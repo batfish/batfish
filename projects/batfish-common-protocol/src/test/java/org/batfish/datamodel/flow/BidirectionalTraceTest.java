@@ -2,7 +2,6 @@ package org.batfish.datamodel.flow;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -11,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.flow.BidirectionalTrace.Key;
 import org.junit.Test;
 
@@ -20,8 +20,11 @@ public final class BidirectionalTraceTest {
   public void testKeyEquals() {
     Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
     Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
+    SessionMatchExpr dummySessionMatch =
+        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
     FirewallSessionTraceInfo session =
-        new FirewallSessionTraceInfo("hostname", Accept.INSTANCE, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionMatch, null);
     new EqualsTester()
         .addEqualityGroup(
             new Key(flow1, ImmutableSet.of(), flow1), new Key(flow1, ImmutableSet.of(), flow1))
@@ -35,6 +38,8 @@ public final class BidirectionalTraceTest {
   public void testKey() {
     Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
     Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
+    SessionMatchExpr dummySessionMatch =
+        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
     Trace successTrace = new Trace(ACCEPTED, ImmutableList.of());
     assertThat(
         new BidirectionalTrace(flow1, successTrace, ImmutableSet.of(), flow2, successTrace)
@@ -45,7 +50,8 @@ public final class BidirectionalTraceTest {
             .getKey(),
         equalTo(new Key(flow2, ImmutableSet.of(), flow1)));
     FirewallSessionTraceInfo session =
-        new FirewallSessionTraceInfo("hostname", Accept.INSTANCE, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionMatch, null);
     Trace failTrace = new Trace(DENIED_IN, ImmutableList.of());
     assertThat(
         new BidirectionalTrace(flow1, failTrace, ImmutableSet.of(session), null, null).getKey(),
