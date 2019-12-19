@@ -1,5 +1,6 @@
 package org.batfish.question.ipsecsessionstatus;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
@@ -15,11 +16,13 @@ import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer
 import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_RESPONDER_IP;
 import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_STATUS;
 import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.COL_TUNNEL_INTERFACES;
+import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.getColumnMetadata;
 import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.rawAnswer;
 import static org.batfish.question.ipsecsessionstatus.IpsecSessionStatusAnswerer.toRow;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -28,6 +31,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Comparator;
+import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkePhase1Key;
@@ -43,6 +47,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
@@ -311,5 +316,21 @@ public class IpsecSessionStatusAnswererTest {
         allOf(
             hasColumn(COL_TUNNEL_INTERFACES, equalTo("Not Applicable"), Schema.STRING),
             hasColumn(COL_STATUS, equalTo("IPSEC_SESSION_ESTABLISHED"), Schema.STRING)));
+  }
+
+  @Test
+  public void testGetColumnMetadataKeyStatus() {
+    List<ColumnMetadata> columnMetadata = getColumnMetadata();
+
+    columnMetadata.forEach(
+        cData -> {
+          if (cData.getName().equals(COL_STATUS)) {
+            assertFalse(cData.getName(), cData.getIsKey());
+            assertTrue(cData.getName(), cData.getIsValue());
+          } else {
+            assertTrue(cData.getName(), cData.getIsKey());
+            assertFalse(cData.getName(), cData.getIsValue());
+          }
+        });
   }
 }
