@@ -333,7 +333,7 @@ public final class F5BigipStructuredGrammarTest {
     if (matchLine == null) {
       return false;
     }
-    return !toBDD().toBdd(acl.getLines().get(matchLine)).isOne();
+    return !toBDD().toPermitAndDenyBdds(acl.getLines().get(matchLine)).getMatchBdd().isOne();
   }
 
   private @Nonnull F5BigipConfiguration parseVendorConfig(String filename) {
