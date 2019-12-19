@@ -37,8 +37,7 @@ public class AclTracerTest {
 
   private static final String ACL_NAME = "acl";
 
-  private static final Flow FLOW =
-      Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
+  private static final Flow FLOW = Flow.builder().setDstIp(Ip.ZERO).setIngressNode("node1").build();
 
   private static final String SRC_INTERFACE = null;
 

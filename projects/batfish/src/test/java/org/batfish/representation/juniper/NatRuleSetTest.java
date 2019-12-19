@@ -230,8 +230,7 @@ public class NatRuleSetTest {
             .setSrcIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(0)
-            .setDstPort(0)
-            .setTag("tag");
+            .setDstPort(0);
 
     // doesn't match rule set
     TransformationResult result =

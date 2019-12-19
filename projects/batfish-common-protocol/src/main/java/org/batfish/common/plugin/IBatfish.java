@@ -76,11 +76,7 @@ public interface IBatfish extends IPluginConsumer {
 
   DataPlanePlugin getDataPlanePlugin();
 
-  String getDifferentialFlowTag();
-
   Environment getEnvironment();
-
-  String getFlowTag(NetworkSnapshot snapshot);
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);

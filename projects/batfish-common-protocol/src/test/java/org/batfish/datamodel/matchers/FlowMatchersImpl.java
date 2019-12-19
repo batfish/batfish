@@ -119,17 +119,6 @@ public final class FlowMatchersImpl {
     }
   }
 
-  public static final class HasTag extends FeatureMatcher<Flow, String> {
-    HasTag(Matcher<? super String> subMatcher) {
-      super(subMatcher, "A Flow with tag:", "tag");
-    }
-
-    @Override
-    protected String featureValueOf(Flow flow) {
-      return flow.getTag();
-    }
-  }
-
   public static final class HasTcpFlagsAck extends FeatureMatcher<Flow, Integer> {
     HasTcpFlagsAck(Matcher<? super Integer> subMatcher) {
       super(subMatcher, "A Flow with tcpFlagsAck:", "tcpFlagsAck");

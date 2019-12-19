@@ -51,7 +51,6 @@ public final class BidirectionalTracerouteAnswererTest {
   private static final Flow FORWARD_FLOW =
       Flow.builder()
           .setDstIp(Ip.parse("1.1.1.1"))
-          .setTag("TAG")
           .setIngressNode("forwardIngressNode")
           .setIngressInterface("forwardIngressInterface")
           .build();
@@ -59,7 +58,6 @@ public final class BidirectionalTracerouteAnswererTest {
   private static final Flow REVERSE_FLOW =
       Flow.builder()
           .setDstIp(Ip.parse("1.1.1.1"))
-          .setTag("TAG")
           .setIngressNode("reverseIngressNode")
           .setIngressInterface("reverseIngressInterface")
           .build();

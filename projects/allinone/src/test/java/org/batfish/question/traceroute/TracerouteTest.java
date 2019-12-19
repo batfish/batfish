@@ -964,7 +964,6 @@ public class TracerouteTest {
             .setIngressNode(hostname)
             .setIngressInterface(inside)
             .setIpProtocol(IpProtocol.TCP)
-            .setTag("tag")
             .build();
 
     List<BidirectionalTrace> traces =

@@ -58,7 +58,6 @@ public class PbrWithTracerouteTest {
     Ip dstIp = Ip.parse("1.1.1.250");
     Flow flow =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(_ingressIfaceName)
             .setDstIp(dstIp)
@@ -109,7 +108,6 @@ public class PbrWithTracerouteTest {
 
     Flow flow =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setIngressInterface(_ingressIfaceName)
             .setDstIp(dstIp)

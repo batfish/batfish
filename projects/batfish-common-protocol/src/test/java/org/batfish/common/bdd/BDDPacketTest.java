@@ -83,7 +83,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasIcmpCode(icmpCode));
@@ -127,7 +127,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasDstPort(dstPort));
@@ -153,7 +153,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
@@ -176,7 +176,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
@@ -199,7 +199,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
@@ -218,7 +218,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd, FlowPreference.APPLICATION);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
@@ -236,7 +236,7 @@ public class BDDPacketTest {
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd, FlowPreference.TESTFILTER);
     assertTrue("Unsat", flowBuilder.isPresent());
-    Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
+    Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(Ip.parse("8.8.8.8")));
     assertThat(flow, hasSrcIp(srcIp));

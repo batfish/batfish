@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
+import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
@@ -79,7 +80,7 @@ public class AwsConfigurationPublicSubnetTest {
   }
 
   private static Trace getTrace(String ingressNode, Ip dstIp) {
-    Flow flow = Flow.builder().setTag("test").setIngressNode(ingressNode).setDstIp(dstIp).build();
+    Flow flow = builder().setIngressNode(ingressNode).setDstIp(dstIp).build();
     SortedMap<Flow, List<Trace>> traces =
         _batfish
             .getTracerouteEngine(_batfish.getSnapshot())
@@ -159,13 +160,7 @@ public class AwsConfigurationPublicSubnetTest {
   @Test
   public void testToInternet() {
     Ip dstIp = Ip.parse("8.8.8.8");
-    Flow flow =
-        Flow.builder()
-            .setTag("test")
-            .setIngressNode(_instance)
-            .setDstIp(dstIp)
-            .setSrcIp(_privateIp)
-            .build();
+    Flow flow = builder().setIngressNode(_instance).setDstIp(dstIp).setSrcIp(_privateIp).build();
     SortedMap<Flow, List<Trace>> traces =
         _batfish
             .getTracerouteEngine(_batfish.getSnapshot())

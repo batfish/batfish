@@ -112,7 +112,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   @Test
   public void testSetSrcPortMultiple() {
-    Builder builder = Flow.builder().setIngressNode("node").setTag("tag");
+    Builder builder = Flow.builder().setIngressNode("node");
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder().setSrcPorts(IntegerSpace.of(new SubRange(1, 10))).build();
     thrown.expect(IllegalArgumentException.class);
@@ -141,8 +141,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   @Test
   public void testDefaultPacketLength() {
-    Builder builder =
-        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    Builder builder = Flow.builder().setIngressNode("node").setIngressInterface("iface");
     PacketHeaderConstraints phc = PacketHeaderConstraints.unconstrained();
     setPacketLength(phc, builder);
     assertThat(builder.build().getPacketLength(), equalTo(DEFAULT_PACKET_LENGTH));
@@ -150,8 +149,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   @Test
   public void testSetEcnValue() {
-    Builder builder =
-        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    Builder builder = Flow.builder().setIngressNode("node").setIngressInterface("iface");
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder().setEcns(IntegerSpace.of(1)).build();
     setEcnValue(phc, builder);
@@ -169,8 +167,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   @Test
   public void testSetFragmentOffsets() {
-    Builder builder =
-        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    Builder builder = Flow.builder().setIngressNode("node").setIngressInterface("iface");
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setFragmentOffsets(IntegerSpace.of(SubRange.singleton(2)))
@@ -192,8 +189,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   @Test
   public void testSetFlowStates() {
-    Builder builder =
-        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    Builder builder = Flow.builder().setIngressNode("node").setIngressInterface("iface");
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setFlowStates(Collections.singleton(FlowState.ESTABLISHED))
@@ -215,8 +211,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   @Test
   public void testSetTcpFlags() {
-    Builder builder =
-        Flow.builder().setIngressNode("node").setIngressInterface("iface").setTag("tag");
+    Builder builder = Flow.builder().setIngressNode("node").setIngressInterface("iface");
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setTcpFlags(Collections.singleton(TcpFlagsMatchConditions.ACK_TCP_FLAG))
