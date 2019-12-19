@@ -3,6 +3,7 @@ package org.batfish.common.util;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP;
 import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
+import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -20,6 +21,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -32,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.Map;
@@ -845,5 +848,45 @@ public class IspModelingUtilsTest {
                                     .build())
                             .build()),
                     getDefaultIspNodeName(remoteAsn)))));
+  }
+
+  @Test
+  public void testIspNameConflictsGoodCase() {
+    Map<Long, IspInfo> ispInfoMap =
+        ImmutableMap.of(1L, new IspInfo(1, "isp1"), 2L, new IspInfo(2, "isp2"));
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(
+            "node",
+            new NetworkFactory()
+                .configurationBuilder()
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build());
+    assertTrue(ispNameConflicts(configurations, ispInfoMap).isEmpty());
+  }
+
+  @Test
+  public void testIspNameConflictsIspConflict() {
+    Map<Long, IspInfo> ispInfoMap =
+        ImmutableMap.of(1L, new IspInfo(1, "isp1"), 2L, new IspInfo(2, "isp1"));
+    Map<String, Configuration> configurations = ImmutableMap.of();
+
+    String message = Iterables.getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    assertThat(message, containsString("ASN 1"));
+  }
+
+  @Test
+  public void testIspNameConflictsNodeConflict() {
+    Map<Long, IspInfo> ispInfoMap =
+        ImmutableMap.of(1L, new IspInfo(1, "isp1"), 2L, new IspInfo(2, "isp2"));
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(
+            "isp1",
+            new NetworkFactory()
+                .configurationBuilder()
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build());
+
+    String message = Iterables.getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    assertThat(message, containsString("ASN 1"));
   }
 }

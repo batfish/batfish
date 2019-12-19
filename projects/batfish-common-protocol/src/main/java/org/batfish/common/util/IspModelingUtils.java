@@ -184,7 +184,44 @@ public final class IspModelingUtils {
     Map<Long, IspInfo> asnToIspInfos =
         combineIspConfigurations(configurations, ispConfigurations, warnings);
 
+    List<String> conflicts = ispNameConflicts(configurations, asnToIspInfos);
+
+    if (!conflicts.isEmpty()) {
+      conflicts.forEach(warnings::redFlag);
+      return ImmutableMap.of();
+    }
+
     return createInternetAndIspNodes(asnToIspInfos, nf, logger);
+  }
+
+  /**
+   * Checks if the ISP names conflicts with a node name in the configurations or with another ISP
+   * name. Returns messages that explain the conflicts
+   */
+  @VisibleForTesting
+  static List<String> ispNameConflicts(
+      Map<String, Configuration> configurations, Map<Long, IspInfo> asnToIspInfo) {
+    ImmutableList.Builder<String> conflicts = ImmutableList.builder();
+
+    asnToIspInfo.forEach(
+        (asn, ispInfo) -> {
+          String ispName = ispInfo.getName();
+          if (configurations.containsKey(ispName)) {
+            conflicts.add(
+                String.format(
+                    "ISP name %s for ASN %d conflicts with a node name in the snapshot",
+                    ispName, asn));
+          }
+          asnToIspInfo.values().stream()
+              .filter(info -> info.getAsn() > asn && info.getName().equals(ispName))
+              .forEach(
+                  info ->
+                      conflicts.add(
+                          String.format(
+                              "ISP name %s for ASN %d conflicts with that for ASN %d",
+                              ispName, asn, info.getAsn())));
+        });
+    return conflicts.build();
   }
 
   @VisibleForTesting
