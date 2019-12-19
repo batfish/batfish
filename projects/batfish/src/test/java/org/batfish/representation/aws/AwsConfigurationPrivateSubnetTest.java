@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
+import static org.batfish.datamodel.Flow.builder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -79,7 +80,7 @@ public class AwsConfigurationPrivateSubnetTest {
       Ip dstIp,
       FlowDisposition expectedDisposition,
       List<String> expectedNodes) {
-    Flow flow = Flow.builder().setTag("test").setIngressNode(ingressNode).setDstIp(dstIp).build();
+    Flow flow = builder().setIngressNode(ingressNode).setDstIp(dstIp).build();
     SortedMap<Flow, List<Trace>> traces =
         _batfish
             .getTracerouteEngine(_batfish.getSnapshot())

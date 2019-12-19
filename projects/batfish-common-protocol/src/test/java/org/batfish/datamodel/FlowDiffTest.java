@@ -23,13 +23,7 @@ public final class FlowDiffTest {
     Ip src1 = Ip.parse("2.2.2.2");
     Ip dst2 = Ip.parse("3.3.3.3");
     Ip src2 = Ip.parse("4.4.4.4");
-    Flow orig =
-        Flow.builder()
-            .setIngressNode("ingressNode")
-            .setTag("tag")
-            .setDstIp(dst1)
-            .setSrcIp(src1)
-            .build();
+    Flow orig = Flow.builder().setIngressNode("ingressNode").setDstIp(dst1).setSrcIp(src1).build();
     Flow newDst = orig.toBuilder().setDstIp(dst2).build();
     Flow newSrc = orig.toBuilder().setSrcIp(src2).build();
     Flow newDstAndSrc = newDst.toBuilder().setSrcIp(src2).build();
@@ -60,7 +54,6 @@ public final class FlowDiffTest {
     Flow orig =
         Flow.builder()
             .setIngressNode("ingressNode")
-            .setTag("tag")
             .setDstPort(dstport1)
             .setSrcPort(srcport1)
             .setIpProtocol(IpProtocol.TCP)

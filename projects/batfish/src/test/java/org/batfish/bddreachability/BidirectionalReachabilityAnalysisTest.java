@@ -1372,7 +1372,7 @@ public final class BidirectionalReachabilityAnalysisTest {
           assertEquals(expectedHops, hops);
         };
 
-    Builder fb = Flow.builder().setIngressVrf(Configuration.DEFAULT_VRF_NAME).setTag("");
+    Builder fb = Flow.builder().setIngressVrf(Configuration.DEFAULT_VRF_NAME);
 
     // test forward traces
     fb.setIngressNode(RTN_SRC).setSrcIp(RTN_TRANSIT_SRC_IP);

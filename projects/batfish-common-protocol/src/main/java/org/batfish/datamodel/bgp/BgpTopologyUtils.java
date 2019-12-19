@@ -429,7 +429,6 @@ public final class BgpTopologyUtils {
         Flow.builder()
             .setIpProtocol(IpProtocol.TCP)
             .setTcpFlagsSyn(1)
-            .setTag("neighbor-resolution")
             .setIngressNode(initiatorNode)
             .setIngressVrf(initiatorVrf)
             .setSrcIp(initiatorIp)

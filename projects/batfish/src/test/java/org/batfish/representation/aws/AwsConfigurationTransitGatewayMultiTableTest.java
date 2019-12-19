@@ -91,7 +91,6 @@ public class AwsConfigurationTransitGatewayMultiTableTest {
   private static SortedMap<Flow, List<Trace>> getTraces(String ingressNode, Ip dstIp) {
     Flow flow =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(ingressNode)
             .setDstIp(dstIp) // this public IP does not exists in the network
             .build();

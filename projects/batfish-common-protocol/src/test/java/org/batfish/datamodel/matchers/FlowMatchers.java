@@ -15,7 +15,6 @@ import org.batfish.datamodel.matchers.FlowMatchersImpl.HasIngressVrf;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasIpProtocol;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasSrcIp;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasSrcPort;
-import org.batfish.datamodel.matchers.FlowMatchersImpl.HasTag;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasTcpFlagsAck;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasTcpFlagsCwr;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasTcpFlagsEce;
@@ -106,14 +105,6 @@ public final class FlowMatchers {
 
   public static Matcher<Flow> hasSrcPort(Matcher<? super Integer> portMatcher) {
     return new HasSrcPort(portMatcher);
-  }
-
-  public static Matcher<Flow> hasTag(String tag) {
-    return new HasTag(equalTo(tag));
-  }
-
-  public static Matcher<Flow> hasTag(Matcher<? super String> tagMatcher) {
-    return new HasTag(tagMatcher);
   }
 
   public static Matcher<Flow> hasTcpFlagsAck(Integer tcpAck) {

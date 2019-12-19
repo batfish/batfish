@@ -33,20 +33,13 @@ public class PacketHeaderConstraintToFlowConverterTest {
 
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder().setSrcIp("2.3.4.5").setDstIp("1.2.3.4").build();
-    Flow flow =
-        converter
-            .toFlow(phc, LOC)
-            .setIngressNode("host1")
-            .setIngressVrf("vrf1")
-            .setTag("tag")
-            .build();
+    Flow flow = converter.toFlow(phc, LOC).setIngressNode("host1").setIngressVrf("vrf1").build();
     Flow expectedFlow =
         Flow.builder()
             .setSrcIp(Ip.parse("2.3.4.5"))
             .setDstIp(Ip.parse("1.2.3.4"))
             .setIngressNode("host1")
             .setIngressVrf("vrf1")
-            .setTag("tag")
             .build();
     assertThat(flow, equalTo(expectedFlow));
   }

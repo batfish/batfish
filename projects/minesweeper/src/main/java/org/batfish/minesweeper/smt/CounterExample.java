@@ -114,7 +114,6 @@ class CounterExample {
     b.setTcpFlagsRst(tcpFlagsRst);
     b.setTcpFlagsSyn(tcpFlagsSyn);
     b.setTcpFlagsFin(tcpFlagsFin);
-    b.setTag("SMT");
     return b.build();
   }
 

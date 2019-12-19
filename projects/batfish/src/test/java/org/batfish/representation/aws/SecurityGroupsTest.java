@@ -63,8 +63,7 @@ public class SecurityGroupsTest {
                 json.get(JSON_KEY_SECURITY_GROUPS), new TypeReference<List<SecurityGroup>>() {});
 
     _region = new Region("test");
-    _flowBuilder =
-        Flow.builder().setIngressNode("foo").setTag("TEST").setIpProtocol(IpProtocol.TCP);
+    _flowBuilder = Flow.builder().setIngressNode("foo").setIpProtocol(IpProtocol.TCP);
     _warnings = new Warnings(true, true, true);
   }
 

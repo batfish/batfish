@@ -30,7 +30,7 @@ public class AclLineMatchExprsTest {
   private static final Flow UDP_FLOW;
 
   static {
-    Supplier<Flow.Builder> fb = () -> Flow.builder().setIngressNode("n").setTag("tag");
+    Supplier<Flow.Builder> fb = () -> Flow.builder().setIngressNode("n");
     Supplier<Flow.Builder> tcpFb =
         () -> fb.get().setIpProtocol(IpProtocol.TCP).setSrcPort(1).setDstPort(2);
     ACK_FLOW = tcpFb.get().setTcpFlags(TcpFlags.builder().setAck(true).build()).build();

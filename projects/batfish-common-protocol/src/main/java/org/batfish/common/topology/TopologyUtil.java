@@ -762,7 +762,6 @@ public final class TopologyUtil {
     //   something else?)
     Flow flow =
         Flow.builder()
-            .setTag("Tunnel reachability check")
             .setIngressNode(src.getHostname())
             .setIngressVrf(tailTunnel.getVrfName())
             .setSrcIp(tailTunnel.getTunnelConfig().getSourceAddress())

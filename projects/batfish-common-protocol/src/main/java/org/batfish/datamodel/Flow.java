@@ -32,8 +32,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
     private @Nonnull Ip _srcIp;
     @Nullable private Integer _srcPort;
     private @Nonnull FlowState _state;
-    // Nullable because no sensible default. User is required to specify.
-    private @Nullable String _tag;
     private int _tcpFlagsAck;
     private int _tcpFlagsCwr;
     private int _tcpFlagsEce;
@@ -87,12 +85,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _tcpFlagsRst = flow.getTcpFlagsRst();
       _tcpFlagsSyn = flow.getTcpFlagsSyn();
       _tcpFlagsFin = flow.getTcpFlagsFin();
-      _tag = flow._tag;
     }
 
     public Flow build() {
       checkNotNull(_ingressNode, "Cannot build flow without at least specifying ingress node");
-      checkNotNull(_tag, "Cannot build flow without specifying tag");
       if (_ipProtocol == IpProtocol.ICMP) {
         checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
         checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
@@ -140,8 +136,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
           _tcpFlagsPsh,
           _tcpFlagsRst,
           _tcpFlagsSyn,
-          _tcpFlagsFin,
-          _tag);
+          _tcpFlagsFin);
     }
 
     public int getDscp() {
@@ -198,10 +193,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
     public FlowState getState() {
       return _state;
-    }
-
-    public String getTag() {
-      return _tag;
     }
 
     public int getTcpFlagsAck() {
@@ -322,7 +313,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
     }
 
     public Builder setTag(String tag) {
-      _tag = tag;
       return this;
     }
 
@@ -403,8 +393,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private static final String PROP_TCP_FLAGS_RST = "tcpFlagsRst";
   private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
-  public static final String BASE_FLOW_TAG = "BASE";
-  public static final String DELTA_FLOW_TAG = "DELTA";
 
   public static Builder builder() {
     return new Builder();
@@ -425,7 +413,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private final @Nonnull Ip _srcIp;
   private final @Nullable Integer _srcPort;
   private final @Nonnull FlowState _state;
-  private final @Nonnull String _tag;
   private final @Nonnull TcpFlags _tcpFlags;
 
   private Flow(
@@ -451,8 +438,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       int tcpFlagsPsh,
       int tcpFlagsRst,
       int tcpFlagsSyn,
-      int tcpFlagsFin,
-      @Nonnull String tag) {
+      int tcpFlagsFin) {
     checkArgument(
         ingressInterface != null || ingressVrf != null,
         "Either ingressInterface or ingressVrf must not be null.");
@@ -474,7 +460,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
     _icmpCode = icmpCode;
     _packetLength = packetLength;
     _state = state;
-    _tag = tag;
     // this ugliness is for backwards compatibility (for now)
     _tcpFlags =
         new TcpFlags(
@@ -547,8 +532,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
         tcpFlagsPsh,
         tcpFlagsRst,
         tcpFlagsSyn,
-        tcpFlagsFin,
-        requireNonNull(tag, PROP_TAG + " must not be null"));
+        tcpFlagsFin);
   }
 
   @Override
@@ -596,7 +580,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
         && _srcIp.equals(other._srcIp)
         && Objects.equals(_srcPort, other._srcPort)
         && _state.equals(other._state)
-        && _tag.equals(other._tag)
         && _tcpFlags.equals(other._tcpFlags);
   }
 
@@ -684,12 +667,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _state;
   }
 
-  @Nonnull
-  @JsonProperty(PROP_TAG)
-  public String getTag() {
-    return _tag;
-  }
-
   // Again, backwards-compatibility tcp-flag ugliness below
 
   @JsonProperty(PROP_TCP_FLAGS_ACK)
@@ -756,7 +733,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
         _srcIp,
         _srcPort,
         _state,
-        _tag,
         _tcpFlags);
   }
 
@@ -825,8 +801,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
         + " state:"
         + _state
         + tcpFlagsStr
-        + " tag:"
-        + _tag
         + ">";
   }
 }

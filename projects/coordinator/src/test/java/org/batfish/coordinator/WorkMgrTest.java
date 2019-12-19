@@ -2627,8 +2627,8 @@ public final class WorkMgrTest {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FLOW, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
-    Row r1 = Row.of(col, Flow.builder().setDstIp(Ip.ZERO).setIngressNode("a").setTag("a").build());
-    Row r2 = Row.of(col, Flow.builder().setDstIp(Ip.MAX).setIngressNode("a").setTag("a").build());
+    Row r1 = Row.of(col, Flow.builder().setDstIp(Ip.ZERO).setIngressNode("a").build());
+    Row r2 = Row.of(col, Flow.builder().setDstIp(Ip.MAX).setIngressNode("a").build());
 
     assertThat(comparator.compare(r1, r2), lessThan(0));
   }
