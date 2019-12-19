@@ -21,7 +21,7 @@ s_application_definition
 
 sapp_description
 :
-    DESCRIPTION description = variable
+    DESCRIPTION description = value
 ;
 
 s_application_group

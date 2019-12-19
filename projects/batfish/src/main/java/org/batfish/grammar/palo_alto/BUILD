@@ -5,7 +5,7 @@ load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 java_library(
     name = "palo_alto",
     srcs = glob(
-        ["*.java"],
+        ["**/*.java"],
         exclude = ["BUILD"],
     ),
     deps = [
