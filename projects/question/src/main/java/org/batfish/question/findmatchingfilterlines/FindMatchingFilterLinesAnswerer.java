@@ -173,13 +173,15 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
+    ActionGetter actionGetter = new ActionGetter(false);
     return IntStream.range(0, aclLines.size())
         .filter(
             i -> {
               AclLine line = aclLines.get(i);
-              // TODO more meaningful action-matching for lines without concrete actions.
-              // For now, always include such lines on the assumption that they could match action.
-              if (!actionMatches(action, line)) {
+              LineAction lineAction = actionGetter.visit(line);
+              // For now, always include lines without concrete actions on the assumption that they
+              // could match action.
+              if (!actionMatches(action, lineAction)) {
                 return false;
               }
               // If there is any overlap between the header space BDD and this line, include it
@@ -213,12 +215,9 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
         EmptyIpSpace.INSTANCE);
   }
 
-  private static boolean actionMatches(@Nullable Action action, AclLine line) {
-    if (!(line instanceof ExprAclLine)) {
-      return true;
-    }
-    LineAction lineAction = ((ExprAclLine) line).getAction();
+  private static boolean actionMatches(@Nullable Action action, @Nullable LineAction lineAction) {
     return action == null
+        || lineAction == null
         || action == Action.PERMIT && lineAction == LineAction.PERMIT
         || action == Action.DENY && lineAction == LineAction.DENY;
   }

@@ -30,6 +30,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -123,6 +124,7 @@ public class CompareFiltersAnswerer extends Answerer {
           .put(COL_CURRENT_NAME, "");
     } else {
       int index = difference.getCurrentIndex();
+      ActionGetter actionGetter = new ActionGetter(false);
       AclLine line =
           currentContext
               .getConfigs()
@@ -132,9 +134,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .getLines()
               .get(index);
       ret.put(COL_CURRENT_LINE, index)
-          .put(
-              COL_CURRENT_ACTION,
-              line instanceof ExprAclLine ? ((ExprAclLine) line).getAction() : null)
+          .put(COL_CURRENT_ACTION, actionGetter.visit(line))
           .put(COL_CURRENT_NAME, line.getName());
     }
 
@@ -181,10 +181,10 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
+    ActionGetter actionGetter = new ActionGetter(false);
     List<LineAction> referenceActions =
         referenceAcl.getLines().stream()
-            // TODO Better handle line types without concrete actions
-            .map(l -> l instanceof ExprAclLine ? ((ExprAclLine) l).getAction() : null)
+            .map(actionGetter::visit)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);

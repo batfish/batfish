@@ -50,6 +50,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -329,33 +330,14 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toMatchLineAcl(Integer lineNumber, IpAccessList acl) {
+    CopierWithAction permittingCopier = new CopierWithAction(LineAction.PERMIT);
+    CopierWithAction denyingCopier = new CopierWithAction(LineAction.DENY);
     List<AclLine> lines =
         Streams.concat(
-                acl.getLines().subList(0, lineNumber).stream()
-                    // TODO Add a method AclLineMatchExpr matchedSpace() in AclLine to handle this
-                    .map(
-                        l -> {
-                          if (!(l instanceof ExprAclLine)) {
-                            throw new UnsupportedOperationException(
-                                "Support not yet implemented for toMatchLineAcl for this type of line");
-                          }
-                          return (ExprAclLine) l;
-                        })
-                    .map(l -> l.toBuilder().setAction(LineAction.DENY).build()),
-                Stream.of(
-                    Optional.of(acl.getLines().get(lineNumber))
-                        .map(
-                            l -> {
-                              if (!(l instanceof ExprAclLine)) {
-                                throw new UnsupportedOperationException(
-                                    "Support not yet implemented for toMatchLineAcl for this type of line");
-                              }
-                              return (ExprAclLine) l;
-                            })
-                        .get()
-                        .toBuilder()
-                        .setAction(LineAction.PERMIT)
-                        .build()))
+                // Deny everything that matches any previous line
+                acl.getLines().subList(0, lineNumber).stream().map(denyingCopier::visit),
+                // Permit everything that matches selected line
+                Stream.of(permittingCopier.visit(acl.getLines().get(lineNumber))))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(MATCH_LINE_RENAMER.apply(lineNumber, acl.getName()))
@@ -367,25 +349,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   static IpAccessList toDenyAcl(IpAccessList acl) {
     List<AclLine> lines =
         Streams.concat(
-                acl.getLines().stream()
-                    // TODO Add a method AclLineMatchExpr matchedSpace() in AclLine to handle this
-                    .map(
-                        l -> {
-                          if (!(l instanceof ExprAclLine)) {
-                            throw new UnsupportedOperationException(
-                                "Support not yet implemented for toDenyAcl for this type of line");
-                          }
-                          return (ExprAclLine) l;
-                        })
-                    .map(
-                        l ->
-                            l.toBuilder()
-                                // flip action
-                                .setAction(
-                                    l.getAction() == LineAction.PERMIT
-                                        ? LineAction.DENY
-                                        : LineAction.PERMIT)
-                                .build()),
+                acl.getLines().stream().map(ComplementaryCopier::copy),
                 // accept if we reach the end of the ACL
                 Stream.of(ExprAclLine.ACCEPT_ALL))
             .collect(ImmutableList.toImmutableList());
@@ -393,6 +357,44 @@ public final class SearchFiltersAnswerer extends Answerer {
         .setName(NEGATED_RENAMER.apply(acl.getName()))
         .setLines(lines)
         .build();
+  }
+
+  /**
+   * Creates a copy of the visited {@link AclLine} that matches the same flows but always takes the
+   * provided action.
+   */
+  private static final class CopierWithAction implements GenericAclLineVisitor<AclLine> {
+    private final LineAction _action;
+
+    CopierWithAction(LineAction action) {
+      _action = action;
+    }
+
+    @Override
+    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+      return exprAclLine.toBuilder().setAction(_action).build();
+    }
+  }
+
+  /**
+   * Creates a copy of the visited {@link AclLine} that matches all the same flows as the original
+   * line, but permits the flows the original denies and vice versa.
+   */
+  private static final class ComplementaryCopier implements GenericAclLineVisitor<AclLine> {
+    private static final ComplementaryCopier INSTANCE = new ComplementaryCopier();
+
+    private ComplementaryCopier() {}
+
+    static AclLine copy(AclLine line) {
+      return INSTANCE.visit(line);
+    }
+
+    @Override
+    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+      LineAction newAction =
+          exprAclLine.getAction() == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
+      return exprAclLine.toBuilder().setAction(newAction).build();
+    }
   }
 
   private Row testFiltersRow(NetworkSnapshot snapshot, String hostname, String aclName, Flow flow) {
