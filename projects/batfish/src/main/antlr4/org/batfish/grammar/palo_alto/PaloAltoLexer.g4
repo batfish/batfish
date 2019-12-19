@@ -11,10 +11,6 @@ tokens {
   WORD
 }
 
-@members {
-// Java code to end up in PaloAltoLexer.java goes here
-}
-
 // Keywords
 
 TWO_BYTE
