@@ -38,6 +38,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.ActionGetter;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -173,21 +174,40 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
-    ActionGetter actionGetter = new ActionGetter(false);
-    return IntStream.range(0, aclLines.size())
-        .filter(
-            i -> {
-              AclLine line = aclLines.get(i);
-              LineAction lineAction = actionGetter.visit(line);
-              // For now, always include lines without concrete actions on the assumption that they
-              // could match action.
-              if (!actionMatches(action, lineAction)) {
-                return false;
-              }
-              // If there is any overlap between the header space BDD and this line, include it
-              BDD lineBdd = bddConverter.toBdd(line);
-              return headerSpaceBdd.andSat(lineBdd);
-            });
+    IncludeChecker includeChecker = new IncludeChecker(bddConverter, action, headerSpaceBdd);
+    return IntStream.range(0, aclLines.size()).filter(i -> includeChecker.visit(aclLines.get(i)));
+  }
+
+  /** Returns true if the answer should include the visited line, based on provided parameters. */
+  private static final class IncludeChecker implements GenericAclLineVisitor<Boolean> {
+    private final IpAccessListToBdd _ipAccessListToBdd;
+
+    // Restrictions on lines to include, based on question parameters
+    @Nullable private final Action _action;
+    private final BDD _headerSpaceBdd;
+
+    IncludeChecker(
+        IpAccessListToBdd ipAccessListToBdd, @Nullable Action action, BDD headerSpaceBdd) {
+      _ipAccessListToBdd = ipAccessListToBdd;
+      _action = action;
+      _headerSpaceBdd = headerSpaceBdd;
+    }
+
+    private boolean actionMatches(LineAction lineAction) {
+      return _action == null
+          || _action == Action.PERMIT && lineAction == LineAction.PERMIT
+          || _action == Action.DENY && lineAction == LineAction.DENY;
+    }
+
+    @Override
+    public Boolean visitExprAclLine(ExprAclLine exprAclLine) {
+      if (!actionMatches(exprAclLine.getAction())) {
+        return false;
+      }
+      // If there is any overlap between the header space BDD and this line, include it
+      BDD lineBdd = _ipAccessListToBdd.toBdd(exprAclLine);
+      return _headerSpaceBdd.andSat(lineBdd);
+    }
   }
 
   /** Creates {@link TableMetadata} from the question. */
@@ -213,12 +233,5 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList())),
         EmptyIpSpace.INSTANCE);
-  }
-
-  private static boolean actionMatches(@Nullable Action action, @Nullable LineAction lineAction) {
-    return action == null
-        || lineAction == null
-        || action == Action.PERMIT && lineAction == LineAction.PERMIT
-        || action == Action.DENY && lineAction == LineAction.DENY;
   }
 }
