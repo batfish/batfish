@@ -13,16 +13,14 @@ import org.batfish.datamodel.LineAction;
  * Evaluates the action of an {@link AclLine} on a given {@link Flow}. Visiting a line returns the
  * {@link LineAction} it will take on the flow, or {@code null} if the line does not match the flow.
  */
-public class AclLineEvaluator implements GenericAclLineVisitor<LineAction> {
-
-  private final Evaluator _matchExprEvaluator;
+public class AclLineEvaluator extends Evaluator implements GenericAclLineVisitor<LineAction> {
 
   public AclLineEvaluator(
       Flow flow,
       String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
-    _matchExprEvaluator = new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces);
+    super(flow, srcInterface, availableAcls, namedIpSpaces);
   }
 
   // Override visit in order to explicitly mark it nullable
@@ -34,8 +32,6 @@ public class AclLineEvaluator implements GenericAclLineVisitor<LineAction> {
 
   @Override
   public LineAction visitExprAclLine(ExprAclLine exprAclLine) {
-    return _matchExprEvaluator.visit(exprAclLine.getMatchCondition())
-        ? exprAclLine.getAction()
-        : null;
+    return visit(exprAclLine.getMatchCondition()) ? exprAclLine.getAction() : null;
   }
 }
