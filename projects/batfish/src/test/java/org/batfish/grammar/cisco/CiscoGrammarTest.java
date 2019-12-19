@@ -13,6 +13,7 @@ import static org.batfish.datamodel.AuthenticationMethod.LINE;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
+import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -453,7 +454,6 @@ public final class CiscoGrammarTest {
   private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort, FlowState state) {
     return Flow.builder()
         .setIngressNode("")
-        .setTag("")
         .setIpProtocol(protocol)
         .setState(state)
         .setSrcPort(srcPort)
@@ -464,7 +464,6 @@ public final class CiscoGrammarTest {
   private Flow createIcmpFlow(Integer icmpType) {
     return Flow.builder()
         .setIngressNode("")
-        .setTag("")
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
         .setIcmpCode(0)
@@ -1417,7 +1416,6 @@ public final class CiscoGrammarTest {
                     .setSrcIp(Ip.parse("10.1.1.1"))
                     .setDstIp(Ip.parse("11.1.1.1"))
                     .setIngressNode(hostname)
-                    .setTag("test")
                     .build(),
                 "Ethernet1",
                 c)));
@@ -1430,7 +1428,6 @@ public final class CiscoGrammarTest {
                     .setSrcIp(Ip.parse("11.1.1.1"))
                     .setDstIp(Ip.parse("10.1.1.1"))
                     .setIngressNode(hostname)
-                    .setTag("test")
                     .build(),
                 "Ethernet1",
                 c)));
@@ -1897,7 +1894,6 @@ public final class CiscoGrammarTest {
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .setDstPort(80)
             .setIngressNode("internet")
-            .setTag("none")
             .build();
     assertThat(eth2Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth2Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
@@ -1912,7 +1908,6 @@ public final class CiscoGrammarTest {
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .setDstPort(80)
             .setIngressNode("internet")
-            .setTag("none")
             .build();
     assertThat(
         eth2Acl,
@@ -1935,7 +1930,6 @@ public final class CiscoGrammarTest {
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .setDstPort(81)
             .setIngressNode("internet")
-            .setTag("none")
             .build();
     assertThat(eth2Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
@@ -2310,7 +2304,6 @@ public final class CiscoGrammarTest {
     String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
     Flow icmpFlow =
         Flow.builder()
-            .setTag("")
             .setIngressNode("")
             .setIpProtocol(IpProtocol.ICMP)
             .setIcmpCode(0)
@@ -2318,7 +2311,6 @@ public final class CiscoGrammarTest {
             .build();
     Flow tcpFlow =
         Flow.builder()
-            .setTag("")
             .setIngressNode("")
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(0)
@@ -3485,7 +3477,7 @@ public final class CiscoGrammarTest {
     String passPolicyMapAclName = computeInspectPolicyMapAclName("ppass");
     String unspecifiedPolicyMapAclName = computeInspectPolicyMapAclName("punspecified");
 
-    Flow flow = Flow.builder().setTag("").setIngressNode("").build();
+    Flow flow = builder().setIngressNode("").build();
 
     assertThat(c, hasIpAccessList(dropPolicyMapAclName, rejects(flow, null, c)));
     assertThat(c, hasIpAccessList(passPolicyMapAclName, accepts(flow, null, c)));
@@ -3507,25 +3499,22 @@ public final class CiscoGrammarTest {
     String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
 
     Flow flowPass =
-        Flow.builder()
+        builder()
             .setIngressNode(c.getHostname())
-            .setTag("")
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(0)
             .setDstPort(0)
             .build();
     Flow flowInspect =
-        Flow.builder()
+        builder()
             .setIngressNode(c.getHostname())
-            .setTag("")
             .setIpProtocol(IpProtocol.UDP)
             .setSrcPort(0)
             .setDstPort(0)
             .build();
     Flow flowDrop =
-        Flow.builder()
+        builder()
             .setIngressNode(c.getHostname())
-            .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
             .setIcmpType(0)
             .setIcmpCode(0)
@@ -3559,7 +3548,7 @@ public final class CiscoGrammarTest {
     /* Ethernet3 is in zone z3 */
     String e3Name = "Ethernet3";
 
-    Flow flow = Flow.builder().setIngressNode(c.getHostname()).setTag("").build();
+    Flow flow = builder().setIngressNode(c.getHostname()).build();
 
     /* Traffic originating from device should not be subject to zone filtering */
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, null, c))));

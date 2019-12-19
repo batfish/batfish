@@ -52,7 +52,6 @@ public final class PaloAltoConfigurationTest {
 
   private @Nonnull Flow createFlow(Ip srcIp, Ip dstIp, String ingressInterface) {
     return Flow.builder()
-        .setTag("tag")
         .setSrcIp(srcIp)
         .setDstIp(dstIp)
         .setIngressInterface(ingressInterface)

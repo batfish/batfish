@@ -44,7 +44,6 @@ public final class FlowEvaluatorTest {
         Flow.builder()
             .setIngressNode("someNode")
             .setIngressInterface("Eth0")
-            .setTag("noTag")
             .setSrcIp(Ip.parse("1.1.1.1"))
             .setDstIp(Ip.parse("2.2.2.2"))
             .build();

@@ -1652,7 +1652,6 @@ public final class CiscoNxosGrammarTest {
     Builder builder =
         Flow.builder()
             .setIngressNode(hostname)
-            .setTag("test")
             .setIngressInterface("eth0")
             .setSrcIp(Ip.parse("8.8.8.8"))
             .setSrcPort(22222)

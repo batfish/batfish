@@ -410,7 +410,7 @@ public final class SearchFiltersAnswerer extends Answerer {
             .and(headerSpaceBDD)
             .and(mgr.isValidValue());
 
-    return getFlow(bddPacket, mgr, node.getHostname(), bdd, batfish.getFlowTag(snapshot))
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd)
         .map(
             flow ->
                 new SearchFiltersResult(
@@ -465,13 +465,12 @@ public final class SearchFiltersAnswerer extends Answerer {
             .and(mgr.isValidValue());
 
     String hostname = baseConfig.getHostname();
-    String flowTag = batfish.getFlowTag(snapshot);
 
     BDD increasedBDD = deltaAclBDD.diff(baseAclBDD);
-    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD, flowTag);
+    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD);
 
     BDD decreasedBDD = baseAclBDD.diff(deltaAclBDD);
-    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD, flowTag);
+    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD);
 
     boolean explain = searchFiltersParameters.getGenerateExplanations();
 

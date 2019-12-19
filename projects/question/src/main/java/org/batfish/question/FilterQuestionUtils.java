@@ -115,14 +115,13 @@ public final class FilterQuestionUtils {
 
   /** Return a concrete flow satisfying the input {@link BDD}, if one exists. */
   public static Optional<Flow> getFlow(
-      BDDPacket pkt, BDDSourceManager bddSourceManager, String hostname, BDD bdd, String flowTag) {
+      BDDPacket pkt, BDDSourceManager bddSourceManager, String hostname, BDD bdd) {
     if (bdd.isZero()) {
       return Optional.empty();
     }
     BDD assignment = bdd.fullSatOne();
     return Optional.of(
         pkt.getFlowFromAssignment(assignment)
-            .setTag(flowTag)
             .setIngressNode(hostname)
             .setIngressInterface(bddSourceManager.getSourceFromAssignment(assignment).orElse(null))
             .build());

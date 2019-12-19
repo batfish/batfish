@@ -30,7 +30,6 @@ public final class TracerouteUtilsTest {
     String node1 = "node1";
     String vrf1 = "vrf1";
     String iface1 = "iface1";
-    String tag = "TAG";
     Flow forwardFlow =
         Flow.builder()
             .setSrcIp(ip1)
@@ -40,7 +39,6 @@ public final class TracerouteUtilsTest {
             .setIngressNode(node1)
             .setIngressVrf(vrf1)
             .setIngressInterface(iface1)
-            .setTag(tag)
             .build();
     String node2 = "node2";
     String vrf2 = "vrf2";
@@ -55,7 +53,6 @@ public final class TracerouteUtilsTest {
                 .setDstPort(port1)
                 .setIngressNode(node2)
                 .setIngressVrf(vrf2)
-                .setTag(tag)
                 .build()));
     assertThat(
         TracerouteUtils.returnFlow(forwardFlow, node2, null, iface2),
@@ -67,7 +64,6 @@ public final class TracerouteUtilsTest {
                 .setDstPort(port1)
                 .setIngressNode(node2)
                 .setIngressInterface(iface2)
-                .setTag(tag)
                 .build()));
   }
 
@@ -152,7 +148,6 @@ public final class TracerouteUtilsTest {
         Flow.builder()
             .setIngressNode("inNode")
             .setIngressInterface("inInterf")
-            .setTag("tag")
             .setDstIp(dstIp1)
             .setSrcIp(srcIp1)
             .setDstPort(dstPort1)
@@ -163,7 +158,6 @@ public final class TracerouteUtilsTest {
         Flow.builder()
             .setIngressNode("inNode")
             .setIngressInterface("inInterf")
-            .setTag("tag")
             .setDstIp(dstIp2)
             .setSrcIp(srcIp2)
             .setDstPort(dstPort2)

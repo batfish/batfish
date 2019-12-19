@@ -370,7 +370,7 @@ public final class SearchFiltersTest {
   @Test
   public void testTestFilter() {
     String hostname = _config.getHostname();
-    Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).setTag("tag").build();
+    Flow flow = Flow.builder().setIngressNode(hostname).setDstIp(IP2).build();
     assertThat(
         TestFiltersAnswerer.getRow(ACL, flow, _config),
         allOf(

@@ -285,7 +285,6 @@ public final class PaloAltoGrammarTest {
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
-    fb.setTag("test");
     return fb.build();
   }
 
@@ -306,7 +305,6 @@ public final class PaloAltoGrammarTest {
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
-    fb.setTag("test");
     return fb.build();
   }
 
@@ -1383,7 +1381,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.TCP)
-            .setTag("test")
             .setSrcPort(1);
     // See comments in the config for how this test works.
     Flow service1 = baseBuilder.setDstPort(1001).build();
@@ -1429,7 +1426,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.TCP)
-            .setTag("test")
             .setSrcPort(1);
     Flow.Builder udpBaseBuilder =
         Flow.builder()
@@ -1437,7 +1433,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.UDP)
-            .setTag("test")
             .setSrcPort(1);
     // See comments in the config for how this test works.
     Flow webapplication = tcpBaseBuilder.setDstPort(80).build();
@@ -1449,7 +1444,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.ICMP)
-            .setTag("test")
             .setIcmpType(IcmpType.ECHO_REPLY)
             .setIcmpCode(0)
             .build();
@@ -1522,7 +1516,6 @@ public final class PaloAltoGrammarTest {
 
     Flow notMatchingZoneSecurity =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setDstIp(Ip.parse("10.10.10.10"))
             .setSrcIp(Ip.parse("10.10.10.20"))

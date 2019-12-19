@@ -1,7 +1,10 @@
 package org.batfish.dataplane;
 
+import static org.batfish.datamodel.Flow.Builder;
+import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
+import static org.batfish.datamodel.Ip.parse;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -114,11 +117,7 @@ public class TracerouteEngineTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot); // Construct flows
-    Flow.Builder fb =
-        Flow.builder()
-            .setDstIp(Ip.parse("3.3.3.3"))
-            .setIngressNode(config.getHostname())
-            .setTag("TAG");
+    Builder fb = builder().setDstIp(parse("3.3.3.3")).setIngressNode(config.getHostname());
 
     Flow flow1 = fb.setIngressInterface(i1.getName()).setIngressVrf(vrf1.getName()).build();
     Flow flow2 = fb.setIngressInterface(i2.getName()).setIngressVrf(vrf2.getName()).build();
@@ -169,11 +168,10 @@ public class TracerouteEngineTest {
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Flow flow =
-        Flow.builder()
+        builder()
             .setIngressNode(source.getHostname())
-            .setSrcIp(Ip.parse("10.0.0.1"))
-            .setDstIp(Ip.parse("10.0.0.2"))
-            .setTag("tag")
+            .setSrcIp(parse("10.0.0.1"))
+            .setDstIp(parse("10.0.0.2"))
             .build();
     List<Trace> traces =
         new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
@@ -294,12 +292,7 @@ public class TracerouteEngineTest {
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = b.getSnapshot();
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(c.getHostname())
-            .setTag(b.getFlowTag(snapshot))
-            .setDstIp(Ip.parse("1.0.0.1"))
-            .build();
+    Flow flow = builder().setIngressNode(c.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
     b.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
@@ -341,12 +334,7 @@ public class TracerouteEngineTest {
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = b.getSnapshot();
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(c1.getHostname())
-            .setTag(b.getFlowTag(snapshot))
-            .setDstIp(Ip.parse("1.0.0.1"))
-            .build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
     b.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
@@ -371,9 +359,7 @@ public class TracerouteEngineTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Node missingNode is not in the network");
     new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
-        .computeTraces(
-            ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
-            false);
+        .computeTraces(ImmutableSet.of(builder().setIngressNode("missingNode").build()), false);
   }
 
   @Test
@@ -398,12 +384,7 @@ public class TracerouteEngineTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(c1.getHostname())
-            .setTag(batfish.getFlowTag(snapshot))
-            .setDstIp(Ip.parse("1.0.0.1"))
-            .build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
     batfish.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(
@@ -466,12 +447,7 @@ public class TracerouteEngineTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(c1.getHostname())
-            .setTag(batfish.getFlowTag(snapshot))
-            .setDstIp(Ip.parse("2.0.0.1"))
-            .build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("2.0.0.1")).build();
     batfish.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(

@@ -46,11 +46,7 @@ public class ExprAclLineTest {
         ImmutableMap.of(acl.getName(), acl, testAcl.getName(), testAcl);
 
     Flow.Builder fb =
-        Flow.builder()
-            .setIpProtocol(IpProtocol.OSPF)
-            .setDstIp(Ip.ZERO)
-            .setIngressNode("node")
-            .setTag("tag");
+        Flow.builder().setIpProtocol(IpProtocol.OSPF).setDstIp(Ip.ZERO).setIngressNode("node");
 
     {
       // The testACL should explicitly permit the flow on some line, since it was permitted by acl.

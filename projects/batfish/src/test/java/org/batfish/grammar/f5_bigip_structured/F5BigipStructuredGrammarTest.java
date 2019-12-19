@@ -313,7 +313,6 @@ public final class F5BigipStructuredGrammarTest {
         .setIpProtocol(IpProtocol.TCP)
         .setSrcIp(Ip.ZERO)
         .setSrcPort(50000)
-        .setTag("")
         .build();
   }
 
@@ -321,7 +320,6 @@ public final class F5BigipStructuredGrammarTest {
     return Flow.builder()
         .setSrcIp(Ip.ZERO)
         .setDstIp(dstIp)
-        .setTag("")
         .setIngressNode(ingressNode)
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(IcmpType.ECHO_REQUEST)
@@ -1064,7 +1062,6 @@ public final class F5BigipStructuredGrammarTest {
     String natHostname = "f5_bigip_structured_dnat";
     String hostname = "host1";
     String hostFilename = hostname + ".json";
-    String tag = "tag";
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -1080,7 +1077,6 @@ public final class F5BigipStructuredGrammarTest {
       // DNAT modulo ARP
       Flow flow =
           Flow.builder()
-              .setTag(tag)
               .setDstIp(Ip.parse("192.0.2.1"))
               .setDstPort(80)
               .setIngressInterface("/Common/SOME_VLAN")
@@ -1120,7 +1116,6 @@ public final class F5BigipStructuredGrammarTest {
       // DNAT with ARP
       Flow flow =
           Flow.builder()
-              .setTag(tag)
               .setDstIp(Ip.parse("192.0.2.1"))
               .setDstPort(80)
               .setIngressNode(hostname)
@@ -1159,7 +1154,6 @@ public final class F5BigipStructuredGrammarTest {
       // bidirectional traceroute with DNAT
       Flow flow =
           Flow.builder()
-              .setTag(tag)
               .setDstIp(Ip.parse("192.0.2.1"))
               .setDstPort(80)
               .setIngressInterface("/Common/SOME_VLAN")
@@ -1181,7 +1175,6 @@ public final class F5BigipStructuredGrammarTest {
           reverseFlow,
           equalTo(
               Flow.builder()
-                  .setTag(tag)
                   .setSrcIp(Ip.parse("192.0.2.10"))
                   .setSrcPort(80)
                   .setIngressInterface("/Common/SOME_VLAN")
@@ -2789,7 +2782,6 @@ public final class F5BigipStructuredGrammarTest {
   @Test
   public void testSnatBidirectionalTraceroute() throws IOException {
     String hostname = "f5_bigip_structured_snat";
-    String tag = "tag";
 
     parseConfig(hostname);
 
@@ -2800,7 +2792,6 @@ public final class F5BigipStructuredGrammarTest {
     // SNAT via snat /Common/snat1
     Flow flow =
         Flow.builder()
-            .setTag(tag)
             .setDstIp(Ip.parse("192.0.2.1"))
             .setDstPort(80)
             .setIngressInterface("/Common/vlan1")
@@ -2822,7 +2813,6 @@ public final class F5BigipStructuredGrammarTest {
         reverseFlow,
         equalTo(
             Flow.builder()
-                .setTag(tag)
                 .setSrcIp(Ip.parse("192.0.2.1"))
                 .setSrcPort(80)
                 .setIngressInterface("/Common/vlan1")
@@ -2888,7 +2878,6 @@ public final class F5BigipStructuredGrammarTest {
   @Test
   public void testSnatMatchingSnatButNoVirtual() throws IOException {
     String hostname = "f5_bigip_structured_snat";
-    String tag = "tag";
 
     Configuration c = parseConfig(hostname);
 
@@ -2899,7 +2888,6 @@ public final class F5BigipStructuredGrammarTest {
     // SNAT via snat /Common/snat1
     Flow flow =
         Flow.builder()
-            .setTag(tag)
             .setDstIp(Ip.parse("192.0.2.1"))
             .setDstPort(80)
             .setIngressInterface("/Common/vlan1")
@@ -2940,8 +2928,6 @@ public final class F5BigipStructuredGrammarTest {
   @Test
   public void testSnatMatchingVirtual() throws IOException {
     String hostname = "f5_bigip_structured_snat";
-    String tag = "tag";
-
     Configuration c = parseConfig("hostname");
 
     // Assume a flow is going out of /Common/vlan1
@@ -2951,7 +2937,6 @@ public final class F5BigipStructuredGrammarTest {
     // SNAT via virtual /Common/virtual1
     Flow flow =
         Flow.builder()
-            .setTag(tag)
             .setDstIp(Ip.parse("192.0.2.1"))
             .setDstPort(80)
             .setIngressInterface("/Common/vlan1")
@@ -3372,7 +3357,6 @@ public final class F5BigipStructuredGrammarTest {
         c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
     Flow.Builder builder =
         Flow.builder()
-            .setTag("tag")
             .setDstIp(Ip.parse("192.0.2.1"))
             .setDstPort(80)
             .setIngressInterface("/Common/SOME_VLAN")
@@ -3457,7 +3441,6 @@ public final class F5BigipStructuredGrammarTest {
     // - translate-address enabled/disabled: rewrite destination IP iff enabled
     // - translate-port enabled/disabled: rewrite destination port iff enabled
     String hostname = "f5_bigip_structured_virtual_pool_translation_options";
-    String tag = "tag";
 
     Configuration c = parseConfig(hostname);
 
@@ -3466,7 +3449,6 @@ public final class F5BigipStructuredGrammarTest {
         c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
     Flow.Builder flowBuilder =
         Flow.builder()
-            .setTag(tag)
             .setDstPort(80)
             .setIngressInterface("/Common/vlan1")
             .setIngressNode(hostname)
@@ -3590,7 +3572,6 @@ public final class F5BigipStructuredGrammarTest {
     // - Traffic matching a 'virtual' in 'reject' mode is filtered at ingress
     String hostname = "f5_bigip_structured_virtual_reject";
     String ifaceName = "/Common/vlan1";
-    String tag = "tag";
 
     Configuration c = parseConfig(hostname);
     IpAccessList incomingFilter = c.getAllInterfaces().get(ifaceName).getIncomingFilter();
@@ -3606,7 +3587,6 @@ public final class F5BigipStructuredGrammarTest {
 
     Flow.Builder builder =
         Flow.builder()
-            .setTag(tag)
             .setDstPort(80)
             .setIngressInterface("/Common/vlan1")
             .setIngressNode(hostname)

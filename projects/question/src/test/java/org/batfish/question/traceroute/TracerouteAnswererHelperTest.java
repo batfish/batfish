@@ -73,7 +73,7 @@ public class TracerouteAnswererHelperTest {
     TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(headerConstraints, sourceLocationStr, ctxt);
 
-    Set<Flow> flows = helper.getFlows("tag");
+    Set<Flow> flows = helper.getFlows();
     assertThat(
         flows,
         contains(

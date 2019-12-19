@@ -6,7 +6,6 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
-import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.everyItem;
@@ -45,7 +44,6 @@ public class TracerouteAnswererHelperTest {
   private static final String NODE2 = "node2";
   private static final Ip NODE2_FAST_ETHERNET_IP = Ip.parse("1.1.1.3");
   private static final Ip NODE2_LOOPBACK_IP = Ip.parse("2.2.2.2");
-  private static final String TAG = "tag";
   private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
@@ -73,7 +71,7 @@ public class TracerouteAnswererHelperTest {
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             NODE1,
             _batfish.specifierContext(_batfish.getSnapshot()));
-    Set<Flow> flows = helper.getFlows(TAG);
+    Set<Flow> flows = helper.getFlows();
 
     String ingressInterface = null;
     assertThat(flows, hasSize(2));
@@ -84,8 +82,7 @@ public class TracerouteAnswererHelperTest {
                 hasIngressInterface(ingressInterface),
                 hasIngressNode("node1"),
                 hasIngressVrf(VRF),
-                hasSrcIp(NODE1_LOOPBACK_IP),
-                hasTag(TAG))));
+                hasSrcIp(NODE1_LOOPBACK_IP))));
     assertThat(
         flows,
         hasItem(
@@ -93,8 +90,7 @@ public class TracerouteAnswererHelperTest {
                 hasIngressInterface(ingressInterface),
                 hasIngressNode("node1"),
                 hasIngressVrf(VRF),
-                hasSrcIp(NODE1_FAST_ETHERNET_IP),
-                hasTag(TAG))));
+                hasSrcIp(NODE1_FAST_ETHERNET_IP))));
   }
 
   @Test
@@ -105,7 +101,7 @@ public class TracerouteAnswererHelperTest {
             "enter(node1)",
             _batfish.specifierContext(_batfish.getSnapshot()));
     thrown.expect(IllegalArgumentException.class);
-    helper.getFlows(TAG);
+    helper.getFlows();
   }
 
   @Test
@@ -116,7 +112,7 @@ public class TracerouteAnswererHelperTest {
             "enter(node1)",
             _batfish.specifierContext(_batfish.getSnapshot()));
 
-    Set<Flow> flows = helper.getFlows(TAG);
+    Set<Flow> flows = helper.getFlows();
 
     // neither interfaces have networks for which link (host) IPs can be inferred
     assertThat(flows, hasSize(2));
@@ -128,8 +124,7 @@ public class TracerouteAnswererHelperTest {
                 hasIngressNode("node1"),
                 hasIngressVrf(nullValue()),
                 hasSrcIp(Ip.parse("1.1.1.0")),
-                hasIpProtocol(IpProtocol.UDP),
-                hasTag(TAG))));
+                hasIpProtocol(IpProtocol.UDP))));
     assertThat(
         flows,
         hasItem(
@@ -138,8 +133,7 @@ public class TracerouteAnswererHelperTest {
                 hasIngressNode("node1"),
                 hasIngressVrf(nullValue()),
                 hasSrcIp(Ip.parse("1.1.1.0")),
-                hasIpProtocol(IpProtocol.UDP),
-                hasTag(TAG))));
+                hasIpProtocol(IpProtocol.UDP))));
   }
 
   @Test
@@ -149,7 +143,7 @@ public class TracerouteAnswererHelperTest {
             PacketHeaderConstraints.builder().setDstIp("ofLocation(node2)").build(),
             String.format("%s[%s]", NODE1, LOOPBACK),
             _batfish.specifierContext(_batfish.getSnapshot()));
-    Set<Flow> flows = helper.getFlows(TAG);
+    Set<Flow> flows = helper.getFlows();
     assertThat(
         flows, everyItem(anyOf(hasDstIp(NODE2_FAST_ETHERNET_IP), hasDstIp(NODE2_LOOPBACK_IP))));
   }
