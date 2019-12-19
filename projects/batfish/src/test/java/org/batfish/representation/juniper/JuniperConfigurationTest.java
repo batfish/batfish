@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
@@ -43,6 +44,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -97,7 +99,7 @@ public class JuniperConfigurationTest {
     assertThat(emptyAcl.getLines(), iterableWithSize(0));
 
     // ACL from headerSpace filter should have one line
-    ExprAclLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
+    AclLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
     ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
         .map(Ip::parse)
@@ -105,24 +107,26 @@ public class JuniperConfigurationTest {
             ip ->
                 assertThat(
                     headerSpaceAclLine,
-                    hasMatchCondition(
-                        isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip)))))));
+                    isExprAclLineThat(
+                        hasMatchCondition(
+                            isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip))))))));
 
     // ACL from headerSpace and zone filter should have one line
-    ExprAclLine comboAclLine = Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
+    AclLine comboAclLine = Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
     // It should have an AndMatchExpr match condition, containing both a MatchSrcInterface
     // condition and a MatchHeaderSpace condition
     assertThat(
         comboAclLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new MatchSrcInterface(ImmutableList.of(interface1Name, interface2Name)),
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                .build()))))));
+        isExprAclLineThat(
+            hasMatchCondition(
+                isAndMatchExprThat(
+                    hasConjuncts(
+                        containsInAnyOrder(
+                            new MatchSrcInterface(ImmutableList.of(interface1Name, interface2Name)),
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
+                                    .build())))))));
   }
 
   /**

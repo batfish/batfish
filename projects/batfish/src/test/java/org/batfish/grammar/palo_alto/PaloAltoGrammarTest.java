@@ -112,6 +112,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -123,7 +124,6 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
@@ -1872,7 +1872,7 @@ public final class PaloAltoGrammarTest {
     // Verify transitive name.
     IpAccessList service1 = c.getIpAccessLists().get(service1AclName);
     IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
-    ExprAclLine line1 = sg1.getLines().get(0);
+    AclLine line1 = sg1.getLines().get(0);
     assertThat(line1.getName(), equalTo(service1.getSourceName()));
   }
 

@@ -42,6 +42,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -230,7 +231,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private String _hostname;
   private boolean _imish;
   private final Map<String, ImishInterface> _imishInterfaces;
-  private transient Map<String, ImmutableList.Builder<ExprAclLine>> _interfaceIncomingFilterLines;
+  private transient Map<String, ImmutableList.Builder<AclLine>> _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
   private @Nonnull List<String> _ntpServers;
@@ -398,9 +399,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nullable IpAccessList computeInterfaceIncomingFilter(String vlanName) {
-    List<ExprAclLine> lines =
-        firstNonNull(
-                _interfaceIncomingFilterLines.get(vlanName), ImmutableList.<ExprAclLine>builder())
+    List<AclLine> lines =
+        firstNonNull(_interfaceIncomingFilterLines.get(vlanName), ImmutableList.<AclLine>builder())
             .add(ExprAclLine.ACCEPT_ALL)
             .build();
     return IpAccessList.builder()

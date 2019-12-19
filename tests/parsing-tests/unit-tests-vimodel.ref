@@ -602,9 +602,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "abcd" : {
-            "name" : "abcd",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -626,6 +626,7 @@
                 "name" : "5 permit vlan 123 0x000 udp any 224.0.0.0/4"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -674,6 +675,7 @@
                 "name" : "10 deny tcp any 102.66.49.113/24 neq www https syn"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -692,6 +694,7 @@
                 "name" : "20 deny ip any any"
               }
             ],
+            "name" : "abcd",
             "sourceName" : "abcd",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -986,9 +989,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "sshabc" : {
-            "name" : "sshabc",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1007,6 +1010,7 @@
                 "name" : "10 permit 1.2.4.8/16"
               }
             ],
+            "name" : "sshabc",
             "sourceName" : "sshabc",
             "sourceType" : "standard ipv4 access-list"
           }
@@ -1086,9 +1090,9 @@
         },
         "ipAccessLists" : {
           "acl1" : {
-            "name" : "acl1",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1107,6 +1111,7 @@
                 "name" : "permit ip any any"
               }
             ],
+            "name" : "acl1",
             "sourceName" : "acl1",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -1657,9 +1662,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "Local_LAN_Access" : {
-            "name" : "Local_LAN_Access",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1678,13 +1683,14 @@
                 "name" : "permit host 0.0.0.0"
               }
             ],
+            "name" : "Local_LAN_Access",
             "sourceName" : "Local_LAN_Access",
             "sourceType" : "standard ipv4 access-list"
           },
           "inline_specifiers" : {
-            "name" : "inline_specifiers",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1709,6 +1715,7 @@
                 "name" : "permit object icmp-alternate-address any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1733,6 +1740,7 @@
                 "name" : "permit object icmp-conversion-error any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1757,6 +1765,7 @@
                 "name" : "permit object icmp-echo any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1781,6 +1790,7 @@
                 "name" : "permit object icmp-echo-reply any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1805,6 +1815,7 @@
                 "name" : "permit object icmp-information-reply any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1829,6 +1840,7 @@
                 "name" : "permit object icmp-information-request any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1853,6 +1865,7 @@
                 "name" : "permit object icmp-mask-reply any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1877,6 +1890,7 @@
                 "name" : "permit object icmp-mask-request any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1901,6 +1915,7 @@
                 "name" : "permit object icmp-mobile-redirect any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1925,6 +1940,7 @@
                 "name" : "permit object icmp-parameter-problem any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1949,6 +1965,7 @@
                 "name" : "permit object icmp-redirect any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1973,6 +1990,7 @@
                 "name" : "permit object icmp-router-advertisement any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -1997,6 +2015,7 @@
                 "name" : "permit object icmp-router-solicitation any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2021,6 +2040,7 @@
                 "name" : "permit object icmp-source-quench any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2045,6 +2065,7 @@
                 "name" : "permit object icmp-time-exceeded any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2069,6 +2090,7 @@
                 "name" : "permit object icmp-timestamp-reply any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2093,6 +2115,7 @@
                 "name" : "permit object icmp-timestamp-request any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2117,6 +2140,7 @@
                 "name" : "permit object icmp-traceroute any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2141,6 +2165,7 @@
                 "name" : "permit object icmp-unreachable any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2162,13 +2187,14 @@
                 "name" : "permit object ospf any any"
               }
             ],
+            "name" : "inline_specifiers",
             "sourceName" : "inline_specifiers",
             "sourceType" : "extended ipv4 access-list"
           },
           "outside" : {
-            "name" : "outside",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2194,13 +2220,14 @@
                 "name" : "permit tcp object-group drawbridge_hosts interface outside eq https"
               }
             ],
+            "name" : "outside",
             "sourceName" : "outside",
             "sourceType" : "extended ipv4 access-list"
           },
           "outside_in" : {
-            "name" : "outside_in",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2225,6 +2252,7 @@
                 "name" : "permit udp any4 host 1.2.3.4 eq tftp"
               }
             ],
+            "name" : "outside_in",
             "sourceName" : "outside_in",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -2364,9 +2392,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "ALLOW_SERVER02" : {
-            "name" : "ALLOW_SERVER02",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2389,13 +2417,14 @@
                 "name" : "permit tcp any object server02"
               }
             ],
+            "name" : "ALLOW_SERVER02",
             "sourceName" : "ALLOW_SERVER02",
             "sourceType" : "extended ipv4 access-list"
           },
           "~SERVICE_OBJECT_GROUP~service-ssh~" : {
-            "name" : "~SERVICE_OBJECT_GROUP~service-ssh~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
@@ -2416,6 +2445,7 @@
                 }
               }
             ],
+            "name" : "~SERVICE_OBJECT_GROUP~service-ssh~",
             "sourceName" : "service-ssh",
             "sourceType" : "object-group service"
           }
@@ -2539,9 +2569,9 @@
         },
         "ipAccessLists" : {
           "~COMBINED_OUTGOING_ACL~blah~" : {
-            "name" : "~COMBINED_OUTGOING_ACL~blah~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
@@ -2558,12 +2588,13 @@
                   ]
                 }
               }
-            ]
+            ],
+            "name" : "~COMBINED_OUTGOING_ACL~blah~"
           },
           "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
@@ -2571,6 +2602,7 @@
                 "name" : "Allow traffic originating from this device"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -2583,7 +2615,8 @@
                 },
                 "name" : "~EXISTING_CONNECTION~"
               }
-            ]
+            ],
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~"
           }
         },
         "routingPolicies" : {
@@ -4074,9 +4107,9 @@
         },
         "ipAccessLists" : {
           "50" : {
-            "name" : "50",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4095,13 +4128,14 @@
                 "name" : "permit 1.2.3.0 0.0.0.255"
               }
             ],
+            "name" : "50",
             "sourceName" : "50",
             "sourceType" : "standard ipv4 access-list"
           },
           "51" : {
-            "name" : "51",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4120,6 +4154,7 @@
                 "name" : "permit 2.3.4.0 0.0.0.255"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4138,13 +4173,14 @@
                 "name" : "deny   any"
               }
             ],
+            "name" : "51",
             "sourceName" : "51",
             "sourceType" : "standard ipv4 access-list"
           },
           "99" : {
-            "name" : "99",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -4163,6 +4199,7 @@
                 "name" : "permit 3.4.5.6"
               }
             ],
+            "name" : "99",
             "sourceName" : "99",
             "sourceType" : "standard ipv4 access-list"
           }
@@ -5408,9 +5445,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "BLAH-BLAH" : {
-            "name" : "BLAH-BLAH",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5438,6 +5475,7 @@
                 "name" : "10 permit icmp any any packet-too-big"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5459,6 +5497,7 @@
                 "name" : "20 permit ip any any tracked"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5480,6 +5519,7 @@
                 "name" : "30 permit ospf any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5504,6 +5544,7 @@
                 "name" : "40 permit tcp any any eq bgp"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5529,6 +5570,7 @@
                 "name" : "50 permit udp any any eq bootps bootpc ntp"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
@@ -5555,6 +5597,7 @@
                 "name" : "60 permit tcp any any eq mlag ttl eq 255"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
@@ -5581,6 +5624,7 @@
                 "name" : "70 permit udp any any eq mlag ttl eq 255"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5602,6 +5646,7 @@
                 "name" : "80 permit vrrp any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5623,6 +5668,7 @@
                 "name" : "90 permit ahp any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5644,6 +5690,7 @@
                 "name" : "100 permit pim any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5665,6 +5712,7 @@
                 "name" : "110 permit igmp any any"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5689,6 +5737,7 @@
                 "name" : "120 permit tcp any any range 1 10"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5713,6 +5762,7 @@
                 "name" : "140 permit udp 10.0.0.0/19 any eq snmp"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5737,6 +5787,7 @@
                 "name" : "180 permit udp host 10.0.0.0 any eq snmp"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5761,6 +5812,7 @@
                 "name" : "220 permit tcp 10.0.0.0/19 any eq ssh"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5785,6 +5837,7 @@
                 "name" : "260 permit tcp host 10.0.0.0 any eq ssh"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5810,6 +5863,7 @@
                 "name" : "270 permit tcp any any eq microsoft-ds 5432"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5837,6 +5891,7 @@
                 "name" : "280 permit icmp any any 5 2"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5861,6 +5916,7 @@
                 "name" : "290 permit icmp any any time-exceeded ! believe this is type 11, any code"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5888,6 +5944,7 @@
                 "name" : "300 permit icmp any any ttl-exceeded  ! type 11, code 0"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5906,13 +5963,14 @@
                 "name" : "410 deny ip any any log"
               }
             ],
+            "name" : "BLAH-BLAH",
             "sourceName" : "BLAH-BLAH",
             "sourceType" : "extended ipv4 access-list"
           },
           "TEST" : {
-            "name" : "TEST",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5931,6 +5989,7 @@
                 "name" : "deny ip any any log 7 interval 600"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5949,6 +6008,7 @@
                 "name" : "deny ip any any log default"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5967,13 +6027,14 @@
                 "name" : "deny ip any any log disable"
               }
             ],
+            "name" : "TEST",
             "sourceName" : "TEST",
             "sourceType" : "extended ipv4 access-list"
           },
           "blah" : {
-            "name" : "blah",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -5992,6 +6053,7 @@
                 "name" : "10 permit ip any any"
               }
             ],
+            "name" : "blah",
             "sourceName" : "blah",
             "sourceType" : "extended ipv4 access-list"
           },
@@ -6006,9 +6068,9 @@
             "sourceType" : "extended ipv4 access-list"
           },
           "test-codes" : {
-            "name" : "test-codes",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -6033,6 +6095,7 @@
                 "name" : "10 permit udp any any eq bfd"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -6057,6 +6120,7 @@
                 "name" : "20 permit udp any any eq bfd-echo"
               }
             ],
+            "name" : "test-codes",
             "sourceName" : "test-codes",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -6224,9 +6288,9 @@
         "deviceType" : "ROUTER",
         "ipAccessLists" : {
           "5" : {
-            "name" : "5",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -6245,6 +6309,7 @@
                 "name" : "deny any"
               }
             ],
+            "name" : "5",
             "sourceName" : "5",
             "sourceType" : "standard ipv4 access-list"
           }
@@ -7465,9 +7530,9 @@
         },
         "ipAccessLists" : {
           "bippety" : {
-            "name" : "bippety",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -7492,6 +7557,7 @@
                 "name" : "permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -7516,6 +7582,7 @@
                 "name" : "permit tcp host 1.1.1.1 any eq 27401"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -7540,6 +7607,7 @@
                 "name" : "permit tcp any host 1.1.1.1 eq 65001"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -7564,6 +7632,7 @@
                 "name" : "permit tcp host 1.1.1.1 any eq 20000"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -7588,13 +7657,14 @@
                 "name" : "permit tcp any host 1.1.1.1 eq 65111"
               }
             ],
+            "name" : "bippety",
             "sourceName" : "bippety",
             "sourceType" : "extended ipv4 access-list"
           },
           "bloop_blop" : {
-            "name" : "bloop_blop",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -7619,6 +7689,7 @@
                 "name" : "permit tcp addrgroup bleep_blorp any eq 13000"
               }
             ],
+            "name" : "bloop_blop",
             "sourceName" : "bloop_blop",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -8615,9 +8686,9 @@
         },
         "ipAccessLists" : {
           "abc" : {
-            "name" : "abc",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -8639,13 +8710,14 @@
                 "name" : "10 permit tcp any any"
               }
             ],
+            "name" : "abc",
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
           },
           "~COMBINED_OUTGOING_ACL~inside~" : {
-            "name" : "~COMBINED_OUTGOING_ACL~inside~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
@@ -8662,12 +8734,13 @@
                   ]
                 }
               }
-            ]
+            ],
+            "name" : "~COMBINED_OUTGOING_ACL~inside~"
           },
           "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
@@ -8675,6 +8748,7 @@
                 "name" : "Allow traffic originating from this device"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -8687,7 +8761,8 @@
                 },
                 "name" : "~EXISTING_CONNECTION~"
               }
-            ]
+            ],
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
           }
         },
         "vendorFamily" : {
@@ -10242,9 +10317,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~" : {
-            "name" : "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
@@ -10265,6 +10340,7 @@
                 }
               }
             ],
+            "name" : "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~",
             "sourceName" : "SVCGRP-ICMP",
             "sourceType" : "object-group service"
           }
@@ -11229,9 +11305,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~INSPECT_POLICY_MAP_ACL~pminspect~" : {
-            "name" : "~INSPECT_POLICY_MAP_ACL~pminspect~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -11239,6 +11315,7 @@
                 "name" : "class-default action: PERMIT"
               }
             ],
+            "name" : "~INSPECT_POLICY_MAP_ACL~pminspect~",
             "sourceName" : "pminspect",
             "sourceType" : "policy-map type inspect"
           }
@@ -11874,9 +11951,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
-            "name" : "blah",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -11895,6 +11972,7 @@
                 "name" : "permit ip any any"
               }
             ],
+            "name" : "blah",
             "sourceName" : "blah",
             "sourceType" : "extended ipv4 access-list"
           }
@@ -11920,9 +11998,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "1" : {
-            "name" : "1",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -11941,6 +12019,7 @@
                 "name" : "permit any"
               }
             ],
+            "name" : "1",
             "sourceName" : "1",
             "sourceType" : "standard ipv4 access-list"
           }
@@ -17610,16 +17689,17 @@
         },
         "ipAccessLists" : {
           "~incoming_filter:/Common/MYVLAN~" : {
-            "name" : "~incoming_filter:/Common/MYVLAN~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "ACCEPT_ALL"
               }
-            ]
+            ],
+            "name" : "~incoming_filter:/Common/MYVLAN~"
           }
         },
         "vendorFamily" : { },
@@ -17958,9 +18038,9 @@
         },
         "ipAccessLists" : {
           "acl1" : {
-            "name" : "acl1",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -17973,12 +18053,13 @@
                 },
                 "name" : "access-list acl1 permit any\n"
               }
-            ]
+            ],
+            "name" : "acl1"
           },
           "acl2" : {
-            "name" : "acl2",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -17992,7 +18073,8 @@
                 },
                 "name" : "access-list acl2 permit 192.0.2.0/24\n"
               }
-            ]
+            ],
+            "name" : "acl2"
           }
         },
         "routeFilterLists" : {
@@ -18620,9 +18702,9 @@
         },
         "ipAccessLists" : {
           "filter::INPUT" : {
-            "name" : "filter::INPUT",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18643,6 +18725,7 @@
                 "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18663,6 +18746,7 @@
                 "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18683,6 +18767,7 @@
                 "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18703,6 +18788,7 @@
                 "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18723,121 +18809,132 @@
                 "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "filter::INPUT"
           },
           "filter::OUTPUT" : {
-            "name" : "filter::OUTPUT",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "filter::OUTPUT"
           },
           "mangle::FORWARD" : {
-            "name" : "mangle::FORWARD",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "mangle::FORWARD"
           },
           "mangle::INPUT" : {
-            "name" : "mangle::INPUT",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "mangle::INPUT"
           },
           "mangle::OUTPUT" : {
-            "name" : "mangle::OUTPUT",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "mangle::OUTPUT"
           },
           "mangle::POSTROUTING" : {
-            "name" : "mangle::POSTROUTING",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "mangle::POSTROUTING"
           },
           "mangle::PREROUTING" : {
-            "name" : "mangle::PREROUTING",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "mangle::PREROUTING"
           },
           "nat::OUTPUT" : {
-            "name" : "nat::OUTPUT",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "nat::OUTPUT"
           },
           "nat::POSTROUTING" : {
-            "name" : "nat::POSTROUTING",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "nat::POSTROUTING"
           },
           "nat::PREROUTING" : {
-            "name" : "nat::PREROUTING",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "nat::PREROUTING"
           }
         },
         "vendorFamily" : { },
@@ -18951,9 +19048,9 @@
         },
         "ipAccessLists" : {
           "iptables_Ethernet0_ingress" : {
-            "name" : "iptables_Ethernet0_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18968,6 +19065,7 @@
                 "name" : "-s 2.128.0.101/32 -i eth0 -j ACCEPT"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -18978,18 +19076,20 @@
                 "name" : "-j DROP"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "iptables_Ethernet0_ingress"
           },
           "iptables_Ethernet1_ingress" : {
-            "name" : "iptables_Ethernet1_ingress",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -19000,13 +19100,15 @@
                 "name" : "-j DROP"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "default"
               }
-            ]
+            ],
+            "name" : "iptables_Ethernet1_ingress"
           }
         },
         "routingPolicies" : {
@@ -21946,9 +22048,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "foo" : {
-            "name" : "foo",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -21981,6 +22083,7 @@
                 "name" : "bar"
               }
             ],
+            "name" : "foo",
             "sourceName" : "foo",
             "sourceType" : "firewall filter"
           }
@@ -23287,9 +23390,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
-            "name" : "blah",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -23370,6 +23473,7 @@
                 "name" : "blorp"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -23380,6 +23484,7 @@
                 "name" : "t3"
               }
             ],
+            "name" : "blah",
             "sourceName" : "blah",
             "sourceType" : "firewall filter"
           },
@@ -24609,9 +24714,9 @@
         },
         "ipAccessLists" : {
           "~EXISTING_CONNECTION~" : {
-            "name" : "~EXISTING_CONNECTION~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -24624,12 +24729,13 @@
                 },
                 "name" : "~EXISTING_CONNECTION~"
               }
-            ]
+            ],
+            "name" : "~EXISTING_CONNECTION~"
           },
           "~SECURITY_POLICIES_TO~ge-0/0/0.0" : {
-            "name" : "~SECURITY_POLICIES_TO~ge-0/0/0.0",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
@@ -24639,6 +24745,7 @@
                 "name" : "EXISTING_CONNECTION"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
@@ -24646,13 +24753,15 @@
                 "name" : "HOST_OUTBOUND"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "DEFAULT_POLICY"
               }
-            ]
+            ],
+            "name" : "~SECURITY_POLICIES_TO~ge-0/0/0.0"
           }
         },
         "vendorFamily" : {
@@ -26671,9 +26780,9 @@
         },
         "ipAccessLists" : {
           "zone~A~to~zone~B" : {
-            "name" : "zone~A~to~zone~B",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
@@ -26692,13 +26801,14 @@
                 "name" : "123-4"
               }
             ],
+            "name" : "zone~A~to~zone~B",
             "sourceName" : "zone~A~to~zone~B",
             "sourceType" : "firewall filter"
           },
           "~EXISTING_CONNECTION~" : {
-            "name" : "~EXISTING_CONNECTION~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26711,12 +26821,13 @@
                 },
                 "name" : "~EXISTING_CONNECTION~"
               }
-            ]
+            ],
+            "name" : "~EXISTING_CONNECTION~"
           },
           "~GLOBAL_SECURITY_POLICY~" : {
-            "name" : "~GLOBAL_SECURITY_POLICY~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26727,13 +26838,14 @@
                 "name" : "p1"
               }
             ],
+            "name" : "~GLOBAL_SECURITY_POLICY~",
             "sourceName" : "~GLOBAL_SECURITY_POLICY~",
             "sourceType" : "firewall filter"
           },
           "~INBOUND_ZONE_FILTER~ZONE-protocols" : {
-            "name" : "~INBOUND_ZONE_FILTER~ZONE-protocols",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26750,6 +26862,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26765,6 +26878,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26777,6 +26891,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26789,6 +26904,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26805,6 +26921,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26820,6 +26937,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26832,6 +26950,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26844,6 +26963,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26856,6 +26976,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26868,6 +26989,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26883,6 +27005,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26895,6 +27018,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26908,6 +27032,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26929,6 +27054,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26941,13 +27067,14 @@
                 }
               }
             ],
+            "name" : "~INBOUND_ZONE_FILTER~ZONE-protocols",
             "sourceName" : "~INBOUND_ZONE_FILTER~ZONE-protocols",
             "sourceType" : "firewall filter"
           },
           "~INBOUND_ZONE_FILTER~ZONE-system-services" : {
-            "name" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26963,6 +27090,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26979,6 +27107,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -26994,6 +27123,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27009,6 +27139,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27024,6 +27155,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27039,6 +27171,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27055,6 +27188,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27070,6 +27204,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27085,6 +27220,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27097,6 +27233,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27112,6 +27249,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27127,6 +27265,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27142,6 +27281,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27157,6 +27297,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27166,6 +27307,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27181,6 +27323,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27197,6 +27340,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27212,6 +27356,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27227,6 +27372,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27242,6 +27388,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27257,6 +27404,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27272,6 +27420,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27287,6 +27436,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27302,6 +27452,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -27317,6 +27468,7 @@
                 }
               }
             ],
+            "name" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
             "sourceName" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
             "sourceType" : "firewall filter"
           }
@@ -28780,9 +28932,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
-            "name" : "blah",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -28801,6 +28953,7 @@
                 "name" : "10 permit ip any any"
               }
             ],
+            "name" : "blah",
             "sourceName" : "blah",
             "sourceType" : "extended ipv4 access-list"
           },
@@ -31760,9 +31913,9 @@
         },
         "ipAccessLists" : {
           "~ethernet1/1.4~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1.4~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31770,17 +31923,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~ethernet1/1.4~OUTGOING_FILTER~"
           },
           "~ethernet1/1.5~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1.5~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31788,17 +31943,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~ethernet1/1.5~OUTGOING_FILTER~"
           },
           "~ethernet1/1~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/1~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31806,17 +31963,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~ethernet1/1~OUTGOING_FILTER~"
           },
           "~loopback.1~OUTGOING_FILTER~" : {
-            "name" : "~loopback.1~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31824,17 +31983,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~loopback.1~OUTGOING_FILTER~"
           },
           "~loopback~OUTGOING_FILTER~" : {
-            "name" : "~loopback~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31842,17 +32003,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~loopback~OUTGOING_FILTER~"
           },
           "~tunnel.3~OUTGOING_FILTER~" : {
-            "name" : "~tunnel.3~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31860,17 +32023,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~tunnel.3~OUTGOING_FILTER~"
           },
           "~tunnel~OUTGOING_FILTER~" : {
-            "name" : "~tunnel~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31878,17 +32043,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~tunnel~OUTGOING_FILTER~"
           },
           "~vlan.1~OUTGOING_FILTER~" : {
-            "name" : "~vlan.1~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31896,17 +32063,19 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~vlan.1~OUTGOING_FILTER~"
           },
           "~vlan~OUTGOING_FILTER~" : {
-            "name" : "~vlan~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -31914,12 +32083,14 @@
                 "name" : "Not in a zone"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~vlan~OUTGOING_FILTER~"
           }
         },
         "vendorFamily" : { },
@@ -32071,21 +32242,22 @@
             "name" : "zone~zl3~vsys10~to~zone~zext~vsys10"
           },
           "zone~zl3~vsys10~to~zone~zl3~vsys10" : {
-            "name" : "zone~zl3~vsys10~to~zone~zl3~vsys10",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "Accept intrazone by default"
               }
-            ]
+            ],
+            "name" : "zone~zl3~vsys10~to~zone~zl3~vsys10"
           },
           "~ethernet1/2~OUTGOING_FILTER~" : {
-            "name" : "~ethernet1/2~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
@@ -32095,6 +32267,7 @@
                 "name" : "~zl3~vsys10~OUTGOING_FILTER~-EXPLICITLY-PERMITTED"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.NotMatchExpr",
@@ -32107,17 +32280,19 @@
                 "name" : "~zl3~vsys10~OUTGOING_FILTER~-EXPLICITLY-DENIED"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 }
               }
-            ]
+            ],
+            "name" : "~ethernet1/2~OUTGOING_FILTER~"
           },
           "~zl3~vsys10~OUTGOING_FILTER~" : {
-            "name" : "~zl3~vsys10~OUTGOING_FILTER~",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
@@ -32137,6 +32312,7 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
@@ -32145,7 +32321,8 @@
                   ]
                 }
               }
-            ]
+            ],
+            "name" : "~zl3~vsys10~OUTGOING_FILTER~"
           }
         },
         "vendorFamily" : { },
@@ -36186,9 +36363,9 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "100" : {
-            "name" : "100",
             "lines" : [
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -36232,6 +36409,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any ack"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -36275,6 +36453,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any rst"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -36458,6 +36637,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -36501,6 +36681,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any fin"
               },
               {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -36564,6 +36745,7 @@
                 "name" : "permit tcp 1.2.3.4/31 any fin ack"
               }
             ],
+            "name" : "100",
             "sourceName" : "100",
             "sourceType" : "extended ipv4 access-list"
           }

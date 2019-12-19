@@ -13,7 +13,7 @@ public class FwFromHostProtocol implements Serializable {
     _protocol = protocol;
   }
 
-  public void applyTo(List<ExprAclLine> lines, Warnings w) {
+  public void applyTo(List<? super ExprAclLine> lines, Warnings w) {
     lines.addAll(_protocol.getLines());
   }
 }

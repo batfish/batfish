@@ -26,8 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/** Test the visitor methods of {@link IpAccessListToBdd}. */
-public class IpAccessListToBddVisitorTest {
+/** Test the visitor in {@link IpAccessListToBdd} that converts lines and exprs to BDD. */
+public class IpAccessListToBddConverterTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   private static final String IFACE1 = "iface1";

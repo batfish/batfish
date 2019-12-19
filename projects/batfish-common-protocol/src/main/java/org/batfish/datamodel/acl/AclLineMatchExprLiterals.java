@@ -34,7 +34,7 @@ public class AclLineMatchExprLiterals
     IdentityHashMap<AclLineMatchExpr, AclLineIndex> literalsToLines = new IdentityHashMap<>();
     acls.forEach(
         currAcl -> {
-          List<ExprAclLine> lines = currAcl.getLines();
+          List<AclLine> lines = currAcl.getLines();
           IntStream.range(0, lines.size())
               .forEach(
                   i ->

@@ -1,10 +1,12 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 /** A line in an {@link IpAccessList} */
 public abstract class AclLine implements Serializable {
   protected static final String PROP_NAME = "name";

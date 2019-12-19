@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -86,7 +87,7 @@ public class FilterLineReachabilityTest {
   public void testWithIcmpType() {
     // First line accepts IP 1.2.3.4
     // Second line accepts same but only ICMP of type 8
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         ImmutableList.of(
             ExprAclLine.acceptingHeaderSpace(
                 HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build()),
@@ -119,7 +120,7 @@ public class FilterLineReachabilityTest {
   public void testIpWildcards() {
     // First line accepts src IPs 1.2.3.4/30
     // Second line accepts src IPs 1.2.3.4/32
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         ImmutableList.of(
             ExprAclLine.acceptingHeaderSpace(
                 HeaderSpace.builder()
@@ -275,13 +276,13 @@ public class FilterLineReachabilityTest {
      0. Permit anything that referenced ACL permits
      1. Permit 1.0.0.0/24
     */
-    List<ExprAclLine> referencedAclLines =
+    List<AclLine> referencedAclLines =
         ImmutableList.of(
             acceptingHeaderSpace(
                 HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()));
     IpAccessList referencedAcl = _aclb.setLines(referencedAclLines).setName("acl1").build();
 
-    List<ExprAclLine> aclLines =
+    List<AclLine> aclLines =
         ImmutableList.of(
             ExprAclLine.accepting()
                 .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
@@ -318,7 +319,7 @@ public class FilterLineReachabilityTest {
 
   @Test
   public void testMultipleCoveringLines() {
-    List<ExprAclLine> aclLines =
+    List<AclLine> aclLines =
         ImmutableList.of(
             acceptingHeaderSpace(
                 HeaderSpace.builder()
@@ -364,7 +365,7 @@ public class FilterLineReachabilityTest {
     3. Accept 1.0.0.0/32 (blocked by line 0)
     4. Accept 1.2.3.4/32 (unblocked)
      */
-    List<ExprAclLine> aclLines =
+    List<AclLine> aclLines =
         ImmutableList.of(
             rejectingHeaderSpace(
                 HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()),
@@ -451,7 +452,7 @@ public class FilterLineReachabilityTest {
 
   @Test
   public void testWithSrcInterfaceReference() {
-    List<ExprAclLine> aclLines =
+    List<AclLine> aclLines =
         ImmutableList.of(
             ExprAclLine.accepting()
                 .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface", "iface2")))
