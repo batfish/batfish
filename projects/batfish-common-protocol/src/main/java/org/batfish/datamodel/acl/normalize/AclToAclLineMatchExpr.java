@@ -16,10 +16,12 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
@@ -96,9 +98,10 @@ public final class AclToAclLineMatchExpr
      */
     List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
 
-    for (ExprAclLine line : acl.getLines()) {
+    ActionGetter actionGetter = new ActionGetter(false);
+    for (AclLine line : acl.getLines()) {
       AclLineMatchExpr expr = visit(line);
-      if (line.getAction() == LineAction.PERMIT) {
+      if (actionGetter.visit(line) == LineAction.PERMIT) {
         /*
          * This is a PERMIT line, so the output is going to include a disjunct for it. The disjunct
          * is an AndMatchExpr -- matches this line, and doesn't match each previous DENY line. We

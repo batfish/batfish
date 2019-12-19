@@ -28,6 +28,7 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
@@ -36,6 +37,8 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.ActionGetter;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -142,19 +145,20 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     MemoizedIpAccessListToBdd bddConverter =
         new MemoizedIpAccessListToBdd(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
     Row.TypedRowBuilder rowBuilder = Row.builder(METADATA_MAP).put(COL_NODE, node.getHostname());
+    ActionGetter actionGetter = new ActionGetter(false);
     return acls.stream()
         .flatMap(
             aclName -> {
-              List<ExprAclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
+              List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
               return getRowsForAcl(aclLines, headerSpaceBdd, bddConverter, action)
                   .mapToObj(
                       lineIndex -> {
-                        ExprAclLine line = aclLines.get(lineIndex);
+                        AclLine line = aclLines.get(lineIndex);
                         return rowBuilder
                             .put(COL_FILTER, aclName)
                             .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
                             .put(COL_LINE_INDEX, lineIndex)
-                            .put(COL_ACTION, line.getAction())
+                            .put(COL_ACTION, actionGetter.visit(line))
                             .build();
                       });
             });
@@ -166,21 +170,44 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
    */
   @VisibleForTesting
   static IntStream getRowsForAcl(
-      List<ExprAclLine> aclLines,
+      List<AclLine> aclLines,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
-    return IntStream.range(0, aclLines.size())
-        .filter(
-            i -> {
-              ExprAclLine line = aclLines.get(i);
-              if (!actionMatches(action, line.getAction())) {
-                return false;
-              }
-              // If there is any overlap between the header space BDD and this line, include it
-              BDD lineBdd = bddConverter.toBdd(line);
-              return headerSpaceBdd.andSat(lineBdd);
-            });
+    IncludeChecker includeChecker = new IncludeChecker(bddConverter, action, headerSpaceBdd);
+    return IntStream.range(0, aclLines.size()).filter(i -> includeChecker.visit(aclLines.get(i)));
+  }
+
+  /** Returns true if the answer should include the visited line, based on provided parameters. */
+  private static final class IncludeChecker implements GenericAclLineVisitor<Boolean> {
+    private final IpAccessListToBdd _ipAccessListToBdd;
+
+    // Restrictions on lines to include, based on question parameters
+    @Nullable private final Action _action;
+    private final BDD _headerSpaceBdd;
+
+    IncludeChecker(
+        IpAccessListToBdd ipAccessListToBdd, @Nullable Action action, BDD headerSpaceBdd) {
+      _ipAccessListToBdd = ipAccessListToBdd;
+      _action = action;
+      _headerSpaceBdd = headerSpaceBdd;
+    }
+
+    private boolean actionMatches(LineAction lineAction) {
+      return _action == null
+          || _action == Action.PERMIT && lineAction == LineAction.PERMIT
+          || _action == Action.DENY && lineAction == LineAction.DENY;
+    }
+
+    @Override
+    public Boolean visitExprAclLine(ExprAclLine exprAclLine) {
+      if (!actionMatches(exprAclLine.getAction())) {
+        return false;
+      }
+      // If there is any overlap between the header space BDD and this line, include it
+      BDD lineBdd = _ipAccessListToBdd.toBdd(exprAclLine);
+      return _headerSpaceBdd.andSat(lineBdd);
+    }
   }
 
   /** Creates {@link TableMetadata} from the question. */
@@ -206,11 +233,5 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList())),
         EmptyIpSpace.INSTANCE);
-  }
-
-  private static boolean actionMatches(@Nullable Action action, LineAction lineAction) {
-    return action == null
-        || action == Action.PERMIT && lineAction == LineAction.PERMIT
-        || action == Action.DENY && lineAction == LineAction.DENY;
   }
 }

@@ -11,6 +11,6 @@ public interface ApplicationSetMember {
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<ExprAclLine> lines,
+      List<? super ExprAclLine> lines,
       Warnings w);
 }

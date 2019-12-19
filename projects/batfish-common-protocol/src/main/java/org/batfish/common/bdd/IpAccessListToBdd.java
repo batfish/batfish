@@ -24,6 +24,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
@@ -84,7 +85,7 @@ public abstract class IpAccessListToBdd {
   @Nonnull private final BDDOps _bddOps;
   @Nonnull private final BDDSourceManager _bddSrcManager;
   @Nonnull private final HeaderSpaceToBDD _headerSpaceToBDD;
-  @Nonnull private final Visitor _visitor;
+  @Nonnull private final ToBddConverter _toBddConverter;
 
   protected IpAccessListToBdd(
       @Nonnull BDDPacket pkt,
@@ -118,19 +119,19 @@ public abstract class IpAccessListToBdd {
     _factory = pkt.getFactory();
     _headerSpaceToBDD = headerSpaceToBDD;
     _pkt = pkt;
-    _visitor = new Visitor();
+    _toBddConverter = new ToBddConverter();
   }
 
   public abstract BDD toBdd(AclLineMatchExpr expr);
 
   public abstract BDD toBdd(AclLine line);
 
-  protected final BDD visit(AclLineMatchExpr expr) {
-    return expr.accept(_visitor);
+  protected final BDD convert(AclLineMatchExpr expr) {
+    return expr.accept(_toBddConverter);
   }
 
-  protected final BDD visit(AclLine line) {
-    return line.accept(_visitor);
+  protected final BDD convert(AclLine line) {
+    return line.accept(_toBddConverter);
   }
 
   public final BDDPacket getBDDPacket() {
@@ -168,17 +169,14 @@ public abstract class IpAccessListToBdd {
     int size = acl.getLines().size();
     List<BDD> lineBdds = new ArrayList<>(size);
     List<LineAction> lineActions = new ArrayList<>(size);
-    for (ExprAclLine line : acl.getLines()) {
+    ActionGetter actionGetter = new ActionGetter(!permit);
+    for (AclLine line : acl.getLines()) {
       // Absurd hack for permit == false! Flip all the line actions so that bddAclLines evaluates to
       // the BDD of packets that will be explicitly rejected by the original ACL.
-      lineActions.add(permit ? line.getAction() : flip(line.getAction()));
+      lineActions.add(actionGetter.visit(line));
       lineBdds.add(toBdd(line));
     }
     return _bddOps.bddAclLines(lineBdds, lineActions);
-  }
-
-  private static LineAction flip(LineAction action) {
-    return action == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
   }
 
   /**
@@ -188,8 +186,8 @@ public abstract class IpAccessListToBdd {
   public List<BDD> reachAndMatchLines(IpAccessList acl) {
     ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
     BDD reach = _pkt.getFactory().one();
-    for (ExprAclLine line : acl.getLines()) {
-      BDD match = visit(line);
+    for (AclLine line : acl.getLines()) {
+      BDD match = convert(line);
       bdds.add(reach.and(match));
       reach = reach.diff(match);
     }
@@ -201,7 +199,7 @@ public abstract class IpAccessListToBdd {
    * A visitor that does the actual conversion to BDD. Recursive calls go through the abstract
    * {@link IpAccessListToBdd#toBdd(AclLineMatchExpr)} method, allowing subclasses to intercept.
    */
-  private final class Visitor
+  private final class ToBddConverter
       implements GenericAclLineMatchExprVisitor<BDD>, GenericAclLineVisitor<BDD> {
 
     /* AclLine visit methods */

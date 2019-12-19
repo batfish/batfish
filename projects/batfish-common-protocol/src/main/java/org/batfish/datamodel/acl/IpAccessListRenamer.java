@@ -144,8 +144,6 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
         .setLines(
             ipAccessList.getLines().stream()
                 .map(_visitor::visit)
-                // TODO temp cast; remove after IpAccessList._lines is a List<AclLine>
-                .map(ExprAclLine.class::cast)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }

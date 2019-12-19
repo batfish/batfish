@@ -13,6 +13,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -105,15 +106,15 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   }
 
   public void recordAction(
-      @Nonnull IpAccessList ipAccessList, int index, @Nonnull ExprAclLine line) {
+      @Nonnull IpAccessList ipAccessList, int index, @Nonnull AclLine line, LineAction action) {
     String lineDescription = firstNonNull(line.getName(), line.toString());
     String type = firstNonNull(ipAccessList.getSourceType(), "filter");
     String name = firstNonNull(ipAccessList.getSourceName(), ipAccessList.getName());
-    String actionStr = line.getAction() == LineAction.PERMIT ? "permitted" : "denied";
+    String actionStr = action == LineAction.PERMIT ? "permitted" : "denied";
     String description =
         String.format(
             "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
-    if (line.getAction() == LineAction.PERMIT) {
+    if (action == LineAction.PERMIT) {
       _currentTreeNode.setEvent(
           new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     } else {
@@ -370,14 +371,16 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   }
 
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
-    List<ExprAclLine> lines = ipAccessList.getLines();
+    List<AclLine> lines = ipAccessList.getLines();
     newTrace();
+    ActionGetter actionGetter = new ActionGetter(false);
     for (int i = 0; i < lines.size(); i++) {
-      ExprAclLine line = lines.get(i);
+      AclLine line = lines.get(i);
       if (visit(line)) {
-        recordAction(ipAccessList, i, line);
+        LineAction action = actionGetter.visit(line);
+        recordAction(ipAccessList, i, line, action);
         endTrace();
-        return line.getAction() == LineAction.PERMIT;
+        return action == LineAction.PERMIT;
       }
       nextLine();
     }

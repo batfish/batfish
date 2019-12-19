@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
@@ -144,24 +145,26 @@ public class RdsInstanceTest {
       assertThat(
           iface.getOutgoingFilter(),
           hasLines(
-              hasMatchCondition(
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder()
-                          .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
-                          .build()))));
+              isExprAclLineThat(
+                  hasMatchCondition(
+                      new MatchHeaderSpace(
+                          HeaderSpace.builder()
+                              .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
+                              .build())))));
       assertThat(
           iface.getIncomingFilter(),
           hasLines(
-              hasMatchCondition(
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder()
-                          .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                          .setSrcIps(
-                              Sets.newHashSet(
-                                  IpWildcard.parse("1.2.3.4/32"),
-                                  IpWildcard.parse("10.193.16.105/32")))
-                          .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                          .build()))));
+              isExprAclLineThat(
+                  hasMatchCondition(
+                      new MatchHeaderSpace(
+                          HeaderSpace.builder()
+                              .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                              .setSrcIps(
+                                  Sets.newHashSet(
+                                      IpWildcard.parse("1.2.3.4/32"),
+                                      IpWildcard.parse("10.193.16.105/32")))
+                              .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                              .build())))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(

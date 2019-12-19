@@ -19,7 +19,7 @@ public final class FwFromJunosApplicationSet extends FwFromApplicationSetMember 
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<ExprAclLine> lines,
+      List<? super ExprAclLine> lines,
       Warnings w) {
     if (!_junosApplicationSet.hasDefinition()) {
       w.redFlag("Reference to undefined application: \"" + _junosApplicationSet.name() + "\"");

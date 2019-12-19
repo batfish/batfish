@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -23,11 +24,13 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -121,7 +124,8 @@ public class CompareFiltersAnswerer extends Answerer {
           .put(COL_CURRENT_NAME, "");
     } else {
       int index = difference.getCurrentIndex();
-      ExprAclLine line =
+      ActionGetter actionGetter = new ActionGetter(false);
+      AclLine line =
           currentContext
               .getConfigs()
               .get(hostname)
@@ -130,7 +134,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .getLines()
               .get(index);
       ret.put(COL_CURRENT_LINE, index)
-          .put(COL_CURRENT_ACTION, line.getAction())
+          .put(COL_CURRENT_ACTION, actionGetter.visit(line))
           .put(COL_CURRENT_NAME, line.getName());
     }
 
@@ -138,7 +142,7 @@ public class CompareFiltersAnswerer extends Answerer {
       ret.put(COL_REFERENCE_LINE, END_OF_ACL).put(COL_REFERENCE_NAME, "");
     } else {
       int index = difference.getReferenceIndex();
-      ExprAclLine line =
+      AclLine line =
           referenceContext
               .getConfigs()
               .get(hostname)
@@ -164,7 +168,8 @@ public class CompareFiltersAnswerer extends Answerer {
     IpAccessList currentAcl = currentAcls.get(filtername);
     List<LineAction> currentActions =
         currentAcl.getLines().stream()
-            .map(ExprAclLine::getAction)
+            // TODO Better handle line types without concrete actions
+            .map(l -> l instanceof ExprAclLine ? ((ExprAclLine) l).getAction() : null)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
@@ -176,9 +181,10 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
+    ActionGetter actionGetter = new ActionGetter(false);
     List<LineAction> referenceActions =
         referenceAcl.getLines().stream()
-            .map(ExprAclLine::getAction)
+            .map(actionGetter::visit)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);
@@ -207,12 +213,14 @@ public class CompareFiltersAnswerer extends Answerer {
     return IntStream.range(0, currentLineBdds.size())
         .mapToObj(
             i -> {
+              @Nullable
               LineAction currentAction =
                   i < currentActions.size() ? currentActions.get(i) : LineAction.DENY;
               BDD currentLineBdd = currentLineBdds.get(i);
               return IntStream.range(0, referenceLineBdds.size())
                   .filter(
                       j -> {
+                        @Nullable
                         LineAction referenceAction =
                             j < referenceActions.size() ? referenceActions.get(j) : LineAction.DENY;
                         return referenceAction != currentAction;

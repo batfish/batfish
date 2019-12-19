@@ -28,11 +28,11 @@ public final class IpAccessListToBddImpl extends IpAccessListToBdd {
 
   @Override
   public BDD toBdd(AclLine line) {
-    return visit(line);
+    return convert(line);
   }
 
   @Override
   public BDD toBdd(AclLineMatchExpr expr) {
-    return visit(expr);
+    return convert(expr);
   }
 }
