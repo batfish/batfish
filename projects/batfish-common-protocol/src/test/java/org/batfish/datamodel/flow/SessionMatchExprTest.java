@@ -1,16 +1,14 @@
 package org.batfish.datamodel.flow;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -32,7 +30,10 @@ public class SessionMatchExprTest {
                 IpProtocol.TCP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), null, null))
         .addEqualityGroup(
             new SessionMatchExpr(
-                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), null, null))
+                IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.3"), null, null))
+        .addEqualityGroup(
+            new SessionMatchExpr(
+                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("1.1.2.2"), null, null))
         .addEqualityGroup(
             new SessionMatchExpr(
                 IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4000, 5000),
@@ -40,8 +41,21 @@ public class SessionMatchExprTest {
                 IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4000, 5000))
         .addEqualityGroup(
             new SessionMatchExpr(
-                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4040, 5050))
+                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4040, 5000))
+        .addEqualityGroup(
+            new SessionMatchExpr(
+                IpProtocol.ICMP, Ip.parse("1.1.2.2"), Ip.parse("2.2.2.2"), 4000, 5050))
         .testEquals();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorWithNullSrcPort() {
+    new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, 5000);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorWithNullDstPort() {
+    new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), 5000, null);
   }
 
   @Test
@@ -63,17 +77,21 @@ public class SessionMatchExprTest {
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), null, null);
     MatchHeaderSpace aclExpr = (MatchHeaderSpace) matcher.toAclLineMatchExpr();
     HeaderSpace hs = aclExpr.getHeaderspace();
-    assertThat(((IpIpSpace) hs.getSrcIps()).getIp(), equalTo(matcher.getSrcIp()));
-    assertThat(((IpIpSpace) hs.getDstIps()).getIp(), equalTo(matcher.getDstIp()));
-    assertThat(hs.getIpProtocols(), contains(IpProtocol.ICMP));
-    assertThat(hs.getSrcPorts(), hasSize(0));
-    assertThat(hs.getDstPorts(), hasSize(0));
+    HeaderSpace.Builder expectedHeaderSpace =
+        HeaderSpace.builder()
+            .setSrcIps(Ip.parse("1.1.1.2").toIpSpace())
+            .setDstIps(Ip.parse("1.1.2.2").toIpSpace())
+            .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP));
+    assertThat(hs, equalTo(expectedHeaderSpace.build()));
 
     matcher =
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), 4000, 5000);
     aclExpr = (MatchHeaderSpace) matcher.toAclLineMatchExpr();
     hs = aclExpr.getHeaderspace();
-    assertThat(hs.getSrcPorts(), contains(SubRange.singleton(4000)));
-    assertThat(hs.getDstPorts(), contains(SubRange.singleton(5000)));
+    expectedHeaderSpace =
+        expectedHeaderSpace
+            .setSrcPorts(SubRange.singleton(4000))
+            .setDstPorts(SubRange.singleton(5000));
+    assertThat(hs, equalTo(expectedHeaderSpace.build()));
   }
 }

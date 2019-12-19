@@ -1,5 +1,7 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -30,18 +32,38 @@ public class SessionMatchExpr {
   @Nullable private final Integer _srcPort;
   @Nullable private final Integer _dstPort;
 
-  @JsonCreator
   public SessionMatchExpr(
-      @JsonProperty(PROP_IP_PROTOCOL) IpProtocol ipProtocol,
-      @JsonProperty(PROP_SRC_IP) Ip srcIp,
-      @JsonProperty(PROP_DST_IP) Ip dstIp,
-      @JsonProperty(PROP_SRC_PORT) @Nullable Integer srcPort,
-      @JsonProperty(PROP_DST_PORT) @Nullable Integer dstPort) {
+      IpProtocol ipProtocol,
+      Ip srcIp,
+      Ip dstIp,
+      @Nullable Integer srcPort,
+      @Nullable Integer dstPort) {
+    checkArgument(
+        (srcPort == null && dstPort == null) || (srcPort != null && dstPort != null),
+        "srcPort and dstPort should be both null or both non-null");
     _ipProtocol = ipProtocol;
     _srcIp = srcIp;
     _dstIp = dstIp;
     _srcPort = srcPort;
     _dstPort = dstPort;
+  }
+
+  @JsonCreator
+  private static SessionMatchExpr jsonCreator(
+      @JsonProperty(PROP_IP_PROTOCOL) @Nullable IpProtocol ipProtocol,
+      @JsonProperty(PROP_SRC_IP) @Nullable Ip srcIp,
+      @JsonProperty(PROP_DST_IP) @Nullable Ip dstIp,
+      @JsonProperty(PROP_SRC_PORT) @Nullable Integer srcPort,
+      @JsonProperty(PROP_DST_PORT) @Nullable Integer dstPort) {
+    checkArgument(ipProtocol != null, "Missing %s", PROP_IP_PROTOCOL);
+    checkArgument(srcIp != null, "Missing %s", PROP_SRC_IP);
+    checkArgument(dstIp != null, "Missing %s", PROP_DST_IP);
+    checkArgument(
+        (srcPort == null && dstPort == null) || (srcPort != null && dstPort != null),
+        "%s and %s should be both null or both non-null",
+        PROP_SRC_PORT,
+        PROP_DST_PORT);
+    return new SessionMatchExpr(ipProtocol, srcIp, dstIp, srcPort, dstPort);
   }
 
   @JsonProperty(PROP_IP_PROTOCOL)
