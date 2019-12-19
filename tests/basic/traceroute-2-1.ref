@@ -42,6 +42,7 @@
           "srcIp" : "2.128.1.101",
           "srcPort" : 49152,
           "state" : "NEW",
+          "tag" : "tag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
