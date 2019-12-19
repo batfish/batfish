@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
+import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROUPS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -22,7 +24,7 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -61,8 +63,7 @@ public class SecurityGroupsTest {
                 json.get(JSON_KEY_SECURITY_GROUPS), new TypeReference<List<SecurityGroup>>() {});
 
     _region = new Region("test");
-    _flowBuilder =
-        Flow.builder().setIngressNode("foo").setTag("TEST").setIpProtocol(IpProtocol.TCP);
+    _flowBuilder = Flow.builder().setIngressNode("foo").setIpProtocol(IpProtocol.TCP);
     _warnings = new Warnings(true, true, true);
   }
 
@@ -116,134 +117,140 @@ public class SecurityGroupsTest {
   public void testSinglePort() {
     SecurityGroup sg = _securityGroups.get(0);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(SubRange.singleton(22)))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(SubRange.singleton(22)))
+                        .build()))));
   }
 
   @Test
   public void testBeginningHalfOpenInterval() {
     SecurityGroup sg = _securityGroups.get(1);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
+                        .build()))));
   }
 
   @Test
   public void testEndHalfOpenInterval() {
     SecurityGroup sg = _securityGroups.get(2);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
+                        .build()))));
   }
 
   @Test
   public void testFullInterval() {
     SecurityGroup sg = _securityGroups.get(3);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .build()))));
   }
 
   @Test
   public void testIcmpType() {
     SecurityGroup sg = _securityGroups.get(9);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.ICMP))
-                    .setIcmpTypes(8)
-                    .setSrcIps(IpWildcardSetIpSpace.ANY)
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.ICMP))
+                        .setIcmpTypes(8)
+                        .setSrcIps(IpWildcardSetIpSpace.ANY)
+                        .build()))));
   }
 
   @Test
   public void testIcmpTypeAndCode() {
     SecurityGroup sg = _securityGroups.get(10);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.ICMP))
-                    .setIcmpTypes(8)
-                    .setIcmpCodes(9)
-                    .setSrcIps(IpWildcardSetIpSpace.ANY)
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.ICMP))
+                        .setIcmpTypes(8)
+                        .setIcmpCodes(9)
+                        .setSrcIps(IpWildcardSetIpSpace.ANY)
+                        .build()))));
   }
 
   @Test
   public void testIcmpInvalidCodeOnly() {
     SecurityGroup sg = _securityGroups.get(11);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
@@ -261,122 +268,128 @@ public class SecurityGroupsTest {
   public void testAllTrafficAllowed() {
     SecurityGroup sg = _securityGroups.get(4);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
-                    .setDstPorts(Sets.newHashSet())
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
+                        .setDstPorts(Sets.newHashSet())
+                        .build()))));
   }
 
   @Test
   public void testClosedInterval() {
     SecurityGroup sg = _securityGroups.get(5);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                        .build()))));
   }
 
   @Test
   public void testInvalidStartInterval() {
     SecurityGroup sg = _securityGroups.get(6);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(0, 50)))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(0, 50)))
+                        .build()))));
   }
 
   @Test
   public void testInvalidEndInterval() {
     SecurityGroup sg = _securityGroups.get(7);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(30, 65535)))
-                    .build())));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(30, 65535)))
+                        .build()))));
   }
 
   @Test
   public void testStatefulTcpRules() {
     SecurityGroup sg = _securityGroups.get(8);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
-    ExprAclLine line = Iterables.getOnlyElement(inboundRules);
+    AclLine line = Iterables.getOnlyElement(inboundRules);
     assertThat(
-        line.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(SubRange.singleton(22)))
-                    .build())));
-    ExprAclLine outline = Iterables.getOnlyElement(outboundRules);
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(SubRange.singleton(22)))
+                        .build()))));
+    AclLine outline = Iterables.getOnlyElement(outboundRules);
     assertThat(
-        outline.getMatchCondition(),
-        equalTo(
-            new MatchHeaderSpace(
-                HeaderSpace.builder()
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setDstIps(Sets.newHashSet(IpWildcard.parse("5.6.7.8/32")))
-                    .setDstPorts(Sets.newHashSet(SubRange.singleton(80)))
-                    .build())));
+        outline,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setDstIps(Sets.newHashSet(IpWildcard.parse("5.6.7.8/32")))
+                        .setDstPorts(Sets.newHashSet(SubRange.singleton(80)))
+                        .build()))));
   }
 
   @Test
   public void testDeniedSynOnlyResponse() {
     SecurityGroup sg = _securityGroups.get(8);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
@@ -402,8 +415,8 @@ public class SecurityGroupsTest {
   public void testDeniedWrongIpResponse() {
     SecurityGroup sg = _securityGroups.get(8);
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(inboundRules, outboundRules, _region, _warnings);
 
@@ -442,8 +455,8 @@ public class SecurityGroupsTest {
     SecurityGroup sg =
         new SecurityGroup("test", "test", ImmutableList.of(perms), ImmutableList.of());
 
-    List<ExprAclLine> inboundRules = new LinkedList<>();
-    List<ExprAclLine> outboundRules = new LinkedList<>();
+    List<AclLine> inboundRules = new LinkedList<>();
+    List<AclLine> outboundRules = new LinkedList<>();
 
     sg.addInOutAccessLines(
         inboundRules,

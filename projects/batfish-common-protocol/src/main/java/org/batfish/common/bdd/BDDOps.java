@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -125,5 +126,36 @@ public final class BDDOps {
       result = result.diff(orAll(lineBddsWithCurrentAction));
     }
     return result;
+  }
+
+  /**
+   * Helper function to compile the line BDDs of an ACL-like object (e.g. an {@link AclIpSpace} or
+   * an {@link org.batfish.datamodel.IpAccessList} to a single {@link PermitAndDenyBdds}
+   * representing the BDDs of all explicitly permitted and explicitly denied flows.
+   *
+   * @param bdds {@link PermitAndDenyBdds} representing flows explicitly matched by each ACL line
+   */
+  public PermitAndDenyBdds bddAclLines(List<PermitAndDenyBdds> bdds) {
+    // TODO Optimizations likely possible. Compare with other bddAclLines() method.
+    // For each line, BDD of the flows that reach that line and are permitted
+    List<BDD> reachAndPermitBdds = new ArrayList<>();
+
+    // For each line, BDD of the flows that reach that line and are denied
+    List<BDD> reachAndDenyBdds = new ArrayList<>();
+
+    // BDD of the flows matched by any previously checked line
+    BDD alreadyMatched = _factory.zero();
+
+    for (PermitAndDenyBdds currentLine : bdds) {
+      // Find BDDs of flows that reach and match current line with each action
+      BDD reachAndPermit = currentLine.getPermitBdd().diff(alreadyMatched);
+      BDD reachAndDeny = currentLine.getDenyBdd().diff(alreadyMatched);
+      reachAndPermitBdds.add(reachAndPermit);
+      reachAndDenyBdds.add(reachAndDeny);
+
+      alreadyMatched = alreadyMatched.or(currentLine.getMatchBdd());
+    }
+
+    return new PermitAndDenyBdds(orAll(reachAndPermitBdds), orAll(reachAndDenyBdds));
   }
 }

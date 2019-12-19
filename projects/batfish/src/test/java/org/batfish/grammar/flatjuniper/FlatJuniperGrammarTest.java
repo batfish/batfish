@@ -4,6 +4,9 @@ import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Flow.builder;
+import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
@@ -365,18 +368,12 @@ public final class FlatJuniperGrammarTest {
     fb.setSrcIp(Ip.parse(sourceAddress));
     fb.setDstIp(Ip.parse(destinationAddress));
     fb.setState(state);
-    fb.setTag("test");
     return fb.build();
   }
 
   private static Flow createFlow(IpProtocol protocol, int port) {
     Flow.Builder fb =
-        Flow.builder()
-            .setIngressNode("node")
-            .setIpProtocol(protocol)
-            .setDstPort(port)
-            .setSrcPort(port)
-            .setTag("test");
+        builder().setIngressNode("node").setIpProtocol(protocol).setDstPort(port).setSrcPort(port);
     return fb.build();
   }
 
@@ -1350,12 +1347,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testFirewallFilterConversion() {
     Configuration c = parseConfig("firewall-filters");
-    Flow.Builder fb =
-        Flow.builder()
-            .setIpProtocol(IpProtocol.OSPF)
-            .setIngressNode(c.getHostname())
-            .setDstIp(Ip.ZERO)
-            .setTag("tag");
+    Flow.Builder fb = builder().setIpProtocol(OSPF).setIngressNode(c.getHostname()).setDstIp(ZERO);
     Flow src1235 = fb.setSrcIp(Ip.parse("1.2.3.5")).build();
     Flow src1236 = fb.setSrcIp(Ip.parse("1.2.3.6")).build();
     Flow src8888 = fb.setSrcIp(Ip.parse("8.8.8.8")).build();
@@ -2713,12 +2705,11 @@ public final class FlatJuniperGrammarTest {
 
     Flow tcpFlow = createFlow(IpProtocol.TCP, 0);
     Flow icmpFlow =
-        Flow.builder()
+        builder()
             .setIngressNode("node")
             .setIpProtocol(IpProtocol.ICMP)
             .setIcmpType(0)
             .setIcmpCode(0)
-            .setTag("tag")
             .build();
 
     // Tcp flow should be accepted by the filter and others should be rejected

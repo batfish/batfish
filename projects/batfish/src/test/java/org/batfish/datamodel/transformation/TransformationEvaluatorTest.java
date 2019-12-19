@@ -47,7 +47,6 @@ public class TransformationEvaluatorTest {
     _flowBuilder =
         Flow.builder()
             .setIngressNode("node")
-            .setTag("tag")
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(0)
             .setDstPort(0);

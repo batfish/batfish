@@ -58,7 +58,7 @@ org.eclipse.jdt.core.compiler.problem.pessimisticNullAnalysisForFreeTypeVariable
 org.eclipse.jdt.core.compiler.problem.possibleAccidentalBooleanAssignment=ignore
 org.eclipse.jdt.core.compiler.problem.potentialNullReference=ignore
 org.eclipse.jdt.core.compiler.problem.potentiallyUnclosedCloseable=ignore
-org.eclipse.jdt.core.compiler.problem.rawTypeReference=warning
+org.eclipse.jdt.core.compiler.problem.rawTypeReference=ignore
 org.eclipse.jdt.core.compiler.problem.redundantNullAnnotation=warning
 org.eclipse.jdt.core.compiler.problem.redundantNullCheck=ignore
 org.eclipse.jdt.core.compiler.problem.redundantSpecificationOfTypeArguments=ignore
@@ -70,6 +70,7 @@ org.eclipse.jdt.core.compiler.problem.specialParameterHidingField=disabled
 org.eclipse.jdt.core.compiler.problem.staticAccessReceiver=warning
 org.eclipse.jdt.core.compiler.problem.suppressOptionalErrors=disabled
 org.eclipse.jdt.core.compiler.problem.suppressWarnings=enabled
+org.eclipse.jdt.core.compiler.problem.suppressWarningsNotFullyAnalysed=info
 org.eclipse.jdt.core.compiler.problem.syntacticNullAnalysisForFields=disabled
 org.eclipse.jdt.core.compiler.problem.syntheticAccessEmulation=ignore
 org.eclipse.jdt.core.compiler.problem.terminalDeprecation=warning

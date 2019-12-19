@@ -53,7 +53,7 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
             q.getHeaderConstraints(),
             q.getSourceLocationStr(),
             _batfish.specifierContext(snapshot));
-    Set<Flow> flows = helper.getFlows(_batfish.getFlowTag(snapshot));
+    Set<Flow> flows = helper.getFlows();
     TracerouteEngine tracerouteEngine = _batfish.getTracerouteEngine(snapshot);
     return bidirectionalTracerouteAnswerElement(
         _question, flows, tracerouteEngine, q.getIgnoreFilters(), q.getMaxTraces());

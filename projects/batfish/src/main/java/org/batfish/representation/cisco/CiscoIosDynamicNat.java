@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -118,15 +119,19 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     if (getAction() == RuleAction.DESTINATION_INSIDE) {
       // Expect all lines to be header space matches for NAT ACL
       if (!natAcl.getLines().stream()
-          .map(ExprAclLine::getMatchCondition)
-          .allMatch(cond -> cond instanceof MatchHeaderSpace)) {
+          .allMatch(
+              l ->
+                  l instanceof ExprAclLine
+                      && ((ExprAclLine) l).getMatchCondition() instanceof MatchHeaderSpace)) {
         return Optional.empty();
       }
 
       // Create reverse acl to match destination address instead of source address
       String reverseAclName = computeDynamicDestinationNatAclName(_aclName);
-      List<ExprAclLine> lines =
+      List<AclLine> lines =
           natAcl.getLines().stream()
+              // Already checked that all lines are instances of ExprAclLine
+              .map(ExprAclLine.class::cast)
               .map(
                   line -> {
                     HeaderSpace origHeader =

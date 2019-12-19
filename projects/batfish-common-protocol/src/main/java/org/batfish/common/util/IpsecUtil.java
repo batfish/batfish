@@ -660,7 +660,6 @@ public class IpsecUtil {
 
     Flow.Builder flowBuilder =
         Flow.builder()
-            .setTag("IPsec reachability check")
             .setIngressNode(sender)
             .setIngressVrf(senderVrf)
             .setSrcIp(srcIp)

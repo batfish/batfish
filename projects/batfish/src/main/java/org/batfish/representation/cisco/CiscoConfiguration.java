@@ -77,6 +77,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -3525,23 +3526,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ///////////////////////////////////////////////
         });
 
-    // For EOS, if a VRF has L3 VNI, create dummy BGP processes in VI, if needed
-    if (_eosVxlan != null) {
-      _eosVxlan
-          .getVrfToVni()
-          .forEach(
-              (vrfName, vni) -> {
-                org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(vrfName);
-                if (viVrf != null && viVrf.getBgpProcess() == null) {
-                  viVrf.setBgpProcess(
-                      org.batfish.datamodel.BgpProcess.builder()
-                          .setRouterId(Ip.ZERO)
-                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
-                          .build());
-                }
-              });
-    }
-
     /*
      * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
      * (e.g. has OSPF settings but no associated OSPF process)
@@ -3592,6 +3576,45 @@ public final class CiscoConfiguration extends VendorConfiguration {
               (vrfName, vni) ->
                   Optional.ofNullable(c.getVrfs().get(vrfName))
                       .ifPresent(vrf -> vrf.addLayer3Vni(toL3Vni(_eosVxlan, vni, sourceIface))));
+    }
+
+    // For EOS, if a VRF has VNIs but no BGP process, create a dummy BGP processes in VI.
+    if (_eosVxlan != null) {
+      // handle L3 VNIs
+      _eosVxlan
+          .getVrfToVni()
+          .forEach(
+              (vrfName, vni) -> {
+                org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(vrfName);
+                if (viVrf != null && viVrf.getBgpProcess() == null) {
+                  viVrf.setBgpProcess(
+                      org.batfish.datamodel.BgpProcess.builder()
+                          .setRouterId(Ip.ZERO)
+                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .build());
+                }
+              });
+      // handle L2 VNIs
+      org.batfish.datamodel.BgpProcess defaultVrfBgpProc = c.getDefaultVrf().getBgpProcess();
+      c.getVrfs()
+          .values()
+          .forEach(
+              vrf -> {
+                if (!vrf.getLayer2Vnis().isEmpty() // have L2 vnis in this VRF
+                    && vrf.getBgpProcess() == null // no bgp process in this VRF
+                    && defaultVrfBgpProc != null // Default VRF has a BGP process
+                    && defaultVrfBgpProc
+                        .allPeerConfigsStream()
+                        .map(BgpPeerConfig::getEvpnAddressFamily)
+                        // Default VRF has peers with EVPN enabled (so not just static vxlan)
+                        .anyMatch(Objects::nonNull)) {
+                  vrf.setBgpProcess(
+                      org.batfish.datamodel.BgpProcess.builder()
+                          .setRouterId(Ip.ZERO)
+                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .build());
+                }
+              });
     }
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
@@ -4048,7 +4071,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _inspectPolicyMaps.forEach(
         (inspectPolicyMapName, inspectPolicyMap) -> {
           String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<ExprAclLine> policyMapAclLines = ImmutableList.builder();
+          ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
           inspectPolicyMap
               .getInspectClasses()
               .forEach(
@@ -4133,7 +4156,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 return;
               }
 
-              ImmutableList.Builder<ExprAclLine> zonePolicies = ImmutableList.builder();
+              ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
 
               // Allow traffic originating from device (no source interface)
               zonePolicies.add(

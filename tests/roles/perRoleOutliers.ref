@@ -124,9 +124,9 @@
           "as2border2"
         ],
         "structDefinition" : {
-          "name" : "102",
           "lines" : [
             {
+              "class" : "org.batfish.datamodel.ExprAclLine",
               "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -145,6 +145,7 @@
               "name" : "permit ip host 2.0.0.0 host 255.0.0.0"
             },
             {
+              "class" : "org.batfish.datamodel.ExprAclLine",
               "action" : "PERMIT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -163,6 +164,7 @@
               "name" : "permit ip host 2.128.0.0 host 255.255.0.0"
             }
           ],
+          "name" : "102",
           "sourceName" : "102",
           "sourceType" : "extended ipv4 access-list"
         },

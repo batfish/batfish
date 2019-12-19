@@ -4,6 +4,8 @@ import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
+import static org.batfish.datamodel.Flow.Builder;
+import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
@@ -15,7 +17,8 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.Ip.parse;
+import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
@@ -110,6 +113,7 @@ import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
+import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -137,8 +141,16 @@ public class TracerouteEngineImplTest {
     Flow.Builder builder = Flow.builder();
     builder.setSrcIp(Ip.parse("1.2.3.4"));
     builder.setIngressNode("foo");
-    builder.setTag("TEST");
     return builder.build();
+  }
+
+  private static SessionMatchExpr makeMatchCriteria(Flow flow) {
+    return new SessionMatchExpr(
+        flow.getIpProtocol(),
+        flow.getSrcIp(),
+        flow.getDstIp(),
+        flow.getSrcPort(),
+        flow.getDstPort());
   }
 
   /*
@@ -169,11 +181,7 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
 
     // Construct flows
-    Flow.Builder fb =
-        Flow.builder()
-            .setDstIp(Ip.parse("3.3.3.3"))
-            .setIngressNode(config.getHostname())
-            .setTag("TAG");
+    Builder fb = builder().setDstIp(parse("3.3.3.3")).setIngressNode(config.getHostname());
 
     Flow flow1 = fb.setIngressInterface(i1.getName()).setIngressVrf(vrf1.getName()).build();
     Flow flow2 = fb.setIngressInterface(i2.getName()).setIngressVrf(vrf2.getName()).build();
@@ -210,11 +218,10 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
 
     Flow flow =
-        Flow.builder()
+        builder()
             .setDstIp(prefix.getFirstHostIp())
             .setIngressNode(config.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("TAG")
             .build();
 
     // Compute flow traces
@@ -269,11 +276,10 @@ public class TracerouteEngineImplTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     Flow flow =
-        Flow.builder()
+        builder()
             .setIngressNode(source.getHostname())
-            .setSrcIp(Ip.parse("10.0.0.1"))
-            .setDstIp(Ip.parse("10.0.0.2"))
-            .setTag("tag")
+            .setSrcIp(parse("10.0.0.1"))
+            .setDstIp(parse("10.0.0.2"))
             .build();
     List<Trace> traces =
         batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(flow), false).get(flow);
@@ -305,12 +311,7 @@ public class TracerouteEngineImplTest {
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     b.computeDataPlane(b.getSnapshot());
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(c.getHostname())
-            .setDstIp(Ip.parse("1.0.0.1"))
-            .setTag("tag")
-            .build();
+    Flow flow = builder().setIngressNode(c.getHostname()).setDstIp(parse("1.0.0.1")).build();
     SortedMap<Flow, List<Trace>> flowTraces =
         b.buildFlows(b.getSnapshot(), ImmutableSet.of(flow), false);
     Trace trace = flowTraces.get(flow).iterator().next();
@@ -352,12 +353,7 @@ public class TracerouteEngineImplTest {
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     b.computeDataPlane(b.getSnapshot());
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(c1.getHostname())
-            .setTag("tag")
-            .setDstIp(Ip.parse("1.0.0.1"))
-            .build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
     SortedMap<Flow, List<Trace>> flowTraces =
         b.buildFlows(b.getSnapshot(), ImmutableSet.of(flow), false);
     Trace trace = flowTraces.get(flow).iterator().next();
@@ -390,9 +386,8 @@ public class TracerouteEngineImplTest {
     Batfish b = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
     b.computeDataPlane(b.getSnapshot());
     Flow.Builder fb =
-        Flow.builder()
+        builder()
             .setIngressNode(c.getHostname())
-            .setTag("denied")
             .setDstIp(ifaceDenyIn.getConcreteAddress().getIp());
 
     Flow flowDenied = fb.setIngressInterface(ifaceDenyIn.getName()).build();
@@ -421,8 +416,7 @@ public class TracerouteEngineImplTest {
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
-    Set<Flow> flows =
-        ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build());
+    Set<Flow> flows = ImmutableSet.of(builder().setIngressNode("missingNode").build());
 
     _thrown.expect(IllegalArgumentException.class);
     batfish.getTracerouteEngine(snapshot).computeTraces(flows, false);
@@ -479,8 +473,7 @@ public class TracerouteEngineImplTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     Flow flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setDstIp(loopPrefix.getStartIp())
@@ -601,8 +594,7 @@ public class TracerouteEngineImplTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     Flow flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
@@ -659,8 +651,7 @@ public class TracerouteEngineImplTest {
     assertThat(step4.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("20.6.6.6")));
 
     Flow flow2 =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
@@ -734,8 +725,7 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
 
     Flow flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setSrcIp(Ip.parse("1.0.0.1"))
@@ -802,8 +792,7 @@ public class TracerouteEngineImplTest {
 
     // Test flows matched by dest nat rules that permit but don't transform
     Flow flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
             .setSrcIp(ip22)
@@ -832,8 +821,7 @@ public class TracerouteEngineImplTest {
 
     // Test flows matched and transformed by dest nat rules
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
             .setSrcIp(ip21)
@@ -862,8 +850,7 @@ public class TracerouteEngineImplTest {
 
     // Test flows not matched by dest nat rules
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
             .setSrcIp(ip21)
@@ -883,8 +870,7 @@ public class TracerouteEngineImplTest {
 
     // Test flows matched by source nat rules that permit but don't transform
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
             .setSrcIp(ip21)
@@ -913,8 +899,7 @@ public class TracerouteEngineImplTest {
 
     // Test flows matched and transformed by source nat rules
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
             .setSrcIp(ip22)
@@ -944,8 +929,7 @@ public class TracerouteEngineImplTest {
 
     // Test flows that match no source nat rule
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inInterface.getName())
             .setSrcIp(ip33)
@@ -1002,8 +986,7 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
 
     Flow flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
@@ -1034,8 +1017,7 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
 
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
@@ -1097,8 +1079,7 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
 
     Flow flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
@@ -1129,8 +1110,7 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(4).getAction(), equalTo(StepAction.EXITS_NETWORK));
 
     flow =
-        Flow.builder()
-            .setTag("tag")
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressVrf(v1.getName())
             .setIngressInterface(i1.getName())
@@ -1226,15 +1206,14 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
 
     // Construct flows
-    Flow.Builder fb =
-        Flow.builder()
-            .setDstIp(Ip.parse("3.3.3.3"))
-            .setSrcIp(Ip.parse("5.5.5.5"))
-            .setIpProtocol(IpProtocol.TCP)
+    Builder fb =
+        builder()
+            .setDstIp(parse("3.3.3.3"))
+            .setSrcIp(parse("5.5.5.5"))
+            .setIpProtocol(TCP)
             .setSrcPort(0)
             .setDstPort(0)
-            .setIngressNode(c1.getHostname())
-            .setTag("TAG");
+            .setIngressNode(c1.getHostname());
 
     Flow acceptFlow = fb.setIngressInterface(i2.getName()).build();
     Flow noRouteFlow = fb.setIngressInterface(i1.getName()).build();
@@ -1348,15 +1327,14 @@ public class TracerouteEngineImplTest {
     Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
     Vrf vrf = vb.build();
     Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("10.0.2.2"))
+        builder()
+            .setDstIp(parse("10.0.2.2"))
             .setDstPort(NamedPort.SSH.number()) // arbitrary
             .setIngressNode(c.getHostname())
             .setIngressInterface(i1Name)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setIpProtocol(TCP)
+            .setSrcIp(parse("10.0.1.2"))
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-            .setTag("tag")
             .build();
     Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(vrf);
     ib.setName(i1Name).setAddresses(ConcreteInterfaceAddress.parse("10.0.1.1/24")).build();
@@ -1407,15 +1385,14 @@ public class TracerouteEngineImplTest {
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
     Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("10.0.2.2"))
+        builder()
+            .setDstIp(parse("10.0.2.2"))
             .setDstPort(NamedPort.SSH.number()) // arbitrary
             .setIngressNode(c.getHostname())
             .setIngressInterface(i1Name)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setIpProtocol(TCP)
+            .setSrcIp(parse("10.0.1.2"))
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-            .setTag("tag")
             .build();
     Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(c);
     ib.setName(i1Name)
@@ -1525,30 +1502,28 @@ public class TracerouteEngineImplTest {
 
     // Flow going out
     Flow flowOut =
-        Flow.builder()
-            .setDstIp(Ip.parse("1.0.1.3"))
-            .setSrcIp(Ip.parse("1.0.1.2"))
+        builder()
+            .setDstIp(parse("1.0.1.3"))
+            .setSrcIp(parse("1.0.1.2"))
             .setIngressNode(c1.getHostname())
             .setIngressVrf(vrf1.getName())
-            .setIpProtocol(IpProtocol.TCP)
+            .setIpProtocol(TCP)
             .setSrcPort(80)
             .setDstPort(80)
             .setTcpFlagsSyn(1)
-            .setTag("TAG")
             .build();
 
     // Flow going in
     Flow flowIn =
-        Flow.builder()
-            .setDstIp(Ip.parse("1.0.1.2"))
-            .setSrcIp(Ip.parse("1.0.1.3"))
+        builder()
+            .setDstIp(parse("1.0.1.2"))
+            .setSrcIp(parse("1.0.1.3"))
             .setIngressNode(c2.getHostname())
             .setIngressVrf(vrf2.getName())
-            .setIpProtocol(IpProtocol.TCP)
+            .setIpProtocol(TCP)
             .setSrcPort(80)
             .setDstPort(80)
             .setTcpFlagsSyn(1)
-            .setTag("TAG")
             .build();
 
     TraceAndReverseFlow traceAndReverseFlowOut =
@@ -1652,7 +1627,7 @@ public class TracerouteEngineImplTest {
       int srcPort = 200;
       IpProtocol ipProtocol = IpProtocol.TCP;
       Flow flow =
-          Flow.builder()
+          builder()
               .setIngressNode(c1.getHostname())
               .setIngressInterface(i1Name)
               .setIpProtocol(ipProtocol)
@@ -1660,7 +1635,6 @@ public class TracerouteEngineImplTest {
               .setSrcPort(srcPort)
               .setDstIp(dstIp)
               .setDstPort(dstPort)
-              .setTag("TAG")
               .build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
@@ -1670,7 +1644,7 @@ public class TracerouteEngineImplTest {
               allOf(
                   hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
                   hasReverseFlow(
-                      Flow.builder()
+                      builder()
                           .setIngressNode(c1.getHostname())
                           .setIngressInterface(i2Name)
                           .setIpProtocol(ipProtocol)
@@ -1678,7 +1652,6 @@ public class TracerouteEngineImplTest {
                           .setSrcPort(dstPort)
                           .setDstIp(srcIp)
                           .setDstPort(srcPort)
-                          .setTag("TAG")
                           .build()),
                   hasNewFirewallSessions(
                       contains(
@@ -1698,7 +1671,7 @@ public class TracerouteEngineImplTest {
       int srcPort = 200;
       IpProtocol ipProtocol = IpProtocol.TCP;
       Flow flow =
-          Flow.builder()
+          builder()
               .setIngressNode(c1.getHostname())
               .setIngressInterface(i1Name)
               .setIpProtocol(ipProtocol)
@@ -1706,7 +1679,6 @@ public class TracerouteEngineImplTest {
               .setSrcPort(srcPort)
               .setDstIp(dstIp)
               .setDstPort(dstPort)
-              .setTag("TAG")
               .build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
@@ -1716,7 +1688,7 @@ public class TracerouteEngineImplTest {
               allOf(
                   hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
                   hasReverseFlow(
-                      Flow.builder()
+                      builder()
                           .setIngressNode(c1.getHostname())
                           .setIngressInterface(i3Name)
                           .setIpProtocol(ipProtocol)
@@ -1724,7 +1696,6 @@ public class TracerouteEngineImplTest {
                           .setSrcPort(dstPort)
                           .setDstIp(srcIp)
                           .setDstPort(srcPort)
-                          .setTag("TAG")
                           .build()),
                   hasNewFirewallSessions(empty()))));
     }
@@ -1738,7 +1709,7 @@ public class TracerouteEngineImplTest {
       int poolPort = 2000;
       IpProtocol ipProtocol = IpProtocol.TCP;
       Flow flow =
-          Flow.builder()
+          builder()
               .setIngressNode(c1.getHostname())
               .setIngressInterface(i1Name)
               .setIpProtocol(ipProtocol)
@@ -1746,7 +1717,6 @@ public class TracerouteEngineImplTest {
               .setSrcPort(srcPort)
               .setDstIp(dstIp)
               .setDstPort(dstPort)
-              .setTag("TAG")
               .build();
       Flow transformedFlow = flow.toBuilder().setSrcIp(poolIp).setSrcPort(poolPort).build();
       List<TraceAndReverseFlow> traces =
@@ -1757,7 +1727,7 @@ public class TracerouteEngineImplTest {
               allOf(
                   hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
                   hasReverseFlow(
-                      Flow.builder()
+                      builder()
                           .setIngressNode(c1.getHostname())
                           .setIngressInterface(i4Name)
                           .setIpProtocol(ipProtocol)
@@ -1765,7 +1735,6 @@ public class TracerouteEngineImplTest {
                           .setSrcPort(dstPort)
                           .setDstIp(poolIp)
                           .setDstPort(2000)
-                          .setTag("TAG")
                           .build()),
                   hasNewFirewallSessions(
                       contains(
@@ -1839,7 +1808,7 @@ public class TracerouteEngineImplTest {
       int srcPort = 200;
       IpProtocol ipProtocol = IpProtocol.TCP;
       Flow flow =
-          Flow.builder()
+          builder()
               .setIngressNode(c1.getHostname())
               .setIngressVrf(vrf1.getName())
               .setIpProtocol(ipProtocol)
@@ -1847,7 +1816,6 @@ public class TracerouteEngineImplTest {
               .setSrcPort(srcPort)
               .setDstIp(dstIp)
               .setDstPort(dstPort)
-              .setTag("TAG")
               .build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
@@ -1857,7 +1825,7 @@ public class TracerouteEngineImplTest {
               allOf(
                   hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
                   hasReverseFlow(
-                      Flow.builder()
+                      builder()
                           .setIngressNode(c2.getHostname())
                           .setIngressInterface(c2i2Name)
                           .setIpProtocol(ipProtocol)
@@ -1865,7 +1833,6 @@ public class TracerouteEngineImplTest {
                           .setSrcPort(dstPort)
                           .setDstIp(srcIp)
                           .setDstPort(srcPort)
-                          .setTag("TAG")
                           .build()),
                   hasNewFirewallSessions(
                       contains(
@@ -1944,12 +1911,11 @@ public class TracerouteEngineImplTest {
     Ip ip10 = Ip.parse("10.10.10.10");
     Ip ip11 = Ip.parse("11.11.11.11");
     Flow protoFlow =
-        Flow.builder()
+        builder()
             .setIngressNode(c1.getHostname())
             .setIngressInterface(c1i1Name)
             .setDstIp(ip10)
             .setSrcIp(ip11)
-            .setTag("TAG")
             .build();
 
     // No session. No route
@@ -1971,7 +1937,11 @@ public class TracerouteEngineImplTest {
       Flow flow = protoFlow;
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
-              c1.getHostname(), Accept.INSTANCE, ImmutableSet.of(c1i1Name), TRUE, null);
+              c1.getHostname(),
+              Accept.INSTANCE,
+              ImmutableSet.of(c1i1Name),
+              makeMatchCriteria(flow),
+              null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
@@ -2004,7 +1974,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, null),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2040,7 +2010,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2075,7 +2045,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2102,7 +2072,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               null);
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2131,7 +2101,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               always().apply(assignSourceIp(ip11, ip11)).build());
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2158,7 +2128,7 @@ public class TracerouteEngineImplTest {
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               always().apply(assignSourceIp(ip11, ip11)).build());
       List<TraceAndReverseFlow> results =
           tracerouteEngine
@@ -2169,14 +2139,14 @@ public class TracerouteEngineImplTest {
 
     // Session filters respect ignoreFilters.
     {
+      Flow flow = protoFlow.toBuilder().setSrcIp(ingressDenySrcIp).build();
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
               new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
               ImmutableSet.of(c1i1Name),
-              TRUE,
+              makeMatchCriteria(flow),
               always().apply(assignSourceIp(ip11, ip11)).build());
-      Flow flow = protoFlow.toBuilder().setSrcIp(ingressDenySrcIp).build();
       List<TraceAndReverseFlow> results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), true)
@@ -2192,6 +2162,13 @@ public class TracerouteEngineImplTest {
                               hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
 
       flow = protoFlow.toBuilder().setSrcIp(egressDenySrcIp).build();
+      session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              new ForwardOutInterface(c1i2Name, NodeInterfacePair.of(c2.getHostname(), c2i1Name)),
+              ImmutableSet.of(c1i1Name),
+              makeMatchCriteria(flow),
+              always().apply(assignSourceIp(ip11, ip11)).build());
       results =
           tracerouteEngine
               .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), true)
@@ -2249,11 +2226,10 @@ public class TracerouteEngineImplTest {
     TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine(snapshot);
 
     Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("5.0.0.0"))
+        builder()
+            .setDstIp(parse("5.0.0.0"))
             .setIngressNode(config.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("TAG")
             .build();
     List<Trace> traces = tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
 
@@ -2305,15 +2281,14 @@ public class TracerouteEngineImplTest {
     TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine(snapshot);
 
     Flow flow =
-        Flow.builder()
+        builder()
             .setSrcIp(srcIp)
-            .setDstIp(Ip.parse("5.0.0.0"))
-            .setIpProtocol(IpProtocol.TCP)
+            .setDstIp(parse("5.0.0.0"))
+            .setIpProtocol(TCP)
             .setSrcPort(srcPort)
             .setDstPort(0)
             .setIngressNode(config.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("TAG")
             .build();
     List<Trace> traces = tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
 

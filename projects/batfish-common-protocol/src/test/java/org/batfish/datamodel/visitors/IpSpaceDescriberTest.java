@@ -35,12 +35,7 @@ public final class IpSpaceDescriberTest {
 
   @Before
   public void setup() {
-    _flow =
-        Flow.builder()
-            .setIngressNode("ingress")
-            .setTag("tag")
-            .setDstIp(Ip.parse("1.1.1.1"))
-            .build();
+    _flow = Flow.builder().setIngressNode("ingress").setDstIp(Ip.parse("1.1.1.1")).build();
     _describerNoNamesNorMetadata =
         new IpSpaceDescriber(
             new AclTracer(_flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of()));

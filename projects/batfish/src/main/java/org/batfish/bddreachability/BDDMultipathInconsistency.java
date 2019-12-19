@@ -27,11 +27,10 @@ public class BDDMultipathInconsistency {
    */
   public static List<Flow> computeMultipathInconsistencies(
       BDDPacket bddPacket,
-      String flowTag,
       Map<IngressLocation, BDD> disposition1FlowBdds,
       Map<IngressLocation, BDD> disposition2FlowBdds) {
     return computeMultipathInconsistencyBDDs(disposition1FlowBdds, disposition2FlowBdds)
-        .map(violation -> multipathInconsistencyToFlow(bddPacket, violation, flowTag))
+        .map(violation -> multipathInconsistencyToFlow(bddPacket, violation))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -59,8 +58,7 @@ public class BDDMultipathInconsistency {
   }
 
   @VisibleForTesting
-  static Flow multipathInconsistencyToFlow(
-      BDDPacket bddPacket, MultipathInconsistency violation, String flowTag) {
+  static Flow multipathInconsistencyToFlow(BDDPacket bddPacket, MultipathInconsistency violation) {
     Flow.Builder fb =
         bddPacket
             .getFlow(violation.getBDD())
@@ -68,7 +66,6 @@ public class BDDMultipathInconsistency {
                 () -> {
                   throw new BatfishException("MultipathConsistencyViolation with UNSAT predicate");
                 });
-    fb.setTag(flowTag);
 
     IngressLocation ingressLocation = violation.getIngressLocation();
     if (ingressLocation.isIngressVrf()) {

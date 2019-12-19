@@ -208,7 +208,7 @@ public enum JunosApplication implements Application {
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
-      List<ExprAclLine> lines,
+      List<? super ExprAclLine> lines,
       Warnings w) {
     _baseApplication.get().applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
   }

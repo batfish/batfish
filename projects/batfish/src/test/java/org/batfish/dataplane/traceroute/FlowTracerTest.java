@@ -4,7 +4,6 @@ import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
@@ -75,6 +74,7 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
+import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -96,7 +96,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("tag")
             .build();
 
     List<TraceAndReverseFlow> traces = new ArrayList<>();
@@ -128,12 +127,14 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("tag")
             .build();
     List<TraceAndReverseFlow> traces = new ArrayList<>();
 
+    SessionMatchExpr dummySessionFlow =
+        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
     FirewallSessionTraceInfo sessionInfo =
-        new FirewallSessionTraceInfo("hostname", Accept.INSTANCE, ImmutableSet.of(), TRUE, null);
+        new FirewallSessionTraceInfo(
+            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionFlow, null);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
@@ -182,7 +183,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(srcVrfName)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     ImmutableList.Builder<TraceAndReverseFlow> traces = ImmutableList.builder();
@@ -239,7 +239,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(srcVrfName)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     StaticRoute nextVrfRoute =
@@ -320,7 +319,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf1Name)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     StaticRoute vrf1NextVrfRoute =
@@ -401,7 +399,6 @@ public final class FlowTracerTest {
             .setDstIp(Ip.parse("1.1.1.1"))
             .setIngressNode(c.getHostname())
             .setIngressVrf(srcVrfName)
-            .setTag("tag")
             .build();
     Ip dstIp = flow.getDstIp();
     ImmutableList.Builder<TraceAndReverseFlow> traces = ImmutableList.builder();
@@ -513,8 +510,7 @@ public final class FlowTracerTest {
     Flow.Builder fb =
         Flow.builder()
             .setIngressNode(c1.getHostname())
-            .setIngressVrf(Configuration.DEFAULT_VRF_NAME)
-            .setTag("tag");
+            .setIngressVrf(Configuration.DEFAULT_VRF_NAME);
 
     // 1. evaluate dstIp=ip1 on c1. Should be transformed to ip3
     {
@@ -556,7 +552,6 @@ public final class FlowTracerTest {
             .setIngressNode("node")
             .setIngressVrf("vrf")
             .setIpProtocol(IpProtocol.HOPOPT)
-            .setTag("")
             .build();
 
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
@@ -574,7 +569,6 @@ public final class FlowTracerTest {
             .setIpProtocol(IpProtocol.ICMP)
             .setIcmpCode(0)
             .setIcmpType(0)
-            .setTag("")
             .build();
 
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
@@ -592,7 +586,6 @@ public final class FlowTracerTest {
             .setIpProtocol(IpProtocol.TCP)
             .setDstPort(100)
             .setSrcPort(20)
-            .setTag("")
             .build();
 
     NodeInterfacePair lastHop = NodeInterfacePair.of("", "");
@@ -612,12 +605,7 @@ public final class FlowTracerTest {
     Ip srcIp = Ip.parse("2.2.2.2");
 
     Flow.Builder fb =
-        Flow.builder()
-            .setIngressNode("node")
-            .setIngressVrf("vrf")
-            .setDstIp(dstIp)
-            .setSrcIp(srcIp)
-            .setTag("");
+        Flow.builder().setIngressNode("node").setIngressVrf("vrf").setDstIp(dstIp).setSrcIp(srcIp);
 
     BDD returnFlowDstIpBdd = pkt.getDstIp().value(srcIp.asLong());
     BDD returnFlowSrcIpBdd = pkt.getSrcIp().value(dstIp.asLong());
@@ -625,7 +613,7 @@ public final class FlowTracerTest {
     // TCP
     {
       Flow flow = fb.setIpProtocol(IpProtocol.TCP).setDstPort(100).setSrcPort(20).build();
-      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow));
+      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow).toAclLineMatchExpr());
       assertEquals(
           returnFlowBdd,
           BDDOps.andNull(
@@ -639,7 +627,7 @@ public final class FlowTracerTest {
     // UDP
     {
       Flow flow = fb.setIpProtocol(IpProtocol.UDP).setDstPort(100).setSrcPort(20).build();
-      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow));
+      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow).toAclLineMatchExpr());
       assertEquals(
           returnFlowBdd,
           BDDOps.andNull(
@@ -653,7 +641,7 @@ public final class FlowTracerTest {
     // ICMP
     {
       Flow flow = fb.setIpProtocol(IpProtocol.ICMP).setIcmpType(100).setIcmpCode(20).build();
-      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow));
+      BDD returnFlowBdd = toBdd.toBdd(matchSessionReturnFlow(flow).toAclLineMatchExpr());
       assertEquals(
           returnFlowBdd,
           BDDOps.andNull(
@@ -763,7 +751,6 @@ public final class FlowTracerTest {
             .setDstIp(ip)
             .setIngressNode(c.getHostname())
             .setIngressVrf(vrf.getName())
-            .setTag("tag")
             .build();
 
     TracerouteEngineImplContext ctxt =

@@ -43,6 +43,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -2085,7 +2086,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
-    List<ExprAclLine> zoneAclLines = new LinkedList<>();
+    List<AclLine> zoneAclLines = new LinkedList<>();
 
     /* Default ACL that allows existing connections should be added to all security policies */
     zoneAclLines.add(
@@ -2194,10 +2195,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
-  private static List<ExprAclLine> mergeIpAccessListLines(
+  private static List<AclLine> mergeIpAccessListLines(
       List<ExprAclLine> lines, @Nullable AclLineMatchExpr conjunctMatchExpr) {
     if (conjunctMatchExpr == null) {
-      return lines;
+      return ImmutableList.copyOf(lines);
     } else {
       return lines.stream()
           .map(
@@ -2232,7 +2233,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       assert f instanceof CompositeFirewallFilter;
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
-      ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
+      ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
       for (FirewallFilter inner : filter.getInner()) {
         ExprAclLine.takingExplicitActionsOf(inner.getName()).forEach(lines::add);
       }

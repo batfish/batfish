@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_enforce_first_as
+!
+router bgp 1
+  router-id 1.2.3.4
+  bgp enforce-first-as
+  neighbor 1.1.1.1 remote-as 2

@@ -1,0 +1,104 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_evpn_l2_vni_only
+!
+!
+vlan 10,20,30
+!
+!
+vrf definition vrf1
+!
+interface Port-Channel10
+   switchport access vlan 20
+!
+interface Port-Channel20
+   switchport access vlan 20
+   mlag 20
+!
+interface Port-Channel999
+   description MLAG Peer
+   switchport mode trunk
+   switchport trunk group mlagpeer
+   spanning-tree link-type point-to-point
+!
+interface Ethernet1
+   speed forced 1000full
+   no switchport
+   ip address 10.10.11.2/24
+!
+interface Ethernet2
+   no switchport
+   ip address 10.10.21.2/24
+!
+interface Ethernet10
+!
+interface Ethernet11
+   switchport access vlan 10
+!
+interface Ethernet12
+   switchport access vlan 20
+!
+!
+interface Loopback0
+   ip address 1.1.1.3/32
+!
+interface Loopback1
+   ip address 1.1.1.112/32
+!
+interface Loopback61
+   ip address 192.168.61.3/32
+!
+interface Management1
+!
+interface Vlan10
+   vrf forwarding vrf1
+   ip address 192.168.10.1/24
+!
+interface Vlan20
+   vrf forwarding vrf1
+   ip address 192.168.20.1/24
+!
+interface Vlan4094
+   ip address 172.16.1.1/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 10010
+   vxlan vlan 20 vni 10020
+   vxlan vlan 30 vni 10030
+!
+ip virtual-router mac-address c0:01:ca:fe:ba:12
+!
+ip routing
+ip routing vrf vrf1
+!
+router bgp 65001
+   router-id 1.1.1.3
+   neighbor 10.10.11.1 remote-as 65000
+   neighbor 10.10.11.1 send-community
+   neighbor 10.10.11.1 maximum-routes 12000
+   neighbor 10.10.21.1 remote-as 65000
+   neighbor 10.10.21.1 send-community
+   neighbor 10.10.21.1 maximum-routes 12000
+   !
+   vlan 10
+      rd 1.1.1.112:10
+      route-target both 10:10010
+      redistribute learned
+   !
+   vlan 20
+      rd 1.1.1.112:20
+      route-target both 20:10020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor 10.10.11.1 activate
+      neighbor 10.10.21.1 activate
+   !
+   address-family ipv4
+      network 1.1.1.3/32
+      network 1.1.1.112/32
+      network 192.168.61.3/32
+!
+end

@@ -28,9 +28,9 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -646,8 +646,8 @@ final class Region implements Serializable {
   private void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
-      List<ExprAclLine> inboundRules = new LinkedList<>();
-      List<ExprAclLine> outboundRules = new LinkedList<>();
+      List<AclLine> inboundRules = new LinkedList<>();
+      List<AclLine> outboundRules = new LinkedList<>();
       entry
           .getValue()
           .forEach(

@@ -112,6 +112,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -123,7 +124,6 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
@@ -285,7 +285,6 @@ public final class PaloAltoGrammarTest {
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
-    fb.setTag("test");
     return fb.build();
   }
 
@@ -306,7 +305,6 @@ public final class PaloAltoGrammarTest {
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
-    fb.setTag("test");
     return fb.build();
   }
 
@@ -1383,7 +1381,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.TCP)
-            .setTag("test")
             .setSrcPort(1);
     // See comments in the config for how this test works.
     Flow service1 = baseBuilder.setDstPort(1001).build();
@@ -1429,7 +1426,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.TCP)
-            .setTag("test")
             .setSrcPort(1);
     Flow.Builder udpBaseBuilder =
         Flow.builder()
@@ -1437,7 +1433,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.UDP)
-            .setTag("test")
             .setSrcPort(1);
     // See comments in the config for how this test works.
     Flow webapplication = tcpBaseBuilder.setDstPort(80).build();
@@ -1449,7 +1444,6 @@ public final class PaloAltoGrammarTest {
             .setSrcIp(Ip.ZERO)
             .setDstIp(Ip.ZERO)
             .setIpProtocol(IpProtocol.ICMP)
-            .setTag("test")
             .setIcmpType(IcmpType.ECHO_REPLY)
             .setIcmpCode(0)
             .build();
@@ -1522,7 +1516,6 @@ public final class PaloAltoGrammarTest {
 
     Flow notMatchingZoneSecurity =
         Flow.builder()
-            .setTag("test")
             .setIngressNode(c.getHostname())
             .setDstIp(Ip.parse("10.10.10.10"))
             .setSrcIp(Ip.parse("10.10.10.20"))
@@ -1872,7 +1865,7 @@ public final class PaloAltoGrammarTest {
     // Verify transitive name.
     IpAccessList service1 = c.getIpAccessLists().get(service1AclName);
     IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
-    ExprAclLine line1 = sg1.getLines().get(0);
+    AclLine line1 = sg1.getLines().get(0);
     assertThat(line1.getName(), equalTo(service1.getSourceName()));
   }
 
@@ -2316,5 +2309,46 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface("ethernet1/1", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/2", hasZoneName(equalTo("zone 1"))));
     assertThat(c, hasInterface("ethernet1/3", hasZoneName(is(nullValue()))));
+  }
+
+  @Test
+  public void testQuotedValues() {
+    String hostname = "quoted-values";
+
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    SortedMap<String, AddressObject> addrs = c.getVirtualSystems().get("vsys1").getAddressObjects();
+    assertThat(
+        addrs,
+        allOf(
+            hasKey("addr0"),
+            hasKey("addr1"),
+            hasKey("addr2"),
+            hasKey("addr3"),
+            hasKey("addr4"),
+            hasKey("addr5"),
+            hasKey("addr6"),
+            hasKey("addr7")));
+
+    String descr0 = addrs.get("addr0").getDescription();
+    String descr1 = addrs.get("addr1").getDescription();
+    String descr2 = addrs.get("addr2").getDescription();
+    String descr3 = addrs.get("addr3").getDescription();
+    String descr4 = addrs.get("addr4").getDescription();
+    String descr5 = addrs.get("addr5").getDescription();
+    String descr6 = addrs.get("addr6").getDescription();
+    String descr7 = addrs.get("addr7").getDescription();
+
+    // Quoted values containing quotes should be extracted
+    assertThat(descr0, equalTo("quoted description with a '"));
+    assertThat(descr1, equalTo("quoted description with a \""));
+    assertThat(descr2, equalTo("quoted description with a \" and '"));
+    assertThat(descr3, equalTo("multiline description with \" inside'\nand other stuff"));
+
+    // Quoted and non-quoted values should be extracted correctly
+    assertThat(descr4, equalTo("shortdescription"));
+    assertThat(descr5, equalTo("quoted description"));
+    // Missing value and empty quotes should be interpreted as empty string
+    assertThat(descr6, equalTo(""));
+    assertThat(descr7, equalTo(""));
   }
 }

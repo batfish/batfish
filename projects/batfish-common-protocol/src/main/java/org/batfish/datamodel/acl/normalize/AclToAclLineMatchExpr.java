@@ -50,9 +50,7 @@ import org.batfish.datamodel.acl.explanation.DisjunctsBuilder;
  * expressions to the form "matches that line AND does not match any early OVERLAPPING {@link
  * LineAction#DENY} line".
  */
-public final class AclToAclLineMatchExpr
-    implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>,
-        GenericAclLineVisitor<AclLineMatchExpr> {
+public final class AclToAclLineMatchExpr {
 
   /** Reduce an entire {@link IpAccessList} to a single {@link AclLineMatchExpr}. */
   public static AclLineMatchExpr toAclLineMatchExpr(
@@ -83,22 +81,73 @@ public final class AclToAclLineMatchExpr
   }
 
   private AclLineMatchExpr toAclLineMatchExpr(IpAccessList acl) {
-    /*
-     * We're going to construct an OrMatchExpr with a disjunct per PERMIT line in the ACL. We use
-     * a disjuncts builder to remove redundant disjuncts.
-     */
-    DisjunctsBuilder disjunctsBuilder = new DisjunctsBuilder(_ipAccessListToBdd);
+    return AclToExprConverter.toAclLineMatchExpr(acl, _namedAclThunks, _ipAccessListToBdd);
+  }
 
-    /*
-     * The disjunct for each PERMIT line is the expression "match the line but do not match any
-     * earlier DENY line". As we walk the ACL we remember the expressions for earlier deny lines in
-     * this list.
-     */
-    List<AclLineMatchExpr> earlierDenyLineExprs = new ArrayList<>();
+  /** For testing purposes only */
+  @VisibleForTesting
+  AclToExprConverter getConverterInstance() {
+    return new AclToExprConverter(_namedAclThunks, _ipAccessListToBdd);
+  }
 
-    for (ExprAclLine line : acl.getLines()) {
-      AclLineMatchExpr expr = visit(line);
-      if (line.getAction() == LineAction.PERMIT) {
+  /**
+   * Visitor to convert an {@link IpAccessList} into an {@link AclLineMatchExpr}. Separated into its
+   * own class because the same instance should never be reused to convert a new ACL: it will have
+   * dirty state. (But do not create a separate converter for referenced ACLs.)
+   */
+  @VisibleForTesting
+  static class AclToExprConverter
+      implements GenericAclLineMatchExprVisitor<AclLineMatchExpr>, GenericAclLineVisitor<Void> {
+
+    /**
+     * Assembles an {@link AclLineMatchExpr} representing the behavior of the given {@link
+     * IpAccessList}. To avoid polluting the assembler's state, this should be the only method that
+     * creates an instance of {@link AclToExprConverter}.
+     */
+    static AclLineMatchExpr toAclLineMatchExpr(
+        IpAccessList acl,
+        Map<String, Supplier<AclLineMatchExpr>> namedAclThunks,
+        IpAccessListToBdd ipAccessListToBdd) {
+      AclToExprConverter converter = new AclToExprConverter(namedAclThunks, ipAccessListToBdd);
+      acl.getLines().forEach(converter::visit);
+      return converter.getExpr();
+    }
+
+    private final Map<String, Supplier<AclLineMatchExpr>> _namedAclThunks;
+    private final IpAccessListToBdd _ipAccessListToBdd;
+    private final DisjunctsBuilder _disjunctsBuilder;
+    private final List<AclLineMatchExpr> _earlierDenyLineExprs;
+
+    private AclToExprConverter(
+        Map<String, Supplier<AclLineMatchExpr>> namedAclThunks,
+        IpAccessListToBdd ipAccessListToBdd) {
+      _namedAclThunks = namedAclThunks;
+      _ipAccessListToBdd = ipAccessListToBdd;
+      /*
+       * We're going to construct an OrMatchExpr with a disjunct per PERMIT line in the ACL. We use
+       * a disjuncts builder to remove redundant disjuncts.
+       */
+      _disjunctsBuilder = new DisjunctsBuilder(ipAccessListToBdd);
+      /*
+       * The disjunct for each PERMIT line is the expression "match the line but do not match any
+       * earlier DENY line". As we walk the ACL we remember the expressions for earlier deny lines in
+       * this list.
+       */
+      _earlierDenyLineExprs = new ArrayList<>();
+    }
+
+    private AclLineMatchExpr getExpr() {
+      return _disjunctsBuilder.build();
+    }
+
+    /* AclLine visit methods */
+
+    @Override
+    public Void visitExprAclLine(ExprAclLine exprAclLine) {
+      // Inline the line's match expr
+      AclLineMatchExpr expr = visit(exprAclLine.getMatchCondition());
+
+      if (exprAclLine.getAction() == LineAction.PERMIT) {
         /*
          * This is a PERMIT line, so the output is going to include a disjunct for it. The disjunct
          * is an AndMatchExpr -- matches this line, and doesn't match each previous DENY line. We
@@ -108,76 +157,68 @@ public final class AclToAclLineMatchExpr
         // matches this PERMIT line
         conjunctsBuilder.add(expr);
         // does not match any earlier DENY line.
-        earlierDenyLineExprs.forEach(conjunctsBuilder::add);
+        _earlierDenyLineExprs.forEach(conjunctsBuilder::add);
 
-        disjunctsBuilder.add(conjunctsBuilder.build());
+        _disjunctsBuilder.add(conjunctsBuilder.build());
       } else {
-        /*
-         * this is a DENY line, so add it to our list of DENY line expressions.
-         */
-        earlierDenyLineExprs.add(not(expr));
+        /* this is a DENY line, so add it to our list of DENY line expressions. */
+        _earlierDenyLineExprs.add(not(expr));
       }
+      return null;
     }
-    return disjunctsBuilder.build();
-  }
 
-  /* AclLine visit methods */
+    /* AclLineMatchExpr visit methods */
 
-  @Override
-  public AclLineMatchExpr visitExprAclLine(ExprAclLine exprAclLine) {
-    return visit(exprAclLine.getMatchCondition());
-  }
+    @Override
+    public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+      return and(
+          andMatchExpr.getConjuncts().stream()
+              .map(this::visit)
+              .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+    }
 
-  /* AclLineMatchExpr visit methods */
+    @Override
+    public AclLineMatchExpr visitFalseExpr(FalseExpr falseExpr) {
+      return falseExpr;
+    }
 
-  @Override
-  public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return and(
-        andMatchExpr.getConjuncts().stream()
-            .map(this::visit)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
-  }
+    @Override
+    public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+      return matchHeaderSpace;
+    }
 
-  @Override
-  public AclLineMatchExpr visitFalseExpr(FalseExpr falseExpr) {
-    return falseExpr;
-  }
+    @Override
+    public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+      return matchSrcInterface;
+    }
 
-  @Override
-  public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    return matchHeaderSpace;
-  }
+    @Override
+    public AclLineMatchExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+      return new NotMatchExpr(notMatchExpr.getOperand().accept(this));
+    }
 
-  @Override
-  public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    return matchSrcInterface;
-  }
+    @Override
+    public AclLineMatchExpr visitOriginatingFromDevice(
+        OriginatingFromDevice originatingFromDevice) {
+      return originatingFromDevice;
+    }
 
-  @Override
-  public AclLineMatchExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    return new NotMatchExpr(notMatchExpr.getOperand().accept(this));
-  }
+    @Override
+    public AclLineMatchExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+      return or(
+          orMatchExpr.getDisjuncts().stream()
+              .map(this::visit)
+              .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+    }
 
-  @Override
-  public AclLineMatchExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-    return originatingFromDevice;
-  }
+    @Override
+    public AclLineMatchExpr visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+      return _namedAclThunks.get(permittedByAcl.getAclName()).get();
+    }
 
-  @Override
-  public AclLineMatchExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-    return or(
-        orMatchExpr.getDisjuncts().stream()
-            .map(this::visit)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
-  }
-
-  @Override
-  public AclLineMatchExpr visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    return _namedAclThunks.get(permittedByAcl.getAclName()).get();
-  }
-
-  @Override
-  public AclLineMatchExpr visitTrueExpr(TrueExpr trueExpr) {
-    return trueExpr;
+    @Override
+    public AclLineMatchExpr visitTrueExpr(TrueExpr trueExpr) {
+      return trueExpr;
+    }
   }
 }

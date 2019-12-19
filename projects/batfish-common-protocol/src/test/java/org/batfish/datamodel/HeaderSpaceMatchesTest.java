@@ -30,7 +30,6 @@ public class HeaderSpaceMatchesTest {
   private static final Flow _sshFlow =
       Flow.builder()
           .setIngressNode("ingressNode") // required
-          .setTag("tag") // required
           .setDscp(_dscp)
           .setDstIp(_dstIp)
           .setDstPort(_dstPort)
@@ -48,7 +47,6 @@ public class HeaderSpaceMatchesTest {
   private static final Flow _icmpFlow =
       Flow.builder()
           .setIngressNode("ingressNode") // required
-          .setTag("tag") // required
           .setDscp(_dscp)
           .setDstIp(_dstIp)
           .setEcn(_ecn)

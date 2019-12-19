@@ -16,11 +16,14 @@ public final class AristaBgpVrf implements Serializable {
 
   private boolean _defaultIpv4Unicast;
   @Nullable private Boolean _advertiseInactive;
+  @Nullable private Integer _allowAsIn;
+  @Nullable private Boolean _alwaysCompareMed;
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
   @Nullable private Ip _clusterId;
   @Nullable private Long _defaultMetric;
   @Nullable private Integer _ebgpAdminDistance;
+  @Nullable private Boolean _enforceFirstAs;
   @Nullable private ExtendedCommunity _exportRouteTarget;
   @Nullable private Integer _ibgpAdminDistance;
   @Nullable private ExtendedCommunity _importRouteTarget;
@@ -75,6 +78,24 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   @Nullable
+  public Integer getAllowAsIn() {
+    return _allowAsIn;
+  }
+
+  public void setAllowAsIn(@Nullable Integer allowAsIn) {
+    _allowAsIn = allowAsIn;
+  }
+
+  @Nullable
+  public Boolean getAlwaysCompareMed() {
+    return _alwaysCompareMed;
+  }
+
+  public void setAlwaysCompareMed(@Nullable Boolean alwaysCompareMed) {
+    _alwaysCompareMed = alwaysCompareMed;
+  }
+
+  @Nullable
   public Boolean getBestpathAsPathMultipathRelax() {
     return _bestpathAsPathMultipathRelax;
   }
@@ -117,6 +138,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setEbgpAdminDistance(@Nullable Integer ebgpAdminDistance) {
     _ebgpAdminDistance = ebgpAdminDistance;
+  }
+
+  @Nullable
+  public Boolean getEnforceFirstAs() {
+    return _enforceFirstAs;
+  }
+
+  public void setEnforceFirstAs(@Nullable Boolean enforceFirstAs) {
+    _enforceFirstAs = enforceFirstAs;
   }
 
   @Nullable

@@ -11,11 +11,11 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
- * An {@link IpAccessListToBdd} that memoizes its {@link IpAccessListToBdd#visit} method using an
+ * An {@link IpAccessListToBdd} that memoizes its {@link IpAccessListToBdd#convert} method using an
  * {@link IdentityHashMap}.
  */
 public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
-  private Map<AclLine, BDD> _lineCache = new IdentityHashMap<>();
+  private Map<AclLine, PermitAndDenyBdds> _lineCache = new IdentityHashMap<>();
   private Map<AclLineMatchExpr, BDD> _exprCache = new IdentityHashMap<>();
 
   public MemoizedIpAccessListToBdd(
@@ -27,13 +27,13 @@ public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
   }
 
   @Override
-  public BDD toBdd(AclLine line) {
-    return _lineCache.computeIfAbsent(line, this::visit);
+  public PermitAndDenyBdds toPermitAndDenyBdds(AclLine line) {
+    return _lineCache.computeIfAbsent(line, this::convert);
   }
 
   @Override
   public BDD toBdd(AclLineMatchExpr expr) {
-    return _exprCache.computeIfAbsent(expr, this::visit);
+    return _exprCache.computeIfAbsent(expr, this::convert);
   }
 
   @VisibleForTesting

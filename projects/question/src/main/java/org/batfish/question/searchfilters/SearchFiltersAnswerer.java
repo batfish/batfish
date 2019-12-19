@@ -41,6 +41,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -328,16 +330,14 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toMatchLineAcl(Integer lineNumber, IpAccessList acl) {
-    List<ExprAclLine> lines =
+    CopierWithAction permittingCopier = new CopierWithAction(LineAction.PERMIT);
+    CopierWithAction denyingCopier = new CopierWithAction(LineAction.DENY);
+    List<AclLine> lines =
         Streams.concat(
-                acl.getLines().subList(0, lineNumber).stream()
-                    .map(l -> l.toBuilder().setAction(LineAction.DENY).build()),
-                Stream.of(
-                    acl.getLines()
-                        .get(lineNumber)
-                        .toBuilder()
-                        .setAction(LineAction.PERMIT)
-                        .build()))
+                // Deny everything that matches any previous line
+                acl.getLines().subList(0, lineNumber).stream().map(denyingCopier::visit),
+                // Permit everything that matches selected line
+                Stream.of(permittingCopier.visit(acl.getLines().get(lineNumber))))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(MATCH_LINE_RENAMER.apply(lineNumber, acl.getName()))
@@ -347,18 +347,9 @@ public final class SearchFiltersAnswerer extends Answerer {
 
   @VisibleForTesting
   static IpAccessList toDenyAcl(IpAccessList acl) {
-    List<ExprAclLine> lines =
+    List<AclLine> lines =
         Streams.concat(
-                acl.getLines().stream()
-                    .map(
-                        l ->
-                            l.toBuilder()
-                                // flip action
-                                .setAction(
-                                    l.getAction() == LineAction.PERMIT
-                                        ? LineAction.DENY
-                                        : LineAction.PERMIT)
-                                .build()),
+                acl.getLines().stream().map(ComplementaryCopier::copy),
                 // accept if we reach the end of the ACL
                 Stream.of(ExprAclLine.ACCEPT_ALL))
             .collect(ImmutableList.toImmutableList());
@@ -366,6 +357,44 @@ public final class SearchFiltersAnswerer extends Answerer {
         .setName(NEGATED_RENAMER.apply(acl.getName()))
         .setLines(lines)
         .build();
+  }
+
+  /**
+   * Creates a copy of the visited {@link AclLine} that matches the same flows but always takes the
+   * provided action.
+   */
+  private static final class CopierWithAction implements GenericAclLineVisitor<AclLine> {
+    private final LineAction _action;
+
+    CopierWithAction(LineAction action) {
+      _action = action;
+    }
+
+    @Override
+    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+      return exprAclLine.toBuilder().setAction(_action).build();
+    }
+  }
+
+  /**
+   * Creates a copy of the visited {@link AclLine} that matches all the same flows as the original
+   * line, but permits the flows the original denies and vice versa.
+   */
+  private static final class ComplementaryCopier implements GenericAclLineVisitor<AclLine> {
+    private static final ComplementaryCopier INSTANCE = new ComplementaryCopier();
+
+    private ComplementaryCopier() {}
+
+    static AclLine copy(AclLine line) {
+      return INSTANCE.visit(line);
+    }
+
+    @Override
+    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
+      LineAction newAction =
+          exprAclLine.getAction() == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
+      return exprAclLine.toBuilder().setAction(newAction).build();
+    }
   }
 
   private Row testFiltersRow(NetworkSnapshot snapshot, String hostname, String aclName, Flow flow) {
@@ -410,7 +439,7 @@ public final class SearchFiltersAnswerer extends Answerer {
             .and(headerSpaceBDD)
             .and(mgr.isValidValue());
 
-    return getFlow(bddPacket, mgr, node.getHostname(), bdd, batfish.getFlowTag(snapshot))
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd)
         .map(
             flow ->
                 new SearchFiltersResult(
@@ -465,13 +494,12 @@ public final class SearchFiltersAnswerer extends Answerer {
             .and(mgr.isValidValue());
 
     String hostname = baseConfig.getHostname();
-    String flowTag = batfish.getFlowTag(snapshot);
 
     BDD increasedBDD = deltaAclBDD.diff(baseAclBDD);
-    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD, flowTag);
+    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD);
 
     BDD decreasedBDD = baseAclBDD.diff(deltaAclBDD);
-    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD, flowTag);
+    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD);
 
     boolean explain = searchFiltersParameters.getGenerateExplanations();
 

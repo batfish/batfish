@@ -76,7 +76,7 @@ srs_category
 
 srs_description
 :
-    DESCRIPTION description = variable
+    DESCRIPTION description = value
 ;
 
 srs_destination

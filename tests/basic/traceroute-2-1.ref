@@ -42,7 +42,7 @@
           "srcIp" : "2.128.1.101",
           "srcPort" : 49152,
           "state" : "NEW",
-          "tag" : "BASE",
+          "tag" : "tag",
           "tcpFlagsAck" : 0,
           "tcpFlagsCwr" : 0,
           "tcpFlagsEce" : 0,
@@ -323,7 +323,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
@@ -591,7 +594,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
@@ -859,7 +865,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }
@@ -1135,7 +1144,10 @@
                   },
                   {
                     "type" : "Inbound",
-                    "action" : "ACCEPTED"
+                    "action" : "ACCEPTED",
+                    "detail" : {
+                      "interface" : "GigabitEthernet1/0"
+                    }
                   }
                 ]
               }

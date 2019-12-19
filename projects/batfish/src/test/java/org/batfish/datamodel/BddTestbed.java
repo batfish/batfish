@@ -14,6 +14,10 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 /** Testbed for {@link BDD}-based comparisons and conversions. */
 public final class BddTestbed {
 
+  public @Nonnull BDD toBDD(AclLine aclLine) {
+    return _aclToBdd.toPermitAndDenyBdds(aclLine).getMatchBdd();
+  }
+
   public @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
     return _aclToBdd.toBdd(aclLineMatchExpr);
   }

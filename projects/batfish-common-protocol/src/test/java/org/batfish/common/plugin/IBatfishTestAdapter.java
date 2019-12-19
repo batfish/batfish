@@ -213,24 +213,8 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public String getDifferentialFlowTag() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Environment getEnvironment() {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public String getFlowTag(NetworkSnapshot snapshot) {
-    if (snapshot.equals(getSnapshot())) {
-      return Flow.BASE_FLOW_TAG;
-    }
-    if (snapshot.equals(getReferenceSnapshot())) {
-      return Flow.DELTA_FLOW_TAG;
-    }
-    throw new IllegalStateException("Snapshot " + snapshot);
   }
 
   @Override

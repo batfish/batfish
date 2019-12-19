@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -168,7 +169,12 @@ public class HostConfiguration extends VendorConfiguration {
     for (String aclName : aclsToCheck) {
       IpAccessList acl = _c.getIpAccessLists().get(aclName);
       if (acl != null) {
-        for (ExprAclLine line : acl.getLines()) {
+        for (AclLine l : acl.getLines()) {
+          // Based on the below comment, no non-ExprAclLine line counts as simple
+          if (!(l instanceof ExprAclLine)) {
+            return false;
+          }
+          ExprAclLine line = (ExprAclLine) l;
           if (line.getAction() == LineAction.DENY) {
             return false;
           }
