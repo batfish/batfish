@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +23,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.vendor.VendorConfiguration;
 
 /** The top-level class that represent AWS configuration */
@@ -84,12 +89,17 @@ public class AwsConfiguration extends VendorConfiguration {
 
   @Override
   @Nonnull
-  public List<BorderInterfaceInfo> getBorderInterfaces() {
-    return _regions.values().stream()
-        .flatMap(r -> r.getInternetGateways().values().stream())
-        .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_INTERFACE_NAME))
-        .map(BorderInterfaceInfo::new)
-        .collect(ImmutableList.toImmutableList());
+  public IspConfiguration getIspConfiguration() {
+    List<BorderInterfaceInfo> borderInterfaces =
+        _regions.values().stream()
+            .flatMap(r -> r.getInternetGateways().values().stream())
+            .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_INTERFACE_NAME))
+            .map(BorderInterfaceInfo::new)
+            .collect(ImmutableList.toImmutableList());
+    return new IspConfiguration(
+        borderInterfaces,
+        IspFilter.ALLOW_ALL,
+        ImmutableList.of(new IspNodeInfo(AWS_BACKBONE_ASN, AWS_BACKBONE_NODE_NAME)));
   }
 
   @Override

@@ -49,6 +49,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -74,7 +75,7 @@ public final class IspModelingUtils {
   static final int INTERNET_OUT_SUBNET = 30;
   private static final int ISP_INTERNET_SUBNET = 31;
 
-  public static String getIspNodeName(Long asn) {
+  public static String getDefaultIspNodeName(Long asn) {
     return String.format("%s_%s", "isp", asn);
   }
 
@@ -83,19 +84,24 @@ public final class IspModelingUtils {
   /** Contains the information required to create one ISP node */
   @ParametersAreNonnullByDefault
   static final class IspInfo {
+    private long _asn;
     private @Nonnull List<ConcreteInterfaceAddress> _interfaceAddresses;
     private @Nonnull List<BgpActivePeerConfig> _bgpActivePeerConfigs;
+    private @Nonnull String _name;
 
-    IspInfo() {
-      _interfaceAddresses = new ArrayList<>();
-      _bgpActivePeerConfigs = new ArrayList<>();
+    IspInfo(long asn, String name) {
+      this(asn, new ArrayList<>(), new ArrayList<>(), name);
     }
 
     IspInfo(
+        long asn,
         List<ConcreteInterfaceAddress> interfaceAddresses,
-        List<BgpActivePeerConfig> bgpActivePeerConfigs) {
+        List<BgpActivePeerConfig> bgpActivePeerConfigs,
+        String name) {
+      _asn = asn;
       _interfaceAddresses = interfaceAddresses;
       _bgpActivePeerConfigs = bgpActivePeerConfigs;
+      _name = name;
     }
 
     void addInterfaceAddress(ConcreteInterfaceAddress interfaceAddress) {
@@ -133,14 +139,28 @@ public final class IspModelingUtils {
         return false;
       }
       IspInfo ispInfo = (IspInfo) o;
-      return com.google.common.base.Objects.equal(_interfaceAddresses, ispInfo._interfaceAddresses)
-          && com.google.common.base.Objects.equal(
-              _bgpActivePeerConfigs, ispInfo._bgpActivePeerConfigs);
+      return _asn == ispInfo._asn
+          && Objects.equals(_interfaceAddresses, ispInfo._interfaceAddresses)
+          && Objects.equals(_bgpActivePeerConfigs, ispInfo._bgpActivePeerConfigs)
+          && _name.equals(ispInfo._name);
     }
 
     @Override
     public int hashCode() {
-      return com.google.common.base.Objects.hashCode(_interfaceAddresses, _bgpActivePeerConfigs);
+      return Objects.hash(_asn, _interfaceAddresses, _bgpActivePeerConfigs, _name);
+    }
+
+    public long getAsn() {
+      return _asn;
+    }
+
+    public void setAsn(long asn) {
+      _asn = asn;
+    }
+
+    @Nonnull
+    public String getName() {
+      return _name;
     }
   }
 
@@ -164,7 +184,44 @@ public final class IspModelingUtils {
     Map<Long, IspInfo> asnToIspInfos =
         combineIspConfigurations(configurations, ispConfigurations, warnings);
 
+    List<String> conflicts = ispNameConflicts(configurations, asnToIspInfos);
+
+    if (!conflicts.isEmpty()) {
+      conflicts.forEach(warnings::redFlag);
+      return ImmutableMap.of();
+    }
+
     return createInternetAndIspNodes(asnToIspInfos, nf, logger);
+  }
+
+  /**
+   * Checks if the ISP names conflicts with a node name in the configurations or with another ISP
+   * name. Returns messages that explain the conflicts
+   */
+  @VisibleForTesting
+  static List<String> ispNameConflicts(
+      Map<String, Configuration> configurations, Map<Long, IspInfo> asnToIspInfo) {
+    ImmutableList.Builder<String> conflicts = ImmutableList.builder();
+
+    asnToIspInfo.forEach(
+        (asn, ispInfo) -> {
+          String ispName = ispInfo.getName();
+          if (configurations.containsKey(ispName)) {
+            conflicts.add(
+                String.format(
+                    "ISP name %s for ASN %d conflicts with a node name in the snapshot",
+                    ispName, asn));
+          }
+          asnToIspInfo.values().stream()
+              .filter(info -> info.getAsn() > asn && info.getName().equals(ispName))
+              .forEach(
+                  info ->
+                      conflicts.add(
+                          String.format(
+                              "ISP name %s for ASN %d conflicts with that for ASN %d",
+                              ispName, asn, info.getAsn())));
+        });
+    return conflicts.build();
   }
 
   @VisibleForTesting
@@ -197,6 +254,7 @@ public final class IspModelingUtils {
             nodeAndInterfaces.getValue(),
             ispConfiguration.getfilter().getOnlyRemoteIps(),
             ispConfiguration.getfilter().getOnlyRemoteAsns(),
+            ispConfiguration.getIspNodeInfos(),
             asnToIspInfos,
             warnings);
       }
@@ -209,9 +267,7 @@ public final class IspModelingUtils {
       Map<Long, IspInfo> asnToIspInfos, NetworkFactory nf, BatfishLogger logger) {
     Map<String, Configuration> ispConfigurations =
         asnToIspInfos.entrySet().stream()
-            .map(
-                asnIspInfo ->
-                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
+            .map(asnIspInfo -> getIspConfigurationNode(asnIspInfo.getValue(), nf, logger))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
     // not proceeding if no ISPs were created
@@ -341,6 +397,7 @@ public final class IspModelingUtils {
       @Nonnull Set<String> interfaces,
       @Nonnull List<Ip> remoteIps,
       @Nonnull List<Long> remoteAsnsList,
+      @Nonnull List<IspNodeInfo> ispNodeInfos,
       Map<Long, IspInfo> allIspInfos,
       @Nonnull Warnings warnings) {
 
@@ -393,9 +450,19 @@ public final class IspModelingUtils {
               configuration.getHostname()));
     }
     for (BgpActivePeerConfig bgpActivePeerConfig : validBgpActivePeerConfigs) {
+      Long asn = bgpActivePeerConfig.getRemoteAsns().least();
       IspInfo ispInfo =
           allIspInfos.computeIfAbsent(
-              bgpActivePeerConfig.getRemoteAsns().least(), k -> new IspInfo());
+              asn,
+              k ->
+                  new IspInfo(
+                      asn,
+                      // if we have a name pick that; else default name
+                      ispNodeInfos.stream()
+                          .filter(i -> i.getAsn() == asn)
+                          .map(i -> i.getName())
+                          .findFirst()
+                          .orElse(getDefaultIspNodeName(asn))));
       // merging ISP's interface addresses and eBGP confs from the current configuration
       ispInfo.addInterfaceAddress(
           ConcreteInterfaceAddress.create(
@@ -411,18 +478,17 @@ public final class IspModelingUtils {
   @VisibleForTesting
   @Nullable
   static Configuration getIspConfigurationNode(
-      Long asn, IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
+      IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
-      logger.warnf("ISP information for ASN '%s' is not correct", asn);
+      logger.warnf("ISP information for ASN '%s' is not correct", ispInfo.getAsn());
       return null;
     }
 
-    String ispNodeName = getIspNodeName(asn);
     Configuration ispConfiguration =
         nf.configurationBuilder()
-            .setHostname(ispNodeName)
+            .setHostname(ispInfo.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);

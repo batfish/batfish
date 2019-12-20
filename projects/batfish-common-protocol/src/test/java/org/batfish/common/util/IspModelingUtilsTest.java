@@ -2,6 +2,8 @@ package org.batfish.common.util;
 
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP;
+import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
+import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -19,6 +21,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -31,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.Map;
@@ -60,6 +64,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -74,6 +79,37 @@ import org.junit.Test;
 
 /** Tests for {@link IspModelingUtils} */
 public class IspModelingUtilsTest {
+
+  private static long _localAsn = 2L;
+
+  private static long _remoteAsn = 1L;
+
+  /** Makes a Configuration object with one BGP peer */
+  private static Configuration configurationWithOnePeer() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration = cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration).build();
+    nf.vrfBuilder().setName("emptyVRF").setOwner(configuration).build();
+    nf.interfaceBuilder()
+        .setName("interface")
+        .setOwner(configuration)
+        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
+        .build();
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setRemoteAs(_remoteAsn)
+            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setLocalAs(_localAsn)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
+    bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
+    configuration.getDefaultVrf().setBgpProcess(bgpProcess);
+    return configuration;
+  }
 
   @Test
   public void testNonExistentNode() {
@@ -105,6 +141,7 @@ public class IspModelingUtilsTest {
     IspModelingUtils.populateIspInfos(
         nf.configurationBuilder().setHostname("conf").build(),
         ImmutableSet.of("init"),
+        ImmutableList.of(),
         ImmutableList.of(),
         ImmutableList.of(),
         Maps.newHashMap(),
@@ -195,11 +232,17 @@ public class IspModelingUtilsTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    IspInfo ispInfo = new IspInfo(ImmutableList.of(interfaceAddress), ImmutableList.of(peer));
+    long asn = 2L;
+    IspInfo ispInfo =
+        new IspInfo(
+            asn,
+            ImmutableList.of(interfaceAddress),
+            ImmutableList.of(peer),
+            getDefaultIspNodeName(asn));
 
     Configuration ispConfiguration =
         IspModelingUtils.getIspConfigurationNode(
-            2L, ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
+            ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
 
     assertThat(
         ispConfiguration,
@@ -244,11 +287,16 @@ public class IspModelingUtilsTest {
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
+    long asn = 2L;
     IspInfo ispInfo =
-        new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
+        new IspInfo(
+            asn,
+            ImmutableList.of(interfaceAddress, interfaceAddress2),
+            ImmutableList.of(peer),
+            getDefaultIspNodeName(asn));
     BatfishLogger logger = new BatfishLogger("debug", false);
     Configuration ispConfiguration =
-        IspModelingUtils.getIspConfigurationNode(2L, ispInfo, new NetworkFactory(), logger);
+        IspModelingUtils.getIspConfigurationNode(ispInfo, new NetworkFactory(), logger);
 
     assertThat(ispConfiguration, nullValue());
 
@@ -259,48 +307,26 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testPopulateIspInfos() {
-    NetworkFactory nf = new NetworkFactory();
-
-    Configuration.Builder cb = nf.configurationBuilder();
-    Configuration configuration = cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration).build();
-    nf.vrfBuilder().setName("emptyVRF").setOwner(configuration).build();
-    nf.interfaceBuilder()
-        .setName("interface")
-        .setOwner(configuration)
-        .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
-        .build();
-    BgpActivePeerConfig peer =
-        BgpActivePeerConfig.builder()
-            .setPeerAddress(Ip.parse("1.1.1.1"))
-            .setRemoteAs(1L)
-            .setLocalIp(Ip.parse("2.2.2.2"))
-            .setLocalAs(2L)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-            .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
-    configuration.getDefaultVrf().setBgpProcess(bgpProcess);
-
     Map<Long, IspInfo> inputMap = Maps.newHashMap();
     IspModelingUtils.populateIspInfos(
-        configuration,
+        configurationWithOnePeer(),
         ImmutableSet.of("interface"),
+        ImmutableList.of(),
         ImmutableList.of(),
         ImmutableList.of(),
         inputMap,
         new Warnings());
 
-    assertThat(inputMap, hasKey(1L));
+    assertThat(inputMap, hasKey(_remoteAsn));
 
-    IspInfo ispInfo = inputMap.get(1L);
+    IspInfo ispInfo = inputMap.get(_remoteAsn);
 
     BgpActivePeerConfig reversedPeer =
         BgpActivePeerConfig.builder()
             .setLocalIp(Ip.parse("1.1.1.1"))
-            .setLocalAs(1L)
+            .setLocalAs(_remoteAsn)
             .setPeerAddress(Ip.parse("2.2.2.2"))
-            .setRemoteAs(2L)
+            .setRemoteAs(_localAsn)
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
             .build();
@@ -308,6 +334,26 @@ public class IspModelingUtilsTest {
     assertThat(
         ispInfo.getInterfaceAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))));
+    assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
+  }
+
+  @Test
+  public void testPopulateIspInfosCustomIspName() {
+    Map<Long, IspInfo> inputMap = Maps.newHashMap();
+    IspModelingUtils.populateIspInfos(
+        configurationWithOnePeer(),
+        ImmutableSet.of("interface"),
+        ImmutableList.of(),
+        ImmutableList.of(),
+        ImmutableList.of(new IspNodeInfo(_remoteAsn, "myisp")),
+        inputMap,
+        new Warnings());
+
+    assertThat(inputMap, hasKey(_remoteAsn));
+
+    IspInfo ispInfo = inputMap.get(_remoteAsn);
+
+    assertThat(ispInfo.getName(), equalTo("myisp"));
   }
 
   @Test
@@ -776,6 +822,7 @@ public class IspModelingUtilsTest {
             ImmutableMap.of(
                 remoteAsn,
                 new IspInfo(
+                    remoteAsn,
                     ImmutableList.of(
                         ConcreteInterfaceAddress.create(remoteBgpIp1, 24),
                         ConcreteInterfaceAddress.create(remoteBgpIp2, 24)),
@@ -799,6 +846,47 @@ public class IspModelingUtilsTest {
                                 Ipv4UnicastAddressFamily.builder()
                                     .setExportPolicy(EXPORT_POLICY_ON_ISP)
                                     .build())
-                            .build())))));
+                            .build()),
+                    getDefaultIspNodeName(remoteAsn)))));
+  }
+
+  @Test
+  public void testIspNameConflictsGoodCase() {
+    Map<Long, IspInfo> ispInfoMap =
+        ImmutableMap.of(1L, new IspInfo(1, "isp1"), 2L, new IspInfo(2, "isp2"));
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(
+            "node",
+            new NetworkFactory()
+                .configurationBuilder()
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build());
+    assertTrue(ispNameConflicts(configurations, ispInfoMap).isEmpty());
+  }
+
+  @Test
+  public void testIspNameConflictsIspConflict() {
+    Map<Long, IspInfo> ispInfoMap =
+        ImmutableMap.of(1L, new IspInfo(1, "isp1"), 2L, new IspInfo(2, "isp1"));
+    Map<String, Configuration> configurations = ImmutableMap.of();
+
+    String message = Iterables.getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    assertThat(message, containsString("ASN 1"));
+  }
+
+  @Test
+  public void testIspNameConflictsNodeConflict() {
+    Map<Long, IspInfo> ispInfoMap =
+        ImmutableMap.of(1L, new IspInfo(1, "isp1"), 2L, new IspInfo(2, "isp2"));
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(
+            "isp1",
+            new NetworkFactory()
+                .configurationBuilder()
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build());
+
+    String message = Iterables.getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    assertThat(message, containsString("ASN 1"));
   }
 }

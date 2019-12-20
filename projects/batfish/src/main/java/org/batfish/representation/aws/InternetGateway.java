@@ -43,7 +43,10 @@ import org.batfish.datamodel.transformation.TransformationStep;
 final class InternetGateway implements AwsVpcEntity, Serializable {
 
   /** ASN to use for AWS backbone */
-  static final long AWS_BACKBONE_AS = 16509L;
+  static final long AWS_BACKBONE_ASN = 16509L;
+
+  /** Name to use for AWS backbone */
+  static final String AWS_BACKBONE_NODE_NAME = "aws-backbone";
 
   /** ASN to use for AWS internet gateways */
   static final long AWS_INTERNET_GATEWAY_AS = 65534L;
@@ -155,7 +158,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
     BgpActivePeerConfig.builder()
         .setPeerAddress(bbInterfaceSubnet.getEndIp())
-        .setRemoteAs(AWS_BACKBONE_AS)
+        .setRemoteAs(AWS_BACKBONE_ASN)
         .setLocalIp(bbInterfaceAddress.getIp())
         .setLocalAs(AWS_INTERNET_GATEWAY_AS)
         .setBgpProcess(bgpProcess)
