@@ -33,6 +33,7 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
    * output set statement list is being populated.
    */
   private int _outputLineCount;
+
   private SetStatementTree _root;
 
   @SuppressWarnings("PMD.LooseCoupling") // actually use linked-specific functions in the code
