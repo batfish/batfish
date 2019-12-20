@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -32,7 +31,7 @@ import org.batfish.datamodel.visitors.IpSpaceTracer;
  * Acts like {@link Evaluator} on {@link IpAccessList}, except that it introduces tracing when
  * encountering traceable classes.
  */
-public final class AclTracer extends Evaluator implements GenericAclLineVisitor<Boolean> {
+public final class AclTracer extends AclLineEvaluator {
 
   public static AclTrace trace(
       @Nonnull IpAccessList ipAccessList,
@@ -373,11 +372,10 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
     List<AclLine> lines = ipAccessList.getLines();
     newTrace();
-    ActionGetter actionGetter = new ActionGetter(false);
     for (int i = 0; i < lines.size(); i++) {
       AclLine line = lines.get(i);
-      if (visit(line)) {
-        LineAction action = actionGetter.visit(line);
+      LineAction action = visit(line);
+      if (action != null) {
         recordAction(ipAccessList, i, line, action);
         endTrace();
         return action == LineAction.PERMIT;
@@ -400,15 +398,6 @@ public final class AclTracer extends Evaluator implements GenericAclLineVisitor<
   public boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(new IpSpaceTracer(this, ip, "source IP"));
   }
-
-  /* AclLine visit methods */
-
-  @Override
-  public Boolean visitExprAclLine(ExprAclLine exprAclLine) {
-    return visit(exprAclLine.getMatchCondition());
-  }
-
-  /* AclLineMatchExpr visit methods */
 
   @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {

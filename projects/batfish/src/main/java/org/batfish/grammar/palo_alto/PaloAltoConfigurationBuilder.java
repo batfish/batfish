@@ -280,6 +280,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Translated_address_list_item
 import org.batfish.grammar.palo_alto.PaloAltoParser.Uint16Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Uint32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Uint8Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.ValueContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
@@ -467,6 +468,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   /** Return token text with enclosing quotes removed, if applicable */
   private String getText(Token t) {
     return unquote(t.getText());
+  }
+
+  /** Return text corresponding to value context with enclosing quotes removed, if applicable */
+  private String getText(ValueContext ctx) {
+    return unquote(ctx.getText());
   }
 
   /**
@@ -701,7 +707,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPraau_med(Praau_medContext ctx) {
-    _currentPolicyRule.setUpdateMetric(new PolicyRuleUpdateMetric(toLong(ctx.value.uint32())));
+    _currentPolicyRule.setUpdateMetric(new PolicyRuleUpdateMetric(toLong(ctx.val.uint32())));
   }
 
   @Override

@@ -38,6 +38,7 @@
             "packetLength" : 0,
             "srcIp" : "0.0.0.0",
             "state" : "NEW",
+            "tag" : "tag",
             "tcpFlagsAck" : 1,
             "tcpFlagsCwr" : 1,
             "tcpFlagsEce" : 1,
