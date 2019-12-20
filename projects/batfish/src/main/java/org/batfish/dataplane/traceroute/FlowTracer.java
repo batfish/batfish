@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
@@ -64,7 +65,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
@@ -198,6 +198,7 @@ class FlowTracer {
   private final TracerouteEngineImplContext _tracerouteContext;
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
+  private final IpOwners _ipOwners;
   private final Node _currentNode;
   private final Consumer<TraceAndReverseFlow> _flowTraces;
   private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
@@ -222,6 +223,7 @@ class FlowTracer {
       TracerouteEngineImplContext tracerouteContext,
       String node,
       @Nullable String ingressInterface,
+      IpOwners ipOwners,
       Flow originalFlow,
       Consumer<TraceAndReverseFlow> flowTraces) {
     Configuration currentConfig = tracerouteContext.getConfigurations().get(node);
@@ -231,6 +233,7 @@ class FlowTracer {
         ingressInterface,
         new Node(node),
         flowTraces,
+        ipOwners,
         null,
         new HashSet<>(),
         originalFlow,
@@ -261,6 +264,7 @@ class FlowTracer {
         newIngressInterface,
         new Node(newConfig.getHostname()),
         _flowTraces,
+        _ipOwners,
         lastHopNodeAndOutgoingInterface,
         new HashSet<>(_newSessions),
         _originalFlow,
@@ -294,6 +298,7 @@ class FlowTracer {
       @Nullable String ingressInterface,
       Node currentNode,
       Consumer<TraceAndReverseFlow> flowTraces,
+      IpOwners ipOwners,
       NodeInterfacePair lastHopNodeAndOutgoingInterface,
       Set<FirewallSessionTraceInfo> newSessions,
       Flow originalFlow,
@@ -307,6 +312,7 @@ class FlowTracer {
     _ingressInterface = ingressInterface;
     _currentNode = currentNode;
     _flowTraces = flowTraces;
+    _ipOwners = ipOwners;
     _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
     _newSessions = newSessions;
     _originalFlow = originalFlow;
@@ -735,7 +741,7 @@ class FlowTracer {
                 .setOriginatingVrf(_vrfName)
                 .setOriginatingInterface(
                     getInterfaceContainingAddress(
-                        _currentFlow.getSrcIp(), _currentConfig.getVrfs().get(_vrfName)))
+                        _currentFlow.getSrcIp(), _vrfName, _currentConfig, _ipOwners))
                 .build())
         .setAction(StepAction.ORIGINATED)
         .build();
@@ -744,11 +750,20 @@ class FlowTracer {
   /** Returns the name of the interface in the given VRF that owns the supplied IP */
   @VisibleForTesting
   @Nullable
-  static String getInterfaceContainingAddress(Ip ip, @Nullable Vrf vrf) {
-    if (ip == null || vrf == null) {
+  static String getInterfaceContainingAddress(
+      Ip ip, String vrfName, Configuration configuration, IpOwners ipOwners) {
+
+    Map<String, Set<String>> hostNamesToInterfaces = ipOwners.getActiveDeviceOwnedIps().get(ip);
+    if (hostNamesToInterfaces == null) {
       return null;
     }
-    return vrf.getActiveInterfaces()
+    Set<String> interfaces = hostNamesToInterfaces.get(configuration.getHostname());
+    if (interfaces == null) {
+      return null;
+    }
+    return interfaces.stream()
+        .map(iface -> configuration.getActiveInterfaces().get(iface))
+        .filter(iface -> iface.getVrfName().equals(vrfName))
         .filter(
             iface ->
                 iface.getAllConcreteAddresses().stream()

@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -86,7 +87,12 @@ public class TracerouteEngineImplContext {
               String ingressNodeName = flow.getIngressNode();
               String ingressInterfaceName = flow.getIngressInterface();
               initialFlowTracer(
-                      this, ingressNodeName, ingressInterfaceName, flow, currentTraces::add)
+                      this,
+                      ingressNodeName,
+                      ingressInterfaceName,
+                      new IpOwners(_configurations),
+                      flow,
+                      currentTraces::add)
                   .processHop();
             });
     return new TreeMap<>(traces);
