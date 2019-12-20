@@ -301,7 +301,10 @@ public class HostConfiguration extends VendorConfiguration {
               .convertValue(hostInterfacesNode, new TypeReference<List<HostInterface>>() {});
       hostInterfaces =
           hostInterfacesList.stream()
-              .collect(ImmutableMap.toImmutableMap(HostInterface::getName, Function.identity()));
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      // use latest definition in case of duplicates
+                      HostInterface::getName, Function.identity(), (hi1, hi2) -> hi2));
     }
     return hostInterfaces;
   }
