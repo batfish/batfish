@@ -366,6 +366,7 @@ final class AristaConversions {
     Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder = Ipv4UnicastAddressFamily.builder();
     boolean v4Enabled = naf4 != null && firstNonNull(naf4.getActivate(), Boolean.FALSE);
 
+    String peerStrRepr = dynamic ? prefix.toString() : prefix.getStartIp().toString();
     if (v4Enabled) {
       ipv4FamilyBuilder.setAddressFamilyCapabilities(
           AddressFamilyCapabilities.builder()
@@ -386,15 +387,18 @@ final class AristaConversions {
           && inboundPrefixList != null
           && c.getRoutingPolicies().containsKey(inboundMap)
           && c.getRouteFilterLists().containsKey(inboundPrefixList)) {
-        warnings.redFlag("Inbound prefix list + route map not supported. Preferring route map.");
+        warnings.redFlag(
+            String.format(
+                "Inbound prefix list {} + route map {} not supported for neighbor {}. Preferring route map.",
+                inboundPrefixList,
+                inboundMap,
+                peerStrRepr));
         policy = inboundMap;
       } else if (inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)) {
         policy = inboundMap;
       } else if (inboundPrefixList != null
           && c.getRouteFilterLists().containsKey(inboundPrefixList)) {
-        policy =
-            generatedBgpPeerImportPolicyName(
-                vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString());
+        policy = generatedBgpPeerImportPolicyName(vrf.getName(), peerStrRepr);
         RoutingPolicy.builder()
             .setOwner(c)
             .setName(policy)
@@ -459,7 +463,12 @@ final class AristaConversions {
           && outboundPrefixList != null
           && c.getRoutingPolicies().containsKey(outboundMap)
           && c.getRouteFilterLists().containsKey(outboundPrefixList)) {
-        warnings.redFlag("Outbound prefix list + route map not supported. Preferring route map.");
+        warnings.redFlag(
+            String.format(
+                "Outbound prefix list {} + route map {} not supported for neighbor {}. Preferring route map.",
+                outboundPrefixList,
+                outboundMap,
+                peerStrRepr));
         peerExportConditions.add(new CallExpr(outboundMap));
       } else if (outboundMap != null && c.getRoutingPolicies().containsKey(outboundMap)) {
         peerExportConditions.add(new CallExpr(outboundMap));
@@ -472,10 +481,7 @@ final class AristaConversions {
     }
 
     RoutingPolicy exportPolicy =
-        new RoutingPolicy(
-            generatedBgpPeerExportPolicyName(
-                vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
-            c);
+        new RoutingPolicy(generatedBgpPeerExportPolicyName(vrf.getName(), peerStrRepr), c);
     exportPolicy.setStatements(exportStatements);
     c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
     if (v4Enabled) {
