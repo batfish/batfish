@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
+import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
@@ -745,7 +746,6 @@ class FlowTracer {
     }
 
     String currentNodeName = _currentNode.getName();
-    Flow flow = _currentFlow;
     Collection<FirewallSessionTraceInfo> sessions =
         _tracerouteContext.getSessions(currentNodeName, inputIfaceName);
     if (sessions.isEmpty()) {
@@ -753,7 +753,7 @@ class FlowTracer {
     }
 
     // session match expr cannot use MatchSrcInterface or ACL/IpSpace references.
-    Evaluator aclEval = new Evaluator(flow, null, ImmutableMap.of(), ImmutableMap.of());
+    Evaluator aclEval = new Evaluator(_currentFlow, null, ImmutableMap.of(), ImmutableMap.of());
     List<FirewallSessionTraceInfo> matchingSessions =
         sessions.stream()
             .filter(session -> aclEval.visit(session.getSessionFlows()))
@@ -764,13 +764,11 @@ class FlowTracer {
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
-    _steps.add(
-        new MatchSessionStep(
-            MatchSessionStepDetail.builder()
-                .setIncomingInterfaces(session.getIncomingInterfaces())
-                .setSessionAction(session.getAction())
-                .setMatchCriteria(session.getMatchCriteria())
-                .build()));
+    MatchSessionStepDetail.Builder matchDetail =
+        MatchSessionStepDetail.builder()
+            .setIncomingInterfaces(session.getIncomingInterfaces())
+            .setSessionAction(session.getAction())
+            .setMatchCriteria(session.getMatchCriteria());
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
@@ -779,6 +777,18 @@ class FlowTracer {
     checkState(
         incomingInterface.getFirewallSessionInterfaceInfo() != null,
         "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+
+    // compute transformation. it will be applied after applying incoming ACL
+    Transformation transformation = session.getTransformation();
+    TransformationResult transformationResult = null;
+    if (transformation != null) {
+      transformationResult =
+          TransformationEvaluator.eval(
+              transformation, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces);
+      matchDetail.setTransformation(flowDiffs(_currentFlow, transformationResult.getOutputFlow()));
+    }
+
+    _steps.add(new MatchSessionStep(matchDetail.build()));
 
     // apply incoming ACL
     String incomingAclName =
@@ -789,13 +799,10 @@ class FlowTracer {
     }
 
     // apply transformation
-    Transformation transformation = session.getTransformation();
-    if (transformation != null) {
-      TransformationResult result =
-          TransformationEvaluator.eval(
-              transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
-      _steps.addAll(result.getTraceSteps());
-      _currentFlow = result.getOutputFlow();
+    Flow originalFlow = _currentFlow;
+    if (transformationResult != null) {
+      _steps.addAll(transformationResult.getTraceSteps());
+      _currentFlow = transformationResult.getOutputFlow();
     }
 
     session
@@ -843,7 +850,7 @@ class FlowTracer {
               @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
                 // cycle detection
-                Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, flow);
+                Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, originalFlow);
                 if (_breadcrumbs.contains(breadcrumb)) {
                   buildLoopTrace();
                   return null;
@@ -882,7 +889,9 @@ class FlowTracer {
                      * disposition maps in forwarding analysis.
                      */
                     buildArpFailureTrace(
-                        outgoingInterfaceName, flow.getDstIp(), FlowDisposition.EXITS_NETWORK);
+                        outgoingInterfaceName,
+                        originalFlow.getDstIp(),
+                        FlowDisposition.EXITS_NETWORK);
                     return null;
                   }
                   _hops.add(new Hop(new Node(currentNodeName), _steps));
