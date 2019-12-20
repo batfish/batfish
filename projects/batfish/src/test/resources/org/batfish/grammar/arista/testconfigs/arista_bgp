@@ -8,6 +8,10 @@ router bgp 1
   bgp additional-paths receive
   bgp advertise-inactive
   bgp always-compare-med
+  bgp asn notation asdot
+  bgp asn notation asplain
+  bgp convergence time 1
+  bgp convergence slow-peer time 1
   bgp enforce-first-as
   bgp listen limit 10
   bgp listen range 1.1.1.0/24 peer-group DYNAMIC remote-as 4000
