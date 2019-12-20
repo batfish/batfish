@@ -26,9 +26,14 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
   private SetStatementTree _currentTree;
   private String _flattenedConfigurationText;
   private final String _header;
-  private final Integer _headerLineCount;
   private boolean _inBrackets;
   private FlattenerLineMap _lineMap;
+  /**
+   * Number of lines in the output text, used for line mapping. This needs to be updated as the
+   * output set statement list is being populated.
+   */
+  private int _outputLineCount;
+
   private SetStatementTree _root;
 
   @SuppressWarnings("PMD.LooseCoupling") // actually use linked-specific functions in the code
@@ -37,11 +42,16 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
   public PaloAltoNestedFlattener(String header) {
     _header = header;
     // Determine length of header to offset subsequent line numbers for original line mapping
-    _headerLineCount = header.split("\n", -1).length;
+    _outputLineCount = countLines(header);
     _lineMap = new FlattenerLineMap();
     _stack = new LinkedList<>();
     _root = new SetStatementTree();
     _allSetStatements = new LinkedList<>();
+  }
+
+  /** Count the number of lines in a given string */
+  private static int countLines(String string) {
+    return string.split("\r\n|\r|\n", -1).length;
   }
 
   @Override
@@ -100,17 +110,26 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
     for (List<WordContext> line : _stack) {
       for (WordContext wordCtx : line) {
         sb.append(" ");
-        // Offset new line number by header line count
-        _lineMap.setOriginalLine(
-            _allSetStatements.size() + _headerLineCount,
-            sb.length(),
-            wordCtx.WORD().getSymbol().getLine());
+        int orgLine = wordCtx.getStart().getLine();
+        // Assume that sb length corresponds to column in the current line, i.e. no multiline
+        // tokens before this (assume they're always last token on their line)
+        _lineMap.setOriginalLine(_outputLineCount, sb.length(), orgLine);
+
+        // Account for newlines inside of tokens, e.g. "something\nsomething" is two lines
+        // Subtract 1 since token's line is counted later and don't want to double count
+        int tokenExtraLines = countLines(wordCtx.getText()) - 1;
+        for (int i = 1; i <= tokenExtraLines; i++) {
+          _lineMap.setOriginalLine(_outputLineCount + i, 0, orgLine);
+        }
+        _outputLineCount += tokenExtraLines;
         sb.append(wordCtx.getText());
       }
     }
     String setStatementText = sb.toString();
     // Record index of new statement in the current subtree
     _currentTree.addSetStatementIndex(_allSetStatements.size());
+    // Account for newlines for each new set statement
+    _outputLineCount++;
     _allSetStatements.add(setStatementText);
   }
 
