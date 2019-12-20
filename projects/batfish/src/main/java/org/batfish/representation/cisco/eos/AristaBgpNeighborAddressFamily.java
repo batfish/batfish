@@ -107,6 +107,12 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     if (_nextHopUnchanged == null) {
       _nextHopUnchanged = other._nextHopUnchanged;
     }
+    if (_prefixListIn == null) {
+      _prefixListIn = other._prefixListIn;
+    }
+    if (_prefixListOut == null) {
+      _prefixListOut = other._prefixListOut;
+    }
     if (_routeMapIn == null) {
       _routeMapIn = other._routeMapIn;
     }

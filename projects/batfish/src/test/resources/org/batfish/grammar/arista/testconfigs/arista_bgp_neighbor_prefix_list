@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_neighbor_prefix_list
+!
+ip prefix-list PREFIX_LIST_IN
+  seq 10 permit 10.1.2.0/24
+ip prefix-list PREFIX_LIST_OUT
+  seq 10 permit 10.7.8.0/24
+!
+router bgp 1
+  router-id 1.2.3.4
+  neighbor 1.1.1.1 remote-as 2
+  neighbor 1.1.1.1 prefix-list PREFIX_LIST_IN in
+  neighbor 1.1.1.1 prefix-list PREFIX_LIST_OUT out
