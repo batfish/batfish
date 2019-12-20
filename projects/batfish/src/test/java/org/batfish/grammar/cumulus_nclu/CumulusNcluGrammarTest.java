@@ -1578,7 +1578,7 @@ public final class CumulusNcluGrammarTest {
     Batfish bf = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 1));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 2));
   }
 
   @Test

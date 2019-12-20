@@ -1166,7 +1166,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             CumulusStructureType.INTERFACE,
             CumulusStructureType.LOOPBACK,
             CumulusStructureType.VLAN,
-            CumulusStructureType.VRF));
+            CumulusStructureType.VRF,
+            CumulusStructureType.VXLAN));
     markAbstractStructure(
         CumulusStructureType.ABSTRACT_INTERFACE,
         CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
