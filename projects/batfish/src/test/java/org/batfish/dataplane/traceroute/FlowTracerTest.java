@@ -826,4 +826,38 @@ public final class FlowTracerTest {
       assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
     }
   }
+
+  @Test
+  public void testGetInterfaceContainingAddress() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration configuration =
+        nf.configurationBuilder()
+            .setHostname("node1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setName("vrf1").setOwner(configuration).build();
+    nf.interfaceBuilder()
+        .setName("iface1")
+        .setOwner(configuration)
+        .setVrf(vrf)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .build();
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setConfigs(ImmutableMap.of(configuration.getHostname(), configuration))
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+
+    assertThat(
+        ctxt.getInterfaceContainingAddress(Ip.parse("1.1.1.1"), vrf.getName(), configuration),
+        equalTo("iface1"));
+    assertThat(
+        ctxt.getInterfaceContainingAddress(Ip.parse("1.1.1.2"), vrf.getName(), configuration),
+        nullValue());
+  }
 }
