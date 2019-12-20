@@ -1,5 +1,6 @@
 package org.batfish.grammar.arista;
 
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
@@ -46,7 +47,11 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -55,14 +60,18 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
@@ -888,5 +897,101 @@ public class AristaGrammarTest {
     BgpActivePeerConfig peerConfig =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
     assertTrue(peerConfig.getEnforceFirstAs());
+  }
+
+  @Test
+  public void testNeighborPrefixListExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbor_prefix_list");
+    assertThat(
+        config
+            .getAristaBgp()
+            .getDefaultVrf()
+            .getV4neighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getGenericAddressFamily()
+            .getPrefixListIn(),
+        equalTo("PREFIX_LIST_IN"));
+    assertThat(
+        config
+            .getAristaBgp()
+            .getDefaultVrf()
+            .getV4neighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getGenericAddressFamily()
+            .getPrefixListOut(),
+        equalTo("PREFIX_LIST_OUT"));
+  }
+
+  @Test
+  public void testNeighborPrefixListConversion() {
+    Configuration c = parseConfig("arista_bgp_neighbor_prefix_list");
+
+    RoutingPolicy exportPolicy =
+        c.getRoutingPolicies()
+            .get(
+                c.getDefaultVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(Prefix.parse("1.1.1.1/32"))
+                    .getIpv4UnicastAddressFamily()
+                    .getExportPolicy());
+    RoutingPolicy importPolicy =
+        c.getRoutingPolicies()
+            .get(
+                c.getDefaultVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(Prefix.parse("1.1.1.1/32"))
+                    .getIpv4UnicastAddressFamily()
+                    .getImportPolicy());
+
+    // assert on the behavior of routing policies
+    Builder originalRoute =
+        Bgpv4Route.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setAdmin(1)
+            .setOriginatorIp(Ip.parse("9.8.7.6"))
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP);
+    Bgpv4Route.Builder outputRouteBuilder =
+        Bgpv4Route.builder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+
+    Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
+    BgpSessionProperties.Builder sessionProps =
+        BgpSessionProperties.builder()
+            .setHeadAs(1L)
+            .setTailAs(1L)
+            .setHeadIp(sessionPropsHeadIp)
+            .setTailIp(Ip.parse("2.2.2.2"));
+    BgpSessionProperties session = sessionProps.setSessionType(SessionType.IBGP).build();
+
+    Prefix allowedIn = Prefix.parse("10.1.2.0/24");
+    Prefix allowedOut = Prefix.parse("10.7.8.0/24");
+    Prefix deniedBoth = Prefix.parse("10.3.4.0/24");
+
+    assertTrue(
+        importPolicy.processBgpRoute(
+            originalRoute.setNetwork(allowedIn).build(),
+            outputRouteBuilder,
+            session,
+            Direction.IN));
+    assertFalse(
+        importPolicy.processBgpRoute(
+            originalRoute.setNetwork(deniedBoth).build(),
+            outputRouteBuilder,
+            session,
+            Direction.IN));
+    assertTrue(
+        exportPolicy.processBgpRoute(
+            originalRoute.setNetwork(allowedOut).build(),
+            outputRouteBuilder,
+            session,
+            Direction.OUT));
+    assertFalse(
+        exportPolicy.processBgpRoute(
+            originalRoute.setNetwork(deniedBoth).build(),
+            outputRouteBuilder,
+            session,
+            Direction.OUT));
   }
 }
