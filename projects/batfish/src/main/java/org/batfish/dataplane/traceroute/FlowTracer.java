@@ -746,7 +746,6 @@ class FlowTracer {
     }
 
     String currentNodeName = _currentNode.getName();
-    Flow flow = _currentFlow;
     Collection<FirewallSessionTraceInfo> sessions =
         _tracerouteContext.getSessions(currentNodeName, inputIfaceName);
     if (sessions.isEmpty()) {
@@ -754,7 +753,7 @@ class FlowTracer {
     }
 
     // session match expr cannot use MatchSrcInterface or ACL/IpSpace references.
-    Evaluator aclEval = new Evaluator(flow, null, ImmutableMap.of(), ImmutableMap.of());
+    Evaluator aclEval = new Evaluator(_currentFlow, null, ImmutableMap.of(), ImmutableMap.of());
     List<FirewallSessionTraceInfo> matchingSessions =
         sessions.stream()
             .filter(session -> aclEval.visit(session.getSessionFlows()))
@@ -785,7 +784,7 @@ class FlowTracer {
     if (transformation != null) {
       transformationResult =
           TransformationEvaluator.eval(
-              transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
+              transformation, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces);
       matchDetail.setTransformation(flowDiffs(_currentFlow, transformationResult.getOutputFlow()));
     }
 
@@ -800,6 +799,7 @@ class FlowTracer {
     }
 
     // apply transformation
+    Flow originalFlow = _currentFlow;
     if (transformationResult != null) {
       _steps.addAll(transformationResult.getTraceSteps());
       _currentFlow = transformationResult.getOutputFlow();
@@ -850,7 +850,7 @@ class FlowTracer {
               @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
                 // cycle detection
-                Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, flow);
+                Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, originalFlow);
                 if (_breadcrumbs.contains(breadcrumb)) {
                   buildLoopTrace();
                   return null;
@@ -889,7 +889,9 @@ class FlowTracer {
                      * disposition maps in forwarding analysis.
                      */
                     buildArpFailureTrace(
-                        outgoingInterfaceName, flow.getDstIp(), FlowDisposition.EXITS_NETWORK);
+                        outgoingInterfaceName,
+                        originalFlow.getDstIp(),
+                        FlowDisposition.EXITS_NETWORK);
                     return null;
                   }
                   _hops.add(new Hop(new Node(currentNodeName), _steps));
