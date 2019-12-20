@@ -20,11 +20,6 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   /** An ordered list of all produced set statements, including those not to be retained */
   private List<String> _allSetStatements;
-  /**
-   * Number of lines in the output text, used for line mapping. This needs to be updated as the
-   * output set statement list is being populated.
-   */
-  private int _outputLineCount;
 
   private List<WordContext> _currentBracketedWords;
   private List<WordContext> _currentStatement;
@@ -33,6 +28,11 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
   private final String _header;
   private boolean _inBrackets;
   private FlattenerLineMap _lineMap;
+  /**
+   * Number of lines in the output text, used for line mapping. This needs to be updated as the
+   * output set statement list is being populated.
+   */
+  private int _outputLineCount;
   private SetStatementTree _root;
 
   @SuppressWarnings("PMD.LooseCoupling") // actually use linked-specific functions in the code

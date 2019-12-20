@@ -1339,12 +1339,12 @@ public final class PaloAltoGrammarTest {
     /* Line number for a particular set line */
     int setLine = 10;
 
-    /* Array is 0 indexed, line numbers are 1 indexed */
+    /* lines array is 0 indexed, line numbers are 1 indexed */
     String setLineText = lines[setLine - 1];
     String startTokenText = lines[startTokenLine - 1];
     String midTokenText = lines[midTokenLine - 1];
     String endTokenText = lines[endTokenLine - 1];
-    /* Make sure flattening produces the line we expect, where we expect them */
+    /* Sanity check; make sure flattening produces the line we expect, where we expect them */
     assertThat(setLineText, equalTo("set config shared certificate cert-name algorithm RSA"));
     assertThat(startTokenText, containsString("BEGIN CERT"));
     assertThat(midTokenText, containsString("AAaaaaa"));
