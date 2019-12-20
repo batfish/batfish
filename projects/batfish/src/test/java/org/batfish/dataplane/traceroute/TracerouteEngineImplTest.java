@@ -1959,7 +1959,7 @@ public class TracerouteEngineImplTest {
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(Accept.INSTANCE)),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
-                          hasProperty("transformation", equalTo(null)))))));
+                          hasProperty("transformation", hasSize(0)))))));
       assertThat(
           results,
           contains(
@@ -1994,7 +1994,7 @@ public class TracerouteEngineImplTest {
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
-                          hasProperty("transformation", equalTo(null)))))));
+                          hasProperty("transformation", hasSize(0)))))));
       /* Disposition is always exits network -- see:
        * TracerouteEngineImplContext#buildSessionArpFailureTrace(String, TransmissionContext, List).
        */
@@ -2032,7 +2032,7 @@ public class TracerouteEngineImplTest {
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
-                          hasProperty("transformation", equalTo(null)))))));
+                          hasProperty("transformation", hasSize(0)))))));
       // flow reaches c2.
       assertThat(
           results,
@@ -2069,7 +2069,7 @@ public class TracerouteEngineImplTest {
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
-                          hasProperty("transformation", equalTo(null)))))));
+                          hasProperty("transformation", hasSize(0)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
     }
 
@@ -2098,7 +2098,7 @@ public class TracerouteEngineImplTest {
                           hasProperty("incomingInterfaces", equalTo(ImmutableSet.of(c1i1Name))),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
-                          hasProperty("transformation", equalTo(null)))))));
+                          hasProperty("transformation", hasSize(0)))))));
       assertThat(results, contains(hasTrace(hasDisposition(DENIED_OUT))));
     }
 

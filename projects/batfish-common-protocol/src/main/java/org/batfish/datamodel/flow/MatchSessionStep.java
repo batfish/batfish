@@ -34,15 +34,11 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
         @Nonnull Set<String> incomingInterfaces,
         @Nonnull SessionAction sessionAction,
         @Nonnull SessionMatchExpr matchCriteria,
-        Set<FlowDiff> transformation) {
+        @Nonnull Set<FlowDiff> transformation) {
       _incomingInterfaces = ImmutableSet.copyOf(incomingInterfaces);
       _sessionAction = sessionAction;
       _matchCriteria = matchCriteria;
-      if (transformation != null) {
-        _transformation = ImmutableSet.copyOf(transformation);
-      } else {
-        _transformation = null;
-      }
+      _transformation = ImmutableSet.copyOf(transformation);
     }
 
     @JsonCreator
@@ -55,7 +51,10 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
       checkArgument(sessionAction != null, "Missing %s", PROP_SESSION_ACTION);
       checkArgument(matchCriteria != null, "Missing %s", PROP_MATCH_CRITERIA);
       return new MatchSessionStepDetail(
-          incomingInterfaces, sessionAction, matchCriteria, transformation);
+          incomingInterfaces,
+          sessionAction,
+          matchCriteria,
+          firstNonNull(transformation, ImmutableSet.of()));
     }
 
     @JsonProperty(PROP_INCOMING_INTERFACES)
@@ -103,7 +102,7 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
             firstNonNull(_incomingInterfaces, ImmutableSet.of()),
             _sessionAction,
             _matchCriteria,
-            _transformation);
+            firstNonNull(_transformation, ImmutableSet.of()));
       }
 
       public Builder setIncomingInterfaces(Set<String> incomingInterfaces) {
