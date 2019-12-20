@@ -389,10 +389,8 @@ final class AristaConversions {
           && c.getRouteFilterLists().containsKey(inboundPrefixList)) {
         warnings.redFlag(
             String.format(
-                "Inbound prefix list {} + route map {} not supported for neighbor {}. Preferring route map.",
-                inboundPrefixList,
-                inboundMap,
-                peerStrRepr));
+                "Inbound prefix list %s + route map %s not supported for neighbor %s. Preferring route map.",
+                inboundPrefixList, inboundMap, peerStrRepr));
         policy = inboundMap;
       } else if (inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)) {
         policy = inboundMap;
@@ -465,10 +463,8 @@ final class AristaConversions {
           && c.getRouteFilterLists().containsKey(outboundPrefixList)) {
         warnings.redFlag(
             String.format(
-                "Outbound prefix list {} + route map {} not supported for neighbor {}. Preferring route map.",
-                outboundPrefixList,
-                outboundMap,
-                peerStrRepr));
+                "Outbound prefix list %s + route map %s not supported for neighbor %s. Preferring route map.",
+                outboundPrefixList, outboundMap, peerStrRepr));
         peerExportConditions.add(new CallExpr(outboundMap));
       } else if (outboundMap != null && c.getRoutingPolicies().containsKey(outboundMap)) {
         peerExportConditions.add(new CallExpr(outboundMap));

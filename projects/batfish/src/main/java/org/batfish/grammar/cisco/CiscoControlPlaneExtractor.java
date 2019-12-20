@@ -2676,12 +2676,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_prefix_list(Eos_rbinc_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    _configuration.referenceStructure(
-        PREFIX_LIST, name, BGP_OUTBOUND_PREFIX_LIST, ctx.getStart().getLine());
     if (ctx.IN() != null) {
       _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListIn(name);
+      _configuration.referenceStructure(
+          PREFIX_LIST, name, BGP_INBOUND_PREFIX_LIST, ctx.getStart().getLine());
     } else if (ctx.OUT() != null) {
       _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListOut(name);
+      _configuration.referenceStructure(
+          PREFIX_LIST, name, BGP_OUTBOUND_PREFIX_LIST, ctx.getStart().getLine());
     } else {
       _w.addWarning(ctx, ctx.getText(), _parser, "Unknown prefix list direction");
     }
