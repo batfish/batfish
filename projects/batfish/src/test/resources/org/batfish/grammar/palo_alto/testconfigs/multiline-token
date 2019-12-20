@@ -1,0 +1,22 @@
+config {
+  shared {
+    certificate {
+      cert-name {
+        public-key "-----BEGIN CERTIFICATE-----
+AAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAA
+HHHHHHHHHHHHHHHHHhhhhhhhhhhhhhhhhhhhhhhhhHHHHHHHHHHHHHHHHHHHHHHH
+-----END CERTIFICATE-----
+";
+        algorithm RSA;
+      }
+    }
+  }
+}
+deviceconfig {
+  system {
+    hostname nested-config;
+  }
+}

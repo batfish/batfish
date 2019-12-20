@@ -77,6 +77,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -1314,6 +1315,53 @@ public final class PaloAltoGrammarTest {
 
     // Confirm extraction works for nested configs even in the presence of line comments
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testLineMapMultilineToken() {
+    String hostname = "multiline-token";
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            PALO_ALTO_NESTED,
+            BATFISH_FLATTENED_PALO_ALTO_HEADER);
+    FlattenerLineMap map = flattener.getOriginalLineMap();
+
+    String[] lines = flattener.getFlattenedConfigurationText().split("\n", -1);
+
+    /* Line numbers for a multiline token in output text */
+    int startTokenLine = 2;
+    int midTokenLine = 5;
+    int endTokenLine = 9;
+    /* Line number for a particular set line */
+    int setLine = 10;
+
+    /* lines array is 0 indexed, line numbers are 1 indexed */
+    String setLineText = lines[setLine - 1];
+    String startTokenText = lines[startTokenLine - 1];
+    String midTokenText = lines[midTokenLine - 1];
+    String endTokenText = lines[endTokenLine - 1];
+    /* Sanity check; make sure flattening produces the line we expect, where we expect them */
+    assertThat(setLineText, equalTo("set config shared certificate cert-name algorithm RSA"));
+    assertThat(startTokenText, containsString("BEGIN CERT"));
+    assertThat(midTokenText, containsString("AAaaaaa"));
+    assertThat(endTokenText, containsString("\""));
+
+    /* Confirm original line numbers are preserved thru map, note line number here starts from 1 */
+    assertThat(map.getOriginalLine(setLine, setLineText.indexOf("certificate")), equalTo(3));
+    assertThat(map.getOriginalLine(setLine, setLineText.indexOf("algorithm")), equalTo(13));
+    /* Start, middle, and end lines in a multiline token should be mapped to public key line */
+    assertThat(
+        map.getOriginalLine(startTokenLine, startTokenText.indexOf("BEGIN CERT")), equalTo(5));
+    assertThat(map.getOriginalLine(midTokenLine, midTokenText.indexOf("AAaaaaa")), equalTo(5));
+    assertThat(map.getOriginalLine(endTokenLine, endTokenText.indexOf("\"")), equalTo(5));
+
+    /* Line beyond end of config should not be mapped */
+    assertThat(
+        map.getOriginalLine(lines.length, 0), equalTo(FlattenerLineMap.UNMAPPED_LINE_NUMBER));
   }
 
   @Test
