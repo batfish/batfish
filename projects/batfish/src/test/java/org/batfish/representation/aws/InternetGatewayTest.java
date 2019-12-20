@@ -6,7 +6,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
@@ -142,7 +142,7 @@ public class InternetGatewayTest {
             BgpActivePeerConfig.builder()
                 .setLocalIp(bbInterfacePrefix.getStartIp())
                 .setLocalAs(AWS_INTERNET_GATEWAY_AS)
-                .setRemoteAs(AWS_BACKBONE_AS)
+                .setRemoteAs(AWS_BACKBONE_ASN)
                 .setPeerAddress(bbInterfacePrefix.getEndIp())
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()

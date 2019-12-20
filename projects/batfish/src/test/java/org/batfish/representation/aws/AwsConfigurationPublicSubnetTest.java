@@ -6,7 +6,7 @@ import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_AS;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -114,11 +114,7 @@ public class AwsConfigurationPublicSubnetTest {
         trace,
         FlowDisposition.DENIED_IN, // by the default security settings
         ImmutableList.of(
-            IspModelingUtils.INTERNET_HOST_NAME,
-            IspModelingUtils.getIspNodeName(AWS_BACKBONE_AS),
-            _igw,
-            _subnet,
-            _instance));
+            IspModelingUtils.INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME, _igw, _subnet, _instance));
 
     // Test NAT behavior
     assertThat(
@@ -171,11 +167,7 @@ public class AwsConfigurationPublicSubnetTest {
         trace,
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
-            _instance,
-            _subnet,
-            _igw,
-            IspModelingUtils.getIspNodeName(AWS_BACKBONE_AS),
-            IspModelingUtils.INTERNET_HOST_NAME));
+            _instance, _subnet, _igw, AWS_BACKBONE_NODE_NAME, IspModelingUtils.INTERNET_HOST_NAME));
 
     // Test NAT behavior
     assertThat(
