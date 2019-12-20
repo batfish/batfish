@@ -110,12 +110,12 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
       for (WordContext wordCtx : line) {
         sb.append(" ");
         int orgLine = wordCtx.WORD().getSymbol().getLine();
-        // Assume that sb length corresponds to position in the current line, i.e. no multiline
-        // tokens before this / are always last token in a given line
+        // Assume that sb length corresponds to column in the current line, i.e. no multiline
+        // tokens before this (assume they're always last token on their line)
         _lineMap.setOriginalLine(_outputLineCount, sb.length(), orgLine);
 
         // Account for newlines inside of tokens, e.g. "something\nsomething" is two lines
-        // -1 since token's line is counted later and don't want to double count
+        // Subtract 1 since token's line is counted later and don't want to double count
         int tokenExtraLines = countLines(wordCtx.getText()) - 1;
         for (int i = 1; i <= tokenExtraLines; i++) {
           _lineMap.setOriginalLine(_outputLineCount + i, 0, orgLine);

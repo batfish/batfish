@@ -1358,6 +1358,10 @@ public final class PaloAltoGrammarTest {
         map.getOriginalLine(startTokenLine, startTokenText.indexOf("BEGIN CERT")), equalTo(5));
     assertThat(map.getOriginalLine(midTokenLine, midTokenText.indexOf("AAaaaaa")), equalTo(5));
     assertThat(map.getOriginalLine(endTokenLine, endTokenText.indexOf("\"")), equalTo(5));
+
+    /* Line beyond end of config should not be mapped */
+    assertThat(
+        map.getOriginalLine(lines.length, 0), equalTo(FlattenerLineMap.UNMAPPED_LINE_NUMBER));
   }
 
   @Test
