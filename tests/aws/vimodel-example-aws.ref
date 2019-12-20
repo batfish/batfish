@@ -2,6 +2,249 @@
   {
     "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelAnswerElement",
     "nodes" : {
+      "aws-backbone" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "aws-backbone",
+        "deviceType" : "ISP",
+        "interfaces" : {
+          "~Interface_0~" : {
+            "name" : "~Interface_0~",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "240.0.0.1/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "240.0.0.1/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "~Interface_1~" : {
+            "name" : "~Interface_1~",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "240.0.0.3/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "240.0.0.3/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "~Interface_2~" : {
+            "name" : "~Interface_2~",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "240.0.0.5/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "240.0.0.5/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "~Interface_4~" : {
+            "name" : "~Interface_4~",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "240.1.1.3/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "240.1.1.3/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          }
+        },
+        "routingPolicies" : {
+          "exportPolicyOnIsp" : {
+            "name" : "exportPolicyOnIsp",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "240.0.0.1",
+              "multipathEbgp" : true,
+              "multipathIbgp" : false,
+              "neighbors" : {
+                "240.0.0.0/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIsp",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "240.0.0.1",
+                  "peerAddress" : "240.0.0.0",
+                  "remoteAsns" : "65534"
+                },
+                "240.0.0.2/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIsp",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "240.0.0.3",
+                  "peerAddress" : "240.0.0.2",
+                  "remoteAsns" : "65534"
+                },
+                "240.0.0.4/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIsp",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "240.0.0.5",
+                  "peerAddress" : "240.0.0.4",
+                  "remoteAsns" : "65534"
+                },
+                "240.1.1.2/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIsp",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "240.1.1.3",
+                  "peerAddress" : "240.1.1.2",
+                  "remoteAsns" : "65537"
+                }
+              },
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "interfaces" : [
+              "~Interface_0~",
+              "~Interface_1~",
+              "~Interface_2~",
+              "~Interface_4~"
+            ]
+          }
+        }
+      },
       "es-domain" : {
         "configurationFormat" : "AWS",
         "name" : "es-domain",
@@ -1027,249 +1270,6 @@
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
-            ]
-          }
-        }
-      },
-      "isp_16509" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "isp_16509",
-        "deviceType" : "ISP",
-        "interfaces" : {
-          "~Interface_0~" : {
-            "name" : "~Interface_0~",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "240.0.0.1/31"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "mtu" : 1500,
-            "prefix" : "240.0.0.1/31",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
-            "vrf" : "default"
-          },
-          "~Interface_1~" : {
-            "name" : "~Interface_1~",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "240.0.0.3/31"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "mtu" : 1500,
-            "prefix" : "240.0.0.3/31",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
-            "vrf" : "default"
-          },
-          "~Interface_2~" : {
-            "name" : "~Interface_2~",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "240.0.0.5/31"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "mtu" : 1500,
-            "prefix" : "240.0.0.5/31",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
-            "vrf" : "default"
-          },
-          "~Interface_4~" : {
-            "name" : "~Interface_4~",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "240.1.1.3/31"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "mtu" : 1500,
-            "prefix" : "240.1.1.3/31",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
-            "vrf" : "default"
-          }
-        },
-        "routingPolicies" : {
-          "exportPolicyOnIsp" : {
-            "name" : "exportPolicyOnIsp",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocols" : [
-                    "bgp"
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : { },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "ebgpAdminCost" : 20,
-              "ibgpAdminCost" : 200,
-              "routerId" : "240.0.0.1",
-              "multipathEbgp" : true,
-              "multipathIbgp" : false,
-              "neighbors" : {
-                "240.0.0.0/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIsp",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.0.0.1",
-                  "peerAddress" : "240.0.0.0",
-                  "remoteAsns" : "65534"
-                },
-                "240.0.0.2/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIsp",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.0.0.3",
-                  "peerAddress" : "240.0.0.2",
-                  "remoteAsns" : "65534"
-                },
-                "240.0.0.4/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIsp",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.0.0.5",
-                  "peerAddress" : "240.0.0.4",
-                  "remoteAsns" : "65534"
-                },
-                "240.1.1.2/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIsp",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.1.1.3",
-                  "peerAddress" : "240.1.1.2",
-                  "remoteAsns" : "65537"
-                }
-              },
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "~Interface_0~",
-              "~Interface_1~",
-              "~Interface_2~",
-              "~Interface_4~"
             ]
           }
         }
