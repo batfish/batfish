@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 
@@ -48,7 +49,10 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -376,11 +380,35 @@ final class AristaConversions {
               .build());
 
       String inboundMap = naf4.getRouteMapIn();
+      String inboundPrefixList = naf4.getPrefixListIn();
+      String policy = null;
+      if (inboundMap != null
+          && inboundPrefixList != null
+          && c.getRoutingPolicies().containsKey(inboundMap)
+          && c.getRouteFilterLists().containsKey(inboundPrefixList)) {
+        warnings.redFlag("Inbound prefix list + route map not supported. Preferring route map.");
+        policy = inboundMap;
+      } else if (inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)) {
+        policy = inboundMap;
+      } else if (inboundPrefixList != null
+          && c.getRouteFilterLists().containsKey(inboundPrefixList)) {
+        policy =
+            generatedBgpPeerImportPolicyName(
+                vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString());
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(policy)
+            .setStatements(
+                ImmutableList.of(
+                    new If(
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new NamedPrefixSet(inboundPrefixList)),
+                        ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                        ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+            .build();
+      }
       ipv4FamilyBuilder
-          .setImportPolicy(
-              inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)
-                  ? inboundMap
-                  : null)
+          .setImportPolicy(policy)
           .setRouteReflectorClient(firstNonNull(neighbor.getRouteReflectorClient(), Boolean.FALSE));
     }
 
@@ -426,8 +454,20 @@ final class AristaConversions {
 
     if (v4Enabled) {
       String outboundMap = naf4.getRouteMapOut();
-      if (outboundMap != null && c.getRoutingPolicies().containsKey(outboundMap)) {
+      String outboundPrefixList = naf4.getPrefixListOut();
+      if (outboundMap != null
+          && outboundPrefixList != null
+          && c.getRoutingPolicies().containsKey(outboundMap)
+          && c.getRouteFilterLists().containsKey(outboundPrefixList)) {
+        warnings.redFlag("Outbound prefix list + route map not supported. Preferring route map.");
         peerExportConditions.add(new CallExpr(outboundMap));
+      } else if (outboundMap != null && c.getRoutingPolicies().containsKey(outboundMap)) {
+        peerExportConditions.add(new CallExpr(outboundMap));
+      } else if (outboundPrefixList != null
+          && c.getRouteFilterLists().containsKey(outboundPrefixList)) {
+        peerExportConditions.add(
+            new MatchPrefixSet(
+                DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixList)));
       }
     }
 

@@ -487,7 +487,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
     | eos_rbinc_password
-//    | eos_rbinc_prefix_list
+    | eos_rbinc_prefix_list
     | eos_rbinc_remote_as
     | eos_rbinc_remove_private_as
     | eos_rbafnc_route_map
@@ -596,6 +596,11 @@ eos_rbinc_next_hop_unchanged
 eos_rbinc_password
 :
   PASSWORD (encrypt_level = DEC)? variable NEWLINE
+;
+
+eos_rbinc_prefix_list
+:
+  PREFIX_LIST name = variable (IN | OUT) NEWLINE
 ;
 
 eos_rbinc_remote_as

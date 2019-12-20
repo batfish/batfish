@@ -602,6 +602,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_accepted_routesCo
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_next_hop_unchangedContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_prefix_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbinc_route_reflector_clientContext;
@@ -2670,6 +2671,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbinc_next_hop_unchanged(Eos_rbinc_next_hop_unchangedContext ctx) {
     _currentAristaBgpNeighbor.setNextHopUnchanged(true);
+  }
+
+  @Override
+  public void exitEos_rbinc_prefix_list(Eos_rbinc_prefix_listContext ctx) {
+    if (ctx.IN() != null) {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListIn(ctx.name.getText());
+    } else if (ctx.OUT() != null) {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListOut(ctx.name.getText());
+    } else {
+      _w.addWarning(ctx, ctx.getText(), _parser, "Unknown prefix list direction");
+    }
   }
 
   @Override
