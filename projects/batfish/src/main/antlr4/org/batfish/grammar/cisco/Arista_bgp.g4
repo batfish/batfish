@@ -260,14 +260,14 @@ eos_rbi_bgp
     | eos_rbib_advertise_inactive
     | eos_rbib_allowas_in
     | eos_rbib_always_compare_med
-//    | eos_rbib_asn
+    | eos_rbib_asn
 //    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
 //    | eos_rbib_client_to_client
     | eos_rbib_cluster_id
 //    | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
-//    | eos_rbib_convergence
+    | eos_rbib_convergence
 //    | eos_rbib_default
     | eos_rbib_enforce_first_as
 //    | eos_rbib_host_routes
@@ -308,6 +308,21 @@ eos_rbib_allowas_in
 eos_rbib_always_compare_med
 :
   ALWAYS_COMPARE_MED NEWLINE
+;
+
+eos_rbib_asn
+:
+  ASN NOTATION (ASDOT | ASPLAIN) NEWLINE
+;
+
+eos_rbib_convergence
+:
+  CONVERGENCE
+  (
+    TIME time = DEC
+    | SLOW_PEER TIME time = DEC
+  )
+  NEWLINE
 ;
 
 eos_rbib_enforce_first_as
