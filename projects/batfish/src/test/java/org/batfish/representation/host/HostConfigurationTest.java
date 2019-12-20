@@ -1,10 +1,11 @@
 package org.batfish.representation.host;
 
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.batfish.representation.host.HostConfiguration.toHostInterfaces;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,49 +17,26 @@ public final class HostConfigurationTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testHostInterfacesDeserializationFromArray() throws IOException {
-    String abc =
-        "{\n"
-            + "  \"hostname\" : \"h1\",\n"
-            + "  \"hostInterfaces\" : [\n"
-            + "    {\n"
-            + "      \"name\": \"eth0\"\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}";
-    HostConfiguration hc = BatfishObjectMapper.mapper().readValue(abc, HostConfiguration.class);
-    assertThat(hc.getHostInterfaces(), hasKeys("eth0"));
+  public void testToHostInterfacesDeserializationFromArray() throws IOException {
+    String jsonText = "[{ \"name\": \"eth0\" }]";
+    Map<String, HostInterface> hostInterfaces =
+        toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
+    assertThat(hostInterfaces, hasKeys("eth0"));
   }
 
   @Test
   public void testHostInterfacesDeserializationFromObject() throws IOException {
-    String abc =
-        "{\n"
-            + "  \"hostname\" : \"h1\",\n"
-            + "  \"hostInterfaces\" : {\n"
-            + "    \"eth0\" : {\n"
-            + "      \"name\": \"eth0\"\n"
-            + "    }\n"
-            + "  }\n"
-            + "}";
-    HostConfiguration hc = BatfishObjectMapper.mapper().readValue(abc, HostConfiguration.class);
-    assertThat(hc.getHostInterfaces(), hasKeys("eth0"));
+    String jsonText = "{ \"eth0\": {\"name\": \"eth0\" } }";
+    Map<String, HostInterface> hostInterfaces =
+        toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
+    assertThat(hostInterfaces, hasKeys("eth0"));
   }
 
   @Test
   public void testHostInterfacesDeserializationFromObjectWithMismatch() throws IOException {
-    String abc =
-        "{\n"
-            + "  \"hostname\" : \"h1\",\n"
-            + "  \"hostInterfaces\" : {\n"
-            + "    \"eth0\" : {\n"
-            + "      \"name\": \"eth1\"\n"
-            + "    }\n"
-            + "  }\n"
-            + "}";
+    String jsonText = "{ \"eth0\": {\"name\": \"eth1\" } }";
 
-    // IllegalArgumentException should be wrapped in a jackson exception
-    _thrown.expectCause(instanceOf(IllegalArgumentException.class));
-    BatfishObjectMapper.mapper().readValue(abc, HostConfiguration.class);
+    _thrown.expect(IllegalArgumentException.class);
+    toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
   }
 }

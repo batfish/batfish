@@ -1,27 +1,26 @@
 package org.batfish.representation.host;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -69,7 +68,6 @@ public class HostConfiguration extends VendorConfiguration {
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_IPTABLES_FILE = "iptablesFile";
   private static final String PROP_OVERLAY = "overlay";
-  private static final String PROP_STATIC_ROUTES = "staticRoutes";
 
   private static final String RAW_OUTPUT = "raw::OUTPUT";
 
@@ -86,7 +84,7 @@ public class HostConfiguration extends VendorConfiguration {
 
   private Configuration _c;
 
-  private final Map<String, HostInterface> _hostInterfaces;
+  private Map<String, HostInterface> _hostInterfaces;
 
   private String _hostname;
 
@@ -100,86 +98,46 @@ public class HostConfiguration extends VendorConfiguration {
 
   private transient VendorConfiguration _underlayConfiguration;
 
-  @JsonCreator
-  private static @Nonnull HostConfiguration create(
-      @JsonProperty(PROP_HOST_INTERFACES) @Nullable JsonNode hostInterfacesNode,
-      @JsonProperty(PROP_STATIC_ROUTES) @Nullable List<HostStaticRoute> staticRoutes) {
-    Map<String, HostInterface> hostInterfaces;
-    if (hostInterfacesNode == null) {
-      hostInterfaces = ImmutableMap.of();
-    } else if (hostInterfacesNode instanceof ObjectNode) {
-      hostInterfaces =
-          BatfishObjectMapper.mapper()
-              .convertValue(hostInterfacesNode, new TypeReference<Map<String, HostInterface>>() {});
-      hostInterfaces.forEach(
-          (name, hostInterface) ->
-              checkArgument(
-                  name.equals(hostInterface.getName()),
-                  "Mismatch between hostInterface key '%s' and name '%s'",
-                  name,
-                  hostInterface.getName()));
-    } else {
-      assert hostInterfacesNode instanceof ArrayNode;
-      List<HostInterface> hostInterfacesList =
-          BatfishObjectMapper.mapper()
-              .convertValue(hostInterfacesNode, new TypeReference<List<HostInterface>>() {});
-      hostInterfaces =
-          hostInterfacesList.stream()
-              .collect(ImmutableMap.toImmutableMap(HostInterface::getName, Function.identity()));
-    }
-    return new HostConfiguration(
-        hostInterfaces, ImmutableSet.copyOf(firstNonNull(staticRoutes, ImmutableSet.of())));
-  }
-
-  private HostConfiguration(
-      Map<String, HostInterface> hostInterfaces, Set<HostStaticRoute> staticRoutes) {
-    _hostInterfaces = hostInterfaces;
-    _staticRoutes = staticRoutes;
-  }
-
   public HostConfiguration() {
-    this(ImmutableMap.of(), ImmutableSet.of());
+    _hostInterfaces = new TreeMap<>();
+    _staticRoutes = new TreeSet<>();
   }
 
-  @JsonIgnore
-  public @Nonnull Map<String, HostInterface> getHostInterfaces() {
+  @JsonProperty(PROP_HOST_INTERFACES)
+  public Map<String, HostInterface> getHostInterfaces() {
     return _hostInterfaces;
   }
 
-  @JsonIgnore
+  @JsonProperty(PROP_HOSTNAME)
   @Override
   public String getHostname() {
     return _hostname;
   }
 
-  @JsonIgnore
+  @JsonProperty(PROP_IPTABLES_FILE)
   public String getIptablesFile() {
     return _iptablesFile;
   }
 
-  @JsonIgnore
   public IptablesVendorConfiguration getIptablesVendorConfig() {
     return _iptablesVendorConfig;
   }
 
-  @JsonIgnore
+  @JsonProperty(PROP_OVERLAY)
   public boolean getOverlay() {
     return _overlay;
   }
 
   @Override
-  @JsonProperty(PROP_HOSTNAME)
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
   }
 
-  @JsonProperty(PROP_IPTABLES_FILE)
   public void setIptablesFile(String file) {
     _iptablesFile = file;
   }
 
-  @JsonIgnore
   public void setIptablesVendorConfig(IptablesVendorConfiguration config) {
     _iptablesVendorConfig = config;
   }
@@ -318,5 +276,38 @@ public class HostConfiguration extends VendorConfiguration {
       VendorConfiguration underlayConfiguration) {
     _underlayConfiguration = underlayConfiguration;
     return toVendorIndependentConfigurations();
+  }
+
+  @VisibleForTesting
+  static @Nonnull Map<String, HostInterface> toHostInterfaces(JsonNode hostInterfacesNode) {
+    Map<String, HostInterface> hostInterfaces;
+    if (hostInterfacesNode == null) {
+      hostInterfaces = ImmutableMap.of();
+    } else if (hostInterfacesNode instanceof ObjectNode) {
+      hostInterfaces =
+          BatfishObjectMapper.mapper()
+              .convertValue(hostInterfacesNode, new TypeReference<Map<String, HostInterface>>() {});
+      hostInterfaces.forEach(
+          (name, hostInterface) ->
+              checkArgument(
+                  name.equals(hostInterface.getName()),
+                  "Mismatch between hostInterface key '%s' and name '%s'",
+                  name,
+                  hostInterface.getName()));
+    } else {
+      assert hostInterfacesNode instanceof ArrayNode;
+      List<HostInterface> hostInterfacesList =
+          BatfishObjectMapper.mapper()
+              .convertValue(hostInterfacesNode, new TypeReference<List<HostInterface>>() {});
+      hostInterfaces =
+          hostInterfacesList.stream()
+              .collect(ImmutableMap.toImmutableMap(HostInterface::getName, Function.identity()));
+    }
+    return hostInterfaces;
+  }
+
+  @JsonProperty(PROP_HOST_INTERFACES)
+  private void setHostInterfaces(JsonNode hostInterfacesNode) {
+    _hostInterfaces = toHostInterfaces(hostInterfacesNode);
   }
 }
