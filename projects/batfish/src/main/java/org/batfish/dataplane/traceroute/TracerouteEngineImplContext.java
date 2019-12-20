@@ -17,7 +17,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -25,6 +27,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -48,6 +51,7 @@ public class TracerouteEngineImplContext {
   private final Map<String, Map<String, Fib>> _fibs;
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
+  private final IpOwners _ipOwners;
   private final boolean _ignoreFilters;
   private final Topology _topology;
 
@@ -62,6 +66,7 @@ public class TracerouteEngineImplContext {
     _dataPlane = dataPlane;
     _flows = flows;
     _fibs = fibs;
+    _ipOwners = new IpOwners(_configurations);
     _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
@@ -143,6 +148,25 @@ public class TracerouteEngineImplContext {
     }
   }
 
+  /** Returns the name of the interface in the given VRF that owns the supplied IP */
+  @Nullable
+  String getInterfaceContainingAddress(Ip ip, String vrfName, Configuration configuration) {
+    Map<String, Set<String>> hostNamesToInterfaces = _ipOwners.getActiveDeviceOwnedIps().get(ip);
+    if (hostNamesToInterfaces == null) {
+      return null;
+    }
+    Set<String> interfaces = hostNamesToInterfaces.get(configuration.getHostname());
+    if (interfaces == null) {
+      return null;
+    }
+    return interfaces.stream()
+        .map(iface -> configuration.getActiveInterfaces().get(iface))
+        .filter(iface -> iface.getVrfName().equals(vrfName))
+        .findFirst()
+        .map(Interface::getName)
+        .orElse(null);
+  }
+
   public Map<String, Configuration> getConfigurations() {
     return _configurations;
   }
@@ -160,6 +184,10 @@ public class TracerouteEngineImplContext {
 
   boolean getIgnoreFilters() {
     return _ignoreFilters;
+  }
+
+  IpOwners get_ipOwners() {
+    return _ipOwners;
   }
 
   Collection<FirewallSessionTraceInfo> getSessions(String node, String inputIface) {
