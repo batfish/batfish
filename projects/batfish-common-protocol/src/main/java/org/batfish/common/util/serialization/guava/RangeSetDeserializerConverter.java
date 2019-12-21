@@ -13,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Converter from {@link Set} of {@link Range} to {@link RangeSet} */
 @ParametersAreNonnullByDefault
 public final class RangeSetDeserializerConverter
-    implements Converter<Set<Range<Comparable>>, RangeSet<Comparable>> {
+    implements Converter<Set<Range<Comparable<?>>>, RangeSet<?>> {
 
   private final @Nonnull JavaType _type;
 
@@ -22,7 +22,7 @@ public final class RangeSetDeserializerConverter
   }
 
   @Override
-  public @Nonnull RangeSet<Comparable> convert(Set<Range<Comparable>> value) {
+  public @Nonnull RangeSet<?> convert(Set<Range<Comparable<?>>> value) {
     return TreeRangeSet.create(value);
   }
 

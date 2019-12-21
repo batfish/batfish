@@ -9,7 +9,7 @@ import com.google.common.collect.RangeSet;
 import javax.annotation.Nonnull;
 
 /** Custom deserializer for {@link RangeSet} */
-public final class RangeSetDeserializer extends StdDelegatingDeserializer<RangeSet<Comparable>>
+public final class RangeSetDeserializer extends StdDelegatingDeserializer<RangeSet<?>>
     implements ContextualDeserializer {
 
   public RangeSetDeserializer(@Nonnull JavaType type) {
@@ -17,8 +17,8 @@ public final class RangeSetDeserializer extends StdDelegatingDeserializer<RangeS
   }
 
   @Override
-  protected @Nonnull StdDelegatingDeserializer<RangeSet<Comparable>> withDelegate(
-      Converter<Object, RangeSet<Comparable>> converter,
+  protected @Nonnull StdDelegatingDeserializer<RangeSet<?>> withDelegate(
+      Converter<Object, RangeSet<?>> converter,
       JavaType delegateType,
       JsonDeserializer<?> delegateDeserializer) {
     return new StdDelegatingDeserializer<>(converter, delegateType, delegateDeserializer);
