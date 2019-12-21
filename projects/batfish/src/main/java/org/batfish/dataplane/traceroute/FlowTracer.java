@@ -729,13 +729,7 @@ class FlowTracer {
   @Nonnull
   private OriginateStep buildOriginateStep() {
     return OriginateStep.builder()
-        .setDetail(
-            OriginateStepDetail.builder()
-                .setOriginatingVrf(_vrfName)
-                .setOriginatingInterface(
-                    _tracerouteContext.getInterfaceContainingAddress(
-                        _currentFlow.getSrcIp(), _vrfName, _currentConfig))
-                .build())
+        .setDetail(OriginateStepDetail.builder().setOriginatingVrf(_vrfName).build())
         .setAction(StepAction.ORIGINATED)
         .build();
   }

@@ -18,33 +18,23 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
   /** Details of the {@link Step} when a {@link Flow} originates at a {@link Hop} */
   public static final class OriginateStepDetail {
     private static final String PROP_ORIGINATING_VRF = "originatingVrf";
-    private static final String PROP_ORIGINATING_INTERFACE = "originatingInterface";
 
     private @Nonnull String _originatingVrf;
-    private @Nullable String _originatingInterface;
 
-    private OriginateStepDetail(String originatingVrf, @Nullable String originatingInterface) {
+    private OriginateStepDetail(String originatingVrf) {
       _originatingVrf = originatingVrf;
-      _originatingInterface = originatingInterface;
     }
 
     @JsonCreator
     private static OriginateStepDetail jsonCreator(
-        @JsonProperty(PROP_ORIGINATING_VRF) @Nullable String originatingVrf,
-        @JsonProperty(PROP_ORIGINATING_INTERFACE) String originatingInterface) {
+        @JsonProperty(PROP_ORIGINATING_VRF) @Nullable String originatingVrf) {
       checkArgument(originatingVrf != null, "%s should be set", PROP_ORIGINATING_VRF);
-      return new OriginateStepDetail(originatingVrf, originatingInterface);
+      return new OriginateStepDetail(originatingVrf);
     }
 
     @JsonProperty(PROP_ORIGINATING_VRF)
     public String getOriginatingVrf() {
       return _originatingVrf;
-    }
-
-    @JsonProperty(PROP_ORIGINATING_INTERFACE)
-    @Nullable
-    public String getOriginatingInterface() {
-      return _originatingInterface;
     }
 
     public static Builder builder() {
@@ -54,20 +44,14 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
     /** Chained builder to create a {@link OriginateStepDetail} object */
     public static final class Builder {
       private String _originatingVrf;
-      @Nullable private String _originatingInterface;
 
       public OriginateStepDetail build() {
         checkState(_originatingVrf != null, "Must call setOriginatingVrf before building");
-        return new OriginateStepDetail(_originatingVrf, _originatingInterface);
+        return new OriginateStepDetail(_originatingVrf);
       }
 
       public Builder setOriginatingVrf(String originatingVrf) {
         _originatingVrf = originatingVrf;
-        return this;
-      }
-
-      public Builder setOriginatingInterface(@Nullable String originatingInterface) {
-        _originatingInterface = originatingInterface;
         return this;
       }
 
