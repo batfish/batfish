@@ -9,7 +9,6 @@ import com.google.common.collect.RangeSet;
 import javax.annotation.Nonnull;
 
 /** Custom deserializer for {@link RangeSet} */
-@SuppressWarnings("rawtypes")
 public final class RangeSetDeserializer extends StdDelegatingDeserializer<RangeSet<Comparable>>
     implements ContextualDeserializer {
 

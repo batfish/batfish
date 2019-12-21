@@ -12,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Converter from {@link Set} of {@link Range} to {@link RangeSet} */
 @ParametersAreNonnullByDefault
-@SuppressWarnings("rawtypes")
 public final class RangeSetDeserializerConverter
     implements Converter<Set<Range<Comparable>>, RangeSet<Comparable>> {
 
