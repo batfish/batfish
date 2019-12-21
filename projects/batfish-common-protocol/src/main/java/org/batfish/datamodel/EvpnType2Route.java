@@ -102,7 +102,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
-  @SuppressWarnings("unused")
   @JsonCreator
   private static EvpnType2Route jsonCreator(
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
@@ -114,8 +113,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @Nullable @JsonProperty(PROP_MAC_ADDRESS) MacAddress macAddress,
       @JsonProperty(PROP_METRIC) long med,
-      // value of network is ignored while calling class constructor
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
@@ -220,6 +217,10 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   public static Builder builder() {
     return new Builder();
   }
+
+  // value of network is ignored during deserialization
+  @JsonProperty(PROP_NETWORK)
+  private void setNetwork(@Nullable Prefix network) {}
 
   /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 
