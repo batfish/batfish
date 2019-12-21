@@ -463,7 +463,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
 
-    _currentInterface.getOrCreateOspf().setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
+    if (ctx.ip != null) {
+      _currentInterface.getOrCreateOspf().setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
+    } else if (ctx.num != null) {
+      _currentInterface.getOrCreateOspf().setOspfArea(Long.parseLong(ctx.num.getText()));
+    } else {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("only allow IP and number in ospf area"));
+    }
   }
 
   @Override

@@ -1069,6 +1069,16 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testInterface_ospf_area_num() {
+    Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
+    i1.setVrf("VRF");
+    _config.getInterfaces().put("swp1", i1);
+    parse("interface swp1 vrf VRF\n ip ospf area 0\n");
+    assertThat(_warnings.getParseWarnings(), empty());
+    assertThat(_config.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
+  }
+
+  @Test
   public void testInterface_ospf_authentication() {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     _config.getInterfaces().put("swp1", i1);

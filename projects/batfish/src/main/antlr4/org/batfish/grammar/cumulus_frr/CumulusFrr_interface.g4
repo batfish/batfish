@@ -48,7 +48,11 @@ siip_ospf
 
 siipo_area
 :
-  AREA ip = IP_ADDRESS
+  AREA
+  (
+    ip = IP_ADDRESS
+    | num = UINT8
+  )
 ;
 
 siipo_authentication
