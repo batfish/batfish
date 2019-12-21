@@ -2623,7 +2623,7 @@ public class WorkMgr extends AbstractCoordinator {
     return comparator;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @VisibleForTesting
   @Nonnull
   Comparator<Row> columnComparator(ColumnMetadata columnMetadata) {
@@ -2634,7 +2634,7 @@ public class WorkMgr extends AbstractCoordinator {
     return comparator;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"rawtypes", "unchecked"})
   private @Nonnull Comparator<?> schemaComparator(Schema schema) {
     if (schema.equals(Schema.ACL_TRACE)) {
       return COMPARATOR_ACL_TRACE;
