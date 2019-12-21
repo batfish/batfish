@@ -109,11 +109,6 @@ public class VirtualRouterTest {
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
   }
 
-  private static Map<String, Node> makeIosRouters(String... hostnames) {
-    return Arrays.stream(hostnames)
-        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
-  }
-
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
     Node n = TestUtils.makeF5Router(hostname);
     return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
