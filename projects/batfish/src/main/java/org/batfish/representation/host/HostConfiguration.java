@@ -1,18 +1,26 @@
 package org.batfish.representation.host;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -76,7 +84,7 @@ public class HostConfiguration extends VendorConfiguration {
 
   private Configuration _c;
 
-  protected final SortedMap<String, HostInterface> _hostInterfaces;
+  private Map<String, HostInterface> _hostInterfaces;
 
   private String _hostname;
 
@@ -85,13 +93,6 @@ public class HostConfiguration extends VendorConfiguration {
   private IptablesVendorConfiguration _iptablesVendorConfig;
 
   private boolean _overlay;
-
-  // @JsonCreator
-  // public HostConfiguration(@JsonProperty(PROP_HOSTNAME) String name) {
-  // _hostname = name;
-  // _interfaces = new HashMap<String, Interface>();
-  // _roles = new RoleSet();
-  // }
 
   private final Set<HostStaticRoute> _staticRoutes;
 
@@ -275,5 +276,41 @@ public class HostConfiguration extends VendorConfiguration {
       VendorConfiguration underlayConfiguration) {
     _underlayConfiguration = underlayConfiguration;
     return toVendorIndependentConfigurations();
+  }
+
+  @VisibleForTesting
+  static @Nonnull Map<String, HostInterface> toHostInterfaces(JsonNode hostInterfacesNode) {
+    Map<String, HostInterface> hostInterfaces;
+    if (hostInterfacesNode == null) {
+      hostInterfaces = ImmutableMap.of();
+    } else if (hostInterfacesNode instanceof ObjectNode) {
+      hostInterfaces =
+          BatfishObjectMapper.mapper()
+              .convertValue(hostInterfacesNode, new TypeReference<Map<String, HostInterface>>() {});
+      hostInterfaces.forEach(
+          (name, hostInterface) ->
+              checkArgument(
+                  name.equals(hostInterface.getName()),
+                  "Mismatch between hostInterface key '%s' and name '%s'",
+                  name,
+                  hostInterface.getName()));
+    } else {
+      assert hostInterfacesNode instanceof ArrayNode;
+      List<HostInterface> hostInterfacesList =
+          BatfishObjectMapper.mapper()
+              .convertValue(hostInterfacesNode, new TypeReference<List<HostInterface>>() {});
+      hostInterfaces =
+          hostInterfacesList.stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      // use latest definition in case of duplicates
+                      HostInterface::getName, Function.identity(), (hi1, hi2) -> hi2));
+    }
+    return hostInterfaces;
+  }
+
+  @JsonProperty(PROP_HOST_INTERFACES)
+  private void setHostInterfaces(JsonNode hostInterfacesNode) {
+    _hostInterfaces = toHostInterfaces(hostInterfacesNode);
   }
 }
