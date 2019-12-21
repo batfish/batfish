@@ -424,18 +424,6 @@ public final class CiscoGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
-    assertFalse(
-        routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
-  }
-
-  private void assertRoutingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
-    assertTrue(
-        routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
-  }
-
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
     assertTrue(routingPolicy.process(route, builder, Direction.IN));
