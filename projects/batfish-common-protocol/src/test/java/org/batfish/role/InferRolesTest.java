@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.junit.Test;
@@ -85,10 +84,6 @@ public class InferRolesTest {
               Edge.of("as3core1", "GigabitEthernet3/0", "as3core1", "GigabitEthernet2/0"),
               Edge.of("host1", "eth0", "as2dept1", "GigabitEthernet2/0"),
               Edge.of("host2", "eth0", "as2dept1", "GigabitEthernet3/0")));
-
-  private static Set<String> filterSet(Set<String> nodes, Predicate<String> filter) {
-    return nodes.stream().filter(filter).collect(ImmutableSet.toImmutableSet());
-  }
 
   @Test
   public void inferRolesOnExampleTopology() throws JsonProcessingException {
