@@ -451,7 +451,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     if (_c.getOspfProcess() == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "does not find router ospf command");
+      _w.addWarning(ctx, ctx.getText(), _parser, "No OSPF process configured");
       return;
     }
 
