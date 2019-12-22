@@ -434,7 +434,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSiip_address(Siip_addressContext ctx) {
     if (_currentInterface == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for %s");
+      _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for address declaration");
+      return;
     }
 
     _currentInterface.getIpAddresses().add(ConcreteInterfaceAddress.parse(ctx.ip_prefix.getText()));
