@@ -11,9 +11,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Converter from {@link Set} of {@link Range} to {@link RangeSet} */
 @ParametersAreNonnullByDefault
-@SuppressWarnings("rawtypes")
 public final class RangeSetSerializerConverter
-    implements Converter<RangeSet<Comparable>, Set<Range<Comparable>>> {
+    implements Converter<RangeSet<Comparable<?>>, Set<Range<Comparable<?>>>> {
 
   static @Nonnull JavaType rangeSetDelegateType(TypeFactory typeFactory, JavaType type) {
     return typeFactory.constructParametricType(
@@ -29,7 +28,7 @@ public final class RangeSetSerializerConverter
   }
 
   @Override
-  public @Nonnull Set<Range<Comparable>> convert(RangeSet<Comparable> value) {
+  public @Nonnull Set<Range<Comparable<?>>> convert(RangeSet<Comparable<?>> value) {
     return value.asRanges();
   }
 
