@@ -148,14 +148,6 @@ public class VerificationStats {
     return newStats;
   }
 
-  private String fmt(double d) {
-    return String.format("%.2f", d);
-  }
-
-  private String fmtSec(double d) {
-    return String.format("%.2f sec", d / 1000);
-  }
-
   @JsonProperty(PROP_AVERAGE_NUM_NODES)
   public double getAvgNumNodes() {
     return _avgNumNodes;
