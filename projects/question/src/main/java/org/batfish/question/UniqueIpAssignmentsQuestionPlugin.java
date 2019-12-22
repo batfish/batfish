@@ -55,17 +55,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       return _duplicateIps;
     }
 
-    private Object ipsToString() {
-      StringBuilder sb = new StringBuilder("  Duplicate IPs\n");
-      for (Ip ip : _duplicateIps.keySet()) {
-        sb.append(String.format("    %s\n", ip));
-        for (NodeInterfacePair nip : _duplicateIps.get(ip)) {
-          sb.append(String.format("      %s\n", nip));
-        }
-      }
-      return sb.toString();
-    }
-
     @JsonProperty(PROP_DUPLICATE_IPS)
     public void setDuplicateIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> duplicateIps) {
       _summary.setNumResults(duplicateIps.size());
