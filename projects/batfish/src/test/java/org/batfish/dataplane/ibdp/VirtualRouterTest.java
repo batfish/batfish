@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -107,11 +106,6 @@ public class VirtualRouterTest {
     interfaceAddresses.forEach(
         (ifaceName, address) ->
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
-  }
-
-  private static Map<String, Node> makeIosRouters(String... hostnames) {
-    return Arrays.stream(hostnames)
-        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
   }
 
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
