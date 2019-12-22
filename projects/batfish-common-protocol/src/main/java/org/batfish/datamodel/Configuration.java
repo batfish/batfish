@@ -477,6 +477,30 @@ public final class Configuration implements Serializable {
     return _interfaces;
   }
 
+  /**
+   * Return all interfaces in a given VRF
+   *
+   * @param vrf the VRF name
+   */
+  @JsonIgnore
+  public Map<String, Interface> getAllInterfaces(@Nonnull String vrf) {
+    return _interfaces.entrySet().stream()
+        .filter(e -> e.getValue().getVrfName().equals(vrf))
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
+  /**
+   * Return all active interfaces in a given VRF
+   *
+   * @param vrf the VRF name
+   */
+  @JsonIgnore
+  public Map<String, Interface> getActiveInterfaces(@Nonnull String vrf) {
+    return _interfaces.entrySet().stream()
+        .filter(e -> e.getValue().getVrfName().equals(vrf) && e.getValue().getActive())
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
   @JsonIgnore
   public Map<String, Interface> getActiveInterfaces() {
     return _interfaces.entrySet().stream()
