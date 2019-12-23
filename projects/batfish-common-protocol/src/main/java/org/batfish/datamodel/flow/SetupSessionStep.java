@@ -27,7 +27,7 @@ public final class SetupSessionStep extends Step<SetupSessionStepDetail> {
     @Nonnull private final Set<String> _incomingInterfaces;
     @Nonnull private final SessionAction _sessionAction;
     @Nonnull private final SessionMatchExpr _matchCriteria;
-    private final Set<FlowDiff> _transformation;
+    @Nonnull private final Set<FlowDiff> _transformation;
 
     private SetupSessionStepDetail(
         @Nonnull Set<String> incomingInterfaces,
@@ -75,6 +75,7 @@ public final class SetupSessionStep extends Step<SetupSessionStepDetail> {
     }
 
     @JsonProperty(PROP_TRANSFORMATION)
+    @Nonnull
     public Set<FlowDiff> getTransformation() {
       return _transformation;
     }
