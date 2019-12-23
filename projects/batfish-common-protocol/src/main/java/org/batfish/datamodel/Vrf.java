@@ -277,14 +277,6 @@ public class Vrf extends ComparableStructure<String> {
             .build();
   }
 
-  public void resolveReferences(Configuration owner) {
-    if (_interfaceNames != null) {
-      for (String ifaceName : _interfaceNames) {
-        _interfaces.put(ifaceName, owner.getAllInterfaces().get(ifaceName));
-      }
-    }
-  }
-
   public void setAppliedRibGroups(Map<RoutingProtocol, RibGroup> appliedRibGroups) {
     _appliedRibGroups = ImmutableSortedMap.copyOf(appliedRibGroups);
   }
