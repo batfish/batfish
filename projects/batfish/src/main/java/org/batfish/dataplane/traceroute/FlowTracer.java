@@ -92,6 +92,7 @@ import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.SetupSessionStep;
+import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -971,7 +972,13 @@ class FlowTracer {
           buildFirewallSessionTraceInfo(firewallSessionInterfaceInfo);
       if (session != null) {
         _newSessions.add(session);
-        _steps.add(new SetupSessionStep());
+        _steps.add(
+            new SetupSessionStep(
+                SetupSessionStepDetail.builder()
+                    .setIncomingInterfaces(session.getIncomingInterfaces())
+                    .setMatchCriteria(session.getMatchCriteria())
+                    .setSessionAction(session.getAction())
+                    .build()));
       }
     }
 
