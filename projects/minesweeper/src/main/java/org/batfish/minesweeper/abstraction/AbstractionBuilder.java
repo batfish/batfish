@@ -516,15 +516,13 @@ class AbstractionBuilder {
       abstractVrf.setSnmpServer(vrf.getSnmpServer());
 
       NavigableMap<String, Interface> abstractVrfInterfaces = new TreeMap<>();
-      for (Entry<String, Interface> entry2 : vrf.getInterfaces().entrySet()) {
+      for (Entry<String, Interface> entry2 : conf.getAllInterfaces(name).entrySet()) {
         String iname = entry2.getKey();
         Interface iface = entry2.getValue();
         if (toRetain.contains(iface)) {
           abstractVrfInterfaces.put(iname, iface);
         }
       }
-      abstractVrf.setInterfaces(abstractVrfInterfaces);
-      abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
       abstractVrf.setOspfProcesses(
           vrf.getOspfProcesses().values().stream()
               .map(

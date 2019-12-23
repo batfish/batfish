@@ -1378,7 +1378,7 @@ public class CiscoConversions {
         newOspfProcess.getAreas().values().stream()
             .flatMap(a -> a.getInterfaces().stream())
             .collect(Collectors.toList())) {
-      org.batfish.datamodel.Interface iface = c.getVrfs().get(vrf).getInterfaces().get(ifaceName);
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces(vrf).get(ifaceName);
       DistributeList ifaceDistributeList = interfaceDistributeLists.get(ifaceName);
       BooleanExpr ifaceCondition = null;
       if (ifaceDistributeList != null

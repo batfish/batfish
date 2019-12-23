@@ -490,7 +490,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 // If the VI vrf has no BGP process, create a dummy one
                 viVrf.setBgpProcess(
                     BgpProcess.builder()
-                        .setRouterId(inferRouterId(viVrf, _w, "BGP process"))
+                        .setRouterId(
+                            inferRouterId(
+                                viVrf.getName(),
+                                _c.getAllInterfaces(viVrf.getName()),
+                                _w,
+                                "BGP process"))
                         .setAdminCostsToVendorDefaults(_c.getConfigurationFormat())
                         .build());
               }
@@ -511,7 +516,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(
-            Conversions.getBgpRouterId(nxBgpVrf, v, _w), ebgpAdmin, ibgpAdmin);
+            Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w), ebgpAdmin, ibgpAdmin);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
       newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
     }
@@ -821,7 +826,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     Ip routerId = vrfConfig.getRouterId();
     if (routerId == null) {
-      routerId = inferRouterId(v, _w, "EIGRP process " + procName);
+      routerId =
+          inferRouterId(
+              v.getName(), _c.getAllInterfaces(v.getName()), _w, "EIGRP process " + procName);
     }
     EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(routerId);
     proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
@@ -840,8 +847,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     String ifaceName = iface.getName();
     org.batfish.datamodel.Interface newIface = toInterface(iface);
     _c.getAllInterfaces().put(ifaceName, newIface);
-    org.batfish.datamodel.Vrf vrf = newIface.getVrf();
-    vrf.getInterfaces().put(ifaceName, newIface);
   }
 
   private void convertInterfaces() {
@@ -2126,7 +2131,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Ip routerId =
         proc.getRouterId() != null
             ? proc.getRouterId()
-            : inferRouterId(_c.getDefaultVrf(), _w, "OSPF process " + proc.getName());
+            : inferRouterId(
+                DEFAULT_VRF_NAME,
+                _c.getAllInterfaces(DEFAULT_VRF_NAME),
+                _w,
+                "OSPF process " + proc.getName());
     return toOspfProcessBuilder(proc, proc.getName(), Configuration.DEFAULT_VRF_NAME)
         .setProcessId(proc.getName())
         .setRouterId(routerId)
@@ -2145,7 +2154,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             ? ospfVrf.getRouterId()
             : proc.getRouterId() != null
                 ? proc.getRouterId()
-                : inferRouterId(vrf, _w, "OSPF process " + proc.getName());
+                : inferRouterId(
+                    vrf.getName(),
+                    _c.getAllInterfaces(vrf.getName()),
+                    _w,
+                    "OSPF process " + proc.getName());
     return toOspfProcessBuilder(ospfVrf, processName, ospfVrf.getVrf())
         .setProcessId(processName)
         .setRouterId(routerId)
@@ -2362,7 +2375,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     ImmutableSet.Builder<String> interfaces = ImmutableSet.builder();
     long areaId = area.getId();
-    vrf.getInterfaces()
+    _c.getAllInterfaces(vrfName)
         .keySet()
         .forEach(
             ifaceName -> {

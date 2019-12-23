@@ -718,7 +718,7 @@ public class VirtualRouter implements Serializable {
 
     // init internal routes from connected routes
     for (String ifaceName : _vrf.getRipProcess().getInterfaces()) {
-      Interface iface = _vrf.getInterfaces().get(ifaceName);
+      Interface iface = _c.getAllInterfaces(_vrf.getName()).get(ifaceName);
       if (iface.getActive()) {
         Set<Prefix> allNetworkPrefixes =
             iface.getAllConcreteAddresses().stream()
@@ -1332,7 +1332,8 @@ public class VirtualRouter implements Serializable {
 
       // Get interface
       String connectingInterfaceName = edge.getInt1();
-      Interface connectingInterface = _vrf.getInterfaces().get(connectingInterfaceName);
+      Interface connectingInterface =
+          _c.getAllInterfaces(_vrf.getName()).get(connectingInterfaceName);
       if (connectingInterface == null) {
         // wrong vrf, so skip
         continue;

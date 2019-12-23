@@ -887,7 +887,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
               if (!isEbgpSingleHop(proc, neighbor)) {
                 String sourceInterfaceName = updateSourceInterface.getName();
                 org.batfish.datamodel.Interface sourceInterface =
-                    _c.getDefaultVrf().getInterfaces().get(sourceInterfaceName);
+                    _c.getAllInterfaces(DEFAULT_VRF_NAME).get(sourceInterfaceName);
                 if (sourceInterface != null) {
                   ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
                   if (address != null) {
@@ -912,7 +912,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Either the neighbor is eBGP single-hop, or no update-source was specified, or we failed to
     // get IP from update-source.
     // So try to get IP of an interface in same network as neighbor address.
-    for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
+    for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces(DEFAULT_VRF_NAME).values()) {
       for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
         if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
           return interfaceAddress.getIp();
@@ -1925,8 +1925,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
         (name, iface) -> {
           org.batfish.datamodel.Interface newIface = toInterface(iface);
           _c.getAllInterfaces().put(name, newIface);
-          // Assume all interfaces are in default VRF for now
-          _c.getDefaultVrf().getInterfaces().put(name, newIface);
         });
 
     // Add trunks
@@ -1934,8 +1932,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
         (name, trunk) -> {
           org.batfish.datamodel.Interface newIface = toInterface(trunk);
           _c.getAllInterfaces().put(name, newIface);
-          // Assume all interfaces are in default VRF for now
-          _c.getDefaultVrf().getInterfaces().put(name, newIface);
         });
 
     // Add VLAN interfaces
@@ -1943,8 +1939,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
         (name, vlan) -> {
           org.batfish.datamodel.Interface newIface = toInterface(vlan);
           _c.getAllInterfaces().put(name, newIface);
-          // Assume all interfaces are in default VRF for now
-          _c.getDefaultVrf().getInterfaces().put(name, newIface);
         });
     // Process vlans:
     _vlans.values().forEach(this::processVlanSettings);
@@ -2056,7 +2050,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Ip routerId =
         proc.getRouterId() != null
             ? proc.getRouterId()
-            : inferRouterId(_c.getDefaultVrf(), _w, "OSPF process " + proc.getName());
+            : inferRouterId(_c, _c.getDefaultVrf().getName(), _w, "OSPF process " + proc.getName());
     return toOspfProcessBuilder(proc, proc.getName(), Configuration.DEFAULT_VRF_NAME)
         .setProcessId(proc.getName())
         .setRouterId(routerId)
@@ -2216,9 +2210,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
    * @see <a href="https://github.com/coreswitch/zebra/blob/master/docs/router-id.md">zebra docs</a>
    */
   @Nonnull
-  static Ip inferRouterId(Vrf vrf, Warnings w, String processDesc) {
+  static Ip inferRouterId(Configuration c, String vrf, Warnings w, String processDesc) {
     Optional<Ip> highestIp =
-        vrf.getInterfaces().values().stream()
+        c.getAllInterfaces(vrf).values().stream()
             .map(org.batfish.datamodel.Interface::getConcreteAddress)
             .filter(Objects::nonNull)
             .map(ConcreteInterfaceAddress::getIp)
@@ -2227,7 +2221,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       w.redFlag(
           String.format(
               "Router-id is not manually configured for %s in VRF %s. Unable to infer default router-id as no interfaces have IP addresses",
-              processDesc, vrf.getName()));
+              processDesc, vrf));
       return Ip.ZERO;
     }
     return highestIp.get();
