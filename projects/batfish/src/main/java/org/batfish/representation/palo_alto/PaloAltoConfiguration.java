@@ -1038,6 +1038,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     Queue<String> applications = new LinkedBlockingQueue<>(rule.getApplications());
     while (!applications.isEmpty()) {
       String name = applications.remove();
+
+      // Assume all traffic matches some application under the "any" definition
+      if (name.equals(CATCHALL_APPLICATION_NAME)) {
+        return ImmutableList.of(TrueExpr.INSTANCE);
+      }
       ApplicationGroup group = vsys.getApplicationGroups().get(name);
       if (group != null) {
         applications.addAll(
