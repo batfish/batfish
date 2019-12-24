@@ -235,13 +235,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "~Interface_0~",
-              "~Interface_1~",
-              "~Interface_2~",
-              "~Interface_4~"
-            ]
+            }
           }
         }
       },
@@ -375,10 +369,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "es-domain-subnet-1641fa70",
-              "es-domain-subnet-7044ff16"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -592,12 +582,6 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "backbone",
-              "subnet-1f315846",
-              "subnet-9c8adceb",
-              "subnet-d9cafabc"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -864,14 +848,6 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "backbone",
-              "subnet-073b8061",
-              "subnet-1641fa70",
-              "subnet-30398256",
-              "subnet-7044ff16",
-              "subnet-f73a8191"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -1090,11 +1066,6 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "backbone",
-              "subnet-62f14104",
-              "subnet-8d0cbdeb"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -1256,10 +1227,6 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "Internet_out_interface",
-              "~Interface_3~"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -2791,22 +2758,6 @@
               },
               "tieBreaker" : "ROUTER_ID"
             },
-            "interfaces" : [
-              "Ethernet0/0",
-              "Ethernet1/0",
-              "Ethernet1/1",
-              "Ethernet1/2",
-              "Ethernet1/3",
-              "Ethernet1/4",
-              "Ethernet1/5",
-              "Ethernet1/6",
-              "Ethernet1/7",
-              "GigabitEthernet0/0",
-              "GigabitEthernet2/0",
-              "Loopback0",
-              "Tunnel1",
-              "Tunnel2"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -2989,11 +2940,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-9b93ddfc",
-              "subnet-073b8061",
-              "vpc-b390fad5"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -3167,11 +3113,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-9b93ddfc",
-              "subnet-1641fa70",
-              "vpc-b390fad5"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -3357,11 +3298,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-068fee63",
-              "subnet-1f315846",
-              "vpc-f8fad69d"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -3535,11 +3471,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-9b93ddfc",
-              "subnet-30398256",
-              "vpc-b390fad5"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -3713,11 +3644,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-fac5839d",
-              "subnet-62f14104",
-              "vpc-925131f4"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -3891,11 +3817,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-9b93ddfc",
-              "subnet-7044ff16",
-              "vpc-b390fad5"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -4069,11 +3990,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-fac5839d",
-              "subnet-8d0cbdeb",
-              "vpc-925131f4"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -4259,11 +4175,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-068fee63",
-              "subnet-9c8adceb",
-              "vpc-f8fad69d"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -4449,11 +4360,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-068fee63",
-              "subnet-d9cafabc",
-              "vpc-f8fad69d"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -4627,11 +4533,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "igw-9b93ddfc",
-              "subnet-f73a8191",
-              "vpc-b390fad5"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -4762,9 +4663,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "test-rds-subnet-1641fa70"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5183,13 +5081,6 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "external-vpn-ba2e34a8-1",
-              "external-vpn-ba2e34a8-2",
-              "loopbackBgp",
-              "vpn-vpn-ba2e34a8-1",
-              "vpn-vpn-ba2e34a8-2"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5296,10 +5187,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "subnet-62f14104",
-              "subnet-8d0cbdeb"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5460,13 +5347,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "subnet-073b8061",
-              "subnet-1641fa70",
-              "subnet-30398256",
-              "subnet-7044ff16",
-              "subnet-f73a8191"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5610,11 +5490,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "subnet-1f315846",
-              "subnet-9c8adceb",
-              "subnet-d9cafabc"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
