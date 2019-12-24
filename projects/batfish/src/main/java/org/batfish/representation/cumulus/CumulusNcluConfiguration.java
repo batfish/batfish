@@ -1273,7 +1273,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .build();
 
     addOspfInterfaces(_c.getAllInterfaces(vrf.getName()), proc.getProcessId());
-    proc.setAreas(computeOspfAreas(vrf.getInterfaceNames()));
+    proc.setAreas(computeOspfAreas(_c.getAllInterfaces(vrf.getName()).keySet()));
     return proc;
   }
 

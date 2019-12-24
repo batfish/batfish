@@ -631,7 +631,7 @@ final class AristaConversions {
   @Nonnull
   static Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
     return c.getVrfs().values().stream()
-        .filter(vrf -> vrf.getInterfaceNames().contains(String.format("Vlan%d", vlan)))
+        .filter(vrf -> c.getAllInterfaces(vrf.getName()).containsKey(String.format("Vlan%d", vlan)))
         .findFirst();
   }
 

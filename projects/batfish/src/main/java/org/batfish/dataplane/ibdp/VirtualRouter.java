@@ -397,7 +397,7 @@ public class VirtualRouter implements Serializable {
       _isisIncomingRoutes = ImmutableSortedMap.of();
     } else {
       _isisIncomingRoutes =
-          _vrf.getInterfaceNames().stream()
+          _c.getAllInterfaces(_vrf.getName()).keySet().stream()
               .map(ifaceName -> new IsisNode(_c.getHostname(), ifaceName))
               .filter(network.nodes()::contains)
               .flatMap(n -> network.inEdges(n).stream())
@@ -787,7 +787,7 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   void initConnectedRib() {
     // Look at all interfaces in our VRF
-    _vrf.getActiveInterfaces()
+    _c.getActiveInterfaces(_name).values().stream()
         .flatMap(VirtualRouter::generateConnectedRoutes)
         .forEach(r -> _connectedRib.mergeRoute(annotateRoute(r)));
   }
@@ -839,7 +839,7 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   void initLocalRib() {
     // Look at all interfaces in our VRF
-    _vrf.getActiveInterfaces()
+    _c.getActiveInterfaces(_name).values().stream()
         .flatMap(VirtualRouter::generateLocalRoutes)
         .forEach(r -> _localRib.mergeRoute(annotateRoute(r)));
   }
@@ -916,7 +916,8 @@ public class VirtualRouter implements Serializable {
         new IsisRoute.Builder()
             .setArea(proc.getNetAddress().getAreaIdString())
             .setSystemId(proc.getNetAddress().getSystemIdString());
-    _vrf.getActiveInterfaces()
+    _c.getActiveInterfaces(_vrf.getName())
+        .values()
         .forEach(
             iface ->
                 generateAllIsisInterfaceRoutes(

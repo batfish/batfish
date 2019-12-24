@@ -396,7 +396,7 @@ public class VirtualRouterTest {
 
     // Complete setup by adding a process
     RipProcess ripProcess = new RipProcess();
-    ripProcess.setInterfaces(vr._vrf.getInterfaceNames());
+    ripProcess.setInterfaces(ImmutableSortedSet.copyOf(exampleInterfaceAddresses.keySet()));
     vr._vrf.setRipProcess(ripProcess);
 
     vr.initBaseRipRoutes();
