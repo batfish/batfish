@@ -789,7 +789,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertOspfVrf(OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
-    org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf, vrf);
+    org.batfish.datamodel.ospf.OspfProcess ospfProcess =
+        toOspfProcess(ospfVrf, _c.getAllInterfaces(vrf.getName()));
     vrf.addOspfProcess(ospfProcess);
   }
 
@@ -1256,7 +1257,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
-      OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
+      OspfVrf ospfVrf, Map<String, org.batfish.datamodel.Interface> vrfInterfaces) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouterId();
@@ -1272,8 +1273,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
 
-    addOspfInterfaces(_c.getAllInterfaces(vrf.getName()), proc.getProcessId());
-    proc.setAreas(computeOspfAreas(_c.getAllInterfaces(vrf.getName()).keySet()));
+    addOspfInterfaces(vrfInterfaces, proc.getProcessId());
+    proc.setAreas(computeOspfAreas(vrfInterfaces.keySet()));
     return proc;
   }
 

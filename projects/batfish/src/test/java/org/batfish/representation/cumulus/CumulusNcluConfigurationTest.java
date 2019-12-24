@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warning;
@@ -560,7 +561,7 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, vrf);
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, ImmutableMap.of());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
     assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
@@ -576,8 +577,7 @@ public class CumulusNcluConfigurationTest {
     Loopback lo = ncluConfiguration.getLoopback();
     lo.setConfigured(true);
     lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
-    OspfProcess ospfProcess =
-        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, ImmutableMap.of());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
@@ -592,8 +592,7 @@ public class CumulusNcluConfigurationTest {
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
 
-    OspfProcess ospfProcess =
-        ncluConfiguration.toOspfProcess(ospfVrf, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, ImmutableMap.of());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
@@ -649,7 +648,9 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertThat(viIface.getOspfAreaName(), equalTo(1L));
   }
 
@@ -677,8 +678,10 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertNull(viIface.getOspfNetworkType());
   }
 
@@ -692,8 +695,10 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertFalse(viIface.getOspfPassive());
   }
 
@@ -709,8 +714,10 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertTrue(viIface.getOspfPassive());
   }
 
@@ -725,8 +732,10 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
@@ -742,8 +751,10 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
 
     // default hello interval
     assertThat(
@@ -752,7 +763,7 @@ public class CumulusNcluConfigurationTest {
 
     // set hello interval
     vsIface.getOrCreateOspf().setHelloInterval(1);
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
   }
 
@@ -766,8 +777,10 @@ public class CumulusNcluConfigurationTest {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
 
     // default dead interval
     assertThat(
@@ -776,7 +789,7 @@ public class CumulusNcluConfigurationTest {
 
     // set dead interval
     vsIface.getOrCreateOspf().setDeadInterval(1);
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
     assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
   }
 
@@ -791,7 +804,9 @@ public class CumulusNcluConfigurationTest {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
 
-    ncluConfiguration.addOspfInterfaces(vrf, "1");
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+    ncluConfiguration.addOspfInterfaces(ifaceMap, "1");
 
     // default dead interval
     assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
