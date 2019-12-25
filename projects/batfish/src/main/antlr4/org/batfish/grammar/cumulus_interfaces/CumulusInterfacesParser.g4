@@ -37,7 +37,8 @@ si_inet
 :
   INET
   (
-    LOOPBACK NEWLINE l_property*
+    DHCP NEWLINE i_property*
+    | LOOPBACK NEWLINE l_property*
     | STATIC NEWLINE i_property*
   )
 ;

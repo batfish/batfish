@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -457,6 +458,17 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("swp1");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+  }
+
+  @Test
+  public void testDhcpInterface() {
+    String input = "iface eth0 inet dhcp\n link-speed 10000\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+    assertEquals(
+        iface.getAddresses(),
+        ImmutableList.of(ConcreteInterfaceAddress.create(Ip.FIRST_CLASS_E_EXPERIMENTAL_IP, 32)));
   }
 
   @Test

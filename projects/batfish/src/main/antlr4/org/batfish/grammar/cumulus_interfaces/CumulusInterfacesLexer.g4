@@ -114,6 +114,11 @@ DASH
   '-'
 ;
 
+DHCP
+:
+  'dhcp'
+;
+
 GATEWAY
 :
   'gateway'

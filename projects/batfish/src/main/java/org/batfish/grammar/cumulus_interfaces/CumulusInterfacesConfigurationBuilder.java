@@ -141,6 +141,13 @@ public final class CumulusInterfacesConfigurationBuilder
           ctx.getStart().getLine());
     } else if (ctx.STATIC() != null) {
       _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+    } else if (ctx.DHCP() != null) {
+      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+      /* We don't know what IP will be assigned to this interface via DHCP, so assigning an
+      experimental IP. Not using link local since we want to be able to source and sink packets here.
+      */
+      _currentIface.addAddress(
+          ConcreteInterfaceAddress.create(Ip.FIRST_CLASS_E_EXPERIMENTAL_IP, 32));
     } else {
       _w.addWarning(ctx, ctx.getStart().getText(), _parser, "syntax is not supported now");
     }
