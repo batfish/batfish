@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_interfaces;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -275,6 +276,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceClagBackupIpWithoutVrf() {
+    String input = "iface swp1\n clagd-backup-ip 1.2.3.4\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
+    assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(clag.getBackupIpVrf(), equalTo(DEFAULT_VRF_NAME));
+  }
+
+  @Test
   public void testIfaceClagdPeerIp() {
     String input = "iface swp1\n clagd-peer-ip 1.2.3.4\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
@@ -286,6 +295,13 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface swp1\n clagd-peer-ip linklocal\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertTrue(clag.isPeerIpLinkLocal());
+  }
+
+  @Test
+  public void testIfaceClagdPriority() {
+    String input = "iface swp1\n clagd-priority 42\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
+    assertThat(clag.getPriority(), equalTo(42));
   }
 
   @Test
