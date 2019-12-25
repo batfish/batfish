@@ -99,6 +99,11 @@ CLAGD_PEER_IP
   'clagd-peer-ip'
 ;
 
+CLAGD_PRIORITY
+:
+  'clagd-priority'
+;
+
 CLAGD_SYS_MAC
 :
   'clagd-sys-mac'
