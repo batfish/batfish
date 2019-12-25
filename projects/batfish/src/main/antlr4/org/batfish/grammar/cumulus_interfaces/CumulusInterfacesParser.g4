@@ -83,6 +83,7 @@ i_property
   | i_clag_id
   | i_clagd_backup_ip
   | i_clagd_peer_ip
+  | i_clagd_priority
   | i_clagd_sys_mac
   | i_gateway
   | i_hwaddress
@@ -171,12 +172,17 @@ i_clag_id
 
 i_clagd_backup_ip
 :
-  CLAGD_BACKUP_IP IP_ADDRESS VRF vrf_name NEWLINE
+  CLAGD_BACKUP_IP IP_ADDRESS (VRF vrf_name)? NEWLINE
 ;
 
 i_clagd_peer_ip
 :
   CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
+;
+
+i_clagd_priority
+:
+  CLAGD_PRIORITY number NEWLINE
 ;
 
 i_clagd_sys_mac

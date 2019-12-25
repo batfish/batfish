@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_interfaces;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -33,6 +34,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_v
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_priorityContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
@@ -238,13 +240,17 @@ public final class CumulusInterfacesConfigurationBuilder
   public void exitI_clagd_backup_ip(I_clagd_backup_ipContext ctx) {
     InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
     clag.setBackupIp(Ip.parse(ctx.IP_ADDRESS().getText()));
-    String vrf = ctx.vrf_name().getText();
-    clag.setBackupIpVrf(vrf);
-    _config.referenceStructure(
-        CumulusStructureType.VRF,
-        vrf,
-        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
-        ctx.getStart().getLine());
+    if (ctx.VRF() != null) {
+      String vrf = ctx.vrf_name().getText();
+      clag.setBackupIpVrf(vrf);
+      _config.referenceStructure(
+          CumulusStructureType.VRF,
+          vrf,
+          CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+          ctx.getStart().getLine());
+    } else {
+      clag.setBackupIpVrf(DEFAULT_VRF_NAME);
+    }
   }
 
   @Override
@@ -257,6 +263,12 @@ public final class CumulusInterfacesConfigurationBuilder
     } else {
       throw new IllegalStateException("clagd-peer-ip without an IP or linklocal");
     }
+  }
+
+  @Override
+  public void exitI_clagd_priority(I_clagd_priorityContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setPriority(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
