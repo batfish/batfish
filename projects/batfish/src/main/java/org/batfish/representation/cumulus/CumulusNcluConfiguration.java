@@ -248,7 +248,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
-                neighbor.getIpv4UnicastAddressFamily(), exportRoutingPolicy, importRoutingPolicy))
+                neighbor.getIpv4UnicastAddressFamily(),
+                bgpVrf.getDefaultIpv4Unicast(),
+                exportRoutingPolicy,
+                importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();
@@ -258,14 +261,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @Nullable
   Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
+      boolean defaultIpv4Unicast,
       RoutingPolicy exportRoutingPolicy,
       RoutingPolicy importRoutingPolicy) {
 
-    // check if address family was explicitly deactivated (address family is activated by default)
-    boolean deactivated =
-        ipv4UnicastAddressFamily != null
-            && Boolean.FALSE.equals(ipv4UnicastAddressFamily.getActivated());
-    if (deactivated) {
+    // check if address family should be activated
+    boolean explicitActivationSetting =
+        ipv4UnicastAddressFamily != null && ipv4UnicastAddressFamily.getActivated() != null;
+    if ((explicitActivationSetting && !ipv4UnicastAddressFamily.getActivated())
+        || (!explicitActivationSetting && !defaultIpv4Unicast)) {
       return null;
     }
 
@@ -334,7 +338,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
-                neighbor.getIpv4UnicastAddressFamily(), exportRoutingPolicy, importRoutingPolicy))
+                neighbor.getIpv4UnicastAddressFamily(),
+                bgpVrf.getDefaultIpv4Unicast(),
+                exportRoutingPolicy,
+                importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();

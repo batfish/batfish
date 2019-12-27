@@ -92,6 +92,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnobd_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
@@ -365,6 +366,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
+  @Override
+  public void exitSbnobd_ipv4_unicast(Sbnobd_ipv4_unicastContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp vrf");
+      return;
+    }
+    _currentBgpVrf.setDefaultIpv4Unicast(false);
   }
 
   @Override

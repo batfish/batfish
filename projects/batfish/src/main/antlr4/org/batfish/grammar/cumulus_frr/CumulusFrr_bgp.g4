@@ -14,6 +14,7 @@ s_bgp
   | sb_always_compare_med
   | sb_bgp
   | sb_neighbor
+  | sb_no
   )*
 ;
 
@@ -26,6 +27,32 @@ sb_bgp
     | sbb_log_neighbor_changes
     | sbb_router_id
   )
+;
+
+sb_no
+:
+  NO
+  (
+    sbno_bgp
+  )
+;
+
+
+sbno_bgp
+:
+  BGP
+  (
+     sbnob_default
+  )
+;
+
+sbnob_default
+:
+  DEFAULT
+  (
+     sbnobd_ipv4_unicast
+  )
+  NEWLINE
 ;
 
 sbb_confederation
@@ -265,4 +292,9 @@ sbn_bfd
 sbn_password
 :
   PASSWORD REMARK_TEXT
+;
+
+sbnobd_ipv4_unicast
+:
+    IPV4_UNICAST
 ;
