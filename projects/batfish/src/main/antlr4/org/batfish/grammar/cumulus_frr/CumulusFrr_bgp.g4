@@ -31,13 +31,29 @@ sb_bgp
 
 sb_no
 :
-  NO BGP DEFAULT
+  NO
+  (
+    sbno_bgp
+  )
+;
+
+
+sbno_bgp
+:
+  BGP
+  (
+     sbnob_default
+  )
+;
+
+sbnob_default
+:
+  DEFAULT
   (
      sbnobd_ipv4_unicast
   )
   NEWLINE
 ;
-
 
 sbb_confederation
 :

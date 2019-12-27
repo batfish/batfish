@@ -21,6 +21,7 @@ public class BgpVrf implements Serializable {
   private @Nullable Long _confederationId;
 
   public BgpVrf(String vrfName) {
+    // the default is true unless explicitly disabled (via "no bgp default ipv4-unicast")
     _defaultIpv4Unicast = true;
     _vrfName = vrfName;
     _neighbors = new HashMap<>();
