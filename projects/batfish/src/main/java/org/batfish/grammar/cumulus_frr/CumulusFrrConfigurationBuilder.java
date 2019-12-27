@@ -269,6 +269,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       routeMap = null;
     }
 
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for redistribution configuration");
+      return;
+    }
     BgpRedistributionPolicy oldRedistributionPolicy =
         _currentBgpVrf
             .getIpv4Unicast()
@@ -288,6 +293,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafi_network(Sbafi_networkContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for network configuration");
+      return;
+    }
     _currentBgpVrf
         .getIpv4Unicast()
         .getNetworks()
@@ -296,17 +306,41 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "BGP vrf is not defined for advertise-all-vni configuration");
+      return;
+    }
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
   }
 
   @Override
   public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "BGP vrf is not defined for advertise-ipv4-unicast configuration");
+      return;
+    }
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
   }
 
   @Override
   public void exitSbafi_aggregate_address(Sbafi_aggregate_addressContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "BGP vrf is not defined for aggregate-address configuration");
+      return;
+    }
     Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks =
         _currentBgpVrf.getIpv4Unicast().getAggregateNetworks();
     Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
@@ -347,6 +381,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       throw new BatfishException("neightbor name or address");
     }
 
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for neighbor configuration");
+      return;
+    }
     BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
     if (bgpNeighbor == null) {
       _w.addWarning(
@@ -497,6 +536,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafin_activate(Sbafin_activateContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      // TODO: check if this silent ignore is OK
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(true);
@@ -505,6 +545,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafin_next_hop_self(Sbafin_next_hop_selfContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      // TODO: check if this silent ignore is OK
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
@@ -513,6 +554,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafin_route_reflector_client(Sbafin_route_reflector_clientContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      // TODO: check if this silent ignore is OK
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setRouteReflectorClient(true);
@@ -520,6 +562,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafls_neighbor_activate(Sbafls_neighbor_activateContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "BGP vrf is not defined for neighbor activate configuration");
+      return;
+    }
     String neighborName = ctx.neighbor.getText();
     BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
     if (neighbor == null) {
@@ -542,22 +592,41 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbbb_aspath_multipath_relax(Sbbb_aspath_multipath_relaxContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for aspath multipath configuration");
+      return;
+    }
     _currentBgpVrf.setAsPathMultipathRelax(true);
   }
 
   @Override
   public void exitSbb_router_id(Sbb_router_idContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for router-id configuration");
+      return;
+    }
     _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
   public void exitSbb_confederation(Sbb_confederationContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for confederation configuration");
+      return;
+    }
     Long id = toLong(ctx.id);
     _currentBgpVrf.setConfederationId(id);
   }
 
   @Override
   public void enterSbn_ip(Sbn_ipContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "BGP vrf is not defined for ip configuration");
+      return;
+    }
     String name = ctx.ip.getText();
     _currentBgpNeighbor =
         _currentBgpVrf
@@ -573,6 +642,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterSbn_name(Sbn_nameContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP vrf is not defined for neighbor name configuration");
+      return;
+    }
     // if neighbor does not already exist, get will return null. That's ok -- the listener for
     // child parse node will create it.
     _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(ctx.name.getText());
@@ -627,16 +701,31 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbnp_description(Sbnp_descriptionContext ctx) {
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP neighbor is not defined for description configuration");
+      return;
+    }
     _currentBgpNeighbor.setDescription(ctx.REMARK_TEXT().getText());
   }
 
   @Override
   public void exitSbnp_peer_group(Sbnp_peer_groupContext ctx) {
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP neighbor is not defined for peer-group configuration");
+      return;
+    }
     _currentBgpNeighbor.setPeerGroup(ctx.name.getText());
   }
 
   @Override
   public void exitSbnp_remote_as(Sbnp_remote_asContext ctx) {
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "BGP neighbor is not defined for remote-as configuration");
+      return;
+    }
     if (ctx.autonomous_system() != null) {
       _currentBgpNeighbor.setRemoteAsType(EXPLICIT);
       _currentBgpNeighbor.setRemoteAs(parseLong(ctx.autonomous_system().getText()));
@@ -651,6 +740,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbnp_ebgp_multihop(Sbnp_ebgp_multihopContext ctx) {
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "BGP neighbor is not defined for ebgp-multihop configuration");
+      return;
+    }
     long num = parseLong(ctx.num.getText());
     _currentBgpNeighbor.setEbgpMultihop(num);
   }
@@ -687,12 +784,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSv_vni(Sv_vniContext ctx) {
+    if (_currentVrf == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "VRF is not defined for VNI configuration");
+      return;
+    }
     int vni = Integer.parseInt(ctx.vni.v.getText());
     _currentVrf.setVni(vni);
   }
 
   @Override
   public void exitSv_route(Sv_routeContext ctx) {
+    if (_currentVrf == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "VRF is not defined for route configuration");
+      return;
+    }
     Ip nextHop = Ip.parse(ctx.ip_address().getText());
     Prefix network = Prefix.parse(ctx.prefix().getText());
     _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHop, null));
@@ -733,6 +838,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRm_description(Rm_descriptionContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "Route map entry is not defined for description configuration");
+      return;
+    }
     _currentRouteMapEntry.setDescription(ctx.route_map_description().getText());
   }
 
@@ -743,6 +856,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRm_call(Rm_callContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for call configuration");
+      return;
+    }
     String name = ctx.name.getText();
     _currentRouteMapEntry.setCall(new RouteMapCall(name));
     _c.referenceStructure(ROUTE_MAP, name, ROUTE_MAP_CALL, ctx.getStart().getLine());
@@ -750,6 +868,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmm_as_path(Rmm_as_pathContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for as-path configuration");
+      return;
+    }
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchAsPath(new RouteMapMatchAsPath(name));
     _c.referenceStructure(
@@ -761,6 +884,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmmipa_prefix_list(Rmmipa_prefix_listContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "Route map entry is not defined for prefix-list configuration");
+      return;
+    }
     String name = ctx.name.getText();
     RouteMapMatchIpAddressPrefixList matchPrefixList =
         _currentRouteMapEntry.getMatchIpAddressPrefixList();
@@ -780,6 +911,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmm_interface(Rmm_interfaceContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "Route map entry is not defined for match interface configuration");
+      return;
+    }
     String name = ctx.name.getText();
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
     _c.referenceStructure(
@@ -791,6 +930,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmm_community(Rmm_communityContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "Route map entry is not defined for community configuration");
+      return;
+    }
     ctx.names.forEach(
         name ->
             _c.referenceStructure(
@@ -812,22 +959,42 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRmm_tag(Rmm_tagContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for tag configuration");
+      return;
+    }
     _currentRouteMapEntry.setMatchTag(new RouteMapMatchTag(toLong(ctx.tag)));
   }
 
   @Override
   public void exitRmom_next(Rmom_nextContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for continue configuration");
+      return;
+    }
     _currentRouteMapEntry.setContinue(new RouteMapContinue(null));
   }
 
   @Override
   public void exitRmom_goto(Rmom_gotoContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for goto configuration");
+      return;
+    }
     int seq = Integer.parseInt(ctx.seq.getText());
     _currentRouteMapEntry.setContinue(new RouteMapContinue(seq));
   }
 
   @Override
   public void exitRms_as_path(Rms_as_pathContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for as-path configuration");
+      return;
+    }
     List<Long> asns =
         ctx.as_path.asns.stream().map(this::toLong).collect(ImmutableList.toImmutableList());
     _currentRouteMapEntry.setSetAsPath(new RouteMapSetAsPath(asns));
@@ -835,11 +1002,21 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_metric(Rms_metricContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for metric configuration");
+      return;
+    }
     _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(parseLong(ctx.metric.getText())));
   }
 
   @Override
   public void exitRmsipnh_literal(Rmsipnh_literalContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for next hop configuration");
+      return;
+    }
     Ip ip = Ip.parse(ctx.next_hop.getText());
     RouteMapSetIpNextHopLiteral setNextHop = _currentRouteMapEntry.getSetIpNextHop();
     if (setNextHop != null) {
@@ -852,6 +1029,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_community(Rms_communityContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "Route map entry is not defined for set community configuration");
+      return;
+    }
     RouteMapSetCommunity old = _currentRouteMapEntry.getSetCommunity();
     if (old != null) {
       _w.addWarning(ctx, ctx.getText(), _parser, "overwriting set community");
@@ -865,11 +1050,24 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_local_preference(Rms_local_preferenceContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getText(),
+          _parser,
+          "Route map entry is not defined for local preference configuration");
+      return;
+    }
     _currentRouteMapEntry.setSetLocalPreference(new RouteMapSetLocalPreference(toLong(ctx.pref)));
   }
 
   @Override
   public void exitRms_tag(Rms_tagContext ctx) {
+    if (_currentRouteMapEntry == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route map entry is not defined for tag configuration");
+      return;
+    }
     _currentRouteMapEntry.setSetTag(new RouteMapSetTag(toLong(ctx.tag)));
   }
 
@@ -941,6 +1139,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitPl_line_action(Pl_line_actionContext ctx) {
+    if (_currentIpPrefixList == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "IP prefix list is not defined for action configuration");
+      return;
+    }
     long num;
     if (ctx.num != null) {
       num = toLong(ctx.num);
