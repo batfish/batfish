@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -444,10 +445,22 @@ public class CumulusNcluConfigurationTest {
     CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
     vsConfig.setConfiguration(viConfig);
     BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
-    af.setActivated(false); // explicitly deactivated
     af.setRouteReflectorClient(true);
 
-    assertNull(vsConfig.convertIpv4UnicastAddressFamily(af, policy, null));
+    // explicitly deactivated
+    af.setActivated(false);
+    assertNull(vsConfig.convertIpv4UnicastAddressFamily(af, true, policy, null));
+    assertNull(vsConfig.convertIpv4UnicastAddressFamily(af, false, policy, null));
+
+    // explicitly activated
+    af.setActivated(true);
+    assertNotNull(vsConfig.convertIpv4UnicastAddressFamily(af, true, policy, null));
+    assertNotNull(vsConfig.convertIpv4UnicastAddressFamily(af, false, policy, null));
+
+    // no explicit configuration
+    af.setActivated(null);
+    assertNotNull(vsConfig.convertIpv4UnicastAddressFamily(af, true, policy, null));
+    assertNull(vsConfig.convertIpv4UnicastAddressFamily(af, false, policy, null));
   }
 
   @Test
@@ -465,7 +478,9 @@ public class CumulusNcluConfigurationTest {
 
     // route-reflector-client is false if ipv4af is null
     assertFalse(
-        vsConfig.convertIpv4UnicastAddressFamily(null, policy, null).getRouteReflectorClient());
+        vsConfig
+            .convertIpv4UnicastAddressFamily(null, true, policy, null)
+            .getRouteReflectorClient());
 
     // VI route-reflector-client is true if VS activate and route-reflector-client are both true
     {
@@ -473,7 +488,9 @@ public class CumulusNcluConfigurationTest {
       af.setActivated(true);
       af.setRouteReflectorClient(true);
       assertTrue(
-          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
+          vsConfig
+              .convertIpv4UnicastAddressFamily(af, true, policy, null)
+              .getRouteReflectorClient());
     }
 
     // Despite cumulus docs, GNS3 testing confirms VI route-reflector-client should be true even if
@@ -482,7 +499,9 @@ public class CumulusNcluConfigurationTest {
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setRouteReflectorClient(true);
       assertTrue(
-          vsConfig.convertIpv4UnicastAddressFamily(af, policy, null).getRouteReflectorClient());
+          vsConfig
+              .convertIpv4UnicastAddressFamily(af, true, policy, null)
+              .getRouteReflectorClient());
     }
   }
 

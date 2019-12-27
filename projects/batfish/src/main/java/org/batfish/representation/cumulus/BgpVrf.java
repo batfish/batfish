@@ -10,6 +10,7 @@ import org.batfish.datamodel.Ip;
 /** BGP configuration for a particular VRF. */
 public class BgpVrf implements Serializable {
 
+  private boolean _defaultIpv4Unicast;
   private @Nullable Long _autonomousSystem;
   private @Nullable Boolean _asPathMultipathRelax;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
@@ -20,8 +21,17 @@ public class BgpVrf implements Serializable {
   private @Nullable Long _confederationId;
 
   public BgpVrf(String vrfName) {
+    _defaultIpv4Unicast = true;
     _vrfName = vrfName;
     _neighbors = new HashMap<>();
+  }
+
+  public boolean getDefaultIpv4Unicast() {
+    return _defaultIpv4Unicast;
+  }
+
+  public void setDefaultIpv4Unicast(boolean defaultIpv4Unicast) {
+    _defaultIpv4Unicast = defaultIpv4Unicast;
   }
 
   @Nullable

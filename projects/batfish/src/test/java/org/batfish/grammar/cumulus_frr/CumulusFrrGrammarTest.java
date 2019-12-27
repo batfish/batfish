@@ -470,6 +470,12 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpNoDefaultIpv4Unicast() {
+    parse("router bgp 1\n no bgp default ipv4-unicast\n");
+    assertFalse(_config.getBgpProcess().getDefaultVrf().getDefaultIpv4Unicast());
+  }
+
+  @Test
   public void testHostname() {
     parse("hostname asdf235jgij981\n");
   }
