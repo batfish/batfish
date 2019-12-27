@@ -160,6 +160,11 @@ DATACENTER
   'datacenter'
 ;
 
+DEFAULT
+:
+  'default'
+;
+
 DEFAULTS
 :
   'defaults'
@@ -306,6 +311,11 @@ IP
 IPV4
 :
   'ipv4'
+;
+
+IPV4_UNICAST
+:
+  'ipv4-unicast'
 ;
 
 IPV6
