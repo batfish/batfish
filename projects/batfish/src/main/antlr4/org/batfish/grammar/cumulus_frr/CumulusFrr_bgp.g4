@@ -64,7 +64,7 @@ sb_neighbor
 sb_address_family
 :
   ADDRESS_FAMILY sbaf
-  EXIT_ADDRESS_FAMILY? NEWLINE
+  (EXIT_ADDRESS_FAMILY NEWLINE)?
 ;
 
 sbaf
