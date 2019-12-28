@@ -61,6 +61,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -91,6 +92,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -130,10 +132,18 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
+  private static final int MAX_ADMINISTRATIVE_COST = 32767;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
 
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
   private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
+
+  private static GeneratedRoute DEFAULT_ROUTE =
+      GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST).build();
+
+  private static final Statement REJECT_DEFAULT_ROUTE =
+      new If(
+          Common.matchDefaultRoute(), ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
@@ -245,6 +255,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setPeerInterface(neighbor.getName())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
+        .setGeneratedRoutes(bgpDefaultOriginate(neighbor) ? ImmutableSet.of(DEFAULT_ROUTE) : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
@@ -335,6 +346,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setPeerAddress(neighbor.getPeerIp())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
+        .setGeneratedRoutes(bgpDefaultOriginate(neighbor) ? ImmutableSet.of(DEFAULT_ROUTE) : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
@@ -402,6 +414,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         RoutingPolicy.builder()
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
+
+    if (bgpDefaultOriginate(neighbor)) {
+      // Do not export other default routes to the neighbor; the generated route should dominate.
+      peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
+    }
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
@@ -660,6 +677,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 Stream.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values().stream())
             .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
             .anyMatch(Predicate.isEqual(ifaceName));
+  }
+
+  /** Returns whether we originate default toward this neighbor */
+  private static boolean bgpDefaultOriginate(BgpNeighbor neighbor) {
+    return neighbor.getIpv4UnicastAddressFamily() != null
+        && Boolean.TRUE.equals(neighbor.getIpv4UnicastAddressFamily().getDefaultOriginate());
   }
 
   /**
