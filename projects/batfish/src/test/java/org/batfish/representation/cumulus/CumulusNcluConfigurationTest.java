@@ -427,6 +427,49 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
+  public void testConvertIpv4UnicastAddressFamily_allowAsIn() {
+    // setup vi model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    RoutingPolicy policy = nf.routingPolicyBuilder().build();
+
+    // setup vs model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+
+    {
+      // address family is null
+      assertFalse(
+          vsConfig
+              .convertIpv4UnicastAddressFamily(null, true, policy, null)
+              .getAddressFamilyCapabilities()
+              .getAllowLocalAsIn());
+    }
+
+    {
+      // address family is non-null but allowasin is not set
+      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+      assertFalse(
+          vsConfig
+              .convertIpv4UnicastAddressFamily(af, true, policy, null)
+              .getAddressFamilyCapabilities()
+              .getAllowLocalAsIn());
+    }
+
+    {
+      // address family is non-null and allowasin is  set
+      BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
+      af.setAllowAsIn(5);
+      assertTrue(
+          vsConfig
+              .convertIpv4UnicastAddressFamily(af, true, policy, null)
+              .getAddressFamilyCapabilities()
+              .getAllowLocalAsIn());
+    }
+  }
+
+  @Test
   public void testConvertIpv4UnicastAddressFamily_routeReflectorClient() {
 
     // setup vi model

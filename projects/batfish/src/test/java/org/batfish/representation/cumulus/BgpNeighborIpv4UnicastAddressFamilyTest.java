@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -20,6 +21,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _empty = new BgpNeighborIpv4UnicastAddressFamily();
     _withSettings = new BgpNeighborIpv4UnicastAddressFamily();
     _withSettings.setActivated(true);
+    _withSettings.setAllowAsIn(5);
     _withSettings.setRouteReflectorClient(false);
   }
 
@@ -28,6 +30,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     // Inherit settings correctly
     _empty.inheritFrom(_withSettings);
     assertTrue(_empty.getActivated());
+    assertEquals(_empty.getAllowAsIn().intValue(), 5);
     assertFalse(_empty.getRouteReflectorClient());
   }
 
@@ -36,6 +39,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     // Inheriting unset settings does not override existing settings
     _empty.inheritFrom(_empty);
     assertThat(_empty.getActivated(), nullValue());
+    assertThat(_empty.getAllowAsIn(), nullValue());
     assertThat(_empty.getRouteReflectorClient(), nullValue());
   }
 
@@ -44,6 +48,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     // Inheriting unset settings onto existing settings does override
     _withSettings.inheritFrom(_empty);
     assertThat(_withSettings.getActivated(), equalTo(_withSettings.getActivated()));
+    assertThat(_withSettings.getAllowAsIn(), equalTo(_withSettings.getAllowAsIn()));
     assertThat(
         _withSettings.getRouteReflectorClient(), equalTo(_withSettings.getRouteReflectorClient()));
   }
