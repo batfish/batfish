@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
@@ -915,25 +914,22 @@ public class CumulusNcluConfigurationTest {
   public void testInitVrfStaticRoutes_postUpRoutes() {
     CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
 
-    List<StaticRoute> routes0 =
-        ImmutableList.of(new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0"));
-
-    List<StaticRoute> routes1 =
-        ImmutableList.of(new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0"));
+    StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0");
+    StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0");
 
     // enabled interface in the target vrf
     Interface iface1 = new Interface("eth0", CumulusInterfaceType.PHYSICAL, null, null);
-    iface1.getPostUpIpRoutes().addAll(routes0);
+    iface1.addPostUpIpRoute(route0);
     iface1.setVrf("vrf0");
 
     // enabled interface in a different vrf
     Interface iface2 = new Interface("eth1", CumulusInterfaceType.PHYSICAL, null, null);
-    iface2.getPostUpIpRoutes().addAll(routes1);
+    iface2.addPostUpIpRoute(route1);
     iface2.setVrf("vrf1");
 
     // disabled interface in the target vrf
     Interface iface3 = new Interface("eth2", CumulusInterfaceType.PHYSICAL, null, null);
-    iface3.getPostUpIpRoutes().addAll(routes1);
+    iface3.addPostUpIpRoute(route1);
     iface3.setVrf("vrf0");
     iface3.setDisabled(true);
 
@@ -948,11 +944,6 @@ public class CumulusNcluConfigurationTest {
     vendorConfiguration.initVrfStaticRoutes(oldVrf0, newVrf0);
 
     // should only have routes from iface0
-    assertThat(
-        newVrf0.getStaticRoutes(),
-        equalTo(
-            routes0.stream()
-                .map(StaticRoute::convert)
-                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))));
+    assertThat(newVrf0.getStaticRoutes(), equalTo(ImmutableSortedSet.of(route0.convert())));
   }
 }
