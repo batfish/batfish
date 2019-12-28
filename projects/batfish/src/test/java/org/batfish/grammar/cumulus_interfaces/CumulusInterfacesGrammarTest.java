@@ -139,6 +139,21 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBondMiimon() {
+    parse("iface swp1\n bond-miimon 100\n");
+  }
+
+  @Test
+  public void testBondMode() {
+    parse("iface swp1\n bond-mode 802.3ad\n");
+  }
+
+  @Test
+  public void testBondMinLinks() {
+    parse("iface swp1\n bond-min-links 1\n");
+  }
+
+  @Test
   public void testIfaceBondSlaves() {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);
@@ -177,6 +192,11 @@ public class CumulusInterfacesGrammarTest {
         contains(4));
     assertThat(interfaces.getInterfaces().get("swp1").getBondSlaves(), contains("s1"));
     assertThat(interfaces.getInterfaces().get("swp2").getBondSlaves(), contains("s2"));
+  }
+
+  @Test
+  public void testBondXmitHashPolicy() {
+    parse("iface swp1\n bond-xmit-hash-policy layer3+4\n");
   }
 
   @Test

@@ -34,7 +34,6 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.CommunityList;
@@ -374,15 +373,13 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testGenerateBgpActivePeerConfig_SetEbgpMultiHop() {
-    // set VI configuration
-    Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
-
+  public void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
     // set bgp neighbor
+    Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
     neighbor.setRemoteAs(10000L);
     neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    neighbor.setPeerIp(Ip.parse("10.0.0.2"));
+    neighbor.setPeerIp(peerIp);
     neighbor.setEbgpMultihop(3L);
 
     // set bgp process
@@ -391,47 +388,13 @@ public class CumulusNcluConfigurationTest {
             Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    ncluConfiguration.generateBgpActivePeerConfig(
-        neighbor,
-        10000L,
-        new BgpVrf("Vrf"),
-        newProc,
-        new RoutingPolicy("Routing", configuration),
-        null,
-        configuration);
 
-    BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(Prefix.parse("10.0.0.2/32"));
-    assertTrue(peerConfig.getEbgpMultihop());
-  }
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder().setPeerAddress(peerIp);
+    ncluConfiguration.generateBgpCommonPeerConfig(
+        neighbor, 10000L, new BgpVrf("Vrf"), newProc, peerConfigBuilder);
 
-  @Test
-  public void testGenerateBgpUnnumberedPeerConfig_SetEbgpMultiHop() {
-
-    // set VI configuration
-    Configuration configuration = new Configuration("Host", ConfigurationFormat.CUMULUS_NCLU);
-
-    // set bgp neighbor
-    BgpInterfaceNeighbor neighbor = new BgpInterfaceNeighbor("BgpNeighbor");
-    neighbor.setRemoteAs(10000L);
-    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    neighbor.setEbgpMultihop(3L);
-
-    // set bgp process
-    org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
-
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    ncluConfiguration.generateBgpUnnumberedPeerConfig(
-        neighbor,
-        10000L,
-        new BgpVrf("Vrf"),
-        newProc,
-        new RoutingPolicy("Routing", configuration),
-        null);
-
-    BgpUnnumberedPeerConfig peerConfig = newProc.getInterfaceNeighbors().get("BgpNeighbor");
-
+    BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(peerIp.toPrefix());
     assertTrue(peerConfig.getEbgpMultihop());
   }
 

@@ -220,29 +220,31 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
-    @Nullable
-    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
-    generateBgpUnnumberedPeerConfig(
-        neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, importRoutingPolicy);
+    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
+        BgpUnnumberedPeerConfig.builder()
+            .setLocalIp(BGP_UNNUMBERED_IP)
+            .setPeerInterface(neighbor.getName());
+    generateBgpCommonPeerConfig(neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 
   @VisibleForTesting
-  void generateBgpUnnumberedPeerConfig(
-      BgpInterfaceNeighbor neighbor,
+  void generateBgpCommonPeerConfig(
+      BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy exportRoutingPolicy,
-      @Nullable RoutingPolicy importRoutingPolicy) {
-    BgpUnnumberedPeerConfig.builder()
+      BgpPeerConfig.Builder<?, ?> peerConfigBuilder) {
+
+    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
+    @Nullable
+    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
+
+    peerConfigBuilder
         .setBgpProcess(newProc)
         .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
-        .setLocalIp(BGP_UNNUMBERED_IP)
-        .setPeerInterface(neighbor.getName())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         // Ipv4 unicast is enabled by default
@@ -263,7 +265,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
       boolean defaultIpv4Unicast,
       RoutingPolicy exportRoutingPolicy,
-      RoutingPolicy importRoutingPolicy) {
+      @Nullable RoutingPolicy importRoutingPolicy) {
 
     // check if address family should be activated
     boolean explicitActivationSetting =
@@ -306,45 +308,16 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
-    @Nullable
-    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
-    generateBgpActivePeerConfig(
-        neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, importRoutingPolicy, _c);
-  }
-
-  @VisibleForTesting
-  void generateBgpActivePeerConfig(
-      BgpIpNeighbor neighbor,
-      @Nullable Long localAs,
-      BgpVrf bgpVrf,
-      org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy exportRoutingPolicy,
-      RoutingPolicy importRoutingPolicy,
-      Configuration c) {
-    BgpActivePeerConfig.builder()
-        .setBgpProcess(newProc)
-        .setConfederation(bgpVrf.getConfederationId())
-        .setDescription(neighbor.getDescription())
-        .setGroup(neighbor.getPeerGroup())
-        .setLocalAs(localAs)
-        .setLocalIp(
-            Optional.ofNullable(
-                    resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, _w))
-                .orElse(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
-        .setPeerAddress(neighbor.getPeerIp())
-        .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-        .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
-        // Ipv4 unicast is enabled by default
-        .setIpv4UnicastAddressFamily(
-            convertIpv4UnicastAddressFamily(
-                neighbor.getIpv4UnicastAddressFamily(),
-                bgpVrf.getDefaultIpv4Unicast(),
-                exportRoutingPolicy,
-                importRoutingPolicy))
-        .setEvpnAddressFamily(
-            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
-        .build();
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(
+                Optional.ofNullable(
+                        resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), _c, _w))
+                    .orElse(
+                        computeLocalIpForBgpNeighbor(
+                            neighbor.getPeerIp(), _c, bgpVrf.getVrfName())))
+            .setPeerAddress(neighbor.getPeerIp());
+    generateBgpCommonPeerConfig(neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 
   @Nullable
