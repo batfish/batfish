@@ -199,7 +199,7 @@ public final class Converter {
     vsIface.getIpAddresses().addAll(firstNonNull(iface.getAddresses(), ImmutableList.of()));
     vsIface.setSpeed(iface.getLinkSpeed());
     vsIface.setVrf(iface.getVrf());
-    vsIface.setPostUpIpRoutes(iface.getPostUpStaticRoutes());
+    vsIface.getPostUpIpRoutes().addAll(iface.getPostUpStaticRoutes());
     return vsIface;
   }
 

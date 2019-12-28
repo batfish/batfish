@@ -960,17 +960,17 @@ public class CumulusNcluConfigurationTest {
 
     // enabled interface in the target vrf
     Interface iface1 = new Interface("eth0", CumulusInterfaceType.PHYSICAL, null, null);
-    iface1.setPostUpIpRoutes(routes0);
+    iface1.getPostUpIpRoutes().addAll(routes0);
     iface1.setVrf("vrf0");
 
     // enabled interface in a different vrf
     Interface iface2 = new Interface("eth1", CumulusInterfaceType.PHYSICAL, null, null);
-    iface2.setPostUpIpRoutes(routes1);
+    iface2.getPostUpIpRoutes().addAll(routes1);
     iface2.setVrf("vrf1");
 
     // disabled interface in the target vrf
     Interface iface3 = new Interface("eth2", CumulusInterfaceType.PHYSICAL, null, null);
-    iface3.setPostUpIpRoutes(routes1);
+    iface3.getPostUpIpRoutes().addAll(routes1);
     iface3.setVrf("vrf0");
     iface3.setDisabled(true);
 

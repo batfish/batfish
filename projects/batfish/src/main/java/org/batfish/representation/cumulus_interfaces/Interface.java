@@ -52,7 +52,7 @@ public final class Interface {
   private @Nullable Integer _vxlanId;
   private @Nullable Set<String> _bondSlaves;
   private @Nullable Set<String> _bridgePorts;
-  private @Nonnull List<StaticRoute> _postUpStaticRoutes;
+  private final @Nonnull List<StaticRoute> _postUpStaticRoutes;
 
   public Interface(@Nonnull String name) {
     _name = name;
