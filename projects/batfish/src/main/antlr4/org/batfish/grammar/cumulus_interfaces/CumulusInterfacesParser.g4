@@ -37,9 +37,8 @@ si_inet
 :
   INET
   (
-    DHCP NEWLINE i_property*
-    | LOOPBACK NEWLINE l_property*
-    | STATIC NEWLINE i_property*
+    LOOPBACK NEWLINE l_property*
+    | (DHCP | MANUAL | STATIC) NEWLINE i_property*
   )
 ;
 
@@ -73,7 +72,11 @@ i_property
   | i_alias
   | i_bond_lacp_bypass_allow
   | i_bond_lacp_rate
+  | i_bond_miimon
+  | i_bond_min_links
+  | i_bond_mode
   | i_bond_slaves
+  | i_bond_xmit_hash_policy
   | i_bridge_access
   | i_bridge_arp_nd_suppress
   | i_bridge_learning
@@ -126,9 +129,29 @@ i_bond_lacp_rate
   BOND_LACP_RATE NEWLINE
 ;
 
+i_bond_miimon
+:
+  BOND_MIIMON NEWLINE
+;
+
+i_bond_min_links
+:
+  BOND_MIN_LINKS NEWLINE
+;
+
+i_bond_mode
+:
+  BOND_MODE NEWLINE
+;
+
 i_bond_slaves
 :
   BOND_SLAVES interface_name+ NEWLINE
+;
+
+i_bond_xmit_hash_policy
+:
+  BOND_XMIT_HASH_POLICY NEWLINE
 ;
 
 i_bridge_access
