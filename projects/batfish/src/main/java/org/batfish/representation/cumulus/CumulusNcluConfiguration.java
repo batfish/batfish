@@ -138,10 +138,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
   private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
 
-  private static GeneratedRoute DEFAULT_ROUTE =
+  @VisibleForTesting
+  static GeneratedRoute GENERATED_DEFAULT_ROUTE =
       GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST).build();
 
-  private static final Statement REJECT_DEFAULT_ROUTE =
+  @VisibleForTesting
+  static final Statement REJECT_DEFAULT_ROUTE =
       new If(
           Common.matchDefaultRoute(), ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   /**
@@ -257,7 +259,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setLocalAs(localAs)
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
-        .setGeneratedRoutes(bgpDefaultOriginate(neighbor) ? ImmutableSet.of(DEFAULT_ROUTE) : null)
+        .setGeneratedRoutes(
+            bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(

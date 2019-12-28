@@ -8,10 +8,7 @@ import javax.annotation.Nullable;
 public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   @Nullable private Boolean _activated;
   @Nullable private Integer _allowAsIn;
-<<<<<<< HEAD
   @Nullable private Boolean _defaultOriginate;
-=======
->>>>>>> origin/frr-allowas-in
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _nextHopSelf;
   @Nullable private String _routeMapIn;
@@ -91,7 +88,6 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   public void setAllowAsIn(@Nullable Integer allowAsIn) {
     _allowAsIn = allowAsIn;
   }
-<<<<<<< HEAD
 
   @Nullable
   public Boolean getDefaultOriginate() {
@@ -101,6 +97,4 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   public void setDefaultOriginate(@Nullable Boolean defaultOriginate) {
     _defaultOriginate = defaultOriginate;
   }
-=======
->>>>>>> origin/frr-allowas-in
 }

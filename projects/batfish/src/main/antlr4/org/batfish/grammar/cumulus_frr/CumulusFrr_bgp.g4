@@ -266,14 +266,11 @@ sbafin_allowas_in
   ALLOWAS_IN count = UINT8
 ;
 
-<<<<<<< HEAD
 sbafin_default_originate
 :
   DEFAULT_ORIGINATE
 ;
 
-=======
->>>>>>> origin/frr-allowas-in
 sbafin_next_hop_self
 :
   NEXT_HOP_SELF
