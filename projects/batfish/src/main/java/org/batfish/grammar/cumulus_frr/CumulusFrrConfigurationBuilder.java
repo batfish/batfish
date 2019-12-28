@@ -506,7 +506,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafin_allowas_in(Sbafin_allowas_inContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
-      // TODO: check if this silent ignore is OK
+      // TODO: remove this silent ignore from here and other places
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setAllowAsIn(Integer.parseInt(ctx.count.getText()));
