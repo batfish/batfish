@@ -165,6 +165,11 @@ DEFAULT
   'default'
 ;
 
+DEFAULT_ORIGINATE
+:
+  'default-originate'
+;
+
 DEFAULTS
 :
   'defaults'
