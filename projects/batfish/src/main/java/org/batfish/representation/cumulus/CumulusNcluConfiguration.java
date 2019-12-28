@@ -1147,12 +1147,22 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void initVrf(String name, Vrf vrf) {
     org.batfish.datamodel.Vrf newVrf = new org.batfish.datamodel.Vrf(name);
-    newVrf.setStaticRoutes(
-        vrf.getStaticRoutes().stream()
-            .map(StaticRoute::convert)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
+    initVrfStaticRoutes(vrf, newVrf);
     assignInterfacesToVrf(newVrf, name);
     _c.getVrfs().put(name, newVrf);
+  }
+
+  @VisibleForTesting
+  void initVrfStaticRoutes(Vrf oldVrf, org.batfish.datamodel.Vrf newVrf) {
+    newVrf.setStaticRoutes(
+        Streams.concat(
+                oldVrf.getStaticRoutes().stream(),
+                _interfaces.values().stream()
+                    .filter(iface -> Objects.equals(iface.getVrf(), oldVrf.getName()))
+                    .filter(iface -> !iface.isDisabled())
+                    .flatMap(iface -> iface.getPostUpIpRoutes().stream()))
+            .map(StaticRoute::convert)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
   private void markStructures() {

@@ -26,6 +26,7 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.StaticRoute;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
@@ -51,9 +52,11 @@ public final class Interface {
   private @Nullable Integer _vxlanId;
   private @Nullable Set<String> _bondSlaves;
   private @Nullable Set<String> _bridgePorts;
+  private @Nonnull List<StaticRoute> _postUpStaticRoutes;
 
   public Interface(@Nonnull String name) {
     _name = name;
+    _postUpStaticRoutes = new LinkedList<>();
   }
 
   public void addAddress(ConcreteInterfaceAddress address) {
@@ -239,5 +242,10 @@ public final class Interface {
       return true;
     }
     return false;
+  }
+
+  @Nonnull
+  public List<StaticRoute> getPostUpStaticRoutes() {
+    return _postUpStaticRoutes;
   }
 }

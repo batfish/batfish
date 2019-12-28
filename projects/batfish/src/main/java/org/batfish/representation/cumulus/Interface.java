@@ -23,6 +23,7 @@ public class Interface implements Serializable {
   private final @Nullable String _superInterfaceName;
   private final @Nonnull CumulusInterfaceType _type;
   private @Nullable String _vrf;
+  private @Nonnull List<StaticRoute> _postUpIpRoutes;
 
   private @Nullable OspfInterface _ospf;
 
@@ -145,5 +146,14 @@ public class Interface implements Serializable {
 
   public void setOspf(@Nullable OspfInterface ospf) {
     _ospf = ospf;
+  }
+
+  @Nonnull
+  public List<StaticRoute> getPostUpIpRoutes() {
+    return _postUpIpRoutes;
+  }
+
+  public void setPostUpIpRoutes(List<StaticRoute> postUpIpRoutes) {
+    _postUpIpRoutes = postUpIpRoutes;
   }
 }

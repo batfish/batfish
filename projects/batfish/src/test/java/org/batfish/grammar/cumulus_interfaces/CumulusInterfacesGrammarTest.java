@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -23,6 +24,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
@@ -33,6 +35,7 @@ import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Before;
@@ -350,6 +353,28 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testMstpctlPortpdufilter() {
     parse("iface vni1\n mstpctl-portbpdufilter yes\n");
+  }
+
+  @Test
+  public void testPostUpIpRouteAddDev() {
+    String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 dev eth0\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertThat(
+        iface.getPostUpStaticRoutes(),
+        equalTo(ImmutableList.of(new StaticRoute(Prefix.parse("10.10.10.0/24"), null, "eth0"))));
+  }
+
+  @Test
+  public void testPostUpIpRouteAddVia() {
+    String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 via 10.1.1.1\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertThat(
+        iface.getPostUpStaticRoutes(),
+        equalTo(
+            ImmutableList.of(
+                new StaticRoute(Prefix.parse("10.10.10.0/24"), Ip.parse("10.1.1.1"), null))));
   }
 
   @Test
