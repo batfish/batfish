@@ -330,15 +330,6 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitIpuir_add(Ipuir_addContext ctx) {
-    if (_currentIface == null) {
-      _w.addWarning(
-          ctx,
-          ctx.getStart().getText(),
-          _parser,
-          "Interface not found for 'post-up ip route add' command");
-      return;
-    }
-
     Ip gatewayIp = null;
     String nextHopInterface = null;
 
@@ -368,7 +359,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
     StaticRoute sr =
         new StaticRoute(Prefix.parse(ctx.IP_PREFIX().getText()), gatewayIp, nextHopInterface);
-    _currentIface.getPostUpStaticRoutes().add(sr);
+    _currentIface.addPostUpIpRoute(sr);
   }
 
   @Override

@@ -8,6 +8,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureType.VXLAN;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,11 +53,11 @@ public final class Interface {
   private @Nullable Integer _vxlanId;
   private @Nullable Set<String> _bondSlaves;
   private @Nullable Set<String> _bridgePorts;
-  private final @Nonnull List<StaticRoute> _postUpStaticRoutes;
+  private @Nonnull List<StaticRoute> _postUpIpRoutes;
 
   public Interface(@Nonnull String name) {
     _name = name;
-    _postUpStaticRoutes = new LinkedList<>();
+    _postUpIpRoutes = ImmutableList.of();
   }
 
   public void addAddress(ConcreteInterfaceAddress address) {
@@ -245,7 +246,11 @@ public final class Interface {
   }
 
   @Nonnull
-  public List<StaticRoute> getPostUpStaticRoutes() {
-    return _postUpStaticRoutes;
+  public List<StaticRoute> getPostUpIpRoutes() {
+    return _postUpIpRoutes;
+  }
+
+  public void addPostUpIpRoute(StaticRoute sr) {
+    _postUpIpRoutes = ImmutableList.<StaticRoute>builder().addAll(_postUpIpRoutes).add(sr).build();
   }
 }

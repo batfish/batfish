@@ -1,5 +1,6 @@
 package org.batfish.representation.cumulus;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class Interface implements Serializable {
   private final @Nullable String _superInterfaceName;
   private final @Nonnull CumulusInterfaceType _type;
   private @Nullable String _vrf;
-  private final @Nonnull List<StaticRoute> _postUpIpRoutes;
+  private @Nonnull List<StaticRoute> _postUpIpRoutes;
 
   private @Nullable OspfInterface _ospf;
 
@@ -49,7 +50,7 @@ public class Interface implements Serializable {
     _type = type;
     _superInterfaceName = superInterfaceName;
     _encapsulationVlan = encapsulationVlan;
-    _postUpIpRoutes = new LinkedList<>();
+    _postUpIpRoutes = ImmutableList.of();
   }
 
   /** Interface alias (description) */
@@ -154,5 +155,9 @@ public class Interface implements Serializable {
   @Nonnull
   public List<StaticRoute> getPostUpIpRoutes() {
     return _postUpIpRoutes;
+  }
+
+  public void addPostUpIpRoute(StaticRoute sr) {
+    _postUpIpRoutes = ImmutableList.<StaticRoute>builder().addAll(_postUpIpRoutes).add(sr).build();
   }
 }

@@ -235,6 +235,34 @@ i_post_up
   )
 ;
 
+ipu_ip
+:
+  IP
+  (
+     ipui_route
+  )
+;
+
+ipui_route
+:
+  ROUTE
+  (
+     ipuir_add
+  )
+;
+
+ipuir_add
+:
+   ADD IP_PREFIX
+   // this rule is more permissive than reality; it allows for multiple occurrences of dev/via
+   // we check for conformance in the extractor
+   (
+     VIA IP_ADDRESS
+     | DEV interface_name
+   )+
+   NEWLINE
+;
+
 i_vlan_id
 :
   VLAN_ID number NEWLINE
@@ -263,32 +291,4 @@ i_vxlan_id
 i_vxlan_local_tunnel_ip
 :
   VXLAN_LOCAL_TUNNEL_IP IP_ADDRESS NEWLINE
-;
-
-ipu_ip
-:
-  IP
-  (
-     ipui_route
-  )
-;
-
-ipui_route
-:
-  ROUTE
-  (
-     ipuir_add
-  )
-;
-
-ipuir_add
-:
-   ADD IP_PREFIX
-   // this rule is more permissive than reality; it allows for multiple occurrences of dev/via
-   // we check for conformance in java-land
-   (
-     VIA IP_ADDRESS
-     | DEV interface_name
-   )+
-   NEWLINE
 ;

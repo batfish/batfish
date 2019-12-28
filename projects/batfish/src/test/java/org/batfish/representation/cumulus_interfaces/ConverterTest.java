@@ -74,7 +74,7 @@ public class ConverterTest {
     bridgeSettings.setPvid(5);
     bridgeSettings.setVids(IntegerSpace.of(123));
 
-    PHYSICAL_IFACE.getPostUpStaticRoutes().add(new StaticRoute(Prefix.ZERO, null, "eth0"));
+    PHYSICAL_IFACE.getPostUpIpRoutes().add(new StaticRoute(Prefix.ZERO, null, "eth0"));
 
     PHYSICAL_SUBIFACE.addAddress(ADDR1);
     PHYSICAL_SUBIFACE.createOrGetBridgeSettings(); // create bridge settings object
@@ -236,7 +236,7 @@ public class ConverterTest {
     assertTrue(vsIface.getIpAddresses().isEmpty());
     assertThat(vsIface.getSpeed(), equalTo(PHYSICAL_IFACE.getLinkSpeed()));
     assertThat(vsIface.getVrf(), equalTo(PHYSICAL_IFACE.getVrf()));
-    assertThat(vsIface.getPostUpIpRoutes(), equalTo(PHYSICAL_IFACE.getPostUpStaticRoutes()));
+    assertThat(vsIface.getPostUpIpRoutes(), equalTo(PHYSICAL_IFACE.getPostUpIpRoutes()));
   }
 
   @Test
