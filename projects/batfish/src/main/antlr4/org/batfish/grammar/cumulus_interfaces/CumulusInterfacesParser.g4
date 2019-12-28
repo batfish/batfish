@@ -37,14 +37,9 @@ si_inet
 :
   INET
   (
-<<<<<<< Updated upstream
     DHCP NEWLINE i_property*
     | LOOPBACK NEWLINE l_property*
     | STATIC NEWLINE i_property*
-=======
-    LOOPBACK NEWLINE l_property*
-    | (DHCP | MANUAL | STATIC) NEWLINE i_property*
->>>>>>> Stashed changes
   )
 ;
 
