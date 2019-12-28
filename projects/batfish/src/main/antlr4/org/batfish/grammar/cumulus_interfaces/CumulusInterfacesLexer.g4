@@ -39,9 +39,29 @@ BOND_LACP_RATE
   'bond-lacp-rate' -> pushMode(M_DropUntilNewline)
 ;
 
+BOND_MIIMON
+:
+  'bond-miimon' -> pushMode(M_DropUntilNewline)
+;
+
+BOND_MIN_LINKS
+:
+  'bond-min-links' -> pushMode(M_DropUntilNewline)
+;
+
+BOND_MODE
+:
+  'bond-mode' -> pushMode(M_DropUntilNewline)
+;
+
 BOND_SLAVES
 :
   'bond-slaves' -> pushMode(M_Words)
+;
+
+BOND_XMIT_HASH_POLICY
+:
+  'bond-xmit-hash-policy' -> pushMode(M_DropUntilNewline)
 ;
 
 BRIDGE_PORTS
