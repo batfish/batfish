@@ -145,6 +145,9 @@ public final class CumulusInterfacesConfigurationBuilder
       // We are not assigning any address to this interface, so it won't really be usable unless
       // another address is explicitly configured
       _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+    } else if (ctx.MANUAL() != null) {
+      // 'manual' creates an interface without an IP address
+      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
     } else {
       _w.addWarning(ctx, ctx.getStart().getText(), _parser, "syntax is not supported now");
     }

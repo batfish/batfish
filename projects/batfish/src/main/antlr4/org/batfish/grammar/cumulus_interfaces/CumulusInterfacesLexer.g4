@@ -179,6 +179,11 @@ LOOPBACK
   'loopback'
 ;
 
+MANUAL
+:
+  'manual'
+;
+
 OFF
 :
   'off'
