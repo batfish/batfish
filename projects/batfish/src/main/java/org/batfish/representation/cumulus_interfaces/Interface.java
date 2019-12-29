@@ -8,6 +8,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VLAN;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureType.VXLAN;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.StaticRoute;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
@@ -51,9 +53,11 @@ public final class Interface {
   private @Nullable Integer _vxlanId;
   private @Nullable Set<String> _bondSlaves;
   private @Nullable Set<String> _bridgePorts;
+  private @Nonnull List<StaticRoute> _postUpIpRoutes;
 
   public Interface(@Nonnull String name) {
     _name = name;
+    _postUpIpRoutes = ImmutableList.of();
   }
 
   public void addAddress(ConcreteInterfaceAddress address) {
@@ -239,5 +243,14 @@ public final class Interface {
       return true;
     }
     return false;
+  }
+
+  @Nonnull
+  public List<StaticRoute> getPostUpIpRoutes() {
+    return _postUpIpRoutes;
+  }
+
+  public void addPostUpIpRoute(StaticRoute sr) {
+    _postUpIpRoutes = ImmutableList.<StaticRoute>builder().addAll(_postUpIpRoutes).add(sr).build();
   }
 }
