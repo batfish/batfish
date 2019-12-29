@@ -489,6 +489,15 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testManualInterface() {
+    String input = "iface eth0 inet manual\n link-speed 10000\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+    assertNull(iface.getAddresses());
+  }
+
+  @Test
   public void testLinkAutoNeg() {
     String input = "iface swp1 inet static\n link-autoneg on\n";
     // assert we can parse the input text
