@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 /** IPv4 unicast BGP configuration for a neighbor (or peer group) */
 public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   @Nullable private Boolean _activated;
+  @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _nextHopSelf;
   @Nullable private String _routeMapIn;
@@ -47,6 +48,10 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
       _activated = other.getActivated();
     }
 
+    if (_allowAsIn == null) {
+      _allowAsIn = other.getAllowAsIn();
+    }
+
     if (_routeReflectorClient == null) {
       _routeReflectorClient = other.getRouteReflectorClient();
     }
@@ -68,5 +73,14 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
 
   public void setRouteMapOut(@Nullable String routeMapOut) {
     _routeMapOut = routeMapOut;
+  }
+
+  @Nullable
+  public Integer getAllowAsIn() {
+    return _allowAsIn;
+  }
+
+  public void setAllowAsIn(@Nullable Integer allowAsIn) {
+    _allowAsIn = allowAsIn;
   }
 }

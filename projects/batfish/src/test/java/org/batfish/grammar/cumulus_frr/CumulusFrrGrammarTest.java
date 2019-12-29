@@ -329,6 +329,25 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborAllowAsIn() {
+    parseLines(
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "neighbor N allowas-in 5",
+        "exit-address-family");
+    assertThat(
+        _config
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(5));
+  }
+
+  @Test
   public void testBgpAddressFamilyNeighborRouteReflectorClient() {
     parseLines(
         "router bgp 1",

@@ -245,6 +245,7 @@ sbafi_neighbor
   NEIGHBOR (ip = IP_ADDRESS | name = word)
   (
     sbafin_activate
+  | sbafin_allowas_in
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_send_community
@@ -257,6 +258,11 @@ sbafi_neighbor
 sbafin_activate
 :
   ACTIVATE
+;
+
+sbafin_allowas_in
+:
+  ALLOWAS_IN count = UINT8
 ;
 
 sbafin_next_hop_self
