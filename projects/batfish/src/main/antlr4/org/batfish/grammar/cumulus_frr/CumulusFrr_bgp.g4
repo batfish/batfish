@@ -246,10 +246,7 @@ sbafi_neighbor
   (
     sbafin_activate
   | sbafin_allowas_in
-<<<<<<< HEAD
   | sbafin_default_originate
-=======
->>>>>>> origin/master
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_send_community
