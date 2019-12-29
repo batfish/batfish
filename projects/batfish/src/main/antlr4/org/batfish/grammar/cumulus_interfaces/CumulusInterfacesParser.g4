@@ -37,8 +37,9 @@ si_inet
 :
   INET
   (
-    DHCP NEWLINE i_property*
-    | LOOPBACK NEWLINE l_property*
+    LOOPBACK NEWLINE l_property*
+    | DHCP NEWLINE i_property*
+    | MANUAL NEWLINE i_property*
     | STATIC NEWLINE i_property*
   )
 ;
@@ -97,6 +98,7 @@ i_property
   | i_mstpctl_bpduguard
   | i_mstpctl_portadminedge
   | i_mstpctl_portbpdufilter
+  | i_post_up
   | i_vlan_id
   | i_vlan_raw_device
   | i_vrf
@@ -248,6 +250,42 @@ i_mstpctl_portadminedge
 i_mstpctl_portbpdufilter
 :
   MSTPCTL_PORTBPDUFILTER NEWLINE
+;
+
+i_post_up
+:
+  POST_UP
+  (
+     ipu_ip
+  )
+;
+
+ipu_ip
+:
+  IP
+  (
+     ipui_route
+  )
+;
+
+ipui_route
+:
+  ROUTE
+  (
+     ipuir_add
+  )
+;
+
+ipuir_add
+:
+   ADD IP_PREFIX
+   // this rule is more permissive than reality; it allows for multiple occurrences of dev/via
+   // we check for conformance in the extractor
+   (
+     VIA IP_ADDRESS
+     | DEV interface_name
+   )+
+   NEWLINE
 ;
 
 i_vlan_id

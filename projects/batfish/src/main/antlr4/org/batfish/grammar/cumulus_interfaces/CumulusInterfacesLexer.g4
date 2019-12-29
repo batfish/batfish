@@ -9,6 +9,11 @@ tokens {
 
 // Keyword tokens
 
+ADD
+:
+  'add'
+;
+
 ADDRESS
 :
   'address'
@@ -134,6 +139,11 @@ DASH
   '-'
 ;
 
+DEV
+:
+  'dev'-> pushMode(M_Word)
+;
+
 DHCP
 :
   'dhcp'
@@ -159,6 +169,11 @@ INET
   'inet'
 ;
 
+IP
+:
+  'ip'
+;
+
 LINK_LOCAL
 :
   'linklocal'
@@ -177,6 +192,11 @@ LINK_AUTONEG
 LOOPBACK
 :
   'loopback'
+;
+
+MANUAL
+:
+  'manual'
 ;
 
 OFF
@@ -209,9 +229,24 @@ NO
   'no'
 ;
 
+POST_UP
+:
+  'post-up'
+;
+
+ROUTE
+:
+  'route'
+;
+
 STATIC
 :
   'static'
+;
+
+VIA
+:
+  'via'
 ;
 
 VLAN_ID

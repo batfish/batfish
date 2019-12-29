@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
@@ -1036,5 +1037,42 @@ public class CumulusNcluConfigurationTest {
         .build();
 
     assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
+  }
+
+  @Test
+  public void testInitVrfStaticRoutes_postUpRoutes() {
+    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
+
+    StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0");
+    StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0");
+
+    // enabled interface in the target vrf
+    Interface iface1 = new Interface("eth0", CumulusInterfaceType.PHYSICAL, null, null);
+    iface1.addPostUpIpRoute(route0);
+    iface1.setVrf("vrf0");
+
+    // enabled interface in a different vrf
+    Interface iface2 = new Interface("eth1", CumulusInterfaceType.PHYSICAL, null, null);
+    iface2.addPostUpIpRoute(route1);
+    iface2.setVrf("vrf1");
+
+    // disabled interface in the target vrf
+    Interface iface3 = new Interface("eth2", CumulusInterfaceType.PHYSICAL, null, null);
+    iface3.addPostUpIpRoute(route1);
+    iface3.setVrf("vrf0");
+    iface3.setDisabled(true);
+
+    org.batfish.representation.cumulus.Vrf oldVrf0 =
+        new org.batfish.representation.cumulus.Vrf("vrf0");
+    Vrf newVrf0 = new Vrf("vrf0");
+
+    vendorConfiguration.setInterfaces(
+        ImmutableMap.of(
+            iface1.getName(), iface1, iface2.getName(), iface2, iface3.getName(), iface3));
+
+    vendorConfiguration.initVrfStaticRoutes(oldVrf0, newVrf0);
+
+    // should only have routes from iface0
+    assertThat(newVrf0.getStaticRoutes(), equalTo(ImmutableSortedSet.of(route0.convert())));
   }
 }
