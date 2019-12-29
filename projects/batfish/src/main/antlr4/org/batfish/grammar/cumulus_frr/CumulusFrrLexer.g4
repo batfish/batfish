@@ -49,6 +49,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+ALLOWAS_IN
+:
+  'allowas-in'
+;
+
 ALWAYS_COMPARE_MED
 :
   'always-compare-med'
