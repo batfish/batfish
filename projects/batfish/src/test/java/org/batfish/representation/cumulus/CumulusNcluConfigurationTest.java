@@ -558,7 +558,6 @@ public class CumulusNcluConfigurationTest {
   @Test
   public void testToOspfProcess_NoRouterId() {
     OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
-    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
 
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     OspfProcess ospfProcess = ncluConfiguration.toOspfProcess(ospfVrf, ImmutableMap.of());
