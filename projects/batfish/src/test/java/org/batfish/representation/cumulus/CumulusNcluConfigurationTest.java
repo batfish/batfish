@@ -5,7 +5,6 @@ import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.GENERATED_DEFAULT_ROUTE;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeLocalIpForBgpNeighbor;
@@ -32,6 +31,7 @@ import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -43,6 +43,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -399,13 +400,16 @@ public class CumulusNcluConfigurationTest {
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     vsConfig.generateBgpCommonPeerConfig(
         neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
-    assertThat(
+
+    AbstractRoute dummyRoute = new ConnectedRoute(Prefix.ZERO, "dummy");
+    assertFalse(
         viConfig
             .getRoutingPolicies()
             .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
-            .getStatements()
-            .get(0),
-        equalTo(REJECT_DEFAULT_ROUTE));
+            .process(
+                dummyRoute,
+                Bgpv4Route.builder().setNetwork(dummyRoute.getNetwork()),
+                Direction.OUT));
   }
 
   @Test

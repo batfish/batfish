@@ -515,6 +515,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafin_default_originate(Sbafin_default_originateContext ctx) {
+    // TODO: handle address-family l2vpn-evpn
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
