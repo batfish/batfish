@@ -378,6 +378,37 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
+  public void testGenerateBgpCommonPeerConfig_rejectDefault() {
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
+    neighbor.setRemoteAs(10000L);
+    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    neighbor.setPeerIp(peerIp);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    Configuration viConfig =
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder().setPeerAddress(peerIp);
+    vsConfig.generateBgpCommonPeerConfig(
+        neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+    assertThat(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
+            .getStatements()
+            .get(0),
+        equalTo(REJECT_DEFAULT_ROUTE));
+  }
+
+  @Test
   public void testGenerateBgpCommonPeerConfig_defaultOriginate_unset() {
     // set bgp neighbor without default originate
     Ip peerIp = Ip.parse("10.0.0.2");
@@ -401,18 +432,10 @@ public class CumulusNcluConfigurationTest {
     vsConfig.generateBgpCommonPeerConfig(
         neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
 
-    // there should be no generated default route, and the first export statement should not reject
-    // default
+    // there should be no generated default route
     assertThat(
         newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
         equalTo(ImmutableSet.of()));
-    assertThat(
-        viConfig
-            .getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
-            .getStatements()
-            .get(0),
-        not(equalTo(REJECT_DEFAULT_ROUTE)));
   }
 
   @Test
@@ -448,13 +471,6 @@ public class CumulusNcluConfigurationTest {
     assertThat(
         newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
         equalTo(ImmutableSet.of(GENERATED_DEFAULT_ROUTE)));
-    assertThat(
-        viConfig
-            .getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
-            .getStatements()
-            .get(0),
-        equalTo(REJECT_DEFAULT_ROUTE));
   }
 
   @Test

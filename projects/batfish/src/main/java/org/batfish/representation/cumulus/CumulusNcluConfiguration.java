@@ -394,10 +394,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
-    if (bgpDefaultOriginate(neighbor)) {
-      // Do not export other default routes to the neighbor; the generated route should dominate.
-      peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
-    }
+    // FRR does not advertise default routes even if they are in the routing table:
+    // https://readthedocs.org/projects/frrouting/downloads/pdf/stable-5.0/
+    peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);

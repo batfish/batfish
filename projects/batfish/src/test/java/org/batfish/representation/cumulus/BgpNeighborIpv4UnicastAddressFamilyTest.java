@@ -22,6 +22,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _withSettings = new BgpNeighborIpv4UnicastAddressFamily();
     _withSettings.setActivated(true);
     _withSettings.setAllowAsIn(5);
+    _withSettings.setDefaultOriginate(true);
     _withSettings.setRouteReflectorClient(false);
   }
 
@@ -31,6 +32,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _empty.inheritFrom(_withSettings);
     assertTrue(_empty.getActivated());
     assertEquals(_empty.getAllowAsIn().intValue(), 5);
+    assertEquals(_empty.getDefaultOriginate(), true);
     assertFalse(_empty.getRouteReflectorClient());
   }
 
@@ -40,6 +42,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _empty.inheritFrom(_empty);
     assertThat(_empty.getActivated(), nullValue());
     assertThat(_empty.getAllowAsIn(), nullValue());
+    assertThat(_empty.getDefaultOriginate(), nullValue());
     assertThat(_empty.getRouteReflectorClient(), nullValue());
   }
 
@@ -49,6 +52,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _withSettings.inheritFrom(_empty);
     assertThat(_withSettings.getActivated(), equalTo(_withSettings.getActivated()));
     assertThat(_withSettings.getAllowAsIn(), equalTo(_withSettings.getAllowAsIn()));
+    assertThat(_withSettings.getDefaultOriginate(), equalTo(_withSettings.getDefaultOriginate()));
     assertThat(
         _withSettings.getRouteReflectorClient(), equalTo(_withSettings.getRouteReflectorClient()));
   }
