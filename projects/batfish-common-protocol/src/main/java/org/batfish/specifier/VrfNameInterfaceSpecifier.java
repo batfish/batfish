@@ -1,7 +1,6 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -37,12 +36,8 @@ public final class VrfNameInterfaceSpecifier implements InterfaceSpecifier {
   @Override
   public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return nodes.stream()
-        .map(n -> ctxt.getConfigs().get(n).getVrfs().values())
-        .flatMap(Collection::stream)
-        // we have a stream of VRFs now
-        .filter(v -> v.getName().equalsIgnoreCase(_name))
-        .map(v -> v.getInterfaces().values())
-        .flatMap(Collection::stream)
+        .flatMap(n -> ctxt.getConfigs().get(n).getAllInterfaces().values().stream())
+        .filter(i -> _name.equalsIgnoreCase(i.getVrfName()))
         .map(NodeInterfacePair::of)
         .collect(ImmutableSet.toImmutableSet());
   }

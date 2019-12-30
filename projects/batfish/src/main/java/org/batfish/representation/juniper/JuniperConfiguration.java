@@ -316,7 +316,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
-    Vrf vrf = _c.getVrfs().get(vrfName);
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
       routerId = _masterLogicalSystem.getDefaultRoutingInstance().getRouterId();
@@ -598,7 +597,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // assign the ip of the interface that is likely connected to this
         // peer
         outerloop:
-        for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
+        for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces(vrfName).values()) {
           for (ConcreteInterfaceAddress address : iface.getAllConcreteAddresses()) {
             if (address.getPrefix().containsPrefix(prefix)) {
               localIp = address.getIp();
@@ -887,7 +886,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   IsisLevel processIsisInterfaceSettings(
       RoutingInstance routingInstance, boolean level1, boolean level2) {
-    return _c.getVrfs().get(routingInstance.getName()).getInterfaces().entrySet().stream()
+    return _c.getAllInterfaces(routingInstance.getName()).entrySet().stream()
         .map(
             e -> {
               String ifaceName = e.getKey();
@@ -1083,7 +1082,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     .forEach(
                         ifaceName -> {
                           org.batfish.datamodel.Interface iface =
-                              _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
+                              _c.getAllInterfaces(vrfName).get(ifaceName);
                           Interface vsIface = routingInstance.getInterfaces().get(ifaceName);
                           finalizeOspfInterfaceSettings(
                               iface, vsIface, newProc, area.getAreaNumber());
@@ -1351,8 +1350,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String interfaceName,
       Interface iface,
       String vrfName) {
-    Vrf vrf = _c.getVrfs().get(vrfName);
-    org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(interfaceName);
+    org.batfish.datamodel.Interface newIface = _c.getAllInterfaces(vrfName).get(interfaceName);
     Ip ospfArea = iface.getOspfArea();
     if (ospfArea == null) {
       return;
@@ -3589,7 +3587,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return;
     }
     _c.getAllInterfaces().put(ifaceName, viIface);
-    vrf.getInterfaces().put(ifaceName, viIface);
     if (viIface.getOwner() == null) {
       viIface.setOwner(_c);
     }

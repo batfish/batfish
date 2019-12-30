@@ -153,7 +153,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 "Interface %s has switchport %s but switchport mode %s",
                 name, i.getSwitchport(), i.getSwitchportMode()));
         c.getAllInterfaces().remove(name);
-        c.getVrfs().get(i.getVrfName()).getInterfaces().remove(name);
       }
     }
   }

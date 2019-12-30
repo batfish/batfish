@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.Configuration;
 
 /**
  * An abstract {@link LocationSpecifier} specifying interfaces that belong to VRFs with names
@@ -35,14 +35,16 @@ public abstract class VrfNameRegexLocationSpecifier implements LocationSpecifier
     return Objects.hashCode(_pattern);
   }
 
-  protected abstract Stream<Location> getVrfLocations(Vrf vrf);
+  protected abstract Stream<Location> getVrfLocations(Configuration c, String vrfName);
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
-        .flatMap(node -> node.getVrfs().values().stream())
-        .filter(vrf -> _pattern.matcher(vrf.getName()).matches())
-        .flatMap(this::getVrfLocations)
+        .flatMap(
+            node ->
+                node.getVrfs().values().stream()
+                    .filter(vrf -> _pattern.matcher(vrf.getName()).matches())
+                    .flatMap(v -> this.getVrfLocations(node, v.getName())))
         .collect(ImmutableSet.toImmutableSet());
   }
 }

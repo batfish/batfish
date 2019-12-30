@@ -4614,8 +4614,7 @@ public final class CiscoGrammarTest {
     Configuration abr = configurations.get(abrName);
 
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
-    Long areaNum =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
+    Long areaNum = abr.getAllInterfaces().get("Ethernet1").getOspfAreaName();
     OspfArea abrToArea1 =
         abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
@@ -4650,8 +4649,7 @@ public final class CiscoGrammarTest {
     abr = configurations.get(abrName);
 
     // This time the ABR should have suppressType7 set for area 1
-    areaNum =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfAreaName();
+    areaNum = abr.getAllInterfaces().get("Ethernet1").getOspfAreaName();
     abrToArea1 =
         abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(true));

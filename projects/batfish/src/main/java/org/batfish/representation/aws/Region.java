@@ -35,7 +35,6 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.aws.Instance.Status;
 
@@ -635,10 +634,8 @@ final class Region implements Serializable {
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : awsConfiguration.getConfigurationNodes().values()) {
-      for (Vrf vrf : cfgNode.getVrfs().values()) {
-        for (Interface iface : vrf.getInterfaces().values()) {
-          iface.setBandwidth(1E12d);
-        }
+      for (Interface iface : cfgNode.getAllInterfaces().values()) {
+        iface.setBandwidth(1E12d);
       }
     }
   }

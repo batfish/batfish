@@ -473,7 +473,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (vrf == null) {
       return null;
     }
-    return vrf.getInterfaces().values().stream()
+    return c.getAllInterfaces(vrf.getName()).values().stream()
         .flatMap(
             i ->
                 i.getAllConcreteAddresses().stream()
@@ -667,7 +667,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .forEach(
             iface -> {
               iface.setVrf(vrf);
-              vrf.getInterfaces().put(iface.getName(), iface);
             });
   }
 
@@ -773,7 +772,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertOspfVrf(OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
-    org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf, vrf);
+    org.batfish.datamodel.ospf.OspfProcess ospfProcess =
+        toOspfProcess(ospfVrf, _c.getAllInterfaces(vrf.getName()));
     vrf.addOspfProcess(ospfProcess);
   }
 
@@ -834,7 +834,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             (ifaceName, iface) -> {
               if (iface.getVrf() == null) {
                 iface.setVrf(defaultVrf);
-                defaultVrf.getInterfaces().put(ifaceName, iface);
               }
             });
     _c.getVrfs().put(DEFAULT_VRF_NAME, defaultVrf);
@@ -1251,7 +1250,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
-      OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
+      OspfVrf ospfVrf, Map<String, org.batfish.datamodel.Interface> vrfInterfaces) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouterId();
@@ -1267,37 +1266,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
 
-    addOspfInterfaces(vrf, proc.getProcessId());
-    proc.setAreas(computeOspfAreas(vrf.getInterfaceNames()));
+    addOspfInterfaces(vrfInterfaces, proc.getProcessId());
+    proc.setAreas(computeOspfAreas(vrfInterfaces.keySet()));
     return proc;
   }
 
   @VisibleForTesting
-  void addOspfInterfaces(org.batfish.datamodel.Vrf vrf, String processId) {
-    vrf.getInterfaces()
-        .forEach(
-            (ifaceName, iface) -> {
-              Interface vsIface = _interfaces.get(iface.getName());
-              OspfInterface ospfInterface = vsIface.getOspf();
-              if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
-                // no ospf running on this interface
-                return;
-              }
+  void addOspfInterfaces(Map<String, org.batfish.datamodel.Interface> ifaces, String processId) {
+    ifaces.forEach(
+        (ifaceName, iface) -> {
+          Interface vsIface = _interfaces.get(iface.getName());
+          OspfInterface ospfInterface = vsIface.getOspf();
+          if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
+            // no ospf running on this interface
+            return;
+          }
 
-              iface.setOspfSettings(
-                  OspfInterfaceSettings.builder()
-                      .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
-                      .setAreaName(ospfInterface.getOspfArea())
-                      .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
-                      .setDeadInterval(
-                          Optional.ofNullable(ospfInterface.getDeadInterval())
-                              .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
-                      .setHelloInterval(
-                          Optional.ofNullable(ospfInterface.getHelloInterval())
-                              .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
-                      .setProcess(processId)
-                      .build());
-            });
+          iface.setOspfSettings(
+              OspfInterfaceSettings.builder()
+                  .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
+                  .setAreaName(ospfInterface.getOspfArea())
+                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
+                  .setDeadInterval(
+                      Optional.ofNullable(ospfInterface.getDeadInterval())
+                          .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
+                  .setHelloInterval(
+                      Optional.ofNullable(ospfInterface.getHelloInterval())
+                          .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
+                  .setProcess(processId)
+                  .build());
+        });
   }
 
   @VisibleForTesting

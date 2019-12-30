@@ -35,6 +35,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
@@ -96,26 +97,27 @@ final class Conversions {
    */
   // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
   @Nonnull
-  static Ip getBgpRouterId(BgpVrfConfiguration vrfConfig, Vrf vrf, Warnings w) {
+  static Ip getBgpRouterId(BgpVrfConfiguration vrfConfig, Configuration c, Vrf vrf, Warnings w) {
     // If Router ID is configured in the VRF-Specific BGP config, it always wins.
     if (vrfConfig.getRouterId() != null) {
       return vrfConfig.getRouterId();
     }
 
-    return inferRouterId(vrf, w, "BGP process");
+    return inferRouterId(vrf.getName(), c.getAllInterfaces(vrf.getName()), w, "BGP process");
   }
 
   /** Infers router ID on Cisco NX-OS when not configured in a routing process */
   @Nonnull
-  static Ip inferRouterId(Vrf vrf, Warnings w, String processDesc) {
+  static Ip inferRouterId(
+      String vrfName, Map<String, Interface> vrfIfaces, Warnings w, String processDesc) {
     String messageBase =
         String.format(
-            "Router-id is not manually configured for %s in VRF %s", processDesc, vrf.getName());
+            "Router-id is not manually configured for %s in VRF %s", processDesc, vrfName);
 
     // Otherwise, Router ID is defined based on the interfaces in the VRF that have IP addresses.
     // NX-OS does use shutdown interfaces to configure router-id.
     Map<String, org.batfish.datamodel.Interface> interfaceMap =
-        vrf.getInterfaces().entrySet().stream()
+        vrfIfaces.entrySet().stream()
             .filter(e -> e.getValue().getConcreteAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (interfaceMap.isEmpty()) {
@@ -245,20 +247,21 @@ final class Conversions {
 
   @Nullable
   private static Ip computeUpdateSource(
-      Vrf vrf,
+      String vrfName,
+      Map<String, org.batfish.datamodel.Interface> vrfInterfaces,
       Prefix prefix,
       BgpVrfNeighborConfiguration neighbor,
       boolean dynamic,
       Warnings warnings) {
     String updateSourceInterface = neighbor.getUpdateSource();
     if (updateSourceInterface != null) {
-      org.batfish.datamodel.Interface iface = vrf.getInterfaces().get(updateSourceInterface);
+      org.batfish.datamodel.Interface iface = vrfInterfaces.get(updateSourceInterface);
       if (iface == null) {
         warnings.redFlag(
             String.format(
                 "BGP neighbor %s in vrf %s: configured update-source %s does not exist or "
                     + "is not associated with this vrf",
-                dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
+                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
         return null;
       }
       ConcreteInterfaceAddress address = iface.getConcreteAddress();
@@ -266,7 +269,7 @@ final class Conversions {
         warnings.redFlag(
             String.format(
                 "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
-                dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
+                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
         return null;
       }
       return address.getIp();
@@ -274,7 +277,7 @@ final class Conversions {
       return Ip.AUTO;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
-        vrf.getInterfaces().values().stream()
+        vrfInterfaces.values().stream()
             .flatMap(i -> i.getAllConcreteAddresses().stream())
             .filter(ia -> ia != null && ia.getPrefix().containsIp(prefix.getStartIp()))
             .map(ConcreteInterfaceAddress::getIp)
@@ -287,7 +290,7 @@ final class Conversions {
     warnings.redFlag(
         String.format(
             "BGP neighbor %s in vrf %s: could not determine update source",
-            prefix.getStartIp(), vrf.getName()));
+            prefix.getStartIp(), vrfName));
     return null;
   }
 
@@ -342,7 +345,14 @@ final class Conversions {
     }
     newNeighborBuilder.setLocalAs(localAs);
 
-    newNeighborBuilder.setLocalIp(computeUpdateSource(vrf, prefix, neighbor, dynamic, warnings));
+    newNeighborBuilder.setLocalIp(
+        computeUpdateSource(
+            vrf.getName(),
+            c.getActiveInterfaces(vrf.getName()),
+            prefix,
+            neighbor,
+            dynamic,
+            warnings));
 
     @Nullable
     BgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();

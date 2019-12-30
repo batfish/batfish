@@ -176,7 +176,6 @@ public class ParboiledInterfaceSpecifierTest {
     Vrf vrf1 = new Vrf("vrf1");
     _iface11B.setVrf(vrf1);
     build();
-    vrf1.setInterfaces(ImmutableSortedMap.of("iface11", _iface11));
     _node1.setVrfs(ImmutableMap.of("node1", vrf1));
     assertThat(
         new ParboiledInterfaceSpecifier(new VrfInterfaceAstNode("vrf1")).resolve(_nodes, _ctxt),

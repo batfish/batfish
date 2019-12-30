@@ -256,10 +256,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    */
   private RibDelta<EigrpInternalRoute> initInternalRoutes(String vrfName, Configuration c) {
     Builder<EigrpInternalRoute> builder = RibDelta.builder();
-    for (String ifaceName : c.getVrfs().get(vrfName).getInterfaceNames()) {
+    for (String ifaceName : c.getActiveInterfaces(vrfName).keySet()) {
       Interface iface = c.getAllInterfaces().get(ifaceName);
-      if (!iface.getActive()
-          || iface.getEigrp() == null
+      assert iface.getActive();
+      if (iface.getEigrp() == null
           || iface.getEigrp().getAsn() != _asn
           || !iface.getEigrp().getEnabled()) {
         continue;
