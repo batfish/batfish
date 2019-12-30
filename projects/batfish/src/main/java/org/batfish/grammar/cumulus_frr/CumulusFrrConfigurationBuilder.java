@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_frr;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -407,6 +408,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       }
 
       _currentInterface = new Interface(name, type, null, null);
+      _currentInterface.setVrf(DEFAULT_VRF_NAME);
       _c.setInterfaces(
           new ImmutableMap.Builder<String, Interface>()
               .putAll(_c.getInterfaces())
@@ -415,26 +417,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
 
     if (ctx.VRF() != null) {
-      String vrf = ctx.vrf.getText();
-      if (_currentInterface.getVrf() == null) {
-        _currentInterface.setVrf(vrf);
-      } else if (!vrf.equals(_currentInterface.getVrf())) {
-        _w.addWarning(
-            ctx,
-            ctx.getText(),
-            _parser,
-            String.format(
-                "vrf %s of interface %s does not match vrf %s defined already",
-                vrf, name, _currentInterface.getVrf()));
-      }
-    } else if (_currentInterface.getVrf() != null) {
       _w.addWarning(
           ctx,
           ctx.getText(),
           _parser,
           String.format(
-              "default vrf of interface %s does not match vrf %s defined already",
-              name, _currentInterface.getVrf()));
+              "Ignoring the VRF command for interface '%s'. It has no impact in FRR.", name));
     }
   }
 
