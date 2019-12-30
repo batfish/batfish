@@ -1226,13 +1226,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -2495,14 +2489,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -2930,13 +2917,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -4257,14 +4238,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -5527,14 +5501,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -6201,15 +6168,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "GigabitEthernet3/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -6821,15 +6780,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "GigabitEthernet3/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -7772,15 +7723,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "GigabitEthernet3/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -8578,14 +8521,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -9383,14 +9319,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -10530,13 +10459,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -11628,13 +11551,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -12243,15 +12160,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "GigabitEthernet2/0",
-              "GigabitEthernet3/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -12475,9 +12384,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "eth0"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -12710,9 +12616,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "eth0"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",

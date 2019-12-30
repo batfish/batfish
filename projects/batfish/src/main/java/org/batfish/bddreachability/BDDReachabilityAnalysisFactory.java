@@ -470,7 +470,8 @@ public final class BDDReachabilityAnalysisFactory {
                         IpsRoutedOutInterfaces ipsRoutedOutInterfaces =
                             ipsRoutedOutInterfacesFactory.getIpsRoutedOutInterfaces(
                                 configEntry.getKey(), vrf.getName());
-                        return vrf.getActiveInterfaces()
+                        return configEntry.getValue().getActiveInterfaces(vrf.getName()).values()
+                            .stream()
                             .filter(iface -> iface.getRoutingPolicyName() != null)
                             .map(
                                 iface ->
@@ -1036,9 +1037,8 @@ public final class BDDReachabilityAnalysisFactory {
                   .flatMap(
                       vrfEntry -> {
                         StateExpr postState = new NodeDropAclOut(node);
-                        return vrfEntry
-                            .getValue()
-                            .getActiveInterfaces()
+                        return nodeEntry.getValue().getActiveInterfaces(vrfEntry.getKey()).values()
+                            .stream()
                             .filter(iface -> iface.getOutgoingFilterName() != null)
                             .flatMap(
                                 iface -> {

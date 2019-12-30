@@ -29,17 +29,12 @@ public class VrfNameInterfaceSpecifierTest {
 
     Interface iface11 =
         Interface.builder().setName("iface11").setOwner(node1).setVrf(vrf1node1).build();
-    Interface iface12 =
-        Interface.builder().setName("iface12").setOwner(node1).setVrf(vrf2node1).build();
+    Interface.builder().setName("iface12").setOwner(node1).setVrf(vrf2node1).build();
     Interface iface2 =
         Interface.builder().setName("iface2").setOwner(node2).setVrf(vrf1node2).build();
 
     node1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1node1, "vrf2", vrf2node1));
-    vrf1node1.setInterfaces(ImmutableSortedMap.of("iface11", iface11));
-    vrf2node1.setInterfaces(ImmutableSortedMap.of("iface12", iface12));
-
     node2.setVrfs(ImmutableSortedMap.of("vrf1", vrf1node2));
-    vrf1node2.setInterfaces(ImmutableSortedMap.of("iface2", iface2));
 
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder()

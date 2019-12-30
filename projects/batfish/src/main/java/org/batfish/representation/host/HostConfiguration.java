@@ -220,7 +220,6 @@ public class HostConfiguration extends VendorConfiguration {
               String canonicalName = hostInterface.getCanonicalName();
               Interface newIface = hostInterface.toInterface(_c, _w);
               _c.getAllInterfaces().put(canonicalName, newIface);
-              _c.getDefaultVrf().getInterfaces().put(canonicalName, newIface);
             });
 
     // add iptables
@@ -230,7 +229,7 @@ public class HostConfiguration extends VendorConfiguration {
 
     // apply acls to interfaces
     if (simple()) {
-      for (Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
+      for (Interface iface : _c.getAllInterfaces(Configuration.DEFAULT_VRF_NAME).values()) {
         iface.setIncomingFilter(_c.getIpAccessLists().get(FILTER_INPUT));
         iface.setOutgoingFilter(_c.getIpAccessLists().get(FILTER_OUTPUT));
       }

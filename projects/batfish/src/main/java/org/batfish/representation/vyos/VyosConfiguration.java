@@ -80,10 +80,8 @@ public class VyosConfiguration extends VendorConfiguration {
 
   private void convertInterfaces() {
     for (Entry<String, Interface> e : _interfaces.entrySet()) {
-      String name = e.getKey();
       Interface iface = e.getValue();
-      org.batfish.datamodel.Interface newIface = toInterface(iface);
-      _c.getDefaultVrf().getInterfaces().put(name, newIface);
+      toInterface(iface);
     }
   }
 
@@ -143,7 +141,7 @@ public class VyosConfiguration extends VendorConfiguration {
       // bind interface
       String bindInterfaceName = ipsecPeer.getBindInterface();
       org.batfish.datamodel.Interface newBindInterface =
-          _c.getDefaultVrf().getInterfaces().get(bindInterfaceName);
+          _c.getAllInterfaces().get(bindInterfaceName);
       if (newBindInterface != null) {
         ipsecPeerConfigBuilder.setTunnelInterface(newBindInterface.getName());
       } else {

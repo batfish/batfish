@@ -125,7 +125,7 @@ public class EigrpTopologyUtils {
       for (Vrf vrf : config.getVrfs().values()) {
         for (EigrpProcess proc : vrf.getEigrpProcesses().values()) {
           ImmutableList.Builder<EigrpNeighborConfig> neighborsBuilder = ImmutableList.builder();
-          for (Interface iface : vrf.getInterfaces().values()) {
+          for (Interface iface : config.getAllInterfaces(vrf.getName()).values()) {
             // if the interface does not belong to the current EIGRP process, skip it
             if (iface.getConcreteAddress() == null
                 || iface.getEigrp() == null

@@ -2531,13 +2531,7 @@
               }
             },
             "tieBreaker" : "ARRIVAL_ORDER"
-          },
-          "interfaces" : [
-            "Ethernet0/0",
-            "GigabitEthernet0/0",
-            "GigabitEthernet1/0",
-            "Loopback0"
-          ]
+          }
         },
         "structType" : "Vrf"
       }
