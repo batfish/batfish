@@ -93,7 +93,7 @@ s_log
 :
   LOG
   (
-    SYSLOG INFORMATIONAL
+    SYSLOG loglevel?
     | FILE REMARK_TEXT
     | COMMANDS
   ) NEWLINE
