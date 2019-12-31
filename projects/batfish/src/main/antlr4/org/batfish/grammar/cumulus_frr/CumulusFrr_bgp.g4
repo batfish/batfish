@@ -246,6 +246,7 @@ sbafi_neighbor
   (
     sbafin_activate
   | sbafin_allowas_in
+  | sbafin_default_originate
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_send_community
@@ -263,6 +264,11 @@ sbafin_activate
 sbafin_allowas_in
 :
   ALLOWAS_IN count = UINT8
+;
+
+sbafin_default_originate
+:
+  DEFAULT_ORIGINATE
 ;
 
 sbafin_next_hop_self

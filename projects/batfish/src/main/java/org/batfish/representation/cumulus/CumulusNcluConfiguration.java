@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Collections.singletonList;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -91,6 +93,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -106,6 +109,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -130,10 +134,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
+  private static final int MAX_ADMINISTRATIVE_COST = 32767;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
 
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
   private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
+
+  @VisibleForTesting
+  static GeneratedRoute GENERATED_DEFAULT_ROUTE =
+      GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST).build();
+
+  @VisibleForTesting
+  static final Statement REJECT_DEFAULT_ROUTE =
+      new If(
+          Common.matchDefaultRoute(), ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
@@ -166,6 +180,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static @Nonnull String computeBgpPeerExportPolicyName(
       String vrfName, String peerInterface) {
     return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrfName, peerInterface);
+  }
+
+  static String computeBgpDefaultRouteExportPolicyName(boolean ipv4, String vrf, String peer) {
+    return String.format(
+        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
   }
 
   public static @Nonnull String computeBgpPeerImportPolicyName(String vrf, String peer) {
@@ -247,6 +266,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .setLocalAs(localAs)
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
+        .setGeneratedRoutes(
+            bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
@@ -311,6 +332,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
+
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder()
             .setLocalIp(
@@ -379,6 +401,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    if (bgpDefaultOriginate(neighbor)) {
+      initBgpDefaultRouteExportPolicy(vrfName, neighbor.getName(), true, null, _c);
+      peerExportPolicy.addStatement(
+          new If(
+              "Export default route from peer with default-originate configured",
+              new CallExpr(
+                  computeBgpDefaultRouteExportPolicyName(true, vrfName, neighbor.getName())),
+              singletonList(Statements.ReturnTrue.toStaticStatement()),
+              ImmutableList.of()));
+    }
+    // FRR does not advertise default routes even if they are in the routing table:
+    // https://readthedocs.org/projects/frrouting/downloads/pdf/stable-5.0/
+    peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
+
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
 
@@ -390,6 +426,56 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
 
     return peerExportPolicy.build();
+  }
+
+  /**
+   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
+   * policy is the same across BGP processes, so only one is created for each configuration.
+   *
+   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
+   * @param defaultOriginateExportMapName Name of route-map to apply to generated route before
+   *     export.
+   */
+  // TODO: This function is copied verbatim from CiscoConversations. Refactor after we've verified
+  // the right behavior for default-originate.
+  private static void initBgpDefaultRouteExportPolicy(
+      String vrfName,
+      String peerName,
+      boolean ipv4,
+      @Nullable String defaultOriginateExportMapName,
+      Configuration c) {
+    SetOrigin setOrigin =
+        new SetOrigin(
+            new LiteralOrigin(
+                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
+                    ? OriginType.IGP
+                    : OriginType.INCOMPLETE,
+                null));
+    List<Statement> defaultRouteExportStatements;
+    if (defaultOriginateExportMapName == null
+        || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {
+      defaultRouteExportStatements =
+          ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
+    } else {
+      defaultRouteExportStatements =
+          ImmutableList.of(
+              setOrigin,
+              new CallStatement(defaultOriginateExportMapName),
+              Statements.ReturnTrue.toStaticStatement());
+    }
+
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, peerName))
+        .addStatement(
+            new If(
+                new Conjunction(
+                    ImmutableList.of(
+                        ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
+                        new MatchProtocol(RoutingProtocol.AGGREGATE))),
+                defaultRouteExportStatements))
+        .addStatement(Statements.ReturnFalse.toStaticStatement())
+        .build();
   }
 
   @Nullable
@@ -636,6 +722,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 Stream.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values().stream())
             .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
             .anyMatch(Predicate.isEqual(ifaceName));
+  }
+
+  /** Returns whether we originate default toward this neighbor */
+  private static boolean bgpDefaultOriginate(BgpNeighbor neighbor) {
+    return neighbor.getIpv4UnicastAddressFamily() != null
+        && Boolean.TRUE.equals(neighbor.getIpv4UnicastAddressFamily().getDefaultOriginate());
   }
 
   /**

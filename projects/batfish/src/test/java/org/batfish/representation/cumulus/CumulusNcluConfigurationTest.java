@@ -4,7 +4,10 @@ import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.GENERATED_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.resolveLocalIpFromUpdateSource;
@@ -30,6 +33,7 @@ import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -41,6 +45,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -55,12 +60,14 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -69,6 +76,9 @@ import org.junit.Test;
 
 /** Test for {@link CumulusNcluConfiguration}. */
 public class CumulusNcluConfigurationTest {
+
+  private static NetworkFactory _nf = new NetworkFactory();
+
   @Test
   public void testToInterface_active() {
     Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, 1);
@@ -370,6 +380,137 @@ public class CumulusNcluConfigurationTest {
           viConfig.getRouteFilterLists(),
           not(hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName()))));
     }
+  }
+
+  @Test
+  public void testGenerateBgpCommonPeerConfig_rejectDefault() {
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
+    neighbor.setRemoteAs(10000L);
+    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    neighbor.setPeerIp(peerIp);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    Configuration viConfig =
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder().setPeerAddress(peerIp);
+    vsConfig.generateBgpCommonPeerConfig(
+        neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+
+    // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
+    // tested in testRejectDefaultRoute()
+    assertThat(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
+            .getStatements()
+            .get(0),
+        equalTo(REJECT_DEFAULT_ROUTE));
+  }
+
+  @Test
+  public void testRejectDefaultRoute() {
+    Configuration viConfig =
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    RoutingPolicy rejectDefaultPolicy =
+        RoutingPolicy.builder()
+            .setOwner(viConfig)
+            .setName("policy")
+            .addStatement(REJECT_DEFAULT_ROUTE)
+            .addStatement(
+                // accept non-default
+                new If(
+                    new Not(Common.matchDefaultRoute()),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+            .build();
+
+    AbstractRoute defaultRoute = new ConnectedRoute(Prefix.ZERO, "dummy");
+    AbstractRoute nonDefaultRoute = new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "dummy");
+
+    assertFalse(
+        rejectDefaultPolicy.process(
+            defaultRoute,
+            Bgpv4Route.builder().setNetwork(defaultRoute.getNetwork()),
+            Direction.OUT));
+
+    assertTrue(
+        rejectDefaultPolicy.process(
+            nonDefaultRoute,
+            Bgpv4Route.builder().setNetwork(nonDefaultRoute.getNetwork()),
+            Direction.OUT));
+  }
+
+  @Test
+  public void testGenerateBgpCommonPeerConfig_defaultOriginate_unset() {
+    // set bgp neighbor without default originate
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
+    neighbor.setRemoteAs(10000L);
+    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    neighbor.setPeerIp(peerIp);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    Configuration viConfig =
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder().setPeerAddress(peerIp);
+    vsConfig.generateBgpCommonPeerConfig(
+        neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+
+    // there should be no generated default route
+    assertThat(
+        newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
+        equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testGenerateBgpCommonPeerConfig_defaultOriginate_set() {
+    // set bgp neighbor with default originate
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
+    neighbor.setRemoteAs(10000L);
+    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    neighbor.setPeerIp(peerIp);
+    BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+    ipv4UnicastAddressFamily.setDefaultOriginate(true);
+    neighbor.setIpv4UnicastAddressFamily(ipv4UnicastAddressFamily);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    Configuration viConfig =
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setConfiguration(viConfig);
+
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder().setPeerAddress(peerIp);
+    vsConfig.generateBgpCommonPeerConfig(
+        neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+
+    // there should be a generated default route
+    assertThat(
+        newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
+        equalTo(ImmutableSet.of(GENERATED_DEFAULT_ROUTE)));
   }
 
   @Test
