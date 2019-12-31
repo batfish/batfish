@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -14,6 +15,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isA;
@@ -26,22 +28,30 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -49,6 +59,8 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
@@ -87,6 +99,8 @@ public class CumulusFrrGrammarTest {
   private static CumulusNcluConfiguration _config;
   private static ConvertConfigurationAnswerElement _ccae;
   private static Warnings _warnings;
+
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cumulus_frr/snapshots/";
 
   @Before
   public void setup() {
@@ -348,7 +362,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborDefaultOriginate() {
+  public void testBgpAddressFamilyNeighborDefaultOriginate_parsing() {
     parseLines(
         "router bgp 1",
         "neighbor N interface description N",
@@ -363,6 +377,46 @@ public class CumulusFrrGrammarTest {
             .get("N")
             .getIpv4UnicastAddressFamily()
             .getDefaultOriginate());
+  }
+
+  @Test
+  public void testBgpAddressFamilyNeighborDefaultOriginate_behavior() throws IOException {
+    /*
+    The implemented behavior with default-originate is that the default route will be advertised unconditionally.
+    TODO: Check if this behavior is actually correct.
+    */
+    String snapshotName = "default-originate";
+    List<String> configurationNames = ImmutableList.of("frr-originator", "ios-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    Set<AbstractRoute> listenerRoutes =
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
+
+    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
+            .setCommunities(
+                ImmutableSet.of(StandardCommunity.of(7274718L), StandardCommunity.of(21823932L)))
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.1.1.1"))
+            .setReceivedFromIp(Ip.parse("10.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setAdmin(20)
+            .setLocalPreference(100)
+            .build();
+    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
   }
 
   @Test
