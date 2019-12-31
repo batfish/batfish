@@ -67,7 +67,7 @@ s_frr
    FRR
    (
      sf_defaults
-     sf_version
+     | sf_version
    )
 ;
 
