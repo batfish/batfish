@@ -1,8 +1,9 @@
 package org.batfish.representation.cumulus;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
@@ -12,11 +13,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-
-import java.util.stream.Collectors;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import java.util.Map;
 
 public class RouteMapSetCommunity implements RouteMapSet {
   private @Nonnull List<StandardCommunity> _communities;
@@ -29,6 +25,7 @@ public class RouteMapSetCommunity implements RouteMapSet {
   public boolean get_isAdditive() {
     return _isAdditive;
   }
+
   public RouteMapSetCommunity(Iterable<StandardCommunity> communities) {
     if (get_isAdditive()) {
       _communities.addAll(ImmutableList.copyOf(communities));
@@ -50,7 +47,7 @@ public class RouteMapSetCommunity implements RouteMapSet {
 
   public void setCommunities(List<StandardCommunity> communities) {
     ArrayList<StandardCommunity> commList =
-            communities.stream().collect(Collectors.toCollection(ArrayList::new));
+        communities.stream().collect(Collectors.toCollection(ArrayList::new));
     if (get_isAdditive()) {
       commList.addAll(_communities);
     }

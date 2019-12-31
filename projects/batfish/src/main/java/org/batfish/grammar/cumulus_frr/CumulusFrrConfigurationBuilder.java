@@ -868,17 +868,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         _w.addWarning(ctx, ctx.getText(), _parser, "overwriting set community");
       }
       _currentRouteMapEntry.setSetCommunity(
-              new RouteMapSetCommunity(
-                      ctx.communities.stream()
-                              .map(this::toStandardCommunity)
-                              .collect(ImmutableList.toImmutableList())));
+          new RouteMapSetCommunity(
+              ctx.communities.stream()
+                  .map(this::toStandardCommunity)
+                  .collect(ImmutableList.toImmutableList())));
     } else {
       old.set_isAdditive();
-      old.setCommunities(ctx.communities.stream()
+      old.setCommunities(
+          ctx.communities.stream()
               .map(this::toStandardCommunity)
               .collect(ImmutableList.toImmutableList()));
     }
-
   }
 
   @Override
