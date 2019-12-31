@@ -1,21 +1,27 @@
 package org.batfish.grammar.palo_alto;
 
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -52,40 +58,47 @@ public class PaloAltoSecurityRuleTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    return createFlow(sourceAddress, destinationAddress, IpProtocol.TCP, 1, 1);
-  }
-
-  private static Flow createFlow(
-      String sourceAddress,
-      String destinationAddress,
-      IpProtocol protocol,
-      int sourcePort,
-      int destinationPort) {
-    Flow.Builder fb = Flow.builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(Ip.parse(sourceAddress));
-    fb.setDstIp(Ip.parse(destinationAddress));
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(destinationPort);
-    fb.setSrcPort(sourcePort);
-    return fb.build();
-  }
-
   @Test
-  public void testAnyApplication() {
+  public void testApplicationAny() throws IOException {
     String hostname = "any-application";
     Configuration c = parseConfig(hostname);
 
-    String if1name = "ethernet1/1";
-    String if2name = "ethernet1/2";
-    Flow flowPermit = createFlow("1.1.1.1", "2.2.2.2");
-    Flow flowReject = createFlow("2.2.2.2", "1.1.1.1");
+    String if1name = "ethernet1/1"; // 1.1.1.1/24
+    String if2name = "ethernet1/2"; // 2.2.2.2/24
+    Builder baseFlow =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    // This flow matches from and to zones in security rule
+    Flow flowPermit =
+        baseFlow
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("1.1.1.3"))
+            .setDstIp(Ip.parse("2.2.2.3"))
+            .build();
+    // This flow does not match from or to zones in security rule
+    Flow flowReject =
+        baseFlow
+            .setIngressInterface(if2name)
+            .setSrcIp(Ip.parse("2.2.2.3"))
+            .setDstIp(Ip.parse("1.1.1.3"))
+            .build();
 
-    // Confirm flow not matching allow-any-app rule is rejected
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(flowReject, if2name, c))));
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
 
-    // Confirm desired flow matches allow-any-app rule even w/ service = application-default
-    assertThat(c, hasInterface(if2name, hasOutgoingFilter(accepts(flowPermit, if1name, c))));
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowPermit, flowReject), false);
+
+    // Confirm flow not matching rule (bad zone) is rejected
+    assertFalse(traces.get(flowReject).get(0).getDisposition().isSuccessful());
+    // Confirm flow from correct zone is accepted, matching rule w/ application = any and
+    // service = application-default
+    assertTrue(traces.get(flowPermit).get(0).getDisposition().isSuccessful());
   }
 }
