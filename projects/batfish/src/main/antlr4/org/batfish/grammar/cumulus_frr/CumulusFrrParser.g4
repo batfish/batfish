@@ -83,7 +83,7 @@ sf_version
 
 s_hostname
 :
-   HOSTNAME null_rest_of_line
+   HOSTNAME word NEWLINE
 ;
 
 se_password
