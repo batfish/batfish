@@ -11,7 +11,6 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
@@ -181,6 +180,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static @Nonnull String computeBgpPeerExportPolicyName(
       String vrfName, String peerInterface) {
     return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrfName, peerInterface);
+  }
+
+  static String computeBgpDefaultRouteExportPolicyName(boolean ipv4, String vrf, String peer) {
+    return String.format(
+        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
   }
 
   public static @Nonnull String computeBgpPeerImportPolicyName(String vrf, String peer) {
