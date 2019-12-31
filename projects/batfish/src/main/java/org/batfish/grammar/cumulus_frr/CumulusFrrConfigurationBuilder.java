@@ -82,6 +82,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_default_originateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
@@ -539,6 +540,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setAllowAsIn(Integer.parseInt(ctx.count.getText()));
+  }
+
+  @Override
+  public void exitSbafin_default_originate(Sbafin_default_originateContext ctx) {
+    // TODO: handle address-family l2vpn-evpn
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setDefaultOriginate(true);
   }
 
   @Override
