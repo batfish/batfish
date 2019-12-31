@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_frr;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -385,7 +386,25 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
     _currentInterface = _c.getInterfaces().get(name);
 
+    // lets first consider the case where we haven't seen this interface before
     if (_currentInterface == null) {
+      if (ctx.VRF() != null) {
+        String vrf = ctx.vrf.getText();
+        // non-default VRF in frr interface definitions are OK only when the vrf is known already
+        // its possible this VRF definitions must exist in FRR exclusively (not interfaces), but we
+        // cannot tell where VRFs were defined at the moment, so accepting anyplace
+        if (!_c.getVrfs().containsKey(vrf)) {
+          _w.addWarning(
+              ctx,
+              ctx.getText(),
+              _parser,
+              String.format("Ignoring interface %s with unknown vrf %s", name, vrf));
+          // dummy
+          _currentInterface = new Interface("dummy", CumulusInterfaceType.LOOPBACK, null, null);
+          return;
+        }
+      }
+
       // Currently only support defining lo and physical interfaces in frr
       // TODO: check other interface types
       CumulusInterfaceType type = null;
@@ -401,25 +420,27 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             String.format(
                 ("cannot recognize interface %s. Only support loopback and physical interfaces"),
                 name));
-      }
-
-      if (type == null) {
+        // dummy
+        _currentInterface = new Interface("dummy", CumulusInterfaceType.LOOPBACK, null, null);
         return;
       }
 
       _currentInterface = new Interface(name, type, null, null);
+      _currentInterface.setVrf(ctx.VRF() != null ? ctx.vrf.getText() : DEFAULT_VRF_NAME);
       _c.setInterfaces(
           new ImmutableMap.Builder<String, Interface>()
               .putAll(_c.getInterfaces())
               .put(name, _currentInterface)
               .build());
+
+      return;
     }
 
+    // now consider the case where we have seen this interface before. if the vrf definitions are
+    // inconsistent, this interface definition and its sub-lines should be ignored
     if (ctx.VRF() != null) {
       String vrf = ctx.vrf.getText();
-      if (_currentInterface.getVrf() == null) {
-        _currentInterface.setVrf(vrf);
-      } else if (!vrf.equals(_currentInterface.getVrf())) {
+      if (!vrf.equals(_currentInterface.getVrf())) {
         _w.addWarning(
             ctx,
             ctx.getText(),
@@ -427,16 +448,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             String.format(
                 "vrf %s of interface %s does not match vrf %s defined already",
                 vrf, name, _currentInterface.getVrf()));
+        // dummy
+        _currentInterface = new Interface("dummy", CumulusInterfaceType.LOOPBACK, null, null);
       }
-    } else if (_currentInterface.getVrf() != null) {
-      _w.addWarning(
-          ctx,
-          ctx.getText(),
-          _parser,
-          String.format(
-              "default vrf of interface %s does not match vrf %s defined already",
-              name, _currentInterface.getVrf()));
     }
+
+    // if we get here, VRF was not explicitly configured for this interface and thus its vrf is
+    // "default". this interface definition should be thrown out if the interface had a different
+    // vrf in the frr file, but it should not be thrown out if its earlier definition (with
+    // whatever) vrf was in interfaces file. we are letting this slide distinction slide at the
+    // moment because we cannot tell where the earlier definition happened.
   }
 
   @Override

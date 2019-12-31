@@ -80,20 +80,20 @@ import org.batfish.representation.cisco.eos.AristaEosVxlan;
 final class AristaConversions {
   /** Computes the router ID. */
   @Nonnull
-  static Ip getBgpRouterId(AristaBgpVrf vrfConfig, Vrf vrf, Warnings w) {
+  static Ip getBgpRouterId(
+      AristaBgpVrf vrfConfig, String vrfName, Map<String, Interface> vrfInterfaces, Warnings w) {
     // If Router ID is configured in the VRF-Specific BGP config, it always wins.
     if (vrfConfig.getRouterId() != null) {
       return vrfConfig.getRouterId();
     }
 
     String messageBase =
-        String.format(
-            "Router-id is not manually configured for BGP process in VRF %s", vrf.getName());
+        String.format("Router-id is not manually configured for BGP process in VRF %s", vrfName);
 
     // Otherwise, Router ID is defined based on the interfaces in the VRF that have IP addresses.
     // EOS does NOT use shutdown interfaces to configure router-id.
     Map<String, Interface> interfaceMap =
-        vrf.getInterfaces().entrySet().stream()
+        vrfInterfaces.entrySet().stream()
             .filter(e -> e.getValue().getActive())
             .filter(e -> e.getValue().getConcreteAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
@@ -254,16 +254,21 @@ final class AristaConversions {
 
   @Nullable
   private static Ip computeUpdateSource(
-      Vrf vrf, Prefix prefix, AristaBgpNeighbor neighbor, boolean dynamic, Warnings warnings) {
+      String vrfName,
+      Map<String, Interface> vrfInterfaces,
+      Prefix prefix,
+      AristaBgpNeighbor neighbor,
+      boolean dynamic,
+      Warnings warnings) {
     String updateSourceInterface = neighbor.getUpdateSource();
     if (updateSourceInterface != null) {
-      Interface iface = vrf.getInterfaces().get(updateSourceInterface);
+      Interface iface = vrfInterfaces.get(updateSourceInterface);
       if (iface == null) {
         warnings.redFlag(
             String.format(
                 "BGP neighbor %s in vrf %s: configured update-source %s does not exist or "
                     + "is not associated with this vrf",
-                dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
+                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
         return null;
       }
       ConcreteInterfaceAddress address = iface.getConcreteAddress();
@@ -271,7 +276,7 @@ final class AristaConversions {
         warnings.redFlag(
             String.format(
                 "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
-                dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
+                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
         return null;
       }
       return address.getIp();
@@ -279,7 +284,7 @@ final class AristaConversions {
       return Ip.AUTO;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
-        vrf.getInterfaces().values().stream()
+        vrfInterfaces.values().stream()
             .flatMap(i -> i.getAllConcreteAddresses().stream())
             .filter(ia -> ia != null && ia.getPrefix().containsIp(prefix.getStartIp()))
             .map(ConcreteInterfaceAddress::getIp)
@@ -292,7 +297,7 @@ final class AristaConversions {
     warnings.redFlag(
         String.format(
             "BGP neighbor %s in vrf %s: could not determine update source",
-            prefix.getStartIp(), vrf.getName()));
+            prefix.getStartIp(), vrfName));
     return null;
   }
 
@@ -351,7 +356,9 @@ final class AristaConversions {
       newNeighborBuilder.setLocalAs(bgpConfig.getAsn());
     }
 
-    newNeighborBuilder.setLocalIp(computeUpdateSource(vrf, prefix, neighbor, dynamic, warnings));
+    newNeighborBuilder.setLocalIp(
+        computeUpdateSource(
+            vrf.getName(), c.getAllInterfaces(vrf.getName()), prefix, neighbor, dynamic, warnings));
 
     @Nullable AristaBgpVrfIpv4UnicastAddressFamily af4 = vrfConfig.getV4UnicastAf();
     @Nullable AristaBgpNeighborAddressFamily naf4;
@@ -624,7 +631,7 @@ final class AristaConversions {
   @Nonnull
   static Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
     return c.getVrfs().values().stream()
-        .filter(vrf -> vrf.getInterfaceNames().contains(String.format("Vlan%d", vlan)))
+        .filter(vrf -> c.getAllInterfaces(vrf.getName()).containsKey(String.format("Vlan%d", vlan)))
         .findFirst();
   }
 

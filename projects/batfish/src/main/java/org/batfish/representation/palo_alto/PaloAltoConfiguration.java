@@ -44,7 +44,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -1553,15 +1552,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 }
               });
     }
-    viAreaBuilder.setInterfaces(computeAreaInterfaces(vrf, vsArea, ospfProcessName));
+    viAreaBuilder.setInterfaces(
+        computeAreaInterfaces(_c.getAllInterfaces(vrf.getName()), vsArea, ospfProcessName));
     return viAreaBuilder.build();
   }
 
   private @Nonnull Set<String> computeAreaInterfaces(
-      Vrf vrf, org.batfish.representation.palo_alto.OspfArea vsArea, String ospfProcessName) {
+      Map<String, org.batfish.datamodel.Interface> viInterfaces,
+      org.batfish.representation.palo_alto.OspfArea vsArea,
+      String ospfProcessName) {
     ImmutableSet.Builder<String> ospfIfaceNames = ImmutableSet.builder();
     Ip vsAreaId = vsArea.getAreaId();
-    Map<String, org.batfish.datamodel.Interface> viInterfaces = vrf.getInterfaces();
     vsArea
         .getInterfaces()
         .values()
@@ -1671,15 +1672,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Interfaces
-    NavigableMap<String, org.batfish.datamodel.Interface> map = new TreeMap<>();
     for (String interfaceName : vr.getInterfaceNames()) {
       org.batfish.datamodel.Interface iface = _c.getAllInterfaces().get(interfaceName);
       if (iface != null) {
-        map.put(interfaceName, iface);
         iface.setVrf(vrf);
       }
     }
-    vrf.setInterfaces(map);
 
     // BGP
     toBgpProcess(vr).ifPresent(vrf::setBgpProcess);
@@ -1762,12 +1760,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Batfish cannot handle interfaces without a Vrf
     // So put orphaned interfaces in a constructed Vrf and shut them down
     Vrf nullVrf = new Vrf(NULL_VRF_NAME);
-    NavigableMap<String, org.batfish.datamodel.Interface> orphanedInterfaces = new TreeMap<>();
+    int oraphnedInterfaces = 0;
     for (Entry<String, org.batfish.datamodel.Interface> i : _c.getAllInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = i.getValue();
       if (iface.getVrf() == null) {
-        orphanedInterfaces.put(iface.getName(), iface);
         iface.setVrf(nullVrf);
+        oraphnedInterfaces++;
         if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
           iface.setActive(false);
@@ -1809,8 +1807,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         }
       }
     }
-    if (orphanedInterfaces.size() > 0) {
-      nullVrf.setInterfaces(orphanedInterfaces);
+    // Don't pollute VI model will null VRF unless we have to.
+    if (oraphnedInterfaces > 0) {
       _c.getVrfs().put(nullVrf.getName(), nullVrf);
     }
 

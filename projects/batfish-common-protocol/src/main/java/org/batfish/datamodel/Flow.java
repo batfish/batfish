@@ -312,10 +312,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return this;
     }
 
-    public Builder setTag(String tag) {
-      return this;
-    }
-
     public Builder setTcpFlagsAck(Integer tcpFlagsAck) {
       _tcpFlagsAck = tcpFlagsAck;
       return this;

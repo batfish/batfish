@@ -845,11 +845,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0",
-              "Ethernet1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -914,10 +910,7 @@
             "name" : "default"
           },
           "mgmt" : {
-            "name" : "mgmt",
-            "interfaces" : [
-              "Vlan1"
-            ]
+            "name" : "mgmt"
           }
         }
       },
@@ -1123,10 +1116,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -1396,10 +1386,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "GigabitEthernet0/0/0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -2352,10 +2339,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ifname"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -2665,10 +2649,7 @@
                 "routerId" : "192.168.1.0",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "blah"
-            ]
+            }
           }
         },
         "zones" : {
@@ -4904,39 +4885,16 @@
         },
         "vrfs" : {
           "bleepvrf" : {
-            "name" : "bleepvrf",
-            "interfaces" : [
-              "Ethernet6/0.48"
-            ]
+            "name" : "bleepvrf"
           },
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet6/0.0",
-              "Ethernet6/1",
-              "cable-downstream1/2",
-              "cable-downstream1/2/3",
-              "cable-downstream5/0/0",
-              "cable-mac1",
-              "cable-mac1.2",
-              "cable-mac2",
-              "cable-mac3",
-              "cable-upstream1/0/0",
-              "cable-upstream1/0/0.0",
-              "cable-upstream1/0/10"
-            ]
+            "name" : "default"
           },
           "foovrf" : {
-            "name" : "foovrf",
-            "interfaces" : [
-              "cable-mac1.1"
-            ]
+            "name" : "foovrf"
           },
           "management" : {
-            "name" : "management",
-            "interfaces" : [
-              "mgmt6/0"
-            ]
+            "name" : "management"
           }
         }
       },
@@ -7127,10 +7085,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Cable1/2/3"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -7905,10 +7860,7 @@
                 "exportPolicy" : "~EIGRP_EXPORT_POLICY:default:5~",
                 "routerId" : "100.1.1.1"
               }
-            },
-            "interfaces" : [
-              "Ethernet0"
-            ]
+            }
           }
         }
       },
@@ -7975,10 +7927,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "GigabitEthernet0/1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -8044,10 +7993,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "TenGigabitEthernet0/0/2/2"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -8775,38 +8721,10 @@
         },
         "vrfs" : {
           "U_VRF" : {
-            "name" : "U_VRF",
-            "interfaces" : [
-              "Ethernet0"
-            ]
+            "name" : "U_VRF"
           },
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Async1",
-              "Cable1/2/3:4",
-              "Crypto-Engine1/2/3",
-              "Dot11Radio0",
-              "Ethernet1/11",
-              "Ethernet1/12",
-              "Loopback0",
-              "Modular-Cable1/2/3:4",
-              "Null0",
-              "Tunnel0",
-              "Vlan1",
-              "Vlan1005",
-              "Vlan1006",
-              "Vlan111",
-              "Vlan1234",
-              "Vlan2",
-              "Vlan3",
-              "Vlan4094",
-              "Wideband-Cable1/2/3:4",
-              "Wlan-GigabitEthernet0",
-              "Wlan-ap0",
-              "inside",
-              "tunnel-ip6"
-            ]
+            "name" : "default"
           }
         },
         "zones" : {
@@ -9622,14 +9540,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "GigabitEthernet0/0",
-              "GigabitEthernet0/0/1",
-              "GigabitEthernet0/1",
-              "HundredGigabitEthernet0/0/0/0.2302",
-              "Loopback0",
-              "Serial4/0"
-            ],
             "isisProcess" : {
               "level1" : {
                 "wideMetricsOnly" : false
@@ -10823,12 +10733,7 @@
                 "routerId" : "1.2.3.4",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "Ethernet1/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -10886,10 +10791,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0/0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -11167,12 +11069,7 @@
                 "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "Ethernet1/0",
-              "Loopback0"
-            ]
+            }
           }
         }
       },
@@ -11230,10 +11127,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0/0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -12354,10 +12248,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -15635,20 +15526,6 @@
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "bond1",
-              "bond1.4094",
-              "bond2",
-              "lo",
-              "swp1",
-              "swp2",
-              "swp3",
-              "swp4",
-              "swp5",
-              "swp6",
-              "swp7",
-              "swp8"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -15662,11 +15539,7 @@
             ]
           },
           "mgmt" : {
-            "name" : "mgmt",
-            "interfaces" : [
-              "eth0",
-              "mgmt"
-            ]
+            "name" : "mgmt"
           },
           "vrf1" : {
             "name" : "vrf1",
@@ -15679,10 +15552,6 @@
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "interfaces" : [
-              "vlan4",
-              "vrf1"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -15939,10 +15808,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "lo"
-            ]
+            }
           },
           "vrf1" : {
             "name" : "vrf1",
@@ -15979,10 +15845,7 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "vrf1"
-            ]
+            }
           }
         }
       },
@@ -16062,10 +15925,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "lo"
-            ]
+            }
           }
         }
       },
@@ -16191,10 +16051,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "lo"
-            ]
+            }
           },
           "vrf1" : {
             "name" : "vrf1",
@@ -16206,10 +16063,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "vrf1"
-            ]
+            }
           }
         }
       },
@@ -16293,10 +16147,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "lo"
-            ]
+            }
           }
         }
       },
@@ -16376,10 +16227,7 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "lo"
-            ]
+            }
           }
         }
       },
@@ -16707,23 +16555,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "AGG",
-              "lo",
-              "otherbond",
-              "swp1",
-              "swp10",
-              "swp2",
-              "swp3",
-              "swp3s0",
-              "swp4",
-              "swp5",
-              "swp6",
-              "swp7",
-              "swp8",
-              "swp9"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -16805,12 +16637,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "lo",
-              "swp1",
-              "swp1s2"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -16871,16 +16698,10 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "lo"
-            ]
+            "name" : "default"
           },
           "vrf1" : {
-            "name" : "vrf1",
-            "interfaces" : [
-              "vrf1"
-            ]
+            "name" : "vrf1"
           }
         }
       },
@@ -16961,17 +16782,10 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "bond1",
-              "lo"
-            ]
+            "name" : "default"
           },
           "vrf1" : {
-            "name" : "vrf1",
-            "interfaces" : [
-              "vrf1"
-            ]
+            "name" : "vrf1"
           }
         }
       },
@@ -17057,12 +16871,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "bond1",
-              "lo",
-              "swp1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -17167,18 +16976,10 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "bond1",
-              "lo",
-              "swp0"
-            ]
+            "name" : "default"
           },
           "vrf1" : {
-            "name" : "vrf1",
-            "interfaces" : [
-              "vrf1"
-            ]
+            "name" : "vrf1"
           }
         }
       },
@@ -17220,10 +17021,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "lo"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -17309,12 +17107,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "bond1",
-              "lo",
-              "swp1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -17394,11 +17187,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Port-Channel1",
-              "Port-Channel2"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -17441,10 +17230,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Port-Channel1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -17816,13 +17602,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "/Common/MYVLAN",
-              "1.0",
-              "2.0",
-              "3.0",
-              "trunk1"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -18715,10 +18494,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet1/15"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -19051,9 +18827,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "eth0"
-            ],
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19263,11 +19036,7 @@
                 "routerId" : "2.130.0.1",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "Ethernet0",
-              "Ethernet1"
-            ]
+            }
           }
         }
       },
@@ -19768,15 +19537,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ge-0/0/0",
-              "ge-0/0/0.0",
-              "ge-0/0/1",
-              "ge-0/0/1.0",
-              "reth0",
-              "reth0.3"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -19858,11 +19619,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Vlan303",
-              "Vlan803"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -19971,13 +19728,7 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "FastEthernet12/13",
-              "HundredGigabitEthernet0/6/0/8",
-              "Port-Channel1",
-              "Vlan100"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20027,10 +19778,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Loopback0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20229,12 +19977,7 @@
                 "routerId" : "10.1.2.3",
                 "summaryAdminCost" : 10
               }
-            },
-            "interfaces" : [
-              "xe-0/0/0",
-              "xe-0/0/0:0",
-              "xe-0/0/0:0.0"
-            ]
+            }
           }
         }
       },
@@ -20404,10 +20147,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "GigabitEthernet1/0/1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20453,10 +20193,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20502,10 +20239,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20551,10 +20285,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20618,10 +20349,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Vlan1000"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -21202,10 +20930,7 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "GigabitEthernet0/2/1/6"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -21739,18 +21464,7 @@
                 "routerId" : "169.232.1.4",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "Bundle-Ethernet101",
-              "Bundle-Ethernet103",
-              "Bundle-Ethernet201",
-              "HundredGigabitEthernet0/2/0/0.292",
-              "HundredGigabitEthernet0/2/0/3",
-              "Loopback0",
-              "TenGigabitEthernet0/0/0/2",
-              "TenGigabitEthernet0/0/0/4",
-              "TenGigabitEthernet0/0/0/5"
-            ]
+            }
           }
         }
       },
@@ -24408,31 +24122,7 @@
             "name" : "SOME_INSTANCE"
           },
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ae0",
-              "ae0.0",
-              "fab0",
-              "ge-0/0/0",
-              "ge-1/0/0",
-              "ge-2/0/0",
-              "ge-2/0/0.0",
-              "ge-2/0/0.1",
-              "ge-3/0/0",
-              "ge-3/0/0.0",
-              "ge-4/0/0",
-              "ge-4/0/0.0",
-              "ge-5/0/0",
-              "ge-5/0/0.0",
-              "irb.5",
-              "vme",
-              "vme.0",
-              "xe-0/0/0:0",
-              "xe-0/0/0:0.0",
-              "xe-0/0/5:0",
-              "xe-0/0/5:0.0",
-              "xe-0/0/6"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -24525,11 +24215,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ge-0/0/0",
-              "ge-0/0/0.0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -24909,11 +24595,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ge-0/0/0",
-              "ge-0/0/0.0"
-            ]
+            "name" : "default"
           }
         },
         "zones" : {
@@ -26842,11 +26524,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ge-0/0/0",
-              "ge-0/0/0.0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -28024,11 +27702,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "xe-0/0/0",
-              "xe-0/0/0.0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -28246,13 +27920,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet1",
-              "Ethernet2",
-              "Management1",
-              "ap1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -28834,10 +28502,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "GigabitEthernet1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -29503,11 +29168,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Ethernet0/0",
-              "Ethernet0/1"
-            ]
+            "name" : "default"
           },
           "management" : {
             "name" : "management"
@@ -29663,10 +29324,7 @@
                 "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
-            },
-            "interfaces" : [
-              "Ethernet0/0"
-            ]
+            }
           },
           "default" : {
             "name" : "default",
@@ -31782,11 +31440,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "ge-0/0/0",
-              "ge-0/0/0.0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -32206,18 +31860,7 @@
         "vendorFamily" : { },
         "vrfs" : {
           "~NULL_VRF~" : {
-            "name" : "~NULL_VRF~",
-            "interfaces" : [
-              "ethernet1/1",
-              "ethernet1/1.4",
-              "ethernet1/1.5",
-              "loopback",
-              "loopback.1",
-              "tunnel",
-              "tunnel.3",
-              "vlan",
-              "vlan.1"
-            ]
+            "name" : "~NULL_VRF~"
           }
         }
       },
@@ -32438,13 +32081,7 @@
         "vendorFamily" : { },
         "vrfs" : {
           "~NULL_VRF~" : {
-            "name" : "~NULL_VRF~",
-            "interfaces" : [
-              "ethernet1/1",
-              "ethernet1/2",
-              "ethernet1/3",
-              "ethernet1/4"
-            ]
+            "name" : "~NULL_VRF~"
           }
         },
         "zones" : {
@@ -32522,10 +32159,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "Loopback1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -36425,10 +36059,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "FastEthernet0/1"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -36967,10 +36598,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "FastEthernet0/0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -37016,10 +36644,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "FastEthernet0/0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -38719,29 +38344,13 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "fxp0",
-              "fxp0.0",
-              "irb.100",
-              "lo0",
-              "lo0.0",
-              "xe-0/0/2",
-              "xe-0/0/2.0",
-              "xe-0/0/3",
-              "xe-0/0/3.0",
-              "xe-0/0/4",
-              "xe-0/0/4.0"
-            ]
+            }
           },
           "fabric" : {
             "name" : "fabric"
           },
           "vr" : {
-            "name" : "vr",
-            "interfaces" : [
-              "lo0.1"
-            ]
+            "name" : "vr"
           }
         }
       }

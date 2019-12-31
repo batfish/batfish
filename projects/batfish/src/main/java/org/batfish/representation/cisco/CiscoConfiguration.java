@@ -703,8 +703,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     if (processRouterId == null) {
       processRouterId = Ip.ZERO;
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
-      for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+      for (Entry<String, org.batfish.datamodel.Interface> e :
+          c.getAllInterfaces(vrfName).entrySet()) {
         String iname = e.getKey();
         org.batfish.datamodel.Interface iface = e.getValue();
         if (iname.startsWith("Loopback")) {
@@ -718,7 +718,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       }
       if (processRouterId.equals(Ip.ZERO)) {
-        for (org.batfish.datamodel.Interface currentInterface : vrf.getInterfaces().values()) {
+        for (org.batfish.datamodel.Interface currentInterface :
+            c.getAllInterfaces(vrfName).values()) {
           ConcreteInterfaceAddress address = currentInterface.getConcreteAddress();
           if (address != null) {
             Ip currentIp = address.getIp();
@@ -964,11 +965,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String updateSourceInterface,
       boolean ipv4) {
     Ip updateSource = null;
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
     if (ipv4) {
       if (updateSourceInterface != null) {
         org.batfish.datamodel.Interface sourceInterface =
-            vrf.getInterfaces().get(updateSourceInterface);
+            c.getAllInterfaces(vrfName).get(updateSourceInterface);
         if (sourceInterface != null) {
           ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
           if (address != null) {
@@ -986,7 +986,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           updateSource = Ip.AUTO;
         } else {
           Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
-          for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
+          for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
             for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
               if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
                 Ip ifaceAddress = interfaceAddress.getIp();
@@ -1628,7 +1628,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat()));
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(
-            AristaConversions.getBgpRouterId(bgpVrf, v, _w), ebgpAdmin, ibgpAdmin);
+            AristaConversions.getBgpRouterId(
+                bgpVrf, v.getName(), c.getAllInterfaces(v.getName()), _w),
+            ebgpAdmin,
+            ibgpAdmin);
 
     boolean multipath = firstNonNull(bgpVrf.getMaxPaths(), 1) > 1;
     newBgpProcess.setMultipathEbgp(multipath);
@@ -2429,7 +2432,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(c.getConfigurationFormat()))
             .setRouterId(routerId)
             .build();
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getMaxMetricRouterLsa()) {
       newProcess.setMaxMetricTransitLinks(OspfProcess.MAX_METRIC_ROUTER_LSA);
@@ -2447,7 +2449,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
-    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+    for (Entry<String, org.batfish.datamodel.Interface> e :
+        c.getAllInterfaces(vrfName).entrySet()) {
       org.batfish.datamodel.Interface iface = e.getValue();
       /*
        * Filter out interfaces that do not belong to this process, however if the process name is missing,
@@ -2685,11 +2688,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.RipProcess toRipProcess(
       RipProcess proc, String vrfName, Configuration c) {
     org.batfish.datamodel.RipProcess newProcess = new org.batfish.datamodel.RipProcess();
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     // establish areas and associated interfaces
     SortedSet<Prefix> networks = proc.getNetworks();
-    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+    for (Entry<String, org.batfish.datamodel.Interface> e :
+        c.getAllInterfaces(vrfName).entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface i = e.getValue();
       ConcreteInterfaceAddress interfaceAddress = i.getConcreteAddress();
@@ -3289,7 +3292,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
           }
           c.getAllInterfaces().put(newIfaceName, newInterface);
-          c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
         });
     /*
      * Second pass over the interfaces to set dependency pointers correctly for portchannels

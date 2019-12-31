@@ -44,7 +44,6 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddres
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
@@ -893,25 +892,23 @@ public final class CumulusNcluGrammarTest {
             "vrf1"));
 
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasInterfaces(
-                containsInAnyOrder(
-                    "bond1",
-                    "bond2",
-                    "bond2.4094",
-                    "bond3",
-                    "bond3.4094",
-                    "eth0",
-                    "lo",
-                    "swp1",
-                    "swp2",
-                    "swp3",
-                    "swp4",
-                    "swp5",
-                    "swp6"))));
-    assertThat(c, hasVrf("mgmt", hasInterfaces(containsInAnyOrder("mgmt"))));
-    assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "swp5.1"))));
+        c.getAllInterfaces(DEFAULT_VRF_NAME).keySet(),
+        containsInAnyOrder(
+            "bond1",
+            "bond2",
+            "bond2.4094",
+            "bond3",
+            "bond3.4094",
+            "eth0",
+            "lo",
+            "swp1",
+            "swp2",
+            "swp3",
+            "swp4",
+            "swp5",
+            "swp6"));
+    assertThat(c.getAllInterfaces("mgmt").keySet(), containsInAnyOrder("mgmt"));
+    assertThat(c.getAllInterfaces("vrf1").keySet(), containsInAnyOrder("vrf1", "swp5.1"));
 
     // encapsulation vlan
     assertThat(c, hasInterface("bond2.4094", hasEncapsulationVlan(4094)));
@@ -1121,7 +1118,7 @@ public final class CumulusNcluGrammarTest {
                     // this anycast IP is here until better place for it in the VI model is found
                     ConcreteInterfaceAddress.parse("192.0.2.1/32")))));
     assertThat(c, hasInterface("lo", hasVrfName(DEFAULT_VRF_NAME)));
-    assertThat(c, hasDefaultVrf(hasInterfaces(contains("lo"))));
+    assertThat(c.getAllInterfaces(DEFAULT_VRF_NAME).keySet(), contains("lo"));
   }
 
   @Test
@@ -1344,8 +1341,9 @@ public final class CumulusNcluGrammarTest {
 
     // vlan interfaces should be put in correct vrfs
     assertThat(
-        c, hasDefaultVrf(hasInterfaces(containsInAnyOrder("vlan3", "vlan4", "vlan5", "lo"))));
-    assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "vlan2"))));
+        c.getAllInterfaces(DEFAULT_VRF_NAME).keySet(),
+        containsInAnyOrder("vlan3", "vlan4", "vlan5", "lo"));
+    assertThat(c.getAllInterfaces("vrf1").keySet(), containsInAnyOrder("vrf1", "vlan2"));
     assertThat(c, hasInterface("vlan2", hasVrfName("vrf1")));
     assertThat(c, hasInterface("vlan3", hasVrfName(DEFAULT_VRF_NAME)));
     assertThat(c, hasInterface("vlan4", hasVrfName(DEFAULT_VRF_NAME)));
@@ -1434,8 +1432,8 @@ public final class CumulusNcluGrammarTest {
     Configuration c = parseConfig("cumulus_nclu_vrf");
 
     // vrf presence and loopbacks
-    assertThat(c, hasVrf("vrf1", hasInterfaces(contains("vrf1"))));
-    assertThat(c, hasVrf("vrf2", hasInterfaces(contains("vrf2"))));
+    assertThat(c.getAllInterfaces("vrf1").keySet(), contains("vrf1"));
+    assertThat(c.getAllInterfaces("vrf2").keySet(), contains("vrf2"));
 
     // ip address
     assertThat(c, hasInterface("vrf1", hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))));

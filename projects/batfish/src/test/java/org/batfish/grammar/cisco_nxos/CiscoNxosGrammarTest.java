@@ -209,7 +209,6 @@ import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
-import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -7117,17 +7116,16 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "Vrf1", "vrf3"));
     {
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
-      assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/2")));
+      Map<String, org.batfish.datamodel.Interface> vrfIfaces = c.getAllInterfaces(DEFAULT_VRF_NAME);
+      assertThat(vrfIfaces, hasKey("Ethernet1/2"));
     }
     {
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("Vrf1");
-      assertThat(
-          vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/1", "Ethernet1/3", "Ethernet1/4")));
+      Map<String, org.batfish.datamodel.Interface> vrfIfaces = c.getAllInterfaces("Vrf1");
+      assertThat(vrfIfaces, hasKeys("Ethernet1/1", "Ethernet1/3", "Ethernet1/4"));
     }
     {
-      org.batfish.datamodel.Vrf vrf = c.getVrfs().get("vrf3");
-      assertThat(vrf, VrfMatchers.hasInterfaces(contains("Ethernet1/5")));
+      Map<String, org.batfish.datamodel.Interface> vrfIfaces = c.getAllInterfaces("vrf3");
+      assertThat(vrfIfaces, hasKeys("Ethernet1/5"));
     }
 
     assertThat(
