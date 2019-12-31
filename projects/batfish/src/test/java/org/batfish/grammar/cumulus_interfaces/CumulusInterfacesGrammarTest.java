@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_interfaces;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -12,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -22,6 +24,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
@@ -32,6 +35,7 @@ import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Before;
@@ -135,6 +139,21 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBondMiimon() {
+    parse("iface swp1\n bond-miimon 100\n");
+  }
+
+  @Test
+  public void testBondMode() {
+    parse("iface swp1\n bond-mode 802.3ad\n");
+  }
+
+  @Test
+  public void testBondMinLinks() {
+    parse("iface swp1\n bond-min-links 1\n");
+  }
+
+  @Test
   public void testIfaceBondSlaves() {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     Interfaces interfaces = parse(input);
@@ -173,6 +192,11 @@ public class CumulusInterfacesGrammarTest {
         contains(4));
     assertThat(interfaces.getInterfaces().get("swp1").getBondSlaves(), contains("s1"));
     assertThat(interfaces.getInterfaces().get("swp2").getBondSlaves(), contains("s2"));
+  }
+
+  @Test
+  public void testBondXmitHashPolicy() {
+    parse("iface swp1\n bond-xmit-hash-policy layer3+4\n");
   }
 
   @Test
@@ -275,6 +299,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceClagBackupIpWithoutVrf() {
+    String input = "iface swp1\n clagd-backup-ip 1.2.3.4\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
+    assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(clag.getBackupIpVrf(), equalTo(DEFAULT_VRF_NAME));
+  }
+
+  @Test
   public void testIfaceClagdPeerIp() {
     String input = "iface swp1\n clagd-peer-ip 1.2.3.4\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
@@ -286,6 +318,13 @@ public class CumulusInterfacesGrammarTest {
     String input = "iface swp1\n clagd-peer-ip linklocal\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertTrue(clag.isPeerIpLinkLocal());
+  }
+
+  @Test
+  public void testIfaceClagdPriority() {
+    String input = "iface swp1\n clagd-priority 42\n";
+    InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
+    assertThat(clag.getPriority(), equalTo(42));
   }
 
   @Test
@@ -334,6 +373,28 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testMstpctlPortpdufilter() {
     parse("iface vni1\n mstpctl-portbpdufilter yes\n");
+  }
+
+  @Test
+  public void testPostUpIpRouteAddDev() {
+    String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 dev eth0\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertThat(
+        iface.getPostUpIpRoutes(),
+        equalTo(ImmutableList.of(new StaticRoute(Prefix.parse("10.10.10.0/24"), null, "eth0"))));
+  }
+
+  @Test
+  public void testPostUpIpRouteAddVia() {
+    String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 via 10.1.1.1\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertThat(
+        iface.getPostUpIpRoutes(),
+        equalTo(
+            ImmutableList.of(
+                new StaticRoute(Prefix.parse("10.10.10.0/24"), Ip.parse("10.1.1.1"), null))));
   }
 
   @Test
@@ -441,6 +502,24 @@ public class CumulusInterfacesGrammarTest {
     Interfaces interfaces = parse(input);
     Interface iface = interfaces.getInterfaces().get("swp1");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+  }
+
+  @Test
+  public void testDhcpInterface() {
+    String input = "iface eth0 inet dhcp\n link-speed 10000\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+    assertNull(iface.getAddresses());
+  }
+
+  @Test
+  public void testManualInterface() {
+    String input = "iface eth0 inet manual\n link-speed 10000\n";
+    Interfaces interfaces = parse(input);
+    Interface iface = interfaces.getInterfaces().get("eth0");
+    assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
+    assertNull(iface.getAddresses());
   }
 
   @Test

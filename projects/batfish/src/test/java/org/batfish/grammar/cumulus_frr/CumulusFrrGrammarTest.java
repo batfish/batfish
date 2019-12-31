@@ -329,6 +329,25 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyNeighborAllowAsIn() {
+    parseLines(
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "neighbor N allowas-in 5",
+        "exit-address-family");
+    assertThat(
+        _config
+            .getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(5));
+  }
+
+  @Test
   public void testBgpAddressFamilyNeighborRouteReflectorClient() {
     parseLines(
         "router bgp 1",
@@ -373,6 +392,12 @@ public class CumulusFrrGrammarTest {
         "address-family ipv4 unicast",
         "neighbor 10.0.0.1 soft-reconfiguration inbound",
         "exit-address-family");
+  }
+
+  @Test
+  public void testBgpAddressFamilyNoExit() {
+    parseLines(
+        "router bgp 1", "address-family ipv4 unicast", "neighbor N soft-reconfiguration inbound");
   }
 
   @Test
@@ -467,6 +492,12 @@ public class CumulusFrrGrammarTest {
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(_config.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
+  public void testBgpNoDefaultIpv4Unicast() {
+    parse("router bgp 1\n no bgp default ipv4-unicast\n");
+    assertFalse(_config.getBgpProcess().getDefaultVrf().getDefaultIpv4Unicast());
   }
 
   @Test

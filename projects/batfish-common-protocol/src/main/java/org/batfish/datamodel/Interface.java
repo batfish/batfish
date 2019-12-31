@@ -174,9 +174,6 @@ public final class Interface extends ComparableStructure<String> {
       iface.setVlan(_vlan);
 
       iface.setVrf(_vrf);
-      if (_vrf != null) {
-        _vrf.getInterfaces().put(name, iface);
-      }
       iface.setVrrpGroups(_vrrpGroups);
 
       iface.setOspfSettings(_ospfSettings);

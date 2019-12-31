@@ -138,7 +138,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                 .getInterfaceSpecifier()
                 .resolve(ImmutableSet.of(hostname), _batfish.specifierContext(snapshot));
         for (Vrf vrf : c.getVrfs().values()) {
-          for (Entry<String, Interface> e2 : vrf.getInterfaces().entrySet()) {
+          for (Entry<String, Interface> e2 : c.getAllInterfaces(vrf.getName()).entrySet()) {
             String interfaceName = e2.getKey();
             Interface iface = e2.getValue();
             if (includeInterfaces.contains(NodeInterfacePair.of(iface))) {

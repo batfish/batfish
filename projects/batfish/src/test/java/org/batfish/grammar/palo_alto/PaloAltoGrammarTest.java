@@ -42,7 +42,6 @@ import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
 import static org.batfish.datamodel.matchers.StubSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER;
@@ -2173,9 +2172,9 @@ public final class PaloAltoGrammarTest {
     String hostname = "virtual-router-interfaces";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
-    assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
-    assertThat(c, hasVrf("some other name", hasInterfaces(emptyIterable())));
+    assertThat(c.getAllInterfaces("default").keySet(), hasItem("ethernet1/1"));
+    assertThat(c.getAllInterfaces("somename").keySet(), hasItems("ethernet1/2", "ethernet1/3"));
+    assertThat(c.getAllInterfaces("some other name").keySet(), empty());
   }
 
   @Test

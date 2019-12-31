@@ -16,7 +16,6 @@ import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
-import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasKernelRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcesses;
@@ -53,14 +52,6 @@ public class VrfMatchers {
   public static HasGeneratedRoutes hasGeneratedRoutes(
       Matcher<? super SortedSet<GeneratedRoute>> subMatcher) {
     return new HasGeneratedRoutes(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's
-   * interfaces.
-   */
-  public static Matcher<Vrf> hasInterfaces(Matcher<? super SortedSet<String>> subMatcher) {
-    return new HasInterfaces(subMatcher);
   }
 
   /**

@@ -14,6 +14,7 @@ s_bgp
   | sb_always_compare_med
   | sb_bgp
   | sb_neighbor
+  | sb_no
   )*
 ;
 
@@ -26,6 +27,32 @@ sb_bgp
     | sbb_log_neighbor_changes
     | sbb_router_id
   )
+;
+
+sb_no
+:
+  NO
+  (
+    sbno_bgp
+  )
+;
+
+
+sbno_bgp
+:
+  BGP
+  (
+     sbnob_default
+  )
+;
+
+sbnob_default
+:
+  DEFAULT
+  (
+     sbnobd_ipv4_unicast
+  )
+  NEWLINE
 ;
 
 sbb_confederation
@@ -64,7 +91,7 @@ sb_neighbor
 sb_address_family
 :
   ADDRESS_FAMILY sbaf
-  EXIT_ADDRESS_FAMILY NEWLINE
+  (EXIT_ADDRESS_FAMILY NEWLINE)?
 ;
 
 sbaf
@@ -218,6 +245,7 @@ sbafi_neighbor
   NEIGHBOR (ip = IP_ADDRESS | name = word)
   (
     sbafin_activate
+  | sbafin_allowas_in
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_send_community
@@ -230,6 +258,11 @@ sbafi_neighbor
 sbafin_activate
 :
   ACTIVATE
+;
+
+sbafin_allowas_in
+:
+  ALLOWAS_IN count = UINT8
 ;
 
 sbafin_next_hop_self
@@ -265,4 +298,9 @@ sbn_bfd
 sbn_password
 :
   PASSWORD REMARK_TEXT
+;
+
+sbnobd_ipv4_unicast
+:
+    IPV4_UNICAST
 ;

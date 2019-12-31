@@ -79,6 +79,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
@@ -92,6 +93,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnobd_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
@@ -368,6 +370,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbnobd_ipv4_unicast(Sbnobd_ipv4_unicastContext ctx) {
+    if (_currentBgpVrf == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp vrf");
+      return;
+    }
+    _currentBgpVrf.setDefaultIpv4Unicast(false);
+  }
+
+  @Override
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
 
@@ -490,6 +501,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(true);
+  }
+
+  @Override
+  public void exitSbafin_allowas_in(Sbafin_allowas_inContext ctx) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      // TODO: remove this silent ignore from here and other places
+      return;
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setAllowAsIn(Integer.parseInt(ctx.count.getText()));
   }
 
   @Override

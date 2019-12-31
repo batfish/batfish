@@ -16,11 +16,9 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -80,7 +78,6 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
   private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
   private static final String PROP_CROSS_VRF_IMPORT_VRFS = "crossVrfImportVrfs";
-  private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_ISIS_PROCESS = "isisProcess";
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
@@ -101,8 +98,6 @@ public class Vrf extends ComparableStructure<String> {
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
   @Nullable private String _crossVrfImportPolicy;
   @Nullable private List<String> _crossVrfImportVrfs;
-  private transient SortedSet<String> _interfaceNames;
-  private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
   @Nonnull private SortedMap<String, OspfProcess> _ospfProcesses;
@@ -118,7 +113,6 @@ public class Vrf extends ComparableStructure<String> {
     _eigrpProcesses = ImmutableSortedMap.of();
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
-    _interfaces = new TreeMap<>();
     _kernelRoutes = ImmutableSortedSet.of();
     _ospfProcesses = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
@@ -188,26 +182,6 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_CROSS_VRF_IMPORT_VRFS)
   public List<String> getCrossVrfImportVrfs() {
     return _crossVrfImportVrfs;
-  }
-
-  /** Interfaces assigned to this VRF. */
-  @JsonProperty(PROP_INTERFACES)
-  public SortedSet<String> getInterfaceNames() {
-    if (_interfaces != null && !_interfaces.isEmpty()) {
-      return new TreeSet<>(_interfaces.keySet());
-    } else {
-      return firstNonNull(_interfaceNames, ImmutableSortedSet.of());
-    }
-  }
-
-  @JsonIgnore
-  public Map<String, Interface> getInterfaces() {
-    return _interfaces;
-  }
-
-  @JsonIgnore
-  public @Nonnull Stream<Interface> getActiveInterfaces() {
-    return _interfaces.values().stream().filter(Interface::getActive);
   }
 
   /** IS-IS routing process for this VRF. */
@@ -324,16 +298,6 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_CROSS_VRF_IMPORT_VRFS)
   public void setCrossVrfImportVrfs(@Nonnull List<String> crossVrfImportVrfs) {
     _crossVrfImportVrfs = ImmutableList.copyOf(crossVrfImportVrfs);
-  }
-
-  @JsonProperty(PROP_INTERFACES)
-  public void setInterfaceNames(SortedSet<String> interfaceNames) {
-    _interfaceNames = interfaceNames;
-  }
-
-  @JsonIgnore
-  public void setInterfaces(NavigableMap<String, Interface> interfaces) {
-    _interfaces = interfaces;
   }
 
   @JsonProperty(PROP_ISIS_PROCESS)

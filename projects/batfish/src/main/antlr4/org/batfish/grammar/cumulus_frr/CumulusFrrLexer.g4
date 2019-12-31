@@ -49,6 +49,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+ALLOWAS_IN
+:
+  'allowas-in'
+;
+
 ALWAYS_COMPARE_MED
 :
   'always-compare-med'
@@ -158,6 +163,11 @@ CONNECTED
 DATACENTER
 :
   'datacenter'
+;
+
+DEFAULT
+:
+  'default'
 ;
 
 DEFAULTS
@@ -306,6 +316,11 @@ IP
 IPV4
 :
   'ipv4'
+;
+
+IPV4_UNICAST
+:
+  'ipv4-unicast'
 ;
 
 IPV6

@@ -38,6 +38,8 @@ si_inet
   INET
   (
     LOOPBACK NEWLINE l_property*
+    | DHCP NEWLINE i_property*
+    | MANUAL NEWLINE i_property*
     | STATIC NEWLINE i_property*
   )
 ;
@@ -72,7 +74,11 @@ i_property
   | i_alias
   | i_bond_lacp_bypass_allow
   | i_bond_lacp_rate
+  | i_bond_miimon
+  | i_bond_min_links
+  | i_bond_mode
   | i_bond_slaves
+  | i_bond_xmit_hash_policy
   | i_bridge_access
   | i_bridge_arp_nd_suppress
   | i_bridge_learning
@@ -83,6 +89,7 @@ i_property
   | i_clag_id
   | i_clagd_backup_ip
   | i_clagd_peer_ip
+  | i_clagd_priority
   | i_clagd_sys_mac
   | i_gateway
   | i_hwaddress
@@ -91,6 +98,7 @@ i_property
   | i_mstpctl_bpduguard
   | i_mstpctl_portadminedge
   | i_mstpctl_portbpdufilter
+  | i_post_up
   | i_vlan_id
   | i_vlan_raw_device
   | i_vrf
@@ -124,9 +132,29 @@ i_bond_lacp_rate
   BOND_LACP_RATE NEWLINE
 ;
 
+i_bond_miimon
+:
+  BOND_MIIMON NEWLINE
+;
+
+i_bond_min_links
+:
+  BOND_MIN_LINKS NEWLINE
+;
+
+i_bond_mode
+:
+  BOND_MODE NEWLINE
+;
+
 i_bond_slaves
 :
   BOND_SLAVES interface_name+ NEWLINE
+;
+
+i_bond_xmit_hash_policy
+:
+  BOND_XMIT_HASH_POLICY NEWLINE
 ;
 
 i_bridge_access
@@ -171,12 +199,17 @@ i_clag_id
 
 i_clagd_backup_ip
 :
-  CLAGD_BACKUP_IP IP_ADDRESS VRF vrf_name NEWLINE
+  CLAGD_BACKUP_IP IP_ADDRESS (VRF vrf_name)? NEWLINE
 ;
 
 i_clagd_peer_ip
 :
   CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
+;
+
+i_clagd_priority
+:
+  CLAGD_PRIORITY number NEWLINE
 ;
 
 i_clagd_sys_mac
@@ -217,6 +250,42 @@ i_mstpctl_portadminedge
 i_mstpctl_portbpdufilter
 :
   MSTPCTL_PORTBPDUFILTER NEWLINE
+;
+
+i_post_up
+:
+  POST_UP
+  (
+     ipu_ip
+  )
+;
+
+ipu_ip
+:
+  IP
+  (
+     ipui_route
+  )
+;
+
+ipui_route
+:
+  ROUTE
+  (
+     ipuir_add
+  )
+;
+
+ipuir_add
+:
+   ADD IP_PREFIX
+   // this rule is more permissive than reality; it allows for multiple occurrences of dev/via
+   // we check for conformance in the extractor
+   (
+     VIA IP_ADDRESS
+     | DEV interface_name
+   )+
+   NEWLINE
 ;
 
 i_vlan_id

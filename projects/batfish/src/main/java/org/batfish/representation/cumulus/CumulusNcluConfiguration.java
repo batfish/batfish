@@ -220,35 +220,40 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
-    @Nullable
-    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
-    generateBgpUnnumberedPeerConfig(
-        neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, importRoutingPolicy);
+    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
+        BgpUnnumberedPeerConfig.builder()
+            .setLocalIp(BGP_UNNUMBERED_IP)
+            .setPeerInterface(neighbor.getName());
+    generateBgpCommonPeerConfig(neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 
   @VisibleForTesting
-  void generateBgpUnnumberedPeerConfig(
-      BgpInterfaceNeighbor neighbor,
+  void generateBgpCommonPeerConfig(
+      BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy exportRoutingPolicy,
-      @Nullable RoutingPolicy importRoutingPolicy) {
-    BgpUnnumberedPeerConfig.builder()
+      BgpPeerConfig.Builder<?, ?> peerConfigBuilder) {
+
+    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
+    @Nullable
+    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
+
+    peerConfigBuilder
         .setBgpProcess(newProc)
         .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
-        .setLocalIp(BGP_UNNUMBERED_IP)
-        .setPeerInterface(neighbor.getName())
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
-                neighbor.getIpv4UnicastAddressFamily(), exportRoutingPolicy, importRoutingPolicy))
+                neighbor.getIpv4UnicastAddressFamily(),
+                bgpVrf.getDefaultIpv4Unicast(),
+                exportRoutingPolicy,
+                importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
         .build();
@@ -258,14 +263,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @Nullable
   Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
+      boolean defaultIpv4Unicast,
       RoutingPolicy exportRoutingPolicy,
-      RoutingPolicy importRoutingPolicy) {
+      @Nullable RoutingPolicy importRoutingPolicy) {
 
-    // check if address family was explicitly deactivated (address family is activated by default)
-    boolean deactivated =
-        ipv4UnicastAddressFamily != null
-            && Boolean.FALSE.equals(ipv4UnicastAddressFamily.getActivated());
-    if (deactivated) {
+    // check if address family should be activated
+    boolean explicitActivationSetting =
+        ipv4UnicastAddressFamily != null && ipv4UnicastAddressFamily.getActivated() != null;
+    if ((explicitActivationSetting && !ipv4UnicastAddressFamily.getActivated())
+        || (!explicitActivationSetting && !defaultIpv4Unicast)) {
       return null;
     }
 
@@ -285,6 +291,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             AddressFamilyCapabilities.builder()
                 .setSendCommunity(true)
                 .setSendExtendedCommunity(true)
+                .setAllowLocalAsIn(
+                    (ipv4UnicastAddressFamily != null
+                        && (firstNonNull(ipv4UnicastAddressFamily.getAllowAsIn(), 0) > 0)))
                 .build())
         .setExportPolicy(exportRoutingPolicy.getName())
         .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
@@ -302,42 +311,16 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       getWarnings().redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(neighbor, bgpVrf);
-    @Nullable
-    RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(neighbor, bgpVrf, _c);
-    generateBgpActivePeerConfig(
-        neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, importRoutingPolicy, _c);
-  }
-
-  @VisibleForTesting
-  void generateBgpActivePeerConfig(
-      BgpIpNeighbor neighbor,
-      @Nullable Long localAs,
-      BgpVrf bgpVrf,
-      org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy exportRoutingPolicy,
-      RoutingPolicy importRoutingPolicy,
-      Configuration c) {
-    BgpActivePeerConfig.builder()
-        .setBgpProcess(newProc)
-        .setConfederation(bgpVrf.getConfederationId())
-        .setDescription(neighbor.getDescription())
-        .setGroup(neighbor.getPeerGroup())
-        .setLocalAs(localAs)
-        .setLocalIp(
-            Optional.ofNullable(
-                    resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, _w))
-                .orElse(computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
-        .setPeerAddress(neighbor.getPeerIp())
-        .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-        .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
-        // Ipv4 unicast is enabled by default
-        .setIpv4UnicastAddressFamily(
-            convertIpv4UnicastAddressFamily(
-                neighbor.getIpv4UnicastAddressFamily(), exportRoutingPolicy, importRoutingPolicy))
-        .setEvpnAddressFamily(
-            toEvpnAddressFamily(neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
-        .build();
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(
+                Optional.ofNullable(
+                        resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), _c, _w))
+                    .orElse(
+                        computeLocalIpForBgpNeighbor(
+                            neighbor.getPeerIp(), _c, bgpVrf.getVrfName())))
+            .setPeerAddress(neighbor.getPeerIp());
+    generateBgpCommonPeerConfig(neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 
   @Nullable
@@ -490,7 +473,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (vrf == null) {
       return null;
     }
-    return vrf.getInterfaces().values().stream()
+    return c.getAllInterfaces(vrf.getName()).values().stream()
         .flatMap(
             i ->
                 i.getAllConcreteAddresses().stream()
@@ -684,7 +667,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .forEach(
             iface -> {
               iface.setVrf(vrf);
-              vrf.getInterfaces().put(iface.getName(), iface);
             });
   }
 
@@ -790,7 +772,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertOspfVrf(OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
-    org.batfish.datamodel.ospf.OspfProcess ospfProcess = toOspfProcess(ospfVrf, vrf);
+    org.batfish.datamodel.ospf.OspfProcess ospfProcess =
+        toOspfProcess(ospfVrf, _c.getAllInterfaces(vrf.getName()));
     vrf.addOspfProcess(ospfProcess);
   }
 
@@ -851,7 +834,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             (ifaceName, iface) -> {
               if (iface.getVrf() == null) {
                 iface.setVrf(defaultVrf);
-                defaultVrf.getInterfaces().put(ifaceName, iface);
               }
             });
     _c.getVrfs().put(DEFAULT_VRF_NAME, defaultVrf);
@@ -1140,12 +1122,22 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void initVrf(String name, Vrf vrf) {
     org.batfish.datamodel.Vrf newVrf = new org.batfish.datamodel.Vrf(name);
-    newVrf.setStaticRoutes(
-        vrf.getStaticRoutes().stream()
-            .map(StaticRoute::convert)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
+    initVrfStaticRoutes(vrf, newVrf);
     assignInterfacesToVrf(newVrf, name);
     _c.getVrfs().put(name, newVrf);
+  }
+
+  @VisibleForTesting
+  void initVrfStaticRoutes(Vrf oldVrf, org.batfish.datamodel.Vrf newVrf) {
+    newVrf.setStaticRoutes(
+        Streams.concat(
+                oldVrf.getStaticRoutes().stream(),
+                _interfaces.values().stream()
+                    .filter(iface -> Objects.equals(iface.getVrf(), oldVrf.getName()))
+                    .filter(iface -> !iface.isDisabled())
+                    .flatMap(iface -> iface.getPostUpIpRoutes().stream()))
+            .map(StaticRoute::convert)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
   }
 
   private void markStructures() {
@@ -1258,7 +1250,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
-      OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
+      OspfVrf ospfVrf, Map<String, org.batfish.datamodel.Interface> vrfInterfaces) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
       routerId = inferRouterId();
@@ -1274,37 +1266,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
 
-    addOspfInterfaces(vrf, proc.getProcessId());
-    proc.setAreas(computeOspfAreas(vrf.getInterfaceNames()));
+    addOspfInterfaces(vrfInterfaces, proc.getProcessId());
+    proc.setAreas(computeOspfAreas(vrfInterfaces.keySet()));
     return proc;
   }
 
   @VisibleForTesting
-  void addOspfInterfaces(org.batfish.datamodel.Vrf vrf, String processId) {
-    vrf.getInterfaces()
-        .forEach(
-            (ifaceName, iface) -> {
-              Interface vsIface = _interfaces.get(iface.getName());
-              OspfInterface ospfInterface = vsIface.getOspf();
-              if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
-                // no ospf running on this interface
-                return;
-              }
+  void addOspfInterfaces(Map<String, org.batfish.datamodel.Interface> ifaces, String processId) {
+    ifaces.forEach(
+        (ifaceName, iface) -> {
+          Interface vsIface = _interfaces.get(iface.getName());
+          OspfInterface ospfInterface = vsIface.getOspf();
+          if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
+            // no ospf running on this interface
+            return;
+          }
 
-              iface.setOspfSettings(
-                  OspfInterfaceSettings.builder()
-                      .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
-                      .setAreaName(ospfInterface.getOspfArea())
-                      .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
-                      .setDeadInterval(
-                          Optional.ofNullable(ospfInterface.getDeadInterval())
-                              .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
-                      .setHelloInterval(
-                          Optional.ofNullable(ospfInterface.getHelloInterval())
-                              .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
-                      .setProcess(processId)
-                      .build());
-            });
+          iface.setOspfSettings(
+              OspfInterfaceSettings.builder()
+                  .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
+                  .setAreaName(ospfInterface.getOspfArea())
+                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
+                  .setDeadInterval(
+                      Optional.ofNullable(ospfInterface.getDeadInterval())
+                          .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
+                  .setHelloInterval(
+                      Optional.ofNullable(ospfInterface.getHelloInterval())
+                          .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
+                  .setProcess(processId)
+                  .build());
+        });
   }
 
   @VisibleForTesting

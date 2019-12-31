@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_interfaces;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
@@ -33,6 +35,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_v
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clag_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_backup_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_priorityContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
@@ -42,6 +45,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tabl
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Ipuir_addContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
@@ -55,6 +59,7 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus_interfaces.Converter;
 import org.batfish.representation.cumulus_interfaces.Interface;
 import org.batfish.representation.cumulus_interfaces.Interfaces;
@@ -138,6 +143,13 @@ public final class CumulusInterfacesConfigurationBuilder
           CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
           ctx.getStart().getLine());
     } else if (ctx.STATIC() != null) {
+      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+    } else if (ctx.DHCP() != null) {
+      // We are not assigning any address to this interface, so it won't really be usable unless
+      // another address is explicitly configured
+      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+    } else if (ctx.MANUAL() != null) {
+      // 'manual' creates an interface without an IP address
       _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
     } else {
       _w.addWarning(ctx, ctx.getStart().getText(), _parser, "syntax is not supported now");
@@ -238,13 +250,17 @@ public final class CumulusInterfacesConfigurationBuilder
   public void exitI_clagd_backup_ip(I_clagd_backup_ipContext ctx) {
     InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
     clag.setBackupIp(Ip.parse(ctx.IP_ADDRESS().getText()));
-    String vrf = ctx.vrf_name().getText();
-    clag.setBackupIpVrf(vrf);
-    _config.referenceStructure(
-        CumulusStructureType.VRF,
-        vrf,
-        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
-        ctx.getStart().getLine());
+    if (ctx.VRF() != null) {
+      String vrf = ctx.vrf_name().getText();
+      clag.setBackupIpVrf(vrf);
+      _config.referenceStructure(
+          CumulusStructureType.VRF,
+          vrf,
+          CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+          ctx.getStart().getLine());
+    } else {
+      clag.setBackupIpVrf(DEFAULT_VRF_NAME);
+    }
   }
 
   @Override
@@ -257,6 +273,12 @@ public final class CumulusInterfacesConfigurationBuilder
     } else {
       throw new IllegalStateException("clagd-peer-ip without an IP or linklocal");
     }
+  }
+
+  @Override
+  public void exitI_clagd_priority(I_clagd_priorityContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setPriority(Integer.parseInt(ctx.number().getText()));
   }
 
   @Override
@@ -307,6 +329,40 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_vxlan_local_tunnel_ip(I_vxlan_local_tunnel_ipContext ctx) {
     _currentIface.setVxlanLocalTunnelIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
+  public void exitIpuir_add(Ipuir_addContext ctx) {
+    Ip gatewayIp = null;
+    String nextHopInterface = null;
+
+    if (ctx.VIA().size() != 0) {
+      if (ctx.VIA().size() > 1) {
+        _w.addWarning(
+            ctx,
+            ctx.getStart().getText(),
+            _parser,
+            "Multiple occurrences of 'via' not allowed in 'post-up ip route add'");
+        return;
+      }
+      gatewayIp = Ip.parse(ctx.IP_ADDRESS(0).getText());
+    }
+
+    if (ctx.DEV().size() != 0) {
+      if (ctx.DEV().size() > 1) {
+        _w.addWarning(
+            ctx,
+            ctx.getStart().getText(),
+            _parser,
+            "Multiple occurrences of 'dev' not allowed in 'post-up ip route add'");
+        return;
+      }
+      nextHopInterface = ctx.interface_name(0).getText();
+    }
+
+    StaticRoute sr =
+        new StaticRoute(Prefix.parse(ctx.IP_PREFIX().getText()), gatewayIp, nextHopInterface);
+    _currentIface.addPostUpIpRoute(sr);
   }
 
   @Override

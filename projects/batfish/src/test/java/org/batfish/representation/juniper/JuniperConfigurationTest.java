@@ -35,7 +35,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
@@ -135,11 +134,10 @@ public class JuniperConfigurationTest {
    * @return the created interface
    */
   private static org.batfish.datamodel.Interface createInterface(Configuration c) {
-    org.batfish.datamodel.Interface iface =
-        org.batfish.datamodel.Interface.builder().setName("iface").build();
     Vrf vrf = new Vrf("vrf");
-    vrf.setInterfaces(ImmutableSortedMap.of("iface", iface));
     c.setVrfs(ImmutableMap.of("vrf", vrf));
+    org.batfish.datamodel.Interface iface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setOwner(c).setVrf(vrf).build();
     return iface;
   }
 
@@ -180,18 +178,23 @@ public class JuniperConfigurationTest {
     String loopbackName = "lo0.0";
     String iface1Name = "iface1";
     String iface2Name = "iface2";
-    org.batfish.datamodel.Interface loopback =
-        org.batfish.datamodel.Interface.builder()
-            .setName(loopbackName)
-            .setType(InterfaceType.LOOPBACK)
-            .build();
-    org.batfish.datamodel.Interface iface1 =
-        org.batfish.datamodel.Interface.builder().setName(iface1Name).build();
-    org.batfish.datamodel.Interface iface2 =
-        org.batfish.datamodel.Interface.builder().setName(iface2Name).build();
     Vrf vrf = new Vrf("vrf");
-    vrf.setInterfaces(
-        ImmutableSortedMap.of(loopbackName, loopback, iface1Name, iface1, iface2Name, iface2));
+    org.batfish.datamodel.Interface.builder()
+        .setOwner(config._c)
+        .setName(loopbackName)
+        .setVrf(vrf)
+        .setType(InterfaceType.LOOPBACK)
+        .build();
+    org.batfish.datamodel.Interface.builder()
+        .setName(iface1Name)
+        .setOwner(config._c)
+        .setVrf(vrf)
+        .build();
+    org.batfish.datamodel.Interface.builder()
+        .setName(iface2Name)
+        .setOwner(config._c)
+        .setVrf(vrf)
+        .build();
     config._c.setVrfs(ImmutableMap.of("vrf", vrf));
 
     // Loopback has IS-IS enabled at both levels; other interfaces' IS-IS settings vary by test

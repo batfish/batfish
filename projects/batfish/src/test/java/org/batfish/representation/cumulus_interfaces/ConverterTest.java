@@ -29,9 +29,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.Bridge;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vlan;
 import org.batfish.representation.cumulus.Vrf;
 import org.batfish.representation.cumulus.Vxlan;
@@ -71,6 +73,8 @@ public class ConverterTest {
     InterfaceBridgeSettings bridgeSettings = BRIDGE_IFACE.createOrGetBridgeSettings();
     bridgeSettings.setPvid(5);
     bridgeSettings.setVids(IntegerSpace.of(123));
+
+    PHYSICAL_IFACE.addPostUpIpRoute(new StaticRoute(Prefix.ZERO, null, "eth0"));
 
     PHYSICAL_SUBIFACE.addAddress(ADDR1);
     PHYSICAL_SUBIFACE.createOrGetBridgeSettings(); // create bridge settings object
@@ -232,6 +236,7 @@ public class ConverterTest {
     assertTrue(vsIface.getIpAddresses().isEmpty());
     assertThat(vsIface.getSpeed(), equalTo(PHYSICAL_IFACE.getLinkSpeed()));
     assertThat(vsIface.getVrf(), equalTo(PHYSICAL_IFACE.getVrf()));
+    assertThat(vsIface.getPostUpIpRoutes(), equalTo(PHYSICAL_IFACE.getPostUpIpRoutes()));
   }
 
   @Test
