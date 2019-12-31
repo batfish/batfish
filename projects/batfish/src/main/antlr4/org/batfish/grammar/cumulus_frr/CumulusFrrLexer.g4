@@ -49,6 +49,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+ALERTS
+:
+   'alerts'
+;
+
 ALLOWAS_IN
 :
   'allowas-in'
@@ -160,9 +165,19 @@ CONNECTED
   'connected'
 ;
 
+CRITICAL
+:
+  'critical'
+;
+
 DATACENTER
 :
   'datacenter'
+;
+
+DEBUGGING
+:
+  'debugging'
 ;
 
 DEFAULT
@@ -185,6 +200,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+EMERGENCIES
+:
+  'emergencies'
+;
+
 ENABLE
 :
   'enable'
@@ -193,6 +213,11 @@ ENABLE
 END
 :
   'end'
+;
+
+ERRORS
+:
+  'errors'
 ;
 
 EVPN
@@ -423,6 +448,11 @@ NO
   'no'
 ;
 
+NOTIFICATIONS
+:
+  'notifications'
+;
+
 ON_MATCH
 :
   'on-match'
@@ -561,6 +591,11 @@ TAG
 TRADITIONAL
 :
   'traditional'
+;
+
+WARNINGS
+:
+  'warnings'
 ;
 
 MATCH
