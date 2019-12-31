@@ -32,7 +32,7 @@ public class BgpNeighborIpv4UnicastAddressFamilyTest {
     _empty.inheritFrom(_withSettings);
     assertTrue(_empty.getActivated());
     assertEquals(_empty.getAllowAsIn().intValue(), 5);
-    assertEquals(_empty.getDefaultOriginate(), true);
+    assertTrue(_empty.getDefaultOriginate());
     assertFalse(_empty.getRouteReflectorClient());
   }
 

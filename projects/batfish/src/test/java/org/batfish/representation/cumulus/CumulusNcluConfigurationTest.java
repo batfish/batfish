@@ -5,6 +5,7 @@ import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.GENERATED_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeLocalIpForBgpNeighbor;
@@ -58,12 +59,14 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -401,15 +404,48 @@ public class CumulusNcluConfigurationTest {
     vsConfig.generateBgpCommonPeerConfig(
         neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
 
-    AbstractRoute dummyRoute = new ConnectedRoute(Prefix.ZERO, "dummy");
-    assertFalse(
+    // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
+    // tested in testRejectDefaultRoute()
+    assertThat(
         viConfig
             .getRoutingPolicies()
             .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
-            .process(
-                dummyRoute,
-                Bgpv4Route.builder().setNetwork(dummyRoute.getNetwork()),
-                Direction.OUT));
+            .getStatements()
+            .get(0),
+        equalTo(REJECT_DEFAULT_ROUTE));
+  }
+
+  @Test
+  public void testRejectDefaultRoute() {
+    Configuration viConfig =
+        _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+
+    RoutingPolicy rejectDefaultPolicy =
+        RoutingPolicy.builder()
+            .setOwner(viConfig)
+            .setName("policy")
+            .addStatement(REJECT_DEFAULT_ROUTE)
+            .addStatement(
+                // accept non-default
+                new If(
+                    new Not(Common.matchDefaultRoute()),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+            .build();
+
+    AbstractRoute defaultRoute = new ConnectedRoute(Prefix.ZERO, "dummy");
+    AbstractRoute nonDefaultRoute = new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "dummy");
+
+    assertFalse(
+        rejectDefaultPolicy.process(
+            defaultRoute,
+            Bgpv4Route.builder().setNetwork(defaultRoute.getNetwork()),
+            Direction.OUT));
+
+    assertTrue(
+        rejectDefaultPolicy.process(
+            nonDefaultRoute,
+            Bgpv4Route.builder().setNetwork(nonDefaultRoute.getNetwork()),
+            Direction.OUT));
   }
 
   @Test
