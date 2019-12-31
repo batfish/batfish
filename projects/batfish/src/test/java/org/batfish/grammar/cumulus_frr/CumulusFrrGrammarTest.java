@@ -940,7 +940,14 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testCumulusFrrSyslog() {
+    parse("log syslog\n");
+    parse("log syslog alerts\n");
+    parse("log syslog critical\n");
+    parse("log syslog debugging\n");
+    parse("log syslog errors\n");
     parse("log syslog informational\n");
+    parse("log syslog notifications\n");
+    parse("log syslog warnings\n");
   }
 
   @Test
