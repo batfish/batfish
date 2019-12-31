@@ -124,7 +124,11 @@ s_log
 
 s_no
 :
-  NO null_rest_of_line
+  NO
+  (
+     IP FORWARDING
+     | IPV6 FORWARDING
+  ) NEWLINE
 ;
 
 s_password

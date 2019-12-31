@@ -1257,6 +1257,14 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testNoIpForwarding() {
+    parseLines("no ip forwarding\n");
+    assertThat(
+        Iterables.getOnlyElement(_warnings.getParseWarnings()).getComment(),
+        equalTo("This feature is not currently supported"));
+  }
+
+  @Test
   public void testNoIpv6Forwarding() {
     parse("no ipv6 forwarding\n");
   }

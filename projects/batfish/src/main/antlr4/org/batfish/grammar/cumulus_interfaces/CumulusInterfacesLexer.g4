@@ -174,6 +174,11 @@ IP
   'ip'
 ;
 
+LINK
+:
+  'link'
+;
+
 LINK_LOCAL
 :
   'linklocal'

@@ -264,8 +264,14 @@ ipu_ip
 :
   IP
   (
-     ipui_route
+     ipui_link
+     | ipui_route
   )
+;
+
+ipui_link
+:
+   LINK null_rest_of_line
 ;
 
 ipui_route

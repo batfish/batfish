@@ -69,6 +69,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_passive_interfaceCont
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_noContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_router_ospfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
@@ -231,6 +232,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_bgp(S_bgpContext ctx) {
     _currentBgpVrf = null;
+  }
+
+  @Override
+  public void exitS_no(S_noContext ctx) {
+    if (ctx.IP() != null && ctx.FORWARDING() != null) {
+      todo(ctx);
+    }
   }
 
   @Override
