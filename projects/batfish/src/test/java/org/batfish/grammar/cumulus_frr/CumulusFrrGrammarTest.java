@@ -1037,6 +1037,10 @@ public class CumulusFrrGrammarTest {
         contains(4));
   }
 
+  /**
+   * Interface vrf is defined in FRR for a new interface that we haven't seen before and using a vrf
+   * that we haven't seen before
+   */
   @Test
   public void testInterface_InterfaceVrfWithoutVrfDefinition() {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
@@ -1046,6 +1050,10 @@ public class CumulusFrrGrammarTest {
     assertFalse(_config.getInterfaces().containsKey("swp1"));
   }
 
+  /**
+   * Interface vrf is defined in FRR for a new interface that we haven't seen before but using a vrf
+   * that we have seen before
+   */
   @Test
   public void testInterface_InterfaceVrfWithVrfDefinition() {
     _config.getVrfs().put("VRF", new Vrf("VRF"));
@@ -1055,6 +1063,7 @@ public class CumulusFrrGrammarTest {
     assertThat(_config.getInterfaces().get("swp1").getVrf(), equalTo("VRF"));
   }
 
+  /** Interface has a vrf definition that does not match what we saw earlier */
   @Test
   public void testInterface_InterfaceVrfNotMatch() {
     // has vrf but not match
@@ -1070,6 +1079,7 @@ public class CumulusFrrGrammarTest {
     assertThat(_config.getInterfaces().get("swp1").getAlias(), equalTo("old alias"));
   }
 
+  /** Two interface definitions in FRR with different VRFs */
   @Test
   public void testInterface_InterfaceVrfNotMatchWithinFrr() {
     _config.getVrfs().put("VRF1", new Vrf("VRF1"));
@@ -1086,6 +1096,7 @@ public class CumulusFrrGrammarTest {
     assertThat(_config.getInterfaces().get("swp1").getAlias(), equalTo("first"));
   }
 
+  /** Interface vrf is defined in FRR but the VRF definition itself is not present in FRR */
   @Test
   public void testInterface_InterfaceVrfNotMatchWithinFrrSecondDefault() {
     // we think that this case should barf but it doesn't at the moment because when we see the
@@ -1096,6 +1107,7 @@ public class CumulusFrrGrammarTest {
     assertThat(_warnings.getParseWarnings(), hasSize(0));
   }
 
+  /** Interface vrf is defined in the interface file and is not explicitly defined in FRR */
   @Test
   public void testInterface_InterfaceDefaultVrf() {
     // default vrf not match
@@ -1107,8 +1119,9 @@ public class CumulusFrrGrammarTest {
     assertThat(_config.getInterfaces().get("swp2").getAlias(), equalTo("rt1010svc01 swp1s1"));
   }
 
+  /** Interface vrf is defined in interfaces and in FRR and the two match */
   @Test
-  public void testInterface_Correct() {
+  public void testInterface_InterfaceVrfMatch() {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     i1.setVrf("VRF");
     i1.setAlias("rt1010svc01 swp1s1");
