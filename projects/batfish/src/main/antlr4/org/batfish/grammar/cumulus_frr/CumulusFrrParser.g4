@@ -126,9 +126,23 @@ s_no
 :
   NO
   (
-     IP FORWARDING
-     | IPV6 FORWARDING
-  ) NEWLINE
+     sno_ip
+     | null_rest_of_line
+  )
+;
+
+sno_ip
+:
+   IP
+   (
+      snoip_forwarding
+      | null_rest_of_line
+   )
+;
+
+snoip_forwarding
+:
+   FORWARDING NEWLINE
 ;
 
 s_password
