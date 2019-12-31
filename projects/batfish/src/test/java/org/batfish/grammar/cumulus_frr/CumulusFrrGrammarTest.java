@@ -400,11 +400,8 @@ public class CumulusFrrGrammarTest {
     Set<AbstractRoute> listenerRoutes =
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
     Bgpv4Route expectedDefaultRoute =
         Bgpv4Route.builder()
-            .setCommunities(
-                ImmutableSet.of(StandardCommunity.of(7274718L), StandardCommunity.of(21823932L)))
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
             .setReceivedFromIp(Ip.parse("10.1.1.1"))
