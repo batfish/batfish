@@ -506,8 +506,7 @@ public class CumulusNcluConfigurationTest {
     vsConfig.generateBgpCommonPeerConfig(
         neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
 
-    // there should be a generated default route, and the first export statement should reject
-    // default routes
+    // there should be a generated default route
     assertThat(
         newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
         equalTo(ImmutableSet.of(GENERATED_DEFAULT_ROUTE)));
