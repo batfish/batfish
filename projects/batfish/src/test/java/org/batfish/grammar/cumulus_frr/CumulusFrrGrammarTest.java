@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import java.util.Map;
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -1037,7 +1038,17 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testInterface_NoInterface() {
+  public void testInterface_InterfaceVrfWithoutVrfDefinition() {
+    parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
+    assertThat(
+        Iterables.getOnlyElement(_warnings.getParseWarnings()).getComment(),
+        equalTo("Ignoring interface swp1 with unknown vrf VRF"));
+    assertFalse(_config.getInterfaces().containsKey("swp1"));
+  }
+
+  @Test
+  public void testInterface_InterfaceVrfWithVrfDefinition() {
+    _config.getVrfs().put("VRF", new Vrf("VRF"));
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_config.getInterfaces().keySet(), contains("swp1"));
@@ -1049,26 +1060,50 @@ public class CumulusFrrGrammarTest {
     // has vrf but not match
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
     i1.setVrf("VRF2");
+    i1.setAlias("old alias");
     _config.getInterfaces().put("swp1", i1);
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(_warnings.getParseWarnings(), hasSize(1));
     assertThat(
         _warnings.getParseWarnings().get(0).getComment(),
         equalTo("vrf VRF of interface swp1 does not match vrf VRF2 defined already"));
-    assertThat(_config.getInterfaces().get("swp1").getAlias(), equalTo("rt1010svc01 swp1s1"));
+    assertThat(_config.getInterfaces().get("swp1").getAlias(), equalTo("old alias"));
   }
 
   @Test
-  public void testInterface_InterfaceDefaultVrfNotMatch() {
+  public void testInterface_InterfaceVrfNotMatchWithinFrr() {
+    _config.getVrfs().put("VRF1", new Vrf("VRF1"));
+    _config.getVrfs().put("VRF2", new Vrf("VRF2"));
+    parseLines(
+        "interface swp1 vrf VRF1",
+        "description first",
+        "interface swp1 vrf VRF2",
+        "description second");
+    assertThat(_warnings.getParseWarnings(), hasSize(1));
+    assertThat(
+        _warnings.getParseWarnings().get(0).getComment(),
+        equalTo("vrf VRF2 of interface swp1 does not match vrf VRF1 defined already"));
+    assertThat(_config.getInterfaces().get("swp1").getAlias(), equalTo("first"));
+  }
+
+  @Test
+  public void testInterface_InterfaceVrfNotMatchWithinFrrSecondDefault() {
+    // we think that this case should barf but it doesn't at the moment because when we see the
+    // second definition, we don't know that the first one was in FRR.
+    _config.getVrfs().put("VRF", new Vrf("VRF"));
+    parseLines(
+        "interface swp1 vrf VRF", "description first", "interface swp1", "description second");
+    assertThat(_warnings.getParseWarnings(), hasSize(0));
+  }
+
+  @Test
+  public void testInterface_InterfaceDefaultVrf() {
     // default vrf not match
     Interface i2 = new Interface("swp2", CumulusInterfaceType.PHYSICAL, null, null);
     i2.setVrf("VRF2");
     _config.getInterfaces().put("swp2", i2);
     parseLines("interface swp2", "description rt1010svc01 swp1s1");
-    assertThat(_warnings.getParseWarnings(), hasSize(1));
-    assertThat(
-        _warnings.getParseWarnings().get(0).getComment(),
-        equalTo("default vrf of interface swp2 does not match vrf VRF2 defined already"));
+    assertThat(_warnings.getParseWarnings(), hasSize(0));
     assertThat(_config.getInterfaces().get("swp2").getAlias(), equalTo("rt1010svc01 swp1s1"));
   }
 
