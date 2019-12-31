@@ -1039,7 +1039,7 @@ public class CumulusFrrGrammarTest {
 
   /**
    * Interface vrf is defined in FRR for a new interface that we haven't seen before and using a vrf
-   * that we haven't seen before
+   * that we haven't seen before in interfaces file (since we do allow for definitions in frr file).
    */
   @Test
   public void testInterface_InterfaceVrfWithoutVrfDefinition() {
@@ -1052,7 +1052,7 @@ public class CumulusFrrGrammarTest {
 
   /**
    * Interface vrf is defined in FRR for a new interface that we haven't seen before but using a vrf
-   * that we have seen before
+   * that we have seen before in interfaces file (since we do allow for definitions in frr file).
    */
   @Test
   public void testInterface_InterfaceVrfWithVrfDefinition() {
@@ -1119,7 +1119,10 @@ public class CumulusFrrGrammarTest {
     assertThat(_config.getInterfaces().get("swp2").getAlias(), equalTo("rt1010svc01 swp1s1"));
   }
 
-  /** Interface vrf is defined in interfaces and in FRR and the two match */
+  /**
+   * Interface vrf is defined in FRR and it matches what was defined for the interface earlier in
+   * interfaces or in FRR.
+   */
   @Test
   public void testInterface_InterfaceVrfMatch() {
     Interface i1 = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, null);
