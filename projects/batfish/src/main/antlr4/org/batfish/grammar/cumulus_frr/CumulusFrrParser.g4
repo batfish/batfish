@@ -17,23 +17,22 @@ cumulus_frr_configuration
 // other rules
 statement
 :
-  FRR VERSION REMARK_TEXT? NEWLINE
-  | FRR DEFAULTS (DATACENTER | TRADITIONAL) NEWLINE
-  | USERNAME word word NEWLINE
-  | HOSTNAME word NEWLINE
-  | NO IPV6 FORWARDING NEWLINE
-  | s_agentx
+  s_agentx
   | s_bgp
   | s_enable
   | s_end
   | s_interface
+  | s_frr
+  | s_hostname
   | s_ip
   | s_line
   | s_log
+  | s_no
   | s_password
   | s_routemap
   | s_router_ospf
   | s_service
+  | s_username
   | s_vrf
 ;
 
@@ -61,6 +60,30 @@ s_enable
 s_end
 :
   END NEWLINE
+;
+
+s_frr
+:
+   FRR
+   (
+     sf_defaults
+     sf_version
+   )
+;
+
+sf_defaults
+:
+   DEFAULTS (DATACENTER | TRADITIONAL) NEWLINE
+;
+
+sf_version
+:
+   VERSION REMARK_TEXT? NEWLINE
+;
+
+s_hostname
+:
+   HOSTNAME null_rest_of_line
 ;
 
 se_password
@@ -99,6 +122,11 @@ s_log
   ) NEWLINE
 ;
 
+s_no
+:
+  NO null_rest_of_line
+;
+
 s_password
 :
   PASSWORD null_rest_of_line
@@ -113,4 +141,10 @@ s_service
   )
   NEWLINE
 ;
+
+s_username
+:
+  USERNAME null_rest_of_line
+;
+
 
