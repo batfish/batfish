@@ -127,7 +127,7 @@ s_no
   NO
   (
      sno_ip
-     | null_rest_of_line
+     | sno_ipv6
   )
 ;
 
@@ -136,11 +136,23 @@ sno_ip
    IP
    (
       snoip_forwarding
-      | null_rest_of_line
+   )
+;
+
+sno_ipv6
+:
+   IPV6
+   (
+      snoipv6_forwarding
    )
 ;
 
 snoip_forwarding
+:
+   FORWARDING NEWLINE
+;
+
+snoipv6_forwarding
 :
    FORWARDING NEWLINE
 ;
