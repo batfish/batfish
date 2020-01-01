@@ -178,12 +178,10 @@ public final class CiscoBidirectionalBehaviorTest {
   public void testASAEstablishedSessionDifferentInterface() throws IOException {
     String hostname = "asa-session";
 
-    // This is the ingress iface for the initial flow
+    // Ingress iface for initial flow
     String insideIface = "inside"; // 1.1.1.1/24
-    // This is the egress iface for the initial flow
-    String outsideIface = "outside"; // 2.2.2.2/24
 
-    // This is the ingress iface for the return flow
+    // Ingress iface for return flow, normally would be egress iface of initial flow ("outside")
     String otherIface = "other"; // 3.3.3.3/24
 
     Flow.Builder baseFlow =
