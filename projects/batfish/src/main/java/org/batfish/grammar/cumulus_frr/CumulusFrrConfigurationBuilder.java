@@ -105,6 +105,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
@@ -912,6 +913,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRms_tag(Rms_tagContext ctx) {
     _currentRouteMapEntry.setSetTag(new RouteMapSetTag(toLong(ctx.tag)));
+  }
+
+  @Override
+  public void exitSnoip_forwarding(Snoip_forwardingContext ctx) {
+    _w.todo(ctx, "no ip forwarding", _parser);
   }
 
   @Override

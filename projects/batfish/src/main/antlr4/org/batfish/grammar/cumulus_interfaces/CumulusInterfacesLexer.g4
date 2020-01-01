@@ -174,6 +174,11 @@ IP
   'ip'
 ;
 
+LINK
+:
+  'link'
+;
+
 LINK_LOCAL
 :
   'linklocal'
@@ -229,6 +234,11 @@ NO
   'no'
 ;
 
+PROMISC
+:
+   'promisc' -> pushMode(M_DropUntilNewline)
+;
+
 POST_UP
 :
   'post-up'
@@ -237,6 +247,11 @@ POST_UP
 ROUTE
 :
   'route'
+;
+
+SET
+:
+  'set'
 ;
 
 STATIC
