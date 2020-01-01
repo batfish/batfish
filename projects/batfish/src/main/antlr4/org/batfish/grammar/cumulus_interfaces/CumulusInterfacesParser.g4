@@ -271,7 +271,23 @@ ipu_ip
 
 ipui_link
 :
-   LINK null_rest_of_line
+   LINK
+   (
+     ipuil_set
+   )
+;
+
+ipuil_set
+:
+   SET
+   (
+     ipuils_promisc
+   )
+;
+
+ipuils_promisc
+:
+   PROMISC NEWLINE
 ;
 
 ipui_route

@@ -917,7 +917,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSnoip_forwarding(Snoip_forwardingContext ctx) {
-    todo(ctx);
+    _w.todo(ctx, "no ip forwarding", _parser);
   }
 
   @Override
