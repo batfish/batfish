@@ -264,8 +264,30 @@ ipu_ip
 :
   IP
   (
-     ipui_route
+     ipui_link
+     | ipui_route
   )
+;
+
+ipui_link
+:
+   LINK
+   (
+     ipuil_set
+   )
+;
+
+ipuil_set
+:
+   SET
+   (
+     ipuils_promisc
+   )
+;
+
+ipuils_promisc
+:
+   PROMISC NEWLINE
 ;
 
 ipui_route

@@ -124,7 +124,37 @@ s_log
 
 s_no
 :
-  NO null_rest_of_line
+  NO
+  (
+     sno_ip
+     | sno_ipv6
+  )
+;
+
+sno_ip
+:
+   IP
+   (
+      snoip_forwarding
+   )
+;
+
+sno_ipv6
+:
+   IPV6
+   (
+      snoipv6_forwarding
+   )
+;
+
+snoip_forwarding
+:
+   FORWARDING NEWLINE
+;
+
+snoipv6_forwarding
+:
+   FORWARDING NEWLINE
 ;
 
 s_password

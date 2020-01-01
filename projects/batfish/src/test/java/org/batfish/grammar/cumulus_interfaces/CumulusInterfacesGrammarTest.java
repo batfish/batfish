@@ -376,6 +376,11 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testPostUpLinkPromisc() {
+    parse("iface eth0 inet static\npost-up ip link set promisc on dev swp4\n");
+  }
+
+  @Test
   public void testPostUpIpRouteAddDev() {
     String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 dev eth0\n";
     Interfaces interfaces = parse(input);
