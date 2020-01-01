@@ -130,9 +130,12 @@ public final class CiscoBidirectionalBehaviorTest {
     assertFalse(reverseTraces.iterator().next().getTrace().getDisposition().isSuccessful());
   }
 
-  /** Test that a return flow traversing the same interfaces as the initial flow is successful. */
+  /**
+   * Test that a return flow traversing the same interfaces as the initial flow is successful on ASA
+   * device.
+   */
   @Test
-  public void testEstablishedSessionSameInterface() throws IOException {
+  public void testASAEstablishedSessionSameInterface() throws IOException {
     String hostname = "asa-session";
 
     String insideIface = "inside"; // 1.1.1.1/24
@@ -167,9 +170,12 @@ public final class CiscoBidirectionalBehaviorTest {
     assertBidirAccepted(bidirTracerouteEngine(hostname), insideInitialFlow);
   }
 
-  /** Test that a return flow taking a different path than initial flow is not successful. */
+  /**
+   * Test that a return flow taking a different path than initial flow is not successful on ASA
+   * device.
+   */
   @Test
-  public void testEstablishedSessionDifferentInterface() throws IOException {
+  public void testASAEstablishedSessionDifferentInterface() throws IOException {
     String hostname = "asa-session";
 
     // This is the ingress iface for the initial flow
