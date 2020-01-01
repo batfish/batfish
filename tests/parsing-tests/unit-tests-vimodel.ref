@@ -2311,6 +2311,12 @@
               "GigabitEthernet0/1",
               "ifname"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "ifname"
+              ]
+            },
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -2525,6 +2531,12 @@
               "Ethernet0/0",
               "blah"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "blah"
+              ]
+            },
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
