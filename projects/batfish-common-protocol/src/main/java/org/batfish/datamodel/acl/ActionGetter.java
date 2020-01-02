@@ -21,7 +21,7 @@ public class ActionGetter implements GenericAclLineVisitor<LineAction> {
 
   @Override
   public LineAction visitAclAclLine(AclAclLine aclAclLine) {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override

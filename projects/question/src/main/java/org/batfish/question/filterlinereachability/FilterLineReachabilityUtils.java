@@ -47,7 +47,7 @@ public class FilterLineReachabilityUtils {
 
     @Override
     public Stream<String> visitAclAclLine(AclAclLine aclAclLine) {
-      throw new UnsupportedOperationException();
+      return Stream.of(aclAclLine.getAclName());
     }
 
     @Override
@@ -115,7 +115,7 @@ public class FilterLineReachabilityUtils {
 
     @Override
     public Stream<String> visitAclAclLine(AclAclLine aclAclLine) {
-      throw new UnsupportedOperationException();
+      return Stream.of();
     }
 
     @Override

@@ -41,7 +41,7 @@ public class HeaderSpaceSanitizer
 
   @Override
   public AclLine visitAclAclLine(AclAclLine aclAclLine) {
-    throw new UnsupportedOperationException();
+    return aclAclLine;
   }
 
   @Override

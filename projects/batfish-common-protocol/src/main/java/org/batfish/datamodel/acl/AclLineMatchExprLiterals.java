@@ -56,7 +56,7 @@ public class AclLineMatchExprLiterals
 
   @Override
   public Void visitAclAclLine(AclAclLine aclAclLine) {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Override

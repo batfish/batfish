@@ -26,6 +26,7 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
@@ -202,7 +203,17 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
 
     @Override
     public Boolean visitAclAclLine(AclAclLine aclAclLine) {
-      throw new UnsupportedOperationException();
+      PermitAndDenyBdds permitAndDenyBdds = _ipAccessListToBdd.toPermitAndDenyBdds(aclAclLine);
+      BDD permitted = permitAndDenyBdds.getPermitBdd();
+      BDD denied = permitAndDenyBdds.getDenyBdd();
+
+      /*
+      Include line if either:
+      1. We're finding permit lines and this line permits packets of interest; or
+      2. We're finding deny lines and this line denies packets of interest
+       */
+      return (actionMatches(LineAction.PERMIT) && _headerSpaceBdd.andSat(permitted))
+          || (actionMatches(LineAction.DENY) && _headerSpaceBdd.andSat(denied));
     }
 
     @Override

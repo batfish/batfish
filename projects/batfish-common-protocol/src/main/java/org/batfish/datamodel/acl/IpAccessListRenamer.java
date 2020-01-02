@@ -37,7 +37,8 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
 
     @Override
     public AclLine visitAclAclLine(AclAclLine aclAclLine) {
-      throw new UnsupportedOperationException();
+      String lineName = aclAclLine.getName() != null ? aclAclLine.getName() : aclAclLine.toString();
+      return new AclAclLine(lineName, _aclRenamer.apply(aclAclLine.getAclName()));
     }
 
     @Override

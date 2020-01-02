@@ -58,7 +58,12 @@ public final class SourcesReferencedByIpAccessLists {
 
     @Override
     public Void visitAclAclLine(AclAclLine aclAclLine) {
-      throw new UnsupportedOperationException();
+      String aclName = aclAclLine.getAclName();
+      Supplier<Void> thunk = _namedAclThunks.get(aclName);
+      if (thunk == null) {
+        throw new BatfishException("Unknown IpAccessList " + aclName);
+      }
+      return thunk.get();
     }
 
     @Override

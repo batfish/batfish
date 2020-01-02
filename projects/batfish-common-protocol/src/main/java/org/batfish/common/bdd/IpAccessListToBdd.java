@@ -181,7 +181,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public PermitAndDenyBdds visitAclAclLine(AclAclLine aclAclLine) {
-      throw new UnsupportedOperationException();
+      return _permitAndDenyBdds.get(aclAclLine.getAclName()).get();
     }
 
     @Override
