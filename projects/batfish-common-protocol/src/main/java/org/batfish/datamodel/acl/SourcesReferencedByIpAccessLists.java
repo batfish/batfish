@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 
@@ -54,6 +55,11 @@ public final class SourcesReferencedByIpAccessLists {
     }
 
     /* AclLine visit methods */
+
+    @Override
+    public Void visitAclAclLine(AclAclLine aclAclLine) {
+      throw new UnsupportedOperationException();
+    }
 
     @Override
     public Void visitExprAclLine(ExprAclLine exprAclLine) {

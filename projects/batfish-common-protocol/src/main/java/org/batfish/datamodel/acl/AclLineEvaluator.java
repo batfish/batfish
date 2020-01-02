@@ -2,6 +2,7 @@ package org.batfish.datamodel.acl;
 
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
@@ -28,6 +29,11 @@ public class AclLineEvaluator extends Evaluator implements GenericAclLineVisitor
   @Nullable
   public LineAction visit(AclLine line) {
     return line.accept(this);
+  }
+
+  @Override
+  public LineAction visitAclAclLine(AclAclLine aclAclLine) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

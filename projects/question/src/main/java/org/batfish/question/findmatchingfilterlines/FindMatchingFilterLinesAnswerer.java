@@ -27,6 +27,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
@@ -197,6 +198,11 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       return _action == null
           || _action == Action.PERMIT && lineAction == LineAction.PERMIT
           || _action == Action.DENY && lineAction == LineAction.DENY;
+    }
+
+    @Override
+    public Boolean visitAclAclLine(AclAclLine aclAclLine) {
+      throw new UnsupportedOperationException();
     }
 
     @Override

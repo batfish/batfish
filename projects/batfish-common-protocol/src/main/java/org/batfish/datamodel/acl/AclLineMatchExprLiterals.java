@@ -6,6 +6,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
@@ -52,6 +53,11 @@ public class AclLineMatchExprLiterals
   }
 
   /* AclLine visit methods */
+
+  @Override
+  public Void visitAclAclLine(AclAclLine aclAclLine) {
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   public Void visitExprAclLine(ExprAclLine exprAclLine) {
