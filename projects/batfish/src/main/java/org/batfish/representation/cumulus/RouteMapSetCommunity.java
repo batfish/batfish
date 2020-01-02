@@ -21,7 +21,7 @@ public class RouteMapSetCommunity implements RouteMapSet {
 
   @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     CommunitySetExpr communities = new LiteralCommunitySet(_communities);
     return Stream.of(new SetCommunity(communities));
   }

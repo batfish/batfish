@@ -46,7 +46,7 @@ public class RouteMapMatchInterface implements RouteMapMatch {
   }
 
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     return new MatchPrefixSet(
         DestinationNetwork.instance(),
         new ExplicitPrefixSet(

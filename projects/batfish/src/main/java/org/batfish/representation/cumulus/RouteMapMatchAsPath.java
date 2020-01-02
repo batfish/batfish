@@ -19,7 +19,7 @@ public final class RouteMapMatchAsPath implements RouteMapMatch {
 
   @Nonnull
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     if (!c.getAsPathAccessLists().containsKey(_name)) {
       // Don't match anything. Rely on undefined references to surface this problem.
       return BooleanExprs.FALSE;

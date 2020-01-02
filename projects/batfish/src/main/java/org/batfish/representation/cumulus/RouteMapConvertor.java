@@ -26,7 +26,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 class RouteMapConvertor {
   private Configuration _c;
-  private CumulusNcluConfiguration _vc;
+  private CumulusNodeConfiguration _vc;
   private RouteMap _routeMap;
   private Warnings _w;
 
@@ -44,7 +44,7 @@ class RouteMapConvertor {
           ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
           ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
-  RouteMapConvertor(Configuration c, CumulusNcluConfiguration vc, RouteMap routeMap, Warnings w) {
+  RouteMapConvertor(Configuration c, CumulusNodeConfiguration vc, RouteMap routeMap, Warnings w) {
     _c = c;
     _vc = vc;
     _w = w;
