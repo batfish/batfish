@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_nclu;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
+import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BOND_SLAVE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.NET_ADD_INTERFACE;
@@ -404,7 +405,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * is invalid.
    */
   private @Nullable Bond createBond(String name, A_bondContext ctx) {
-    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
+    if (name.equals(LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -439,7 +440,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     String superInterfaceName = null;
 
     // Early exits
-    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
+    if (name.equals(LOOPBACK_INTERFACE_NAME)) {
       _w.redFlag(
           String.format(
               "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
@@ -505,7 +506,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * invalid.
    */
   private @Nullable Vrf createVrf(String name, ParserRuleContext ctx) {
-    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
+    if (name.equals(LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -541,7 +542,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * is invalid.
    */
   private @Nullable Vxlan createVxlan(String name, ParserRuleContext ctx) {
-    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
+    if (name.equals(LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -630,12 +631,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void enterA_loopback(A_loopbackContext ctx) {
     _c.getLoopback().setConfigured(true);
     _c.defineSingleLineStructure(
-        CumulusStructureType.LOOPBACK,
-        CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
-        ctx.getStart().getLine());
+        CumulusStructureType.LOOPBACK, LOOPBACK_INTERFACE_NAME, ctx.getStart().getLine());
     _c.referenceStructure(
         CumulusStructureType.LOOPBACK,
-        CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
+        LOOPBACK_INTERFACE_NAME,
         CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
         ctx.getStart().getLine());
   }
@@ -1597,10 +1596,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     }
 
     int line = ctx.getStart().getLine();
-    if (names.contains(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
-        && !_c.getLoopback().getConfigured()) {
-      _c.defineSingleLineStructure(
-          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, line);
+    if (names.contains(LOOPBACK_INTERFACE_NAME) && !_c.getLoopback().getConfigured()) {
+      _c.defineSingleLineStructure(CumulusStructureType.LOOPBACK, LOOPBACK_INTERFACE_NAME, line);
     }
     names.forEach(
         name -> _c.referenceStructure(CumulusStructureType.ABSTRACT_INTERFACE, name, usage, line));
