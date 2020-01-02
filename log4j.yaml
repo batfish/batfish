@@ -1,0 +1,43 @@
+Configuration:
+  status: warn
+  name: BatfishLogging
+  properties:
+    property:
+      name: filename
+      value: ${env:BATFISH_LOG_DIR:-logs}/batfish.log
+
+  appenders:
+    Console:
+      name: STDOUT
+      PatternLayout:
+        Pattern: "%d{ISO8601} %p %m%n"
+      Filters:
+        ThresholdFilter:
+          level: warn
+    File:
+      name: File
+      Filters:
+        ThresholdFilter:
+          level: debug
+      fileName: ${filename}
+      PatternLayout:
+        Pattern: "%d{ISO8601} %p %m%n"
+
+  Loggers:
+    logger:
+      -
+        name: org.batfish
+        level: error
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+      -
+        name: org.batfish.dataplane
+        level: debug
+        additivity: false
+        AppenderRef:
+          ref: File
+    Root:
+      level: error
+      AppenderRef:
+        ref: STDOUT
