@@ -14,9 +14,4 @@ interface GigabitEthernet0/2
  security-level 0
  ip address 2.2.2.2 255.255.255.0
 !
-interface GigabitEthernet0/3
- nameif other
- security-level 0
- ip address 3.3.3.3 255.255.255.0
-!
 !
