@@ -24,7 +24,7 @@ public final class RouteMapMatchCommunity implements RouteMapMatch {
   }
 
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     return new Disjunction(
         _names.stream()
             .filter(

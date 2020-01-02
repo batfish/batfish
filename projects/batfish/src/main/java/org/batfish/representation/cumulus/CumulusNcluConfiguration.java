@@ -4,9 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.singletonList;
 import static java.util.Comparator.naturalOrder;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -16,9 +13,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateExpo
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
-import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
-import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
-import static org.batfish.representation.cumulus.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -31,7 +25,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,23 +35,17 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -79,8 +66,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
@@ -91,8 +76,6 @@ import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.datamodel.ospf.OspfArea;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -102,7 +85,6 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -122,7 +104,8 @@ import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
-public class CumulusNcluConfiguration extends VendorConfiguration {
+public class CumulusNcluConfiguration extends VendorConfiguration
+    implements CumulusNodeConfiguration {
 
   @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
 
@@ -138,7 +121,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
 
   private static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
-  private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
 
   @VisibleForTesting
   static GeneratedRoute GENERATED_DEFAULT_ROUTE =
@@ -840,35 +822,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
-  void convertOspfProcess() {
-    if (_ospfProcess == null) {
-      return;
-    }
-
-    convertOspfVrf(_ospfProcess.getDefaultVrf(), _c.getDefaultVrf());
-
-    _ospfProcess
-        .getVrfs()
-        .values()
-        .forEach(
-            ospfVrf -> {
-              org.batfish.datamodel.Vrf vrf = _c.getVrfs().get(ospfVrf.getVrfName());
-
-              if (vrf == null) {
-                _w.redFlag(String.format("Vrf %s is not found.", ospfVrf.getVrfName()));
-                return;
-              }
-
-              convertOspfVrf(ospfVrf, vrf);
-            });
-  }
-
-  private void convertOspfVrf(OspfVrf ospfVrf, org.batfish.datamodel.Vrf vrf) {
-    org.batfish.datamodel.ospf.OspfProcess ospfProcess =
-        toOspfProcess(ospfVrf, _c.getAllInterfaces(vrf.getName()));
-    vrf.addOspfProcess(ospfProcess);
-  }
-
   private void convertBondInterfaces() {
     _bonds.forEach((name, bond) -> _c.getAllInterfaces().put(name, toInterface(bond)));
   }
@@ -929,13 +882,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               }
             });
     _c.getVrfs().put(DEFAULT_VRF_NAME, defaultVrf);
-  }
-
-  private void convertDnsServers() {
-    _c.setDnsServers(
-        _ipv4Nameservers.stream()
-            .map(Object::toString)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
   @VisibleForTesting
@@ -1002,11 +948,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                         toInterface(
                             new Interface(
                                 superInterfaceName, CumulusInterfaceType.PHYSICAL, null, null))));
-  }
-
-  private void convertRouteMaps() {
-    _routeMaps.forEach(
-        (name, routeMap) -> new RouteMapConvertor(_c, this, routeMap, _w).toRouteMap());
   }
 
   private void convertSubinterfaces() {
@@ -1188,10 +1129,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _ipAsPathAccessLists;
   }
 
+  @Override
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
   }
 
+  @Override
   public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
     return _ipCommunityLists;
   }
@@ -1303,7 +1246,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
-      routerId = inferRouterId();
+      routerId = CumulusConversions.inferRouterId(_loopback, _interfaces);
     }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
@@ -1338,122 +1281,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     generateBgpCommonExportPolicy(vrfName, bgpVrf);
 
     return newProc;
-  }
-
-  @VisibleForTesting
-  org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
-      OspfVrf ospfVrf, Map<String, org.batfish.datamodel.Interface> vrfInterfaces) {
-    Ip routerId = ospfVrf.getRouterId();
-    if (routerId == null) {
-      routerId = inferRouterId();
-    }
-
-    org.batfish.datamodel.ospf.OspfProcess.Builder builder =
-        org.batfish.datamodel.ospf.OspfProcess.builder();
-
-    org.batfish.datamodel.ospf.OspfProcess proc =
-        builder
-            .setRouterId(routerId)
-            .setProcessId(DEFAULT_OSPF_PROCESS_NAME)
-            .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
-            .build();
-
-    addOspfInterfaces(vrfInterfaces, proc.getProcessId());
-    proc.setAreas(computeOspfAreas(vrfInterfaces.keySet()));
-    return proc;
-  }
-
-  @VisibleForTesting
-  void addOspfInterfaces(Map<String, org.batfish.datamodel.Interface> ifaces, String processId) {
-    ifaces.forEach(
-        (ifaceName, iface) -> {
-          Interface vsIface = _interfaces.get(iface.getName());
-          OspfInterface ospfInterface = vsIface.getOspf();
-          if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
-            // no ospf running on this interface
-            return;
-          }
-
-          iface.setOspfSettings(
-              OspfInterfaceSettings.builder()
-                  .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
-                  .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
-                  .setDeadInterval(
-                      Optional.ofNullable(ospfInterface.getDeadInterval())
-                          .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
-                  .setHelloInterval(
-                      Optional.ofNullable(ospfInterface.getHelloInterval())
-                          .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
-                  .setProcess(processId)
-                  .build());
-        });
-  }
-
-  @VisibleForTesting
-  SortedMap<Long, OspfArea> computeOspfAreas(Collection<String> interfaces) {
-    Map<Long, List<String>> areaInterfaces =
-        interfaces.stream()
-            .map(_interfaces::get)
-            .filter(vsIface -> vsIface.getOspf() != null && vsIface.getOspf().getOspfArea() != null)
-            .collect(
-                groupingBy(
-                    vsIface -> vsIface.getOspf().getOspfArea(),
-                    mapping(Interface::getName, Collectors.toList())));
-
-    return toImmutableSortedMap(
-        areaInterfaces,
-        Entry::getKey,
-        e -> OspfArea.builder().setNumber(e.getKey()).addInterfaces(e.getValue()).build());
-  }
-
-  private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
-      @Nullable OspfNetworkType type) {
-    if (type == null) {
-      return null;
-    }
-    switch (type) {
-      case BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
-      case POINT_TO_POINT:
-        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-      default:
-        _w.redFlag(
-            String.format(
-                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.",
-                type.toString()));
-        return null;
-    }
-  }
-
-  /**
-   * Logic of inferring router ID for Zebra based system
-   * (https://github.com/coreswitch/zebra/blob/master/docs/router-id.md):
-   *
-   * <p>If the loopback is configured with an IP address NOT in 127.0.0.0/8, the numerically largest
-   * such IP is used. Otherwise, the numerically largest IP configured on any interface on the
-   * device is used. Otherwise, 0.0.0.0 is used.
-   */
-  @VisibleForTesting
-  Ip inferRouterId() {
-    if (_loopback.getConfigured()) {
-      Optional<ConcreteInterfaceAddress> maxLoIp =
-          _loopback.getAddresses().stream()
-              .filter(addr -> !LOOPBACK_PREFIX.containsIp(addr.getIp()))
-              .max(ConcreteInterfaceAddress::compareTo);
-      if (maxLoIp.isPresent()) {
-        return maxLoIp.get().getIp();
-      }
-    }
-
-    Optional<ConcreteInterfaceAddress> biggestInterfaceIp =
-        _interfaces.values().stream()
-            .flatMap(iface -> iface.getIpAddresses().stream())
-            .max(InterfaceAddress::compareTo);
-
-    return biggestInterfaceIp
-        .map(ConcreteInterfaceAddress::getIp)
-        .orElseGet(() -> Ip.parse("0.0.0.0"));
   }
 
   /**
@@ -1722,14 +1549,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertVrfLoopbackInterfaces();
     convertVrfs();
     convertDefaultVrf();
-    convertIpAsPathAccessLists();
-    convertIpPrefixLists();
-    convertIpCommunityLists();
-    convertRouteMaps();
-    convertDnsServers();
+    CumulusConversions.convertIpAsPathAccessLists(_c, _ipAsPathAccessLists);
+    CumulusConversions.convertIpPrefixLists(_c, _ipPrefixLists);
+    CumulusConversions.convertIpCommunityLists(_c, _ipCommunityLists);
+    CumulusConversions.convertRouteMaps(_c, this, _routeMaps, _w);
+    CumulusConversions.convertDnsServers(_c, _ipv4Nameservers);
     convertClags();
     convertVxlans();
-    convertOspfProcess();
+    CumulusConversions.convertOspfProcess(_c, _ospfProcess, _loopback, _interfaces, _w);
     convertBgpProcess();
 
     initVendorFamily();
@@ -1739,70 +1566,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     warnDuplicateClagIds();
 
     return _c;
-  }
-
-  private void convertIpCommunityLists() {
-    _ipCommunityLists.forEach(
-        (name, list) -> _c.getCommunityLists().put(name, toCommunityList(list)));
-  }
-
-  @VisibleForTesting
-  static CommunityList toCommunityList(IpCommunityList list) {
-    return list.accept(
-        ipCommunityList ->
-            new CommunityList(
-                ipCommunityList.getName(),
-                ipCommunityList.getCommunities().stream()
-                    .map(LiteralCommunity::new)
-                    .map(k -> new CommunityListLine(ipCommunityList.getAction(), k))
-                    .collect(ImmutableList.toImmutableList()),
-                false));
-  }
-
-  private void convertIpAsPathAccessLists() {
-    _ipAsPathAccessLists.forEach(
-        (name, asPathAccessList) ->
-            _c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
-  }
-
-  @VisibleForTesting
-  static @Nonnull AsPathAccessList toAsPathAccessList(IpAsPathAccessList asPathAccessList) {
-    String name = asPathAccessList.getName();
-    List<AsPathAccessListLine> lines =
-        asPathAccessList.getLines().stream()
-            // TODO Check FRR AS path match semantics.
-            // This regex assumes we should match any path containing the specified ASN anywhere.
-            .map(
-                line ->
-                    new AsPathAccessListLine(
-                        line.getAction(), String.format("(^| )%s($| )", line.getAsNum())))
-            .collect(ImmutableList.toImmutableList());
-    return new AsPathAccessList(name, lines);
-  }
-
-  private void convertIpPrefixLists() {
-    _ipPrefixLists.forEach(
-        (name, ipPrefixList) ->
-            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
-  }
-
-  @VisibleForTesting
-  static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
-    String name = ipPrefixList.getName();
-    RouteFilterList rfl = new RouteFilterList(name);
-    rfl.setLines(
-        ipPrefixList.getLines().values().stream()
-            .map(CumulusNcluConfiguration::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList()));
-    return rfl;
-  }
-
-  @VisibleForTesting
-  static @Nonnull RouteFilterLine toRouteFilterLine(IpPrefixListLine ipPrefixListLine) {
-    return new RouteFilterLine(
-        ipPrefixListLine.getAction(),
-        ipPrefixListLine.getPrefix(),
-        ipPrefixListLine.getLengthRange());
   }
 
   @Override
