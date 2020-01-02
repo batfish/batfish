@@ -129,6 +129,37 @@ public final class FlowDiff implements Comparable<FlowDiff> {
     return _newValue;
   }
 
+  /**
+   * Helper method for flowDiffs and returnFlowDiffs, creates FlowDiffs given source and destination
+   * IPs and ports of two flows
+   */
+  private static SortedSet<FlowDiff> getFlowDiffs(
+      Ip srcIp1,
+      Ip dstIp1,
+      Integer srcPort1,
+      Integer dstPort1,
+      Ip srcIp2,
+      Ip dstIp2,
+      Integer srcPort2,
+      Integer dstPort2) {
+    ImmutableSortedSet.Builder<FlowDiff> diffs = ImmutableSortedSet.naturalOrder();
+    if (dstPort1 != dstPort2) {
+      diffs.add(
+          new FlowDiff(PROP_DST_PORT, Integer.toString(dstPort1), Integer.toString(dstPort2)));
+    }
+    if (srcPort1 != srcPort2) {
+      diffs.add(
+          new FlowDiff(PROP_SRC_PORT, Integer.toString(srcPort1), Integer.toString(srcPort2)));
+    }
+    if (!dstIp1.equals(dstIp2)) {
+      diffs.add(new FlowDiff(PROP_DST_IP, dstIp1.toString(), dstIp2.toString()));
+    }
+    if (!srcIp1.equals(srcIp2)) {
+      diffs.add(new FlowDiff(PROP_SRC_IP, srcIp1.toString(), srcIp2.toString()));
+    }
+    return diffs.build();
+  }
+
   /** Compute the differences between two flows */
   public static SortedSet<FlowDiff> flowDiffs(@Nullable Flow flow1, @Nullable Flow flow2) {
     if (flow1 == null || flow2 == null || flow1.equals(flow2)) {
@@ -146,30 +177,44 @@ public final class FlowDiff implements Comparable<FlowDiff> {
             .equals(flow2),
         "flowDiff only supports differences of src/dst Ip and src/dst Port");
 
-    ImmutableSortedSet.Builder<FlowDiff> diffs = ImmutableSortedSet.naturalOrder();
-    if (flow1.getDstPort() != flow2.getDstPort()) {
-      diffs.add(
-          new FlowDiff(
-              PROP_DST_PORT,
-              Integer.toString(flow1.getDstPort()),
-              Integer.toString(flow2.getDstPort())));
+    return getFlowDiffs(
+        flow1.getSrcIp(),
+        flow1.getDstIp(),
+        flow1.getSrcPort(),
+        flow1.getDstPort(),
+        flow2.getSrcIp(),
+        flow2.getDstIp(),
+        flow2.getSrcPort(),
+        flow2.getDstPort());
+  }
+
+  /** Compute expected flow diffs of return flows */
+  public static SortedSet<FlowDiff> returnFlowDiffs(
+      @Nullable Flow origForwardFlow, @Nullable Flow transformedForwardFlow) {
+    if (origForwardFlow == null
+        || transformedForwardFlow == null
+        || origForwardFlow.equals(transformedForwardFlow)) {
+      return ImmutableSortedSet.of();
     }
-    if (flow1.getSrcPort() != flow2.getSrcPort()) {
-      diffs.add(
-          new FlowDiff(
-              PROP_SRC_PORT,
-              Integer.toString(flow1.getSrcPort()),
-              Integer.toString(flow2.getSrcPort())));
-    }
-    if (!flow1.getDstIp().equals(flow2.getDstIp())) {
-      diffs.add(
-          new FlowDiff(PROP_DST_IP, flow1.getDstIp().toString(), flow2.getDstIp().toString()));
-    }
-    if (!flow1.getSrcIp().equals(flow2.getSrcIp())) {
-      diffs.add(
-          new FlowDiff(PROP_SRC_IP, flow1.getSrcIp().toString(), flow2.getSrcIp().toString()));
-    }
-    return diffs.build();
+    checkArgument(
+        origForwardFlow
+            .toBuilder()
+            .setDstIp(transformedForwardFlow.getDstIp())
+            .setSrcIp(transformedForwardFlow.getSrcIp())
+            .setDstPort(transformedForwardFlow.getDstPort())
+            .setSrcPort(transformedForwardFlow.getSrcPort())
+            .build()
+            .equals(transformedForwardFlow),
+        "returnFlowDiffs only supports differences of src/dst Ip and src/dst Port");
+    return getFlowDiffs(
+        transformedForwardFlow.getDstIp(),
+        transformedForwardFlow.getSrcIp(),
+        transformedForwardFlow.getDstPort(),
+        transformedForwardFlow.getSrcPort(),
+        origForwardFlow.getDstIp(),
+        origForwardFlow.getSrcIp(),
+        origForwardFlow.getDstPort(),
+        origForwardFlow.getSrcPort());
   }
 
   /** Returns {@link PortField} corresponding to field name if applicable, or else {@code null}. */
