@@ -251,7 +251,7 @@ public final class CumulusConversionsTest {
             LineAction.PERMIT, 10, Prefix.parse("10.0.0.1/24"), new SubRange(27, 30));
 
     RouteFilterLine rfl = toRouteFilterLine(prefixListLine);
-    Assert.assertThat(
+    assertThat(
         rfl,
         equalTo(
             new RouteFilterLine(
