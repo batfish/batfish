@@ -975,7 +975,8 @@ public class CiscoConversions {
         return null;
       }
       ExprAclLine exprAclLine = (ExprAclLine) line;
-      HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(exprAclLine);
+      HeaderSpace originalHeaderSpace =
+          HeaderSpaceConverter.convert(exprAclLine.getMatchCondition());
 
       if (!originalHeaderSpace.equals(
           HeaderSpace.builder()
