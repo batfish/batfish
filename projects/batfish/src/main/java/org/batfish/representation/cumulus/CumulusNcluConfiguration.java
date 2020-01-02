@@ -8,6 +8,13 @@ import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.CLAG_LINK_LOCAL_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
+import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
+import static org.batfish.representation.cumulus.CumulusConversions.convertDnsServers;
+import static org.batfish.representation.cumulus.CumulusConversions.convertIpAsPathAccessLists;
+import static org.batfish.representation.cumulus.CumulusConversions.convertIpCommunityLists;
+import static org.batfish.representation.cumulus.CumulusConversions.convertIpPrefixLists;
+import static org.batfish.representation.cumulus.CumulusConversions.convertOspfProcess;
+import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -748,15 +755,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     convertVrfLoopbackInterfaces();
     convertVrfs();
     convertDefaultVrf();
-    CumulusConversions.convertIpAsPathAccessLists(_c, _ipAsPathAccessLists);
-    CumulusConversions.convertIpPrefixLists(_c, _ipPrefixLists);
-    CumulusConversions.convertIpCommunityLists(_c, _ipCommunityLists);
-    CumulusConversions.convertRouteMaps(_c, this, _routeMaps, _w);
-    CumulusConversions.convertDnsServers(_c, _ipv4Nameservers);
+    convertIpAsPathAccessLists(_c, _ipAsPathAccessLists);
+    convertIpPrefixLists(_c, _ipPrefixLists);
+    convertIpCommunityLists(_c, _ipCommunityLists);
+    convertRouteMaps(_c, this, _routeMaps, _w);
+    convertDnsServers(_c, _ipv4Nameservers);
     convertClags();
     convertVxlans();
-    CumulusConversions.convertOspfProcess(_c, this, _w);
-    CumulusConversions.convertBgpProcess(_c, this, _w);
+    convertOspfProcess(_c, this, _w);
+    convertBgpProcess(_c, this, _w);
 
     initVendorFamily();
 

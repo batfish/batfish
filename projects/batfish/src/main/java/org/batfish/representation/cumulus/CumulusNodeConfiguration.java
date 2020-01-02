@@ -2,7 +2,7 @@ package org.batfish.representation.cumulus;
 
 import java.util.Map;
 
-/** A shared interfaces for the two Cumulus configuration types -- concatenated, frr */
+/** A shared interfaces for the two Cumulus configuration types -- concatenated, nclu */
 public interface CumulusNodeConfiguration {
 
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
