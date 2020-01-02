@@ -295,6 +295,7 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -6338,5 +6339,23 @@ public final class CiscoGrammarTest {
                     .setRouterId(Ip.ZERO)
                     .build(),
                 Direction.OUT));
+  }
+
+  @Test
+  public void testAsaSession() throws IOException {
+    Configuration c = parseConfig("asa-session");
+    assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("inside", "outside"));
+    FirewallSessionInterfaceInfo inside =
+        c.getAllInterfaces().get("inside").getFirewallSessionInterfaceInfo();
+    FirewallSessionInterfaceInfo outside =
+        c.getAllInterfaces().get("outside").getFirewallSessionInterfaceInfo();
+    // Confirm that each interface has the correct, interface-name-specific firewall session info
+    // attached to it
+    assertThat(
+        inside,
+        equalTo(new FirewallSessionInterfaceInfo(true, ImmutableSet.of("inside"), null, null)));
+    assertThat(
+        outside,
+        equalTo(new FirewallSessionInterfaceInfo(true, ImmutableSet.of("outside"), null, null)));
   }
 }
