@@ -1019,7 +1019,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
           // When permitting an application, optimistically permit all traffic where the L4 rule
           // matches, assuming it is this application. But when blocking a specific application, do
           // not block all matching L4 traffic, since we can't know it is this specific application.
-          serviceDisjuncts.addAll(matchApplications(rule, vsys));
+          serviceDisjuncts.addAll(matchServicesForApplications(rule, vsys));
         }
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
         serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
@@ -1032,11 +1032,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return Optional.of(new OrMatchExpr(serviceDisjuncts));
   }
 
-  private List<AclLineMatchExpr> matchApplications(SecurityRule rule, Vsys vsys) {
+  private List<AclLineMatchExpr> matchServicesForApplications(SecurityRule rule, Vsys vsys) {
     ImmutableList.Builder<AclLineMatchExpr> ret = ImmutableList.builder();
     Queue<String> applications = new LinkedBlockingQueue<>(rule.getApplications());
     while (!applications.isEmpty()) {
       String name = applications.remove();
+
+      // Assume all traffic matches some application under the "any" definition
+      if (name.equals(CATCHALL_APPLICATION_NAME)) {
+        return ImmutableList.of(TrueExpr.INSTANCE);
+      }
       ApplicationGroup group = vsys.getApplicationGroups().get(name);
       if (group != null) {
         applications.addAll(
