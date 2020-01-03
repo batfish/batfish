@@ -1108,6 +1108,11 @@ public final class CumulusConversions {
     viIfaces.forEach(
         (ifaceName, iface) -> {
           Interface vsIface = vsIfaces.get(iface.getName());
+          if (vsIface == null) {
+            // if this interface does not exist (e.g., it's a bond) we skip it for now
+            return;
+          }
+
           OspfInterface ospfInterface = vsIface.getOspf();
           if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
             // no ospf running on this interface
@@ -1136,7 +1141,11 @@ public final class CumulusConversions {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
             .map(vsIfaces::get)
-            .filter(vsIface -> vsIface.getOspf() != null && vsIface.getOspf().getOspfArea() != null)
+            .filter(
+                vsIface ->
+                    vsIface != null
+                        && vsIface.getOspf() != null
+                        && vsIface.getOspf().getOspfArea() != null)
             .collect(
                 groupingBy(
                     vsIface -> vsIface.getOspf().getOspfArea(),
