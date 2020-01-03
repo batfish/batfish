@@ -40,6 +40,10 @@ public final class SearchFiltersQuestion extends Question {
   // Retained for backwards compatibility
   private static final String PROP_GENERATE_EXPLANATIONS = "explain";
 
+  private static final PacketHeaderConstraints DEFAULT_HEADER_CONSTRAINTS =
+      PacketHeaderConstraints.unconstrained();
+  private static final String DEFAULT_TYPE = "permit";
+
   public enum Type {
     PERMIT,
     DENY,
@@ -65,26 +69,31 @@ public final class SearchFiltersQuestion extends Question {
       @Nullable @JsonProperty(PROP_START_LOCATION) String start,
       @Nullable @JsonProperty(PROP_ACTION) String type) {
     return new SearchFiltersQuestion(
-        firstNonNull(complementHeaderSpace, false), filters, headerConstraints, nodes, start, type);
+        firstNonNull(complementHeaderSpace, false),
+        filters,
+        firstNonNull(headerConstraints, DEFAULT_HEADER_CONSTRAINTS),
+        nodes,
+        start,
+        firstNonNull(type, DEFAULT_TYPE));
   }
 
   private SearchFiltersQuestion(
       boolean complementHeaderSpace,
       @Nullable String filters,
-      @Nullable PacketHeaderConstraints headerConstraints,
+      @Nonnull PacketHeaderConstraints headerConstraints,
       @Nullable String nodes,
       @Nullable String start,
-      @Nullable String type) {
+      @Nonnull String type) {
     _complementHeaderSpace = complementHeaderSpace;
     _filters = filters;
-    _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
+    _headerConstraints = headerConstraints;
     _nodes = nodes;
     _startLocation = start;
-    setQuery(firstNonNull(type, "permit"));
+    setQuery(type);
   }
 
   SearchFiltersQuestion() {
-    this(false, null, null, null, null, null);
+    this(false, null, DEFAULT_HEADER_CONSTRAINTS, null, null, DEFAULT_TYPE);
   }
 
   @Override
@@ -249,7 +258,12 @@ public final class SearchFiltersQuestion extends Question {
 
     public SearchFiltersQuestion build() {
       return new SearchFiltersQuestion(
-          _complementHeaderSpace, _filters, _headers, _nodeSpecifierInput, _startLocation, _type);
+          _complementHeaderSpace,
+          _filters,
+          firstNonNull(_headers, DEFAULT_HEADER_CONSTRAINTS),
+          _nodeSpecifierInput,
+          _startLocation,
+          firstNonNull(_type, DEFAULT_TYPE));
     }
   }
 }
