@@ -100,7 +100,7 @@ test -raw tests/questions/experimental/resolveLocationSpecifier.ref validate-tem
 test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-template resolveNodeSpecifier grammarVersion="v2", nodes="input"
 
 # validate searchfilters
-test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
+test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode"
 
 # validate subnetMultipathConsistency
 test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
