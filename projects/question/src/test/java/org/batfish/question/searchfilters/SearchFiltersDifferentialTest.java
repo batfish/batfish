@@ -118,7 +118,6 @@ public class SearchFiltersDifferentialTest {
                     SearchFiltersQuestion.builder()
                         .setStartLocation(ENTER_ALL)
                         .setAction("deny")
-                        .setGenerateExplanations(true)
                         .build(),
                     batfish)
                 .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());

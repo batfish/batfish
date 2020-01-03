@@ -33,10 +33,16 @@ public final class SearchFiltersQuestion extends Question {
   private static final String PROP_ACTION = "action";
   private static final String PROP_COMPLEMENT_HEADERSPACE = "invertSearch";
   private static final String PROP_FILTERS = "filters";
-  private static final String PROP_GENERATE_EXPLANATIONS = "explain";
   private static final String PROP_HEADERS = "headers";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_START_LOCATION = "startLocation";
+
+  // Retained for backwards compatibility
+  private static final String PROP_GENERATE_EXPLANATIONS = "explain";
+
+  private static final PacketHeaderConstraints DEFAULT_HEADER_CONSTRAINTS =
+      PacketHeaderConstraints.unconstrained();
+  private static final String DEFAULT_TYPE = "permit";
 
   public enum Type {
     PERMIT,
@@ -47,7 +53,6 @@ public final class SearchFiltersQuestion extends Question {
   private final boolean _complementHeaderSpace;
   // Invariant: null unless _type == MATCH_LINE
   @Nullable private final String _filters;
-  private final boolean _generateExplanations;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
   @Nullable private Integer _lineNumber;
   @Nullable private final String _nodes;
@@ -55,25 +60,40 @@ public final class SearchFiltersQuestion extends Question {
   @Nonnull private Type _type = PERMIT;
 
   @JsonCreator
+  private static SearchFiltersQuestion create(
+      @Nullable @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) Boolean complementHeaderSpace,
+      @Nullable @JsonProperty(PROP_FILTERS) String filters,
+      @Nullable @JsonProperty(PROP_GENERATE_EXPLANATIONS) Boolean generateExplanations,
+      @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_START_LOCATION) String start,
+      @Nullable @JsonProperty(PROP_ACTION) String type) {
+    return new SearchFiltersQuestion(
+        firstNonNull(complementHeaderSpace, false),
+        filters,
+        firstNonNull(headerConstraints, DEFAULT_HEADER_CONSTRAINTS),
+        nodes,
+        start,
+        firstNonNull(type, DEFAULT_TYPE));
+  }
+
   private SearchFiltersQuestion(
-      @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) boolean complementHeaderSpace,
-      @JsonProperty(PROP_FILTERS) @Nullable String filters,
-      @JsonProperty(PROP_GENERATE_EXPLANATIONS) boolean generateExplanations,
-      @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
-      @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_START_LOCATION) @Nullable String start,
-      @JsonProperty(PROP_ACTION) @Nullable String type) {
+      boolean complementHeaderSpace,
+      @Nullable String filters,
+      @Nonnull PacketHeaderConstraints headerConstraints,
+      @Nullable String nodes,
+      @Nullable String start,
+      @Nonnull String type) {
     _complementHeaderSpace = complementHeaderSpace;
     _filters = filters;
-    _generateExplanations = generateExplanations;
-    _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
+    _headerConstraints = headerConstraints;
     _nodes = nodes;
     _startLocation = start;
-    setQuery(firstNonNull(type, "permit"));
+    setQuery(type);
   }
 
   SearchFiltersQuestion() {
-    this(false, null, false, null, null, null, null);
+    this(false, null, DEFAULT_HEADER_CONSTRAINTS, null, null, DEFAULT_TYPE);
   }
 
   @Override
@@ -105,11 +125,6 @@ public final class SearchFiltersQuestion extends Question {
   @JsonProperty(PROP_COMPLEMENT_HEADERSPACE)
   public boolean getComplementHeaderSpace() {
     return _complementHeaderSpace;
-  }
-
-  @JsonProperty(PROP_GENERATE_EXPLANATIONS)
-  public boolean getGenerateExplanations() {
-    return _generateExplanations;
   }
 
   @Nullable
@@ -190,7 +205,6 @@ public final class SearchFiltersQuestion extends Question {
   SearchFiltersParameters toSearchFiltersParameters() {
     return SearchFiltersParameters.builder()
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
-        .setGenerateExplanations(_generateExplanations)
         .setHeaderSpace(getHeaderSpace())
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
         .setStartLocationSpecifier(getStartLocationSpecifier())
@@ -205,7 +219,6 @@ public final class SearchFiltersQuestion extends Question {
   public static final class Builder {
     private boolean _complementHeaderSpace;
     private @Nullable String _filters;
-    private boolean _generateExplanations;
     private @Nullable PacketHeaderConstraints _headers;
     private @Nullable String _nodeSpecifierInput;
     private @Nullable String _startLocation;
@@ -228,11 +241,6 @@ public final class SearchFiltersQuestion extends Question {
       return this;
     }
 
-    public Builder setGenerateExplanations(boolean generateExplanations) {
-      _generateExplanations = generateExplanations;
-      return this;
-    }
-
     public Builder setHeaders(@Nullable PacketHeaderConstraints headers) {
       _headers = headers;
       return this;
@@ -252,11 +260,10 @@ public final class SearchFiltersQuestion extends Question {
       return new SearchFiltersQuestion(
           _complementHeaderSpace,
           _filters,
-          _generateExplanations,
-          _headers,
+          firstNonNull(_headers, DEFAULT_HEADER_CONSTRAINTS),
           _nodeSpecifierInput,
           _startLocation,
-          _type);
+          firstNonNull(_type, DEFAULT_TYPE));
     }
   }
 }
