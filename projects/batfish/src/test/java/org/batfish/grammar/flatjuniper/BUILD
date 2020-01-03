@@ -35,6 +35,7 @@ junit_tests(
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/representation/juniper",
         "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",

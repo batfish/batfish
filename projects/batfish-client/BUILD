@@ -73,6 +73,7 @@ junit_tests(
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_guava_guava",
         "@maven//:io_github_java_diff_utils_java_diff_utils",
+        "@maven//:junit_junit",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_hamcrest_hamcrest",
