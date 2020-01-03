@@ -62,6 +62,15 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
 
+  public static final List<ColumnMetadata> COLUMN_METADATA =
+      ImmutableList.of(
+          new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
+          new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", true, false),
+          new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
+          new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
+          new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
+          new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
+
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -71,17 +80,8 @@ public class TestFiltersAnswerer extends Answerer {
    *
    * @param question The question object for which the answer is being created, to borrow its {@link
    *     DisplayHints}
-   * @return The creates the answer element object.
    */
   public static TableAnswerElement create(TestFiltersQuestion question) {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
-            new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", true, false),
-            new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
-            new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
-            new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
-            new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
     String textDesc =
         String.format(
             "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s}",
@@ -90,7 +90,7 @@ public class TestFiltersAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    TableMetadata metadata = new TableMetadata(columnMetadata, textDesc);
+    TableMetadata metadata = new TableMetadata(COLUMN_METADATA, textDesc);
     return new TableAnswerElement(metadata);
   }
 
