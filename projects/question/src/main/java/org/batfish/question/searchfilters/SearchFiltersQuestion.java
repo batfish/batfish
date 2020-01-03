@@ -57,20 +57,15 @@ public final class SearchFiltersQuestion extends Question {
 
   @JsonCreator
   private static SearchFiltersQuestion create(
-      @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) boolean complementHeaderSpace,
-      @JsonProperty(PROP_FILTERS) @Nullable String filters,
-      @JsonProperty(PROP_GENERATE_EXPLANATIONS) boolean generateExplanations,
-      @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
-      @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_START_LOCATION) @Nullable String start,
-      @JsonProperty(PROP_ACTION) @Nullable String type) {
+      @Nullable @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) Boolean complementHeaderSpace,
+      @Nullable @JsonProperty(PROP_FILTERS) String filters,
+      @Nullable @JsonProperty(PROP_GENERATE_EXPLANATIONS) Boolean generateExplanations,
+      @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_START_LOCATION) String start,
+      @Nullable @JsonProperty(PROP_ACTION) String type) {
     return new SearchFiltersQuestion(
-        complementHeaderSpace,
-        filters,
-        firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()),
-        nodes,
-        start,
-        firstNonNull(type, "permit"));
+        firstNonNull(complementHeaderSpace, false), filters, headerConstraints, nodes, start, type);
   }
 
   private SearchFiltersQuestion(
