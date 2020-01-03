@@ -40,6 +40,10 @@ public class Loopback implements Serializable {
     _configured = configured;
   }
 
+  public void setBandwidth(@Nullable Double bw) {
+    _bandwidth = bw;
+  }
+
   @Nullable
   public Double getBandwidth() {
     return _bandwidth;

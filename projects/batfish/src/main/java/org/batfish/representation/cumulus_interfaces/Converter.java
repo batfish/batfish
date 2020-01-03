@@ -36,14 +36,14 @@ import org.batfish.representation.cumulus.Vxlan;
 
 /** Converter from cumulus interfaces file model to Cumulus VS model. */
 public final class Converter {
-  @VisibleForTesting static final String BRIDGE_NAME = "bridge";
+  @VisibleForTesting public static final String BRIDGE_NAME = "bridge";
 
   private static final Pattern ENCAPSULATION_VLAN_PATTERN = Pattern.compile("^.*\\.([0-9]+)$");
 
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
 
-  private static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
-  private static final int DEFAULT_BRIDGE_PVID = 1;
+  public static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
+  public static final int DEFAULT_BRIDGE_PVID = 1;
 
   private final Interfaces _interfaces;
   private final Warnings _w;
@@ -148,7 +148,7 @@ public final class Converter {
       return CumulusInterfaceType.PHYSICAL;
     }
 
-    String superInterfaceName = getSuperInterfaceName(iface);
+    String superInterfaceName = getSuperInterfaceName(iface.getName());
     if (superInterfaceName == null) {
       throw new BatfishException("cannot determine interface type for " + name);
     }
@@ -167,8 +167,8 @@ public final class Converter {
 
   @VisibleForTesting
   @Nullable
-  static String getSuperInterfaceName(Interface iface) {
-    Matcher matcher = SUBINTERFACE_PATTERN.matcher(iface.getName());
+  public static String getSuperInterfaceName(String ifaceName) {
+    Matcher matcher = SUBINTERFACE_PATTERN.matcher(ifaceName);
     if (matcher.matches()) {
       return matcher.group(1);
     }
@@ -177,7 +177,7 @@ public final class Converter {
 
   @VisibleForTesting
   @Nullable
-  static Integer getEncapsulationVlan(Interface iface) {
+  public static Integer getEncapsulationVlan(Interface iface) {
     Matcher matcher = ENCAPSULATION_VLAN_PATTERN.matcher(iface.getName());
     return matcher.matches() ? Integer.parseInt(matcher.group(1)) : null;
   }
@@ -191,7 +191,7 @@ public final class Converter {
         new org.batfish.representation.cumulus.Interface(
             name,
             getInterfaceType(iface),
-            getSuperInterfaceName(iface),
+            getSuperInterfaceName(iface.getName()),
             getEncapsulationVlan(iface));
     vsIface.setAlias(iface.getDescription());
     vsIface.setBridgeSettings(iface.getBridgeSettings());
@@ -236,28 +236,23 @@ public final class Converter {
     return vxlan;
   }
 
-  @VisibleForTesting
-  static boolean isBond(Interface iface) {
+  public static boolean isBond(Interface iface) {
     return iface.getType() == BOND;
   }
 
-  @VisibleForTesting
-  static boolean isVlan(Interface iface) {
+  public static boolean isVlan(Interface iface) {
     return iface.getType() == VLAN;
   }
 
-  @VisibleForTesting
-  static boolean isVxlan(Interface iface) {
+  public static boolean isVxlan(Interface iface) {
     return iface.getType() == VXLAN;
   }
 
-  @VisibleForTesting
-  static boolean isVrf(Interface iface) {
+  public static boolean isVrf(Interface iface) {
     return iface.getType() == VRF;
   }
 
-  @VisibleForTesting
-  static boolean isInterface(Interface iface) {
+  public static boolean isInterface(Interface iface) {
     return iface.getType() == INTERFACE;
   }
 }

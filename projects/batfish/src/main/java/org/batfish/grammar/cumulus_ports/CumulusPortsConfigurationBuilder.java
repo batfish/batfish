@@ -5,8 +5,6 @@ import static java.lang.Integer.parseInt;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.Warnings;
@@ -16,8 +14,10 @@ import org.batfish.grammar.cumulus_ports.CumulusPortsParser.BreakoutContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.SpeedContext;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
-import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
 
 /**
  * Populates a {@link CumulusNcluConfiguration} from the data in a {@link
@@ -27,27 +27,17 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
   private static final Pattern BREAKOUT_PATTERN = Pattern.compile("(\\d+)x(\\d+)G");
   private static final Pattern SPEED_PATTERN = Pattern.compile("^(\\d+)G$");
 
-  private final CumulusNcluConfiguration _config;
+  private final CumulusConcatenatedConfiguration _config;
   private final CumulusPortsCombinedParser _parser;
   private final Warnings _w;
 
   private Integer _currentPort;
 
   public CumulusPortsConfigurationBuilder(
-      CumulusNcluConfiguration config, CumulusPortsCombinedParser parser, Warnings w) {
+      CumulusConcatenatedConfiguration config, CumulusPortsCombinedParser parser, Warnings w) {
     _config = config;
     _parser = parser;
     _w = w;
-  }
-
-  @Nullable
-  private Interface tryGetInterface(String ifaceName, ParserRuleContext ctx) {
-    Interface iface = _config.getInterfaces().get(ifaceName);
-    if (iface == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s not found", ifaceName));
-    }
-    return iface;
   }
 
   @Override
@@ -91,10 +81,13 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
 
     for (int i = 0; i < numSubIfaces; i++) {
       String subIfaceName = String.format("swp%ds%d", _currentPort, i);
-      Interface iface = tryGetInterface(subIfaceName, ctx);
-      if (iface != null) {
-        iface.setSpeed(subIfaceSpeedMbps);
-      }
+      _config.getPortsConfiguration().setSpeed(subIfaceName, subIfaceSpeedMbps);
+
+      _config.referenceStructure(
+          CumulusStructureType.INTERFACE,
+          subIfaceName,
+          CumulusStructureUsage.PORT_BREAKOUT,
+          ctx.getStart().getLine());
     }
   }
 
@@ -102,23 +95,29 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
   public void exitDisabled(DisabledContext ctx) {
     checkState(_currentPort != null);
     String ifaceName = String.format("swp%d", _currentPort);
-    Interface iface = tryGetInterface(ifaceName, ctx);
-    if (iface != null) {
-      iface.setDisabled(true);
-    }
+    _config.getPortsConfiguration().setDisabled(ifaceName, true);
+
+    _config.referenceStructure(
+        CumulusStructureType.INTERFACE,
+        ifaceName,
+        CumulusStructureUsage.PORT_DISABLED,
+        ctx.getStart().getLine());
   }
 
   @Override
   public void exitSpeed(SpeedContext ctx) {
     checkState(_currentPort != null);
     String ifaceName = String.format("swp%d", _currentPort);
-    Interface iface = tryGetInterface(ifaceName, ctx);
-    if (iface != null) {
-      Matcher matcher = SPEED_PATTERN.matcher(ctx.getText());
-      checkState(matcher.matches());
-      int speedGbps = parseInt(matcher.group(1));
-      // setSpeed expects Mbps
-      iface.setSpeed(speedGbps * 1000);
-    }
+    Matcher matcher = SPEED_PATTERN.matcher(ctx.getText());
+    checkState(matcher.matches());
+    int speedGbps = parseInt(matcher.group(1));
+    // setSpeed expects Mbps
+    _config.getPortsConfiguration().setSpeed(ifaceName, speedGbps * 1000);
+
+    _config.referenceStructure(
+        CumulusStructureType.INTERFACE,
+        ifaceName,
+        CumulusStructureUsage.PORT_SPEED,
+        ctx.getStart().getLine());
   }
 }

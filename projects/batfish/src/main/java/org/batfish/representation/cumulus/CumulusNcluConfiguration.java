@@ -15,6 +15,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertIpCom
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpPrefixLists;
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
+import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -35,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,7 +73,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration
    * Bandwidth cannot be determined from name alone, so we choose the following made-up plausible
    * value in absence of explicit information.
    */
-  private static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
+  public static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
 
   private @Nullable BgpProcess _bgpProcess;
   private @Nonnull Map<String, Bond> _bonds;
@@ -95,7 +95,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
   @Nonnull
-  private static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
+  public static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
@@ -149,18 +149,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration
       newIface.setAddress(iface.getIpAddresses().get(0));
     }
     newIface.setAllAddresses(iface.getIpAddresses());
-    if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName())) {
+    if (iface.getIpAddresses().isEmpty() && isUsedForBgpUnnumbered(iface.getName(), _bgpProcess)) {
       newIface.setAddress(LINK_LOCAL_ADDRESS);
       newIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
     }
-  }
-
-  private boolean isUsedForBgpUnnumbered(@Nonnull String ifaceName) {
-    return _bgpProcess != null
-        && Stream.concat(
-                Stream.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values().stream())
-            .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
-            .anyMatch(Predicate.isEqual(ifaceName));
   }
 
   /**
@@ -459,7 +451,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _hostname;
   }
 
-  @Override
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -472,7 +463,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _ipv6Nameservers;
   }
 
-  @Override
   public @Nonnull Loopback getLoopback() {
     return _loopback;
   }
@@ -495,12 +485,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _vlans;
   }
 
-  @Override
   public @Nonnull Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
 
-  @Override
   public @Nonnull Map<String, Vxlan> getVxlans() {
     return _vxlans;
   }
@@ -801,5 +789,19 @@ public class CumulusNcluConfiguration extends VendorConfiguration
                         .collect(ImmutableList.toImmutableList())));
           }
         });
+  }
+
+  @Override
+  @Nullable
+  public Vrf getVrf(String vrfName) {
+    return _vrfs.get(vrfName);
+  }
+
+  @Override
+  public Optional<OspfInterface> getOspfInterface(String ifaceName) {
+    if (!_interfaces.containsKey(ifaceName)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(_interfaces.get(ifaceName).getOspf());
   }
 }

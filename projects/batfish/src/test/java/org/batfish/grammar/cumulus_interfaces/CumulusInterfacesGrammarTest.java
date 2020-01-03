@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,7 +29,7 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
@@ -44,13 +43,15 @@ import org.junit.Test;
 /** Test of {@link CumulusInterfacesParser}. */
 public class CumulusInterfacesGrammarTest {
   private static final String FILENAME = "";
-  private static CumulusNcluConfiguration _config;
+  private static CumulusConcatenatedConfiguration _config;
+  private static Interfaces _ic;
   private static ConvertConfigurationAnswerElement _ccae;
   private static Warnings _warnings;
 
   @Before
   public void setup() {
-    _config = new CumulusNcluConfiguration();
+    _config = new CumulusConcatenatedConfiguration();
+    _ic = _config.getInterfacesConfiguration();
     _ccae = new ConvertConfigurationAnswerElement();
     _warnings = new Warnings();
     _config.setFilename(FILENAME);
@@ -95,7 +96,7 @@ public class CumulusInterfacesGrammarTest {
         new CumulusInterfacesConfigurationBuilder(_config, parser, input, _warnings);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
     _config = SerializationUtils.clone(_config);
-    return configurationBuilder.getInterfaces();
+    return configurationBuilder.getConfig().getInterfacesConfiguration();
   }
 
   @Test
@@ -174,8 +175,7 @@ public class CumulusInterfacesGrammarTest {
         containsInAnyOrder("i2", "i3", "i4"));
 
     // swp1 is inferred to be a bond
-    assertThat(_config.getInterfaces().keySet(), not(contains("swp1")));
-    assertThat(_config.getBonds().keySet(), contains("swp1"));
+    assertThat(_ic.getInterfaces().get("swp1").getType(), equalTo(CumulusStructureType.BOND));
   }
 
   @Test
@@ -454,7 +454,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopback() {
     parse("iface lo inet loopback\n");
-    assertTrue(_config.getLoopback().getConfigured());
+    assertTrue(_ic.getLoopback().getConfigured());
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
         contains(1));
@@ -468,14 +468,13 @@ public class CumulusInterfacesGrammarTest {
   public void testLoopbackAddress() {
     parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
-        _config.getLoopback().getAddresses(),
-        contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+        _ic.getLoopback().getAddresses(), contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
   }
 
   @Test
   public void testLoopbackClagdVxlanAnycastIp() {
     parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
-    assertThat(_config.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(_ic.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test

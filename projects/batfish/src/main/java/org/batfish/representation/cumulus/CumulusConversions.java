@@ -10,6 +10,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
+import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
@@ -21,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -30,6 +32,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.SortedMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -294,7 +298,7 @@ public final class CumulusConversions {
     c.getVrfs()
         .forEach(
             (vrfName, vrf) -> {
-              Vrf vsVrf = vsConfig.getVrfs().get(vrfName);
+              Vrf vsVrf = vsConfig.getVrf(vrfName);
               if (vsVrf != null
                   && vsVrf.getVni() != null // has L3 VNI
                   && vrf.getBgpProcess() == null // process does not already exist
@@ -351,7 +355,7 @@ public final class CumulusConversions {
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
-      routerId = inferRouterId(vsConfig.getLoopback(), vsConfig.getInterfaces());
+      routerId = inferRouterId(c);
     }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
@@ -903,13 +907,18 @@ public final class CumulusConversions {
     CommonUtil.forEachWithIndex(
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
-            Comparator.nullsLast(Comparator.comparing(Vxlan::getId)),
-            vsConfig.getVxlans().values()),
-        (index, vxlan) -> {
-          if (vxlan.getId() == null) {
+            Comparator.nullsLast(Comparator.comparing(Function.identity())),
+            c.getVrfs().values().stream()
+                .flatMap(
+                    vrf ->
+                        Sets.union(vrf.getLayer2Vnis().keySet(), vrf.getLayer3Vnis().keySet())
+                            .stream())
+                .collect(ImmutableSet.toImmutableSet())),
+        (index, vni) -> {
+          if (vni == null) {
             return;
           }
-          vniToIndexBuilder.put(vxlan.getId(), index);
+          vniToIndexBuilder.put(vni, index);
         });
     Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
 
@@ -933,42 +942,43 @@ public final class CumulusConversions {
     assert bgpProcess != null; // Since we are in neighbor conversion, this must be true
     // Iterate over ALL vrfs, because even if the vrf doesn't appear in bgp process config, we
     // must be aware of the fact that it has a VNI and advertise it.
-    vsConfig
-        .getVrfs()
+    c.getVrfs()
         .values()
         .forEach(
             innerVrf -> {
               String innerVrfName = innerVrf.getName();
-              Integer l3Vni = innerVrf.getVni();
-              if (l3Vni == null) {
-                return;
-              }
-              RouteDistinguisher rd =
-                  RouteDistinguisher.from(
-                      Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
-                          .map(org.batfish.datamodel.BgpProcess::getRouterId)
-                          .orElse(bgpVrf.getRouterId()),
-                      vniToIndex.get(l3Vni));
-              ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
-              // Grab the BgpVrf for the innerVrf, if it exists
-              @Nullable
-              BgpVrf innerBgpVrf =
-                  (innerVrfName.equals(DEFAULT_VRF_NAME)
-                      ? bgpProcess.getDefaultVrf()
-                      : bgpProcess.getVrfs().get(innerVrfName));
-              l3Vnis.add(
-                  Layer3VniConfig.builder()
-                      .setVni(l3Vni)
-                      .setVrf(innerVrfName)
-                      .setRouteDistinguisher(rd)
-                      .setRouteTarget(rt)
-                      .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                      .setAdvertiseV4Unicast(
-                          Optional.ofNullable(innerBgpVrf)
-                              .map(BgpVrf::getL2VpnEvpn)
-                              .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
-                              .isPresent())
-                      .build());
+              innerVrf
+                  .getLayer3Vnis()
+                  .keySet()
+                  .forEach(
+                      l3Vni -> {
+                        RouteDistinguisher rd =
+                            RouteDistinguisher.from(
+                                Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
+                                    .map(org.batfish.datamodel.BgpProcess::getRouterId)
+                                    .orElse(bgpVrf.getRouterId()),
+                                vniToIndex.get(l3Vni));
+                        ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
+                        // Grab the BgpVrf for the innerVrf, if it exists
+                        @Nullable
+                        BgpVrf innerBgpVrf =
+                            (innerVrfName.equals(DEFAULT_VRF_NAME)
+                                ? bgpProcess.getDefaultVrf()
+                                : bgpProcess.getVrfs().get(innerVrfName));
+                        l3Vnis.add(
+                            Layer3VniConfig.builder()
+                                .setVni(l3Vni)
+                                .setVrf(innerVrfName)
+                                .setRouteDistinguisher(rd)
+                                .setRouteTarget(rt)
+                                .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                                .setAdvertiseV4Unicast(
+                                    Optional.ofNullable(innerBgpVrf)
+                                        .map(BgpVrf::getL2VpnEvpn)
+                                        .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
+                                        .isPresent())
+                                .build());
+                      });
             });
 
     return EvpnAddressFamily.builder()
@@ -1000,19 +1010,22 @@ public final class CumulusConversions {
     return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
+  static boolean isUsedForBgpUnnumbered(
+      @Nonnull String ifaceName, @Nullable BgpProcess bgpProcess) {
+    return bgpProcess != null
+        && Stream.concat(
+                Stream.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values().stream())
+            .flatMap(vrf -> vrf.getNeighbors().keySet().stream())
+            .anyMatch(Predicate.isEqual(ifaceName));
+  }
+
   static void convertOspfProcess(Configuration c, CumulusNodeConfiguration vsConfig, Warnings w) {
     @Nullable OspfProcess ospfProcess = vsConfig.getOspfProcess();
     if (ospfProcess == null) {
       return;
     }
 
-    convertOspfVrf(
-        c,
-        ospfProcess.getDefaultVrf(),
-        c.getDefaultVrf(),
-        vsConfig.getLoopback(),
-        vsConfig.getInterfaces(),
-        w);
+    convertOspfVrf(c, vsConfig, ospfProcess.getDefaultVrf(), c.getDefaultVrf(), w);
 
     ospfProcess
         .getVrfs()
@@ -1026,32 +1039,31 @@ public final class CumulusConversions {
                 return;
               }
 
-              convertOspfVrf(c, ospfVrf, vrf, vsConfig.getLoopback(), vsConfig.getInterfaces(), w);
+              convertOspfVrf(c, vsConfig, ospfVrf, vrf, w);
             });
   }
 
   private static void convertOspfVrf(
       Configuration c,
+      CumulusNodeConfiguration vsConfig,
       OspfVrf ospfVrf,
       org.batfish.datamodel.Vrf vrf,
-      Loopback loopback,
-      Map<String, Interface> vsInterfaces,
       Warnings w) {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
-        toOspfProcess(ospfVrf, c.getAllInterfaces(vrf.getName()), loopback, vsInterfaces, w);
+        toOspfProcess(c, vsConfig, ospfVrf, c.getAllInterfaces(vrf.getName()), w);
     vrf.addOspfProcess(ospfProcess);
   }
 
   @VisibleForTesting
   static org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
+      Configuration c,
+      CumulusNodeConfiguration vsConfig,
       OspfVrf ospfVrf,
       Map<String, org.batfish.datamodel.Interface> vrfInterfaces,
-      Loopback loopback,
-      Map<String, Interface> vsInterfaces,
       Warnings w) {
     Ip routerId = ospfVrf.getRouterId();
     if (routerId == null) {
-      routerId = inferRouterId(loopback, vsInterfaces);
+      routerId = inferRouterId(c);
     }
 
     org.batfish.datamodel.ospf.OspfProcess.Builder builder =
@@ -1064,8 +1076,8 @@ public final class CumulusConversions {
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
 
-    addOspfInterfaces(vrfInterfaces, proc.getProcessId(), vsInterfaces, w);
-    proc.setAreas(computeOspfAreas(vrfInterfaces.keySet(), vsInterfaces));
+    addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
+    proc.setAreas(computeOspfAreas(vsConfig, vrfInterfaces.keySet()));
     return proc;
   }
 
@@ -1078,10 +1090,10 @@ public final class CumulusConversions {
    * device is used. Otherwise, 0.0.0.0 is used.
    */
   @VisibleForTesting
-  static Ip inferRouterId(Loopback loopback, Map<String, Interface> vsInterfaces) {
-    if (loopback.getConfigured()) {
+  static Ip inferRouterId(Configuration c) {
+    if (c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
       Optional<ConcreteInterfaceAddress> maxLoIp =
-          loopback.getAddresses().stream()
+          c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getAllConcreteAddresses().stream()
               .filter(addr -> !LOOPBACK_PREFIX.containsIp(addr.getIp()))
               .max(ConcreteInterfaceAddress::compareTo);
       if (maxLoIp.isPresent()) {
@@ -1090,8 +1102,9 @@ public final class CumulusConversions {
     }
 
     Optional<ConcreteInterfaceAddress> biggestInterfaceIp =
-        vsInterfaces.values().stream()
-            .flatMap(iface -> iface.getIpAddresses().stream())
+        c.getAllInterfaces().values().stream()
+            .filter(iface -> !iface.getName().equals(LOOPBACK_INTERFACE_NAME))
+            .flatMap(iface -> iface.getAllConcreteAddresses().stream())
             .max(InterfaceAddress::compareTo);
 
     return biggestInterfaceIp
@@ -1101,19 +1114,19 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static void addOspfInterfaces(
+      CumulusNodeConfiguration vsConfig,
       Map<String, org.batfish.datamodel.Interface> viIfaces,
       String processId,
-      Map<String, Interface> vsIfaces,
       Warnings w) {
     viIfaces.forEach(
         (ifaceName, iface) -> {
-          Interface vsIface = vsIfaces.get(iface.getName());
-          OspfInterface ospfInterface = vsIface.getOspf();
-          if (ospfInterface == null || ospfInterface.getOspfArea() == null) {
+          Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(ifaceName);
+          if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
             // no ospf running on this interface
             return;
           }
 
+          OspfInterface ospfInterface = ospfOpt.get();
           iface.setOspfSettings(
               OspfInterfaceSettings.builder()
                   .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
@@ -1132,15 +1145,19 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static SortedMap<Long, OspfArea> computeOspfAreas(
-      Collection<String> vrfIfaceNames, Map<String, Interface> vsIfaces) {
+      CumulusNodeConfiguration vsConfig, Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
-            .map(vsIfaces::get)
-            .filter(vsIface -> vsIface.getOspf() != null && vsIface.getOspf().getOspfArea() != null)
+            // .map(vsIfaces::get)
+            .filter(
+                iface -> {
+                  Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(iface);
+                  return ospfOpt.isPresent() && ospfOpt.get().getOspfArea() != null;
+                })
             .collect(
                 groupingBy(
-                    vsIface -> vsIface.getOspf().getOspfArea(),
-                    mapping(Interface::getName, Collectors.toList())));
+                    iface -> vsConfig.getOspfInterface(iface).get().getOspfArea(),
+                    mapping(Function.identity(), Collectors.toList())));
 
     return toImmutableSortedMap(
         areaInterfaces,

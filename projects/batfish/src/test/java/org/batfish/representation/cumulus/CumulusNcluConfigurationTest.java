@@ -10,15 +10,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.junit.Test;
 
 /** Test for {@link CumulusNcluConfiguration}. */
 public class CumulusNcluConfigurationTest {
-
-  private static NetworkFactory _nf = new NetworkFactory();
 
   @Test
   public void testToInterface_active() {

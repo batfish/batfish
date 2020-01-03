@@ -153,15 +153,15 @@ public class ConverterTest {
 
   @Test
   public void testGetSuperInterfaceName_physicalSubInterface() {
-    assertThat(getSuperInterfaceName(new Interface("swp1.0")), equalTo("swp1"));
-    assertThat(getSuperInterfaceName(new Interface("swp1s5.0")), equalTo("swp1s5"));
-    assertThat(getSuperInterfaceName(new Interface("eth0.0")), equalTo("eth0"));
+    assertThat(getSuperInterfaceName("swp1.0"), equalTo("swp1"));
+    assertThat(getSuperInterfaceName("swp1s5.0"), equalTo("swp1s5"));
+    assertThat(getSuperInterfaceName("eth0.0"), equalTo("eth0"));
   }
 
   @Test
   public void testGetSuperInterface_none() {
     // could be a bond slave, but isn't in bondSlaveParents map
-    assertThat(getSuperInterfaceName(new Interface("swp1")), nullValue());
+    assertThat(getSuperInterfaceName("swp1"), nullValue());
   }
 
   @Test
