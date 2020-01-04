@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableSet;
@@ -129,6 +130,14 @@ public final class SourcesReferencedByIpAccessLists {
       Map<String, IpAccessList> namedAcls, IpAccessList acl) {
     ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor(namedAcls);
     visitor.visit(acl);
+    return visitor.referencedInterfaces();
+  }
+
+  public static Set<String> referencedSources(
+      Map<String, IpAccessList> namedAcls, Set<String> acls) {
+    checkArgument(namedAcls.keySet().containsAll(acls));
+    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor(namedAcls);
+    acls.forEach(acl -> visitor.visit(namedAcls.get(acl)));
     return visitor.referencedInterfaces();
   }
 }
