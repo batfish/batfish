@@ -601,7 +601,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return c.getVrfs().computeIfAbsent(vrfName, org.batfish.datamodel.Vrf::new);
   }
 
-  // TODO: add entries for port speed and breakout
   private void markStructures() {
     markAbstractStructure(
         CumulusStructureType.ABSTRACT_INTERFACE,
@@ -631,6 +630,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             CumulusStructureType.LOOPBACK,
             CumulusStructureType.VLAN,
             CumulusStructureType.VRF));
+    markAbstractStructure(
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.PORT_SPEED,
+        ImmutableSet.of(CumulusStructureType.INTERFACE));
     markConcreteStructure(CumulusStructureType.BOND);
     markConcreteStructure(CumulusStructureType.INTERFACE);
     markConcreteStructure(CumulusStructureType.IP_AS_PATH_ACCESS_LIST);
