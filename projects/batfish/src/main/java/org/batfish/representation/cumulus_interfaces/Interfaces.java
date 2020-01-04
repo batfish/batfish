@@ -1,6 +1,6 @@
 package org.batfish.representation.cumulus_interfaces;
 
-import static org.batfish.representation.cumulus_interfaces.Converter.isInterface;
+import static org.batfish.representation.cumulus_interfaces.Converter.isVrf;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public final class Interfaces implements Serializable {
 
   public boolean hasVrf(String vrfName) {
     return _interfaces.values().stream()
-        .anyMatch(iface -> iface.getName().equals(vrfName) && isInterface(iface));
+        .anyMatch(iface -> iface.getName().equals(vrfName) && isVrf(iface));
   }
 
   @Nonnull

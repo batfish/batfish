@@ -128,6 +128,12 @@ public final class CumulusConversions {
   // TODO: need to verify this
   public static final double DEFAULT_LOOPBACK_BANDWIDTH = 8e9;
 
+  /**
+   * Bandwidth cannot be determined from name alone, so we choose the following made-up plausible
+   * value in absence of explicit information.
+   */
+  public static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
+
   public static @Nonnull String computeBgpCommonExportPolicyName(String vrfName) {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrfName);
   }

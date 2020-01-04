@@ -238,25 +238,6 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    /**
-     * Add more secondary addresses to the interface. <br>
-     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
-     * set containing the primary address and secondary addresses.<br>
-     * The node will accept traffic whose destination IP belongs is among any of the addresses of
-     * any of the interfaces. The primary address is the one used by default as the source IP for
-     * traffic sent out the interface. A secondary address is another address potentially associated
-     * with a different subnet living on the interface. The interface will reply to ARP for the
-     * primary or any secondary IP.
-     */
-    public Builder addSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
-      _secondaryAddresses =
-          ImmutableSet.<InterfaceAddress>builder()
-              .addAll(_secondaryAddresses)
-              .addAll(secondaryAddresses)
-              .build();
-      return this;
-    }
-
     public @Nonnull Builder setAccessVlan(@Nullable Integer accessVlan) {
       _accessVlan = accessVlan;
       return this;

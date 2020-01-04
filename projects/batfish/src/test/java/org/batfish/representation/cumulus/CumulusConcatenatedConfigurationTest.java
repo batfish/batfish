@@ -101,11 +101,10 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testPopulateLoopbackProperties_baseCase() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    org.batfish.datamodel.Interface.Builder loopbackBuilder =
-        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
     CumulusConcatenatedConfiguration vsConfig = CumulusConcatenatedConfiguration.builder().build();
-    vsConfig.populateLoopbackProperties(loopbackBuilder);
-    org.batfish.datamodel.Interface loopback = loopbackBuilder.build();
+    vsConfig.populateLoopbackProperties(loopback);
 
     assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of()));
     assertThat(loopback.getBandwidth(), equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
@@ -114,8 +113,8 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testPopulateLoopbackProperties_primaryAddress() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    org.batfish.datamodel.Interface.Builder loopbackBuilder =
-        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/32");
     Interfaces interfaces = new Interfaces();
@@ -124,8 +123,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder().setInterfacesConfiguration(interfaces).build();
 
-    vsConfig.populateLoopbackProperties(loopbackBuilder);
-    org.batfish.datamodel.Interface loopback = loopbackBuilder.build();
+    vsConfig.populateLoopbackProperties(loopback);
 
     assertThat(loopback.getAddress(), equalTo(primary));
     assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of(primary)));
@@ -134,8 +132,8 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testPopulateLoopbackProperties_moreAddresses() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    org.batfish.datamodel.Interface.Builder loopbackBuilder =
-        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/32");
     Interfaces interfaces = new Interfaces();
@@ -149,8 +147,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder().setInterfacesConfiguration(interfaces).build();
 
-    vsConfig.populateLoopbackProperties(loopbackBuilder);
-    org.batfish.datamodel.Interface loopback = loopbackBuilder.build();
+    vsConfig.populateLoopbackProperties(loopback);
 
     assertThat(loopback.getAddress(), equalTo(primary));
     assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of(primary, secondary)));
@@ -159,8 +156,8 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testPopulateLoopbackProperties_clagVxlanAnycastIp() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    org.batfish.datamodel.Interface.Builder loopbackBuilder =
-        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     Ip clagIp = Ip.parse("1.1.1.1");
     Interfaces interfaces = new Interfaces();
@@ -169,8 +166,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder().setInterfacesConfiguration(interfaces).build();
 
-    vsConfig.populateLoopbackProperties(loopbackBuilder);
-    org.batfish.datamodel.Interface loopback = loopbackBuilder.build();
+    vsConfig.populateLoopbackProperties(loopback);
 
     assertNull(loopback.getAddress());
     assertThat(
@@ -182,8 +178,8 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testPopulateLoopbackProperties_bandwidth() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    org.batfish.datamodel.Interface.Builder loopbackBuilder =
-        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     Interfaces interfaces = new Interfaces();
     interfaces.getLoopback().setBandwidth(42.0);
@@ -191,16 +187,13 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder().setInterfacesConfiguration(interfaces).build();
 
-    vsConfig.populateLoopbackProperties(loopbackBuilder);
-    org.batfish.datamodel.Interface loopback = loopbackBuilder.build();
+    vsConfig.populateLoopbackProperties(loopback);
 
     assertThat(loopback.getBandwidth(), equalTo(42.0));
   }
 
   @Test
   public void testInitPostUpRoutes() {
-    CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
-
     StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0");
     StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0");
 
@@ -241,7 +234,7 @@ public class CumulusConcatenatedConfigurationTest {
                             .build()));
     c.getAllInterfaces().get(iface3.getName()).setActive(false);
 
-    vsConfig.initPostUpRoutes(c);
+    vsConfig.initVrfStaticRoutes(c);
 
     // should only have routes from iface0
     assertThat(

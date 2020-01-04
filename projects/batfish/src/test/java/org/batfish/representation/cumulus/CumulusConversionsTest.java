@@ -860,12 +860,15 @@ public final class CumulusConversionsTest {
   private static Configuration getConfigurationWithLoopback(
       @Nullable ConcreteInterfaceAddress address) {
     Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_NCLU);
-    org.batfish.datamodel.Interface.Builder loopback =
-        org.batfish.datamodel.Interface.builder().setName(LOOPBACK_INTERFACE_NAME).setOwner(c);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder()
+            .setName(LOOPBACK_INTERFACE_NAME)
+            .setOwner(c)
+            .build();
     if (address != null) {
-      loopback.addSecondaryAddresses(ImmutableList.of(address));
+      loopback.setAddress(address);
+      loopback.setAllAddresses(ImmutableSet.of(address));
     }
-    loopback.build();
     return c;
   }
 

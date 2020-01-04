@@ -120,6 +120,7 @@ public enum RoutingProtocol {
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
+          case CUMULUS_CONCATENATED:
           case CUMULUS_NCLU:
           case FORCE10:
           case FOUNDRY:
@@ -247,6 +248,7 @@ public enum RoutingProtocol {
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
+          case CUMULUS_CONCATENATED:
           case CUMULUS_NCLU:
           case FORCE10:
           case FOUNDRY:

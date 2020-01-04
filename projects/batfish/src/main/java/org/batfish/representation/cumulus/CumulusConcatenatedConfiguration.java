@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.CumulusConversions.CLAG_LINK_LOCAL_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertDnsServers;
@@ -15,7 +16,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertOspfP
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus_interfaces.Converter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus_interfaces.Converter.DEFAULT_BRIDGE_PORTS;
@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -114,24 +113,19 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   @Nonnull
   @VisibleForTesting
   Configuration toVendorIndependentConfiguration() {
-    Configuration c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_NCLU);
+    Configuration c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_CONCATENATED);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDefaultInboundAction(LineAction.PERMIT);
 
     // create default VRF
     getOrCreateVrf(c, DEFAULT_VRF_NAME);
 
-    Map<String, org.batfish.datamodel.Interface.Builder> allIfaces = getAllInterfacesBuilders(c);
-    populateInterfacesInterfaceProperties(allIfaces);
-    populateFrrInterfaceProperties(allIfaces);
-    // "lock" all interfaces
-    c.getAllInterfaces()
-        .putAll(
-            allIfaces.values().stream()
-                .map(org.batfish.datamodel.Interface.Builder::build)
-                .collect(ImmutableMap.toImmutableMap(v -> v.getName(), v -> v)));
+    initializeAllInterfaces(c);
+    populateInterfacesInterfaceProperties(c);
+    populatePortsInterfaceProperties(c);
+    populateFrrInterfaceProperties(c);
 
-    initPostUpRoutes(c);
+    initVrfStaticRoutes(c);
 
     convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
     convertIpPrefixLists(c, _frrConfiguration.getIpPrefixLists());
@@ -148,6 +142,26 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     markStructures();
 
     return c;
+  }
+
+  private void populatePortsInterfaceProperties(Configuration c) {
+    _portsConfiguration
+        .getPortSettings()
+        .forEach(
+            (ifaceName, portSettings) -> {
+              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+              if (viIface == null) { // ports file may have undefined interfaces
+                return;
+              }
+              boolean isDisabled = Boolean.FALSE.equals(portSettings.getDisabled());
+              viIface.setActive(!isDisabled);
+
+              if (portSettings.getSpeed() != null) {
+                double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
+                viIface.setSpeed(speed);
+                viIface.setBandwidth(speed);
+              }
+            });
   }
 
   private void convertClags(Configuration c) {
@@ -278,10 +292,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @VisibleForTesting
-  void initPostUpRoutes(Configuration c) {
-    _interfacesConfiguration
-        .getInterfaces()
-        .values()
+  void initVrfStaticRoutes(Configuration c) {
+    // post-up routes from the interfaces file
+    _interfacesConfiguration.getInterfaces().values().stream()
+        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
         .forEach(
             iface -> {
               if (!c.getAllInterfaces().get(iface.getName()).getActive()) {
@@ -290,19 +304,31 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
               org.batfish.datamodel.Vrf vrf = getOrCreateVrf(c, iface.getVrf());
               iface.getPostUpIpRoutes().forEach(sr -> vrf.getStaticRoutes().add(sr.convert()));
             });
+
+    // default vrf static routes from the frr file
+    org.batfish.datamodel.Vrf defVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
+    _frrConfiguration.getStaticRoutes().forEach(sr -> defVrf.getStaticRoutes().add(sr.convert()));
+
+    // other vrf static routes from the frr file
+    _frrConfiguration
+        .getVrfs()
+        .values()
+        .forEach(
+            frrVrf -> {
+              org.batfish.datamodel.Vrf newVrf = getOrCreateVrf(c, frrVrf.getName());
+              frrVrf.getStaticRoutes().forEach(sr -> newVrf.getStaticRoutes().add(sr.convert()));
+            });
   }
 
-  private void populateFrrInterfaceProperties(
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
+  private void populateFrrInterfaceProperties(Configuration c) {
     _frrConfiguration
         .getInterfaces()
         .values()
-        .forEach(iface -> populateFrrInterfaceProperties(iface, allIfaces));
+        .forEach(iface -> populateFrrInterfaceProperties(c, iface));
   }
 
-  private static void populateFrrInterfaceProperties(
-      FrrInterface iface, Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
-    org.batfish.datamodel.Interface.Builder viIface = allIfaces.get(iface.getName());
+  private static void populateFrrInterfaceProperties(Configuration c, FrrInterface iface) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     checkArgument(
         viIface != null, "VI interface object not found for interface %s", iface.getName());
     if (iface.getAlias() != null) {
@@ -310,26 +336,30 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     }
     if (!iface.getIpAddresses().isEmpty()) {
       viIface.setAddress(iface.getIpAddresses().get(0));
-      viIface.addSecondaryAddresses(new ArrayList<>(iface.getIpAddresses()));
+      viIface.setAllAddresses(
+          ImmutableSet.<InterfaceAddress>builder()
+              .addAll(viIface.getAllAddresses())
+              .addAll(iface.getIpAddresses())
+              .build());
     }
   }
 
   /** Add interface properties based on what we saw in the interfaces file */
-  private void populateInterfacesInterfaceProperties(
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
+  private void populateInterfacesInterfaceProperties(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !Converter.isVrf(iface))
-        .forEach(iface -> populateInterfaceProperties(iface, allIfaces));
-    populateLoopbackProperties(allIfaces.get(LOOPBACK_INTERFACE_NAME));
+        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .forEach(iface -> populateInterfaceProperties(c, iface));
+    populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
   }
 
   private void populateInterfaceProperties(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
+      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+
+    populateCommonInterfaceProperties(iface, c.getAllInterfaces().get(iface.getName()));
 
     // bond interfaces
     if (Converter.isBond(iface)) {
-      populateBondInterfaceProperties(iface, allIfaces);
+      populateBondInterfaceProperties(c, iface);
       return;
     }
 
@@ -337,25 +367,25 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     // a physical interface
     if (Converter.isInterface(iface) && superInterfaceName == null) {
-      populatePhysicalInterfaceProperties(iface, allIfaces);
+      populatePhysicalInterfaceProperties(c, iface);
       return;
     }
 
     // a (physical or bond) sub-interface
     if (Converter.isInterface(iface) && superInterfaceName != null) {
-      populateSubInterfaceProperties(iface, superInterfaceName, allIfaces);
+      populateSubInterfaceProperties(c, iface, superInterfaceName);
       return;
     }
 
     // vlans
     if (Converter.isVlan(iface)) {
-      populateVlanInterfaceProperties(iface, allIfaces);
+      populateVlanInterfaceProperties(c, iface);
       return;
     }
 
     // vrf loopbacks
     if (Converter.isVrf(iface)) {
-      populateVrfLoopbackProperties(iface, allIfaces);
+      populateVrfInterfaceProperties(c, iface);
       return;
     }
 
@@ -364,10 +394,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @VisibleForTesting
-  void populateLoopbackProperties(org.batfish.datamodel.Interface.Builder viIfaceBuilder) {
-    Loopback loopback = _interfacesConfiguration.getLoopback();
+  void populateLoopbackProperties(org.batfish.datamodel.Interface viLoopback) {
+    Loopback vsLoopback = _interfacesConfiguration.getLoopback();
 
-    List<InterfaceAddress> addresses = new LinkedList<>(loopback.getAddresses());
+    List<InterfaceAddress> addresses = new LinkedList<>(vsLoopback.getAddresses());
 
     // get any additional additional address from interfaces
     if (_interfacesConfiguration.getInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
@@ -377,26 +407,26 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
               ImmutableList.of()));
     }
     InterfaceAddress primaryAddress = addresses.isEmpty() ? null : addresses.get(0);
-    if (loopback.getClagVxlanAnycastIp() != null) {
+    if (vsLoopback.getClagVxlanAnycastIp() != null) {
       // Just assume CLAG is correctly configured and comes up
       addresses.add(
           ConcreteInterfaceAddress.create(
-              loopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH));
+              vsLoopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH));
     }
-    viIfaceBuilder.setAddresses(primaryAddress, addresses);
+    viLoopback.setAddress(primaryAddress);
+    viLoopback.setAllAddresses(addresses);
 
     // set bandwidth
-    viIfaceBuilder.setBandwidth(firstNonNull(loopback.getBandwidth(), DEFAULT_LOOPBACK_BANDWIDTH));
+    viLoopback.setBandwidth(firstNonNull(vsLoopback.getBandwidth(), DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
   private static void populateVlanInterfaceProperties(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
-    org.batfish.datamodel.Interface.Builder myBuilder = allIfaces.get(iface.getName());
-    myBuilder.setType(InterfaceType.VLAN);
-    myBuilder.setActive(true);
-    myBuilder.setVlan(iface.getVlanId());
-    myBuilder.setDescription(iface.getDescription());
+      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
+    viIface.setInterfaceType(InterfaceType.VLAN);
+    viIface.setActive(true);
+    viIface.setVlan(iface.getVlanId());
+    viIface.setDescription(iface.getDescription());
 
     InterfaceAddress primaryAdress =
         (iface.getAddresses() == null || iface.getAddresses().isEmpty())
@@ -408,94 +438,90 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     firstNonNull(iface.getAddressVirtuals(), ImmutableMap.<MacAddress, Set<InterfaceAddress>>of())
         .values()
         .forEach(allAddresses::addAll);
-    myBuilder.setAddresses(primaryAdress, allAddresses.build());
+    viIface.setAddress(primaryAdress);
+    viIface.setAllAddresses(allAddresses.build());
   }
 
-  private void populateVrfLoopbackProperties(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
-    org.batfish.datamodel.Interface.Builder myBuilder = allIfaces.get(iface.getName());
-    myBuilder.setType(InterfaceType.LOOPBACK);
-    myBuilder.setActive(true);
-    populateAddresses(iface, myBuilder);
+  /** properties for VRF loopback interfaces */
+  private void populateVrfInterfaceProperties(
+      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
+    viIface.setInterfaceType(InterfaceType.LOOPBACK);
+    viIface.setActive(true);
+    // this loopback should be in its own vrf
+    viIface.setVrf(getOrCreateVrf(c, iface.getName()));
   }
 
   private void populateSubInterfaceProperties(
+      Configuration c,
       org.batfish.representation.cumulus_interfaces.Interface iface,
-      String superInterfaceName,
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
-    org.batfish.datamodel.Interface.Builder myBuilder = allIfaces.get(iface.getName());
-    myBuilder.setType(
+      String superInterfaceName) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
+    viIface.setInterfaceType(
         isPhysicalInterfaceType(superInterfaceName)
             ? InterfaceType.LOGICAL
             : InterfaceType.AGGREGATE_CHILD);
 
-    PortSettings portSettings = _portsConfiguration.getPortSettings().get(iface.getName());
-    boolean isDisabled = portSettings != null && Boolean.FALSE.equals(portSettings.getDisabled());
-    myBuilder.setActive(!isDisabled);
-
-    myBuilder.setDependencies(
+    viIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
-    myBuilder.setEncapsulationVlan(Converter.getEncapsulationVlan(iface));
-    populateAddresses(iface, myBuilder);
+    viIface.setEncapsulationVlan(Converter.getEncapsulationVlan(iface));
   }
 
   private void populatePhysicalInterfaceProperties(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
-    org.batfish.datamodel.Interface.Builder myBuilder = allIfaces.get(iface.getName());
-    myBuilder.setType(InterfaceType.PHYSICAL);
-    populateAddresses(iface, myBuilder);
-    populateBridgeSettings(iface, myBuilder);
-    myBuilder.setDescription(iface.getDescription());
-
-    PortSettings portSettings = _portsConfiguration.getPortSettings().get(iface.getName());
-    boolean isDisabled = portSettings != null && Boolean.FALSE.equals(portSettings.getDisabled());
-    myBuilder.setActive(!isDisabled);
-
-    if (portSettings != null && portSettings.getSpeed() != null) {
-      double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
-      myBuilder.setSpeed(speed);
-      myBuilder.setBandwidth(speed);
-    } else {
-      myBuilder.setBandwidth(DEFAULT_PORT_BANDWIDTH);
-    }
+      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
+    viIface.setInterfaceType(InterfaceType.PHYSICAL);
+    populateBridgeSettings(iface, viIface);
+    viIface.setDescription(iface.getDescription());
   }
 
   private void populateBondInterfaceProperties(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      Map<String, org.batfish.datamodel.Interface.Builder> allIfaces) {
-    org.batfish.datamodel.Interface.Builder myBuilder = allIfaces.get(iface.getName());
-    myBuilder.setType(InterfaceType.AGGREGATED);
+      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
+    viIface.setInterfaceType(InterfaceType.AGGREGATED);
     Set<String> slaves = firstNonNull(iface.getBondSlaves(), ImmutableSet.of());
-    slaves.forEach(slave -> allIfaces.get(slave).setChannelGroup(iface.getName()));
-    myBuilder.setChannelGroupMembers(slaves);
-    myBuilder.setDependencies(
+    slaves.forEach(slave -> c.getAllInterfaces().get(slave).setChannelGroup(iface.getName()));
+    viIface.setChannelGroupMembers(slaves);
+    viIface.setDependencies(
         slaves.stream()
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
             .collect(ImmutableSet.toImmutableSet()));
-    myBuilder.setActive(true);
-    populateAddresses(iface, myBuilder);
-    populateBridgeSettings(iface, myBuilder);
-    myBuilder.setMlagId(iface.getClagId());
+    viIface.setActive(true);
+    populateBridgeSettings(iface, viIface);
+    viIface.setMlagId(iface.getClagId());
   }
 
-  private void populateAddresses(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      org.batfish.datamodel.Interface.Builder newIface) {
-    if (iface.getAddresses() != null && !iface.getAddresses().isEmpty()) {
-      List<ConcreteInterfaceAddress> addresses = iface.getAddresses();
-      newIface.setAddresses(addresses.get(0), new ArrayList<>(addresses));
+  private void populateCommonInterfaceProperties(
+      org.batfish.representation.cumulus_interfaces.Interface vsIface,
+      org.batfish.datamodel.Interface viIface) {
+    // addresses
+    if (vsIface.getAddresses() != null && !vsIface.getAddresses().isEmpty()) {
+      List<ConcreteInterfaceAddress> addresses = vsIface.getAddresses();
+      viIface.setAddress(addresses.get(0));
+      viIface.setAllAddresses(addresses);
     } else {
-      if (isUsedForBgpUnnumbered(iface.getName(), _frrConfiguration.getBgpProcess())) {
-        newIface.setAddress(LINK_LOCAL_ADDRESS);
+      if (isUsedForBgpUnnumbered(vsIface.getName(), _frrConfiguration.getBgpProcess())) {
+        viIface.setAddress(LINK_LOCAL_ADDRESS);
+        viIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
       }
+    }
+
+    // description
+    viIface.setDescription(vsIface.getDescription());
+
+    // speed
+    if (vsIface.getLinkSpeed() != null) {
+      double speed = vsIface.getLinkSpeed() * SPEED_CONVERSION_FACTOR;
+      viIface.setSpeed(speed);
+      viIface.setBandwidth(speed);
+    } else {
+      viIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
     }
   }
 
   private void populateBridgeSettings(
       org.batfish.representation.cumulus_interfaces.Interface iface,
-      org.batfish.datamodel.Interface.Builder newIface) {
+      org.batfish.datamodel.Interface newIface) {
     InterfaceBridgeSettings bridge =
         firstNonNull(iface.getBridgeSettings(), new InterfaceBridgeSettings());
     Integer access = bridge.getAccess();
@@ -528,56 +554,47 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             : getBridge().getVids().union(IntegerSpace.of(nativeVlan))));
   }
 
-  private Map<String, org.batfish.datamodel.Interface.Builder> getAllInterfacesBuilders(
-      Configuration c) {
-    Map<String, org.batfish.datamodel.Interface.Builder> allInterfaces = new HashMap<>();
+  private void initializeAllInterfaces(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        // not a bridge
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(iface -> !iface.getName().equals(BRIDGE_NAME)) // not a bridge
         .forEach(
             iface ->
-                allInterfaces.put(
-                    iface.getName(),
-                    org.batfish.datamodel.Interface.builder()
-                        .setName(iface.getName())
-                        .setOwner(c)
-                        .setVrf(getOrCreateVrf(c, iface.getVrf()))));
+                org.batfish.datamodel.Interface.builder()
+                    .setName(iface.getName())
+                    .setOwner(c)
+                    .setVrf(getOrCreateVrf(c, iface.getVrf()))
+                    .build());
     _frrConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !allInterfaces.containsKey(iface.getName()))
+        .filter(iface -> !c.getAllInterfaces().containsKey(iface.getName()))
         .forEach(
             iface ->
-                allInterfaces.put(
-                    iface.getName(),
-                    org.batfish.datamodel.Interface.builder()
-                        .setName(iface.getName())
-                        .setOwner(c)
-                        .setVrf(getOrCreateVrf(c, iface.getVrf()))));
+                org.batfish.datamodel.Interface.builder()
+                    .setName(iface.getName())
+                    .setOwner(c)
+                    .setVrf(getOrCreateVrf(c, iface.getVrf()))
+                    .build());
 
     // initialize super interfaces of sub-interfaces if needed
-    Set<String> ifaceNames = allInterfaces.keySet();
+    Set<String> ifaceNames = c.getAllInterfaces().keySet();
     ifaceNames.stream()
         .map(Converter::getSuperInterfaceName)
         .filter(Objects::nonNull)
-        .filter(superName -> !allInterfaces.containsKey(superName))
+        .filter(superName -> !c.getAllInterfaces().containsKey(superName))
         .forEach(
             superName ->
-                allInterfaces.put(
-                    superName,
-                    org.batfish.datamodel.Interface.builder()
-                        .setName(superName)
-                        .setOwner(c)
-                        .setVrf(getOrCreateVrf(c, null))));
+                org.batfish.datamodel.Interface.builder()
+                    .setName(superName)
+                    .setOwner(c)
+                    .setVrf(getOrCreateVrf(c, null))
+                    .build());
 
-    if (!allInterfaces.containsKey(LOOPBACK_INTERFACE_NAME)) {
-      allInterfaces.put(
-          LOOPBACK_INTERFACE_NAME,
-          org.batfish.datamodel.Interface.builder()
-              .setName(LOOPBACK_INTERFACE_NAME)
-              .setOwner(c)
-              .setVrf(getOrCreateVrf(c, null)));
+    if (!c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
+      org.batfish.datamodel.Interface.builder()
+          .setName(LOOPBACK_INTERFACE_NAME)
+          .setOwner(c)
+          .setVrf(getOrCreateVrf(c, null))
+          .build();
     }
-
-    return ImmutableMap.copyOf(allInterfaces);
   }
 
   @Nonnull

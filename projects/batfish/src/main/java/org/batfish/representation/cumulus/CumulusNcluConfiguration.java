@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.CLAG_LINK_LOCAL_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertDnsServers;
@@ -68,12 +69,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     implements CumulusNodeConfiguration {
 
   @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
-
-  /**
-   * Bandwidth cannot be determined from name alone, so we choose the following made-up plausible
-   * value in absence of explicit information.
-   */
-  public static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
 
   private @Nullable BgpProcess _bgpProcess;
   private @Nonnull Map<String, Bond> _bonds;
