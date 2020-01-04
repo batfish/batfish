@@ -86,7 +86,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       Map<String, IpAccessList> aclsForNode = acls.get(hostname);
       Map<String, IpAccessList> refAclsForNode = refAcls.get(hostname);
 
-      Set<String> commonAcls = Sets.union(aclsForNode.keySet(), refAclsForNode.keySet());
+      Set<String> commonAcls = Sets.intersection(aclsForNode.keySet(), refAclsForNode.keySet());
       for (String aclName : commonAcls) {
         IpAccessList acl = aclsForNode.get(aclName);
         IpAccessList refAcl = refAclsForNode.get(aclName);
