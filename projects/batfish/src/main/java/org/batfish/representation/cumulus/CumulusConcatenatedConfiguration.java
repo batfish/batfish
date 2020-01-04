@@ -347,10 +347,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   /** Add interface properties based on what we saw in the interfaces file */
   private void populateInterfacesInterfaceProperties(Configuration c) {
+    populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(iface -> !iface.getName().equals(LOOPBACK_INTERFACE_NAME))
         .forEach(iface -> populateInterfaceProperties(c, iface));
-    populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
   }
 
   private void populateInterfaceProperties(Configuration c, InterfacesInterface iface) {
@@ -546,7 +547,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             : getBridge().getVids().union(IntegerSpace.of(nativeVlan))));
   }
 
-  private void initializeAllInterfaces(Configuration c) {
+  @VisibleForTesting
+  void initializeAllInterfaces(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(iface -> !iface.getName().equals(BRIDGE_NAME)) // not a bridge
         .forEach(
@@ -567,7 +569,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                     .build());
 
     // initialize super interfaces of sub-interfaces if needed
-    Set<String> ifaceNames = c.getAllInterfaces().keySet();
+    Set<String> ifaceNames = ImmutableSet.copyOf(c.getAllInterfaces().keySet());
     ifaceNames.stream()
         .map(InterfaceConverter::getSuperInterfaceName)
         .filter(Objects::nonNull)

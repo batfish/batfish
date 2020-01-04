@@ -1,8 +1,12 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -24,10 +28,65 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Test that loopback interface is unconditionally created */
   @Test
-  public void testCreateLoopback() {
-    CumulusConcatenatedConfiguration vsConfig = CumulusConcatenatedConfiguration.builder().build();
-    Configuration viConfig = vsConfig.toVendorIndependentConfiguration();
-    assertTrue(viConfig.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
+  public void testInitializeAllInterfaces_createLoopback() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    CumulusConcatenatedConfiguration.builder().build().initializeAllInterfaces(c);
+    assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
+  }
+
+  /** Test that bridge is not included as an interface */
+  @Test
+  public void testInitializeAllInterfaces_noBridge() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    InterfacesInterface bridge = new InterfacesInterface(BRIDGE_NAME);
+    CumulusConcatenatedConfiguration.builder()
+        .addInterfaces(ImmutableMap.of(bridge.getName(), bridge))
+        .build()
+        .initializeAllInterfaces(c);
+    assertFalse(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
+  }
+
+  /** Interfaces in interfaceConfiguration are included */
+  @Test
+  public void testInitializeAllInterfaces_interfacesInterfaces() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    InterfacesInterface iface1 = new InterfacesInterface("interfaces");
+    iface1.setVrf("vrf1");
+    CumulusConcatenatedConfiguration.builder()
+        .addInterfaces(ImmutableMap.of(iface1.getName(), iface1))
+        .build()
+        .initializeAllInterfaces(c);
+    assertTrue(c.getAllInterfaces().containsKey(iface1.getName()));
+    assertEquals(c.getAllInterfaces().get(iface1.getName()).getVrfName(), iface1.getVrf());
+  }
+
+  /** Interfaces in frrConfiguration are included */
+  @Test
+  public void testInitializeAllInterfaces_frrInterfaces() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    FrrInterface iface1 = new FrrInterface("frr", "vrf1");
+    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    frrConfiguration.getInterfaces().put(iface1.getName(), iface1);
+    CumulusConcatenatedConfiguration.builder()
+        .setFrrConfiguration(frrConfiguration)
+        .build()
+        .initializeAllInterfaces(c);
+    assertTrue(c.getAllInterfaces().containsKey(iface1.getName()));
+    assertEquals(c.getAllInterfaces().get(iface1.getName()).getVrfName(), iface1.getVrf());
+  }
+
+  /** Missing super interfaces are included */
+  @Test
+  public void testInitializeAllInterfaces_superInterfaces() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    InterfacesInterface iface1 = new InterfacesInterface("swp1.2");
+    CumulusConcatenatedConfiguration.builder()
+        .addInterfaces(ImmutableMap.of(iface1.getName(), iface1))
+        .build()
+        .initializeAllInterfaces(c);
+    assertTrue(c.getAllInterfaces().containsKey("swp1"));
+    // this interface is put in the default vrf
+    assertEquals(c.getAllInterfaces().get("swp1").getVrfName(), DEFAULT_VRF_NAME);
   }
 
   @Test
