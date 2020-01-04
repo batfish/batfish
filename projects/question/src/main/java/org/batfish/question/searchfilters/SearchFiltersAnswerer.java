@@ -110,8 +110,7 @@ public final class SearchFiltersAnswerer extends Answerer {
         }
 
         // present in both snapshot
-        DifferentialSearchFiltersResult result =
-            getDiffResult(acl, refAcl, configContext, question);
+        DifferentialSearchFiltersResult result = getDiffResult(acl, refAcl, configContext, query);
 
         Stream.of(result.getDecreasedFlow(), result.getIncreasedFlow())
             .filter(Optional::isPresent)
@@ -273,8 +272,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       IpAccessList acl,
       IpAccessList refAcl,
       DiffConfigContext configContext,
-      SearchFiltersQuestion question) {
-    SearchFiltersQuery query = question.getQuery();
+      SearchFiltersQuery query) {
     BDD bdd = configContext.getReachBdd(acl, query, false);
     BDD refBdd = configContext.getReachBdd(refAcl, query, true);
 
