@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -914,12 +913,7 @@ public final class CumulusConversions {
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
             Comparator.nullsLast(Comparator.comparing(Function.identity())),
-            c.getVrfs().values().stream()
-                .flatMap(
-                    vrf ->
-                        Sets.union(vrf.getLayer2Vnis().keySet(), vrf.getLayer3Vnis().keySet())
-                            .stream())
-                .collect(ImmutableSet.toImmutableSet())),
+            vsConfig.getVxlanIds()),
         (index, vni) -> {
           if (vni == null) {
             return;
@@ -953,38 +947,40 @@ public final class CumulusConversions {
         .forEach(
             innerVrf -> {
               String innerVrfName = innerVrf.getName();
-              innerVrf
-                  .getLayer3Vnis()
-                  .keySet()
-                  .forEach(
-                      l3Vni -> {
-                        RouteDistinguisher rd =
-                            RouteDistinguisher.from(
-                                Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
-                                    .map(org.batfish.datamodel.BgpProcess::getRouterId)
-                                    .orElse(bgpVrf.getRouterId()),
-                                vniToIndex.get(l3Vni));
-                        ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
-                        // Grab the BgpVrf for the innerVrf, if it exists
-                        @Nullable
-                        BgpVrf innerBgpVrf =
-                            (innerVrfName.equals(DEFAULT_VRF_NAME)
-                                ? bgpProcess.getDefaultVrf()
-                                : bgpProcess.getVrfs().get(innerVrfName));
-                        l3Vnis.add(
-                            Layer3VniConfig.builder()
-                                .setVni(l3Vni)
-                                .setVrf(innerVrfName)
-                                .setRouteDistinguisher(rd)
-                                .setRouteTarget(rt)
-                                .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                                .setAdvertiseV4Unicast(
-                                    Optional.ofNullable(innerBgpVrf)
-                                        .map(BgpVrf::getL2VpnEvpn)
-                                        .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
-                                        .isPresent())
-                                .build());
-                      });
+              Vrf vsVrf = vsConfig.getVrf(innerVrfName);
+              if (vsVrf == null) {
+                return;
+              }
+              Integer l3Vni = vsVrf.getVni();
+              if (l3Vni == null) {
+                return;
+              }
+              RouteDistinguisher rd =
+                  RouteDistinguisher.from(
+                      Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
+                          .map(org.batfish.datamodel.BgpProcess::getRouterId)
+                          .orElse(bgpVrf.getRouterId()),
+                      vniToIndex.get(l3Vni));
+              ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
+              // Grab the BgpVrf for the innerVrf, if it exists
+              @Nullable
+              BgpVrf innerBgpVrf =
+                  (innerVrfName.equals(DEFAULT_VRF_NAME)
+                      ? bgpProcess.getDefaultVrf()
+                      : bgpProcess.getVrfs().get(innerVrfName));
+              l3Vnis.add(
+                  Layer3VniConfig.builder()
+                      .setVni(l3Vni)
+                      .setVrf(innerVrfName)
+                      .setRouteDistinguisher(rd)
+                      .setRouteTarget(rt)
+                      .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                      .setAdvertiseV4Unicast(
+                          Optional.ofNullable(innerBgpVrf)
+                              .map(BgpVrf::getL2VpnEvpn)
+                              .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
+                              .isPresent())
+                      .build());
             });
 
     return EvpnAddressFamily.builder()

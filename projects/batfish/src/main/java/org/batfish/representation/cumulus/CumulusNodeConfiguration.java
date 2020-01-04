@@ -1,7 +1,9 @@
 package org.batfish.representation.cumulus;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** A shared interfaces for the two Cumulus configuration types -- concatenated, nclu */
@@ -27,6 +29,10 @@ public interface CumulusNodeConfiguration {
   /** Returns the vrf with the asked name. Returns null if the vrf does not exist */
   @Nullable
   Vrf getVrf(String vrfName);
+
+  /** Returns all the vxlan Ids for this node */
+  @Nonnull
+  List<Integer> getVxlanIds();
 
   OspfProcess getOspfProcess();
 }

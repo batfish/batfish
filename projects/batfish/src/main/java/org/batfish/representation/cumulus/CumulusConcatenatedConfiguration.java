@@ -753,6 +753,15 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @Override
+  @Nullable
+  public List<Integer> getVxlanIds() {
+    return _interfacesConfiguration.getInterfaces().values().stream()
+        .filter(Converter::isVxlan)
+        .map(Interface::getVxlanId)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
   public OspfProcess getOspfProcess() {
     return _frrConfiguration.getOspfProcess();
   }

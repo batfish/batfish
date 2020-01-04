@@ -793,6 +793,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration
   }
 
   @Override
+  @Nullable
+  public List<Integer> getVxlanIds() {
+    return _vxlans.values().stream().map(Vxlan::getId).collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
   public Optional<OspfInterface> getOspfInterface(String ifaceName) {
     if (!_interfaces.containsKey(ifaceName)) {
       return Optional.empty();
