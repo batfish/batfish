@@ -537,6 +537,14 @@ public class AristaGrammarTest {
       assertThat(v6, notNullValue());
       assertThat(v6.getActivate(), equalTo(Boolean.TRUE));
     }
+    {
+      Ip neighbor = Ip.parse("3.3.3.3");
+      assertThat(vrf.getV4neighbors(), not(hasKey(neighbor)));
+      AristaBgpVrf vrf1 = config.getAristaBgp().getVrfs().get("vrf1");
+      assertThat(vrf1.getV4neighbors(), hasKey(neighbor));
+      assertTrue(vrf1.getV4UnicastAf().getNeighbor(neighbor).getActivate());
+      assertThat(vrf1.getV4UnicastAf().getNeighbor(neighbor).getRouteMapOut(), equalTo("RM1"));
+    }
   }
 
   @Test
