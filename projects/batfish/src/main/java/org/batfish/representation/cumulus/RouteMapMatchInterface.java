@@ -52,6 +52,8 @@ public class RouteMapMatchInterface implements RouteMapMatch {
         new ExplicitPrefixSet(
             new PrefixSpace(
                 _interfaces.stream()
+                    // remove non-existent interfaces mentioned in the configuration
+                    .filter(ifaceName -> c.getAllInterfaces().containsKey(ifaceName))
                     .flatMap(
                         ifaceName ->
                             c.getAllInterfaces().get(ifaceName).getAllConcreteAddresses().stream())
