@@ -71,6 +71,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   private void differentialAnswer(
       SearchFiltersQuestion question, NetworkSnapshot snapshot, NetworkSnapshot reference) {
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
+    SearchFiltersQuery query = question.getQuery();
 
     TableAnswerElement baseTable = new TableAnswerElement(new TableMetadata(COLUMN_METADATA));
     TableAnswerElement refTable = new TableAnswerElement(new TableMetadata(COLUMN_METADATA));
@@ -93,8 +94,8 @@ public final class SearchFiltersAnswerer extends Answerer {
 
         // If either ACL can't be queried, can't compare them; fill in row in the other table if
         // necessary and continue
-        boolean canQueryAcl = question.getQuery().canQuery(acl);
-        boolean canQueryRefAcl = question.getQuery().canQuery(refAcl);
+        boolean canQueryAcl = query.canQuery(acl);
+        boolean canQueryRefAcl = query.canQuery(refAcl);
         if (!canQueryAcl || !canQueryRefAcl) {
           if (question.getIncludeOneTableKeys() && (canQueryAcl || canQueryRefAcl)) {
             // One of them is not null and question specifies to include rows in this case
@@ -149,18 +150,19 @@ public final class SearchFiltersAnswerer extends Answerer {
      * flow. Concatenate the answers for all flows into one big table.
      */
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
+    SearchFiltersQuery query = question.getQuery();
     for (Entry<String, NonDiffConfigContext> e :
         getConfigContexts(specifiedAcls, snapshot, parameters).entrySet()) {
       String hostname = e.getKey();
       NonDiffConfigContext configContext = e.getValue();
       for (IpAccessList acl : specifiedAcls.get(hostname).values()) {
         // Ensure that query is applicable to acl
-        if (!question.getQuery().canQuery(acl)) {
+        if (!query.canQuery(acl)) {
           continue;
         }
 
         // Generate representative flow for ACL, if one exists
-        Flow flow = configContext.getFlow(configContext.getReachBdd(acl, question.getQuery()));
+        Flow flow = configContext.getFlow(configContext.getReachBdd(acl, query));
         if (flow == null) {
           continue;
         }
@@ -304,7 +306,6 @@ public final class SearchFiltersAnswerer extends Answerer {
       _hostname = config.getHostname();
       _pkt = new BDDPacket();
 
-      // Build source manager, including sources from ref snapshot if necessary
       SpecifierContext specifierContext = batfish.specifierContext(snapshot);
       Set<String> activeSources = getActiveSources(config, specifierContext, parameters);
       Set<String> referencedSources = referencedSources(config.getIpAccessLists(), specifiedAcls);
@@ -357,7 +358,6 @@ public final class SearchFiltersAnswerer extends Answerer {
       _hostname = config.getHostname();
       _pkt = new BDDPacket();
 
-      // Build source manager, including sources from ref snapshot if necessary
       SpecifierContext specifierContext = batfish.specifierContext(snapshot);
       SpecifierContext refSpecifierContext = batfish.specifierContext(refSnapshot);
       _mgr =
