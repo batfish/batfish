@@ -16,3 +16,10 @@ router bgp 65104
   address-family evpn
     neighbor 1.1.1.1 activate
     neighbor PG activate
+
+  vrf vrf1
+    neighbor 3.3.3.3 remote-as 3
+    address-family ipv4
+      neighbor 3.3.3.3 activate
+      neighbor 3.3.3.3 route-map RM1 out
+

@@ -1031,9 +1031,12 @@ eos_rb_vlan_tail
 
 eos_rbv_address_family
 :
-  eos_rb_af_ipv4
+  ADDRESS_FAMILY
+  (
+    eos_rb_af_ipv4
 //  | eos_rb_af_ipv4_multicast
-  | eos_rb_af_ipv6
+    | eos_rb_af_ipv6
+  )
 ;
 
 eos_rbv_local_as
