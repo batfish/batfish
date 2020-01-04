@@ -10,8 +10,10 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
+import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInterfaceName;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cumulus.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
@@ -54,7 +56,9 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -1262,5 +1266,43 @@ public final class CumulusConversions {
         ipv4Nameservers.stream()
             .map(Object::toString)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+  }
+
+  static void convertClags(Configuration c, CumulusNodeConfiguration vsConfig, Warnings w) {
+    Map<String, InterfaceClagSettings> clagSourceInterfaces = vsConfig.getClagSettings();
+    if (clagSourceInterfaces.isEmpty()) {
+      return;
+    }
+    if (clagSourceInterfaces.size() > 1) {
+      w.redFlag(
+          String.format(
+              "CLAG configuration on multiple peering interfaces is unsupported: %s",
+              clagSourceInterfaces.keySet()));
+      return;
+    }
+    // Interface clagSourceInterface = clagSourceInterfaces.get(0);
+    Entry<String, InterfaceClagSettings> entry = clagSourceInterfaces.entrySet().iterator().next();
+    String sourceInterfaceName = entry.getKey();
+    InterfaceClagSettings clagSettings = entry.getValue();
+    Ip peerAddress = clagSettings.getPeerIp();
+    // Special case link-local addresses when no other addresses are defined
+    org.batfish.datamodel.Interface viInterface = c.getAllInterfaces().get(sourceInterfaceName);
+    if (peerAddress == null
+        && clagSettings.isPeerIpLinkLocal()
+        && viInterface.getAllAddresses().isEmpty()) {
+      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
+      viInterface.setAddress(lla);
+      viInterface.setAllAddresses(ImmutableSet.of(lla));
+    }
+    String peerInterfaceName = getSuperInterfaceName(sourceInterfaceName);
+    c.setMlags(
+        ImmutableMap.of(
+            CUMULUS_CLAG_DOMAIN_ID,
+            Mlag.builder()
+                .setId(CUMULUS_CLAG_DOMAIN_ID)
+                .setLocalInterface(sourceInterfaceName)
+                .setPeerAddress(peerAddress)
+                .setPeerInterface(peerInterfaceName)
+                .build()));
   }
 }

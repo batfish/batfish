@@ -3,11 +3,11 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cumulus.CumulusConversions.CLAG_LINK_LOCAL_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
+import static org.batfish.representation.cumulus.CumulusConversions.convertClags;
 import static org.batfish.representation.cumulus.CumulusConversions.convertDnsServers;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpAsPathAccessLists;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpCommunityLists;
@@ -15,7 +15,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertIpPre
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
@@ -50,11 +49,8 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -134,7 +130,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     convertIpCommunityLists(c, _frrConfiguration.getIpCommunityLists());
     convertRouteMaps(c, this, _frrConfiguration.getRouteMaps(), _w);
     convertDnsServers(c, _frrConfiguration.getIpv4Nameservers());
-    convertClags(c);
+    convertClags(c, this, _w);
     convertVxlans(c);
     convertOspfProcess(c, this, _w);
     convertBgpProcess(c, this, _w);
@@ -164,48 +160,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 viIface.setBandwidth(speed);
               }
             });
-  }
-
-  private void convertClags(Configuration c) {
-    List<InterfacesInterface> clagSourceInterfaces =
-        _interfacesConfiguration.getInterfaces().values().stream()
-            .filter(i -> i.getClagSettings() != null)
-            .collect(ImmutableList.toImmutableList());
-    if (clagSourceInterfaces.isEmpty()) {
-      return;
-    }
-    if (clagSourceInterfaces.size() > 1) {
-      _w.redFlag(
-          String.format(
-              "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagSourceInterfaces.stream()
-                  .map(InterfacesInterface::getName)
-                  .collect(ImmutableList.toImmutableList())));
-      return;
-    }
-    InterfacesInterface clagSourceInterface = clagSourceInterfaces.get(0);
-    assert clagSourceInterface.getClagSettings() != null;
-    String sourceInterfaceName = clagSourceInterface.getName();
-    Ip peerAddress = clagSourceInterface.getClagSettings().getPeerIp();
-    // Special case link-local addresses when no other addresses are defined
-    org.batfish.datamodel.Interface viInterface = c.getAllInterfaces().get(sourceInterfaceName);
-    if (peerAddress == null
-        && clagSourceInterface.getClagSettings().isPeerIpLinkLocal()
-        && viInterface.getAllAddresses().isEmpty()) {
-      LinkLocalAddress lla = LinkLocalAddress.of(CLAG_LINK_LOCAL_IP);
-      viInterface.setAddress(lla);
-      viInterface.setAllAddresses(ImmutableSet.of(lla));
-    }
-    String peerInterfaceName = getSuperInterfaceName(clagSourceInterface.getName());
-    c.setMlags(
-        ImmutableMap.of(
-            CUMULUS_CLAG_DOMAIN_ID,
-            Mlag.builder()
-                .setId(CUMULUS_CLAG_DOMAIN_ID)
-                .setLocalInterface(sourceInterfaceName)
-                .setPeerAddress(peerAddress)
-                .setPeerInterface(peerInterfaceName)
-                .build()));
   }
 
   /**
@@ -757,6 +711,16 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .filter(InterfaceConverter::isVxlan)
         .map(InterfacesInterface::getVxlanId)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  @Nonnull
+  public Map<String, InterfaceClagSettings> getClagSettings() {
+    return _interfacesConfiguration.getInterfaces().values().stream()
+        .filter(iface -> iface.getClagSettings() != null)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                InterfacesInterface::getName, InterfacesInterface::getClagSettings));
   }
 
   @Override

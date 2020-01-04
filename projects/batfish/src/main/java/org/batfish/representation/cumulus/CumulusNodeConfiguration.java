@@ -34,5 +34,8 @@ public interface CumulusNodeConfiguration {
   @Nonnull
   List<Integer> getVxlanIds();
 
+  /** Returns a map from interface names to clag settings, for interfaces with Clag settings */
+  Map<String, InterfaceClagSettings> getClagSettings();
+
   OspfProcess getOspfProcess();
 }
