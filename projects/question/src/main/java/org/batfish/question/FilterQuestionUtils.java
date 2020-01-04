@@ -13,7 +13,6 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
@@ -51,64 +50,38 @@ public final class FilterQuestionUtils {
 
   /**
    * Instantiate a {@link BDDSourceManager} that tracks sources that are active and referenced on
-   * both the current and reference version of a node. Further scope references to the input ACL,
+   * both the current and reference version of a node. Further scope references to the input ACLs,
    * and active sources to those specified by the input {@link LocationSpecifier}.
    */
   public static BDDSourceManager differentialBDDSourceManager(
       BDDPacket bddPacket,
-      IBatfish batfish,
-      String hostname,
-      String aclName,
-      LocationSpecifier startLocationSpecifier) {
-    Configuration baseConfig = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    Configuration deltaConfig =
-        batfish.loadConfigurations(batfish.getReferenceSnapshot()).get(hostname);
-
-    IpAccessList baseAcl = baseConfig.getIpAccessLists().get(aclName);
-    IpAccessList deltaAcl = deltaConfig.getIpAccessLists().get(aclName);
-
-    return differentialBDDSourceManager(
-        bddPacket, batfish, baseConfig, deltaConfig, baseAcl, deltaAcl, startLocationSpecifier);
-  }
-
-  /**
-   * Instantiate a {@link BDDSourceManager} that tracks sources that are active and referenced on
-   * both the current and reference version of a node. Further scope references to the input ACL,
-   * and active sources to those specified by the input {@link LocationSpecifier}.
-   */
-  public static BDDSourceManager differentialBDDSourceManager(
-      BDDPacket bddPacket,
-      IBatfish batfish,
+      SpecifierContext baseSpecifierContext,
+      SpecifierContext refSpecifierContext,
       Configuration baseConfig,
-      Configuration deltaConfig,
-      IpAccessList baseAcl,
-      IpAccessList deltaAcl,
+      Configuration refConfig,
+      Set<String> aclNames,
       LocationSpecifier startLocationSpecifier) {
     String hostname = baseConfig.getHostname();
 
     // resolve specified source interfaces that exist in both configs.
     Set<String> commonSources =
         Sets.intersection(
-            resolveSources(
-                batfish.specifierContext(batfish.getSnapshot()), startLocationSpecifier, hostname),
-            resolveSources(
-                batfish.specifierContext(batfish.getReferenceSnapshot()),
-                startLocationSpecifier,
-                hostname));
+            resolveSources(baseSpecifierContext, startLocationSpecifier, hostname),
+            resolveSources(refSpecifierContext, startLocationSpecifier, hostname));
 
     Set<String> inactiveInterfaces =
         Sets.union(
             Sets.difference(
                 baseConfig.getAllInterfaces().keySet(), baseConfig.activeInterfaceNames()),
             Sets.difference(
-                deltaConfig.getAllInterfaces().keySet(), deltaConfig.activeInterfaceNames()));
+                refConfig.getAllInterfaces().keySet(), refConfig.activeInterfaceNames()));
 
     // effectively active sources are those of interest that are active in both configs.
     Set<String> activeSources = Sets.difference(commonSources, inactiveInterfaces);
     Set<String> referencedSources =
         Sets.union(
-            referencedSources(baseConfig.getIpAccessLists(), baseAcl),
-            referencedSources(deltaConfig.getIpAccessLists(), deltaAcl));
+            referencedSources(baseConfig.getIpAccessLists(), aclNames),
+            referencedSources(refConfig.getIpAccessLists(), aclNames));
 
     return BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
   }
