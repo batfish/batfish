@@ -1,6 +1,6 @@
-package org.batfish.representation.cumulus_interfaces;
+package org.batfish.representation.cumulus;
 
-import static org.batfish.representation.cumulus_interfaces.Converter.isVrf;
+import static org.batfish.representation.cumulus.InterfaceConverter.isVrf;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -9,16 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.representation.cumulus.Loopback;
 
 /** Model of a Cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
-public final class Interfaces implements Serializable {
+public final class CumulusInterfacesConfiguration implements Serializable {
   @Nonnull private final Set<String> _autoIfaces;
-  @Nonnull private final Map<String, Interface> _interfaces;
+  @Nonnull private final Map<String, InterfacesInterface> _interfaces;
   @Nonnull private final Loopback _loopback;
 
-  public Interfaces() {
+  public CumulusInterfacesConfiguration() {
     _autoIfaces = new HashSet<>();
     _interfaces = new HashMap<>();
     _loopback = new Loopback();
@@ -31,10 +30,10 @@ public final class Interfaces implements Serializable {
 
   /** Create an interface with the following name, or return it if it already exists. */
   @Nonnull
-  public Interface createOrGetInterface(String name) {
-    Interface iface = _interfaces.get(name);
+  public InterfacesInterface createOrGetInterface(String name) {
+    InterfacesInterface iface = _interfaces.get(name);
     if (iface == null) {
-      iface = new Interface(name);
+      iface = new InterfacesInterface(name);
       _interfaces.put(name, iface);
     }
     return iface;
@@ -56,7 +55,7 @@ public final class Interfaces implements Serializable {
   }
 
   @Nonnull
-  public Map<String, Interface> getInterfaces() {
+  public Map<String, InterfacesInterface> getInterfaces() {
     return _interfaces;
   }
 }

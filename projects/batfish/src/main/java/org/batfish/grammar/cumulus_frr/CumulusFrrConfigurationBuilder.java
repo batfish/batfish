@@ -128,6 +128,7 @@ import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.FrrInterface;
+import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
@@ -407,7 +408,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
 
-    org.batfish.representation.cumulus_interfaces.Interface interfacesInterface =
+    InterfacesInterface interfacesInterface =
         _c.getInterfacesConfiguration().getInterfaces().get(name);
 
     if (ctx.VRF() != null) {
@@ -749,7 +750,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
     String ifaceName = ctx.name.getText();
-    org.batfish.representation.cumulus_interfaces.Interface interfacesIface =
+    InterfacesInterface interfacesIface =
         _c.getInterfacesConfiguration().getInterfaces().get(ifaceName);
     if (interfacesIface == null && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(

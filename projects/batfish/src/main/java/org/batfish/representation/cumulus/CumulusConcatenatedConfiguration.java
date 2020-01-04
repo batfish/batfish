@@ -17,11 +17,11 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertRoute
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
-import static org.batfish.representation.cumulus_interfaces.Converter.BRIDGE_NAME;
-import static org.batfish.representation.cumulus_interfaces.Converter.DEFAULT_BRIDGE_PORTS;
-import static org.batfish.representation.cumulus_interfaces.Converter.DEFAULT_BRIDGE_PVID;
-import static org.batfish.representation.cumulus_interfaces.Converter.getSuperInterfaceName;
-import static org.batfish.representation.cumulus_interfaces.Interface.isPhysicalInterfaceType;
+import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
+import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
+import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PVID;
+import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInterfaceName;
+import static org.batfish.representation.cumulus.InterfacesInterface.isPhysicalInterfaceType;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -63,9 +63,6 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
-import org.batfish.representation.cumulus_interfaces.Converter;
-import org.batfish.representation.cumulus_interfaces.Interface;
-import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
@@ -75,18 +72,23 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   private String _hostname;
 
-  @Nonnull private final Interfaces _interfacesConfiguration;
+  @Nonnull private final CumulusInterfacesConfiguration _interfacesConfiguration;
 
   @Nonnull private final CumulusFrrConfiguration _frrConfiguration;
 
   @Nonnull private final CumulusPortsConfiguration _portsConfiguration;
 
   public CumulusConcatenatedConfiguration() {
-    this(new Interfaces(), new CumulusFrrConfiguration(), new CumulusPortsConfiguration());
+    this(
+        new CumulusInterfacesConfiguration(),
+        new CumulusFrrConfiguration(),
+        new CumulusPortsConfiguration());
   }
 
   private CumulusConcatenatedConfiguration(
-      Interfaces interfaces, CumulusFrrConfiguration frr, CumulusPortsConfiguration ports) {
+      CumulusInterfacesConfiguration interfaces,
+      CumulusFrrConfiguration frr,
+      CumulusPortsConfiguration ports) {
     _interfacesConfiguration = interfaces;
     _frrConfiguration = frr;
     _portsConfiguration = ports;
@@ -165,7 +167,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   private void convertClags(Configuration c) {
-    List<org.batfish.representation.cumulus_interfaces.Interface> clagSourceInterfaces =
+    List<InterfacesInterface> clagSourceInterfaces =
         _interfacesConfiguration.getInterfaces().values().stream()
             .filter(i -> i.getClagSettings() != null)
             .collect(ImmutableList.toImmutableList());
@@ -177,12 +179,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
           String.format(
               "CLAG configuration on multiple peering interfaces is unsupported: %s",
               clagSourceInterfaces.stream()
-                  .map(org.batfish.representation.cumulus_interfaces.Interface::getName)
+                  .map(InterfacesInterface::getName)
                   .collect(ImmutableList.toImmutableList())));
       return;
     }
-    org.batfish.representation.cumulus_interfaces.Interface clagSourceInterface =
-        clagSourceInterfaces.get(0);
+    InterfacesInterface clagSourceInterface = clagSourceInterfaces.get(0);
     assert clagSourceInterface.getClagSettings() != null;
     String sourceInterfaceName = clagSourceInterface.getName();
     Ip peerAddress = clagSourceInterface.getClagSettings().getPeerIp();
@@ -221,7 +222,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     // Put all valid VXLAN VNIs into appropriate VRF
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(Converter::isVxlan)
+        .filter(InterfaceConverter::isVxlan)
         .forEach(
             vxlan -> {
               if (vxlan.getVxlanId() == null
@@ -284,10 +285,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       return null;
     }
     return _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(Converter::isVlan)
+        .filter(InterfaceConverter::isVlan)
         .filter(v -> Objects.equals(v.getVlanId(), bridgeAccessVlan))
         .findFirst()
-        .map(org.batfish.representation.cumulus_interfaces.Interface::getVrf)
+        .map(InterfacesInterface::getVrf)
         .orElse(null);
   }
 
@@ -352,13 +353,12 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
   }
 
-  private void populateInterfaceProperties(
-      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+  private void populateInterfaceProperties(Configuration c, InterfacesInterface iface) {
 
     populateCommonInterfaceProperties(iface, c.getAllInterfaces().get(iface.getName()));
 
     // bond interfaces
-    if (Converter.isBond(iface)) {
+    if (InterfaceConverter.isBond(iface)) {
       populateBondInterfaceProperties(c, iface);
       return;
     }
@@ -366,25 +366,25 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     @Nullable String superInterfaceName = getSuperInterfaceName(iface.getName());
 
     // a physical interface
-    if (Converter.isInterface(iface) && superInterfaceName == null) {
+    if (InterfaceConverter.isInterface(iface) && superInterfaceName == null) {
       populatePhysicalInterfaceProperties(c, iface);
       return;
     }
 
     // a (physical or bond) sub-interface
-    if (Converter.isInterface(iface) && superInterfaceName != null) {
+    if (InterfaceConverter.isInterface(iface) && superInterfaceName != null) {
       populateSubInterfaceProperties(c, iface, superInterfaceName);
       return;
     }
 
     // vlans
-    if (Converter.isVlan(iface)) {
+    if (InterfaceConverter.isVlan(iface)) {
       populateVlanInterfaceProperties(c, iface);
       return;
     }
 
     // vrf loopbacks
-    if (Converter.isVrf(iface)) {
+    if (InterfaceConverter.isVrf(iface)) {
       populateVrfInterfaceProperties(c, iface);
       return;
     }
@@ -420,8 +420,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     viLoopback.setBandwidth(firstNonNull(vsLoopback.getBandwidth(), DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
-  private static void populateVlanInterfaceProperties(
-      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+  private static void populateVlanInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(InterfaceType.VLAN);
     viIface.setActive(true);
@@ -443,8 +442,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   /** properties for VRF loopback interfaces */
-  private void populateVrfInterfaceProperties(
-      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+  private void populateVrfInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(InterfaceType.LOOPBACK);
     viIface.setActive(true);
@@ -453,9 +451,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   private void populateSubInterfaceProperties(
-      Configuration c,
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      String superInterfaceName) {
+      Configuration c, InterfacesInterface iface, String superInterfaceName) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(
         isPhysicalInterfaceType(superInterfaceName)
@@ -464,19 +460,17 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     viIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
-    viIface.setEncapsulationVlan(Converter.getEncapsulationVlan(iface));
+    viIface.setEncapsulationVlan(InterfaceConverter.getEncapsulationVlan(iface));
   }
 
-  private void populatePhysicalInterfaceProperties(
-      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+  private void populatePhysicalInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(InterfaceType.PHYSICAL);
     populateBridgeSettings(iface, viIface);
     viIface.setDescription(iface.getDescription());
   }
 
-  private void populateBondInterfaceProperties(
-      Configuration c, org.batfish.representation.cumulus_interfaces.Interface iface) {
+  private void populateBondInterfaceProperties(Configuration c, InterfacesInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     viIface.setInterfaceType(InterfaceType.AGGREGATED);
     Set<String> slaves = firstNonNull(iface.getBondSlaves(), ImmutableSet.of());
@@ -492,8 +486,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   private void populateCommonInterfaceProperties(
-      org.batfish.representation.cumulus_interfaces.Interface vsIface,
-      org.batfish.datamodel.Interface viIface) {
+      InterfacesInterface vsIface, org.batfish.datamodel.Interface viIface) {
     // addresses
     if (vsIface.getAddresses() != null && !vsIface.getAddresses().isEmpty()) {
       List<ConcreteInterfaceAddress> addresses = vsIface.getAddresses();
@@ -520,8 +513,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   private void populateBridgeSettings(
-      org.batfish.representation.cumulus_interfaces.Interface iface,
-      org.batfish.datamodel.Interface newIface) {
+      InterfacesInterface iface, org.batfish.datamodel.Interface newIface) {
     InterfaceBridgeSettings bridge =
         firstNonNull(iface.getBridgeSettings(), new InterfaceBridgeSettings());
     Integer access = bridge.getAccess();
@@ -577,7 +569,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     // initialize super interfaces of sub-interfaces if needed
     Set<String> ifaceNames = c.getAllInterfaces().keySet();
     ifaceNames.stream()
-        .map(Converter::getSuperInterfaceName)
+        .map(InterfaceConverter::getSuperInterfaceName)
         .filter(Objects::nonNull)
         .filter(superName -> !c.getAllInterfaces().containsKey(superName))
         .forEach(
@@ -666,7 +658,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   private Bridge getBridge() {
-    Interface bridgeIface = _interfacesConfiguration.getInterfaces().get(BRIDGE_NAME);
+    InterfacesInterface bridgeIface = _interfacesConfiguration.getInterfaces().get(BRIDGE_NAME);
     if (bridgeIface == null) {
       return new Bridge();
     }
@@ -681,7 +673,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   private void warnDuplicateClagIds() {
-    Map<Integer, List<Interface>> clagBondsById = new HashMap<>();
+    Map<Integer, List<InterfacesInterface>> clagBondsById = new HashMap<>();
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(bond -> bond.getClagId() != null) // bond interface
         .forEach(
@@ -697,14 +689,14 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                     "clag-id %d is erroneously configured on more than one bond: %s",
                     id,
                     clagBonds.stream()
-                        .map(Interface::getName)
+                        .map(InterfacesInterface::getName)
                         .collect(ImmutableList.toImmutableList())));
           }
         });
   }
 
   @Nonnull
-  public Interfaces getInterfacesConfiguration() {
+  public CumulusInterfacesConfiguration getInterfacesConfiguration() {
     return _interfacesConfiguration;
   }
 
@@ -756,8 +748,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   @Nullable
   public List<Integer> getVxlanIds() {
     return _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(Converter::isVxlan)
-        .map(Interface::getVxlanId)
+        .filter(InterfaceConverter::isVxlan)
+        .map(InterfacesInterface::getVxlanId)
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -773,7 +765,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   /** Builder for {@link CumulusConcatenatedConfiguration} */
   public static final class Builder {
     private String _hostname;
-    private Interfaces _interfacesConfiguration;
+    private CumulusInterfacesConfiguration _interfacesConfiguration;
     private CumulusFrrConfiguration _frrConfiguration;
     private CumulusPortsConfiguration _portsConfiguration;
 
@@ -784,14 +776,14 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       return this;
     }
 
-    Builder setInterfacesConfiguration(Interfaces interfacesConfiguration) {
+    Builder setInterfacesConfiguration(CumulusInterfacesConfiguration interfacesConfiguration) {
       this._interfacesConfiguration = interfacesConfiguration;
       return this;
     }
 
-    Builder addInterfaces(Map<String, Interface> interfaces) {
+    Builder addInterfaces(Map<String, InterfacesInterface> interfaces) {
       if (this._interfacesConfiguration == null) {
-        this._interfacesConfiguration = new Interfaces();
+        this._interfacesConfiguration = new CumulusInterfacesConfiguration();
       }
       this._interfacesConfiguration.getInterfaces().putAll(interfaces);
       return this;
@@ -816,7 +808,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     public CumulusConcatenatedConfiguration build() {
       CumulusConcatenatedConfiguration cumulusConcatenatedConfiguration =
           new CumulusConcatenatedConfiguration(
-              firstNonNull(_interfacesConfiguration, new Interfaces()),
+              firstNonNull(_interfacesConfiguration, new CumulusInterfacesConfiguration()),
               firstNonNull(_frrConfiguration, new CumulusFrrConfiguration()),
               firstNonNull(_portsConfiguration, new CumulusPortsConfiguration()));
       cumulusConcatenatedConfiguration.setHostname(_hostname);

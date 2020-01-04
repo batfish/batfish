@@ -1,4 +1,4 @@
-package org.batfish.representation.cumulus_interfaces;
+package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -26,16 +26,11 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.representation.cumulus.Bond;
-import org.batfish.representation.cumulus.Bridge;
-import org.batfish.representation.cumulus.CumulusInterfaceType;
-import org.batfish.representation.cumulus.InterfaceBridgeSettings;
-import org.batfish.representation.cumulus.Vlan;
-import org.batfish.representation.cumulus.Vrf;
-import org.batfish.representation.cumulus.Vxlan;
+
+// TODO: Remove this class entirely now that we don't convert from concatenated to NCLU */
 
 /** Converter from cumulus interfaces file model to Cumulus VS model. */
-public final class Converter {
+public final class InterfaceConverter {
   @VisibleForTesting public static final String BRIDGE_NAME = "bridge";
 
   private static final Pattern ENCAPSULATION_VLAN_PATTERN = Pattern.compile("^.*\\.([0-9]+)$");
@@ -45,10 +40,10 @@ public final class Converter {
   public static final Set<String> DEFAULT_BRIDGE_PORTS = ImmutableSet.of();
   public static final int DEFAULT_BRIDGE_PVID = 1;
 
-  private final Interfaces _interfaces;
+  private final CumulusInterfacesConfiguration _interfaces;
   private final Warnings _w;
 
-  public Converter(Interfaces interfaces, Warnings w) {
+  public InterfaceConverter(CumulusInterfacesConfiguration interfaces, Warnings w) {
     _interfaces = interfaces;
     _w = w;
   }
@@ -56,13 +51,13 @@ public final class Converter {
   /** Get Cumulus VS model {@link Bond Bonds}. */
   public Map<String, Bond> convertBonds() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(Converter::isBond)
-        .map(Converter::convertBond)
+        .filter(InterfaceConverter::isBond)
+        .map(InterfaceConverter::convertBond)
         .collect(ImmutableMap.toImmutableMap(Bond::getName, Function.identity()));
   }
 
   @VisibleForTesting
-  static Bond convertBond(Interface bondIface) {
+  static Bond convertBond(InterfacesInterface bondIface) {
     Bond bond = new Bond(bondIface.getName());
     bond.setClagId(bondIface.getClagId());
     bond.setSlaves(bondIface.getBondSlaves());
@@ -79,7 +74,7 @@ public final class Converter {
 
   /** Get Cumulus VS model {@link Bridge}. */
   public @Nullable Bridge convertBridge() {
-    Interface bridgeIface = _interfaces.getInterfaces().get(BRIDGE_NAME);
+    InterfacesInterface bridgeIface = _interfaces.getInterfaces().get(BRIDGE_NAME);
     if (bridgeIface == null) {
       return null;
     }
@@ -96,7 +91,7 @@ public final class Converter {
   /** Get Cumulus VS model {@link org.batfish.representation.cumulus.Interface interfaces}. */
   public Map<String, org.batfish.representation.cumulus.Interface> convertInterfaces() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(Converter::isInterface)
+        .filter(InterfaceConverter::isInterface)
         // interface bridge is handled by convertBridge
         .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
         .map(
@@ -120,31 +115,31 @@ public final class Converter {
   /** Get Cumulus VS model {@link Vlan Vlans}. */
   public Map<String, Vlan> convertVlans() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(Converter::isVlan)
-        .map(Converter::convertVlan)
+        .filter(InterfaceConverter::isVlan)
+        .map(InterfaceConverter::convertVlan)
         .collect(toImmutableMap(Vlan::getName, Function.identity()));
   }
 
   /** Get Cumulus VS model {@link Vrf Vrfs}. */
   public Map<String, Vrf> convertVrfs() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(Converter::isVrf)
-        .map(Converter::convertVrf)
+        .filter(InterfaceConverter::isVrf)
+        .map(InterfaceConverter::convertVrf)
         .collect(toImmutableMap(Vrf::getName, Function.identity()));
   }
 
   /** Get Cumulus VS model {@link Vxlan Vxlans}. */
   public Map<String, Vxlan> convertVxlans() {
     return _interfaces.getInterfaces().values().stream()
-        .filter(Converter::isVxlan)
-        .map(Converter::convertVxlan)
+        .filter(InterfaceConverter::isVxlan)
+        .map(InterfaceConverter::convertVxlan)
         .collect(toImmutableMap(Vxlan::getName, Function.identity()));
   }
 
   @VisibleForTesting
-  CumulusInterfaceType getInterfaceType(Interface iface) {
+  CumulusInterfaceType getInterfaceType(InterfacesInterface iface) {
     String name = iface.getName();
-    if (Interface.isPhysicalInterfaceType(name)) {
+    if (InterfacesInterface.isPhysicalInterfaceType(name)) {
       return CumulusInterfaceType.PHYSICAL;
     }
 
@@ -153,7 +148,7 @@ public final class Converter {
       throw new BatfishException("cannot determine interface type for " + name);
     }
 
-    Interface superIface = _interfaces.getInterfaces().get(superInterfaceName);
+    InterfacesInterface superIface = _interfaces.getInterfaces().get(superInterfaceName);
     if (superIface == null) {
       throw new BatfishException("missing superinterface of subinterface " + name);
     } else if (superIface.getType() == BOND) {
@@ -177,13 +172,13 @@ public final class Converter {
 
   @VisibleForTesting
   @Nullable
-  public static Integer getEncapsulationVlan(Interface iface) {
+  public static Integer getEncapsulationVlan(InterfacesInterface iface) {
     Matcher matcher = ENCAPSULATION_VLAN_PATTERN.matcher(iface.getName());
     return matcher.matches() ? Integer.parseInt(matcher.group(1)) : null;
   }
 
   @VisibleForTesting
-  org.batfish.representation.cumulus.Interface convertInterface(Interface iface) {
+  org.batfish.representation.cumulus.Interface convertInterface(InterfacesInterface iface) {
     checkArgument(isInterface(iface), "input is not an interface");
     checkArgument(!iface.getName().equals(BRIDGE_NAME), "interface bridge is handled separately");
     String name = iface.getName();
@@ -204,7 +199,7 @@ public final class Converter {
   }
 
   @VisibleForTesting
-  static Vlan convertVlan(Interface iface) {
+  static Vlan convertVlan(InterfacesInterface iface) {
     checkArgument(isVlan(iface), "interfaces %s is not a vlan", iface.getName());
     Vlan vlan = new Vlan(iface.getName());
     vlan.setAlias(iface.getDescription());
@@ -216,7 +211,7 @@ public final class Converter {
   }
 
   @VisibleForTesting
-  static Vrf convertVrf(Interface iface) {
+  static Vrf convertVrf(InterfacesInterface iface) {
     checkArgument(isVrf(iface), "not a vrf");
     Vrf vrf = new Vrf(iface.getName());
     vrf.getAddresses().addAll(firstNonNull(iface.getAddresses(), ImmutableList.of()));
@@ -224,7 +219,7 @@ public final class Converter {
   }
 
   @VisibleForTesting
-  static Vxlan convertVxlan(Interface iface) {
+  static Vxlan convertVxlan(InterfacesInterface iface) {
     checkArgument(isVxlan(iface), "not a vxlan");
     Vxlan vxlan = new Vxlan(iface.getName());
     vxlan.setId(iface.getVxlanId());
@@ -236,23 +231,23 @@ public final class Converter {
     return vxlan;
   }
 
-  public static boolean isBond(Interface iface) {
+  public static boolean isBond(InterfacesInterface iface) {
     return iface.getType() == BOND;
   }
 
-  public static boolean isVlan(Interface iface) {
+  public static boolean isVlan(InterfacesInterface iface) {
     return iface.getType() == VLAN;
   }
 
-  public static boolean isVxlan(Interface iface) {
+  public static boolean isVxlan(InterfacesInterface iface) {
     return iface.getType() == VXLAN;
   }
 
-  public static boolean isVrf(Interface iface) {
+  public static boolean isVrf(InterfacesInterface iface) {
     return iface.getType() == VRF;
   }
 
-  public static boolean isInterface(Interface iface) {
+  public static boolean isInterface(InterfacesInterface iface) {
     return iface.getType() == INTERFACE;
   }
 }

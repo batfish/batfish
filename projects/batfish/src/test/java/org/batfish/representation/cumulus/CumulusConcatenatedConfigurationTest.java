@@ -17,8 +17,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
-import org.batfish.representation.cumulus_interfaces.Interface;
-import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Test;
 
 /** Test for {@link CumulusNcluConfiguration}. */
@@ -34,7 +32,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   @Test
   public void testToInterface_active() {
-    Interface vsIface = new Interface("swp1");
+    InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
@@ -49,7 +47,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   @Test
   public void testToInterface_inactive() {
-    Interface vsIface = new Interface("swp1");
+    InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
@@ -67,7 +65,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   @Test
   public void testToInterface_sub_active() {
-    Interface vsIface = new Interface("swp1s1");
+    InterfacesInterface vsIface = new InterfacesInterface("swp1s1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
@@ -82,7 +80,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   @Test
   public void testToInterface_sub_inactive() {
-    Interface vsIface = new Interface("swp1s1");
+    InterfacesInterface vsIface = new InterfacesInterface("swp1s1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
@@ -117,7 +115,7 @@ public class CumulusConcatenatedConfigurationTest {
         org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/32");
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getLoopback().getAddresses().add(primary);
 
     CumulusConcatenatedConfiguration vsConfig =
@@ -136,11 +134,11 @@ public class CumulusConcatenatedConfigurationTest {
         org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/32");
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getLoopback().getAddresses().add(primary);
 
     ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.2/32");
-    Interface vsIface = new Interface(LOOPBACK_INTERFACE_NAME);
+    InterfacesInterface vsIface = new InterfacesInterface(LOOPBACK_INTERFACE_NAME);
     vsIface.addAddress(secondary);
     interfaces.getInterfaces().put(LOOPBACK_INTERFACE_NAME, vsIface);
 
@@ -160,7 +158,7 @@ public class CumulusConcatenatedConfigurationTest {
         org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
     Ip clagIp = Ip.parse("1.1.1.1");
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getLoopback().setClagVxlanAnycastIp(clagIp);
 
     CumulusConcatenatedConfiguration vsConfig =
@@ -181,7 +179,7 @@ public class CumulusConcatenatedConfigurationTest {
     org.batfish.datamodel.Interface loopback =
         org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getLoopback().setBandwidth(42.0);
 
     CumulusConcatenatedConfiguration vsConfig =
@@ -198,17 +196,17 @@ public class CumulusConcatenatedConfigurationTest {
     StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0");
 
     // enabled interface in the target vrf
-    Interface iface1 = new Interface("eth0");
+    InterfacesInterface iface1 = new InterfacesInterface("eth0");
     iface1.addPostUpIpRoute(route0);
     iface1.setVrf("vrf0");
 
     // enabled interface in a different vrf
-    Interface iface2 = new Interface("eth1");
+    InterfacesInterface iface2 = new InterfacesInterface("eth1");
     iface2.addPostUpIpRoute(route1);
     iface2.setVrf("vrf1");
 
     // disabled interface in the target vrf (disabling is happening below)
-    Interface iface3 = new Interface("eth2");
+    InterfacesInterface iface3 = new InterfacesInterface("eth2");
     iface3.addPostUpIpRoute(route1);
     iface3.setVrf("vrf0");
 

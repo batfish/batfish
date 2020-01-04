@@ -7,9 +7,9 @@ import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBA
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BOND_SLAVE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.NET_ADD_INTERFACE;
-import static org.batfish.representation.cumulus_interfaces.Interface.PHYSICAL_INTERFACE_PATTERN;
-import static org.batfish.representation.cumulus_interfaces.Interface.SUBINTERFACE_PATTERN;
-import static org.batfish.representation.cumulus_interfaces.Interface.VLAN_INTERFACE_PATTERN;
+import static org.batfish.representation.cumulus.InterfacesInterface.PHYSICAL_INTERFACE_PATTERN;
+import static org.batfish.representation.cumulus.InterfacesInterface.SUBINTERFACE_PATTERN;
+import static org.batfish.representation.cumulus.InterfacesInterface.VLAN_INTERFACE_PATTERN;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.BoundType;

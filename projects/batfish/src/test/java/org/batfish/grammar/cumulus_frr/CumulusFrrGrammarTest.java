@@ -75,6 +75,7 @@ import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.FrrInterface;
+import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
@@ -1178,8 +1179,7 @@ public class CumulusFrrGrammarTest {
   /** Interface vrf is configured in the interfaces file and is not explicitly configured in FRR */
   @Test
   public void testInterface_InterfaceDefaultVrf() {
-    org.batfish.representation.cumulus_interfaces.Interface i2 =
-        new org.batfish.representation.cumulus_interfaces.Interface("swp2");
+    InterfacesInterface i2 = new InterfacesInterface("swp2");
     i2.setVrf("VRF2");
     _config.getInterfacesConfiguration().getInterfaces().put("swp2", i2);
     parseLines("interface swp2", "description rt1010svc01 swp1s1");

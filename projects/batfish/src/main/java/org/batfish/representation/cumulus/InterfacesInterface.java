@@ -1,4 +1,4 @@
-package org.batfish.representation.cumulus_interfaces;
+package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -25,14 +25,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.InterfaceBridgeSettings;
-import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.StaticRoute;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
-public final class Interface implements Serializable {
+public final class InterfacesInterface implements Serializable {
   public static final Pattern PHYSICAL_INTERFACE_PATTERN =
       Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
 
@@ -60,7 +56,7 @@ public final class Interface implements Serializable {
   private @Nullable Set<String> _bridgePorts;
   private @Nonnull List<StaticRoute> _postUpIpRoutes;
 
-  public Interface(@Nonnull String name) {
+  public InterfacesInterface(@Nonnull String name) {
     _name = name;
     _postUpIpRoutes = ImmutableList.of();
   }

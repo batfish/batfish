@@ -53,16 +53,16 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.StaticRoute;
-import org.batfish.representation.cumulus_interfaces.Interface;
-import org.batfish.representation.cumulus_interfaces.Interfaces;
 
 /**
- * Populates an {@link Interfaces} from a parse tree from {@link
+ * Populates an {@link CumulusInterfacesConfiguration} from a parse tree from {@link
  * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser}.
  */
 public final class CumulusInterfacesConfigurationBuilder
@@ -72,7 +72,7 @@ public final class CumulusInterfacesConfigurationBuilder
   private final CumulusInterfacesCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  private Interface _currentIface;
+  private InterfacesInterface _currentIface;
   private @Nullable String _currentIfaceName;
 
   public CumulusInterfacesConfigurationBuilder(

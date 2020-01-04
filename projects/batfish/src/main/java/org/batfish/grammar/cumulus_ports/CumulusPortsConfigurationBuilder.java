@@ -28,6 +28,7 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
   private static final Pattern SPEED_PATTERN = Pattern.compile("^(\\d+)G$");
 
   private final CumulusConcatenatedConfiguration _config;
+  private final CumulusPortsCombinedParser _parser;
   private final Warnings _w;
 
   private Integer _currentPort;
@@ -35,6 +36,7 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
   public CumulusPortsConfigurationBuilder(
       CumulusConcatenatedConfiguration config, CumulusPortsCombinedParser parser, Warnings w) {
     _config = config;
+    _parser = parser;
     _w = w;
   }
 
@@ -117,5 +119,9 @@ public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseList
         ifaceName,
         CumulusStructureUsage.PORT_SPEED,
         ctx.getStart().getLine());
+  }
+
+  public CumulusPortsCombinedParser getParser() {
+    return _parser;
   }
 }
