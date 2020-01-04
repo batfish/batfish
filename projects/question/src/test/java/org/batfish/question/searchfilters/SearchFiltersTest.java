@@ -71,6 +71,9 @@ public final class SearchFiltersTest {
   private static final Ip IP2 = Ip.parse("1.1.1.2");
   private static final Ip IP3 = Ip.parse("1.1.1.3");
 
+  private static final PermitQuery PERMIT_QUERY = PermitQuery.INSTANCE;
+  private static final DenyQuery DENY_QUERY = DenyQuery.INSTANCE;
+
   private static final IpAccessList ACL =
       IpAccessList.builder()
           .setName("acl")
@@ -173,17 +176,15 @@ public final class SearchFiltersTest {
 
   @Test
   public void testPermittedFlows_ACCEPT_ALL() {
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, q));
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
   }
 
   @Test
   public void testPermittedFlows_REJECT_ALL() {
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    BDD reachBdd = configContext.getReachBdd(REJECT_ALL_ACL, q);
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    BDD reachBdd = configContext.getReachBdd(REJECT_ALL_ACL, PERMIT_QUERY);
     assertTrue("Reach BDD should be empty", reachBdd.isZero());
     Flow flow = configContext.getFlow(reachBdd);
     assertNull("Should not find permitted flow", flow);
@@ -191,9 +192,8 @@ public final class SearchFiltersTest {
 
   @Test
   public void testDeniedFlows_ACCEPT_ALL() {
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("deny").build();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    BDD reachBdd = configContext.getReachBdd(ACCEPT_ALL_ACL, q);
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    BDD reachBdd = configContext.getReachBdd(ACCEPT_ALL_ACL, DENY_QUERY);
     assertTrue("Reach BDD should be empty", reachBdd.isZero());
     Flow flow = configContext.getFlow(reachBdd);
     assertNull("Should not find denied flow", flow);
@@ -201,18 +201,16 @@ public final class SearchFiltersTest {
 
   @Test
   public void testDeniedFlows_REJECT_ALL() {
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("deny").build();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    BDD reachBdd = configContext.getReachBdd(REJECT_ALL_ACL, q);
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    BDD reachBdd = configContext.getReachBdd(REJECT_ALL_ACL, DENY_QUERY);
     Flow flow = configContext.getFlow(reachBdd);
     assertNotNull("Should find denied flow", flow);
   }
 
   @Test
   public void testPermittedFlows_ACL() {
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, q));
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasDstIp(oneOf(IP0, IP3)));
   }
@@ -228,58 +226,58 @@ public final class SearchFiltersTest {
 
     SearchFiltersParameters params = paramsBuilder.build();
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, new SearchFiltersQuestion()));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow for IP0", flow);
     assertThat(flow, hasDstIp(IP0));
 
     params = paramsBuilder.setHeaderSpace(HeaderSpace.builder().setNegate(true).build()).build();
     configContext = getConfigContextWithParams(params);
-    flow = configContext.getFlow(configContext.getReachBdd(ACL, new SearchFiltersQuestion()));
+    flow = configContext.getFlow(configContext.getReachBdd(ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow for IP3 since IP0 is now excluded", flow);
     assertThat(flow, hasDstIp(IP3));
   }
 
   @Test
   public void testDeniedFlows_ACL() {
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("deny").build();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, q));
-    assertNotNull("Should find permitted flow", flow);
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, DENY_QUERY));
+    assertNotNull("Should find denied flow", flow);
     assertThat(flow, hasDstIp(not(oneOf(IP0, IP3))));
   }
 
   @Test
   public void testMatchLine_ACL() {
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("matchLine 0").build();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, q));
+    MatchLineQuery matchLine0 = new MatchLineQuery(0);
+    MatchLineQuery matchLine1 = new MatchLineQuery(1);
+    MatchLineQuery matchLine2 = new MatchLineQuery(2);
+    MatchLineQuery matchLine3 = new MatchLineQuery(3);
+
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACL, matchLine0));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasDstIp(IP0));
 
-    q = SearchFiltersQuestion.builder().setAction("matchLine 1").build();
-    configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    flow = configContext.getFlow(configContext.getReachBdd(ACL, q));
+    configContext = getConfigContextWithParams(_allLocationsParams);
+    flow = configContext.getFlow(configContext.getReachBdd(ACL, matchLine1));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasDstIp(IP1));
 
-    q = SearchFiltersQuestion.builder().setAction("matchLine 2").build();
-    configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    flow = configContext.getFlow(configContext.getReachBdd(ACL, q));
+    configContext = getConfigContextWithParams(_allLocationsParams);
+    flow = configContext.getFlow(configContext.getReachBdd(ACL, matchLine2));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasDstIp(IP2));
 
-    q = SearchFiltersQuestion.builder().setAction("matchLine 3").build();
-    configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    flow = configContext.getFlow(configContext.getReachBdd(ACL, q));
+    configContext = getConfigContextWithParams(_allLocationsParams);
+    flow = configContext.getFlow(configContext.getReachBdd(ACL, matchLine3));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasDstIp(IP3));
   }
 
   @Test
   public void testMatchLine_BLOCKED_LINE_ACL() {
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("matchLine 2").build();
-    NonDiffConfigContext configContext = getConfigContextWithParams(q.toSearchFiltersParameters());
-    Flow flow = configContext.getFlow(configContext.getReachBdd(BLOCKED_LINE_ACL, q));
+    MatchLineQuery matchLine2 = new MatchLineQuery(2);
+    NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
+    Flow flow = configContext.getFlow(configContext.getReachBdd(BLOCKED_LINE_ACL, matchLine2));
     assertNull("Should not find permitted flow", flow);
   }
 
@@ -352,36 +350,37 @@ public final class SearchFiltersTest {
 
   @Test
   public void testMatchSrcInterface() {
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("matchLine 0").build();
+    MatchLineQuery matchLine0 = new MatchLineQuery(0);
+    MatchLineQuery matchLine1 = new MatchLineQuery(1);
+    MatchLineQuery matchLine2 = new MatchLineQuery(2);
+    MatchLineQuery matchLine3 = new MatchLineQuery(3);
+    MatchLineQuery matchLine4 = new MatchLineQuery(4);
+
     NonDiffConfigContext configContext = getConfigContextWithParams(_allLocationsParams);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, matchLine0));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, allOf(hasIngressInterface(nullValue()), hasDstIp(IP0)));
 
-    q = SearchFiltersQuestion.builder().setAction("matchLine 1").build();
     configContext = getConfigContextWithParams(_allLocationsParams);
-    flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, q));
+    flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, matchLine1));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
 
-    q = SearchFiltersQuestion.builder().setAction("matchLine 2").build();
     configContext = getConfigContextWithParams(_allLocationsParams);
-    flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, q));
+    flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, matchLine2));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, allOf(hasIngressInterface(IFACE2), hasDstIp(IP2)));
 
     // cannot have two different source interfaces
-    q = SearchFiltersQuestion.builder().setAction("matchLine 3").build();
     configContext = getConfigContextWithParams(_allLocationsParams);
-    BDD reachBdd = configContext.getReachBdd(SRC_ACL, q);
+    BDD reachBdd = configContext.getReachBdd(SRC_ACL, matchLine3);
     assertTrue(reachBdd.isZero());
     flow = configContext.getFlow(reachBdd);
     assertNull("Should not find permitted flow", flow);
 
     // cannot have originate from device and have a source interface
-    q = SearchFiltersQuestion.builder().setAction("matchLine 4").build();
     configContext = getConfigContextWithParams(_allLocationsParams);
-    reachBdd = configContext.getReachBdd(SRC_ACL, q);
+    reachBdd = configContext.getReachBdd(SRC_ACL, matchLine4);
     assertTrue(reachBdd.isZero());
     flow = configContext.getFlow(reachBdd);
     assertNull("Should not find permitted flow", flow);
@@ -412,7 +411,6 @@ public final class SearchFiltersTest {
     ib.setName("inactiveIface").setActive(false).build();
 
     IBatfish bf = new MockBatfish(c);
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
     NonDiffConfigContext configContext =
         new NonDiffConfigContext(
             c,
@@ -420,7 +418,7 @@ public final class SearchFiltersTest {
             bf.getSnapshot(),
             bf,
             _allLocationsParams);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(denyAllSourcesAcl, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(denyAllSourcesAcl, PERMIT_QUERY));
     assertNull("Should not find permitted flow", flow);
   }
 
@@ -447,7 +445,6 @@ public final class SearchFiltersTest {
     ib.setName("inactiveIface").setActive(false).build();
 
     IBatfish bf = new MockBatfish(c);
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
     NonDiffConfigContext configContext =
         new NonDiffConfigContext(
             c,
@@ -455,7 +452,7 @@ public final class SearchFiltersTest {
             bf.getSnapshot(),
             bf,
             _allLocationsParams);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(denyAllButIface2, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(denyAllButIface2, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasIngressInterface(IFACE2));
   }
@@ -469,15 +466,15 @@ public final class SearchFiltersTest {
             .build();
 
     // can match line 1 because IFACE1 is specified
-    SearchFiltersQuestion q = SearchFiltersQuestion.builder().setAction("matchLine 1").build();
+    MatchLineQuery matchLine1 = new MatchLineQuery(1);
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, matchLine1));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, allOf(hasIngressInterface(IFACE1), hasDstIp(IP1)));
 
     // cannot match line 2 because IFACE2 is not specified
-    q = SearchFiltersQuestion.builder().setAction("matchLine 2").build();
-    flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, q));
+    MatchLineQuery matchLine2 = new MatchLineQuery(2);
+    flow = configContext.getFlow(configContext.getReachBdd(SRC_ACL, matchLine2));
     assertNull("Should not find permitted flow", flow);
   }
 
@@ -492,10 +489,8 @@ public final class SearchFiltersTest {
             .setHeaderSpace(new HeaderSpace())
             .build();
 
-    // TODO: Separate out query part of question so it's clear q's params are ignored in getReachBdd
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasDstIp(constraintIp));
   }
@@ -511,10 +506,8 @@ public final class SearchFiltersTest {
             .setHeaderSpace(new HeaderSpace())
             .build();
 
-    // TODO: Separate out query part of question so it's clear q's params are ignored in getReachBdd
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasSrcIp(constraintIp));
   }
@@ -533,10 +526,8 @@ public final class SearchFiltersTest {
             .setHeaderSpace(hs)
             .build();
 
-    // TODO: Separate out query part of question so it's clear q's params are ignored in getReachBdd
-    SearchFiltersQuestion q = new SearchFiltersQuestion();
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
-    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, q));
+    Flow flow = configContext.getFlow(configContext.getReachBdd(ACCEPT_ALL_ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, allOf(hasSrcPort(1111), hasDstPort(2222)));
   }

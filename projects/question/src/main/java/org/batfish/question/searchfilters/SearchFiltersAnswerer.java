@@ -1,7 +1,5 @@
 package org.batfish.question.searchfilters;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.question.FilterQuestionUtils.differentialBDDSourceManager;
 import static org.batfish.question.FilterQuestionUtils.resolveSources;
@@ -45,7 +43,6 @@ import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.FilterQuestionUtils;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.question.searchfilters.SearchFiltersQuestion.Type;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
@@ -96,8 +93,8 @@ public final class SearchFiltersAnswerer extends Answerer {
 
         // If either ACL can't be queried, can't compare them; fill in row in the other table if
         // necessary and continue
-        boolean canQueryAcl = canQuery(acl, question);
-        boolean canQueryRefAcl = canQuery(refAcl, question);
+        boolean canQueryAcl = question.getQuery().canQuery(acl);
+        boolean canQueryRefAcl = question.getQuery().canQuery(refAcl);
         if (!canQueryAcl || !canQueryRefAcl) {
           if (question.getIncludeOneTableKeys() && (canQueryAcl || canQueryRefAcl)) {
             // One of them is not null and question specifies to include rows in this case
@@ -139,20 +136,6 @@ public final class SearchFiltersAnswerer extends Answerer {
     _tableAnswerElement.postProcessAnswer(question, diffTable.getRows().getData());
   }
 
-  /**
-   * Returns true if the given ACL can be queried using the given question. Currently only returns
-   * false if the question specifies a match line for a line number too big for the ACL.
-   */
-  @VisibleForTesting
-  static boolean canQuery(IpAccessList acl, SearchFiltersQuestion question) {
-    if (question.getType() != Type.MATCH_LINE) {
-      return true;
-    }
-    Integer lineNumber = question.getLineNumber();
-    checkState(lineNumber != null, "Line number must be defined for MATCH_LINE query");
-    return acl.getLines().size() > question.getLineNumber();
-  }
-
   private void nonDifferentialAnswer(NetworkSnapshot snapshot, SearchFiltersQuestion question) {
     Map<String, Map<String, IpAccessList>> specifiedAcls = getSpecifiedAcls(snapshot, question);
     if (specifiedAcls.values().stream().allMatch(Map::isEmpty)) {
@@ -172,12 +155,12 @@ public final class SearchFiltersAnswerer extends Answerer {
       NonDiffConfigContext configContext = e.getValue();
       for (IpAccessList acl : specifiedAcls.get(hostname).values()) {
         // Ensure that query is applicable to acl
-        if (!canQuery(acl, question)) {
+        if (!question.getQuery().canQuery(acl)) {
           continue;
         }
 
         // Generate representative flow for ACL, if one exists
-        Flow flow = configContext.getFlow(configContext.getReachBdd(acl, question));
+        Flow flow = configContext.getFlow(configContext.getReachBdd(acl, question.getQuery()));
         if (flow == null) {
           continue;
         }
@@ -273,41 +256,6 @@ public final class SearchFiltersAnswerer extends Answerer {
     }
   }
 
-  /**
-   * Returns BDD representing the space of flows matching the given ACL for the given question.
-   * Assumes the question is applicable to the ACL (see {@link
-   * SearchFiltersAnswerer#canQuery(IpAccessList, SearchFiltersQuestion)}).
-   */
-  @Nonnull
-  private static BDD getQueryBdd(
-      IpAccessList acl, IpAccessListToBdd ipAccessListToBdd, SearchFiltersQuestion question) {
-    checkArgument(canQuery(acl, question), "Unable to apply query to ACL %s", acl.getName());
-    switch (question.getType()) {
-      case PERMIT:
-        // BDD of everything permitted by the acl
-        return ipAccessListToBdd.toBdd(acl);
-      case DENY:
-        // BDD of everything not permitted by the acl
-        return ipAccessListToBdd.toBdd(acl).not();
-      case MATCH_LINE:
-        Integer lineNumber = question.getLineNumber();
-        assert lineNumber != null; // ensured by canQuery() check
-
-        // Generate BDD matching all flows that would match the target line, then
-        // subtract out the BDDs of flows matched by each previous line
-        BDD matchingTargetLine =
-            ipAccessListToBdd.toPermitAndDenyBdds(acl.getLines().get(lineNumber)).getMatchBdd();
-        for (int i = 0; i < lineNumber && !matchingTargetLine.isZero(); i++) {
-          BDD lineBdd = ipAccessListToBdd.toPermitAndDenyBdds(acl.getLines().get(i)).getMatchBdd();
-          matchingTargetLine = matchingTargetLine.diff(lineBdd);
-        }
-        return matchingTargetLine;
-      default:
-        throw new IllegalStateException(
-            String.format("Unrecognized Search Filters question type %s", question.getType()));
-    }
-  }
-
   private static Set<String> getActiveSources(
       Configuration c, SpecifierContext specifierContext, SearchFiltersParameters parameters) {
     Set<String> inactiveIfaces =
@@ -324,8 +272,9 @@ public final class SearchFiltersAnswerer extends Answerer {
       IpAccessList refAcl,
       DiffConfigContext configContext,
       SearchFiltersQuestion question) {
-    BDD bdd = configContext.getReachBdd(acl, question, false);
-    BDD refBdd = configContext.getReachBdd(refAcl, question, true);
+    SearchFiltersQuery query = question.getQuery();
+    BDD bdd = configContext.getReachBdd(acl, query, false);
+    BDD refBdd = configContext.getReachBdd(refAcl, query, true);
 
     // Find example increased and decreased flows, if they exist
     BDD increasedBDD = bdd.diff(refBdd);
@@ -370,13 +319,12 @@ public final class SearchFiltersAnswerer extends Answerer {
     }
 
     /**
-     * Returns the BDD representing all flows that will match the query for the given ACL. Assumes
-     * the question is applicable to the ACL (see {@link
-     * SearchFiltersAnswerer#canQuery(IpAccessList, SearchFiltersQuestion)}).
+     * Returns the BDD representing all flows that match the query for the given ACL. Assumes the
+     * question is applicable to the ACL (see {@link SearchFiltersQuery#canQuery(IpAccessList)}).
      */
     @Nonnull
-    BDD getReachBdd(IpAccessList acl, SearchFiltersQuestion question) {
-      return getQueryBdd(acl, _ipAccessListToBdd, question).and(_prerequisiteBdd);
+    BDD getReachBdd(IpAccessList acl, SearchFiltersQuery query) {
+      return query.getMatchingBdd(acl, _ipAccessListToBdd).and(_prerequisiteBdd);
     }
 
     /** Returns a concrete flow satisfying the input {@link BDD}, if one exists. */
@@ -436,16 +384,15 @@ public final class SearchFiltersAnswerer extends Answerer {
     }
 
     /**
-     * Returns the BDD representing all flows that will match the query for the given ACL. Assumes
-     * the question is applicable to the ACL (see {@link
-     * SearchFiltersAnswerer#canQuery(IpAccessList, SearchFiltersQuestion)}).
+     * Returns the BDD representing all flows that match the query for the given ACL. Assumes the
+     * question is applicable to the ACL (see {@link SearchFiltersQuery#canQuery(IpAccessList)}).
      *
      * @param reference Whether the provided ACL is from the reference snapshot
      */
     @Nonnull
-    BDD getReachBdd(IpAccessList acl, SearchFiltersQuestion question, boolean reference) {
+    BDD getReachBdd(IpAccessList acl, SearchFiltersQuery query, boolean reference) {
       IpAccessListToBdd ipAccessListToBdd = reference ? _refIpAccessListToBdd : _ipAccessListToBdd;
-      return getQueryBdd(acl, ipAccessListToBdd, question).and(_prerequisiteBdd);
+      return query.getMatchingBdd(acl, ipAccessListToBdd).and(_prerequisiteBdd);
     }
 
     /** Returns a concrete flow satisfying the input {@link BDD}, if one exists. */

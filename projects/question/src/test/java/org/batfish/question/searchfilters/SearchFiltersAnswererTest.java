@@ -1,12 +1,9 @@
 package org.batfish.question.searchfilters;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstIp;
-import static org.batfish.question.searchfilters.SearchFiltersAnswerer.canQuery;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -34,24 +31,6 @@ public class SearchFiltersAnswererTest {
               ImmutableList.of(
                   ExprAclLine.accepting().setMatchCondition(matchDstIp("2.2.2.2")).build()))
           .build();
-
-  @Test
-  public void testCanQuery() {
-    // Permit or deny queries should work
-    SearchFiltersQuestion permit = SearchFiltersQuestion.builder().setAction("permit").build();
-    SearchFiltersQuestion deny = SearchFiltersQuestion.builder().setAction("deny").build();
-    assertTrue(canQuery(ACL1, permit));
-    assertTrue(canQuery(ACL1, deny));
-
-    // Match line queries should work only if the line number is within range for the ACL
-    int numLines = ACL1.getLines().size();
-    SearchFiltersQuestion matchLastLine =
-        SearchFiltersQuestion.builder().setAction("matchLine " + (numLines - 1)).build();
-    SearchFiltersQuestion matchLineOutOfRange =
-        SearchFiltersQuestion.builder().setAction("matchLine " + numLines).build();
-    assertTrue(canQuery(ACL1, matchLastLine));
-    assertFalse(canQuery(ACL1, matchLineOutOfRange));
-  }
 
   @Test
   public void testGetSpecifiedAcls_includeAll() {
