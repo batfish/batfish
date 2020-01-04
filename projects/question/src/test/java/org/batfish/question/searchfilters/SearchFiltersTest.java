@@ -171,63 +171,6 @@ public final class SearchFiltersTest {
         _config, _config.getIpAccessLists().keySet(), _batfish.getSnapshot(), _batfish, params);
   }
 
-  //  @Test
-  //  public void testGetQueryAcls_permit() {
-  //    SearchFiltersQuestion question =
-  //        SearchFiltersQuestion.builder()
-  //            .setFilterSpecifier(ACL.getName())
-  //            .setAction("permit")
-  //            .build();
-  //    SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-  //    List<Triple<String, String, IpAccessList>> queryAcls =
-  //        answerer.getQueryAcls(_batfish.getSnapshot(), question);
-  //    assertThat(queryAcls, hasSize(1));
-  //    String queryConfig = queryAcls.get(0).getLeft();
-  //    String queryAclName = queryAcls.get(0).getMiddle();
-  //    IpAccessList queryAcl = queryAcls.get(0).getRight();
-  //    assertThat(queryConfig, equalTo(_config.getHostname()));
-  //    assertThat(queryAclName, equalTo(ACL.getName()));
-  //    assertThat(queryAcl, is(ACL));
-  //  }
-  //
-  //  @Test
-  //  public void testGetQueryAcls_deny() {
-  //    SearchFiltersQuestion question =
-  //
-  // SearchFiltersQuestion.builder().setFilterSpecifier(ACL.getName()).setAction("deny").build();
-  //    SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-  //    List<Triple<String, String, IpAccessList>> queryAcls =
-  //        answerer.getQueryAcls(_batfish.getSnapshot(), question);
-  //    assertThat(queryAcls, hasSize(1));
-  //    String queryConfig = queryAcls.get(0).getLeft();
-  //    String queryAclName = queryAcls.get(0).getMiddle();
-  //    IpAccessList queryAcl = queryAcls.get(0).getRight();
-  //    assertThat(queryConfig, equalTo(_config.getHostname()));
-  //    assertThat(queryAclName, equalTo(ACL.getName()));
-  //    assertThat(queryAcl.getName(), equalTo(NEGATED_RENAMER.apply(ACL.getName())));
-  //    assertThat(queryAcl.getLines(), equalTo(DENY_ACL.getLines()));
-  //  }
-  //
-  //  @Test
-  //  public void testGetQueryAcls_matchLine2() {
-  //    SearchFiltersQuestion question =
-  //        SearchFiltersQuestion.builder()
-  //            .setFilterSpecifier(ACL.getName())
-  //            .setAction("matchLine 2")
-  //            .build();
-  //    SearchFiltersAnswerer answerer = new SearchFiltersAnswerer(question, _batfish);
-  //    List<Triple<String, String, IpAccessList>> queryAcls =
-  //        answerer.getQueryAcls(_batfish.getSnapshot(), question);
-  //    assertThat(queryAcls, hasSize(1));
-  //    String queryConfig = queryAcls.get(0).getLeft();
-  //    String queryAclName = queryAcls.get(0).getMiddle();
-  //    IpAccessList queryAcl = queryAcls.get(0).getRight();
-  //    assertThat(queryConfig, equalTo(_config.getHostname()));
-  //    assertThat(queryAclName, equalTo(ACL.getName()));
-  //    assertThat(queryAcl.getName(), equalTo(MATCH_LINE_RENAMER.apply(2, ACL.getName())));
-  //    assertThat(queryAcl.getLines(), equalTo(MATCH_LINE2_ACL.getLines()));
-  //  }
-
   @Test
   public void testPermittedFlows_ACCEPT_ALL() {
     SearchFiltersQuestion q = new SearchFiltersQuestion();
