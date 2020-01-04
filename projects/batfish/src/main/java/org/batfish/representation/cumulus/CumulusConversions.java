@@ -1110,6 +1110,7 @@ public final class CumulusConversions {
           Interface vsIface = vsIfaces.get(iface.getName());
           if (vsIface == null) {
             // if this interface does not exist (e.g., it's a bond) we skip it for now
+            // TODO: need to handle other types of interfaces: bonds, vlans, bridge
             return;
           }
 
