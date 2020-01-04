@@ -347,11 +347,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   /** Add interface properties based on what we saw in the interfaces file */
   private void populateInterfacesInterfaceProperties(Configuration c) {
-    populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
-        .filter(iface -> !iface.getName().equals(LOOPBACK_INTERFACE_NAME))
         .forEach(iface -> populateInterfaceProperties(c, iface));
+    populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
   }
 
   private void populateInterfaceProperties(Configuration c, InterfacesInterface iface) {
@@ -398,24 +397,26 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   void populateLoopbackProperties(org.batfish.datamodel.Interface viLoopback) {
     Loopback vsLoopback = _interfacesConfiguration.getLoopback();
 
+    // addresses in interface configuration, if present, have been transferred via
+    // populateCommonProperties. we need to take care of other sources of addresses.
+
     List<InterfaceAddress> addresses = new LinkedList<>(vsLoopback.getAddresses());
 
-    // get any additional additional address from interfaces
-    if (_interfacesConfiguration.getInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
-      addresses.addAll(
-          firstNonNull(
-              _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME).getAddresses(),
-              ImmutableList.of()));
+    if (viLoopback.getAddress() == null && !addresses.isEmpty()) {
+      viLoopback.setAddress(addresses.get(0));
     }
-    InterfaceAddress primaryAddress = addresses.isEmpty() ? null : addresses.get(0);
+
     if (vsLoopback.getClagVxlanAnycastIp() != null) {
       // Just assume CLAG is correctly configured and comes up
       addresses.add(
           ConcreteInterfaceAddress.create(
               vsLoopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH));
     }
-    viLoopback.setAddress(primaryAddress);
-    viLoopback.setAllAddresses(addresses);
+    viLoopback.setAllAddresses(
+        ImmutableSet.<InterfaceAddress>builder()
+            .addAll(viLoopback.getAllAddresses())
+            .addAll(addresses)
+            .build());
 
     // set bandwidth
     viLoopback.setBandwidth(firstNonNull(vsLoopback.getBandwidth(), DEFAULT_LOOPBACK_BANDWIDTH));

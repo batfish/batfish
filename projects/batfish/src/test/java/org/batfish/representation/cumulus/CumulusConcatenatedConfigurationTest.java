@@ -43,7 +43,7 @@ public class CumulusConcatenatedConfigurationTest {
         .addInterfaces(ImmutableMap.of(bridge.getName(), bridge))
         .build()
         .initializeAllInterfaces(c);
-    assertFalse(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
+    assertFalse(c.getAllInterfaces().containsKey(BRIDGE_NAME));
   }
 
   /** Interfaces in interfaceConfiguration are included */
@@ -168,46 +168,57 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testPopulateLoopbackProperties_primaryAddress() {
+  public void testPopulateLoopbackProperties_loopbackAddressOnly() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+
+    // no address configured as a regular interface
     org.batfish.datamodel.Interface loopback =
         org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
 
-    ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/32");
+    // address configured as loopback address
+    ConcreteInterfaceAddress loopbackAddress = ConcreteInterfaceAddress.parse("2.1.1.1/32");
+
     CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
-    interfaces.getLoopback().getAddresses().add(primary);
+    interfaces.getLoopback().getAddresses().add(loopbackAddress);
 
-    CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder().setInterfacesConfiguration(interfaces).build();
+    CumulusConcatenatedConfiguration.builder()
+        .setInterfacesConfiguration(interfaces)
+        .build()
+        .populateLoopbackProperties(loopback);
 
-    vsConfig.populateLoopbackProperties(loopback);
-
-    assertThat(loopback.getAddress(), equalTo(primary));
-    assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of(primary)));
+    // loopback address is made primary
+    assertThat(loopback.getAddress(), equalTo(loopbackAddress));
+    assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of(loopbackAddress)));
   }
 
   @Test
-  public void testPopulateLoopbackProperties_moreAddresses() {
+  public void testPopulateLoopbackProperties_bothAddresses() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+
+    // address configured as a regular interface configuration
+    ConcreteInterfaceAddress interfacesAddress = ConcreteInterfaceAddress.parse("1.1.1.1/32");
+
     org.batfish.datamodel.Interface loopback =
-        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
+        org.batfish.datamodel.Interface.builder()
+            .setName("lo")
+            .setOwner(c)
+            .setAddress(interfacesAddress)
+            .build();
 
-    ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/32");
+    // address configured as loopback address
+    ConcreteInterfaceAddress loopbackAddress = ConcreteInterfaceAddress.parse("2.1.1.1/32");
+
     CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
-    interfaces.getLoopback().getAddresses().add(primary);
+    interfaces.getLoopback().getAddresses().add(loopbackAddress);
 
-    ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.2/32");
-    InterfacesInterface vsIface = new InterfacesInterface(LOOPBACK_INTERFACE_NAME);
-    vsIface.addAddress(secondary);
-    interfaces.getInterfaces().put(LOOPBACK_INTERFACE_NAME, vsIface);
+    CumulusConcatenatedConfiguration.builder()
+        .setInterfacesConfiguration(interfaces)
+        .build()
+        .populateLoopbackProperties(loopback);
 
-    CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder().setInterfacesConfiguration(interfaces).build();
-
-    vsConfig.populateLoopbackProperties(loopback);
-
-    assertThat(loopback.getAddress(), equalTo(primary));
-    assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of(primary, secondary)));
+    assertThat(loopback.getAddress(), equalTo(interfacesAddress));
+    assertThat(
+        loopback.getAllAddresses(), equalTo(ImmutableSet.of(interfacesAddress, loopbackAddress)));
   }
 
   @Test
@@ -225,7 +236,7 @@ public class CumulusConcatenatedConfigurationTest {
 
     vsConfig.populateLoopbackProperties(loopback);
 
-    assertNull(loopback.getAddress());
+    assertNull(loopback.getAddress()); // clag ip is not made primary
     assertThat(
         loopback.getAllAddresses(),
         equalTo(
