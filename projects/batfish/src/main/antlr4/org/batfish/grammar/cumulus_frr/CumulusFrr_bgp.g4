@@ -14,6 +14,7 @@ s_bgp
   | sb_always_compare_med
   | sb_bgp
   | sb_neighbor
+  | sb_network
   | sb_no
   )*
 ;
@@ -238,6 +239,11 @@ sbnp_remote_as
 sbnp_update_source
 :
   UPDATE_SOURCE (ip = IP_ADDRESS | name = word)
+;
+
+sb_network
+:
+  NETWORK IP_PREFIX NEWLINE
 ;
 
 sbafi_neighbor

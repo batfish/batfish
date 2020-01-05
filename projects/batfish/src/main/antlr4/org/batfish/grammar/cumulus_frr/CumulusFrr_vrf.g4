@@ -13,12 +13,17 @@ s_vrf
     sv_vni
   | sv_route
   )*
-  EXIT_VRF NEWLINE
+  (EXIT_VRF NEWLINE)?
 ;
 
 sv_route
 :
-  IP ROUTE prefix ip_address NEWLINE
+  IP ROUTE prefix
+  (
+     BLACKHOLE
+     | ip_address
+  )
+  NEWLINE
 ;
 
 sv_vni

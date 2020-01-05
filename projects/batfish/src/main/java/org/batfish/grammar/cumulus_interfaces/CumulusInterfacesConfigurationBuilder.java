@@ -38,6 +38,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_pe
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_priorityContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_mtuContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_raw_deviceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
@@ -47,6 +48,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_lo
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Ipuir_addContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_aliasContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
@@ -164,7 +166,9 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_address(I_addressContext ctx) {
-    _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+    if (ctx.IP_PREFIX() != null) { // ignore v6
+      _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+    }
   }
 
   @Override
@@ -293,6 +297,11 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
+  public void exitI_mtu(I_mtuContext ctx) {
+    _currentIface.setMtu(Integer.parseInt(ctx.number().getText()));
+  }
+
+  @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
     _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
@@ -371,6 +380,11 @@ public final class CumulusInterfacesConfigurationBuilder
         .getLoopback()
         .getAddresses()
         .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+  }
+
+  @Override
+  public void exitL_alias(L_aliasContext ctx) {
+    _config.getLoopback().setAlias(ctx.TEXT().getText());
   }
 
   @Override

@@ -45,6 +45,10 @@ public final class Interface {
   private @Nullable String _description;
   private @Nullable String _vrfTable;
   private @Nullable Integer _linkSpeed;
+
+  // TODO: this needs to move to VI (after concatenated parser is in)
+  private @Nullable Integer _mtu;
+
   private final @Nonnull String _name;
   private @Nullable Integer _vlanId;
   private @Nullable String _vrf;
@@ -132,6 +136,11 @@ public final class Interface {
     return _linkSpeed;
   }
 
+  @Nullable
+  public Integer getMtu() {
+    return _mtu;
+  }
+
   @Nonnull
   public String getName() {
     return _name;
@@ -209,6 +218,10 @@ public final class Interface {
 
   public void setLinkSpeed(int linkSpeed) {
     _linkSpeed = linkSpeed;
+  }
+
+  public void setMtu(int mtu) {
+    _mtu = mtu;
   }
 
   public void setVlanId(int vlanId) {

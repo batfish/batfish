@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_frr;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -73,6 +74,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_router_ospfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
@@ -370,6 +372,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
+  @Override
+  public void exitSb_network(Sb_networkContext ctx) {
+    _currentBgpVrf.addNetwork(Prefix.parse(ctx.IP_PREFIX().getText()));
   }
 
   @Override
@@ -735,9 +742,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSv_route(Sv_routeContext ctx) {
-    Ip nextHop = Ip.parse(ctx.ip_address().getText());
     Prefix network = Prefix.parse(ctx.prefix().getText());
-    _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHop, null));
+    Ip nextHopIp = null;
+    String nextHopInterface = null;
+    if (ctx.BLACKHOLE() != null) {
+      nextHopInterface = NULL_INTERFACE_NAME;
+    } else {
+      nextHopIp = Ip.parse(ctx.ip_address().getText());
+    }
+    _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHopIp, nextHopInterface));
   }
 
   @Override
