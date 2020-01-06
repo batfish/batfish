@@ -1,9 +1,13 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -28,6 +32,18 @@ public class AclLineEvaluator extends Evaluator implements GenericAclLineVisitor
   @Nullable
   public LineAction visit(AclLine line) {
     return line.accept(this);
+  }
+
+  @Override
+  public LineAction visitAclAclLine(AclAclLine aclAclLine) {
+    IpAccessList referencedAcl =
+        checkNotNull(
+            _availableAcls.get(aclAclLine.getAclName()),
+            "Reference to undefined IpAccessList %s",
+            aclAclLine.getAclName());
+    FilterResult referencedAclResult =
+        referencedAcl.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces);
+    return referencedAclResult.getMatchLine() == null ? null : referencedAclResult.getAction();
   }
 
   @Override

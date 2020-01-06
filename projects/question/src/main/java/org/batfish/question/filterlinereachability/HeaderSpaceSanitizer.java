@@ -2,6 +2,7 @@ package org.batfish.question.filterlinereachability;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpSpace;
@@ -37,6 +38,11 @@ public class HeaderSpaceSanitizer
   }
 
   /* AclLine visit methods */
+
+  @Override
+  public AclLine visitAclAclLine(AclAclLine aclAclLine) {
+    return aclAclLine;
+  }
 
   @Override
   public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
