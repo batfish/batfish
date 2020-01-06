@@ -588,11 +588,6 @@ STATIC
   'static'
 ;
 
-SUBNET_MASK
-:
-  F_SubnetMask
-;
-
 SUMMARY_ONLY
 :
   'summary-only'
@@ -646,6 +641,11 @@ NEXT_HOP
 ROUTE_REFLECTOR_CLIENT
 :
   'route-reflector-client'
+;
+
+SUBNET_MASK
+:
+  F_SubnetMask
 ;
 
 UINT8

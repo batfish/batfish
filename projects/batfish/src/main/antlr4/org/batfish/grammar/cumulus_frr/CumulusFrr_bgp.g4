@@ -243,7 +243,7 @@ sbnp_update_source
 
 sb_network
 :
-  NETWORK IP_PREFIX NEWLINE
+  NETWORK pfx = ipv4_prefix NEWLINE
 ;
 
 sbafi_neighbor

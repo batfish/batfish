@@ -38,7 +38,15 @@ si_ipv6
 
 si_no
 :
-   NO null_rest_of_line
+   NO
+   (
+      sino_ipv6
+   )
+;
+
+sino_ipv6
+:
+   IPV6 null_rest_of_line
 ;
 
 si_description

@@ -49,6 +49,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ipv4_prefixContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
@@ -189,6 +190,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Nonnull
   private Long toLong(Uint32Context ctx) {
     return Long.parseUnsignedLong(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Ipv4_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   @Override
@@ -376,7 +381,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSb_network(Sb_networkContext ctx) {
-    _currentBgpVrf.addNetwork(Prefix.parse(ctx.IP_PREFIX().getText()));
+    _currentBgpVrf.addNetwork(toPrefix(ctx.pfx));
   }
 
   @Override
