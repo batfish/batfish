@@ -184,6 +184,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       NetworkSnapshot snapshot,
       SearchFiltersParameters parameters) {
     Map<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
+    BDDPacket pkt = new BDDPacket();
     return specifiedAcls.entrySet().stream()
         .collect(
             ImmutableMap.toImmutableMap(
@@ -191,7 +192,7 @@ public final class SearchFiltersAnswerer extends Answerer {
                 e -> {
                   Configuration c = configs.get(e.getKey());
                   Set<String> aclNames = e.getValue().keySet();
-                  return new NonDiffConfigContext(c, aclNames, snapshot, _batfish, parameters);
+                  return new NonDiffConfigContext(c, aclNames, snapshot, _batfish, parameters, pkt);
                 }));
   }
 
@@ -207,6 +208,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       SearchFiltersParameters parameters) {
     Map<String, Configuration> baseConfigs = _batfish.loadConfigurations(snapshot);
     Map<String, Configuration> refConfigs = _batfish.loadConfigurations(reference);
+    BDDPacket pkt = new BDDPacket();
 
     Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), refAcls.keySet());
     ImmutableMap.Builder<String, DiffConfigContext> configContexts = ImmutableMap.builder();
@@ -217,7 +219,8 @@ public final class SearchFiltersAnswerer extends Answerer {
           Sets.intersection(baseAcls.get(hostname).keySet(), refAcls.get(hostname).keySet());
       configContexts.put(
           hostname,
-          new DiffConfigContext(c, refC, commonAcls, snapshot, reference, _batfish, parameters));
+          new DiffConfigContext(
+              c, refC, commonAcls, snapshot, reference, _batfish, parameters, pkt));
     }
     return configContexts.build();
   }
@@ -300,9 +303,10 @@ public final class SearchFiltersAnswerer extends Answerer {
         Set<String> specifiedAcls,
         NetworkSnapshot snapshot,
         IBatfish batfish,
-        SearchFiltersParameters parameters) {
+        SearchFiltersParameters parameters,
+        BDDPacket pkt) {
       _hostname = config.getHostname();
-      _pkt = new BDDPacket();
+      _pkt = pkt;
 
       SpecifierContext specifierContext = batfish.specifierContext(snapshot);
       Set<String> activeSources = getActiveSources(config, specifierContext, parameters);
@@ -323,7 +327,7 @@ public final class SearchFiltersAnswerer extends Answerer {
      */
     @Nonnull
     BDD getReachBdd(IpAccessList acl, SearchFiltersQuery query) {
-      return query.getMatchingBdd(acl, _ipAccessListToBdd).and(_prerequisiteBdd);
+      return query.getMatchingBdd(acl, _ipAccessListToBdd, _pkt).and(_prerequisiteBdd);
     }
 
     /** Returns a concrete flow satisfying the input {@link BDD}, if one exists. */
@@ -351,10 +355,11 @@ public final class SearchFiltersAnswerer extends Answerer {
         NetworkSnapshot snapshot,
         NetworkSnapshot refSnapshot,
         IBatfish batfish,
-        SearchFiltersParameters parameters) {
+        SearchFiltersParameters parameters,
+        BDDPacket pkt) {
       // Both configs should share the same hostname
       _hostname = config.getHostname();
-      _pkt = new BDDPacket();
+      _pkt = pkt;
 
       SpecifierContext specifierContext = batfish.specifierContext(snapshot);
       SpecifierContext refSpecifierContext = batfish.specifierContext(refSnapshot);
@@ -390,7 +395,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     @Nonnull
     BDD getReachBdd(IpAccessList acl, SearchFiltersQuery query, boolean reference) {
       IpAccessListToBdd ipAccessListToBdd = reference ? _refIpAccessListToBdd : _ipAccessListToBdd;
-      return query.getMatchingBdd(acl, ipAccessListToBdd).and(_prerequisiteBdd);
+      return query.getMatchingBdd(acl, ipAccessListToBdd, _pkt).and(_prerequisiteBdd);
     }
 
     /** Returns a concrete flow satisfying the input {@link BDD}, if one exists. */

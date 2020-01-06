@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -34,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 public class SearchFiltersAnswererDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
+  private static final BDDPacket PKT = new BDDPacket();
   private static final String HOSTNAME = "hostname";
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
@@ -89,7 +91,14 @@ public class SearchFiltersAnswererDifferentialTest {
 
     DiffConfigContext configContext =
         new DiffConfigContext(
-            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, _params);
+            config,
+            refConfig,
+            ImmutableSet.of(aclName),
+            snapshot,
+            reference,
+            batfish,
+            _params,
+            PKT);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
@@ -105,7 +114,8 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             snapshot,
             getBatfish(refConfig, config),
-            _params);
+            _params,
+            PKT);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
@@ -128,7 +138,14 @@ public class SearchFiltersAnswererDifferentialTest {
 
     DiffConfigContext configContext =
         new DiffConfigContext(
-            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, _params);
+            config,
+            refConfig,
+            ImmutableSet.of(aclName),
+            snapshot,
+            reference,
+            batfish,
+            _params,
+            PKT);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
@@ -144,7 +161,8 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             snapshot,
             getBatfish(refConfig, config),
-            _params);
+            _params,
+            PKT);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
@@ -182,7 +200,7 @@ public class SearchFiltersAnswererDifferentialTest {
     // can match line 1 because IFACE1 is specified
     DiffConfigContext configContext =
         new DiffConfigContext(
-            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params);
+            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params, PKT);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
@@ -198,7 +216,7 @@ public class SearchFiltersAnswererDifferentialTest {
     // can't match line 1 because IFACE2 is specified
     configContext =
         new DiffConfigContext(
-            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params);
+            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params, PKT);
     result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());

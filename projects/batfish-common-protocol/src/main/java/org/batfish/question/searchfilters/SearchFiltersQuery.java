@@ -2,6 +2,7 @@ package org.batfish.question.searchfilters;
 
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.IpAccessList;
 
@@ -16,5 +17,5 @@ public interface SearchFiltersQuery {
    * query is applicable to the ACL as per {@link SearchFiltersQuery#canQuery(IpAccessList)}.
    */
   @Nonnull
-  BDD getMatchingBdd(IpAccessList acl, IpAccessListToBdd ipAccessListToBdd);
+  BDD getMatchingBdd(IpAccessList acl, IpAccessListToBdd ipAccessListToBdd, BDDPacket pkt);
 }

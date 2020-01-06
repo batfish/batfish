@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -63,6 +64,7 @@ import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link org.batfish.question.searchfilters}. */
 public final class SearchFiltersTest {
+  private static final BDDPacket PKT = new BDDPacket();
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
 
@@ -171,7 +173,12 @@ public final class SearchFiltersTest {
 
   private static NonDiffConfigContext getConfigContextWithParams(SearchFiltersParameters params) {
     return new NonDiffConfigContext(
-        _config, _config.getIpAccessLists().keySet(), _batfish.getSnapshot(), _batfish, params);
+        _config,
+        _config.getIpAccessLists().keySet(),
+        _batfish.getSnapshot(),
+        _batfish,
+        params,
+        PKT);
   }
 
   @Test
@@ -417,7 +424,8 @@ public final class SearchFiltersTest {
             ImmutableSet.of(denyAllSourcesAcl.getName()),
             bf.getSnapshot(),
             bf,
-            _allLocationsParams);
+            _allLocationsParams,
+            PKT);
     Flow flow = configContext.getFlow(configContext.getReachBdd(denyAllSourcesAcl, PERMIT_QUERY));
     assertNull("Should not find permitted flow", flow);
   }
@@ -451,7 +459,8 @@ public final class SearchFiltersTest {
             ImmutableSet.of(denyAllButIface2.getName()),
             bf.getSnapshot(),
             bf,
-            _allLocationsParams);
+            _allLocationsParams,
+            PKT);
     Flow flow = configContext.getFlow(configContext.getReachBdd(denyAllButIface2, PERMIT_QUERY));
     assertNotNull("Should find permitted flow", flow);
     assertThat(flow, hasIngressInterface(IFACE2));
