@@ -59,7 +59,7 @@ eos_rb_af_ipv4_unicast
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
     | eos_rbafipv4_no
-//    | eos_rbafipv4u_network
+    | eos_rbafipv4u_network
 //    | eos_rbafipv4u_redistribute
   )*
 ;
@@ -135,6 +135,15 @@ eos_rbafipv4_no_neighbor
     | pg = variable
   )
   eos_rb_af_no_neighbor_common
+;
+
+eos_rbafipv4u_network
+:
+  NETWORK
+  (
+    eos_rbi_network4
+    | eos_rbi_network6
+  )
 ;
 
 eos_rb_af_ipv6

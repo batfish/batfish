@@ -566,10 +566,14 @@ public class AristaGrammarTest {
     }
     {
       Prefix prefix = Prefix.parse("1.1.3.0/24");
-      AristaBgpNetworkConfiguration network =
-          config.getAristaBgp().getDefaultVrf().getV4UnicastAf().getNetworks().get(prefix);
+      AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+      AristaBgpVrfIpv4UnicastAddressFamily v4UnicastAf = vrf.getV4UnicastAf();
+      AristaBgpNetworkConfiguration network = v4UnicastAf.getNetworks().get(prefix);
       assertThat(network, notNullValue());
       assertThat(network.getRouteMap(), equalTo("RM"));
+      // Ensure parser didn't go into "router bgp" context and stayed in "address family ipv4"
+      assertNull(vrf.getNextHopUnchanged());
+      assertTrue(v4UnicastAf.getNextHopUnchanged());
     }
   }
 
