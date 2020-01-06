@@ -185,7 +185,7 @@ eos_rb_af_neighbor_common
     eos_rbafnc_activate
 //    | eos_rbafnc_additional_paths
 //    | eos_rbafnc_graceful_restart
-//    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
   )
@@ -204,6 +204,11 @@ eos_rbafeb_next_hop_unchanged
 eos_rbafnc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbafnc_route_map
@@ -276,7 +281,7 @@ eos_rbi_bgp
     | eos_rbib_log_neighbor_changes
 //    | eos_rbib_missing_policy
 //    | eos_rbib_monitoring
-//    | eos_rbib_next_hop_unchanged
+    | eos_rbib_next_hop_unchanged
 //    | eos_rbib_redistribute_internal
 //    | eos_rbib_route
 //    | eos_rbib_route_reflector
@@ -399,6 +404,11 @@ eos_rbibl_range
 eos_rbib_log_neighbor_changes
 :
   LOG_NEIGHBOR_CHANGES NEWLINE
+;
+
+eos_rbib_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbi_default_metric

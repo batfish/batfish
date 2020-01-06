@@ -561,10 +561,12 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_redistributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafeb_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4_no_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4u_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv6u_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnonc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbi_default_metricContext;
@@ -584,6 +586,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_allowas_inContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_always_compare_medContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_cluster_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_enforce_first_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_limitContext;
@@ -2293,6 +2296,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbafeb_next_hop_unchanged(Eos_rbafeb_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrfAf.setNextHopUnchanged(true);
+  }
+
+  @Override
   public void enterEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
     if (ctx.v4 != null) {
       Ip address = toIp(ctx.v4);
@@ -2419,6 +2427,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_rbafnc_next_hop_unchanged(Eos_rbafnc_next_hop_unchangedContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setNextHopUnchanged(true);
+  }
+
+  @Override
   public void exitEos_rbafnc_route_map(Eos_rbafnc_route_mapContext ctx) {
     if (ctx.IN() != null) {
       _currentAristaBgpNeighborAddressFamily.setRouteMapIn(ctx.name.getText());
@@ -2515,6 +2528,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rbibl_limit(Eos_rbibl_limitContext ctx) {
     _currentAristaBgpVrf.setListenLimit(toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitEos_rbib_next_hop_unchanged(Eos_rbib_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrf.setNextHopUnchanged(true);
   }
 
   @Override

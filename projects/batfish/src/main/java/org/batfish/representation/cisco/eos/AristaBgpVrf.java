@@ -35,6 +35,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Integer _maxPaths;
   @Nullable private Integer _maxPathsEcmp;
   @Nonnull private final String _name;
+  @Nullable private Boolean _nextHopUnchanged;
 
   @Nonnull
   private final Map<AristaRedistributeType, AristaBgpRedistributionPolicy> _redistributionPolicies;
@@ -265,6 +266,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setMaxPathsEcmp(@Nullable Integer maxPathsEcmp) {
     _maxPathsEcmp = maxPathsEcmp;
+  }
+
+  @Nullable
+  public Boolean getNextHopUnchanged() {
+    return _nextHopUnchanged;
+  }
+
+  public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
+    _nextHopUnchanged = nextHopUnchanged;
   }
 
   @Nonnull
