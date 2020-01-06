@@ -896,7 +896,7 @@ public final class CumulusConversionsTest {
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
-            getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/31")),
+            getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/24")),
             new CumulusNcluConfiguration(),
             ospfVrf,
             ImmutableMap.of(),

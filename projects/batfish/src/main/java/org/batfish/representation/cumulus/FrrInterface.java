@@ -15,7 +15,7 @@ public class FrrInterface implements Serializable {
   private @Nullable String _alias;
   private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
-  private final @Nullable String _vrf;
+  private final @Nullable String _vrfName;
 
   private @Nullable OspfInterface _ospf;
 
@@ -23,9 +23,9 @@ public class FrrInterface implements Serializable {
     this(name, null);
   }
 
-  public FrrInterface(String name, @Nullable String vrf) {
+  public FrrInterface(String name, @Nullable String vrfName) {
     _name = name;
-    _vrf = vrf;
+    _vrfName = vrfName;
     _ipAddresses = new LinkedList<>();
   }
 
@@ -47,8 +47,8 @@ public class FrrInterface implements Serializable {
     _alias = alias;
   }
 
-  public @Nullable String getVrf() {
-    return _vrf;
+  public @Nullable String getVrfName() {
+    return _vrfName;
   }
 
   @Nullable

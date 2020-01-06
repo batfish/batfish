@@ -916,8 +916,7 @@ public final class CumulusConversions {
     CommonUtil.forEachWithIndex(
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
-            Comparator.nullsLast(Comparator.comparing(Function.identity())),
-            vsConfig.getVxlanIds()),
+            Comparator.nullsLast(Comparator.naturalOrder()), vsConfig.getVxlanIds()),
         (index, vni) -> {
           if (vni == null) {
             return;

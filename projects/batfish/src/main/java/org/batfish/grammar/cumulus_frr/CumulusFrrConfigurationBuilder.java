@@ -390,16 +390,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterS_interface(S_interfaceContext ctx) {
     String name = ctx.name.getText();
 
-    if (_frr.getInterfaces().get(name) != null) {
+    if (_frr.getInterfaces().containsKey(name)) {
       // this interface was already defined in the FRR file
-      String newVrf = ctx.VRF() != null ? ctx.vrf.getText() : DEFAULT_VRF_NAME;
-      String oldVrf = _frr.getInterfaces().get(name).getVrf();
-      if (!newVrf.equals(oldVrf)) {
+      String newVrfName = ctx.VRF() != null ? ctx.vrf.getText() : DEFAULT_VRF_NAME;
+      String oldVrfName = _frr.getInterfaces().get(name).getVrfName();
+      if (!newVrfName.equals(oldVrfName)) {
         warn(
             ctx,
             String.format(
                 "vrf %s of interface %s does not match previously-defined vrf %s",
-                newVrf, name, oldVrf));
+                newVrfName, name, oldVrfName));
         _currentInterface = new FrrInterface("dummy", "dummy");
         return;
       }
@@ -415,31 +415,31 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       // interface with non-default vrf
       // this is OK only if the VRF matches prior definition in the interfaces file or, if no prior
       // definition exists, the vrf is defined in FRR file
-      String vrf = ctx.vrf.getText();
+      String vrfName = ctx.vrf.getText();
       if (interfacesInterface != null) {
-        if (!vrf.equals(interfacesInterface.getVrf())) {
+        if (!vrfName.equals(interfacesInterface.getVrf())) {
           warn(
               ctx,
               String.format(
                   "vrf %s of interface %s does not match previously-defined vrf %s in interfaces file",
-                  vrf, name, interfacesInterface.getVrf()));
+                  vrfName, name, interfacesInterface.getVrf()));
           _currentInterface = new FrrInterface("dummy", "dummy");
           return;
         }
-        _currentInterface = _frr.getOrCreateInterface(name, vrf);
+        _currentInterface = _frr.getOrCreateInterface(name, vrfName);
         return;
       }
 
-      if (_frr.getVrfs().get(vrf) == null) {
+      if (!_frr.getVrfs().containsKey(vrfName)) {
         warn(
             ctx,
             String.format(
                 "vrf %s of interface %s has not been defined in FRR configuration file",
-                vrf, name));
+                vrfName, name));
         _currentInterface = new FrrInterface("dummy", "dummy");
         return;
       }
-      _currentInterface = _frr.getOrCreateInterface(name, vrf);
+      _currentInterface = _frr.getOrCreateInterface(name, vrfName);
       return;
     }
 
@@ -750,9 +750,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
     String ifaceName = ctx.name.getText();
-    InterfacesInterface interfacesIface =
-        _c.getInterfacesConfiguration().getInterfaces().get(ifaceName);
-    if (interfacesIface == null && !_frr.getInterfaces().containsKey(ifaceName)) {
+    if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
+        && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
           ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
       return;

@@ -62,7 +62,7 @@ import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.StaticRoute;
 
 /**
- * Populates an {@link CumulusInterfacesConfiguration} from a parse tree from {@link
+ * Populates {@link CumulusInterfacesConfiguration} from a parse tree from {@link
  * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser}.
  */
 public final class CumulusInterfacesConfigurationBuilder

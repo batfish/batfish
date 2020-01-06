@@ -72,7 +72,7 @@ public class CumulusConcatenatedConfigurationTest {
         .build()
         .initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(iface1.getName()));
-    assertEquals(c.getAllInterfaces().get(iface1.getName()).getVrfName(), iface1.getVrf());
+    assertEquals(c.getAllInterfaces().get(iface1.getName()).getVrfName(), iface1.getVrfName());
   }
 
   /** Missing super interfaces are included */

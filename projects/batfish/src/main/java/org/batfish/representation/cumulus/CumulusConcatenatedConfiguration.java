@@ -520,7 +520,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 org.batfish.datamodel.Interface.builder()
                     .setName(iface.getName())
                     .setOwner(c)
-                    .setVrf(getOrCreateVrf(c, iface.getVrf()))
+                    .setVrf(getOrCreateVrf(c, iface.getVrfName()))
                     .build());
 
     // initialize super interfaces of sub-interfaces if needed

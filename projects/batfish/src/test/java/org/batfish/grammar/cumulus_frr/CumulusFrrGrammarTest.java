@@ -1130,7 +1130,7 @@ public class CumulusFrrGrammarTest {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().keySet(), contains("swp1"));
-    assertThat(_frr.getInterfaces().get("swp1").getVrf(), equalTo("VRF"));
+    assertThat(_frr.getInterfaces().get("swp1").getVrfName(), equalTo("VRF"));
   }
 
   /** Interface has a vrf definition that does not match what we saw earlier */
@@ -1165,6 +1165,7 @@ public class CumulusFrrGrammarTest {
     assertThat(_frr.getInterfaces().get("swp1").getAlias(), equalTo("first"));
   }
 
+  /** Two interface definitions in FRR, with the second one missing explicit VRF */
   @Test
   public void testInterface_InterfaceVrfNotMatchWithinFrrSecondDefault() {
     _frr.getVrfs().put("VRF", new Vrf("VRF"));
