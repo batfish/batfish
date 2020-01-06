@@ -150,7 +150,8 @@ public final class TracerouteUtils {
       }
     }
 
-    return new FilterStep(new FilterStepDetail(filter.getName(), filterType), action);
+    return new FilterStep(
+        new FilterStepDetail(filter.getName(), filterType, inInterfaceName, currentFlow), action);
   }
 
   /**

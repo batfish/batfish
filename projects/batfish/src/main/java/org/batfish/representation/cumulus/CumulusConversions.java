@@ -1127,7 +1127,6 @@ public final class CumulusConversions {
         (ifaceName, iface) -> {
           Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(ifaceName);
           if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
-            // no ospf running on this interface
             return;
           }
 
@@ -1153,7 +1152,6 @@ public final class CumulusConversions {
       CumulusNodeConfiguration vsConfig, Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
-            // .map(vsIfaces::get)
             .filter(
                 iface -> {
                   Optional<OspfInterface> ospfOpt = vsConfig.getOspfInterface(iface);

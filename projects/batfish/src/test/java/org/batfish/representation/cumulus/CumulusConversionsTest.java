@@ -1141,6 +1141,21 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testAddOspfInterfaces_NoInterface() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+
+    Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+
+    assertNull(viIface.getOspfSettings());
+  }
+
+  @Test
   public void testComputeOspfProcess_HasArea() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
@@ -1165,6 +1180,15 @@ public final class CumulusConversionsTest {
 
     SortedMap<Long, OspfArea> areas =
         computeOspfAreas(ncluConfiguration, ImmutableList.of("iface"));
+    assertThat(areas, equalTo(ImmutableSortedMap.of()));
+  }
+
+  @Test
+  public void testComputeOspfProcess_NoInterface() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+
+    SortedMap<Long, OspfArea> areas =
+        computeOspfAreas(ImmutableList.of("iface"), ncluConfiguration.getInterfaces());
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
