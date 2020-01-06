@@ -2,6 +2,7 @@ package org.batfish.question.searchfilters;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -18,7 +19,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.question.searchfilters.SearchFiltersQuestion.Type;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
@@ -30,6 +30,26 @@ public class SearchFiltersQuestionTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   @Test
+  public void testJsonSerialization() throws IOException {
+    SearchFiltersQuestion q =
+        SearchFiltersQuestion.builder()
+            .setAction("deny")
+            .setFilterSpecifier("filter")
+            .setNodeSpecifier("node")
+            .setHeaders(PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build())
+            .setStartLocation("start")
+            .setComplementHeaderSpace(true)
+            .build();
+    SearchFiltersQuestion clone = BatfishObjectMapper.clone(q, SearchFiltersQuestion.class);
+    assertThat(clone.getQuery(), is(DenyQuery.INSTANCE));
+    assertThat(clone.getFilters(), equalTo(q.getFilters()));
+    assertThat(clone.getNodes(), equalTo(q.getNodes()));
+    assertThat(clone.getHeaderConstraints(), equalTo(q.getHeaderConstraints()));
+    assertThat(clone.getStartLocation(), equalTo(q.getStartLocation()));
+    assertThat(clone.getComplementHeaderSpace(), equalTo(q.getComplementHeaderSpace()));
+  }
+
+  @Test
   public void testDeserializationDefaultValues() throws IOException {
     String serialized =
         String.format("{\"class\":\"%s\"}", SearchFiltersQuestion.class.getCanonicalName());
@@ -37,7 +57,7 @@ public class SearchFiltersQuestionTest {
         BatfishObjectMapper.mapper().readValue(serialized, SearchFiltersQuestion.class);
 
     assertThat(q.getFilterSpecifier(), notNullValue());
-    assertThat(q.getType(), is(Type.PERMIT));
+    assertThat(q.getQuery(), is(PermitQuery.INSTANCE));
     assertThat(q.getNodesSpecifier(), notNullValue());
     assertThat(q.getDataPlane(), equalTo(false));
     assertThat(q.getNodes(), nullValue());
@@ -55,30 +75,27 @@ public class SearchFiltersQuestionTest {
               .map(Entry::getIpSpace)
               .collect(ImmutableList.toImmutableList()),
           hasItem(UniverseIpSpace.INSTANCE));
-      assertThat(q.getLineNumber(), nullValue());
     }
   }
 
   @Test
-  public void testSetQuery() {
+  public void testGenerateQuery() {
     SearchFiltersQuestion question = new SearchFiltersQuestion();
-    assertThat(question.getType(), is(Type.PERMIT));
-    assertThat(question.getLineNumber(), nullValue());
-
-    question = SearchFiltersQuestion.builder().setAction("deny").build();
-    assertThat(question.getType(), is(Type.DENY));
-    assertThat(question.getLineNumber(), nullValue());
-
-    question = SearchFiltersQuestion.builder().setAction("matchLine 5").build();
-    assertThat(question.getType(), is(Type.MATCH_LINE));
-    assertThat(question.getLineNumber(), is(5));
+    assertThat(question.getQuery(), is(PermitQuery.INSTANCE));
 
     question = SearchFiltersQuestion.builder().setAction("permit").build();
-    assertThat(question.getType(), is(Type.PERMIT));
-    assertThat(question.getLineNumber(), nullValue());
+    assertThat(question.getQuery(), is(PermitQuery.INSTANCE));
+
+    question = SearchFiltersQuestion.builder().setAction("deny").build();
+    assertThat(question.getQuery(), is(DenyQuery.INSTANCE));
+
+    question = SearchFiltersQuestion.builder().setAction("matchLine 5").build();
+    SearchFiltersQuery query = question.getQuery();
+    assertThat(query, instanceOf(MatchLineQuery.class));
+    assertThat(((MatchLineQuery) query).getLineNum(), is(5));
 
     exception.expect(BatfishException.class);
-    exception.expectMessage("Unrecognized query: foo");
+    exception.expectMessage("Unrecognized query type: foo");
     SearchFiltersQuestion.builder().setAction("foo").build();
   }
 
