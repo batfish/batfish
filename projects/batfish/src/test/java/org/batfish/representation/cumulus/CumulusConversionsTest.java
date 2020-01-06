@@ -1150,7 +1150,7 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
 
     assertNull(viIface.getOspfSettings());
   }
@@ -1188,7 +1188,7 @@ public final class CumulusConversionsTest {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(ImmutableList.of("iface"), ncluConfiguration.getInterfaces());
+        computeOspfAreas(ncluConfiguration, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
