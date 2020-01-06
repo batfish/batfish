@@ -32,3 +32,6 @@ router bgp 1
       neighbor 3.3.3.3 activate
       neighbor 3.3.3.33 activate
 
+  vrf vrf4
+    address-family ipv4
+      bgp next-hop-unchanged

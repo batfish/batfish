@@ -564,6 +564,11 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rb_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafeb_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4_no_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4u_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4ub_additional_pathsContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4ub_next_hopContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4ub_next_hop_unchangedContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4ub_redistribute_internalContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv4ub_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafipv6u_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_activateContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbafnc_next_hop_unchangedContext;
@@ -2366,6 +2371,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_rb_af_ipv6_unicast(Eos_rb_af_ipv6_unicastContext ctx) {
     _currentAristaBgpVrfAf = null;
+  }
+
+  @Override
+  public void exitEos_rbafipv4ub_additional_paths(Eos_rbafipv4ub_additional_pathsContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_rbafipv4ub_next_hop(Eos_rbafipv4ub_next_hopContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_rbafipv4ub_next_hop_unchanged(Eos_rbafipv4ub_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrfAf.setNextHopUnchanged(true);
+  }
+
+  @Override
+  public void exitEos_rbafipv4ub_redistribute_internal(
+      Eos_rbafipv4ub_redistribute_internalContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_rbafipv4ub_route(Eos_rbafipv4ub_routeContext ctx) {
+    todo(ctx);
   }
 
   @Override
