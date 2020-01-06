@@ -58,6 +58,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -2380,5 +2381,98 @@ public class TracerouteEngineImplTest {
                     SOURCE_NAT,
                     ImmutableSortedSet.of(flowDiff(PortField.SOURCE, srcPort, poolPort))),
                 StepAction.TRANSFORMED)));
+  }
+
+  @Test
+  public void testFilterStep() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder();
+
+    // c1
+    Configuration c1 = cb.build();
+    Vrf v1 = vb.setOwner(c1).build();
+    // permits everything
+    IpAccessList outgoingFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setName("outgoingAcl")
+            .setLines(ImmutableList.of(ExprAclLine.accepting(AclLineMatchExprs.TRUE)))
+            .build();
+    ib.setOwner(c1)
+        .setVrf(v1)
+        .setOutgoingFilter(outgoingFilter)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .build();
+
+    // c2
+    Configuration c2 = cb.build();
+    Vrf v2 = vb.setOwner(c2).build();
+    // denies all
+    IpAccessList postTransformationFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setName("postTransformationAcl")
+            .setLines(ImmutableList.of())
+            .build();
+    Interface i2 =
+        ib.setOwner(c2)
+            .setVrf(v2)
+            .setIncomingTransformation(
+                always().apply(assignSourceIp(Ip.parse("10.0.0.1"), Ip.parse("10.0.0.2"))).build())
+            .setPostTransformationIncomingFilter(postTransformationFilter)
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
+            .build();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    b.computeDataPlane(b.getSnapshot());
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.3")).build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        b.buildFlows(b.getSnapshot(), ImmutableSet.of(flow), false);
+    Trace trace = flowTraces.get(flow).iterator().next();
+
+    assertThat(trace.getHops(), hasSize(2));
+
+    // hop 0
+    {
+      List<Step<?>> steps = trace.getHops().get(0).getSteps();
+      assertThat(steps, hasSize(4));
+
+      assertTrue(OriginateStep.class.isInstance(steps.get(0)));
+      assertTrue(RoutingStep.class.isInstance(steps.get(1)));
+      assertTrue(FilterStep.class.isInstance(steps.get(2)));
+      assertTrue(ExitOutputIfaceStep.class.isInstance(steps.get(3)));
+
+      FilterStep filterStep = (FilterStep) steps.get(2);
+      assertThat(filterStep.getAction(), equalTo(StepAction.PERMITTED));
+      assertThat(filterStep.getDetail().getFilter(), equalTo("outgoingAcl"));
+      assertThat(filterStep.getDetail().getType(), equalTo(FilterType.EGRESS_FILTER));
+      assertNull(filterStep.getDetail().getInputInterface());
+      assertThat(filterStep.getDetail().getFlow(), equalTo(flow));
+    }
+
+    // hop 1
+    {
+      List<Step<?>> steps = trace.getHops().get(1).getSteps();
+      assertThat(steps, hasSize(3));
+
+      assertTrue(EnterInputIfaceStep.class.isInstance(steps.get(0)));
+      assertTrue(TransformationStep.class.isInstance(steps.get(1)));
+      assertTrue(FilterStep.class.isInstance(steps.get(2)));
+
+      FilterStep filterStep = (FilterStep) steps.get(2);
+      assertThat(filterStep.getAction(), equalTo(StepAction.DENIED));
+      assertThat(filterStep.getDetail().getFilter(), equalTo("postTransformationAcl"));
+      assertThat(
+          filterStep.getDetail().getType(), equalTo(FilterType.POST_TRANSFORMATION_INGRESS_FILTER));
+      assertThat(filterStep.getDetail().getInputInterface(), equalTo(i2.getName()));
+      assertThat(
+          filterStep.getDetail().getFlow(),
+          equalTo(flow.toBuilder().setSrcIp(Ip.parse("10.0.0.1")).build()));
+    }
   }
 }

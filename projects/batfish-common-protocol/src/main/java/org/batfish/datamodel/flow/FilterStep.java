@@ -43,22 +43,35 @@ public class FilterStep extends Step<FilterStepDetail> {
   public static final class FilterStepDetail {
     private static final String PROP_FILTER = "filter";
     private static final String PROP_TYPE = "type";
+    private static final String PROP_INPUT_INTERFACE = "inputInterface";
+    private static final String PROP_FLOW = "flow";
 
     private @Nonnull String _filter;
     private @Nonnull FilterType _type;
+    private @Nullable String _inputInterface;
+    private @Nonnull Flow _flow;
 
-    public FilterStepDetail(@Nonnull String filter, @Nonnull FilterType type) {
+    public FilterStepDetail(
+        @Nonnull String filter,
+        @Nonnull FilterType type,
+        @Nullable String inputInterface,
+        @Nonnull Flow flow) {
       _filter = filter;
       _type = type;
+      _inputInterface = inputInterface;
+      _flow = flow;
     }
 
     @JsonCreator
     private static FilterStepDetail jsonCreator(
         @JsonProperty(PROP_FILTER) @Nullable String filter,
-        @JsonProperty(PROP_TYPE) @Nullable FilterType type) {
+        @JsonProperty(PROP_TYPE) @Nullable FilterType type,
+        @JsonProperty(PROP_INPUT_INTERFACE) @Nullable String inputInterface,
+        @JsonProperty(PROP_FLOW) @Nullable Flow flow) {
       checkArgument(filter != null, "Missing %s", PROP_FILTER);
       checkArgument(type != null, "Missing %s", PROP_TYPE);
-      return new FilterStepDetail(filter, type);
+      checkArgument(flow != null, "Missing %s", PROP_FLOW);
+      return new FilterStepDetail(filter, type, inputInterface, flow);
     }
 
     @JsonProperty(PROP_FILTER)
@@ -71,6 +84,18 @@ public class FilterStep extends Step<FilterStepDetail> {
     @Nonnull
     public FilterType getType() {
       return _type;
+    }
+
+    @JsonProperty(PROP_INPUT_INTERFACE)
+    @Nullable
+    public String getInputInterface() {
+      return _inputInterface;
+    }
+
+    @JsonProperty(PROP_FLOW)
+    @Nonnull
+    public Flow getFlow() {
+      return _flow;
     }
   }
 
