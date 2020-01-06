@@ -67,13 +67,44 @@ eos_rb_af_ipv4_unicast
 eos_rbafipv4u_bgp
 :
   BGP
-  null_rest_of_line
-//  (
-//    eos_rbafipv4b_additional_paths
-//    | eos_rbafipv4b_next_hop
-//    | eos_rbafipv4b_redistribute_internal
-//    | eos_rbafipv4b_route
-//  )
+  (
+    eos_rbafipv4ub_additional_paths
+    | eos_rbafipv4ub_next_hop
+    | eos_rbafipv4ub_next_hop_unchanged
+    | eos_rbafipv4ub_redistribute_internal
+    | eos_rbafipv4ub_route
+  )
+;
+
+eos_rbafipv4ub_additional_paths
+:
+  ADDITIONAL_PATHS
+  (
+    INSTALL
+    | RECEIVE
+    | SEND ANY
+  )
+  NEWLINE
+;
+
+eos_rbafipv4ub_next_hop
+:
+  NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
+;
+
+eos_rbafipv4ub_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafipv4ub_redistribute_internal
+:
+  REDISTRIBUTE_INTERNAL NEWLINE
+;
+
+eos_rbafipv4ub_route
+:
+  ROUTE INSTALL name = variable NEWLINE
 ;
 
 eos_rbafipv4u_neighbor
