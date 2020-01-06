@@ -1026,6 +1026,10 @@ public class AristaGrammarTest {
       assertTrue(vrf.getV4UnicastAf().getNeighbor(Ip.parse("3.3.3.3")).getNextHopUnchanged());
       assertNull(vrf.getV4UnicastAf().getNeighbor(Ip.parse("3.3.3.33")).getNextHopUnchanged());
     }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf4");
+      assertTrue(vrf.getV4UnicastAf().getNextHopUnchanged());
+    }
   }
 
   @Test
