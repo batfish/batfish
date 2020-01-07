@@ -15,7 +15,7 @@ route-map deny-all deny 10
 route-map permit-all permit 10
 !
 router bgp 3
- bgp router-id 10.3.3.3
+ router-id 10.3.3.3
  neighbor 10.0.23.2 remote-as 2
  neighbor 10.0.23.2 activate
  neighbor 10.0.23.2 route-map permit-all in
