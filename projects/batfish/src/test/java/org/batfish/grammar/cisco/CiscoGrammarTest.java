@@ -4176,7 +4176,8 @@ public final class CiscoGrammarTest {
             hostname,
             containsString(
                 String.format(
-                    "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
+                    "No remote-as configured for BGP neighbor %s in vrf default",
+                    neighborWithoutRemoteAs.getStartIp()))));
 
     /*
      * Also ensure that default value of allowRemoteAsOut is true.
