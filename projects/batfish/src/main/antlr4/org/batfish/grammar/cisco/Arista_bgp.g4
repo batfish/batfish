@@ -960,7 +960,7 @@ eos_rbir_ospf
     (
       INTERNAL
       | EXTERNAL
-      | (NSSA_EXTERNAL DEC?)
+      | (NSSA_EXTERNAL nssa_type = DEC?)
     )
   )?
   (ROUTE_MAP rm = variable)?
@@ -975,7 +975,7 @@ eos_rbir_ospf3
     (
       INTERNAL
       | EXTERNAL
-      | (NSSA_EXTERNAL DEC?)
+      | (NSSA_EXTERNAL nssa_type = DEC?)
     )
   )?
   (ROUTE_MAP rm = variable)?

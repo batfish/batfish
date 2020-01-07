@@ -38,6 +38,12 @@ import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInter
 import static org.batfish.representation.cisco.CiscoConversions.toOspfNetworkType;
 import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.cisco.eos.AristaRedistributeType.CONNECTED;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_EXTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_INTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.batfish.representation.cisco.eos.AristaRedistributeType.STATIC;
 
 import com.google.common.base.Functions;
@@ -204,6 +210,7 @@ import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.cisco.eos.AristaBgpVrf;
 import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
+import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
@@ -1785,7 +1792,50 @@ public final class CiscoConfiguration extends VendorConfiguration {
       exportConditions.add(connected);
     }
 
-    // TODO: Export OSPF routes that should be redistributed.
+    // Export OSPF routes that should be redistributed, to the best of our abilities in VI.
+    // Warn and skip if our VI model doesn't allow a particular type of redistribution
+    Map<AristaRedistributeType, MatchProtocol> protocolConversions =
+        ImmutableMap.of(
+            OSPF,
+                new MatchProtocol(
+                    RoutingProtocol.OSPF,
+                    RoutingProtocol.OSPF_IA,
+                    RoutingProtocol.OSPF_E1,
+                    RoutingProtocol.OSPF_E2),
+            OSPF_INTERNAL, new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA),
+            OSPF_EXTERNAL, new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2));
+
+    for (AristaRedistributeType type :
+        new AristaRedistributeType[] {
+          OSPF,
+          OSPF_INTERNAL,
+          OSPF_EXTERNAL,
+          OSPF_NSSA_EXTERNAL,
+          OSPF_NSSA_EXTERNAL_TYPE_1,
+          OSPF_NSSA_EXTERNAL_TYPE_2
+        }) {
+      if (protocolConversions.get(type) == null) {
+        _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
+        continue;
+      }
+      AristaBgpRedistributionPolicy ospfPolicy =
+          ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(type);
+      if (ospfPolicy != null) {
+        BooleanExpr filterByRouteMap =
+            Optional.ofNullable(ospfPolicy.getRouteMap())
+                .filter(_routeMaps::containsKey)
+                .<BooleanExpr>map(CallExpr::new)
+                .orElse(BooleanExprs.TRUE);
+        List<BooleanExpr> conditions =
+            ImmutableList.of(
+                protocolConversions.get(type),
+                // TODO redistributeDefaultRoute,
+                bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
+        Conjunction ospf = new Conjunction(conditions);
+        ospf.setComment(String.format("Redistribute %s routes into BGP", type));
+        exportConditions.add(ospf);
+      }
+    }
 
     // Now we add all the per-network export policies.
     if (ipv4af != null) {

@@ -17,6 +17,12 @@ import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARIST
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_EXTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_INTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -65,6 +71,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType1Route;
+import org.batfish.datamodel.OspfExternalType2Route;
+import org.batfish.datamodel.OspfInterAreaRoute;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -630,6 +640,123 @@ public class AristaGrammarTest {
               AristaRedistributeType.STATIC,
               new AristaBgpRedistributionPolicy(AristaRedistributeType.STATIC, "RM2")));
     }
+  }
+
+  @Test
+  public void testRedistributeOspfExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_redistribute_ospf");
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf1");
+      assertThat(
+          vrf.getRedistributionPolicies().get(OSPF),
+          equalTo(new AristaBgpRedistributionPolicy(OSPF, "ALLOW_10")));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf2");
+      assertThat(
+          vrf.getRedistributionPolicies().get(OSPF_INTERNAL),
+          equalTo(new AristaBgpRedistributionPolicy(OSPF_INTERNAL, "ALLOW_10")));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf3");
+      assertThat(
+          vrf.getRedistributionPolicies().get(OSPF_EXTERNAL),
+          equalTo(new AristaBgpRedistributionPolicy(OSPF_EXTERNAL, "ALLOW_10")));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf4");
+      assertThat(
+          vrf.getRedistributionPolicies().get(OSPF_NSSA_EXTERNAL),
+          equalTo(new AristaBgpRedistributionPolicy(OSPF_NSSA_EXTERNAL, "ALLOW_10")));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf5");
+      assertThat(
+          vrf.getRedistributionPolicies().get(OSPF_NSSA_EXTERNAL_TYPE_1),
+          equalTo(new AristaBgpRedistributionPolicy(OSPF_NSSA_EXTERNAL_TYPE_1, "ALLOW_10")));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf6");
+      assertThat(
+          vrf.getRedistributionPolicies().get(OSPF_NSSA_EXTERNAL_TYPE_2),
+          equalTo(new AristaBgpRedistributionPolicy(OSPF_NSSA_EXTERNAL_TYPE_2, "ALLOW_10")));
+    }
+  }
+
+  @Test
+  public void testRedistributeOspfConversion() {
+    Configuration config = parseConfig("arista_bgp_redistribute_ospf");
+    Prefix prefix = Prefix.parse("10.1.1.0/24");
+    OspfIntraAreaRoute intra = OspfIntraAreaRoute.builder().setNetwork(prefix).build();
+    OspfInterAreaRoute inter = OspfInterAreaRoute.builder().setNetwork(prefix).setArea(0).build();
+    OspfExternalType1Route ext1 =
+        (OspfExternalType1Route)
+            OspfExternalType1Route.builder()
+                .setNetwork(prefix)
+                .setLsaMetric(0)
+                .setArea(0)
+                .setCostToAdvertiser(1)
+                .setAdvertiser("node")
+                .build();
+    OspfExternalType2Route ext2 =
+        (OspfExternalType2Route)
+            OspfExternalType2Route.builder()
+                .setNetwork(prefix)
+                .setLsaMetric(0)
+                .setArea(0)
+                .setAdvertiser("node")
+                .setCostToAdvertiser(1)
+                .build();
+    Builder builder = Bgpv4Route.builder();
+    {
+      String policyName =
+          config
+              .getVrfs()
+              .get("vrf1")
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.parse("1.1.1.1/32"))
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicy();
+      RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
+      assertTrue(policy.process(intra, builder, Direction.OUT));
+      assertTrue(policy.process(inter, builder, Direction.OUT));
+      assertTrue(policy.process(ext1, builder, Direction.OUT));
+      assertTrue(policy.process(ext2, builder, Direction.OUT));
+    }
+    {
+      String policyName =
+          config
+              .getVrfs()
+              .get("vrf2")
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.parse("2.2.2.2/32"))
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicy();
+      RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
+      assertTrue(policy.process(intra, builder, Direction.OUT));
+      assertTrue(policy.process(inter, builder, Direction.OUT));
+      assertFalse(policy.process(ext1, builder, Direction.OUT));
+      assertFalse(policy.process(ext2, builder, Direction.OUT));
+    }
+    {
+      String policyName =
+          config
+              .getVrfs()
+              .get("vrf3")
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Prefix.parse("3.3.3.3/32"))
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicy();
+      RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
+      assertFalse(policy.process(intra, builder, Direction.OUT));
+      assertFalse(policy.process(inter, builder, Direction.OUT));
+      assertTrue(policy.process(ext1, builder, Direction.OUT));
+      assertTrue(policy.process(ext2, builder, Direction.OUT));
+    }
+    // TODO: support for nssa-external variants
   }
 
   @Test
