@@ -6,7 +6,6 @@ import static com.google.common.base.Predicates.not;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
-import static org.batfish.datamodel.ExprAclLine.takingExplicitActionsOf;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -61,6 +60,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -1231,18 +1231,25 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (sharedGatewayOptional.isPresent()) {
       Vsys sharedGateway = sharedGatewayOptional.get();
       String sgName = sharedGateway.getName();
-      takingExplicitActionsOf(computeOutgoingFilterName(computeObjectName(sgName, sgName)))
-          .forEach(aclLines::add);
+      String outgoingFilterName = computeOutgoingFilterName(computeObjectName(sgName, sgName));
+      aclLines.add(
+          new AclAclLine(
+              String.format("Match restrictions for shared gateway %s", sgName),
+              outgoingFilterName));
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               true, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
-        takingExplicitActionsOf(
-                computeOutgoingFilterName(
-                    computeObjectName(zone.getVsys().getName(), zone.getName())))
-            .forEach(aclLines::add);
+        String zoneFilterName =
+            computeOutgoingFilterName(computeObjectName(zone.getVsys().getName(), zone.getName()));
+        aclLines.add(
+            new AclAclLine(
+                String.format(
+                    "Match restrictions for exiting zone %s in vsys %s",
+                    zone.getName(), zone.getVsys().getName()),
+                zoneFilterName));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
