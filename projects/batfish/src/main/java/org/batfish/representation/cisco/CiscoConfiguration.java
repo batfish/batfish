@@ -143,6 +143,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -1649,6 +1650,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       tieBreaker = BgpTieBreaker.CLUSTER_LIST_LENGTH;
     }
     newBgpProcess.setTieBreaker(tieBreaker);
+
+    // If confederations are present, convert
+    if (bgpVrf.getConfederationIdentifier() != null) {
+      LongSpace peers =
+          firstNonNull(
+              bgpVrf.getConfederationPeers(),
+              LongSpace.of(firstNonNull(bgpVrf.getLocalAs(), bgpGlobal.getAsn())));
+      newBgpProcess.setConfederation(
+          // Assuming peers is a small space/set in most configs, so safe to enumerate
+          new BgpConfederation(bgpVrf.getConfederationIdentifier(), peers.enumerate()));
+    }
 
     // Process vrf-level address family configuration, such as export policy.
     if (bgpVrf.getDefaultIpv4Unicast()) {
