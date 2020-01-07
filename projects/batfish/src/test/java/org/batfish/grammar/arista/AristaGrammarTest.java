@@ -1180,4 +1180,39 @@ public class AristaGrammarTest {
           containsInAnyOrder((1L << 16) + 1, (1L << 16) + 2, (3L << 16) + 3, 44L));
     }
   }
+
+  @Test
+  public void testEvpnImportPolicyExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_evpn_import_policy");
+    AristaBgpNeighborAddressFamily neighbor =
+        config.getAristaBgp().getDefaultVrf().getEvpnAf().getNeighbor(Ip.parse("2.2.2.2"));
+    assertThat(neighbor.getRouteMapIn(), equalTo("ALLOW_10"));
+  }
+
+  @Test
+  public void testEvpnImportPolicyConversion() {
+    Configuration config = parseConfig("arista_bgp_evpn_import_policy");
+    String policyName =
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("2.2.2.2/32"))
+            .getEvpnAddressFamily()
+            .getImportPolicy();
+    RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
+
+    Builder builder =
+        Bgpv4Route.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setAdmin(1)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP);
+
+    Bgpv4Route acceptRoute = builder.setNetwork(Prefix.parse("10.1.1.0/24")).build();
+    Bgpv4Route denyRoute = builder.setNetwork(Prefix.parse("240.1.1.0/24")).build();
+    assertTrue(policy.processBgpRoute(acceptRoute, Bgpv4Route.builder(), null, Direction.IN));
+    assertFalse(policy.processBgpRoute(denyRoute, Bgpv4Route.builder(), null, Direction.IN));
+  }
 }

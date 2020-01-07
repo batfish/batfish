@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_evpn_import_policy
+!
+router bgp 1
+  router-id 1.2.3.4
+  neighbor 2.2.2.2 remote-as 2
+
+  address-family evpn
+    neighbor 2.2.2.2 activate
+    neighbor 2.2.2.2 route-map ALLOW_10 in
+!
+ip prefix-list ALLOW_10 seq 10 permit 10.0.0.0/8 ge 8
+!
+route-map ALLOW_10 permit 10
+   match ip address prefix-list ALLOW_10
