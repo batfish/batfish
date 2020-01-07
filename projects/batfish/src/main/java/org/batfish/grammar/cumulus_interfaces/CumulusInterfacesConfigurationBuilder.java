@@ -13,7 +13,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -22,7 +21,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.UnrecognizedLineToken;
-import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_address_virtualContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasContext;
@@ -54,33 +52,31 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoCont
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
-import org.batfish.representation.cumulus.Bridge;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.StaticRoute;
-import org.batfish.representation.cumulus_interfaces.Converter;
-import org.batfish.representation.cumulus_interfaces.Interface;
-import org.batfish.representation.cumulus_interfaces.Interfaces;
 
 /**
- * Populates an {@link Interfaces} from a parse tree from {@link
+ * Populates {@link CumulusInterfacesConfiguration} from a parse tree from {@link
  * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser}.
  */
 public final class CumulusInterfacesConfigurationBuilder
     extends CumulusInterfacesParserBaseListener {
-  private final CumulusNcluConfiguration _config;
-  private final Interfaces _interfaces = new Interfaces();
+  private final CumulusConcatenatedConfiguration _config;
 
   private final CumulusInterfacesCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  private Interface _currentIface;
+  private InterfacesInterface _currentIface;
   private @Nullable String _currentIfaceName;
 
   public CumulusInterfacesConfigurationBuilder(
-      CumulusNcluConfiguration config,
+      CumulusConcatenatedConfiguration config,
       CumulusInterfacesCombinedParser parser,
       String text,
       Warnings w) {
@@ -97,8 +93,8 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @VisibleForTesting
-  Interfaces getInterfaces() {
-    return _interfaces;
+  CumulusConcatenatedConfiguration getConfig() {
+    return _config;
   }
 
   @Override
@@ -134,7 +130,7 @@ public final class CumulusInterfacesConfigurationBuilder
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }
-      _config.getLoopback().setConfigured(true);
+      _config.getInterfacesConfiguration().getLoopback().setConfigured(true);
       _config.defineStructure(
           CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, ctx);
       _config.referenceStructure(
@@ -143,14 +139,14 @@ public final class CumulusInterfacesConfigurationBuilder
           CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
           ctx.getStart().getLine());
     } else if (ctx.STATIC() != null) {
-      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+      _currentIface = _config.getInterfacesConfiguration().createOrGetInterface(_currentIfaceName);
     } else if (ctx.DHCP() != null) {
       // We are not assigning any address to this interface, so it won't really be usable unless
       // another address is explicitly configured
-      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+      _currentIface = _config.getInterfacesConfiguration().createOrGetInterface(_currentIfaceName);
     } else if (ctx.MANUAL() != null) {
       // 'manual' creates an interface without an IP address
-      _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+      _currentIface = _config.getInterfacesConfiguration().createOrGetInterface(_currentIfaceName);
     } else {
       _w.addWarning(ctx, ctx.getStart().getText(), _parser, "syntax is not supported now");
     }
@@ -159,7 +155,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void enterSi_no_inet(Si_no_inetContext ctx) {
     checkArgument(_currentIfaceName != null, "not find interface name");
-    _currentIface = _interfaces.createOrGetInterface(_currentIfaceName);
+    _currentIface = _config.getInterfacesConfiguration().createOrGetInterface(_currentIfaceName);
   }
 
   @Override
@@ -368,6 +364,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitL_address(L_addressContext ctx) {
     _config
+        .getInterfacesConfiguration()
         .getLoopback()
         .getAddresses()
         .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
@@ -375,13 +372,16 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitL_clagd_vxlan_anycast_ip(L_clagd_vxlan_anycast_ipContext ctx) {
-    _config.getLoopback().setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _config
+        .getInterfacesConfiguration()
+        .getLoopback()
+        .setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
   public void exitS_auto(S_autoContext ctx) {
     String name = ctx.interface_name().getText();
-    _interfaces.setAuto(name);
+    _config.getInterfacesConfiguration().setAuto(name);
   }
 
   @Override
@@ -401,44 +401,6 @@ public final class CumulusInterfacesConfigurationBuilder
           ctx.getStart().getLine());
       _currentIface = null;
       _currentIfaceName = null;
-    }
-  }
-
-  @Override
-  public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctxt) {
-    Converter converter = new Converter(_interfaces, _w);
-
-    try {
-      _config.setBonds(converter.convertBonds());
-    } catch (BatfishException e) {
-      _w.redFlag("Error converting bonds to vendor-specific model");
-    }
-
-    Bridge bridge = converter.convertBridge();
-    _config.setBridge(bridge != null ? bridge : new Bridge());
-
-    try {
-      _config.setInterfaces(converter.convertInterfaces());
-    } catch (BatfishException e) {
-      _w.redFlag("Error converting interfaces to vendor-specific model");
-    }
-
-    try {
-      _config.setVlans(converter.convertVlans());
-    } catch (BatfishException e) {
-      _w.redFlag("Error converting vlans to vendor-specific model");
-    }
-
-    try {
-      _config.setVrfs(converter.convertVrfs());
-    } catch (BatfishException e) {
-      _w.redFlag("Error converting vrfs to vendor-specific model");
-    }
-
-    try {
-      _config.setVxlans(converter.convertVxlans());
-    } catch (BatfishException e) {
-      _w.redFlag("Error converting vxlans to vendor-specific model");
     }
   }
 

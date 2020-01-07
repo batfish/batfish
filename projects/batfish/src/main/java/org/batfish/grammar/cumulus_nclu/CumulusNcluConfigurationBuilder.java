@@ -7,6 +7,9 @@ import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBA
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BOND_SLAVE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.NET_ADD_INTERFACE;
+import static org.batfish.representation.cumulus.InterfacesInterface.PHYSICAL_INTERFACE_PATTERN;
+import static org.batfish.representation.cumulus.InterfacesInterface.SUBINTERFACE_PATTERN;
+import static org.batfish.representation.cumulus.InterfacesInterface.VLAN_INTERFACE_PATTERN;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.BoundType;
@@ -191,10 +194,6 @@ import org.batfish.representation.cumulus.Vxlan;
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
-  private static final Pattern PHYSICAL_INTERFACE_PATTERN =
-      Pattern.compile("(swp[0-9]+(s[0-9])?)|(eth[0-9]+)");
-  private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
-  private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
   private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
 
   private static int toInteger(Uint16Context ctx) {

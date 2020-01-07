@@ -12,7 +12,6 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cumulus_frr",
         "//projects/batfish/src/main/java/org/batfish/representation/cumulus",
-        "//projects/batfish/src/main/java/org/batfish/representation/cumulus_interfaces",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
