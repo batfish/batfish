@@ -648,6 +648,8 @@ public class AristaGrammarTest {
       BgpActivePeerConfig neighbor =
           c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ip.toPrefix());
       assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
+      assertTrue(
+          neighbor.getEvpnAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut());
       assertThat(
           neighbor.getEvpnAddressFamily().getL2VNIs(),
           equalTo(
