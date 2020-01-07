@@ -144,7 +144,6 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
     @Override
     @Nonnull
     public BgpActivePeerConfig build() {
-      checkValid();
       BgpActivePeerConfig bgpPeerConfig =
           new BgpActivePeerConfig(
               _appliedRibGroup,
