@@ -278,6 +278,12 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_EXTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_INTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
+import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -2973,11 +2979,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_rbir_ospf(Eos_rbir_ospfContext ctx) {
-    todo(ctx);
     String routeMap = ctx.rm == null ? null : ctx.rm.getText();
     if (routeMap != null) {
       _configuration.referenceStructure(
           ROUTE_MAP, routeMap, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
+    }
+    if (ctx.MATCH() == null) {
+      _currentAristaBgpVrf.addRedistributionPolicy(OSPF, routeMap);
+    } else {
+      if (ctx.INTERNAL() != null) {
+        _currentAristaBgpVrf.addRedistributionPolicy(OSPF_INTERNAL, routeMap);
+      } else if (ctx.EXTERNAL() != null) {
+        _currentAristaBgpVrf.addRedistributionPolicy(OSPF_EXTERNAL, routeMap);
+      } else if (ctx.NSSA_EXTERNAL() != null) {
+        if (ctx.nssa_type == null) {
+          _currentAristaBgpVrf.addRedistributionPolicy(OSPF_NSSA_EXTERNAL, routeMap);
+        } else if (toInteger(ctx.nssa_type) == 1) {
+          _currentAristaBgpVrf.addRedistributionPolicy(OSPF_NSSA_EXTERNAL_TYPE_1, routeMap);
+        } else if (toInteger(ctx.nssa_type) == 2) {
+          _currentAristaBgpVrf.addRedistributionPolicy(OSPF_NSSA_EXTERNAL_TYPE_2, routeMap);
+        } else {
+          _w.addWarning(
+              ctx,
+              getFullText(ctx),
+              _parser,
+              String.format("Unknown OSPF nssa-external route type: %s", ctx.nssa_type.getText()));
+        }
+      }
     }
   }
 

@@ -22,6 +22,8 @@ public enum AristaRedistributeType {
   OSPF_INTERNAL,
   /** Routes external to the AS, but imported from OSPF */
   OSPF_EXTERNAL,
+  /** All OSPF NSSA external routes */
+  OSPF_NSSA_EXTERNAL,
   /** Type 1 OSPF NSSA external routes */
   OSPF_NSSA_EXTERNAL_TYPE_1,
   /** Type 2 OSPF NSSA external routes */
