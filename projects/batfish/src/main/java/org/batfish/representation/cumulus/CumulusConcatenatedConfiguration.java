@@ -351,6 +351,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   void populateLoopbackProperties(org.batfish.datamodel.Interface viLoopback) {
     Loopback vsLoopback = _interfacesConfiguration.getLoopback();
 
+    viLoopback.setDescription(vsLoopback.getAlias());
+
     // addresses in interface configuration, if present, have been transferred via
     // populateCommonProperties. we need to take care of other sources of addresses.
 
@@ -441,7 +443,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     viIface.setMlagId(iface.getClagId());
   }
 
-  private void populateCommonInterfaceProperties(
+  @VisibleForTesting
+  void populateCommonInterfaceProperties(
       InterfacesInterface vsIface, org.batfish.datamodel.Interface viIface) {
     // addresses
     if (vsIface.getAddresses() != null && !vsIface.getAddresses().isEmpty()) {
@@ -457,6 +460,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
     // description
     viIface.setDescription(vsIface.getDescription());
+
+    // mtu
+    if (vsIface.getMtu() != null) {
+      viIface.setMtu(vsIface.getMtu());
+    }
 
     // speed
     if (vsIface.getLinkSpeed() != null) {

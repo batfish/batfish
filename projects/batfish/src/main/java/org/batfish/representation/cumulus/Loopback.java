@@ -12,10 +12,7 @@ import org.batfish.datamodel.Ip;
 public class Loopback implements Serializable {
 
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
-
-  // TODO: push this to VI model after concatenated conversion is in master
   private @Nullable String _alias;
-
   private @Nullable Ip _clagVxlanAnycastIp;
   private boolean _configured;
   private @Nullable Double _bandwidth;

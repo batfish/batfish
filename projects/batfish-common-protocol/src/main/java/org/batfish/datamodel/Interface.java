@@ -524,7 +524,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  private static final int DEFAULT_MTU = 1500;
+  public static final int DEFAULT_MTU = 1500;
   public static final String DYNAMIC_INTERFACE_NAME = "dynamic";
   public static final String NULL_INTERFACE_NAME = "null_interface";
   public static final Set<InterfaceType> TUNNEL_INTERFACE_TYPES =

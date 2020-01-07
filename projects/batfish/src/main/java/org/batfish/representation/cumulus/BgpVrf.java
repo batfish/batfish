@@ -17,7 +17,7 @@ public class BgpVrf implements Serializable {
   private @Nullable Boolean _asPathMultipathRelax;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
 
-  // TODO: this needs to move to VI (after concatenated parser is in)
+  // TODO: this needs to move to VI after testing behavior
   private @Nonnull Map<Prefix, BgpNetwork> _networks;
 
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
