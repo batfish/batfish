@@ -674,6 +674,11 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  private static InterfaceType computeCumulusInterfaceType(String name) {
+    // TODO: fill this out
+    return InterfaceType.UNKNOWN;
+  }
+
   private static InterfaceType computeHostInterfaceType(String name) {
     if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
@@ -699,6 +704,10 @@ public final class Interface extends ComparableStructure<String> {
       case CISCO_NX:
       case FOUNDRY:
         return computeCiscoInterfaceType(name);
+
+      case CUMULUS_CONCATENATED:
+      case CUMULUS_NCLU:
+        return computeCumulusInterfaceType(name);
 
       case F5_BIGIP_STRUCTURED:
         return computeF5BigipStructuredInterfaceType(name);

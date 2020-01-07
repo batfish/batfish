@@ -27,7 +27,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser;
 import org.batfish.grammar.cumulus_ports.CumulusPortsConfigurationBuilder;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExtractor {
@@ -44,7 +44,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   private final boolean _printParseTreeLineNums;
   private final Warnings _w;
 
-  private CumulusNcluConfiguration _configuration;
+  private CumulusConcatenatedConfiguration _configuration;
   private int _line = -1;
   private int _offset = -1;
   private List<String> _errors = new ArrayList<>();
@@ -71,7 +71,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
 
   @Override
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
-    _configuration = new CumulusNcluConfiguration();
+    _configuration = new CumulusConcatenatedConfiguration();
 
     parseHostname();
     parseInterfacesFile();

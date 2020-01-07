@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
@@ -27,15 +28,15 @@ import static org.batfish.representation.cumulus.CumulusConversions.toCommunityL
 import static org.batfish.representation.cumulus.CumulusConversions.toOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -46,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -855,13 +857,32 @@ public final class CumulusConversionsTest {
     }
   }
 
+  private static Configuration getConfigurationWithLoopback(
+      @Nullable ConcreteInterfaceAddress address) {
+    Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_NCLU);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder()
+            .setName(LOOPBACK_INTERFACE_NAME)
+            .setOwner(c)
+            .build();
+    if (address != null) {
+      loopback.setAddress(address);
+      loopback.setAllAddresses(ImmutableSet.of(address));
+    }
+    return c;
+  }
+
   @Test
   public void testToOspfProcess_NoRouterId() {
     OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
-            ospfVrf, ImmutableMap.of(), new Loopback(), ImmutableMap.of(), new Warnings());
+            new Configuration("dummy", ConfigurationFormat.CUMULUS_NCLU),
+            new CumulusNcluConfiguration(),
+            ospfVrf,
+            ImmutableMap.of(),
+            new Warnings());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("0.0.0.0")));
     assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
@@ -873,12 +894,13 @@ public final class CumulusConversionsTest {
   public void testToOspfProcess_InferRouterId() {
     OspfVrf ospfVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
 
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Loopback lo = ncluConfiguration.getLoopback();
-    lo.setConfigured(true);
-    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
-        toOspfProcess(ospfVrf, ImmutableMap.of(), lo, ImmutableMap.of(), new Warnings());
+        toOspfProcess(
+            getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/24")),
+            new CumulusNcluConfiguration(),
+            ospfVrf,
+            ImmutableMap.of(),
+            new Warnings());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
@@ -893,7 +915,11 @@ public final class CumulusConversionsTest {
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
-            ospfVrf, ImmutableMap.of(), new Loopback(), ImmutableMap.of(), new Warnings());
+            new Configuration("dummy", ConfigurationFormat.CUMULUS_NCLU),
+            new CumulusNcluConfiguration(),
+            ospfVrf,
+            ImmutableMap.of(),
+            new Warnings());
     assertThat(ospfProcess.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(ospfProcess.getProcessId(), equalTo("default"));
     assertThat(
@@ -903,40 +929,40 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testInferRouterID_DefaultCase() {
-    assertThat(inferRouterId(new Loopback(), ImmutableMap.of()), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(
+        inferRouterId(new Configuration("dummy", ConfigurationFormat.CUMULUS_NCLU)),
+        equalTo(Ip.parse("0.0.0.0")));
   }
 
   @Test
   public void testInferRouterID_Loopback() {
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Loopback lo = ncluConfiguration.getLoopback();
-    lo.setConfigured(true);
-    lo.getAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/31"));
-    assertThat(inferRouterId(lo, ImmutableMap.of()), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(
+        inferRouterId(getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/31"))),
+        equalTo(Ip.parse("1.1.1.1")));
   }
 
   @Test
   public void testInferRouterID_LoopbackNotUsable() {
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Loopback lo = ncluConfiguration.getLoopback();
-    lo.setConfigured(true);
-    lo.getAddresses().add(ConcreteInterfaceAddress.parse("127.0.0.2/31"));
-    assertThat(inferRouterId(lo, ImmutableMap.of()), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(
+        inferRouterId(getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("127.0.0.2/31"))),
+        equalTo(Ip.parse("0.0.0.0")));
   }
 
   @Test
   public void testInferRouterID_MaxInterfaceIp() {
-    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
-    Interface i1 = new Interface("eth1", CumulusInterfaceType.PHYSICAL, null, null);
-    i1.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
-    Interface i2 = new Interface("eth2", CumulusInterfaceType.PHYSICAL, null, null);
-    i2.getIpAddresses().add(ConcreteInterfaceAddress.parse("2.2.2.2/30"));
+    Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_NCLU);
+    org.batfish.datamodel.Interface.builder()
+        .setName("eth1")
+        .setOwner(c)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30"))
+        .build();
+    org.batfish.datamodel.Interface.builder()
+        .setName("eth2")
+        .setOwner(c)
+        .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/30"))
+        .build();
 
-    ncluConfiguration.setInterfaces(ImmutableMap.of("eth1", i1, "eth2", i2));
-
-    assertThat(
-        inferRouterId(ncluConfiguration.getLoopback(), ncluConfiguration.getInterfaces()),
-        equalTo(Ip.parse("2.2.2.2")));
+    assertThat(inferRouterId(c), equalTo(Ip.parse("2.2.2.2")));
   }
 
   @Test
@@ -952,7 +978,7 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfAreaName(), equalTo(1L));
   }
 
@@ -983,7 +1009,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertNull(viIface.getOspfNetworkType());
   }
 
@@ -1000,7 +1026,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertFalse(viIface.getOspfPassive());
   }
 
@@ -1019,7 +1045,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertTrue(viIface.getOspfPassive());
   }
 
@@ -1037,7 +1063,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertThat(
         viIface.getOspfNetworkType(),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
@@ -1056,7 +1082,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
 
     // default hello interval
     assertThat(
@@ -1065,7 +1091,7 @@ public final class CumulusConversionsTest {
 
     // set hello interval
     vsIface.getOrCreateOspf().setHelloInterval(1);
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfSettings().getHelloInterval(), equalTo(1));
   }
 
@@ -1082,7 +1108,7 @@ public final class CumulusConversionsTest {
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
 
     // default dead interval
     assertThat(
@@ -1091,7 +1117,7 @@ public final class CumulusConversionsTest {
 
     // set dead interval
     vsIface.getOrCreateOspf().setDeadInterval(1);
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfSettings().getDeadInterval(), equalTo(1));
   }
 
@@ -1108,7 +1134,7 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
 
     // default dead interval
     assertThat(viIface.getOspfSettings().getProcess(), equalTo("1"));
@@ -1124,7 +1150,7 @@ public final class CumulusConversionsTest {
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
-    addOspfInterfaces(ifaceMap, "1", ncluConfiguration.getInterfaces(), new Warnings());
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
 
     assertNull(viIface.getOspfSettings());
   }
@@ -1137,7 +1163,7 @@ public final class CumulusConversionsTest {
     ncluConfiguration.getInterfaces().put("iface", vsIface);
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(ImmutableList.of("iface"), ncluConfiguration.getInterfaces());
+        computeOspfAreas(ncluConfiguration, ImmutableList.of("iface"));
     assertThat(
         areas,
         equalTo(
@@ -1153,7 +1179,7 @@ public final class CumulusConversionsTest {
     vsIface.getOrCreateOspf();
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(ImmutableList.of("iface"), ncluConfiguration.getInterfaces());
+        computeOspfAreas(ncluConfiguration, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
@@ -1162,7 +1188,7 @@ public final class CumulusConversionsTest {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(ImmutableList.of("iface"), ncluConfiguration.getInterfaces());
+        computeOspfAreas(ncluConfiguration, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
