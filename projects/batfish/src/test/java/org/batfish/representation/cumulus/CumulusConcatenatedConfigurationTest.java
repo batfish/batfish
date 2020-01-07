@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.DEFAULT_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
@@ -17,6 +18,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -156,6 +158,25 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
+  public void testPopulateCommonProperties_mtu() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    InterfacesInterface vsIface = new InterfacesInterface("iface");
+    Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setOwner(c).build();
+
+    CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
+
+    // unset means default
+    vsConfig.populateCommonInterfaceProperties(vsIface, viIface);
+    assertEquals(viIface.getMtu(), DEFAULT_MTU);
+
+    // should get the set value
+    vsIface.setMtu(42);
+    vsConfig.populateCommonInterfaceProperties(vsIface, viIface);
+    assertEquals(viIface.getMtu(), 42);
+  }
+
+  @Test
   public void testPopulateLoopbackProperties_baseCase() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface loopback =
@@ -163,6 +184,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vsConfig = CumulusConcatenatedConfiguration.builder().build();
     vsConfig.populateLoopbackProperties(loopback);
 
+    assertNull(loopback.getDescription());
     assertThat(loopback.getAllAddresses(), equalTo(ImmutableSet.of()));
     assertThat(loopback.getBandwidth(), equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
   }
@@ -219,6 +241,23 @@ public class CumulusConcatenatedConfigurationTest {
     assertThat(loopback.getAddress(), equalTo(interfacesAddress));
     assertThat(
         loopback.getAllAddresses(), equalTo(ImmutableSet.of(interfacesAddress, loopbackAddress)));
+  }
+
+  @Test
+  public void testPopulateLoopbackProperties_alias() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    org.batfish.datamodel.Interface loopback =
+        org.batfish.datamodel.Interface.builder().setName("lo").setOwner(c).build();
+
+    CumulusInterfacesConfiguration ifaceConfig = new CumulusInterfacesConfiguration();
+    ifaceConfig.getLoopback().setAlias("lalala");
+
+    CumulusConcatenatedConfiguration.builder()
+        .setInterfacesConfiguration(ifaceConfig)
+        .build()
+        .populateLoopbackProperties(loopback);
+
+    assertEquals(loopback.getDescription(), "lalala");
   }
 
   @Test
