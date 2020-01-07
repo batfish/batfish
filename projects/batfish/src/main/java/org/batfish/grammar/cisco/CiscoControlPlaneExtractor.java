@@ -3003,7 +3003,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               ctx,
               getFullText(ctx),
               _parser,
-              String.format("Unknowns OSPF nssa-external route type: %s", ctx.nssa_type.getText()));
+              String.format("Unknown OSPF nssa-external route type: %s", ctx.nssa_type.getText()));
         }
       }
     }
