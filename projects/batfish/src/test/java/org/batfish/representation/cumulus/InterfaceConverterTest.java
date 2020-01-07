@@ -1,17 +1,17 @@
-package org.batfish.representation.cumulus_interfaces;
+package org.batfish.representation.cumulus;
 
 import static org.batfish.representation.cumulus.CumulusInterfaceType.BOND_SUBINTERFACE;
 import static org.batfish.representation.cumulus.CumulusInterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusInterfaceType.PHYSICAL_SUBINTERFACE;
-import static org.batfish.representation.cumulus_interfaces.Converter.BRIDGE_NAME;
-import static org.batfish.representation.cumulus_interfaces.Converter.convertBond;
-import static org.batfish.representation.cumulus_interfaces.Converter.convertVlan;
-import static org.batfish.representation.cumulus_interfaces.Converter.convertVrf;
-import static org.batfish.representation.cumulus_interfaces.Converter.convertVxlan;
-import static org.batfish.representation.cumulus_interfaces.Converter.getEncapsulationVlan;
-import static org.batfish.representation.cumulus_interfaces.Converter.getSuperInterfaceName;
-import static org.batfish.representation.cumulus_interfaces.Converter.isInterface;
-import static org.batfish.representation.cumulus_interfaces.Converter.isVlan;
+import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
+import static org.batfish.representation.cumulus.InterfaceConverter.convertBond;
+import static org.batfish.representation.cumulus.InterfaceConverter.convertVlan;
+import static org.batfish.representation.cumulus.InterfaceConverter.convertVrf;
+import static org.batfish.representation.cumulus.InterfaceConverter.convertVxlan;
+import static org.batfish.representation.cumulus.InterfaceConverter.getEncapsulationVlan;
+import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInterfaceName;
+import static org.batfish.representation.cumulus.InterfaceConverter.isInterface;
+import static org.batfish.representation.cumulus.InterfaceConverter.isVlan;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -30,34 +30,27 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
-import org.batfish.representation.cumulus.Bond;
-import org.batfish.representation.cumulus.Bridge;
-import org.batfish.representation.cumulus.InterfaceBridgeSettings;
-import org.batfish.representation.cumulus.StaticRoute;
-import org.batfish.representation.cumulus.Vlan;
-import org.batfish.representation.cumulus.Vrf;
-import org.batfish.representation.cumulus.Vxlan;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Test for Cumulus {@link Interfaces} {@link Converter}. */
-public class ConverterTest {
+/** Test for Cumulus {@link CumulusInterfacesConfiguration} {@link InterfaceConverter}. */
+public class InterfaceConverterTest {
   private static final ConcreteInterfaceAddress ADDR1 =
       ConcreteInterfaceAddress.parse("1.2.3.4/24");
   private static final ConcreteInterfaceAddress ADDR2 =
       ConcreteInterfaceAddress.parse("2.3.4.5/25");
   private static final MacAddress MAC = MacAddress.parse("00:00:00:00:00:01");
 
-  private static final Interface BOND_IFACE = new Interface("bond");
-  private static final Interface BRIDGE_IFACE = new Interface("bridge");
-  private static final Interface PHYSICAL_IFACE = new Interface("swp1");
-  private static final Interface PHYSICAL_SUBIFACE = new Interface("swp1.1");
-  private static final Interface VLAN_IFACE = new Interface("vlan123");
-  private static final Interface VRF_IFACE = new Interface("vrf1");
-  private static final Interface VXLAN_IFACE = new Interface("vni1");
+  private static final InterfacesInterface BOND_IFACE = new InterfacesInterface("bond");
+  private static final InterfacesInterface BRIDGE_IFACE = new InterfacesInterface("bridge");
+  private static final InterfacesInterface PHYSICAL_IFACE = new InterfacesInterface("swp1");
+  private static final InterfacesInterface PHYSICAL_SUBIFACE = new InterfacesInterface("swp1.1");
+  private static final InterfacesInterface VLAN_IFACE = new InterfacesInterface("vlan123");
+  private static final InterfacesInterface VRF_IFACE = new InterfacesInterface("vrf1");
+  private static final InterfacesInterface VXLAN_IFACE = new InterfacesInterface("vni1");
 
-  private static final Map<String, Interface> INTERFACE_MAP =
-      ImmutableMap.<String, Interface>builder()
+  private static final Map<String, InterfacesInterface> INTERFACE_MAP =
+      ImmutableMap.<String, InterfacesInterface>builder()
           .put(BOND_IFACE.getName(), BOND_IFACE)
           .put(PHYSICAL_IFACE.getName(), PHYSICAL_IFACE)
           .put(PHYSICAL_SUBIFACE.getName(), PHYSICAL_SUBIFACE)
@@ -106,26 +99,26 @@ public class ConverterTest {
 
   @Test
   public void testIsVlan() {
-    assertTrue(isVlan(new Interface("vlan123")));
-    assertFalse(isVlan(new Interface("vni123")));
-    assertFalse(isVlan(new Interface(BRIDGE_NAME)));
+    assertTrue(isVlan(new InterfacesInterface("vlan123")));
+    assertFalse(isVlan(new InterfacesInterface("vni123")));
+    assertFalse(isVlan(new InterfacesInterface(BRIDGE_NAME)));
   }
 
   @Test
   public void testIsInterface() {
-    assertTrue(isInterface(new Interface("swp1")));
-    assertFalse(isInterface(new Interface("vlan123")));
+    assertTrue(isInterface(new InterfacesInterface("swp1")));
+    assertFalse(isInterface(new InterfacesInterface("vlan123")));
 
     // vrf
     {
-      Interface swp1 = new Interface("swp1");
+      InterfacesInterface swp1 = new InterfacesInterface("swp1");
       swp1.setVrfTable("auto");
       assertFalse(isInterface(swp1));
     }
 
     // vxlan
     {
-      Interface vxlan1 = new Interface("vni1");
+      InterfacesInterface vxlan1 = new InterfacesInterface("vni1");
       vxlan1.setVxlanId(1);
       assertFalse(isInterface(vxlan1));
     }
@@ -133,40 +126,40 @@ public class ConverterTest {
 
   @Test
   public void testGetEncapsulationVlan() {
-    assertThat(getEncapsulationVlan(new Interface("swp1")), nullValue());
-    assertThat(getEncapsulationVlan(new Interface("swp1.1")), equalTo(1));
-    assertThat(getEncapsulationVlan(new Interface("peerlink.4094")), equalTo(4094));
+    assertThat(getEncapsulationVlan(new InterfacesInterface("swp1")), nullValue());
+    assertThat(getEncapsulationVlan(new InterfacesInterface("swp1.1")), equalTo(1));
+    assertThat(getEncapsulationVlan(new InterfacesInterface("peerlink.4094")), equalTo(4094));
   }
 
   @Test
   public void testGetInterfaceType() {
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getInterfaces().putAll(INTERFACE_MAP);
-    Converter converter = new Converter(interfaces, _w);
+    InterfaceConverter converter = new InterfaceConverter(interfaces, _w);
 
     assertThat(converter.getInterfaceType(PHYSICAL_IFACE), equalTo(PHYSICAL));
     assertThat(
-        converter.getInterfaceType(new Interface(BOND_IFACE.getName() + ".1")),
+        converter.getInterfaceType(new InterfacesInterface(BOND_IFACE.getName() + ".1")),
         equalTo(BOND_SUBINTERFACE));
     assertThat(converter.getInterfaceType(PHYSICAL_SUBIFACE), equalTo(PHYSICAL_SUBINTERFACE));
   }
 
   @Test
   public void testGetSuperInterfaceName_physicalSubInterface() {
-    assertThat(getSuperInterfaceName(new Interface("swp1.0")), equalTo("swp1"));
-    assertThat(getSuperInterfaceName(new Interface("swp1s5.0")), equalTo("swp1s5"));
-    assertThat(getSuperInterfaceName(new Interface("eth0.0")), equalTo("eth0"));
+    assertThat(getSuperInterfaceName("swp1.0"), equalTo("swp1"));
+    assertThat(getSuperInterfaceName("swp1s5.0"), equalTo("swp1s5"));
+    assertThat(getSuperInterfaceName("eth0.0"), equalTo("eth0"));
   }
 
   @Test
   public void testGetSuperInterface_none() {
     // could be a bond slave, but isn't in bondSlaveParents map
-    assertThat(getSuperInterfaceName(new Interface("swp1")), nullValue());
+    assertThat(getSuperInterfaceName("swp1"), nullValue());
   }
 
   @Test
   public void testConvertBond_Basic() {
-    Interface bondIface = new Interface("bond");
+    InterfacesInterface bondIface = new InterfacesInterface("bond");
     bondIface.setClagId(1);
     bondIface.setBondSlaves(ImmutableSet.of("slave"));
     bondIface.setVrf("vrf");
@@ -182,7 +175,7 @@ public class ConverterTest {
 
   @Test
   public void testConvertBond_Pvid() {
-    Interface bondIface = new Interface("bond");
+    InterfacesInterface bondIface = new InterfacesInterface("bond");
     bondIface.setBondSlaves(ImmutableSet.of("slave"));
     bondIface.createOrGetBridgeSettings().setPvid(5);
 
@@ -193,7 +186,7 @@ public class ConverterTest {
 
   @Test
   public void testConvertBond_Access() {
-    Interface bondIface = new Interface("bond");
+    InterfacesInterface bondIface = new InterfacesInterface("bond");
     bondIface.setBondSlaves(ImmutableSet.of("slave"));
     bondIface.createOrGetBridgeSettings().setAccess(5);
 
@@ -204,10 +197,10 @@ public class ConverterTest {
 
   @Test
   public void testConvertBridge() {
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getInterfaces().put(BRIDGE_IFACE.getName(), BRIDGE_IFACE);
 
-    Converter converter = new Converter(interfaces, _w);
+    InterfaceConverter converter = new InterfaceConverter(interfaces, _w);
     Bridge bridge = converter.convertBridge();
     assertThat(bridge.getPorts(), equalTo(BRIDGE_IFACE.getBridgePorts()));
     assertThat(bridge.getPvid(), equalTo(BRIDGE_IFACE.getBridgeSettings().getPvid()));
@@ -216,7 +209,7 @@ public class ConverterTest {
 
   @Test
   public void testConvertInterface() {
-    Converter converter = new Converter(new Interfaces(), _w);
+    InterfaceConverter converter = new InterfaceConverter(new CumulusInterfacesConfiguration(), _w);
 
     org.batfish.representation.cumulus.Interface vsIface =
         converter.convertInterface(PHYSICAL_IFACE);
@@ -241,10 +234,10 @@ public class ConverterTest {
 
   @Test
   public void testConvertSubInterface() {
-    Interfaces interfaces = new Interfaces();
+    CumulusInterfacesConfiguration interfaces = new CumulusInterfacesConfiguration();
     interfaces.getInterfaces().put(PHYSICAL_IFACE.getName(), PHYSICAL_IFACE);
 
-    Converter converter = new Converter(interfaces, _w);
+    InterfaceConverter converter = new InterfaceConverter(interfaces, _w);
 
     org.batfish.representation.cumulus.Interface vsIface =
         converter.convertInterface(PHYSICAL_SUBIFACE);
@@ -263,10 +256,10 @@ public class ConverterTest {
 
   @Test
   public void testConvertInterfaces() {
-    Interfaces ifaces = new Interfaces();
+    CumulusInterfacesConfiguration ifaces = new CumulusInterfacesConfiguration();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
     Map<String, org.batfish.representation.cumulus.Interface> vsIfaces =
-        new Converter(ifaces, _w).convertInterfaces();
+        new InterfaceConverter(ifaces, _w).convertInterfaces();
 
     // non-interfaces filtered out
     assertThat(
@@ -287,9 +280,9 @@ public class ConverterTest {
 
   @Test
   public void testConvertVlans() {
-    Interfaces ifaces = new Interfaces();
+    CumulusInterfacesConfiguration ifaces = new CumulusInterfacesConfiguration();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vlan> vlans = new Converter(ifaces, _w).convertVlans();
+    Map<String, Vlan> vlans = new InterfaceConverter(ifaces, _w).convertVlans();
 
     // non-vlans filtered out
     assertThat(vlans.keySet(), containsInAnyOrder(VLAN_IFACE.getName()));
@@ -304,9 +297,9 @@ public class ConverterTest {
 
   @Test
   public void testConvertVrfs() {
-    Interfaces ifaces = new Interfaces();
+    CumulusInterfacesConfiguration ifaces = new CumulusInterfacesConfiguration();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vrf> vrfs = new Converter(ifaces, _w).convertVrfs();
+    Map<String, Vrf> vrfs = new InterfaceConverter(ifaces, _w).convertVrfs();
 
     // non-vrfs filtered out
     assertThat(vrfs.keySet(), containsInAnyOrder(VRF_IFACE.getName()));
@@ -323,9 +316,9 @@ public class ConverterTest {
 
   @Test
   public void testConvertVxlans() {
-    Interfaces ifaces = new Interfaces();
+    CumulusInterfacesConfiguration ifaces = new CumulusInterfacesConfiguration();
     ifaces.getInterfaces().putAll(INTERFACE_MAP);
-    Map<String, Vxlan> vxlans = new Converter(ifaces, _w).convertVxlans();
+    Map<String, Vxlan> vxlans = new InterfaceConverter(ifaces, _w).convertVxlans();
 
     // non-vxlans filtered out
     assertThat(vxlans.keySet(), containsInAnyOrder(VXLAN_IFACE.getName()));

@@ -9,3 +9,6 @@ router bgp 65104
   network 1.1.2.0 255.255.255.0
   address-family ipv4
     network 1.1.3.0/24 route-map RM
+    !! the next-hop-unchanged command is here to verify that
+    !! we haven't left the "address-family ipv4" parser context
+    bgp next-hop-unchanged

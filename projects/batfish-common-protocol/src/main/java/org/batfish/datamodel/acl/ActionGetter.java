@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.LineAction;
 
@@ -16,6 +17,11 @@ public class ActionGetter implements GenericAclLineVisitor<LineAction> {
 
   private static LineAction flip(LineAction action) {
     return action == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
+  }
+
+  @Override
+  public LineAction visitAclAclLine(AclAclLine aclAclLine) {
+    return null;
   }
 
   @Override

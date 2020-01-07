@@ -59,7 +59,7 @@ eos_rb_af_ipv4_unicast
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
     | eos_rbafipv4_no
-//    | eos_rbafipv4u_network
+    | eos_rbafipv4u_network
 //    | eos_rbafipv4u_redistribute
   )*
 ;
@@ -67,13 +67,44 @@ eos_rb_af_ipv4_unicast
 eos_rbafipv4u_bgp
 :
   BGP
-  null_rest_of_line
-//  (
-//    eos_rbafipv4b_additional_paths
-//    | eos_rbafipv4b_next_hop
-//    | eos_rbafipv4b_redistribute_internal
-//    | eos_rbafipv4b_route
-//  )
+  (
+    eos_rbafipv4ub_additional_paths
+    | eos_rbafipv4ub_next_hop
+    | eos_rbafipv4ub_next_hop_unchanged
+    | eos_rbafipv4ub_redistribute_internal
+    | eos_rbafipv4ub_route
+  )
+;
+
+eos_rbafipv4ub_additional_paths
+:
+  ADDITIONAL_PATHS
+  (
+    INSTALL
+    | RECEIVE
+    | SEND ANY
+  )
+  NEWLINE
+;
+
+eos_rbafipv4ub_next_hop
+:
+  NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
+;
+
+eos_rbafipv4ub_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafipv4ub_redistribute_internal
+:
+  REDISTRIBUTE_INTERNAL NEWLINE
+;
+
+eos_rbafipv4ub_route
+:
+  ROUTE INSTALL name = variable NEWLINE
 ;
 
 eos_rbafipv4u_neighbor
@@ -106,6 +137,15 @@ eos_rbafipv4_no_neighbor
   eos_rb_af_no_neighbor_common
 ;
 
+eos_rbafipv4u_network
+:
+  NETWORK
+  (
+    eos_rbi_network4
+    | eos_rbi_network6
+  )
+;
+
 eos_rb_af_ipv6
 :
   IPV6
@@ -136,8 +176,8 @@ eos_rb_af_evpn
   EVPN NEWLINE
   (
     eos_rb_af_evpn_bgp
-//    | eos_rb_af_evpn_graceful_restart
-//    | eos_rb_af_evpn_host_flap
+    | eos_rb_af_evpn_graceful_restart
+    | eos_rb_af_evpn_host_flap
     | eos_rb_af_evpn_neighbor
     | eos_rb_af_evpn_no
   )*
@@ -150,6 +190,16 @@ eos_rb_af_evpn_bgp
     eos_rbafeb_additional_paths
     | eos_rbafeb_next_hop_unchanged
   )
+;
+
+eos_rb_af_evpn_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rb_af_evpn_host_flap
+:
+  HOST_FLAP null_rest_of_line
 ;
 
 eos_rb_af_evpn_neighbor
@@ -184,8 +234,8 @@ eos_rb_af_neighbor_common
   (
     eos_rbafnc_activate
 //    | eos_rbafnc_additional_paths
-//    | eos_rbafnc_graceful_restart
-//    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_graceful_restart
+    | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
   )
@@ -204,6 +254,16 @@ eos_rbafeb_next_hop_unchanged
 eos_rbafnc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnc_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbafnc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbafnc_route_map
@@ -276,7 +336,7 @@ eos_rbi_bgp
     | eos_rbib_log_neighbor_changes
 //    | eos_rbib_missing_policy
 //    | eos_rbib_monitoring
-//    | eos_rbib_next_hop_unchanged
+    | eos_rbib_next_hop_unchanged
 //    | eos_rbib_redistribute_internal
 //    | eos_rbib_route
 //    | eos_rbib_route_reflector
@@ -401,6 +461,11 @@ eos_rbib_log_neighbor_changes
   LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
+eos_rbib_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
 eos_rbi_default_metric
 :
   DEFAULT_METRIC metric = DEC NEWLINE
@@ -487,9 +552,9 @@ eos_rbi_neighbor_common
     | eos_rbinc_enforce_first_as
     | eos_rbinc_export_localpref
     | eos_rbinc_fall_over
-//    | eos_rbinc_graceful_restart
-//    | eos_rbinc_graceful_restart_helper
-//    | eos_rbinc_idle_restart_timer
+    | eos_rbinc_graceful_restart
+    | eos_rbinc_graceful_restart_helper
+    | eos_rbinc_idle_restart_timer
 //    | eos_rbinc_import_localpref
 //    | eos_rbinc_link_bandwidth
     | eos_rbinc_local_as
@@ -510,7 +575,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
     | eos_rbinc_shutdown
-//    | eos_rbinc_soft_reconfiguration
+    | eos_rbinc_soft_reconfiguration
     | eos_rbinc_timers
 //    | eos_rbinc_transport
 //    | eos_rbinc_ttl
@@ -576,6 +641,21 @@ eos_rbinc_export_localpref
 eos_rbinc_fall_over
 :
   FALL_OVER BFD NEWLINE
+;
+
+eos_rbinc_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbinc_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
+;
+
+eos_rbinc_idle_restart_timer
+:
+  IDLE_RESTART_TIMER time = DEC NEWLINE
 ;
 
 eos_rbinc_local_as
@@ -647,6 +727,11 @@ eos_rbinc_send_community
 eos_rbinc_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbinc_soft_reconfiguration
+:
+  SOFT_RECONFIGURATION INBOUND ALL? NEWLINE
 ;
 
 eos_rbinc_timers

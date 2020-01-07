@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,27 +29,29 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
+import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.StaticRoute;
-import org.batfish.representation.cumulus_interfaces.Interface;
-import org.batfish.representation.cumulus_interfaces.Interfaces;
 import org.junit.Before;
 import org.junit.Test;
 
 /** Test of {@link CumulusInterfacesParser}. */
 public class CumulusInterfacesGrammarTest {
   private static final String FILENAME = "";
-  private static CumulusNcluConfiguration _config;
+  private static CumulusConcatenatedConfiguration _config;
+  private static CumulusInterfacesConfiguration _ic;
   private static ConvertConfigurationAnswerElement _ccae;
   private static Warnings _warnings;
 
   @Before
   public void setup() {
-    _config = new CumulusNcluConfiguration();
+    _config = new CumulusConcatenatedConfiguration();
+    _ic = _config.getInterfacesConfiguration();
     _ccae = new ConvertConfigurationAnswerElement();
     _warnings = new Warnings();
     _config.setFilename(FILENAME);
@@ -81,7 +82,7 @@ public class CumulusInterfacesGrammarTest {
         .get(usage.getDescription());
   }
 
-  private static Interfaces parse(String input) {
+  private static CumulusInterfacesConfiguration parse(String input) {
     GrammarSettings settings =
         MockGrammarSettings.builder()
             .setDisableUnrecognized(true)
@@ -95,13 +96,13 @@ public class CumulusInterfacesGrammarTest {
         new CumulusInterfacesConfigurationBuilder(_config, parser, input, _warnings);
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
     _config = SerializationUtils.clone(_config);
-    return configurationBuilder.getInterfaces();
+    return configurationBuilder.getConfig().getInterfacesConfiguration();
   }
 
   @Test
   public void testAuto() {
     String input = "auto swp1\n";
-    Interfaces interfaces = parse(input);
+    CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(interfaces.getAutoIfaces(), contains("swp1"));
   }
 
@@ -114,7 +115,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIface() {
     String input = "iface swp1\n";
-    Interfaces interfaces = parse(input);
+    CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1").getDefinitionLines(),
@@ -129,7 +130,7 @@ public class CumulusInterfacesGrammarTest {
   public void testIfaceDescription() {
     String description = "foo hey 123!#?<>";
     String input = "iface swp1\n alias " + description + "\n";
-    Interface iface = parse(input).getInterfaces().get("swp1");
+    InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
     assertEquals(iface.getDescription(), description);
   }
 
@@ -156,7 +157,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBondSlaves() {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
-    Interfaces interfaces = parse(input);
+    CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(
         getStructureReferences(
             CumulusStructureType.INTERFACE, "i2", CumulusStructureUsage.BOND_SLAVE),
@@ -174,14 +175,13 @@ public class CumulusInterfacesGrammarTest {
         containsInAnyOrder("i2", "i3", "i4"));
 
     // swp1 is inferred to be a bond
-    assertThat(_config.getInterfaces().keySet(), not(contains("swp1")));
-    assertThat(_config.getBonds().keySet(), contains("swp1"));
+    assertThat(_ic.getInterfaces().get("swp1").getType(), equalTo(CumulusStructureType.BOND));
   }
 
   @Test
   public void testIfaceBondSlaves2() {
     String input = "iface swp1\n bond-slaves s1\n iface swp2\n bond-slaves s2\n";
-    Interfaces interfaces = parse(input);
+    CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(
         getStructureReferences(
             CumulusStructureType.INTERFACE, "s1", CumulusStructureUsage.BOND_SLAVE),
@@ -202,7 +202,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceAddress() {
     String input = "iface swp1\n address 10.12.13.14/24\n";
-    Interface iface = parse(input).getInterfaces().get("swp1");
+    InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
   }
 
@@ -215,7 +215,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceAddressVirtual() {
     String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4/24\n";
-    Interface iface = parse(input).getInterfaces().get("vlan1");
+    InterfacesInterface iface = parse(input).getInterfaces().get("vlan1");
     assertThat(
         iface.getAddressVirtuals(),
         equalTo(
@@ -227,7 +227,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBridgeAccess() {
     String input = "iface swp1\n bridge-access 1234\n";
-    Interfaces interfaces = parse(input);
+    CumulusInterfacesConfiguration interfaces = parse(input);
     InterfaceBridgeSettings bridgeSettings =
         interfaces.getInterfaces().get("swp1").getBridgeSettings();
     assertThat(bridgeSettings.getAccess(), equalTo(1234));
@@ -246,14 +246,14 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceBridgePorts_multiline() {
     String input = "iface bridge\n bridge-ports i2 \\\n i3 i4\n";
-    Interface iface = parse(input).getInterfaces().get("bridge");
+    InterfacesInterface iface = parse(input).getInterfaces().get("bridge");
     assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
   }
 
   @Test
   public void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
-    Interface iface = parse(input).getInterfaces().get("bridge");
+    InterfacesInterface iface = parse(input).getInterfaces().get("bridge");
     assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
   }
 
@@ -288,7 +288,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceClagId() {
     String input = "iface swp1\n clag-id 123\n";
-    Interface iface = parse(input).getInterfaces().get("swp1");
+    InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getClagId(), equalTo(123));
   }
 
@@ -353,16 +353,16 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceLinkSpeed() {
     String input = "iface swp1\n link-speed 10000\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getLinkSpeed(), equalTo(10000));
   }
 
   @Test
   public void testIfaceLinkSpeed_null() {
     String input = "iface swp1\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertNull(iface.getLinkSpeed());
   }
 
@@ -408,8 +408,8 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testPostUpIpRouteAddDev() {
     String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 dev eth0\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("eth0");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertThat(
         iface.getPostUpIpRoutes(),
         equalTo(ImmutableList.of(new StaticRoute(Prefix.parse("10.10.10.0/24"), null, "eth0"))));
@@ -418,8 +418,8 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testPostUpIpRouteAddVia() {
     String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 via 10.1.1.1\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("eth0");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertThat(
         iface.getPostUpIpRoutes(),
         equalTo(
@@ -430,8 +430,8 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceVlanId() {
     String input = "iface vlan1\n vlan-id 1\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vlan1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("vlan1");
     assertThat(iface.getVlanId(), equalTo(1));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vlan1"));
@@ -445,16 +445,16 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceVlanRawDevice() {
     String input = "iface vlan1\n vlan-raw-device bridge\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vlan1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("vlan1");
     assertThat(iface.getVlanRawDevice(), equalTo("bridge"));
   }
 
   @Test
   public void testIfaceVrf() {
     String input = "iface swp1\n vrf v1\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVrf(), equalTo("v1"));
     assertThat(
         getStructureReferences(CumulusStructureType.VRF, "v1", CumulusStructureUsage.INTERFACE_VRF),
@@ -464,8 +464,8 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceVrfTable() {
     String input = "iface vrf1\n vrf-table auto\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("vrf1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("vrf1");
     assertThat(iface.getVrfTable(), equalTo("auto"));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "vrf1"));
@@ -479,7 +479,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopback() {
     parse("iface lo inet loopback\n");
-    assertTrue(_config.getLoopback().getConfigured());
+    assertTrue(_ic.getLoopback().getConfigured());
     assertThat(
         getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
         contains(1));
@@ -493,8 +493,7 @@ public class CumulusInterfacesGrammarTest {
   public void testLoopbackAddress() {
     parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
-        _config.getLoopback().getAddresses(),
-        contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+        _ic.getLoopback().getAddresses(), contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
   }
 
   @Test
@@ -506,14 +505,14 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopbackClagdVxlanAnycastIp() {
     parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
-    assertThat(_config.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(_ic.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
   public void testVxlanId() {
     String input = "iface swp1\n vxlan-id 123\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getVxlanId(), equalTo(123));
     // not marked as an interface definition
     assertNull(getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1"));
@@ -527,24 +526,24 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testVxlanLocalTunnelIp() {
     String input = "iface swp1\n vxlan-local-tunnelip 1.2.3.4\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertEquals(iface.getVxlanLocalTunnelIp(), Ip.parse("1.2.3.4"));
   }
 
   @Test
   public void testStaticInterface() {
     String input = "iface swp1 inet static\n link-speed 10000\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
   }
 
   @Test
   public void testDhcpInterface() {
     String input = "iface eth0 inet dhcp\n link-speed 10000\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("eth0");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
     assertNull(iface.getAddresses());
   }
@@ -552,8 +551,8 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testManualInterface() {
     String input = "iface eth0 inet manual\n link-speed 10000\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("eth0");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertEquals(iface.getLinkSpeed(), Integer.valueOf(10000));
     assertNull(iface.getAddresses());
   }

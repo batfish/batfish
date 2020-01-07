@@ -54,3 +54,15 @@ router bgp 1
     maximum-paths 3 ecmp 2
   vrf tenant2_vrf
     shutdown
+  address-family ipv4
+    bgp additional-paths receive
+    bgp additional-paths send any
+    bgp additional-paths install
+    bgp next-hop address-family ipv6
+    bgp redistribute-internal
+    bgp route install ROUTE_MAP
+    graceful-restart
+  address-family evpn
+    graceful-restart
+    host-flap detection threshold 2
+    host-flap detection window 3

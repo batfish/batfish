@@ -1,11 +1,15 @@
 package org.batfish.representation.cumulus;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** A shared interfaces for the two Cumulus configuration types -- concatenated, nclu */
 public interface CumulusNodeConfiguration {
 
-  public static final String LOOPBACK_INTERFACE_NAME = "lo";
+  String LOOPBACK_INTERFACE_NAME = "lo";
 
   Map<String, IpCommunityList> getIpCommunityLists();
 
@@ -15,13 +19,23 @@ public interface CumulusNodeConfiguration {
 
   BgpProcess getBgpProcess();
 
-  Map<String, Interface> getInterfaces();
+  /**
+   * Returns the {@link OspfInterface} of the specified interface.
+   *
+   * <p>Returns Optional.empty if the interface does not exist or its OspfInterface is null.
+   */
+  Optional<OspfInterface> getOspfInterface(String ifaceName);
 
-  Loopback getLoopback();
+  /** Returns the vrf with the asked name. Returns null if the vrf does not exist */
+  @Nullable
+  Vrf getVrf(String vrfName);
 
-  Map<String, Vrf> getVrfs();
+  /** Returns all the vxlan Ids for this node */
+  @Nonnull
+  List<Integer> getVxlanIds();
 
-  Map<String, Vxlan> getVxlans();
+  /** Returns a map from interface names to clag settings, for interfaces with Clag settings */
+  Map<String, InterfaceClagSettings> getClagSettings();
 
   OspfProcess getOspfProcess();
 }

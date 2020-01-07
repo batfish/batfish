@@ -17,6 +17,7 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
@@ -177,6 +178,11 @@ public abstract class IpAccessListToBdd {
       implements GenericAclLineMatchExprVisitor<BDD>, GenericAclLineVisitor<PermitAndDenyBdds> {
 
     /* AclLine visit methods */
+
+    @Override
+    public PermitAndDenyBdds visitAclAclLine(AclAclLine aclAclLine) {
+      return _permitAndDenyBdds.get(aclAclLine.getAclName()).get();
+    }
 
     @Override
     public PermitAndDenyBdds visitExprAclLine(ExprAclLine exprAclLine) {

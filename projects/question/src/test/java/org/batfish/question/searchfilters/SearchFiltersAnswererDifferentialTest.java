@@ -6,24 +6,24 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
-import static org.batfish.question.searchfilters.SearchFiltersAnswerer.differentialReachFilter;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.getDiffResult;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.question.searchfilters.SearchFiltersAnswerer.DiffConfigContext;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
@@ -35,10 +35,12 @@ import org.junit.rules.TemporaryFolder;
 public class SearchFiltersAnswererDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
+  private static final BDDPacket PKT = new BDDPacket();
   private static final String HOSTNAME = "hostname";
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
   private static final Ip IP = Ip.parse("1.2.3.4");
+  private static final SearchFiltersQuery PERMIT_QUERY = PermitQuery.INSTANCE;
 
   private NetworkFactory _nf;
   private Configuration.Builder _cb;
@@ -56,11 +58,10 @@ public class SearchFiltersAnswererDifferentialTest {
     _ib = _nf.interfaceBuilder();
     _ab = _nf.aclBuilder();
     _params =
-        SearchFiltersParameters.builder()
-            .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
+        new SearchFiltersQuestion()
+            .toSearchFiltersParameters()
+            .toBuilder()
             .setStartLocationSpecifier(LocationSpecifier.ALL_LOCATIONS)
-            .setHeaderSpace(HeaderSpace.builder().build())
             .build();
   }
 
@@ -70,34 +71,52 @@ public class SearchFiltersAnswererDifferentialTest {
 
   @Test
   public void testMatchSrcInterface() {
-    Configuration baseConfig = _cb.build();
-    Configuration deltaConfig = _cb.build();
-    _ib.setName(IFACE1).setOwner(baseConfig).build();
-    _ib.setOwner(deltaConfig).build();
+    Configuration config = _cb.build();
+    Configuration refConfig = _cb.build();
+    _ib.setName(IFACE1).setOwner(config).build();
+    _ib.setOwner(refConfig).build();
     String aclName = "aclName";
-    IpAccessList baseAcl = _ab.setName(aclName).setOwner(baseConfig).build();
-    IpAccessList deltaAcl =
-        _ab.setOwner(deltaConfig)
+    IpAccessList refAcl = _ab.setName(aclName).setOwner(config).build();
+    IpAccessList acl =
+        _ab.setOwner(refConfig)
             .setLines(
                 ImmutableList.of(
                     accepting()
                         .setMatchCondition(and(matchSrcInterface(IFACE1), matchDst(IP)))
                         .build()))
             .build();
-    IBatfish batfish = getBatfish(baseConfig, deltaConfig);
+    IBatfish batfish = getBatfish(config, refConfig);
     NetworkSnapshot snapshot = batfish.getSnapshot();
+    NetworkSnapshot reference = batfish.getReferenceSnapshot();
 
+    DiffConfigContext configContext =
+        new DiffConfigContext(
+            config,
+            refConfig,
+            ImmutableSet.of(aclName),
+            snapshot,
+            reference,
+            batfish,
+            _params,
+            PKT);
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(
-            snapshot, batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
+        getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
     assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     // flip base and delta
-    result =
-        differentialReachFilter(
-            snapshot, batfish, deltaConfig, deltaAcl, baseConfig, baseAcl, _params);
+    configContext =
+        new DiffConfigContext(
+            refConfig,
+            config,
+            ImmutableSet.of(aclName),
+            reference,
+            snapshot,
+            getBatfish(refConfig, config),
+            _params,
+            PKT);
+    result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
     assertThat(result.getDecreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
@@ -106,20 +125,45 @@ public class SearchFiltersAnswererDifferentialTest {
   @Test
   public void testAclLineAddedRemoved() {
     Configuration config = _cb.build();
-    IpAccessList baseAcl = _ab.setOwner(config).build();
-    IpAccessList deltaAcl =
-        _ab.setLines(ImmutableList.of(accepting().setMatchCondition(matchDst(IP)).build())).build();
-    IBatfish batfish = getBatfish(config, config);
+    Configuration refConfig = _cb.build();
+    String aclName = "aclName";
+    IpAccessList refAcl = _ab.setName(aclName).setOwner(refConfig).build();
+    IpAccessList acl =
+        _ab.setOwner(config)
+            .setLines(ImmutableList.of(accepting().setMatchCondition(matchDst(IP)).build()))
+            .build();
+    IBatfish batfish = getBatfish(config, refConfig);
     NetworkSnapshot snapshot = batfish.getSnapshot();
+    NetworkSnapshot reference = batfish.getReferenceSnapshot();
 
+    DiffConfigContext configContext =
+        new DiffConfigContext(
+            config,
+            refConfig,
+            ImmutableSet.of(aclName),
+            snapshot,
+            reference,
+            batfish,
+            _params,
+            PKT);
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(snapshot, batfish, config, baseAcl, config, deltaAcl, _params);
+        getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
     assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
     assertThat(result.getIncreasedFlow().get(), hasDstIp(IP));
 
     // flip base and delta ACL
-    result = differentialReachFilter(snapshot, batfish, config, deltaAcl, config, baseAcl, _params);
+    configContext =
+        new DiffConfigContext(
+            refConfig,
+            config,
+            ImmutableSet.of(aclName),
+            reference,
+            snapshot,
+            getBatfish(refConfig, config),
+            _params,
+            PKT);
+    result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
     assertThat(result.getDecreasedFlow().get(), hasDstIp(IP));
@@ -127,16 +171,16 @@ public class SearchFiltersAnswererDifferentialTest {
 
   @Test
   public void testSourceInterfaceParameter() {
-    Configuration baseConfig = _cb.build();
-    Configuration deltaConfig = _cb.build();
-    _ib.setName(IFACE1).setOwner(baseConfig).build();
-    _ib.setOwner(deltaConfig).build();
-    _ib.setName(IFACE2).setOwner(baseConfig).build();
-    _ib.setOwner(deltaConfig).build();
+    Configuration refConfig = _cb.build();
+    Configuration config = _cb.build();
+    _ib.setName(IFACE1).setOwner(refConfig).build();
+    _ib.setOwner(config).build();
+    _ib.setName(IFACE2).setOwner(refConfig).build();
+    _ib.setOwner(config).build();
     String aclName = "acl";
-    IpAccessList baseAcl = _ab.setName(aclName).setOwner(baseConfig).build();
-    IpAccessList deltaAcl =
-        _ab.setOwner(deltaConfig)
+    IpAccessList refAcl = _ab.setName(aclName).setOwner(refConfig).build();
+    IpAccessList acl =
+        _ab.setOwner(config)
             .setLines(
                 ImmutableList.of(
                     accepting()
@@ -144,8 +188,9 @@ public class SearchFiltersAnswererDifferentialTest {
                         .build()))
             .build();
 
-    IBatfish batfish = getBatfish(baseConfig, deltaConfig);
+    IBatfish batfish = getBatfish(refConfig, config);
     NetworkSnapshot snapshot = batfish.getSnapshot();
+    NetworkSnapshot reference = batfish.getReferenceSnapshot();
     SearchFiltersParameters params =
         _params
             .toBuilder()
@@ -153,9 +198,11 @@ public class SearchFiltersAnswererDifferentialTest {
             .build();
 
     // can match line 1 because IFACE1 is specified
+    DiffConfigContext configContext =
+        new DiffConfigContext(
+            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params, PKT);
     DifferentialSearchFiltersResult result =
-        differentialReachFilter(
-            snapshot, batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+        getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
     assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
@@ -166,10 +213,11 @@ public class SearchFiltersAnswererDifferentialTest {
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE2))
             .build();
 
-    // not can't match line 1 because IFACE2 is specified
-    result =
-        differentialReachFilter(
-            snapshot, batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+    // can't match line 1 because IFACE2 is specified
+    configContext =
+        new DiffConfigContext(
+            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params, PKT);
+    result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
   }

@@ -1,5 +1,7 @@
 package org.batfish.grammar.arista;
 
+import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
@@ -14,6 +16,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -86,7 +89,6 @@ import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMod
 import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
-import org.batfish.representation.cisco.eos.AristaBgpProcess;
 import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.cisco.eos.AristaBgpV4DynamicNeighbor;
 import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
@@ -441,8 +443,7 @@ public class AristaGrammarTest {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_vrf");
     assertThat(config.getAristaBgp(), notNullValue());
     assertThat(
-        config.getAristaBgp().getVrfs().keySet(),
-        containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
+        config.getAristaBgp().getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR"));
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertThat(vrf.getBestpathAsPathMultipathRelax(), nullValue());
@@ -471,8 +472,7 @@ public class AristaGrammarTest {
   @Test
   public void testVrfConversion() {
     Configuration c = parseConfig("arista_bgp_vrf");
-    assertThat(
-        c.getVrfs().keySet(), containsInAnyOrder(AristaBgpProcess.DEFAULT_VRF, "FOO", "BAR"));
+    assertThat(c.getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR"));
     {
       BgpProcess proc = c.getDefaultVrf().getBgpProcess();
       assertThat(proc, notNullValue());
@@ -566,10 +566,14 @@ public class AristaGrammarTest {
     }
     {
       Prefix prefix = Prefix.parse("1.1.3.0/24");
-      AristaBgpNetworkConfiguration network =
-          config.getAristaBgp().getDefaultVrf().getV4UnicastAf().getNetworks().get(prefix);
+      AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+      AristaBgpVrfIpv4UnicastAddressFamily v4UnicastAf = vrf.getV4UnicastAf();
+      AristaBgpNetworkConfiguration network = v4UnicastAf.getNetworks().get(prefix);
       assertThat(network, notNullValue());
       assertThat(network.getRouteMap(), equalTo("RM"));
+      // Ensure parser didn't go into "router bgp" context and stayed in "address family ipv4"
+      assertNull(vrf.getNextHopUnchanged());
+      assertTrue(v4UnicastAf.getNextHopUnchanged());
     }
   }
 
@@ -1001,5 +1005,123 @@ public class AristaGrammarTest {
             outputRouteBuilder,
             session,
             Direction.OUT));
+  }
+
+  @Test
+  public void testNextHopUnchangedExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_nexthop_unchanged");
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+      assertTrue(vrf.getV4neighbors().get(Ip.parse("9.9.9.9")).getNextHopUnchanged());
+      assertNull(vrf.getV4neighbors().get(Ip.parse("8.8.8.8")).getNextHopUnchanged());
+      assertTrue(vrf.getEvpnAf().getNextHopUnchanged());
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf2");
+      assertTrue(vrf.getNextHopUnchanged());
+      assertNull(vrf.getV4neighbors().get(Ip.parse("2.2.2.2")).getNextHopUnchanged());
+      assertNull(vrf.getV4neighbors().get(Ip.parse("2.2.2.22")).getNextHopUnchanged());
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf3");
+      assertNull(vrf.getNextHopUnchanged());
+      assertNull(vrf.getV4neighbors().get(Ip.parse("3.3.3.3")).getNextHopUnchanged());
+      assertNull(vrf.getV4neighbors().get(Ip.parse("3.3.3.33")).getNextHopUnchanged());
+      assertTrue(vrf.getV4UnicastAf().getNeighbor(Ip.parse("3.3.3.3")).getNextHopUnchanged());
+      assertNull(vrf.getV4UnicastAf().getNeighbor(Ip.parse("3.3.3.33")).getNextHopUnchanged());
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf4");
+      assertTrue(vrf.getV4UnicastAf().getNextHopUnchanged());
+    }
+  }
+
+  @Test
+  public void testNextHopUnchangedConversion() {
+    Configuration c = parseConfig("arista_bgp_nexthop_unchanged");
+    Ip nextHopIp = Ip.parse("42.42.42.42");
+    Bgpv4Route originalRoute =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.parse("1.2.3.0/24"))
+            .setNextHopIp(nextHopIp)
+            .setAdmin(1)
+            .setOriginatorIp(nextHopIp)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Ip headIp = Ip.parse("1.1.1.1");
+    Ip tailIp = Ip.parse("1.1.1.2");
+    BgpSessionProperties session =
+        BgpSessionProperties.builder()
+            .setHeadAs(1)
+            .setTailAs(2)
+            .setHeadIp(headIp)
+            .setTailIp(tailIp)
+            .setSessionType(SessionType.EBGP_SINGLEHOP)
+            .build();
+    {
+      // 9.9.9.9 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "9.9.9.9"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
+    }
+    {
+      // 8.8.8.8 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+    }
+    {
+      // 8.8.8.8 for EVPN
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerEvpnExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
+    }
+    {
+      // 7.7.7.7 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "7.7.7.7"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+    }
+    {
+      // 2.2.2.2 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf2", "2.2.2.2"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
+    }
+    {
+      // 2.2.2.22 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf2", "2.2.2.22"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
+    }
+    {
+      // 3.3.3.3 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.3"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
+    }
+    {
+      // 3.3.3.33 for IPv4
+      RoutingPolicy policy =
+          c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.33"));
+      Builder builder = Bgpv4Route.builder();
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+    }
   }
 }

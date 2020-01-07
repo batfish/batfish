@@ -3,6 +3,7 @@ package org.batfish.question.filterlinereachability;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -43,6 +44,11 @@ public class FilterLineReachabilityUtils {
           GenericAclLineVisitor<Stream<String>> {
 
     /* AclLine visit methods */
+
+    @Override
+    public Stream<String> visitAclAclLine(AclAclLine aclAclLine) {
+      return Stream.of(aclAclLine.getAclName());
+    }
 
     @Override
     public Stream<String> visitExprAclLine(ExprAclLine exprAclLine) {
@@ -106,6 +112,11 @@ public class FilterLineReachabilityUtils {
           GenericAclLineVisitor<Stream<String>> {
 
     /* AclLine visit methods */
+
+    @Override
+    public Stream<String> visitAclAclLine(AclAclLine aclAclLine) {
+      return Stream.of();
+    }
 
     @Override
     public Stream<String> visitExprAclLine(ExprAclLine exprAclLine) {

@@ -7,6 +7,7 @@ import com.google.common.collect.Ordering;
 import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -33,6 +34,12 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
     }
 
     /* AclLine visit methods */
+
+    @Override
+    public AclLine visitAclAclLine(AclAclLine aclAclLine) {
+      String lineName = aclAclLine.getName() != null ? aclAclLine.getName() : aclAclLine.toString();
+      return new AclAclLine(lineName, _aclRenamer.apply(aclAclLine.getAclName()));
+    }
 
     @Override
     public AclLine visitExprAclLine(ExprAclLine exprAclLine) {

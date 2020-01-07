@@ -1,4 +1,4 @@
-package org.batfish.representation.cumulus_interfaces;
+package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -10,6 +10,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VXLAN;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,18 +25,18 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.InterfaceBridgeSettings;
-import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.StaticRoute;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
-public final class Interface {
-  private static final Pattern PHYSICAL_INTERFACE_PATTERN =
+public final class InterfacesInterface implements Serializable {
+  public static final Pattern PHYSICAL_INTERFACE_PATTERN =
       Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
 
-  private static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
+  public static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
+
+  public static final Pattern VXLAN_INTERFACE_PATTERN = Pattern.compile("^vxlan([0-9]+)$");
+
+  public static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
 
   private @Nullable List<ConcreteInterfaceAddress> _addresses;
   private @Nullable Map<MacAddress, Set<InterfaceAddress>> _addressVirtuals;
@@ -59,7 +60,7 @@ public final class Interface {
   private @Nullable Set<String> _bridgePorts;
   private @Nonnull List<StaticRoute> _postUpIpRoutes;
 
-  public Interface(@Nonnull String name) {
+  public InterfacesInterface(@Nonnull String name) {
     _name = name;
     _postUpIpRoutes = ImmutableList.of();
   }
@@ -252,10 +253,11 @@ public final class Interface {
   }
 
   public static boolean isPhysicalInterfaceType(String ifaceName) {
-    if (PHYSICAL_INTERFACE_PATTERN.matcher(ifaceName).matches()) {
-      return true;
-    }
-    return false;
+    return PHYSICAL_INTERFACE_PATTERN.matcher(ifaceName).matches();
+  }
+
+  public static boolean isVlanInterfaceType(String ifaceName) {
+    return VLAN_INTERFACE_PATTERN.matcher(ifaceName).matches();
   }
 
   @Nonnull

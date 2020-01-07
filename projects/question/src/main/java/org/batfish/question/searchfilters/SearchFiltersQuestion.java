@@ -1,9 +1,6 @@
 package org.batfish.question.searchfilters;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.searchfilters.SearchFiltersQuestion.Type.DENY;
-import static org.batfish.question.searchfilters.SearchFiltersQuestion.Type.MATCH_LINE;
-import static org.batfish.question.searchfilters.SearchFiltersQuestion.Type.PERMIT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,34 +27,30 @@ import org.batfish.specifier.SpecifierFactories;
 
 /** A question to determine which flows match a particular ACL action. */
 public final class SearchFiltersQuestion extends Question {
-  private static final String PROP_ACTION = "action";
   private static final String PROP_COMPLEMENT_HEADERSPACE = "invertSearch";
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_HEADERS = "headers";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_START_LOCATION = "startLocation";
+  private static final String PROP_ACTION = "action";
 
   // Retained for backwards compatibility
   private static final String PROP_GENERATE_EXPLANATIONS = "explain";
 
   private static final PacketHeaderConstraints DEFAULT_HEADER_CONSTRAINTS =
       PacketHeaderConstraints.unconstrained();
-  private static final String DEFAULT_TYPE = "permit";
-
-  public enum Type {
-    PERMIT,
-    DENY,
-    MATCH_LINE
-  }
+  private static final String DEFAULT_ACTION = "permit";
 
   private final boolean _complementHeaderSpace;
-  // Invariant: null unless _type == MATCH_LINE
   @Nullable private final String _filters;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
-  @Nullable private Integer _lineNumber;
   @Nullable private final String _nodes;
+  @Nonnull private final SearchFiltersQuery _query;
   @Nullable private final String _startLocation;
-  @Nonnull private Type _type = PERMIT;
+
+  // Redundant with _query. Present for JSON serialization only, to avoid needing a new type of
+  // parameter in the question template.
+  @Nonnull private String _action;
 
   @JsonCreator
   private static SearchFiltersQuestion create(
@@ -67,14 +60,14 @@ public final class SearchFiltersQuestion extends Question {
       @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_START_LOCATION) String start,
-      @Nullable @JsonProperty(PROP_ACTION) String type) {
+      @Nullable @JsonProperty(PROP_ACTION) String action) {
     return new SearchFiltersQuestion(
         firstNonNull(complementHeaderSpace, false),
         filters,
         firstNonNull(headerConstraints, DEFAULT_HEADER_CONSTRAINTS),
         nodes,
         start,
-        firstNonNull(type, DEFAULT_TYPE));
+        firstNonNull(action, DEFAULT_ACTION));
   }
 
   private SearchFiltersQuestion(
@@ -83,17 +76,18 @@ public final class SearchFiltersQuestion extends Question {
       @Nonnull PacketHeaderConstraints headerConstraints,
       @Nullable String nodes,
       @Nullable String start,
-      @Nonnull String type) {
+      @Nonnull String action) {
     _complementHeaderSpace = complementHeaderSpace;
     _filters = filters;
     _headerConstraints = headerConstraints;
     _nodes = nodes;
     _startLocation = start;
-    setQuery(type);
+    _query = generateQuery(action);
+    _action = action;
   }
 
   SearchFiltersQuestion() {
-    this(false, null, DEFAULT_HEADER_CONSTRAINTS, null, null, DEFAULT_TYPE);
+    this(false, null, DEFAULT_HEADER_CONSTRAINTS, null, null, DEFAULT_ACTION);
   }
 
   @Override
@@ -106,20 +100,22 @@ public final class SearchFiltersQuestion extends Question {
     return "searchfilters";
   }
 
-  @JsonProperty(PROP_ACTION)
-  private void setQuery(String query) {
-    if (query.equals("permit")) {
-      _type = PERMIT;
-      _lineNumber = null;
-    } else if (query.equals("deny")) {
-      _type = DENY;
-      _lineNumber = null;
-    } else if (query.startsWith("matchLine")) {
-      _type = MATCH_LINE;
-      _lineNumber = Integer.parseInt(query.substring("matchLine".length()).trim());
+  private SearchFiltersQuery generateQuery(String type) {
+    if (type.equals("permit")) {
+      return PermitQuery.INSTANCE;
+    } else if (type.equals("deny")) {
+      return DenyQuery.INSTANCE;
+    } else if (type.startsWith("matchLine")) {
+      int lineNum = Integer.parseInt(type.substring("matchLine".length()).trim());
+      return new MatchLineQuery(lineNum);
     } else {
-      throw new BatfishException("Unrecognized query: " + query);
+      throw new BatfishException("Unrecognized query type: " + type);
     }
+  }
+
+  @JsonProperty(PROP_ACTION)
+  private String getAction() {
+    return _action;
   }
 
   @JsonProperty(PROP_COMPLEMENT_HEADERSPACE)
@@ -158,15 +154,10 @@ public final class SearchFiltersQuestion extends Question {
         _filters, AllFiltersFilterSpecifier.INSTANCE);
   }
 
+  @Nonnull
   @JsonIgnore
-  @Nullable
-  public Integer getLineNumber() {
-    return _lineNumber;
-  }
-
-  @JsonIgnore
-  public Type getType() {
-    return _type;
+  public SearchFiltersQuery getQuery() {
+    return _query;
   }
 
   @Nonnull
@@ -263,7 +254,7 @@ public final class SearchFiltersQuestion extends Question {
           firstNonNull(_headers, DEFAULT_HEADER_CONSTRAINTS),
           _nodeSpecifierInput,
           _startLocation,
-          firstNonNull(_type, DEFAULT_TYPE));
+          firstNonNull(_type, DEFAULT_ACTION));
     }
   }
 }
