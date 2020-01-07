@@ -19,6 +19,16 @@ number_or_range
   lo = number (DASH hi = number)?
 ;
 
+prefix
+:
+  IP_PREFIX
+;
+
+prefix6
+:
+  IPV6_PREFIX
+;
+
 vlan_id
 :
   v = NUMBER

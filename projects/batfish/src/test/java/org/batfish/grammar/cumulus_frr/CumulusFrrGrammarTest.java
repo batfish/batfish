@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -26,6 +27,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
@@ -67,6 +69,7 @@ import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
 import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
+import org.batfish.representation.cumulus.BgpNetwork;
 import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
@@ -601,6 +604,26 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrVrfIpRoutes_blackhole() {
+    Vrf vrf = new Vrf("NAME");
+    _frr.getVrfs().put("NAME", vrf);
+    parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
+    assertThat(
+        vrf.getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("1.0.0.0/8"), null, NULL_INTERFACE_NAME))));
+  }
+
+  @Test
+  public void testCumulusFrrVrf_noExit() {
+    Vrf vrf = new Vrf("NAME");
+    _frr.getVrfs().put("NAME", vrf);
+    parse("vrf NAME\n vni 170000\n");
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
   public void testCumulusFrrRouteMap() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nroute-map %s deny 20\n", name, name));
@@ -1059,6 +1082,15 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpNetwork() {
+    Prefix network = Prefix.parse("10.0.0.0/8");
+    parseLines("router bgp 10000", "network 10.0.0.0/8");
+    assertThat(
+        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
+  }
+
+  @Test
   public void testIp4vUnicastRoutemap_in() {
     parseLines(
         "router bgp 10000",
@@ -1104,6 +1136,18 @@ public class CumulusFrrGrammarTest {
             "R",
             CumulusStructureUsage.BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT),
         contains(4));
+  }
+
+  @Test
+  public void testInterface_IPv6() {
+    parseLines("interface swp1", "ipv6 nd ra-interval 10");
+    assertTrue(_warnings.getParseWarnings().isEmpty());
+  }
+
+  @Test
+  public void testInterface_No() {
+    parseLines("interface swp1", "no ipv6 nd suppress-ra");
+    assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
   /**

@@ -106,6 +106,11 @@ BGP
   'bgp'
 ;
 
+BLACKHOLE
+:
+  'blackhole'
+;
+
 CALL
 :
   'call' -> pushMode(M_Word)
@@ -428,6 +433,11 @@ MULTIPATH_RELAX
   'multipath-relax'
 ;
 
+ND
+:
+   'nd'
+;
+
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
@@ -513,6 +523,11 @@ PREPEND
   'prepend'
 ;
 
+RA_INTERVAL
+:
+   'ra-interval'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -578,9 +593,9 @@ SUMMARY_ONLY
   'summary-only'
 ;
 
-SUBNET_MASK
+SUPPRESS_RA
 :
-  F_SubnetMask
+  'suppress-ra'
 ;
 
 SYSLOG
@@ -626,6 +641,11 @@ NEXT_HOP
 ROUTE_REFLECTOR_CLIENT
 :
   'route-reflector-client'
+;
+
+SUBNET_MASK
+:
+  F_SubnetMask
 ;
 
 UINT8
