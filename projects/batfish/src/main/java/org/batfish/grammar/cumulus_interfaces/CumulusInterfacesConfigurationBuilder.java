@@ -101,8 +101,8 @@ public final class CumulusInterfacesConfigurationBuilder
     return _config;
   }
 
-  private static @Nonnull Prefix toPrefix(PrefixContext ctx) {
-    return Prefix.parse(ctx.getText());
+  private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(PrefixContext ctx) {
+    return ConcreteInterfaceAddress.parse(ctx.getText());
   }
 
   @Override
@@ -169,9 +169,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_address(I_addressContext ctx) {
     if (ctx.prefix() != null) { // ignore v6
-      Prefix prefix = toPrefix(ctx.prefix());
-      _currentIface.addAddress(
-          ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()));
+      _currentIface.addAddress(toConcreteInterfaceAddress(ctx.prefix()));
     }
   }
 
@@ -380,12 +378,11 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitL_address(L_addressContext ctx) {
-    Prefix prefix = toPrefix(ctx.prefix());
     _config
         .getInterfacesConfiguration()
         .getLoopback()
         .getAddresses()
-        .add(ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()));
+        .add(toConcreteInterfaceAddress(ctx.prefix()));
   }
 
   @Override
