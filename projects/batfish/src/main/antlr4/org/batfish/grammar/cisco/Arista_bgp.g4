@@ -6,6 +6,22 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+eos_as_range
+:
+  lo = bgp_asn
+  (
+    DASH hi = bgp_asn
+  )?
+;
+
+eos_as_range_list
+:
+  aslist += eos_as_range
+  (
+    COMMA aslist += eos_as_range
+  )*
+;
+
 eos_bgp_community
 :
   EXTENDED
@@ -310,7 +326,7 @@ eos_rbi_bgp
     | eos_rbib_bestpath
 //    | eos_rbib_client_to_client
     | eos_rbib_cluster_id
-//    | eos_rbib_confederation
+    | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
     | eos_rbib_convergence
 //    | eos_rbib_default
@@ -358,6 +374,25 @@ eos_rbib_always_compare_med
 eos_rbib_asn
 :
   ASN NOTATION (ASDOT | ASPLAIN) NEWLINE
+;
+
+eos_rbib_confederation
+:
+  CONFEDERATION
+  (
+    eos_rbibconf_identifier
+    | eos_rbibconf_peers
+  )
+;
+
+eos_rbibconf_identifier
+:
+  IDENTIFIER asn = bgp_asn NEWLINE
+;
+
+eos_rbibconf_peers
+:
+  PEERS asns = eos_as_range_list NEWLINE
 ;
 
 eos_rbib_convergence

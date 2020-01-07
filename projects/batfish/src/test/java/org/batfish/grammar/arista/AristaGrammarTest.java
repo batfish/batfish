@@ -35,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -1122,6 +1123,27 @@ public class AristaGrammarTest {
       Builder builder = Bgpv4Route.builder();
       policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
+    }
+  }
+
+  @Test
+  public void testConfederationExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_bgp_confederations");
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
+      assertThat(vrf.getConfederationIdentifier(), equalTo(1111L));
+      assertThat(vrf.getConfederationPeers(), equalTo(LongSpace.of(Range.closed(3L, 6L))));
+    }
+    {
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf2");
+      assertThat(vrf.getConfederationIdentifier(), equalTo((22L << 16) + 22));
+      assertThat(
+          vrf.getConfederationPeers(),
+          equalTo(
+              LongSpace.unionOf(
+                  Range.closed((1L << 16) + 1, (2L << 16) + 2),
+                  Range.singleton((3L << 16) + 3),
+                  Range.singleton(44L))));
     }
   }
 }
