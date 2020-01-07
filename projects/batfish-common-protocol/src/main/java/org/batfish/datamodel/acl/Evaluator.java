@@ -75,7 +75,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     return _availableAcls
             .get(permittedByAcl.getAclName())
-            .filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces, LineAction.DENY)
+            .filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces)
             .getAction()
         == LineAction.PERMIT;
   }
