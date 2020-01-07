@@ -1246,7 +1246,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             computeOutgoingFilterName(computeObjectName(zone.getVsys().getName(), zone.getName()));
         aclLines.add(
             new AclAclLine(
-                String.format("Match restrictions for zone %s", zone.getName()), zoneFilterName));
+                String.format(
+                    "Match restrictions for exiting zone %s in vsys %s",
+                    zone.getName(), zone.getVsys().getName()),
+                zoneFilterName));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }

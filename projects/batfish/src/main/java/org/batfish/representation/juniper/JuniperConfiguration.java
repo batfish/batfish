@@ -2100,9 +2100,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
-      for (String zoneName : zone.getFromZonePolicies().keySet()) {
-        zoneAclLines.add(
-            new AclAclLine(String.format("Match traffic from zone %s", zoneName), zoneName));
+      for (String fromZone : zone.getFromZonePolicies().keySet()) {
+        String zonePolicyLineDesc =
+            fromZone.equals(zone.getName())
+                ? String.format("Match intra-zone policy for zone %s", fromZone)
+                : String.format(
+                    "Match cross-zone policy from-zone %s to-zone %s", fromZone, zone.getName());
+        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, fromZone));
       }
     }
 
