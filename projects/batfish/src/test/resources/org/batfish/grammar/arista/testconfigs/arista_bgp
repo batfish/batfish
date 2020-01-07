@@ -61,3 +61,8 @@ router bgp 1
     bgp next-hop address-family ipv6
     bgp redistribute-internal
     bgp route install ROUTE_MAP
+    graceful-restart
+  address-family evpn
+    graceful-restart
+    host-flap detection threshold 2
+    host-flap detection window 3
