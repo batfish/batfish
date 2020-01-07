@@ -380,16 +380,17 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitL_address(L_addressContext ctx) {
+    Prefix prefix = toPrefix(ctx.prefix());
     _config
         .getInterfacesConfiguration()
         .getLoopback()
         .getAddresses()
-        .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+        .add(ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()));
   }
 
   @Override
   public void exitL_alias(L_aliasContext ctx) {
-    _config.getLoopback().setAlias(ctx.TEXT().getText());
+    _config.getInterfacesConfiguration().getLoopback().setAlias(ctx.TEXT().getText());
   }
 
   @Override
