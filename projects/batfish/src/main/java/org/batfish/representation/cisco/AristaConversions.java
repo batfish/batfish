@@ -647,6 +647,10 @@ final class AristaConversions {
           .setOwner(c)
           .build();
       evpnFamilyBuilder.setExportPolicy(policyName);
+      String importPolicyName = nEvpn.getRouteMapIn();
+      if (importPolicyName != null && c.getRoutingPolicies().get(importPolicyName) != null) {
+        evpnFamilyBuilder.setImportPolicy(importPolicyName);
+      }
       newNeighborBuilder.setEvpnAddressFamily(evpnFamilyBuilder.build());
     }
 
