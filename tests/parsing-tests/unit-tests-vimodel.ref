@@ -1049,8 +1049,7 @@
             "outgoingTransformation" : {
               "guard" : {
                 "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                "aclName" : "acl1",
-                "defaultAccept" : false
+                "aclName" : "acl1"
               },
               "transformationSteps" : [
                 {
@@ -2578,8 +2577,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
-                      "defaultAccept" : false
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~"
                     }
                   ]
                 }
@@ -8145,8 +8143,7 @@
             "outgoingTransformation" : {
               "guard" : {
                 "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                "aclName" : "def",
-                "defaultAccept" : false
+                "aclName" : "def"
               },
               "transformationSteps" : [
                 {
@@ -8686,8 +8683,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
-                      "defaultAccept" : false
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
                     }
                   ]
                 }
@@ -24547,8 +24543,7 @@
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                  "aclName" : "~EXISTING_CONNECTION~",
-                  "defaultAccept" : false
+                  "aclName" : "~EXISTING_CONNECTION~"
                 },
                 "name" : "EXISTING_CONNECTION"
               },
@@ -32052,8 +32047,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10",
-                      "defaultAccept" : false
+                      "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10"
                     }
                   ]
                 }

@@ -64,7 +64,7 @@ public class PermittedByAclTest {
 
     Map<String, IpAccessList> acceptAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.PERMIT);
     Map<String, IpAccessList> rejectAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.DENY);
-    PermittedByAcl exprMatch = new PermittedByAcl("acl1", false);
+    PermittedByAcl exprMatch = new PermittedByAcl("acl1");
 
     // Confirm a flow matching the ACL is correctly identified as accepted
     assertThat(exprMatch, matches(createFlow("1.2.3.4"), "", acceptAcl));
