@@ -316,10 +316,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_MAX_RUNTIME_MS);
   }
 
-  public boolean getPedanticRecord() {
-    return !_config.getBoolean(BfConsts.ARG_PEDANTIC_SUPPRESS);
-  }
-
   @Override
   public boolean getPrintParseTree() {
     return _config.getBoolean(ARG_PRINT_PARSE_TREES);
@@ -333,10 +329,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   public @Nullable QuestionId getQuestionName() {
     String name = _config.getString(BfConsts.ARG_QUESTION_NAME);
     return name != null ? new QuestionId(name) : null;
-  }
-
-  public boolean getRedFlagRecord() {
-    return !_config.getBoolean(BfConsts.ARG_RED_FLAG_SUPPRESS);
   }
 
   public RunMode getRunMode() {
@@ -456,10 +448,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_TRACING_ENABLE);
   }
 
-  public boolean getUnimplementedRecord() {
-    return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
-  }
-
   @Override
   public boolean getUseAristaBgp() {
     return debugFlagEnabled(DEBUG_FLAG_USE_ARISTA_BGP);
@@ -532,13 +520,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
-    setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PARSE_REUSE, true);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
-    setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
     setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
     setDefaultProperty(ARG_SEQUENTIAL, false);
     setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
@@ -560,7 +546,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
-    setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
@@ -708,16 +693,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_PARSE_REUSE, "reuse parse results when appropriate");
 
-    addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
-
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
     addBooleanOption(
         ARG_PRINT_PARSE_TREE_LINE_NUMS, "print line numbers when printing parse trees");
 
     addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
-
-    addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS, "suppresses red-flag warnings");
 
     addOption(
         ARG_RUN_MODE,
@@ -769,10 +750,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
 
     addBooleanOption(
-        BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
-        "suppresses warnings about unimplemented configuration directives");
-
-    addBooleanOption(
         BfConsts.ARG_VERBOSE_PARSE,
         "(developer option) include parse/convert data in init-testrig answer");
 
@@ -809,8 +786,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "gsremoteas",
           "logtee",
           "outputenv",
+          "pedanticsuppress",
           "ppa",
+          "redflagsuppress",
           "stext",
+          "unimplementedsuppress",
           "venv"
         }) {
       addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
@@ -876,11 +856,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
     getIntOptionValue(ARG_PARENT_PID);
-    getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
-    getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
     getStringOptionValue(ARG_RUN_MODE);
     getBooleanOptionValue(ARG_SEQUENTIAL);
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
@@ -907,7 +885,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(ARG_TRACING_AGENT_HOST);
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
-    getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
     getIntegerOptionValue(ARG_Z3_TIMEOUT);
     getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
