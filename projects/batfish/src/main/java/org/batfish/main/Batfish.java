@@ -730,10 +730,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
-        settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
-        settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
-        settings.getUnimplementedRecord()
-            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
+        settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
+        settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
+        settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
   @Override
