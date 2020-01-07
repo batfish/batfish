@@ -369,16 +369,16 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testIfaceMtu() {
     String input = "iface swp1\n mtu 9000\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertThat(iface.getMtu(), equalTo(9000));
   }
 
   @Test
   public void testIfaceMtu_null() {
     String input = "iface swp1\n";
-    Interfaces interfaces = parse(input);
-    Interface iface = interfaces.getInterfaces().get("swp1");
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
     assertNull(iface.getMtu());
   }
 
@@ -499,7 +499,8 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopbackAlias() {
     parse("iface lo inet loopback\n alias my aliases\n");
-    assertThat(_config.getLoopback().getAlias(), equalTo("my aliases"));
+    assertThat(
+        _config.getInterfacesConfiguration().getLoopback().getAlias(), equalTo("my aliases"));
   }
 
   @Test

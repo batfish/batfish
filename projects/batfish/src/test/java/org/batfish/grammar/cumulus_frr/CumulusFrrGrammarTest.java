@@ -606,7 +606,7 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrVrfIpRoutes_blackhole() {
     Vrf vrf = new Vrf("NAME");
-    _config.getVrfs().put("NAME", vrf);
+    _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
     assertThat(
         vrf.getStaticRoutes(),
@@ -618,7 +618,7 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrVrf_noExit() {
     Vrf vrf = new Vrf("NAME");
-    _config.getVrfs().put("NAME", vrf);
+    _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n vni 170000\n");
     assertTrue(_warnings.getParseWarnings().isEmpty());
   }
