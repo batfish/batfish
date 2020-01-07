@@ -175,5 +175,4 @@ public final class TraceElement implements Serializable {
   public String toString() {
     return _fragments.stream().map(Fragment::getText).collect(Collectors.joining());
   }
-
 }
