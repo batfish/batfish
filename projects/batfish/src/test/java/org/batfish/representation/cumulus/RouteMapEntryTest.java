@@ -70,7 +70,7 @@ public class RouteMapEntryTest {
   public void testGetSets_Community() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetCommunity(
-        new RouteMapSetCommunity(ImmutableSet.of(StandardCommunity.of(60000, 10))));
+			  new RouteMapSetCommunity(ImmutableSet.of(StandardCommunity.of(60000, 10)), false));
 
     ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
 

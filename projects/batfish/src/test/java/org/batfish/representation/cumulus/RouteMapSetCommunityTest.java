@@ -16,7 +16,7 @@ public class RouteMapSetCommunityTest {
   public void toStatements() {
     List<StandardCommunity> communities =
         ImmutableList.of(StandardCommunity.parse("65000:1"), StandardCommunity.parse("65000:2"));
-    RouteMapSetCommunity set = new RouteMapSetCommunity(communities);
+    RouteMapSetCommunity set = new RouteMapSetCommunity(communities, false);
 
     assertThat(
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList()),

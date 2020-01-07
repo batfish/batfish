@@ -866,11 +866,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (old != null) {
       _w.addWarning(ctx, ctx.getText(), _parser, "overwriting set community");
     }
+    boolean additive = ctx.ADDITIVE() != null;
     _currentRouteMapEntry.setSetCommunity(
         new RouteMapSetCommunity(
             ctx.communities.stream()
                 .map(this::toStandardCommunity)
-                .collect(ImmutableList.toImmutableList())));
+                .collect(ImmutableList.toImmutableList()), additive));
   }
 
   @Override
