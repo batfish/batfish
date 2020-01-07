@@ -524,7 +524,7 @@ final class AristaConversions {
                   .setAdvertiseInactive(
                       firstNonNull(vrfConfig.getAdvertiseInactive(), Boolean.FALSE))
                   .setAllowLocalAsIn(Boolean.FALSE) // todo
-                  .setAllowRemoteAsOut(Boolean.FALSE) // todo
+                  .setAllowRemoteAsOut(true) // this is always true on Arista
                   .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
                   .setSendExtendedCommunity(
                       firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
