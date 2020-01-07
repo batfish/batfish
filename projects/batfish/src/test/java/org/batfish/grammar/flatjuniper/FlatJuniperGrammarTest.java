@@ -4988,8 +4988,7 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         ExprAclLine.accepting(
                             new AndMatchExpr(
-                                ImmutableList.of(
-                                    new PermittedByAcl("~SCREEN~IDS_OPTION_NAME", false))))))
+                                ImmutableList.of(new PermittedByAcl("~SCREEN~IDS_OPTION_NAME"))))))
                 .build()));
 
     assertThat(
@@ -4999,7 +4998,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN_INTERFACE~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
-                        ExprAclLine.accepting(new PermittedByAcl("~SCREEN_ZONE~untrust", false))))
+                        ExprAclLine.accepting(new PermittedByAcl("~SCREEN_ZONE~untrust"))))
                 .build()));
 
     assertThat(
@@ -5012,8 +5011,8 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.accepting(
                             new AndMatchExpr(
                                 ImmutableList.of(
-                                    new PermittedByAcl("~SCREEN_INTERFACE~ge-0/0/0.0", false),
-                                    new PermittedByAcl("FILTER1", false))))))
+                                    new PermittedByAcl("~SCREEN_INTERFACE~ge-0/0/0.0"),
+                                    new PermittedByAcl("FILTER1"))))))
                 .build()));
 
     assertThat(
