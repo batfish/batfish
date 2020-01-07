@@ -68,6 +68,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
@@ -1141,9 +1142,27 @@ public class AristaGrammarTest {
           vrf.getConfederationPeers(),
           equalTo(
               LongSpace.unionOf(
-                  Range.closed((1L << 16) + 1, (2L << 16) + 2),
+                  Range.closed((1L << 16) + 1, (1L << 16) + 2),
                   Range.singleton((3L << 16) + 3),
                   Range.singleton(44L))));
+    }
+  }
+
+  @Test
+  public void testConfederationConversion() {
+    Configuration c = parseConfig("arista_bgp_confederations");
+    {
+      BgpConfederation confederation = c.getDefaultVrf().getBgpProcess().getConfederation();
+      assertThat(confederation.getId(), equalTo(1111L));
+      assertThat(confederation.getMembers(), equalTo(ImmutableSet.of(3L, 4L, 5L, 6L)));
+    }
+    {
+      BgpConfederation confederation = c.getVrfs().get("vrf2").getBgpProcess().getConfederation();
+
+      assertThat(confederation.getId(), equalTo((22L << 16) + 22));
+      assertThat(
+          confederation.getMembers(),
+          containsInAnyOrder((1L << 16) + 1, (1L << 16) + 2, (3L << 16) + 3, 44L));
     }
   }
 }

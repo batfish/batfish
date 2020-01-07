@@ -9,4 +9,4 @@ router bgp 1
   bgp confederation peers 3,4,5-6
   vrf vrf2
     bgp confederation identifier 22.22
-    bgp confederation peers 1.1-2.2,3.3,44
+    bgp confederation peers 1.1-1.2,3.3,44
