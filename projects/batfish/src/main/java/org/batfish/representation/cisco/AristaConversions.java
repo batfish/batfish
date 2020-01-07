@@ -523,7 +523,10 @@ final class AristaConversions {
               AddressFamilyCapabilities.builder()
                   .setAdvertiseInactive(
                       firstNonNull(vrfConfig.getAdvertiseInactive(), Boolean.FALSE))
-                  .setAllowLocalAsIn(Boolean.FALSE) // todo
+                  .setAllowLocalAsIn(
+                      firstNonNull(
+                              neighbor.getAllowAsIn(), firstNonNull(vrfConfig.getAllowAsIn(), 0))
+                          > 0)
                   .setAllowRemoteAsOut(true) // this is always true on Arista
                   .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
                   .setSendExtendedCommunity(

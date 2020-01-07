@@ -892,13 +892,26 @@ public class AristaGrammarTest {
   @Test
   public void testAllowasInConversion() {
     Configuration c = parseConfig("arista_bgp_allowas_in");
-    BgpActivePeerConfig peerConfig =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
-    assertTrue(
-        peerConfig
-            .getIpv4UnicastAddressFamily()
-            .getAddressFamilyCapabilities()
-            .getAllowLocalAsIn());
+    {
+      BgpActivePeerConfig peerConfig =
+          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+      assertTrue(
+          peerConfig
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities()
+              .getAllowLocalAsIn());
+    }
+    {
+      BgpActivePeerConfig peerConfig =
+          c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("2.2.2.2/32"));
+      assertTrue(
+          peerConfig
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities()
+              .getAllowLocalAsIn());
+      assertTrue(
+          peerConfig.getEvpnAddressFamily().getAddressFamilyCapabilities().getAllowLocalAsIn());
+    }
   }
 
   @Test
