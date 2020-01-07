@@ -830,7 +830,7 @@ class FlowTracer {
                       // TODO: handle ACLs
 
                       // add ExitOutputIfaceStep
-                      _steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
+                      flowTracer._steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
 
                       SortedSet<NodeInterfacePair> neighborIfaces =
                           _tracerouteContext.getInterfaceNeighbors(
@@ -839,7 +839,7 @@ class FlowTracer {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
                                 currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
-                        buildArpFailureTrace(
+                        flowTracer.buildArpFailureTrace(
                             outgoingIfaceName, _currentFlow.getDstIp(), disposition);
                       } else {
                         flowTracer.processOutgoingInterfaceEdges(
