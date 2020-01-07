@@ -283,6 +283,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -344,6 +345,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -538,6 +540,8 @@ import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Eigrp_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_as_rangeContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_as_range_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bgp_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_domainContext;
@@ -594,6 +598,8 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbib_next_hop_unchangedContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibbpa_multipath_relaxContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibconf_identifierContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_rbibconf_peersContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_limitContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbibl_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_rbin_peer_groupContext;
@@ -1336,6 +1342,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     String[] parts = ctx.asn4b.getText().split("\\.");
     return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
+  }
+
+  @Nonnull
+  private static LongSpace toAsSpace(Eos_as_rangeContext rangeContext) {
+    if (rangeContext.hi == null) {
+      return LongSpace.of(toAsNum(rangeContext.lo));
+    } else {
+      return LongSpace.of(Range.closed(toAsNum(rangeContext.lo), toAsNum(rangeContext.hi)));
+    }
+  }
+
+  @Nonnull
+  private static LongSpace toAsSpace(Eos_as_range_listContext asns) {
+    LongSpace.Builder builder = LongSpace.builder();
+    for (Eos_as_rangeContext rangeContext : asns.aslist) {
+      builder.including(toAsSpace(rangeContext));
+    }
+    return builder.build();
   }
 
   @Nonnull
@@ -2532,6 +2556,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _currentAristaBgpVrf.setClusterId(clusterId);
     }
+  }
+
+  @Override
+  public void exitEos_rbibconf_identifier(Eos_rbibconf_identifierContext ctx) {
+    _currentAristaBgpVrf.setConfederationIdentifier(toAsNum(ctx.asn));
+  }
+
+  @Override
+  public void exitEos_rbibconf_peers(Eos_rbibconf_peersContext ctx) {
+    _currentAristaBgpVrf.setConfederationPeers(toAsSpace(ctx.asns));
   }
 
   @Override
