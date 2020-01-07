@@ -113,7 +113,9 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   bgpProcess ->
                       bgpProcess.getConfederation() != null
-                          ? bgpProcess.getConfederation().getMembers()
+                          // Enumerating for backwards compatibility with schema.
+                          // TODO: Can be too much data for large spaces.
+                          ? bgpProcess.getConfederation().getMembers().enumerate()
                           : null,
                   Schema.set(Schema.LONG),
                   "Set of autonomous system numbers visible only within this BGP confederation"))

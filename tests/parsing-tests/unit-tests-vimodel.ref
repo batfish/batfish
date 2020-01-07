@@ -18217,10 +18217,7 @@
             "bgpProcess" : {
               "confederation" : {
                 "id" : 65001,
-                "members" : [
-                  65002,
-                  65003
-                ]
+                "members" : "65002-65003"
               },
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
