@@ -1231,7 +1231,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (sharedGatewayOptional.isPresent()) {
       Vsys sharedGateway = sharedGatewayOptional.get();
       String sgName = sharedGateway.getName();
-      String outgoingFilterName = computeObjectName(sgName, sgName);
+      String outgoingFilterName = computeOutgoingFilterName(computeObjectName(sgName, sgName));
       aclLines.add(
           new AclAclLine(
               String.format("Match restrictions for shared gateway %s", sgName),
@@ -1242,7 +1242,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
-        String zoneFilterName = computeObjectName(zone.getVsys().getName(), zone.getName());
+        String zoneFilterName =
+            computeOutgoingFilterName(computeObjectName(zone.getVsys().getName(), zone.getName()));
         aclLines.add(
             new AclAclLine(
                 String.format("Match restrictions for zone %s", zone.getName()), zoneFilterName));
