@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -442,12 +441,6 @@ public abstract class BgpPeerConfig implements Serializable {
     public S setEvpnAddressFamily(@Nullable EvpnAddressFamily evpnAddressFamily) {
       _evpnAddressFamily = evpnAddressFamily;
       return getThis();
-    }
-
-    protected final void checkValid() {
-      checkArgument(
-          _ipv4UnicastAddressFamily != null || _evpnAddressFamily != null,
-          "At least one address family required for BGP peer");
     }
   }
 }
