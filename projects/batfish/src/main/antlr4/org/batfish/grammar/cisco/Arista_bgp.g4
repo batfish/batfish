@@ -176,8 +176,8 @@ eos_rb_af_evpn
   EVPN NEWLINE
   (
     eos_rb_af_evpn_bgp
-//    | eos_rb_af_evpn_graceful_restart
-//    | eos_rb_af_evpn_host_flap
+    | eos_rb_af_evpn_graceful_restart
+    | eos_rb_af_evpn_host_flap
     | eos_rb_af_evpn_neighbor
     | eos_rb_af_evpn_no
   )*
@@ -190,6 +190,16 @@ eos_rb_af_evpn_bgp
     eos_rbafeb_additional_paths
     | eos_rbafeb_next_hop_unchanged
   )
+;
+
+eos_rb_af_evpn_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rb_af_evpn_host_flap
+:
+  HOST_FLAP null_rest_of_line
 ;
 
 eos_rb_af_evpn_neighbor
@@ -224,7 +234,7 @@ eos_rb_af_neighbor_common
   (
     eos_rbafnc_activate
 //    | eos_rbafnc_additional_paths
-//    | eos_rbafnc_graceful_restart
+    | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
@@ -244,6 +254,11 @@ eos_rbafeb_next_hop_unchanged
 eos_rbafnc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnc_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
 ;
 
 eos_rbafnc_next_hop_unchanged
@@ -537,9 +552,9 @@ eos_rbi_neighbor_common
     | eos_rbinc_enforce_first_as
     | eos_rbinc_export_localpref
     | eos_rbinc_fall_over
-//    | eos_rbinc_graceful_restart
-//    | eos_rbinc_graceful_restart_helper
-//    | eos_rbinc_idle_restart_timer
+    | eos_rbinc_graceful_restart
+    | eos_rbinc_graceful_restart_helper
+    | eos_rbinc_idle_restart_timer
 //    | eos_rbinc_import_localpref
 //    | eos_rbinc_link_bandwidth
     | eos_rbinc_local_as
@@ -560,7 +575,7 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
     | eos_rbinc_shutdown
-//    | eos_rbinc_soft_reconfiguration
+    | eos_rbinc_soft_reconfiguration
     | eos_rbinc_timers
 //    | eos_rbinc_transport
 //    | eos_rbinc_ttl
@@ -626,6 +641,21 @@ eos_rbinc_export_localpref
 eos_rbinc_fall_over
 :
   FALL_OVER BFD NEWLINE
+;
+
+eos_rbinc_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbinc_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
+;
+
+eos_rbinc_idle_restart_timer
+:
+  IDLE_RESTART_TIMER time = DEC NEWLINE
 ;
 
 eos_rbinc_local_as
@@ -697,6 +727,11 @@ eos_rbinc_send_community
 eos_rbinc_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbinc_soft_reconfiguration
+:
+  SOFT_RECONFIGURATION INBOUND ALL? NEWLINE
 ;
 
 eos_rbinc_timers
