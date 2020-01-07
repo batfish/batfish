@@ -12,6 +12,8 @@ s_interface
   (
     si_description
     | si_ip
+    | si_ipv6
+    | si_no
   )*
 ;
 
@@ -27,6 +29,24 @@ si_ip
 siip_address
 :
   ADDRESS ip_prefix = IP_PREFIX NEWLINE
+;
+
+si_ipv6
+:
+   IPV6 null_rest_of_line
+;
+
+si_no
+:
+   NO
+   (
+      sino_ipv6
+   )
+;
+
+sino_ipv6
+:
+   IPV6 null_rest_of_line
 ;
 
 si_description

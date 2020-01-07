@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -36,6 +37,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_pe
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_priorityContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_mtuContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_raw_deviceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfContext;
@@ -45,9 +47,11 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_lo
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Ipuir_addContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_aliasContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.PrefixContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
@@ -95,6 +99,10 @@ public final class CumulusInterfacesConfigurationBuilder
   @VisibleForTesting
   CumulusConcatenatedConfiguration getConfig() {
     return _config;
+  }
+
+  private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(PrefixContext ctx) {
+    return ConcreteInterfaceAddress.parse(ctx.getText());
   }
 
   @Override
@@ -160,7 +168,9 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_address(I_addressContext ctx) {
-    _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+    if (ctx.prefix() != null) { // ignore v6
+      _currentIface.addAddress(toConcreteInterfaceAddress(ctx.prefix()));
+    }
   }
 
   @Override
@@ -289,6 +299,11 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
+  public void exitI_mtu(I_mtuContext ctx) {
+    _currentIface.setMtu(toInt(ctx.number()));
+  }
+
+  @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
     String vlanId = ctx.number().getText();
     _config.defineStructure(CumulusStructureType.VLAN, vlanId, ctx);
@@ -367,7 +382,12 @@ public final class CumulusInterfacesConfigurationBuilder
         .getInterfacesConfiguration()
         .getLoopback()
         .getAddresses()
-        .add(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+        .add(toConcreteInterfaceAddress(ctx.prefix()));
+  }
+
+  @Override
+  public void exitL_alias(L_aliasContext ctx) {
+    _config.getInterfacesConfiguration().getLoopback().setAlias(ctx.TEXT().getText());
   }
 
   @Override

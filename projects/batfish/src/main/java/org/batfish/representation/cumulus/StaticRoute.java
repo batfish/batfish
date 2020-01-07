@@ -4,6 +4,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STAT
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_METRIC;
 import static org.batfish.representation.cumulus.Interface.NULL_INTERFACE_NAME;
 
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -71,5 +72,15 @@ public class StaticRoute implements Serializable {
                 ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
                 : _nextHopInterface)
         .build();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add("_network", _network)
+        .add("_nextHopIp", _nextHopIp)
+        .add("_nextHopInterface", _nextHopInterface)
+        .toString();
   }
 }

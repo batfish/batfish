@@ -207,6 +207,12 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceAddressV6() {
+    parse("iface swp1\n address ::1/128\n");
+    assertThat(_warnings.getParseWarnings().size(), equalTo(0));
+  }
+
+  @Test
   public void testIfaceAddressVirtual() {
     String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4/24\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("vlan1");
@@ -361,6 +367,22 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceMtu() {
+    String input = "iface swp1\n mtu 9000\n";
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
+    assertThat(iface.getMtu(), equalTo(9000));
+  }
+
+  @Test
+  public void testIfaceMtu_null() {
+    String input = "iface swp1\n";
+    CumulusInterfacesConfiguration interfaces = parse(input);
+    InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
+    assertNull(iface.getMtu());
+  }
+
+  @Test
   public void testMstpctlBpduguard() {
     parse("iface vni1\n mstpctl-bpduguard yes\n");
   }
@@ -378,6 +400,9 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testPostUpLinkPromisc() {
     parse("iface eth0 inet static\npost-up ip link set promisc on dev swp4\n");
+    assertThat(_warnings.getParseWarnings().size(), equalTo(0));
+    parse("iface eth0 inet static\npost-up ip link set swp1 promisc on\n");
+    assertThat(_warnings.getParseWarnings().size(), equalTo(0));
   }
 
   @Test
@@ -469,6 +494,13 @@ public class CumulusInterfacesGrammarTest {
     parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
         _ic.getLoopback().getAddresses(), contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+  }
+
+  @Test
+  public void testLoopbackAlias() {
+    parse("iface lo inet loopback\n alias my aliases\n");
+    assertThat(
+        _config.getInterfacesConfiguration().getLoopback().getAlias(), equalTo("my aliases"));
   }
 
   @Test

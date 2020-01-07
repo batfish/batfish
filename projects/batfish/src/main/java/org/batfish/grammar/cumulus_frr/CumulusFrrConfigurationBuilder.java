@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_frr;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -43,11 +44,13 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
@@ -71,6 +74,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_router_ospfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
@@ -188,6 +192,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Nonnull
   private Long toLong(Uint32Context ctx) {
     return Long.parseUnsignedLong(ctx.getText());
+  }
+
+  private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(PrefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   @Override
@@ -375,6 +387,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
+  @Override
+  public void exitSb_network(Sb_networkContext ctx) {
+    _currentBgpVrf.addNetwork(toPrefix(ctx.prefix()));
   }
 
   @Override
@@ -721,9 +738,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSv_route(Sv_routeContext ctx) {
-    Ip nextHop = Ip.parse(ctx.ip_address().getText());
     Prefix network = Prefix.parse(ctx.prefix().getText());
-    _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHop, null));
+    Ip nextHopIp = null;
+    String nextHopInterface = null;
+    if (ctx.BLACKHOLE() != null) {
+      nextHopInterface = NULL_INTERFACE_NAME;
+    } else {
+      nextHopIp = toIp(ctx.ip_address());
+    }
+    _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHopIp, nextHopInterface));
   }
 
   @Override

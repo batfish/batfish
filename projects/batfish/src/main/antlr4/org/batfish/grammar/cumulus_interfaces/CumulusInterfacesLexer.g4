@@ -204,6 +204,11 @@ MANUAL
   'manual'
 ;
 
+MTU
+:
+   'mtu'
+;
+
 OFF
 :
   'off'
@@ -234,11 +239,6 @@ NO
   'no'
 ;
 
-PROMISC
-:
-   'promisc' -> pushMode(M_DropUntilNewline)
-;
-
 POST_UP
 :
   'post-up'
@@ -251,7 +251,7 @@ ROUTE
 
 SET
 :
-  'set'
+  'set' -> pushMode(M_DropUntilNewline)
 ;
 
 STATIC
@@ -334,6 +334,11 @@ IP_PREFIX
   F_IpPrefix
 ;
 
+IPV6_PREFIX
+:
+  F_Ipv6Prefix
+;
+
 MAC_ADDRESS
 :
   F_MacAddress
@@ -385,6 +390,168 @@ F_IpPrefixLength
   F_Digit
   | [12] F_Digit
   | [3] [012]
+;
+
+fragment
+F_Ipv6Address
+:
+  '::' F_Ipv6HexWordLE7
+  | F_Ipv6HexWord '::' F_Ipv6HexWordLE6
+  | F_Ipv6HexWord2 '::' F_Ipv6HexWordLE5
+  | F_Ipv6HexWord3 '::' F_Ipv6HexWordLE4
+  | F_Ipv6HexWord4 '::' F_Ipv6HexWordLE3
+  | F_Ipv6HexWord5 '::' F_Ipv6HexWordLE2
+  | F_Ipv6HexWord6 '::' F_Ipv6HexWordLE1
+  | F_Ipv6HexWord7 '::'
+  | F_Ipv6HexWord8
+;
+
+fragment
+F_Ipv6HexWord
+:
+  F_HexDigit F_HexDigit? F_HexDigit? F_HexDigit?
+;
+
+fragment
+F_Ipv6HexWord2
+:
+  F_Ipv6HexWord ':' F_Ipv6HexWord
+;
+
+fragment
+F_Ipv6HexWord3
+:
+  F_Ipv6HexWord2 ':' F_Ipv6HexWord
+;
+
+fragment
+F_Ipv6HexWord4
+:
+  F_Ipv6HexWord3 ':' F_Ipv6HexWord
+;
+
+fragment
+F_Ipv6HexWord5
+:
+  F_Ipv6HexWord4 ':' F_Ipv6HexWord
+;
+
+fragment
+F_Ipv6HexWord6
+:
+  F_Ipv6HexWord5 ':' F_Ipv6HexWord
+;
+
+fragment
+F_Ipv6HexWord7
+:
+  F_Ipv6HexWord6 ':' F_Ipv6HexWord
+;
+
+fragment
+F_Ipv6HexWord8
+:
+  F_Ipv6HexWord6 ':' F_Ipv6HexWordFinal2
+;
+
+fragment
+F_Ipv6HexWordFinal2
+:
+  F_Ipv6HexWord2
+  | F_IpAddress
+;
+
+fragment
+F_Ipv6HexWordFinal3
+:
+  F_Ipv6HexWord ':' F_Ipv6HexWordFinal2
+;
+
+fragment
+F_Ipv6HexWordFinal4
+:
+  F_Ipv6HexWord ':' F_Ipv6HexWordFinal3
+;
+
+fragment
+F_Ipv6HexWordFinal5
+:
+  F_Ipv6HexWord ':' F_Ipv6HexWordFinal4
+;
+
+fragment
+F_Ipv6HexWordFinal6
+:
+  F_Ipv6HexWord ':' F_Ipv6HexWordFinal5
+;
+
+fragment
+F_Ipv6HexWordFinal7
+:
+  F_Ipv6HexWord ':' F_Ipv6HexWordFinal6
+;
+
+fragment
+F_Ipv6HexWordLE1
+:
+  F_Ipv6HexWord?
+;
+
+fragment
+F_Ipv6HexWordLE2
+:
+  F_Ipv6HexWordLE1
+  | F_Ipv6HexWordFinal2
+;
+
+fragment
+F_Ipv6HexWordLE3
+:
+  F_Ipv6HexWordLE2
+  | F_Ipv6HexWordFinal3
+;
+
+fragment
+F_Ipv6HexWordLE4
+:
+  F_Ipv6HexWordLE3
+  | F_Ipv6HexWordFinal4
+;
+
+fragment
+F_Ipv6HexWordLE5
+:
+  F_Ipv6HexWordLE4
+  | F_Ipv6HexWordFinal5
+;
+
+fragment
+F_Ipv6HexWordLE6
+:
+  F_Ipv6HexWordLE5
+  | F_Ipv6HexWordFinal6
+;
+
+fragment
+F_Ipv6HexWordLE7
+:
+  F_Ipv6HexWordLE6
+  | F_Ipv6HexWordFinal7
+;
+
+fragment
+F_Ipv6Prefix
+:
+  F_Ipv6Address '/' F_Ipv6PrefixLength
+;
+
+fragment
+F_Ipv6PrefixLength
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' [01] F_Digit
+  | '12' [0-8]
 ;
 
 fragment
