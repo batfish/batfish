@@ -59,7 +59,7 @@ l_property
 
 l_address
 :
-  ADDRESS IP_PREFIX NEWLINE
+  ADDRESS prefix NEWLINE
 ;
 
 l_alias
@@ -118,8 +118,8 @@ i_address
 :
   ADDRESS
   (
-    IP_PREFIX
-    | IPV6_PREFIX
+    prefix
+    | prefix6
   ) NEWLINE
 ;
 

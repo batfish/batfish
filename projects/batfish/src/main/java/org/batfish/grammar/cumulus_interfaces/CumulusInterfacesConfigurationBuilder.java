@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -50,6 +51,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_aliasCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.PrefixContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
@@ -97,6 +99,10 @@ public final class CumulusInterfacesConfigurationBuilder
   @VisibleForTesting
   CumulusConcatenatedConfiguration getConfig() {
     return _config;
+  }
+
+  private static @Nonnull Prefix toPrefix(PrefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   @Override
@@ -162,8 +168,10 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_address(I_addressContext ctx) {
-    if (ctx.IP_PREFIX() != null) { // ignore v6
-      _currentIface.addAddress(ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+    if (ctx.prefix() != null) { // ignore v6
+      Prefix prefix = toPrefix(ctx.prefix());
+      _currentIface.addAddress(
+          ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()));
     }
   }
 
@@ -294,7 +302,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_mtu(I_mtuContext ctx) {
-    _currentIface.setMtu(Integer.parseInt(ctx.number().getText()));
+    _currentIface.setMtu(toInt(ctx.number()));
   }
 
   @Override

@@ -21,11 +21,6 @@ ip_community_list_name
   WORD
 ;
 
-ipv4_prefix
-:
-  IP_PREFIX
-;
-
 ip_prefix_list_name
 :
 // 1-63 chars
