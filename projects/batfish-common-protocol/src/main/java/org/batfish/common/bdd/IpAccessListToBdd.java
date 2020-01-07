@@ -244,12 +244,7 @@ public abstract class IpAccessListToBdd {
       checkArgument(
           _permitAndDenyBdds.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
       try {
-        if (permittedByAcl.getDefaultAccept()) {
-          // Return the BDD of packets not explicitly rejected by the referenced ACL
-          return _permitAndDenyBdds.get(name).get().getDenyBdd().not();
-        } else {
-          return _permitAndDenyBdds.get(name).get().getPermitBdd();
-        }
+        return _permitAndDenyBdds.get(name).get().getPermitBdd();
       } catch (NonRecursiveSupplierException e) {
         throw new BatfishException("Circular PermittedByAcl reference: " + name);
       }

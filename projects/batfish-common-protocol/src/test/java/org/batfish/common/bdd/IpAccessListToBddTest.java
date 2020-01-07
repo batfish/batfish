@@ -4,7 +4,6 @@ import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
@@ -81,35 +80,6 @@ public class IpAccessListToBddTest {
             ImmutableMap.of(),
             BDDSourceManager.empty(_pkt));
     assertThat(bdd, equalTo(fooIpBDD));
-  }
-
-  @Test
-  public void testPermittedByAclDefaultAccept() {
-    Ip fooIp = Ip.parse("1.1.1.1");
-    IpAccessList acceptsFooIp =
-        aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
-    IpAccessList mainAcl = aclWithLines(accepting(new PermittedByAcl("foo", true)));
-    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", acceptsFooIp, "acl", mainAcl);
-
-    // ACL acl should accept everything since the PermittedByAcl has defaultAccept true
-    BDD bdd =
-        IpAccessListToBdd.toBDD(
-            _pkt, mainAcl, namedAcls, ImmutableMap.of(), BDDSourceManager.empty(_pkt));
-    assertTrue(bdd.isOne());
-  }
-
-  @Test
-  public void testPermittedByAclDefaultAccept2() {
-    Ip fooIp = Ip.parse("1.1.1.1");
-    IpAccessList rejectsFooIp = aclWithLines(rejectingDst(fooIp.toPrefix()));
-    IpAccessList mainAcl = aclWithLines(accepting(new PermittedByAcl("foo", true)));
-    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", rejectsFooIp, "acl", mainAcl);
-
-    // ACL acl should accept everything except packets destined for fooIp
-    BDD bdd =
-        IpAccessListToBdd.toBDD(
-            _pkt, mainAcl, namedAcls, ImmutableMap.of(), BDDSourceManager.empty(_pkt));
-    assertThat(bdd, equalTo(_pkt.getDstIp().value(fooIp.asLong()).not()));
   }
 
   @Test

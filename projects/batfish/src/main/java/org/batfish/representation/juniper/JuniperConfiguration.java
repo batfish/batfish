@@ -1940,7 +1940,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   IpAccessList screenAcl =
                       _c.getIpAccessLists()
                           .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
-                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName(), false) : null;
+                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -1989,11 +1989,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (screenAcl == null) {
       return inAcl;
     } else if (inAcl == null) {
-      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName(), false));
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName()));
     } else {
       aclConjunctList =
-          ImmutableSet.of(
-              new PermittedByAcl(screenAcl.getName(), false), new PermittedByAcl(inAclName, false));
+          ImmutableSet.of(new PermittedByAcl(screenAcl.getName()), new PermittedByAcl(inAclName));
     }
 
     String combinedAclName = ACL_NAME_COMBINED_INCOMING + iface.getName();
@@ -2091,7 +2090,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     zoneAclLines.add(
         new ExprAclLine(
             LineAction.PERMIT,
-            new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION, false),
+            new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION),
             "EXISTING_CONNECTION"));
 
     /* Default policy allows traffic originating from the device to be accepted */
