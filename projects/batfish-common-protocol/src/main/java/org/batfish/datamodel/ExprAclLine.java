@@ -11,6 +11,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.flow.Trace;
 
 /** A line in an IpAccessList */
 public final class ExprAclLine extends AclLine {
@@ -21,7 +22,9 @@ public final class ExprAclLine extends AclLine {
 
     private AclLineMatchExpr _matchCondition;
 
-    private TraceElement _name;
+    private String _name;
+
+    private TraceElement _traceElement;
 
     private Builder() {}
 
@@ -31,7 +34,7 @@ public final class ExprAclLine extends AclLine {
     }
 
     public ExprAclLine build() {
-      return new ExprAclLine(_action, _matchCondition, _name);
+      return new ExprAclLine(_action, _matchCondition, _name, _traceElement);
     }
 
     public Builder rejecting() {
@@ -50,12 +53,12 @@ public final class ExprAclLine extends AclLine {
     }
 
     public Builder setName(@Nullable String name) {
-      _name = name == null ? null : TraceElement.of(name);
+      _name = name;
       return this;
     }
 
-    public Builder setName(@Nullable TraceElement name) {
-      _name = name;
+    public Builder setTraceElement(@Nullable TraceElement traceElement) {
+      _traceElement = traceElement;
       return this;
     }
   }
@@ -126,8 +129,9 @@ public final class ExprAclLine extends AclLine {
   public ExprAclLine(
       @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
       @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
-      @JsonProperty(PROP_NAME) TraceElement name) {
-    super(name);
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+    super(name, traceElement);
     _action = Objects.requireNonNull(action);
     _matchCondition = Objects.requireNonNull(matchCondition);
   }

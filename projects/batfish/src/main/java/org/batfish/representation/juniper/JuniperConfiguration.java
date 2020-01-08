@@ -2209,7 +2209,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   new ExprAclLine(
                       l.getAction(),
                       new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
-                      l.getNameAsString()))
+                      l.getName()))
           .collect(ImmutableList.toImmutableList());
     }
   }

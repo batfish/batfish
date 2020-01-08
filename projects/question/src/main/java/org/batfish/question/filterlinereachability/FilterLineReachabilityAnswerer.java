@@ -116,7 +116,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       _sanitizedLines.add(
           lineNum,
           ExprAclLine.builder()
-              .setName(originalLine.getNameAsString())
+              .setName(originalLine.getName())
               .setMatchCondition(FalseExpr.INSTANCE)
               .setAction(unmatchableLineAction)
               .build());

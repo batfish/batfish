@@ -142,14 +142,7 @@
                   }
                 }
               },
-              "name" : {
-                "fragments" : [
-                  {
-                    "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                    "text" : "permit ip host 2.0.0.0 host 255.0.0.0"
-                  }
-                ]
-              }
+              "name" : "permit ip host 2.0.0.0 host 255.0.0.0"
             },
             {
               "class" : "org.batfish.datamodel.ExprAclLine",
@@ -168,14 +161,7 @@
                   }
                 }
               },
-              "name" : {
-                "fragments" : [
-                  {
-                    "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                    "text" : "permit ip host 2.128.0.0 host 255.255.0.0"
-                  }
-                ]
-              }
+              "name" : "permit ip host 2.128.0.0 host 255.255.0.0"
             }
           ],
           "name" : "102",

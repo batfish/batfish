@@ -158,7 +158,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
                         AclLine line = aclLines.get(lineIndex);
                         return rowBuilder
                             .put(COL_FILTER, aclName)
-                            .put(COL_LINE, firstNonNull(line.getNameAsString(), line.toString()))
+                            .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
                             .put(COL_LINE_INDEX, lineIndex)
                             .put(COL_ACTION, actionGetter.visit(line))
                             .build();

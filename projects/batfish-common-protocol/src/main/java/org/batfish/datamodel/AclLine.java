@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -11,26 +12,33 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 /** A line in an {@link IpAccessList} */
 public abstract class AclLine implements Serializable {
   protected static final String PROP_NAME = "name";
+  protected static final String PROP_TRACE_ELEMENT = "traceElement";
 
-  @Nullable protected final TraceElement _name;
+  @Nullable protected final String _name;
+  @Nullable protected final TraceElement _traceElement;
 
   AclLine(@Nullable String name) {
-    _name = name == null ? null : TraceElement.of(name);
+    _name = name;
+    _traceElement = name == null ? null : TraceElement.of(name);
   }
 
-  AclLine(@Nullable TraceElement name) {
+  @JsonCreator
+  AclLine(
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
     _name = name;
+    _traceElement = traceElement;
   }
 
   /** The name of this line in the list */
   @JsonProperty(PROP_NAME)
-  public final TraceElement getName() {
+  public final String getName() {
     return _name;
   }
 
-  @JsonIgnore
-  public final String getNameAsString() {
-    return _name == null ? null : _name.toString();
+  @JsonProperty(PROP_TRACE_ELEMENT)
+  public final TraceElement getTraceElement() {
+    return _traceElement;
   }
 
   public abstract <R> R accept(GenericAclLineVisitor<R> visitor);

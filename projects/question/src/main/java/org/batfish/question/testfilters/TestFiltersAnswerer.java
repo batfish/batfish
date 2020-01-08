@@ -213,7 +213,7 @@ public class TestFiltersAnswerer extends Answerer {
     Integer matchLine = result.getMatchLine();
     String lineDesc = "no-match";
     if (matchLine != null) {
-      lineDesc = filter.getLines().get(matchLine).getNameAsString();
+      lineDesc = filter.getLines().get(matchLine).getName();
       if (lineDesc == null) {
         lineDesc = "line:" + matchLine;
       }

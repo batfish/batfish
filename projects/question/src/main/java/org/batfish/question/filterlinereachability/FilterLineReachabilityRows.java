@@ -131,16 +131,14 @@ public class FilterLineReachabilityRows {
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
             .put(COL_UNREACHABLE_LINE_ACTION, blockedLineAction)
-            .put(
-                COL_UNREACHABLE_LINE,
-                firstNonNull(blockedLine.getNameAsString(), blockedLine.toString()))
+            .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
             .put(
                 COL_BLOCKING_LINES,
                 blockingLines.stream()
                     .map(
                         i -> {
                           AclLine l = acl.getLines().get(i);
-                          return firstNonNull(l.getNameAsString(), l.toString());
+                          return firstNonNull(l.getName(), l.toString());
                         })
                     .collect(ImmutableList.toImmutableList()))
             .put(COL_DIFF_ACTION, diffAction)

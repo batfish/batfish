@@ -106,7 +106,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   public void recordAction(
       @Nonnull IpAccessList ipAccessList, int index, @Nonnull AclLine line, LineAction action) {
-    String lineDescription = firstNonNull(line.getNameAsString(), line.toString());
+    String lineDescription = firstNonNull(line.getName(), line.toString());
     String type = firstNonNull(ipAccessList.getSourceType(), "filter");
     String name = firstNonNull(ipAccessList.getSourceName(), ipAccessList.getName());
     String actionStr = action == LineAction.PERMIT ? "permitted" : "denied";
