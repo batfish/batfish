@@ -44,18 +44,6 @@
     "rows" : [
       {
         "File_Name" : "configs/arista_bgp",
-        "Struct_Type" : "bgp peer-group",
-        "Ref_Name" : "UNDEFINED_PEER_GROUP",
-        "Context" : "bgp neighbor statement",
-        "Lines" : {
-          "filename" : "configs/arista_bgp",
-          "lines" : [
-            11
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/arista_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "UNDEFINED_MAP",
         "Context" : "bgp redistribute ospfv3 route-map",
@@ -4180,10 +4168,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 339 results",
+      "notes" : "Found 338 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 339
+      "numResults" : 338
     }
   }
 ]

@@ -1563,65 +1563,70 @@
             "      procnum = (bgp_asn",
             "        asn = DEC:'1')",
             "      NEWLINE:'\\n'",
-            "      (router_bgp_stanza_tail",
-            "        (as_path_multipath_relax_rb_stanza",
-            "          NO:'no'",
-            "          BGP:'bgp'",
-            "          BESTPATH:'bestpath'",
-            "          AS_PATH:'as-path'",
-            "          MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
-            "          NEWLINE:'\\n'))",
-            "      (router_bgp_stanza_tail",
-            "        (bgp_tail",
-            "          (null_bgp_tail",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_no",
+            "            NO:'no'",
+            "            (eos_rbino_bgp",
+            "              BGP:'bgp'",
+            "              (eos_rbino_bgp_bestpath",
+            "                BESTPATH:'bestpath'",
+            "                (eos_rbino_bgp_bp_as_path",
+            "                  AS_PATH:'as-path'",
+            "                  (eos_rbino_bgp_bpa_multipath_relax",
+            "                    MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
+            "                    NEWLINE:'\\n')))))))",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_update",
             "            UPDATE:'update'",
-            "            (null_rest_of_line",
-            "              WAIT_FOR_CONVERGENCE:'wait-for-convergence'",
-            "              NEWLINE:'\\n'))))",
-            "      (router_bgp_stanza_tail",
-            "        (bgp_tail",
-            "          (null_bgp_tail",
+            "            WAIT_FOR_CONVERGENCE:'wait-for-convergence'",
+            "            NEWLINE:'\\n')))",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_update",
             "            UPDATE:'update'",
-            "            (null_rest_of_line",
-            "              WAIT_INSTALL:'wait-install'",
-            "              NEWLINE:'\\n'))))",
-            "      (router_bgp_stanza_tail",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            af = (bgp_address_family",
-            "              IPV4:'ipv4')",
-            "            NEWLINE:'\\n')",
-            "          (neighbor_flat_rb_stanza",
-            "            NEIGHBOR:'neighbor'",
-            "            peergroup = VARIABLE:'UNDEFINED_PEER_GROUP'  <== mode:M_NEIGHBOR",
-            "            (bgp_tail",
-            "              (activate_bgp_tail",
-            "                ACTIVATE:'activate'",
-            "                NEWLINE:'\\n')))",
-            "          (bgp_tail",
-            "            (redistribute_ospfv3_bgp_tail",
-            "              REDISTRIBUTE:'redistribute'",
+            "            WAIT_INSTALL:'wait-install'",
+            "            NEWLINE:'\\n')))",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_address_family",
+            "          ADDRESS_FAMILY:'address-family'",
+            "          (eos_rb_af_ipv4",
+            "            IPV4:'ipv4'",
+            "            (eos_rb_af_ipv4_unicast",
+            "              NEWLINE:'\\n'",
+            "              (eos_rbafipv4u_neighbor",
+            "                NEIGHBOR:'neighbor'",
+            "                pg = (variable",
+            "                  VARIABLE:'UNDEFINED_PEER_GROUP'  <== mode:M_NEIGHBOR)",
+            "                (eos_rb_af_neighbor_common",
+            "                  (eos_rbafnc_activate",
+            "                    ACTIVATE:'activate'",
+            "                    NEWLINE:'\\n')))))))",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_redistribute",
+            "            REDISTRIBUTE:'redistribute'",
+            "            (eos_rbir_ospf3",
             "              OSPF3:'ospf3'",
             "              MATCH:'match'",
-            "              (ospf_route_type",
-            "                INTERNAL:'internal')",
+            "              INTERNAL:'internal'",
             "              ROUTE_MAP:'route-map'",
-            "              map = (variable",
+            "              rm = (variable",
             "                VARIABLE:'ROUTE_MAP'  <== mode:M_RouteMap)",
-            "              NEWLINE:'\\n'))",
-            "          (bgp_tail",
-            "            (redistribute_ospfv3_bgp_tail",
-            "              REDISTRIBUTE:'redistribute'",
+            "              NEWLINE:'\\n'))))",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_redistribute",
+            "            REDISTRIBUTE:'redistribute'",
+            "            (eos_rbir_ospf3",
             "              OSPF3:'ospf3'",
             "              MATCH:'match'",
-            "              (ospf_route_type",
-            "                EXTERNAL:'external')",
+            "              EXTERNAL:'external'",
             "              ROUTE_MAP:'route-map'",
-            "              map = (variable",
+            "              rm = (variable",
             "                VARIABLE:'UNDEFINED_MAP'  <== mode:M_RouteMap)",
-            "              NEWLINE:'\\n'))",
-            "          (address_family_footer)))))",
+            "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (route_map_stanza",
             "      ROUTE_MAP:'route-map'",
@@ -75962,6 +75967,22 @@
       },
       "version" : "0.36.0",
       "warnings" : {
+        "configs/arista_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "ospf3 match internal route-map ROUTE_MAP"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "ospf3 match external route-map UNDEFINED_MAP"
+            }
+          ]
+        },
         "configs/arista_nat" : {
           "Parse warnings" : [
             {
@@ -77755,7 +77776,7 @@
         "aggaddress" : "PASSED",
         "arista-event-handler" : "PASSED",
         "arista_acl" : "PASSED",
-        "arista_bgp" : "PASSED",
+        "arista_bgp" : "WARNINGS",
         "arista_dhcp_relay" : "PASSED",
         "arista_interface" : "PASSED",
         "arista_ip_route" : "PASSED",
@@ -86859,13 +86880,6 @@
       },
       "referencedStructures" : {
         "configs/arista_bgp" : {
-          "bgp peer-group" : {
-            "UNDEFINED_PEER_GROUP" : {
-              "bgp neighbor statement" : [
-                11
-              ]
-            }
-          },
           "route-map" : {
             "ROUTE_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
@@ -92428,13 +92442,6 @@
       },
       "undefinedReferences" : {
         "configs/arista_bgp" : {
-          "bgp peer-group" : {
-            "UNDEFINED_PEER_GROUP" : {
-              "bgp neighbor statement" : [
-                11
-              ]
-            }
-          },
           "route-map" : {
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
@@ -94660,6 +94667,26 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '1.2.3.4'"
+            }
+          ]
+        },
+        "arista_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Redistribution of OSPF_NSSA_EXTERNAL routes is not yet supported"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Redistribution of OSPF_NSSA_EXTERNAL_TYPE_1 routes is not yet supported"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Redistribution of OSPF_NSSA_EXTERNAL_TYPE_2 routes is not yet supported"
             }
           ]
         },
