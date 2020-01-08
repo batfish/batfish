@@ -50,9 +50,9 @@ public final class AclTracer extends AclLineEvaluator {
 
   private final Map<IpSpace, String> _ipSpaceNames;
 
-  private final TraceEventNode _traceRoot;
+  private final TraceNode _traceRoot;
 
-  private TraceEventNode _currentTreeNode;
+  private TraceNode _currentTreeNode;
 
   public AclTracer(
       @Nonnull Flow flow,
@@ -63,7 +63,7 @@ public final class AclTracer extends AclLineEvaluator {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceNames = new IdentityHashMap<>();
     _ipSpaceMetadata = new IdentityHashMap<>();
-    _traceRoot = TraceEventNode.withParent(null);
+    _traceRoot = TraceNode.withParent(null);
     _currentTreeNode = _traceRoot;
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
     namedIpSpaceMetadata.forEach(
@@ -97,9 +97,9 @@ public final class AclTracer extends AclLineEvaluator {
   public @Nonnull AclTrace getTrace() {
     return new AclTrace(
         ImmutableList.copyOf(
-                Traverser.forTree(TraceEventNode::getChildren).depthFirstPreOrder(_traceRoot))
+                Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(_traceRoot))
             .stream()
-            .map(TraceEventNode::getEvent)
+            .map(TraceNode::getEvent)
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -439,7 +439,7 @@ public final class AclTracer extends AclLineEvaluator {
    */
   public void newTrace() {
     // Add new child, set it as current node
-    _currentTreeNode = _currentTreeNode.addChild(TraceEventNode.withParent(_currentTreeNode));
+    _currentTreeNode = _currentTreeNode.addChild(TraceNode.withParent(_currentTreeNode));
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */
@@ -458,31 +458,31 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   /** For building trace event trees */
-  private static final class TraceEventNode {
+  private static final class TraceNode {
     private @Nullable TraceEvent _event;
-    private final @Nullable TraceEventNode _parent;
-    private final @Nonnull List<TraceEventNode> _children;
+    private final @Nullable TraceNode _parent;
+    private final @Nonnull List<TraceNode> _children;
 
-    private TraceEventNode(
+    private TraceNode(
         @Nullable TraceEvent event,
-        @Nullable TraceEventNode parent,
-        @Nonnull List<TraceEventNode> children) {
+        @Nullable TraceNode parent,
+        @Nonnull List<TraceNode> children) {
       _event = event;
       _parent = parent;
       _children = children;
     }
 
-    private static TraceEventNode withParent(@Nullable TraceEventNode parent) {
-      return new TraceEventNode(null, parent, new ArrayList<>());
+    private static TraceNode withParent(@Nullable TraceNode parent) {
+      return new TraceNode(null, parent, new ArrayList<>());
     }
 
     @Nonnull
-    private List<TraceEventNode> getChildren() {
+    private List<TraceNode> getChildren() {
       return _children;
     }
 
     @Nullable
-    private TraceEventNode getParent() {
+    private TraceNode getParent() {
       return _parent;
     }
 
@@ -496,7 +496,7 @@ public final class AclTracer extends AclLineEvaluator {
     }
 
     /** Adds a new child to this node trace node. Returns pointer to given node */
-    private TraceEventNode addChild(@Nonnull TraceEventNode node) {
+    private TraceNode addChild(@Nonnull TraceNode node) {
       _children.add(node);
       return node;
     }
