@@ -51,6 +51,11 @@ public class IpAccessList implements Serializable {
       return this;
     }
 
+    public Builder setLines(AclLine... lines) {
+      _lines = ImmutableList.copyOf(lines);
+      return this;
+    }
+
     public Builder setName(String name) {
       _name = name;
       return this;

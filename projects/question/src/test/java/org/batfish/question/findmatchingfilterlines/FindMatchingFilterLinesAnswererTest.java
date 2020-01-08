@@ -1,17 +1,19 @@
 package org.batfish.question.findmatchingfilterlines;
 
+import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_ACTION;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_FILTER;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE_INDEX;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_NODE;
-import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getRowsForAcl;
+import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getReportedActions;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -19,10 +21,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -30,6 +32,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -43,6 +46,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row;
+import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.ReportedAction;
+import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.ReportedActionFinder;
 import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
@@ -75,7 +80,7 @@ public class FindMatchingFilterLinesAnswererTest {
   }
 
   @Test
-  public void testGetRowsForAcl() {
+  public void testGetActionsToReport() {
     // Set up ACL containing two lines, make sure header constraints filter to the right line
 
     // First line accepts TCP to 1.1.1.0/24
@@ -93,8 +98,7 @@ public class FindMatchingFilterLinesAnswererTest {
 
     List<AclLine> aclLines =
         ImmutableList.of(
-            ExprAclLine.acceptingHeaderSpace(headerSpace1),
-            ExprAclLine.rejectingHeaderSpace(headerSpace2));
+            acceptingHeaderSpace(headerSpace1), ExprAclLine.rejectingHeaderSpace(headerSpace2));
 
     BDDPacket pkt = new BDDPacket();
     IpAccessListToBdd bddConverter =
@@ -108,8 +112,9 @@ public class FindMatchingFilterLinesAnswererTest {
           HeaderSpace.builder()
               .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() - 8).toIpSpace())
               .build();
-      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(rows.boxed().collect(Collectors.toList()), contains(0));
+      Map<Integer, ReportedAction> reportedActions =
+          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(0, ReportedAction.PERMIT)));
     }
     {
       // Constrain dstIp to a subset of first line's dstIps
@@ -117,36 +122,155 @@ public class FindMatchingFilterLinesAnswererTest {
           HeaderSpace.builder()
               .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() + 4).toIpSpace())
               .build();
-      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(rows.boxed().collect(Collectors.toList()), contains(0));
+      Map<Integer, ReportedAction> reportedActions =
+          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(0, ReportedAction.PERMIT)));
     }
     {
       // Constrain protocol to TCP
       HeaderSpace headerSpace =
           HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.TCP)).build();
-      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(rows.boxed().collect(Collectors.toList()), contains(0));
+      Map<Integer, ReportedAction> reportedActions =
+          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(0, ReportedAction.PERMIT)));
     }
     {
       // Constrain action to DENY
       HeaderSpace headerSpace = HeaderSpace.builder().build();
-      IntStream rows =
-          getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, Action.DENY);
-      assertThat(rows.boxed().collect(Collectors.toList()), contains(1));
+      Map<Integer, ReportedAction> reportedActions =
+          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, Action.DENY);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(1, ReportedAction.DENY)));
     }
     {
       // Constrain dstIp to 3.3.3.0/24 (shouldn't match either line)
       HeaderSpace headerSpace =
           HeaderSpace.builder().setDstIps(Prefix.parse("3.3.3.0/24").toIpSpace()).build();
-      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(rows.boxed().collect(Collectors.toList()), empty());
+      Map<Integer, ReportedAction> reportedActions =
+          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, anEmptyMap());
     }
     {
       // Constrain srcIp to 3.3.3.0/24 (should match both lines)
       HeaderSpace headerSpace =
           HeaderSpace.builder().setSrcIps(Prefix.parse("3.3.3.0/24").toIpSpace()).build();
-      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(rows.boxed().collect(Collectors.toList()), contains(0, 1));
+      Map<Integer, ReportedAction> reportedActions =
+          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(
+          reportedActions,
+          equalTo(ImmutableMap.of(0, ReportedAction.PERMIT, 1, ReportedAction.DENY)));
+    }
+  }
+
+  @Test
+  public void testRecordedActionFinder_AclAclLine() {
+    HeaderSpace permitSpace =
+        HeaderSpace.builder().setDstIps(Ip.parse("1.1.1.1").toIpSpace()).build();
+    HeaderSpace denySpace =
+        HeaderSpace.builder().setDstIps(Ip.parse("2.2.2.2").toIpSpace()).build();
+
+    IpAccessList permitAcl =
+        IpAccessList.builder()
+            .setName("permitAcl")
+            .setLines(acceptingHeaderSpace(permitSpace))
+            .build();
+    IpAccessList denyAcl =
+        IpAccessList.builder().setName("denyAcl").setLines(rejectingHeaderSpace(denySpace)).build();
+    IpAccessList mixedAcl =
+        IpAccessList.builder()
+            .setName("mixedAcl")
+            .setLines(acceptingHeaderSpace(permitSpace), rejectingHeaderSpace(denySpace))
+            .build();
+    Map<String, IpAccessList> acls =
+        ImmutableMap.of(
+            permitAcl.getName(),
+            permitAcl,
+            denyAcl.getName(),
+            denyAcl,
+            mixedAcl.getName(),
+            mixedAcl);
+
+    BDDPacket pkt = new BDDPacket();
+    IpAccessListToBdd bddConverter =
+        new IpAccessListToBddImpl(pkt, BDDSourceManager.empty(pkt), acls, ImmutableMap.of());
+    HeaderSpaceToBDD hsConverter = new HeaderSpaceToBDD(pkt, ImmutableMap.of());
+    BDD permitSpaceBdd = hsConverter.toBDD(permitSpace);
+    BDD denySpaceBdd = hsConverter.toBDD(denySpace);
+
+    AclAclLine permitAclAclLine = new AclAclLine("line name", permitAcl.getName());
+    AclAclLine denyAclAclLine = new AclAclLine("line name", denyAcl.getName());
+    AclAclLine mixedAclAclLine = new AclAclLine("line name", mixedAcl.getName());
+
+    {
+      // No action specified: Reported action should match all possible actions of referenced ACL
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, null, pkt.getFactory().one());
+      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
+      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.VARIABLE));
+    }
+    {
+      // Action PERMIT: Only lines that can PERMIT should be reported
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, Action.PERMIT, pkt.getFactory().one());
+      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
+      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.VARIABLE));
+    }
+    {
+      // Action DENY: Only lines that can DENY should be reported
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, Action.DENY, pkt.getFactory().one());
+      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.VARIABLE));
+    }
+    {
+      // No action specified, only permitHeaderSpace counts
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, null, permitSpaceBdd);
+      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
+      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.PERMIT));
+    }
+    {
+      // Action PERMIT and only permitHeaderSpace counts
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, Action.PERMIT, permitSpaceBdd);
+      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
+      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.PERMIT));
+    }
+    {
+      // Action DENY, but only permitHeaderSpace counts
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, Action.DENY, permitSpaceBdd);
+      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), nullValue());
+    }
+    {
+      // No action specified, only denyHeaderSpace counts
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, null, denySpaceBdd);
+      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.DENY));
+    }
+    {
+      // Action PERMIT, but only denyHeaderSpace counts
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, Action.PERMIT, denySpaceBdd);
+      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), nullValue());
+    }
+    {
+      // Action DENY and only denyHeaderSpace counts
+      ReportedActionFinder reportedActionFinder =
+          new ReportedActionFinder(bddConverter, Action.DENY, denySpaceBdd);
+      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
+      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
+      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.DENY));
     }
   }
 
@@ -192,12 +316,12 @@ public class FindMatchingFilterLinesAnswererTest {
     Configuration c2 = cb.setHostname("c2").build();
 
     // Add acl1 in both configs
-    aclBuilder.setName("acl1").setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL));
+    aclBuilder.setName("acl1").setLines(ExprAclLine.ACCEPT_ALL);
     aclBuilder.setOwner(c1).build();
     aclBuilder.setOwner(c2).build();
 
     // Add acl2 in c1
-    aclBuilder.setName("acl2").setLines(ImmutableList.of(ExprAclLine.REJECT_ALL));
+    aclBuilder.setName("acl2").setLines(ExprAclLine.REJECT_ALL);
     aclBuilder.setOwner(c1).build();
 
     // Create batfish with configs
