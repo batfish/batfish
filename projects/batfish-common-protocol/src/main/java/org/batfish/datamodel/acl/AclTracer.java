@@ -114,15 +114,9 @@ public final class AclTracer extends AclLineEvaluator {
         String.format(
             "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
     if (action == LineAction.PERMIT) {
-      _nodeStack
-          .peek()
-          .setEvent(
-              new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      setEvent(new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     } else {
-      _nodeStack
-          .peek()
-          .setEvent(
-              new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      setEvent(new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     }
   }
 
@@ -135,38 +129,30 @@ public final class AclTracer extends AclLineEvaluator {
       String ipDescription,
       IpSpaceDescriber describer) {
     if (line.getAction() == LineAction.PERMIT) {
-      _nodeStack
-          .peek()
-          .setEvent(
-              new PermittedByAclIpSpaceLine(
-                  aclIpSpaceName,
-                  ipSpaceMetadata,
-                  index,
-                  computeLineDescription(line, describer),
-                  ip,
-                  ipDescription));
+      setEvent(
+          new PermittedByAclIpSpaceLine(
+              aclIpSpaceName,
+              ipSpaceMetadata,
+              index,
+              computeLineDescription(line, describer),
+              ip,
+              ipDescription));
     } else {
-      _nodeStack
-          .peek()
-          .setEvent(
-              new DeniedByAclIpSpaceLine(
-                  aclIpSpaceName,
-                  ipSpaceMetadata,
-                  index,
-                  computeLineDescription(line, describer),
-                  ip,
-                  ipDescription));
+      setEvent(
+          new DeniedByAclIpSpaceLine(
+              aclIpSpaceName,
+              ipSpaceMetadata,
+              index,
+              computeLineDescription(line, describer),
+              ip,
+              ipDescription));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _nodeStack
-        .peek()
-        .setEvent(
-            new DefaultDeniedByIpAccessList(
-                ipAccessList.getName(),
-                ipAccessList.getSourceName(),
-                ipAccessList.getSourceType()));
+    setEvent(
+        new DefaultDeniedByIpAccessList(
+            ipAccessList.getName(), ipAccessList.getSourceName(), ipAccessList.getSourceType()));
   }
 
   public void recordDefaultDeny(
@@ -174,10 +160,7 @@ public final class AclTracer extends AclLineEvaluator {
       @Nullable IpSpaceMetadata ipSpaceMetadata,
       Ip ip,
       String ipDescription) {
-    _nodeStack
-        .peek()
-        .setEvent(
-            new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
+    setEvent(new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -192,17 +175,12 @@ public final class AclTracer extends AclLineEvaluator {
       Ip ip,
       String ipDescription) {
     if (permit) {
-      _nodeStack
-          .peek()
-          .setEvent(
-              new PermittedByNamedIpSpace(
-                  ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
+      setEvent(
+          new PermittedByNamedIpSpace(
+              ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
     } else {
-      _nodeStack
-          .peek()
-          .setEvent(
-              new DeniedByNamedIpSpace(
-                  ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
+      setEvent(
+          new DeniedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
     }
   }
 
@@ -465,6 +443,13 @@ public final class AclTracer extends AclLineEvaluator {
   public void endTrace() {
     // Go up level of a tree, do not delete children
     _nodeStack.pop();
+  }
+
+  /** Set the event of the current node. Precondition: current node's event is null. */
+  private void setEvent(TraceEvent event) {
+    TraceNode currentNode = _nodeStack.peek();
+    checkState(currentNode.getEvent() == null, "Clobbered current node's event");
+    currentNode.setEvent(event);
   }
 
   /**
