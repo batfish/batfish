@@ -7,16 +7,15 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
-import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
-import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
-import org.batfish.datamodel.routing_policy.communities.InputCommunities;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetCommunity implements RouteMapSet {
 
@@ -31,6 +30,7 @@ public class RouteMapSetCommunity implements RouteMapSet {
   public boolean getAdditive() {
     return _additive;
   }
+
   public void setAdditive(boolean additive) {
     _additive = additive;
   }
@@ -40,11 +40,13 @@ public class RouteMapSetCommunity implements RouteMapSet {
   public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     CommunitySetExpr communities = new LiteralCommunitySet(CommunitySet.of(_communities));
 
-    return Stream.of(new SetCommunities(
+    return Stream.of(
+        new SetCommunities(
             this.getAdditive()
-                    ? CommunitySetUnion.of(InputCommunities.instance(), communities)
-                    : CommunitySetUnion.of(new CommunitySetDifference(
-                            InputCommunities.instance(), AllStandardCommunities.instance()),
+                ? CommunitySetUnion.of(InputCommunities.instance(), communities)
+                : CommunitySetUnion.of(
+                    new CommunitySetDifference(
+                        InputCommunities.instance(), AllStandardCommunities.instance()),
                     communities)));
   }
 

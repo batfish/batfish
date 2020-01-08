@@ -912,7 +912,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         new RouteMapSetCommunity(
             ctx.communities.stream()
                 .map(this::toStandardCommunity)
-                .collect(ImmutableList.toImmutableList()), additive));
+                .collect(ImmutableList.toImmutableList()),
+            additive));
   }
 
   @Override
