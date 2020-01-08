@@ -56,6 +56,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -426,21 +427,37 @@ final class AristaConversions {
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();
     if (v4Enabled && neighbor.getDefaultOriginate() != null) {
+      // TODO: fix the export pipeline in VI so that setting the attribute policy is sufficient.
+      //   Similarly, "new MatchProtocol(RoutingProtocol.AGGREGATE)" below should go away
+      //   https://github.com/batfish/batfish/issues/5375
+
       // 1. Unconditionally generate a default route that is sent directly to this neighbor, without
       // going through the export policy.
+      String defaultOriginateRouteMapName = neighbor.getDefaultOriginate().getRouteMap();
       GeneratedRoute defaultRoute =
           GeneratedRoute.builder()
               .setNetwork(Prefix.ZERO)
               .setAdmin(MAX_ADMINISTRATIVE_COST)
-              .setAttributePolicy(neighbor.getDefaultOriginate().getRouteMap())
+              .setAttributePolicy(defaultOriginateRouteMapName)
               .build();
       newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute));
 
       // 2. Do not export any other default route to this neighbor, since the generated route should
       // dominate.
+      Builder<Statement> trueStatementsForGeneratedDefaultRoute = ImmutableList.builder();
+      if (defaultOriginateRouteMapName != null
+          && c.getRoutingPolicies().containsKey(defaultOriginateRouteMapName)) {
+        trueStatementsForGeneratedDefaultRoute.add(new CallStatement(defaultOriginateRouteMapName));
+      }
+      trueStatementsForGeneratedDefaultRoute.add(Statements.ReturnTrue.toStaticStatement());
       exportStatements.add(
           new If(
-              Common.matchDefaultRoute(),
+              new Conjunction(
+                  ImmutableList.of(
+                      Common.matchDefaultRoute(),
+                      // AGGREGATE means we generated it in this context
+                      new MatchProtocol(RoutingProtocol.AGGREGATE))),
+              trueStatementsForGeneratedDefaultRoute.build(),
               ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
     }
     if (firstNonNull(neighbor.getNextHopSelf(), Boolean.FALSE)) {
