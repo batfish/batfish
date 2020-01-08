@@ -2607,15 +2607,7 @@
                     ]
                   }
                 },
-                "name" : "~EXISTING_CONNECTION~",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "~EXISTING_CONNECTION~"
-                    }
-                  ]
-                }
+                "name" : "~EXISTING_CONNECTION~"
               }
             ],
             "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~"
@@ -8721,15 +8713,7 @@
                     ]
                   }
                 },
-                "name" : "~EXISTING_CONNECTION~",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "~EXISTING_CONNECTION~"
-                    }
-                  ]
-                }
+                "name" : "~EXISTING_CONNECTION~"
               }
             ],
             "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
@@ -24547,15 +24531,7 @@
                     ]
                   }
                 },
-                "name" : "~EXISTING_CONNECTION~",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "~EXISTING_CONNECTION~"
-                    }
-                  ]
-                }
+                "name" : "~EXISTING_CONNECTION~"
               }
             ],
             "name" : "~EXISTING_CONNECTION~"
@@ -24569,15 +24545,7 @@
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                   "aclName" : "~EXISTING_CONNECTION~"
                 },
-                "name" : "EXISTING_CONNECTION",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "EXISTING_CONNECTION"
-                    }
-                  ]
-                }
+                "name" : "EXISTING_CONNECTION"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -24585,15 +24553,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
-                "name" : "HOST_OUTBOUND",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "HOST_OUTBOUND"
-                    }
-                  ]
-                }
+                "name" : "HOST_OUTBOUND"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -24601,15 +24561,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "DEFAULT_POLICY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "DEFAULT_POLICY"
-                    }
-                  ]
-                }
+                "name" : "DEFAULT_POLICY"
               }
             ],
             "name" : "~SECURITY_POLICIES_TO~ge-0/0/0.0"
@@ -26641,15 +26593,7 @@
                     }
                   ]
                 },
-                "name" : "123-4",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "123-4"
-                    }
-                  ]
-                }
+                "name" : "123-4"
               }
             ],
             "name" : "zone~A~to~zone~B",
@@ -26670,15 +26614,7 @@
                     ]
                   }
                 },
-                "name" : "~EXISTING_CONNECTION~",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "~EXISTING_CONNECTION~"
-                    }
-                  ]
-                }
+                "name" : "~EXISTING_CONNECTION~"
               }
             ],
             "name" : "~EXISTING_CONNECTION~"

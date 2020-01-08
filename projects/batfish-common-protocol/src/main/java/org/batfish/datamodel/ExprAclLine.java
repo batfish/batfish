@@ -11,7 +11,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.flow.Trace;
 
 /** A line in an IpAccessList */
 public final class ExprAclLine extends AclLine {
