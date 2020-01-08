@@ -6,6 +6,7 @@ import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
@@ -1275,5 +1276,43 @@ public final class CumulusConversionsTest {
         .build();
 
     assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
+  }
+
+  /** An interface neighbor with an explicit address should be treated as a passive neighbor */
+  @Test
+  public void testAddBgpNeighbor_numberedPassiveInterface() {
+    // set up the VI bgp process
+    org.batfish.datamodel.BgpProcess bgpProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf viVrf = Vrf.builder().setName("vrf").build();
+    viVrf.setBgpProcess(bgpProc);
+
+    // set up the vi interface
+    Prefix ifacePrefix = Prefix.parse("1.1.1.1/31");
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setName("iface")
+            .setOwner(c)
+            .setAddress(
+                ConcreteInterfaceAddress.create(
+                    ifacePrefix.getStartIp(), ifacePrefix.getPrefixLength()))
+            .build();
+    c.getAllInterfaces().put(viIface.getName(), viIface);
+    c.getVrfs().put(viVrf.getName(), viVrf);
+
+    BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
+    neighbor.setRemoteAs(123L);
+
+    addBgpNeighbor(
+        c,
+        CumulusConcatenatedConfiguration.builder().build(),
+        new BgpVrf(viVrf.getName()),
+        neighbor,
+        new Warnings());
+
+    assertTrue(bgpProc.getPassiveNeighbors().containsKey(ifacePrefix));
+    assertEquals(bgpProc.getPassiveNeighbors().get(ifacePrefix).getPeerPrefix(), ifacePrefix);
   }
 }

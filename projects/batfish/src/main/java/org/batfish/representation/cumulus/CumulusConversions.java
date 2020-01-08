@@ -45,6 +45,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.CommunityList;
@@ -53,6 +54,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -328,29 +330,10 @@ public final class CumulusConversions {
     Iterables.concat(ImmutableSet.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values())
         .forEach(
             bgpVrf -> {
-              Long localAs = bgpVrf.getAutonomousSystem();
-              org.batfish.datamodel.BgpProcess viBgpProcess =
-                  c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
               bgpVrf
                   .getNeighbors()
-                  .forEach(
-                      (neighborName, neighbor) -> {
-                        if (neighbor instanceof BgpInterfaceNeighbor) {
-                          BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-                          interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                          addInterfaceNeighbor(
-                              c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
-                        } else if (neighbor instanceof BgpIpNeighbor) {
-                          BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-                          ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                          addIpv4BgpNeighbor(
-                              c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-                        } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
-                          throw new IllegalArgumentException(
-                              "Unsupported BGP neighbor type: "
-                                  + neighbor.getClass().getSimpleName());
-                        }
-                      });
+                  .values()
+                  .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
             });
   }
 
@@ -401,7 +384,42 @@ public final class CumulusConversions {
     return newProc;
   }
 
-  private static void addInterfaceNeighbor(
+  @VisibleForTesting
+  static void addBgpNeighbor(
+      Configuration c,
+      CumulusNodeConfiguration vsConfig,
+      BgpVrf bgpVrf,
+      BgpNeighbor neighbor,
+      Warnings w) {
+
+    Long localAs = bgpVrf.getAutonomousSystem();
+    org.batfish.datamodel.BgpProcess viBgpProcess =
+        c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
+
+    if (neighbor instanceof BgpInterfaceNeighbor) {
+      BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+      interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      String ifaceName = interfaceNeighbor.getName();
+      // if an interface neighbor has explicit address on the interface, it is a
+      // passive (numbered) peer
+      if (c.getAllInterfaces().containsKey(ifaceName)
+          && c.getAllInterfaces().get(ifaceName).getAddress() != null
+          && c.getAllInterfaces().get(ifaceName).getAddress() instanceof ConcreteInterfaceAddress) {
+        addIpv4PassiveBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      } else {
+        addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      }
+    } else if (neighbor instanceof BgpIpNeighbor) {
+      BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
+      ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      addIpv4ActiveBgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+    } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
+      throw new IllegalArgumentException(
+          "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
+    }
+  }
+
+  private static void addInterfaceBgpNeighbor(
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       BgpInterfaceNeighbor neighbor,
@@ -499,7 +517,7 @@ public final class CumulusConversions {
         .build();
   }
 
-  private static void addIpv4BgpNeighbor(
+  private static void addIpv4ActiveBgpNeighbor(
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       BgpIpNeighbor neighbor,
@@ -521,6 +539,29 @@ public final class CumulusConversions {
                     .orElse(
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
+    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+  }
+
+  private static void addIpv4PassiveBgpNeighbor(
+      Configuration c,
+      CumulusNodeConfiguration vsConfig,
+      BgpInterfaceNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc,
+      Warnings w) {
+    if (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null) {
+      w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
+      return;
+    }
+
+    Interface viIface = c.getAllInterfaces().get(neighbor.getName());
+    ConcreteInterfaceAddress ifaceAddress = (ConcreteInterfaceAddress) viIface.getAddress();
+
+    BgpPassivePeerConfig.Builder peerConfigBuilder =
+        BgpPassivePeerConfig.builder()
+            .setLocalIp(ifaceAddress.getIp())
+            .setPeerPrefix(ifaceAddress.getPrefix());
     generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 
