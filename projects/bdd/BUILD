@@ -36,6 +36,7 @@ junit_tests(
     deps = [
         ":bdd",
         ":bdd_testlib",
+        "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )

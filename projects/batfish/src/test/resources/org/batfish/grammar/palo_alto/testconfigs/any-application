@@ -1,0 +1,17 @@
+set deviceconfig system hostname any-application
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 2.2.2.2/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2]
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+
+set rulebase security rules allow-any-app from z1
+set rulebase security rules allow-any-app to z2
+set rulebase security rules allow-any-app source any
+set rulebase security rules allow-any-app source-user any
+set rulebase security rules allow-any-app destination any
+# Service application-default defers matching to application definition
+set rulebase security rules allow-any-app service application-default
+# Using application any to match all traffic
+set rulebase security rules allow-any-app application [ ftp any ]
+set rulebase security rules allow-any-app action allow

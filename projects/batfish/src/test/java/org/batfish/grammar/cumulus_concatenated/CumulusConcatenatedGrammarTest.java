@@ -49,7 +49,7 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -77,7 +77,8 @@ public class CumulusConcatenatedGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static CumulusNcluConfiguration parseFromTextWithSettings(String src, Settings settings) {
+  private static CumulusConcatenatedConfiguration parseFromTextWithSettings(
+      String src, Settings settings) {
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
@@ -85,10 +86,11 @@ public class CumulusConcatenatedGrammarTest {
         new CumulusConcatenatedControlPlaneExtractor(
             src, new Warnings(), "", settings, null, false);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    return SerializationUtils.clone((CumulusNcluConfiguration) extractor.getVendorConfiguration());
+    return SerializationUtils.clone(
+        (CumulusConcatenatedConfiguration) extractor.getVendorConfiguration());
   }
 
-  private static CumulusNcluConfiguration parse(String src) {
+  private static CumulusConcatenatedConfiguration parse(String src) {
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);
@@ -97,17 +99,17 @@ public class CumulusConcatenatedGrammarTest {
     return parseFromTextWithSettings(src, settings);
   }
 
-  private static CumulusNcluConfiguration parseLines(String... lines) {
+  private static CumulusConcatenatedConfiguration parseLines(String... lines) {
     return parse(String.join("\n", lines) + "\n");
   }
 
-  private static CumulusNcluConfiguration parseVendorConfig(String filename) {
+  private static CumulusConcatenatedConfiguration parseVendorConfig(String filename) {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     return parseVendorConfig(filename, settings);
   }
 
-  private static CumulusNcluConfiguration parseVendorConfig(
+  private static CumulusConcatenatedConfiguration parseVendorConfig(
       String filename, GrammarSettings settings) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
@@ -117,7 +119,8 @@ public class CumulusConcatenatedGrammarTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    CumulusNcluConfiguration config = (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+    CumulusConcatenatedConfiguration config =
+        (CumulusConcatenatedConfiguration) extractor.getVendorConfiguration();
     config.setFilename(TESTCONFIGS_PREFIX + filename);
     return config;
   }
@@ -150,19 +153,19 @@ public class CumulusConcatenatedGrammarTest {
 
   @Test
   public void testConcatenation() {
-    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation");
+    CumulusConcatenatedConfiguration cfg = parseVendorConfig("concatenation");
     assertThat(cfg.getHostname(), equalTo("hostname"));
   }
 
   @Test
   public void testConcatenationWithLeadingGarbage() {
-    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_leading_garbage");
+    CumulusConcatenatedConfiguration cfg = parseVendorConfig("concatenation_with_leading_garbage");
     assertThat(cfg.getHostname(), equalTo("hostname"));
   }
 
   @Test
   public void testConcatenationWithMissingHostname() {
-    CumulusNcluConfiguration cfg = parseVendorConfig("concatenation_with_missing_hostname");
+    CumulusConcatenatedConfiguration cfg = parseVendorConfig("concatenation_with_missing_hostname");
     assertThat(cfg.getHostname(), emptyString());
   }
 
@@ -173,13 +176,13 @@ public class CumulusConcatenatedGrammarTest {
     settings.setDisableUnrecognized(false);
     settings.setThrowOnLexerError(false);
     settings.setThrowOnParserError(false);
-    CumulusNcluConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
+    CumulusConcatenatedConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
     assertThat(cfg.getHostname(), equalTo("hostname"));
   }
 
   @Test
   public void testBgpAggregateAddress_e2e() {
-    CumulusNcluConfiguration vsConfig = parseVendorConfig("bgp_aggregate_address");
+    CumulusConcatenatedConfiguration vsConfig = parseVendorConfig("bgp_aggregate_address");
     Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
     Vrf vrf = viConfig.getDefaultVrf();
 
@@ -213,7 +216,7 @@ public class CumulusConcatenatedGrammarTest {
 
   @Test
   public void testVrf() {
-    CumulusNcluConfiguration c =
+    CumulusConcatenatedConfiguration c =
         parseLines(
             "hostname",
             INTERFACES_DELIMITER,
@@ -226,7 +229,7 @@ public class CumulusConcatenatedGrammarTest {
             "vrf vrf1",
             "  vni 1000",
             "exit-vrf");
-    assertThat(c.getVrfs().get("vrf1").getVni(), equalTo(1000));
+    assertThat(c.getFrrConfiguration().getVrfs().get("vrf1").getVni(), equalTo(1000));
   }
 
   @Test
@@ -259,7 +262,7 @@ public class CumulusConcatenatedGrammarTest {
 
   @Test
   public void testStaticRoute() {
-    CumulusNcluConfiguration vsConfig = parseVendorConfig("static_route");
+    CumulusConcatenatedConfiguration vsConfig = parseVendorConfig("static_route");
     Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
     assertThat(
         viConfig.getDefaultVrf().getStaticRoutes(),

@@ -114,6 +114,7 @@ junit_tests(
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",
         "//projects/symbolic",
+        "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",

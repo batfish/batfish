@@ -1310,12 +1310,13 @@ public class CiscoXrConversions {
     List<AclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
     for (AclLine line : ipAccessList.getLines()) {
-      // Does not support types of ACL line other than IpAccessListLine
+      // Does not support types of ACL line other than ExprAclLine
       if (!(line instanceof ExprAclLine)) {
         return null;
       }
       ExprAclLine exprAclLine = (ExprAclLine) line;
-      HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(exprAclLine);
+      HeaderSpace originalHeaderSpace =
+          HeaderSpaceConverter.convert(exprAclLine.getMatchCondition());
 
       if (!originalHeaderSpace.equals(
           HeaderSpace.builder()

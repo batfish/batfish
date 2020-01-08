@@ -166,6 +166,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -355,6 +379,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -475,6 +523,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -664,6 +736,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -784,6 +880,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -973,6 +1093,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -1093,6 +1237,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -1282,6 +1450,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet0/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.2.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -1430,6 +1622,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -1619,6 +1835,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -1739,6 +1979,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -1928,6 +2192,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -2048,6 +2336,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -2237,6 +2549,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }
@@ -2357,6 +2693,30 @@
                     "action" : "PERMITTED",
                     "detail" : {
                       "filter" : "OUTSIDE_TO_INSIDE",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "GigabitEthernet0/0",
                       "type" : "INGRESS_FILTER"
                     }
                   },
@@ -2546,6 +2906,30 @@
                     "action" : "DENIED",
                     "detail" : {
                       "filter" : "filter::INPUT",
+                      "flow" : {
+                        "dscp" : 0,
+                        "dstIp" : "2.128.0.101",
+                        "dstPort" : 33434,
+                        "ecn" : 0,
+                        "fragmentOffset" : 0,
+                        "ingressInterface" : "GigabitEthernet1/0",
+                        "ingressNode" : "as1core1",
+                        "ipProtocol" : "UDP",
+                        "packetLength" : 512,
+                        "srcIp" : "1.0.1.3",
+                        "srcPort" : 49152,
+                        "state" : "NEW",
+                        "tag" : "tag",
+                        "tcpFlagsAck" : 0,
+                        "tcpFlagsCwr" : 0,
+                        "tcpFlagsEce" : 0,
+                        "tcpFlagsFin" : 0,
+                        "tcpFlagsPsh" : 0,
+                        "tcpFlagsRst" : 0,
+                        "tcpFlagsSyn" : 0,
+                        "tcpFlagsUrg" : 0
+                      },
+                      "inputInterface" : "eth0",
                       "type" : "INGRESS_FILTER"
                     }
                   }

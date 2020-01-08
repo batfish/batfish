@@ -17,6 +17,7 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
@@ -179,6 +180,11 @@ public abstract class IpAccessListToBdd {
     /* AclLine visit methods */
 
     @Override
+    public PermitAndDenyBdds visitAclAclLine(AclAclLine aclAclLine) {
+      return _permitAndDenyBdds.get(aclAclLine.getAclName()).get();
+    }
+
+    @Override
     public PermitAndDenyBdds visitExprAclLine(ExprAclLine exprAclLine) {
       BDD matchExprBdd = visit(exprAclLine.getMatchCondition());
       return exprAclLine.getAction() == LineAction.PERMIT
@@ -238,12 +244,7 @@ public abstract class IpAccessListToBdd {
       checkArgument(
           _permitAndDenyBdds.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
       try {
-        if (permittedByAcl.getDefaultAccept()) {
-          // Return the BDD of packets not explicitly rejected by the referenced ACL
-          return _permitAndDenyBdds.get(name).get().getDenyBdd().not();
-        } else {
-          return _permitAndDenyBdds.get(name).get().getPermitBdd();
-        }
+        return _permitAndDenyBdds.get(name).get().getPermitBdd();
       } catch (NonRecursiveSupplierException e) {
         throw new BatfishException("Circular PermittedByAcl reference: " + name);
       }

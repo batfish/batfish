@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 public class Loopback implements Serializable {
 
   private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
+  private @Nullable String _alias;
   private @Nullable Ip _clagVxlanAnycastIp;
   private boolean _configured;
   private @Nullable Double _bandwidth;
@@ -40,8 +41,21 @@ public class Loopback implements Serializable {
     _configured = configured;
   }
 
+  public void setBandwidth(@Nullable Double bw) {
+    _bandwidth = bw;
+  }
+
   @Nullable
   public Double getBandwidth() {
     return _bandwidth;
+  }
+
+  @Nullable
+  public String getAlias() {
+    return _alias;
+  }
+
+  public void setAlias(@Nullable String alias) {
+    _alias = alias;
   }
 }

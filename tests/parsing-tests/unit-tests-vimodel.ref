@@ -1049,8 +1049,7 @@
             "outgoingTransformation" : {
               "guard" : {
                 "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                "aclName" : "acl1",
-                "defaultAccept" : false
+                "aclName" : "acl1"
               },
               "transformationSteps" : [
                 {
@@ -2311,6 +2310,12 @@
               "GigabitEthernet0/1",
               "ifname"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "ifname"
+              ]
+            },
             "mtu" : 1500,
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -2525,6 +2530,12 @@
               "Ethernet0/0",
               "blah"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "blah"
+              ]
+            },
             "mtu" : 1500,
             "ospfSettings" : {
               "area" : 0,
@@ -2566,8 +2577,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
-                      "defaultAccept" : false
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~"
                     }
                   ]
                 }
@@ -8133,8 +8143,7 @@
             "outgoingTransformation" : {
               "guard" : {
                 "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                "aclName" : "def",
-                "defaultAccept" : false
+                "aclName" : "def"
               },
               "transformationSteps" : [
                 {
@@ -8674,8 +8683,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
-                      "defaultAccept" : false
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
                     }
                   ]
                 }
@@ -15185,6 +15193,28 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
                 "falseStatements" : [
                   {
@@ -15210,6 +15240,28 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
                 "falseStatements" : [
                   {
@@ -15233,6 +15285,28 @@
           "~BGP_PEER_EXPORT_POLICY:default:swp3~" : {
             "name" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
             "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
@@ -15607,6 +15681,28 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
                 "falseStatements" : [
                   {
@@ -15630,6 +15726,28 @@
           "~BGP_PEER_EXPORT_POLICY:vrf1:1.1.1.2~" : {
             "name" : "~BGP_PEER_EXPORT_POLICY:vrf1:1.1.1.2~",
             "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
@@ -24425,8 +24543,7 @@
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                  "aclName" : "~EXISTING_CONNECTION~",
-                  "defaultAccept" : false
+                  "aclName" : "~EXISTING_CONNECTION~"
                 },
                 "name" : "EXISTING_CONNECTION"
               },
@@ -31900,27 +32017,9 @@
           "~ethernet1/2~OUTGOING_FILTER~" : {
             "lines" : [
               {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                  "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
-                  "defaultAccept" : false
-                },
-                "name" : "~zl3~vsys10~OUTGOING_FILTER~-EXPLICITLY-PERMITTED"
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.NotMatchExpr",
-                  "operand" : {
-                    "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                    "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
-                    "defaultAccept" : true
-                  }
-                },
-                "name" : "~zl3~vsys10~OUTGOING_FILTER~-EXPLICITLY-DENIED"
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
+                "name" : "Match restrictions for exiting zone zl3 in vsys vsys10"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -31948,8 +32047,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10",
-                      "defaultAccept" : false
+                      "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10"
                     }
                   ]
                 }

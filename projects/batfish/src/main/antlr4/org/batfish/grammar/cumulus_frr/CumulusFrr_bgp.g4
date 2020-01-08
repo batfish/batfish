@@ -14,6 +14,7 @@ s_bgp
   | sb_always_compare_med
   | sb_bgp
   | sb_neighbor
+  | sb_network
   | sb_no
   )*
 ;
@@ -240,12 +241,18 @@ sbnp_update_source
   UPDATE_SOURCE (ip = IP_ADDRESS | name = word)
 ;
 
+sb_network
+:
+  NETWORK prefix NEWLINE
+;
+
 sbafi_neighbor
 :
   NEIGHBOR (ip = IP_ADDRESS | name = word)
   (
     sbafin_activate
   | sbafin_allowas_in
+  | sbafin_default_originate
   | sbafin_next_hop_self
   | sbafin_route_reflector_client
   | sbafin_send_community
@@ -263,6 +270,11 @@ sbafin_activate
 sbafin_allowas_in
 :
   ALLOWAS_IN count = UINT8
+;
+
+sbafin_default_originate
+:
+  DEFAULT_ORIGINATE
 ;
 
 sbafin_next_hop_self

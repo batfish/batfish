@@ -1,11 +1,13 @@
 package org.batfish.representation.cumulus;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 /** BGP configuration for a particular VRF. */
 public class BgpVrf implements Serializable {
@@ -14,6 +16,10 @@ public class BgpVrf implements Serializable {
   private @Nullable Long _autonomousSystem;
   private @Nullable Boolean _asPathMultipathRelax;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
+
+  // TODO: this needs to move to VI after testing behavior
+  private @Nonnull Map<Prefix, BgpNetwork> _networks;
+
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
   private @Nullable Ip _routerId;
@@ -25,6 +31,7 @@ public class BgpVrf implements Serializable {
     _defaultIpv4Unicast = true;
     _vrfName = vrfName;
     _neighbors = new HashMap<>();
+    _networks = ImmutableMap.of();
   }
 
   public boolean getDefaultIpv4Unicast() {
@@ -91,5 +98,18 @@ public class BgpVrf implements Serializable {
 
   public void setConfederationId(@Nullable Long confederationId) {
     _confederationId = confederationId;
+  }
+
+  @Nonnull
+  public Map<Prefix, BgpNetwork> getNetworks() {
+    return _networks;
+  }
+
+  public void addNetwork(Prefix network) {
+    _networks =
+        ImmutableMap.<Prefix, BgpNetwork>builder()
+            .putAll(_networks)
+            .put(network, new BgpNetwork(network))
+            .build();
   }
 }

@@ -30,7 +30,6 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
     @Nonnull
     public BgpUnnumberedPeerConfig build() {
       checkArgument(_peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
-      checkValid();
       BgpUnnumberedPeerConfig bgpPeerConfig =
           new BgpUnnumberedPeerConfig(
               _appliedRibGroup,

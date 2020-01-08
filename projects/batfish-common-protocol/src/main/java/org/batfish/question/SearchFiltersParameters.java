@@ -18,7 +18,6 @@ import org.batfish.specifier.SpecifierContext;
 /** A set of parameters for ACL filter analysis that uses high-level specifiers. */
 public final class SearchFiltersParameters {
   private final @Nonnull IpSpaceSpecifier _destinationIpSpaceSpecifier;
-  private final boolean _generateExplanations;
   private final @Nonnull HeaderSpace _headerSpace;
   private final @Nonnull LocationSpecifier _startLocationSpecifier;
   private final @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier;
@@ -27,10 +26,8 @@ public final class SearchFiltersParameters {
       @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier,
       @Nonnull LocationSpecifier startLocationSpecifier,
       @Nonnull IpSpaceSpecifier sourceIpSpaceSpecifier,
-      @Nonnull HeaderSpace headerSpace,
-      boolean generateExplanations) {
+      @Nonnull HeaderSpace headerSpace) {
     _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
-    _generateExplanations = generateExplanations;
     _headerSpace = headerSpace;
     _startLocationSpecifier = startLocationSpecifier;
     _sourceIpSpaceSpecifier = sourceIpSpaceSpecifier;
@@ -39,10 +36,6 @@ public final class SearchFiltersParameters {
   @Nonnull
   public IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
     return _destinationIpSpaceSpecifier;
-  }
-
-  public boolean getGenerateExplanations() {
-    return _generateExplanations;
   }
 
   @Nonnull
@@ -87,18 +80,12 @@ public final class SearchFiltersParameters {
     private HeaderSpace _headerSpace;
     private LocationSpecifier _startLocationSpecifier;
     private IpSpaceSpecifier _sourceIpSpaceSpecifier;
-    private boolean _generateExplanations;
 
     private Builder() {}
 
     public Builder setDestinationIpSpaceSpecifier(
         @Nonnull IpSpaceSpecifier destinationIpSpaceSpecifier) {
       _destinationIpSpaceSpecifier = destinationIpSpaceSpecifier;
-      return this;
-    }
-
-    public Builder setGenerateExplanations(boolean generateExplanations) {
-      _generateExplanations = generateExplanations;
       return this;
     }
 
@@ -117,8 +104,7 @@ public final class SearchFiltersParameters {
           requireNonNull(_destinationIpSpaceSpecifier),
           requireNonNull(_startLocationSpecifier),
           requireNonNull(_sourceIpSpaceSpecifier),
-          requireNonNull(_headerSpace),
-          _generateExplanations);
+          requireNonNull(_headerSpace));
     }
 
     public Builder setStartLocationSpecifier(@Nonnull LocationSpecifier startLocationSpecifier) {

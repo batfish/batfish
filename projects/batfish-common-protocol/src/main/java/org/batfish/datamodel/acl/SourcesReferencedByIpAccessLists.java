@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.NonRecursiveSupplier;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 
@@ -53,6 +55,16 @@ public final class SourcesReferencedByIpAccessLists {
     }
 
     /* AclLine visit methods */
+
+    @Override
+    public Void visitAclAclLine(AclAclLine aclAclLine) {
+      String aclName = aclAclLine.getAclName();
+      Supplier<Void> thunk = _namedAclThunks.get(aclName);
+      if (thunk == null) {
+        throw new BatfishException("Unknown IpAccessList " + aclName);
+      }
+      return thunk.get();
+    }
 
     @Override
     public Void visitExprAclLine(ExprAclLine exprAclLine) {
@@ -129,6 +141,14 @@ public final class SourcesReferencedByIpAccessLists {
       Map<String, IpAccessList> namedAcls, IpAccessList acl) {
     ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor(namedAcls);
     visitor.visit(acl);
+    return visitor.referencedInterfaces();
+  }
+
+  public static Set<String> referencedSources(
+      Map<String, IpAccessList> namedAcls, Set<String> acls) {
+    checkArgument(namedAcls.keySet().containsAll(acls));
+    ReferenceSourcesVisitor visitor = new ReferenceSourcesVisitor(namedAcls);
+    acls.forEach(acl -> visitor.visit(namedAcls.get(acl)));
     return visitor.referencedInterfaces();
   }
 }

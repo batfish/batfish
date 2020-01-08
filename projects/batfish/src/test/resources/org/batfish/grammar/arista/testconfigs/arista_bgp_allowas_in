@@ -6,3 +6,7 @@ router bgp 1
   router-id 1.2.3.4
   bgp allowas-in 2
   neighbor 1.1.1.1 remote-as 2
+  neighbor 2.2.2.2 remote-as 2
+
+  address-family evpn
+    neighbor 2.2.2.2 activate

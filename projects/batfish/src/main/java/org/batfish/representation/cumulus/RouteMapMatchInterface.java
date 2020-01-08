@@ -46,12 +46,14 @@ public class RouteMapMatchInterface implements RouteMapMatch {
   }
 
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     return new MatchPrefixSet(
         DestinationNetwork.instance(),
         new ExplicitPrefixSet(
             new PrefixSpace(
                 _interfaces.stream()
+                    // remove non-existent interfaces mentioned in the configuration
+                    .filter(ifaceName -> c.getAllInterfaces().containsKey(ifaceName))
                     .flatMap(
                         ifaceName ->
                             c.getAllInterfaces().get(ifaceName).getAllConcreteAddresses().stream())

@@ -42,6 +42,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CollectionUtil;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AuthenticationKey;
@@ -1939,7 +1940,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   IpAccessList screenAcl =
                       _c.getIpAccessLists()
                           .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
-                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName(), false) : null;
+                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -1988,11 +1989,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (screenAcl == null) {
       return inAcl;
     } else if (inAcl == null) {
-      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName(), false));
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName()));
     } else {
       aclConjunctList =
-          ImmutableSet.of(
-              new PermittedByAcl(screenAcl.getName(), false), new PermittedByAcl(inAclName, false));
+          ImmutableSet.of(new PermittedByAcl(screenAcl.getName()), new PermittedByAcl(inAclName));
     }
 
     String combinedAclName = ACL_NAME_COMBINED_INCOMING + iface.getName();
@@ -2090,7 +2090,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     zoneAclLines.add(
         new ExprAclLine(
             LineAction.PERMIT,
-            new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION, false),
+            new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION),
             "EXISTING_CONNECTION"));
 
     /* Default policy allows traffic originating from the device to be accepted */
@@ -2099,15 +2099,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
-      for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
-        ExprAclLine.takingExplicitActionsOf(e.getKey()).forEach(zoneAclLines::add);
+      for (String fromZone : zone.getFromZonePolicies().keySet()) {
+        String zonePolicyLineDesc =
+            fromZone.equals(zone.getName())
+                ? String.format("Match intra-zone policy for zone %s", fromZone)
+                : String.format(
+                    "Match cross-zone policy from-zone %s to-zone %s", fromZone, zone.getName());
+        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, fromZone));
       }
     }
 
     /* Global policy if applicable */
     if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
-      ExprAclLine.takingExplicitActionsOf(ACL_NAME_GLOBAL_POLICY).forEach(zoneAclLines::add);
+      zoneAclLines.add(new AclAclLine("Match global security policy", ACL_NAME_GLOBAL_POLICY));
     }
 
     /* Add catch-all line with default action */
@@ -2233,7 +2238,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
       ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
       for (FirewallFilter inner : filter.getInner()) {
-        ExprAclLine.takingExplicitActionsOf(inner.getName()).forEach(lines::add);
+        String filterName = inner.getName();
+        lines.add(
+            new AclAclLine(String.format("Match firewall filter %s", filterName), filterName));
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }

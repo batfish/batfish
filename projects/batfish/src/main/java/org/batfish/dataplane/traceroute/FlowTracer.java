@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
+import static org.batfish.datamodel.FlowDiff.returnFlowDiffs;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
@@ -829,7 +830,7 @@ class FlowTracer {
                       // TODO: handle ACLs
 
                       // add ExitOutputIfaceStep
-                      _steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
+                      flowTracer._steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
 
                       SortedSet<NodeInterfacePair> neighborIfaces =
                           _tracerouteContext.getInterfaceNeighbors(
@@ -838,7 +839,7 @@ class FlowTracer {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
                                 currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
-                        buildArpFailureTrace(
+                        flowTracer.buildArpFailureTrace(
                             outgoingIfaceName, _currentFlow.getDstIp(), disposition);
                       } else {
                         flowTracer.processOutgoingInterfaceEdges(
@@ -978,6 +979,7 @@ class FlowTracer {
                     .setIncomingInterfaces(session.getIncomingInterfaces())
                     .setMatchCriteria(session.getMatchCriteria())
                     .setSessionAction(session.getAction())
+                    .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))
                     .build()));
       }
     }

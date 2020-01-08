@@ -1,0 +1,39 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_redistribute_ospf
+!
+!!!!!
+!!!  Neighbors are needed because we bake redistribution policy into neighbor's export policy.
+!!!!!
+!
+router bgp 1
+  vrf vrf1
+    redistribute ospf route-map ALLOW_10
+    neighbor 1.1.1.1 remote-as 2
+  vrf vrf2
+    redistribute ospf match internal route-map ALLOW_10
+    neighbor 2.2.2.2 remote-as 2
+  vrf vrf3
+    redistribute ospf match external route-map ALLOW_10
+    neighbor 3.3.3.3 remote-as 2
+  vrf vrf4
+    redistribute ospf match nssa-external route-map ALLOW_10
+    neighbor 4.4.4.4 remote-as 2
+  vrf vrf5
+    redistribute ospf match nssa-external 1 route-map ALLOW_10
+    neighbor 5.5.5.5 remote-as 2
+  vrf vrf6
+    redistribute ospf match nssa-external 2 route-map ALLOW_10
+    neighbor 6.6.6.6 remote-as 2
+!
+ip prefix-list ALLOW_10 seq 10 permit 10.0.0.0/8 ge 8
+!
+route-map ALLOW_10 permit 10
+   match ip address prefix-list ALLOW_10
+!
+vrf instance vrf1
+vrf instance vrf2
+vrf instance vrf3
+vrf instance vrf4
+vrf instance vrf5
+vrf instance vrf6

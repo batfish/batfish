@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -171,13 +170,11 @@ public final class BDDSourceManager {
                 return active;
               }
 
-              Set<String> sources = new HashSet<>();
-              for (IpAccessList acl : config.getIpAccessLists().values()) {
-                referencedSources(config.getIpAccessLists(), acl).stream()
-                    .filter(active::contains)
-                    .forEach(sources::add);
-              }
-              return sources;
+              return referencedSources(
+                      config.getIpAccessLists(), config.getIpAccessLists().keySet())
+                  .stream()
+                  .filter(active::contains)
+                  .collect(ImmutableSet.toImmutableSet());
             });
 
     Map<String, Set<String>> activeAndReferenced =

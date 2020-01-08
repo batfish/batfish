@@ -54,6 +54,11 @@ AGGREGATE_ADDRESS
   'aggregate-address'
 ;
 
+ALERTS
+:
+   'alerts'
+;
+
 ALLOWAS_IN
 :
   'allowas-in'
@@ -104,6 +109,11 @@ BFD
 BGP
 :
   'bgp'
+;
+
+BLACKHOLE
+:
+  'blackhole'
 ;
 
 CALL
@@ -165,14 +175,29 @@ CONNECTED
   'connected'
 ;
 
+CRITICAL
+:
+  'critical'
+;
+
 DATACENTER
 :
   'datacenter'
 ;
 
+DEBUGGING
+:
+  'debugging'
+;
+
 DEFAULT
 :
   'default'
+;
+
+DEFAULT_ORIGINATE
+:
+  'default-originate'
 ;
 
 DEFAULTS
@@ -190,6 +215,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Remark )
 ;
 
+EMERGENCIES
+:
+  'emergencies'
+;
+
 ENABLE
 :
   'enable'
@@ -198,6 +228,11 @@ ENABLE
 END
 :
   'end'
+;
+
+ERRORS
+:
+  'errors'
 ;
 
 EVPN
@@ -403,6 +438,11 @@ MULTIPATH_RELAX
   'multipath-relax'
 ;
 
+ND
+:
+   'nd'
+;
+
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
@@ -426,6 +466,11 @@ NEXT_HOP_SELF
 NO
 :
   'no'
+;
+
+NOTIFICATIONS
+:
+  'notifications'
 ;
 
 ON_MATCH
@@ -481,6 +526,11 @@ PREFIX_LIST
 PREPEND
 :
   'prepend'
+;
+
+RA_INTERVAL
+:
+   'ra-interval'
 ;
 
 REDISTRIBUTE
@@ -548,9 +598,9 @@ SUMMARY_ONLY
   'summary-only'
 ;
 
-SUBNET_MASK
+SUPPRESS_RA
 :
-  F_SubnetMask
+  'suppress-ra'
 ;
 
 SYSLOG
@@ -566,6 +616,11 @@ TAG
 TRADITIONAL
 :
   'traditional'
+;
+
+WARNINGS
+:
+  'warnings'
 ;
 
 MATCH
@@ -591,6 +646,11 @@ NEXT_HOP
 ROUTE_REFLECTOR_CLIENT
 :
   'route-reflector-client'
+;
+
+SUBNET_MASK
+:
+  F_SubnetMask
 ;
 
 UINT8

@@ -5513,6 +5513,11 @@ HOST_ASSOCIATION
    'host-association'
 ;
 
+HOST_FLAP
+:
+   'host-flap'
+;
+
 HOST_INFO
 :
    'host-info'
@@ -5901,6 +5906,11 @@ IDLE
 IDLE_TIMEOUT
 :
    'idle-timeout'
+;
+
+IDLE_RESTART_TIMER
+:
+   'idle-restart-timer'
 ;
 
 IDP_CERT

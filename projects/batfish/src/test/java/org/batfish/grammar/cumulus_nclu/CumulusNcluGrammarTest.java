@@ -46,8 +46,9 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.representation.cumulus.CumulusConversions.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.both;
@@ -305,8 +306,7 @@ public final class CumulusNcluGrammarTest {
     Configuration c = parseConfig("cumulus_nclu_bgp");
     String peerInterface = "swp1";
     String peerExportPolicyName = computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerInterface);
-    String commonExportPolicyName =
-        CumulusNcluConfiguration.computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME);
+    String commonExportPolicyName = computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME);
 
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.2")))));
     assertThat(

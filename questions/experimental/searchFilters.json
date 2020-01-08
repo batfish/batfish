@@ -2,7 +2,6 @@
     "class": "org.batfish.question.searchfilters.SearchFiltersQuestion",
     "differential": false,
     "action": "${action}",
-    "explain": "${explain}",
     "filters": "${filters}",
     "headers": "${headers}",
     "invertSearch": "${invertSearch}",
@@ -18,8 +17,7 @@
             "headers",
             "action",
             "startLocation",
-            "invertSearch",
-            "explain"
+            "invertSearch"
         ],
         "tags": [
                     "acl"
@@ -30,12 +28,6 @@
                 "optional": true,
                 "type": "string",
                 "displayName": "Action"
-            },
-            "explain": {
-                "description": "Include a description of the flow space matching the query.",
-                "optional": true,
-                "type": "boolean",
-                "displayName": "Explain"
             },
             "filters": {
                 "description": "Only evaluate filters that match this specifier",

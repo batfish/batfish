@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_confederations
+!
+vrf instance vrf2
+!
+router bgp 1
+  bgp confederation identifier 1111
+  bgp confederation peers 3,4,5-6
+  vrf vrf2
+    bgp confederation identifier 22.22
+    bgp confederation peers 1.1-1.2,3.3,44

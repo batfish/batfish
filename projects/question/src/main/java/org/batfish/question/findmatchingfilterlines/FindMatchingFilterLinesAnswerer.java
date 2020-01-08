@@ -10,12 +10,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.SortedMap;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -26,7 +28,9 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
@@ -37,7 +41,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -76,6 +79,25 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
               false));
 
   private static final Map<String, ColumnMetadata> METADATA_MAP = toColumnMap(COLUMN_METADATA);
+
+  /** Possible actions for the {@link FindMatchingFilterLinesAnswerer#COL_ACTION} column */
+  enum ReportedAction {
+    PERMIT,
+    DENY,
+    VARIABLE;
+
+    static ReportedAction fromLineAction(@Nonnull LineAction lineAction) {
+      switch (lineAction) {
+        case PERMIT:
+          return PERMIT;
+        case DENY:
+          return DENY;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unrecognized ACL line action %s", lineAction));
+      }
+    }
+  }
 
   FindMatchingFilterLinesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -145,48 +167,62 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     MemoizedIpAccessListToBdd bddConverter =
         new MemoizedIpAccessListToBdd(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
     Row.TypedRowBuilder rowBuilder = Row.builder(METADATA_MAP).put(COL_NODE, node.getHostname());
-    ActionGetter actionGetter = new ActionGetter(false);
     return acls.stream()
         .flatMap(
             aclName -> {
               List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
-              return getRowsForAcl(aclLines, headerSpaceBdd, bddConverter, action)
-                  .mapToObj(
-                      lineIndex -> {
+              return getReportedActions(aclLines, headerSpaceBdd, bddConverter, action).entrySet()
+                  .stream()
+                  .map(
+                      e -> {
+                        int lineIndex = e.getKey();
                         AclLine line = aclLines.get(lineIndex);
                         return rowBuilder
                             .put(COL_FILTER, aclName)
                             .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
                             .put(COL_LINE_INDEX, lineIndex)
-                            .put(COL_ACTION, actionGetter.visit(line))
+                            .put(COL_ACTION, e.getValue())
                             .build();
                       });
             });
   }
 
   /**
-   * Returns the indices of the lines in the given list of {@link ExprAclLine}s that match the given
-   * {@code headerSpaceBdd} and {@link Action}.
+   * Returns a map of line index in {@code aclLines} to action to report for that line. Only
+   * includes lines that should be reported.
    */
   @VisibleForTesting
-  static IntStream getRowsForAcl(
+  static SortedMap<Integer, ReportedAction> getReportedActions(
       List<AclLine> aclLines,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
-    IncludeChecker includeChecker = new IncludeChecker(bddConverter, action, headerSpaceBdd);
-    return IntStream.range(0, aclLines.size()).filter(i -> includeChecker.visit(aclLines.get(i)));
+    ReportedActionFinder actionFinder =
+        new ReportedActionFinder(bddConverter, action, headerSpaceBdd);
+    ImmutableSortedMap.Builder<Integer, ReportedAction> actionsToReport =
+        ImmutableSortedMap.naturalOrder();
+    for (int i = 0; i < aclLines.size(); i++) {
+      ReportedAction reportedAction = actionFinder.visit(aclLines.get(i));
+      if (reportedAction != null) {
+        actionsToReport.put(i, reportedAction);
+      }
+    }
+    return actionsToReport.build();
   }
 
-  /** Returns true if the answer should include the visited line, based on provided parameters. */
-  private static final class IncludeChecker implements GenericAclLineVisitor<Boolean> {
+  /**
+   * Returns the line's action if the answer should include the visited line based on provided
+   * parameters, otherwise null.
+   */
+  @VisibleForTesting
+  static final class ReportedActionFinder implements GenericAclLineVisitor<ReportedAction> {
     private final IpAccessListToBdd _ipAccessListToBdd;
 
     // Restrictions on lines to include, based on question parameters
     @Nullable private final Action _action;
     private final BDD _headerSpaceBdd;
 
-    IncludeChecker(
+    ReportedActionFinder(
         IpAccessListToBdd ipAccessListToBdd, @Nullable Action action, BDD headerSpaceBdd) {
       _ipAccessListToBdd = ipAccessListToBdd;
       _action = action;
@@ -200,13 +236,37 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     }
 
     @Override
-    public Boolean visitExprAclLine(ExprAclLine exprAclLine) {
+    public ReportedAction visitAclAclLine(AclAclLine aclAclLine) {
+      PermitAndDenyBdds permitAndDenyBdds = _ipAccessListToBdd.toPermitAndDenyBdds(aclAclLine);
+      boolean permitsAnything = _headerSpaceBdd.andSat(permitAndDenyBdds.getPermitBdd());
+      boolean deniesAnything = _headerSpaceBdd.andSat(permitAndDenyBdds.getDenyBdd());
+
+      if (permitsAnything && deniesAnything) {
+        // The line can both permit and deny packets within the specified headerspace.
+        // Don't care what action the question specifies; this line matches with variable action.
+        return ReportedAction.VARIABLE;
+      }
+
+      // The line either doesn't match the headerspace or only takes one action on matching packets.
+      // In the latter case, report the line if question says to include that action.
+      if (permitsAnything && actionMatches(LineAction.PERMIT)) {
+        return ReportedAction.PERMIT;
+      } else if (deniesAnything && actionMatches(LineAction.DENY)) {
+        return ReportedAction.DENY;
+      }
+      return null;
+    }
+
+    @Override
+    public ReportedAction visitExprAclLine(ExprAclLine exprAclLine) {
       if (!actionMatches(exprAclLine.getAction())) {
-        return false;
+        return null;
       }
       // If there is any overlap between the header space BDD and this line, include it
       BDD lineBdd = _ipAccessListToBdd.toBdd(exprAclLine.getMatchCondition());
-      return _headerSpaceBdd.andSat(lineBdd);
+      return _headerSpaceBdd.andSat(lineBdd)
+          ? ReportedAction.fromLineAction(exprAclLine.getAction())
+          : null;
     }
   }
 

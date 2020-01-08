@@ -1,37 +1,27 @@
 package org.batfish.question.searchfilters;
 
-import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.question.FilterQuestionUtils.differentialBDDSourceManager;
-import static org.batfish.question.FilterQuestionUtils.getFlow;
 import static org.batfish.question.FilterQuestionUtils.resolveSources;
+import static org.batfish.question.testfilters.TestFiltersAnswerer.COLUMN_METADATA;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import com.google.common.collect.Streams;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
@@ -39,46 +29,26 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.acl.AclExplainer;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.GenericAclLineVisitor;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.FilterQuestionUtils;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
-import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** Answerer for SearchFiltersQuestion */
 public final class SearchFiltersAnswerer extends Answerer {
-  public static final String COL_HEADER_SPACE = "Header_Space";
-
-  @VisibleForTesting
-  public static final Function<String, String> NEGATED_RENAMER =
-      name -> String.format("~~ Negated ACL: %s ~~", name);
-
-  @VisibleForTesting
-  public static final BiFunction<Integer, String, String> MATCH_LINE_RENAMER =
-      (line, name) -> String.format("~~ Match-Line %d ACL: %s ~~", line, name);
-
   private TableAnswerElement _tableAnswerElement;
 
   public SearchFiltersAnswerer(Question question, IBatfish batfish) {
@@ -101,300 +71,180 @@ public final class SearchFiltersAnswerer extends Answerer {
   private void differentialAnswer(
       SearchFiltersQuestion question, NetworkSnapshot snapshot, NetworkSnapshot reference) {
     SearchFiltersParameters parameters = question.toSearchFiltersParameters();
+    SearchFiltersQuery query = question.getQuery();
 
-    TableAnswerElement baseTable =
-        toSearchFiltersTable(
-            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
-            question.getGenerateExplanations());
-    TableAnswerElement deltaTable =
-        toSearchFiltersTable(
-            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
-            question.getGenerateExplanations());
+    TableAnswerElement baseTable = new TableAnswerElement(new TableMetadata(COLUMN_METADATA));
+    TableAnswerElement refTable = new TableAnswerElement(new TableMetadata(COLUMN_METADATA));
 
-    Multimap<String, String> baseAcls = getSpecifiedAcls(snapshot, question);
-    Multimap<String, String> deltaAcls = getSpecifiedAcls(reference, question);
-    Map<String, Configuration> baseConfigs = _batfish.loadConfigurations(snapshot);
-    Map<String, Configuration> deltaConfigs = _batfish.loadConfigurations(reference);
+    Map<String, Map<String, IpAccessList>> acls = getSpecifiedAcls(snapshot, question);
+    Map<String, Map<String, IpAccessList>> refAcls = getSpecifiedAcls(reference, question);
+    Map<String, DiffConfigContext> configContexts =
+        getDiffConfigContexts(acls, refAcls, snapshot, reference, parameters);
 
-    Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), deltaAcls.keySet());
-    for (String node : commonNodes) {
-      Configuration baseConfig = baseConfigs.get(node);
-      Configuration deltaConfig = deltaConfigs.get(node);
+    for (Entry<String, DiffConfigContext> e : configContexts.entrySet()) {
+      String hostname = e.getKey();
+      DiffConfigContext configContext = e.getValue();
+      Map<String, IpAccessList> aclsForNode = acls.get(hostname);
+      Map<String, IpAccessList> refAclsForNode = refAcls.get(hostname);
 
-      Set<String> commonAcls =
-          Sets.intersection(
-              ImmutableSet.copyOf(baseAcls.get(node)), ImmutableSet.copyOf(deltaAcls.get(node)));
-
+      Set<String> commonAcls = Sets.intersection(aclsForNode.keySet(), refAclsForNode.keySet());
       for (String aclName : commonAcls) {
-        Optional<IpAccessList> baseAcl = makeQueryAcl(baseConfig.getIpAccessLists().get(aclName));
-        Optional<IpAccessList> deltaAcl = makeQueryAcl(deltaConfig.getIpAccessLists().get(aclName));
-        if (!baseAcl.isPresent() && !deltaAcl.isPresent()) {
-          continue;
-        }
-        if (baseAcl.isPresent() && !deltaAcl.isPresent() && question.getIncludeOneTableKeys()) {
-          baseTable.addRow(
-              Row.builder(baseTable.getMetadata().toColumnMap())
-                  .put(COL_NODE, node)
-                  .put(COL_FILTER_NAME, aclName)
-                  .build());
-          continue;
-        }
-        if (!baseAcl.isPresent() && question.getIncludeOneTableKeys()) {
-          deltaTable.addRow(
-              Row.builder(deltaTable.getMetadata().toColumnMap())
-                  .put(COL_NODE, node)
-                  .put(COL_FILTER_NAME, aclName)
-                  .build());
+        IpAccessList acl = aclsForNode.get(aclName);
+        IpAccessList refAcl = refAclsForNode.get(aclName);
+
+        // If either ACL can't be queried, can't compare them; fill in row in the other table if
+        // necessary and continue
+        boolean canQueryAcl = query.canQuery(acl);
+        boolean canQueryRefAcl = query.canQuery(refAcl);
+        if (!canQueryAcl || !canQueryRefAcl) {
+          if (question.getIncludeOneTableKeys() && (canQueryAcl || canQueryRefAcl)) {
+            // One of them is not null and question specifies to include rows in this case
+            TableAnswerElement table = canQueryAcl ? baseTable : refTable;
+            table.addRow(
+                Row.builder(table.getMetadata().toColumnMap())
+                    .put(COL_NODE, hostname)
+                    .put(COL_FILTER_NAME, aclName)
+                    .build());
+          }
           continue;
         }
 
         // present in both snapshot
-        DifferentialSearchFiltersResult results =
-            differentialReachFilter(
-                snapshot,
-                _batfish,
-                baseConfig,
-                baseAcl.get(),
-                deltaConfig,
-                deltaAcl.get(),
-                parameters);
+        DifferentialSearchFiltersResult result = getDiffResult(acl, refAcl, configContext, query);
 
-        Stream.of(results.getDecreasedResult(), results.getIncreasedResult())
+        Stream.of(result.getDecreasedFlow(), result.getIncreasedFlow())
             .filter(Optional::isPresent)
             .map(Optional::get)
             .forEach(
-                result -> {
-                  Flow flow = result.getExampleFlow();
-                  AclLineMatchExpr description = result.getHeaderSpaceDescription().orElse(null);
-                  baseTable.addRow(
-                      toSearchFiltersRow(
-                          description,
-                          testFiltersRow(snapshot, node, aclName, flow),
-                          question.getGenerateExplanations()));
-                  deltaTable.addRow(
-                      toSearchFiltersRow(
-                          description,
-                          testFiltersRow(reference, node, aclName, flow),
-                          question.getGenerateExplanations()));
+                flow -> {
+                  baseTable.addRow(testFiltersRow(snapshot, hostname, aclName, flow));
+                  refTable.addRow(testFiltersRow(reference, hostname, aclName, flow));
                 });
       }
     }
 
     // take care of nodes that are present in only one snapshot
     if (question.getIncludeOneTableKeys()) {
-      addOneSnapshotNodes(Sets.difference(baseAcls.keySet(), deltaAcls.keySet()), baseTable);
-      addOneSnapshotNodes(Sets.difference(deltaAcls.keySet(), baseAcls.keySet()), deltaTable);
+      addOneSnapshotNodes(Sets.difference(acls.keySet(), refAcls.keySet()), baseTable);
+      addOneSnapshotNodes(Sets.difference(refAcls.keySet(), acls.keySet()), refTable);
     }
 
     TableAnswerElement diffTable =
-        TableDiff.diffTables(baseTable, deltaTable, question.getIncludeOneTableKeys());
+        TableDiff.diffTables(baseTable, refTable, question.getIncludeOneTableKeys());
 
     _tableAnswerElement = new TableAnswerElement(diffTable.getMetadata());
     _tableAnswerElement.postProcessAnswer(question, diffTable.getRows().getData());
   }
 
-  private static TableAnswerElement toSearchFiltersTable(
-      TableAnswerElement tableAnswerElement, boolean generateExplanation) {
-    Map<String, ColumnMetadata> columnMap = tableAnswerElement.getMetadata().toColumnMap();
-
-    List<ColumnMetadata> columnMetadata = new ArrayList<>();
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_NODE));
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_FILTER_NAME));
-    if (generateExplanation) {
-      columnMetadata.add(
-          new ColumnMetadata(COL_HEADER_SPACE, Schema.STRING, "Description of HeaderSpace"));
-    }
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_FLOW));
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_ACTION));
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_LINE_CONTENT));
-    columnMetadata.add(columnMap.get(TestFiltersAnswerer.COL_TRACE));
-
-    TableMetadata metadata = new TableMetadata(columnMetadata);
-    return new TableAnswerElement(metadata);
-  }
-
-  private static Row toSearchFiltersRow(
-      @Nullable AclLineMatchExpr description, Row row, boolean generateExplanations) {
-
-    RowBuilder rowBuilder = Row.builder().putAll(row, row.getColumnNames());
-
-    if (generateExplanations) {
-      /*
-       * Sending the explanation to the client as a JSON blob. TODO: do something better.
-       */
-      String jsonDescription;
-      try {
-        jsonDescription = BatfishObjectMapper.writeString(description);
-      } catch (JsonProcessingException e) {
-        e.printStackTrace();
-        jsonDescription = e.getMessage();
-      }
-
-      rowBuilder.put(COL_HEADER_SPACE, jsonDescription);
-    }
-
-    return rowBuilder.build();
-  }
-
   private void nonDifferentialAnswer(NetworkSnapshot snapshot, SearchFiltersQuestion question) {
-    List<Triple<String, String, IpAccessList>> acls =
-        getQueryAcls(_batfish.getSnapshot(), question);
-    if (acls.isEmpty()) {
+    Map<String, Map<String, IpAccessList>> specifiedAcls = getSpecifiedAcls(snapshot, question);
+    if (specifiedAcls.values().stream().allMatch(Map::isEmpty)) {
       throw new BatfishException("No matching filters");
     }
 
     Multiset<Row> rows = HashMultiset.create();
-    /*
-     * For each query ACL, try to get a flow. If one exists, run traceFilter on that flow.
-     * Concatenate the answers for all flows into one big table.
-     */
-    Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
-    for (Triple<String, String, IpAccessList> triple : acls) {
-      String hostname = triple.getLeft();
-      String aclname = triple.getMiddle();
-      Configuration node = configurations.get(hostname);
-      IpAccessList acl = triple.getRight();
-      Optional<SearchFiltersResult> optionalResult;
-      optionalResult =
-          reachFilter(snapshot, _batfish, node, acl, question.toSearchFiltersParameters());
-      optionalResult.ifPresent(
-          result ->
-              rows.add(
-                  toSearchFiltersRow(
-                      result.getHeaderSpaceDescription().orElse(null),
-                      testFiltersRow(snapshot, hostname, aclname, result.getExampleFlow()),
-                      question.getGenerateExplanations())));
-    }
 
-    _tableAnswerElement =
-        toSearchFiltersTable(
-            TestFiltersAnswerer.create(new TestFiltersQuestion(null, null, null, null)),
-            question.getGenerateExplanations());
-    _tableAnswerElement.postProcessAnswer(question, rows);
+    /*
+     * For each ACL, try to get a flow matching the query. If one exists, run traceFilter on that
+     * flow. Concatenate the answers for all flows into one big table.
+     */
+    SearchFiltersParameters parameters = question.toSearchFiltersParameters();
+    SearchFiltersQuery query = question.getQuery();
+    for (Entry<String, NonDiffConfigContext> e :
+        getConfigContexts(specifiedAcls, snapshot, parameters).entrySet()) {
+      String hostname = e.getKey();
+      NonDiffConfigContext configContext = e.getValue();
+      for (IpAccessList acl : specifiedAcls.get(hostname).values()) {
+        // Ensure that query is applicable to acl
+        if (!query.canQuery(acl)) {
+          continue;
+        }
+
+        // Generate representative flow for ACL, if one exists
+        Flow flow = configContext.getFlow(configContext.getReachBdd(acl, query));
+        if (flow == null) {
+          continue;
+        }
+
+        // Add result to table
+        rows.add(testFiltersRow(snapshot, hostname, acl.getName(), flow));
+      }
+
+      _tableAnswerElement = new TableAnswerElement(new TableMetadata(COLUMN_METADATA));
+      _tableAnswerElement.postProcessAnswer(question, rows);
+    }
   }
 
-  private Multimap<String, String> getSpecifiedAcls(
+  /**
+   * Given all specified ACLs on all configs of the given snapshot, returns a {@link
+   * NonDiffConfigContext} for each config.
+   */
+  private Map<String, NonDiffConfigContext> getConfigContexts(
+      Map<String, Map<String, IpAccessList>> specifiedAcls,
+      NetworkSnapshot snapshot,
+      SearchFiltersParameters parameters) {
+    Map<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
+    BDDPacket pkt = new BDDPacket();
+    return specifiedAcls.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e -> {
+                  Configuration c = configs.get(e.getKey());
+                  Set<String> aclNames = e.getValue().keySet();
+                  return new NonDiffConfigContext(c, aclNames, snapshot, _batfish, parameters, pkt);
+                }));
+  }
+
+  /**
+   * Given all specified ACLs in two snapshots, returns a {@link DiffConfigContext} for each config
+   * in common between the two snapshots.
+   */
+  private Map<String, DiffConfigContext> getDiffConfigContexts(
+      Map<String, Map<String, IpAccessList>> baseAcls,
+      Map<String, Map<String, IpAccessList>> refAcls,
+      NetworkSnapshot snapshot,
+      NetworkSnapshot reference,
+      SearchFiltersParameters parameters) {
+    Map<String, Configuration> baseConfigs = _batfish.loadConfigurations(snapshot);
+    Map<String, Configuration> refConfigs = _batfish.loadConfigurations(reference);
+    BDDPacket pkt = new BDDPacket();
+
+    Set<String> commonNodes = Sets.intersection(baseAcls.keySet(), refAcls.keySet());
+    ImmutableMap.Builder<String, DiffConfigContext> configContexts = ImmutableMap.builder();
+    for (String hostname : commonNodes) {
+      Configuration c = baseConfigs.get(hostname);
+      Configuration refC = refConfigs.get(hostname);
+      Set<String> commonAcls =
+          Sets.intersection(baseAcls.get(hostname).keySet(), refAcls.get(hostname).keySet());
+      configContexts.put(
+          hostname,
+          new DiffConfigContext(
+              c, refC, commonAcls, snapshot, reference, _batfish, parameters, pkt));
+    }
+    return configContexts.build();
+  }
+
+  /**
+   * Creates a map of hostname to ACL name to {@link IpAccessList} specifying all ACLs to query.
+   * Keys include all hostnames matching the query, even if they contain no ACLs matching the query
+   * (might matter in differential context where the other snapshot's version of the node does have
+   * matching ACLs).
+   */
+  @VisibleForTesting
+  Map<String, Map<String, IpAccessList>> getSpecifiedAcls(
       NetworkSnapshot snapshot, SearchFiltersQuestion question) {
-    SortedMap<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
     SpecifierContext specifierContext = _batfish.specifierContext(snapshot);
-    ImmutableMultimap.Builder<String, String> acls = ImmutableMultimap.builder();
-    question.getNodesSpecifier().resolve(specifierContext).stream()
-        .map(configs::get)
-        .forEach(
-            config ->
-                filterSpecifier
-                    .resolve(config.getHostname(), specifierContext)
-                    .forEach(acl -> acls.put(config.getHostname(), acl.getName())));
-    return acls.build();
-  }
-
-  private Optional<IpAccessList> makeQueryAcl(IpAccessList originalAcl) {
-    SearchFiltersQuestion question = (SearchFiltersQuestion) _question;
-    switch (question.getType()) {
-      case PERMIT:
-        return Optional.of(originalAcl);
-      case DENY:
-        return Optional.of(toDenyAcl(originalAcl));
-      case MATCH_LINE:
-        // for each ACL, construct a new ACL that accepts if and only if the specified line matches
-        Integer lineNumber = question.getLineNumber();
-        checkState(lineNumber != null, "Cannot perform a match line query without a line number");
-        return originalAcl.getLines().size() > lineNumber
-            ? Optional.of(toMatchLineAcl(lineNumber, originalAcl))
-            : Optional.empty();
-      default:
-        throw new BatfishException("Unexpected query Type: " + question.getType());
-    }
-  }
-
-  // Each triple in the result is a node name, ACL name, and the ACL itself.  The ACL itself
-  // may rename the ACL, so we explicitly keep track of the original name for later use.
-  @VisibleForTesting
-  List<Triple<String, String, IpAccessList>> getQueryAcls(
-      NetworkSnapshot snapshot, SearchFiltersQuestion question) {
-    Map<String, Configuration> configs = _batfish.loadConfigurations(snapshot);
-    return getSpecifiedAcls(snapshot, question).entries().stream()
-        .map(
-            entry -> {
-              String hostName = entry.getKey();
-              String aclName = entry.getValue();
-              Optional<IpAccessList> queryAcl =
-                  makeQueryAcl(configs.get(hostName).getIpAccessLists().get(aclName));
-              return queryAcl.map(acl -> ImmutableTriple.of(hostName, aclName, acl));
-            })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  @VisibleForTesting
-  static IpAccessList toMatchLineAcl(Integer lineNumber, IpAccessList acl) {
-    CopierWithAction permittingCopier = new CopierWithAction(LineAction.PERMIT);
-    CopierWithAction denyingCopier = new CopierWithAction(LineAction.DENY);
-    List<AclLine> lines =
-        Streams.concat(
-                // Deny everything that matches any previous line
-                acl.getLines().subList(0, lineNumber).stream().map(denyingCopier::visit),
-                // Permit everything that matches selected line
-                Stream.of(permittingCopier.visit(acl.getLines().get(lineNumber))))
-            .collect(ImmutableList.toImmutableList());
-    return IpAccessList.builder()
-        .setName(MATCH_LINE_RENAMER.apply(lineNumber, acl.getName()))
-        .setLines(lines)
-        .build();
-  }
-
-  @VisibleForTesting
-  static IpAccessList toDenyAcl(IpAccessList acl) {
-    List<AclLine> lines =
-        Streams.concat(
-                acl.getLines().stream().map(ComplementaryCopier::copy),
-                // accept if we reach the end of the ACL
-                Stream.of(ExprAclLine.ACCEPT_ALL))
-            .collect(ImmutableList.toImmutableList());
-    return IpAccessList.builder()
-        .setName(NEGATED_RENAMER.apply(acl.getName()))
-        .setLines(lines)
-        .build();
-  }
-
-  /**
-   * Creates a copy of the visited {@link AclLine} that matches the same flows but always takes the
-   * provided action.
-   */
-  private static final class CopierWithAction implements GenericAclLineVisitor<AclLine> {
-    private final LineAction _action;
-
-    CopierWithAction(LineAction action) {
-      _action = action;
-    }
-
-    @Override
-    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
-      return exprAclLine.toBuilder().setAction(_action).build();
-    }
-  }
-
-  /**
-   * Creates a copy of the visited {@link AclLine} that matches all the same flows as the original
-   * line, but permits the flows the original denies and vice versa.
-   */
-  private static final class ComplementaryCopier implements GenericAclLineVisitor<AclLine> {
-    private static final ComplementaryCopier INSTANCE = new ComplementaryCopier();
-
-    private ComplementaryCopier() {}
-
-    static AclLine copy(AclLine line) {
-      return INSTANCE.visit(line);
-    }
-
-    @Override
-    public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
-      LineAction newAction =
-          exprAclLine.getAction() == LineAction.PERMIT ? LineAction.DENY : LineAction.PERMIT;
-      return exprAclLine.toBuilder().setAction(newAction).build();
-    }
+    return question.getNodesSpecifier().resolve(specifierContext).stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(),
+                hostname ->
+                    filterSpecifier.resolve(hostname, specifierContext).stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                IpAccessList::getName, Function.identity()))));
   }
 
   private Row testFiltersRow(NetworkSnapshot snapshot, String hostname, String aclName, Flow flow) {
@@ -410,140 +260,148 @@ public final class SearchFiltersAnswerer extends Answerer {
     }
   }
 
-  @VisibleForTesting
-  static Optional<SearchFiltersResult> reachFilter(
-      NetworkSnapshot snapshot,
-      IBatfish batfish,
-      Configuration node,
-      IpAccessList acl,
-      SearchFiltersParameters parameters) {
-    BDDPacket bddPacket = new BDDPacket();
-
-    SpecifierContext specifierContext = batfish.specifierContext(snapshot);
-
+  private static Set<String> getActiveSources(
+      Configuration c, SpecifierContext specifierContext, SearchFiltersParameters parameters) {
     Set<String> inactiveIfaces =
-        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaceNames());
-    Set<String> activeSources =
-        Sets.difference(
-            resolveSources(
-                specifierContext, parameters.getStartLocationSpecifier(), node.getHostname()),
-            inactiveIfaces);
-    Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
-
-    BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
-
-    HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
-    BDD headerSpaceBDD = new HeaderSpaceToBDD(bddPacket, node.getIpSpaces()).toBDD(headerSpace);
-    BDD bdd =
-        IpAccessListToBdd.toBDD(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
-            .and(headerSpaceBDD)
-            .and(mgr.isValidValue());
-
-    return getFlow(bddPacket, mgr, node.getHostname(), bdd)
-        .map(
-            flow ->
-                new SearchFiltersResult(
-                    flow,
-                    parameters.getGenerateExplanations()
-                        ? AclExplainer.explain(
-                            bddPacket,
-                            mgr,
-                            new MatchHeaderSpace(headerSpace),
-                            acl,
-                            node.getIpAccessLists(),
-                            node.getIpSpaces())
-                        : null));
+        Sets.difference(c.getAllInterfaces().keySet(), c.activeInterfaceNames());
+    return Sets.difference(
+        resolveSources(specifierContext, parameters.getStartLocationSpecifier(), c.getHostname()),
+        inactiveIfaces);
   }
 
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
   @VisibleForTesting
-  static DifferentialSearchFiltersResult differentialReachFilter(
-      NetworkSnapshot snapshot,
-      IBatfish batfish,
-      Configuration baseConfig,
-      IpAccessList baseAcl,
-      Configuration deltaConfig,
-      IpAccessList deltaAcl,
-      SearchFiltersParameters searchFiltersParameters) {
-    BDDPacket bddPacket = new BDDPacket();
+  static DifferentialSearchFiltersResult getDiffResult(
+      IpAccessList acl,
+      IpAccessList refAcl,
+      DiffConfigContext configContext,
+      SearchFiltersQuery query) {
+    BDD bdd = configContext.getReachBdd(acl, query, false);
+    BDD refBdd = configContext.getReachBdd(refAcl, query, true);
 
-    HeaderSpace headerSpace =
-        searchFiltersParameters.resolveHeaderspace(batfish.specifierContext(snapshot));
-    BDD headerSpaceBDD =
-        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
+    // Find example increased and decreased flows, if they exist
+    BDD increasedBDD = bdd.diff(refBdd);
+    BDD decreasedBDD = refBdd.diff(bdd);
+    Flow increasedFlow = configContext.getFlow(increasedBDD);
+    Flow decreasedFlow = configContext.getFlow(decreasedBDD);
 
-    BDDSourceManager mgr =
-        differentialBDDSourceManager(
-            bddPacket,
-            batfish,
-            baseConfig,
-            deltaConfig,
-            baseAcl,
-            deltaAcl,
-            searchFiltersParameters.getStartLocationSpecifier());
+    return new DifferentialSearchFiltersResult(increasedFlow, decreasedFlow);
+  }
 
-    BDD baseAclBDD =
-        IpAccessListToBdd.toBDD(
-                bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
-            .and(headerSpaceBDD)
-            .and(mgr.isValidValue());
-    BDD deltaAclBDD =
-        IpAccessListToBdd.toBDD(
-                bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
-            .and(headerSpaceBDD)
-            .and(mgr.isValidValue());
+  /** Holds BDD state for one configuration */
+  @VisibleForTesting
+  static final class NonDiffConfigContext {
+    private final String _hostname;
+    private final IpAccessListToBdd _ipAccessListToBdd;
 
-    String hostname = baseConfig.getHostname();
+    private final BDDPacket _pkt;
+    private final BDDSourceManager _mgr;
+    private final BDD _prerequisiteBdd;
 
-    BDD increasedBDD = deltaAclBDD.diff(baseAclBDD);
-    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD);
+    NonDiffConfigContext(
+        Configuration config,
+        Set<String> specifiedAcls,
+        NetworkSnapshot snapshot,
+        IBatfish batfish,
+        SearchFiltersParameters parameters,
+        BDDPacket pkt) {
+      _hostname = config.getHostname();
+      _pkt = pkt;
 
-    BDD decreasedBDD = baseAclBDD.diff(deltaAclBDD);
-    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD);
+      SpecifierContext specifierContext = batfish.specifierContext(snapshot);
+      Set<String> activeSources = getActiveSources(config, specifierContext, parameters);
+      Set<String> referencedSources = referencedSources(config.getIpAccessLists(), specifiedAcls);
+      _mgr = BDDSourceManager.forSources(_pkt, activeSources, referencedSources);
+      HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
+      BDD headerSpaceBdd = new HeaderSpaceToBDD(_pkt, config.getIpSpaces()).toBDD(headerSpace);
+      _prerequisiteBdd = headerSpaceBdd.and(_mgr.isValidValue());
 
-    boolean explain = searchFiltersParameters.getGenerateExplanations();
+      _ipAccessListToBdd =
+          new MemoizedIpAccessListToBdd(
+              _pkt, _mgr, config.getIpAccessLists(), config.getIpSpaces());
+    }
 
-    /*
-     * Only generate an explanation if the differential headerspace is non-empty (i.e. we found a
-     * flow).
+    /**
+     * Returns the BDD representing all flows that match the query for the given ACL. Assumes the
+     * question is applicable to the ACL (see {@link SearchFiltersQuery#canQuery(IpAccessList)}).
      */
-    Optional<SearchFiltersResult> increasedResult =
-        increasedFlow.map(
-            flow ->
-                new SearchFiltersResult(
-                    flow,
-                    !explain
-                        ? null
-                        : AclExplainer.explainDifferential(
-                            bddPacket,
-                            mgr,
-                            new MatchHeaderSpace(headerSpace),
-                            baseAcl,
-                            baseConfig.getIpAccessLists(),
-                            baseConfig.getIpSpaces(),
-                            deltaAcl,
-                            deltaConfig.getIpAccessLists(),
-                            deltaConfig.getIpSpaces())));
+    @Nonnull
+    BDD getReachBdd(IpAccessList acl, SearchFiltersQuery query) {
+      return query.getMatchingBdd(acl, _ipAccessListToBdd, _pkt).and(_prerequisiteBdd);
+    }
 
-    Optional<SearchFiltersResult> decreasedResult =
-        decreasedFlow.map(
-            flow ->
-                new SearchFiltersResult(
-                    flow,
-                    !explain
-                        ? null
-                        : AclExplainer.explainDifferential(
-                            bddPacket,
-                            mgr,
-                            new MatchHeaderSpace(headerSpace),
-                            deltaAcl,
-                            deltaConfig.getIpAccessLists(),
-                            deltaConfig.getIpSpaces(),
-                            baseAcl,
-                            baseConfig.getIpAccessLists(),
-                            baseConfig.getIpSpaces())));
+    /** Returns a concrete flow satisfying the input {@link BDD}, if one exists. */
+    @Nullable
+    Flow getFlow(BDD reachBdd) {
+      return FilterQuestionUtils.getFlow(_pkt, _mgr, _hostname, reachBdd).orElse(null);
+    }
+  }
 
-    return new DifferentialSearchFiltersResult(
-        increasedResult.orElse(null), decreasedResult.orElse(null));
+  @VisibleForTesting
+  /** Holds BDD state for two snapshots' versions of one configuration */
+  static final class DiffConfigContext {
+    private final String _hostname;
+    private final IpAccessListToBdd _ipAccessListToBdd;
+    private final IpAccessListToBdd _refIpAccessListToBdd;
+
+    private final BDDPacket _pkt;
+    private final BDDSourceManager _mgr;
+    private final BDD _prerequisiteBdd;
+
+    DiffConfigContext(
+        Configuration config,
+        Configuration refConfig,
+        Set<String> specifiedAcls,
+        NetworkSnapshot snapshot,
+        NetworkSnapshot refSnapshot,
+        IBatfish batfish,
+        SearchFiltersParameters parameters,
+        BDDPacket pkt) {
+      // Both configs should share the same hostname
+      _hostname = config.getHostname();
+      _pkt = pkt;
+
+      SpecifierContext specifierContext = batfish.specifierContext(snapshot);
+      SpecifierContext refSpecifierContext = batfish.specifierContext(refSnapshot);
+      _mgr =
+          differentialBDDSourceManager(
+              _pkt,
+              specifierContext,
+              refSpecifierContext,
+              config,
+              refConfig,
+              specifiedAcls,
+              parameters.getStartLocationSpecifier());
+
+      // TODO: How to adjust _headerSpace in differential context?
+      HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
+      BDD headerSpaceBdd = new HeaderSpaceToBDD(_pkt, config.getIpSpaces()).toBDD(headerSpace);
+      _prerequisiteBdd = headerSpaceBdd.and(_mgr.isValidValue());
+
+      _ipAccessListToBdd =
+          new MemoizedIpAccessListToBdd(
+              _pkt, _mgr, config.getIpAccessLists(), config.getIpSpaces());
+      _refIpAccessListToBdd =
+          new MemoizedIpAccessListToBdd(
+              _pkt, _mgr, refConfig.getIpAccessLists(), refConfig.getIpSpaces());
+    }
+
+    /**
+     * Returns the BDD representing all flows that match the query for the given ACL. Assumes the
+     * question is applicable to the ACL (see {@link SearchFiltersQuery#canQuery(IpAccessList)}).
+     *
+     * @param reference Whether the provided ACL is from the reference snapshot
+     */
+    @Nonnull
+    BDD getReachBdd(IpAccessList acl, SearchFiltersQuery query, boolean reference) {
+      IpAccessListToBdd ipAccessListToBdd = reference ? _refIpAccessListToBdd : _ipAccessListToBdd;
+      return query.getMatchingBdd(acl, ipAccessListToBdd, _pkt).and(_prerequisiteBdd);
+    }
+
+    /** Returns a concrete flow satisfying the input {@link BDD}, if one exists. */
+    @Nullable
+    Flow getFlow(BDD reachBdd) {
+      return FilterQuestionUtils.getFlow(_pkt, _mgr, _hostname, reachBdd).orElse(null);
+    }
   }
 }

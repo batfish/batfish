@@ -1,0 +1,37 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_nexthop_unchanged
+!
+vrf instance vrf2
+vrf instance vrf3
+!
+router bgp 1
+  router-id 1.2.3.4
+
+  neighbor 9.9.9.9 remote-as 2
+  neighbor 9.9.9.9 next-hop-unchanged
+
+  neighbor 8.8.8.8 remote-as 2
+  neighbor 7.7.7.7 remote-as 2
+
+  address-family evpn
+    bgp next-hop-unchanged
+    neighbor 8.8.8.8 activate
+
+  vrf vrf2
+    ! should apply globally to all neighbors in vrf2
+    bgp next-hop-unchanged
+    neighbor 2.2.2.2 remote-as 2
+    neighbor 2.2.2.22 remote-as 2
+
+  vrf vrf3
+    neighbor 3.3.3.3 remote-as 2
+    neighbor 3.3.3.33 remote-as 2
+    address-family ipv4
+      neighbor 3.3.3.3 next-hop-unchanged
+      neighbor 3.3.3.3 activate
+      neighbor 3.3.3.33 activate
+
+  vrf vrf4
+    address-family ipv4
+      bgp next-hop-unchanged

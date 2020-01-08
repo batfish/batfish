@@ -58,6 +58,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -100,6 +102,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
+import org.batfish.datamodel.flow.ArpErrorStep;
 import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
@@ -1675,7 +1678,8 @@ public class TracerouteEngineImplTest {
                           hasProperty(
                               "incomingInterfaces", equalTo(session.getIncomingInterfaces())),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", hasSize(0)))))));
     }
 
     // When exiting i3, we don't make a new session
@@ -1776,7 +1780,12 @@ public class TracerouteEngineImplTest {
                           hasProperty(
                               "incomingInterfaces", equalTo(session.getIncomingInterfaces())),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty(
+                              "transformation",
+                              contains(
+                                  flowDiff(IpField.DESTINATION, poolIp, srcIp),
+                                  flowDiff(PortField.DESTINATION, poolPort, srcPort))))))));
     }
   }
 
@@ -1882,7 +1891,8 @@ public class TracerouteEngineImplTest {
                           hasProperty(
                               "incomingInterfaces", equalTo(session.getIncomingInterfaces())),
                           hasProperty("sessionAction", equalTo(session.getAction())),
-                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())))))));
+                          hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
+                          hasProperty("transformation", hasSize(0)))))));
     }
   }
 
@@ -2373,5 +2383,357 @@ public class TracerouteEngineImplTest {
                     SOURCE_NAT,
                     ImmutableSortedSet.of(flowDiff(PortField.SOURCE, srcPort, poolPort))),
                 StepAction.TRANSFORMED)));
+  }
+
+  @Test
+  public void testFilterStep() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder();
+
+    // c1
+    Configuration c1 = cb.build();
+    Vrf v1 = vb.setOwner(c1).build();
+    // permits everything
+    IpAccessList outgoingFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setName("outgoingAcl")
+            .setLines(ImmutableList.of(ExprAclLine.accepting(AclLineMatchExprs.TRUE)))
+            .build();
+    ib.setOwner(c1)
+        .setVrf(v1)
+        .setOutgoingFilter(outgoingFilter)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .build();
+
+    // c2
+    Configuration c2 = cb.build();
+    Vrf v2 = vb.setOwner(c2).build();
+    // denies all
+    IpAccessList postTransformationFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setName("postTransformationAcl")
+            .setLines(ImmutableList.of())
+            .build();
+    Interface i2 =
+        ib.setOwner(c2)
+            .setVrf(v2)
+            .setIncomingTransformation(
+                always().apply(assignSourceIp(Ip.parse("10.0.0.1"), Ip.parse("10.0.0.2"))).build())
+            .setPostTransformationIncomingFilter(postTransformationFilter)
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/24"))
+            .build();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    b.computeDataPlane(b.getSnapshot());
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.3")).build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        b.buildFlows(b.getSnapshot(), ImmutableSet.of(flow), false);
+    Trace trace = flowTraces.get(flow).iterator().next();
+
+    assertThat(trace.getHops(), hasSize(2));
+
+    // hop 0
+    {
+      List<Step<?>> steps = trace.getHops().get(0).getSteps();
+      assertThat(steps, hasSize(4));
+
+      assertTrue(OriginateStep.class.isInstance(steps.get(0)));
+      assertTrue(RoutingStep.class.isInstance(steps.get(1)));
+      assertTrue(FilterStep.class.isInstance(steps.get(2)));
+      assertTrue(ExitOutputIfaceStep.class.isInstance(steps.get(3)));
+
+      FilterStep filterStep = (FilterStep) steps.get(2);
+      assertThat(filterStep.getAction(), equalTo(StepAction.PERMITTED));
+      assertThat(filterStep.getDetail().getFilter(), equalTo("outgoingAcl"));
+      assertThat(filterStep.getDetail().getType(), equalTo(FilterType.EGRESS_FILTER));
+      assertNull(filterStep.getDetail().getInputInterface());
+      assertThat(filterStep.getDetail().getFlow(), equalTo(flow));
+    }
+
+    // hop 1
+    {
+      List<Step<?>> steps = trace.getHops().get(1).getSteps();
+      assertThat(steps, hasSize(3));
+
+      assertTrue(EnterInputIfaceStep.class.isInstance(steps.get(0)));
+      assertTrue(TransformationStep.class.isInstance(steps.get(1)));
+      assertTrue(FilterStep.class.isInstance(steps.get(2)));
+
+      FilterStep filterStep = (FilterStep) steps.get(2);
+      assertThat(filterStep.getAction(), equalTo(StepAction.DENIED));
+      assertThat(filterStep.getDetail().getFilter(), equalTo("postTransformationAcl"));
+      assertThat(
+          filterStep.getDetail().getType(), equalTo(FilterType.POST_TRANSFORMATION_INGRESS_FILTER));
+      assertThat(filterStep.getDetail().getInputInterface(), equalTo(i2.getName()));
+      assertThat(
+          filterStep.getDetail().getFlow(),
+          equalTo(flow.toBuilder().setSrcIp(Ip.parse("10.0.0.1")).build()));
+    }
+  }
+
+  @Test
+  public void testBidirectionalTracerouteWithDeliveredStep() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration c1 = cb.setHostname("c1").build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+
+    nf.interfaceBuilder()
+        .setName("c1_out")
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+        .build();
+
+    String c1ToFw = "c1_to_fw";
+    nf.interfaceBuilder()
+        .setName(c1ToFw)
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .build();
+
+    vrf1.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("20.0.0.2/32"))
+                .setNextHopInterface(c1ToFw)
+                .setNextHopIp(Ip.parse("1.1.1.2"))
+                .setAdministrativeCost(1)
+                .build());
+
+    Configuration fw =
+        cb.setConfigurationFormat(ConfigurationFormat.CISCO_ASA).setHostname("fw").build();
+    Vrf fwVrf = nf.vrfBuilder().setOwner(fw).build();
+
+    String fwToC1Name = "fw_to_c1";
+    nf.interfaceBuilder()
+        .setName(fwToC1Name)
+        .setOwner(fw)
+        .setVrf(fwVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
+        .build();
+
+    // set up another interface with session
+    String fwOutName = "fwOut";
+    nf.interfaceBuilder()
+        .setName(fwOutName)
+        .setOwner(fw)
+        .setVrf(fwVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("20.0.0.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(fwOutName), null, null))
+        .build();
+
+    // set up a static route for the reverse flow
+    fwVrf
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("10.0.0.0/24"))
+                .setAdministrativeCost(1)
+                .setNextHopIp(Ip.parse("1.1.1.1"))
+                .build());
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, fw.getHostname(), fw);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine(snapshot);
+
+    Flow flow =
+        builder()
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(vrf1.getName())
+            .setSrcIp(Ip.parse("10.0.0.2"))
+            .setDstIp(Ip.parse("20.0.0.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(12345)
+            .setDstPort(12346)
+            .build();
+
+    List<TraceAndReverseFlow> forwardTracerouteResult =
+        tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+
+    assertThat(forwardTracerouteResult, hasSize(1));
+
+    Flow reverseFlow = forwardTracerouteResult.get(0).getReverseFlow();
+    assertNotNull(reverseFlow);
+
+    Set<FirewallSessionTraceInfo> newSessions =
+        forwardTracerouteResult.get(0).getNewFirewallSessions();
+
+    // reverse direction
+    List<TraceAndReverseFlow> reverseResult =
+        tracerouteEngine
+            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), newSessions, false)
+            .get(reverseFlow);
+
+    assertThat(reverseResult, hasSize(1));
+
+    List<Hop> reverseHops = reverseResult.get(0).getTrace().getHops();
+    assertThat(reverseHops, hasSize(2));
+
+    assertThat(reverseHops.get(0).getSteps(), hasSize(4));
+    assertTrue(reverseHops.get(0).getSteps().get(0) instanceof EnterInputIfaceStep);
+    assertTrue(reverseHops.get(0).getSteps().get(1) instanceof MatchSessionStep);
+    assertTrue(reverseHops.get(0).getSteps().get(2) instanceof RoutingStep);
+    assertTrue(reverseHops.get(0).getSteps().get(3) instanceof ExitOutputIfaceStep);
+
+    assertThat(reverseHops.get(1).getSteps(), hasSize(4));
+    assertTrue(reverseHops.get(1).getSteps().get(0) instanceof EnterInputIfaceStep);
+    assertTrue(reverseHops.get(1).getSteps().get(1) instanceof RoutingStep);
+    assertTrue(reverseHops.get(1).getSteps().get(2) instanceof ExitOutputIfaceStep);
+    assertTrue(reverseHops.get(1).getSteps().get(3) instanceof DeliveredStep);
+  }
+
+  @Test
+  public void testBidirectionalTracerouteWithArpErrorStep() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration c1 = cb.setHostname("c1").build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+
+    nf.interfaceBuilder()
+        .setName("c1_out")
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
+        .build();
+
+    String c1ToFw = "c1_to_fw";
+    nf.interfaceBuilder()
+        .setName(c1ToFw)
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .build();
+
+    vrf1.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("20.0.0.2/32"))
+                .setNextHopInterface(c1ToFw)
+                .setNextHopIp(Ip.parse("1.1.1.2"))
+                .setAdministrativeCost(1)
+                .build());
+
+    Configuration fw =
+        cb.setConfigurationFormat(ConfigurationFormat.CISCO_ASA).setHostname("fw").build();
+    Vrf fwVrf = nf.vrfBuilder().setOwner(fw).build();
+
+    String fwToC1Name = "fw_to_c1";
+    nf.interfaceBuilder()
+        .setName(fwToC1Name)
+        .setOwner(fw)
+        .setVrf(fwVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
+        .build();
+
+    // set up another interface with session
+    String fwOutName = "fwOut";
+    nf.interfaceBuilder()
+        .setName(fwOutName)
+        .setOwner(fw)
+        .setVrf(fwVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("20.0.0.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(fwOutName), null, null))
+        .build();
+
+    // set up a dummy interface to cause arp failure for return flow
+    String fwDummyName = "fwDummy";
+    nf.interfaceBuilder()
+        .setName(fwDummyName)
+        .setOwner(fw)
+        .setVrf(fwVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("200.0.0.1/24"))
+        .build();
+
+    // set up a static route for the reverse flow
+    fwVrf
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("30.0.0.0/24"))
+                .setAdministrativeCost(1)
+                .setNextHopIp(Ip.parse("100.1.1.1"))
+                .setNextHopInterface(fwDummyName)
+                .build());
+
+    // set up a dummy node to cause Insufficient Info
+    Configuration dummy =
+        cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).setHostname("dummy").build();
+    Vrf dummyVrf = nf.vrfBuilder().setOwner(dummy).build();
+    nf.interfaceBuilder()
+        .setName("dummy_interface")
+        .setOwner(dummy)
+        .setVrf(dummyVrf)
+        .setAddress(ConcreteInterfaceAddress.parse("100.1.1.1/24"))
+        .build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(
+            c1.getHostname(), c1, fw.getHostname(), fw, dummy.getHostname(), dummy);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine(snapshot);
+
+    Flow flow =
+        builder()
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(vrf1.getName())
+            .setSrcIp(Ip.parse("30.0.0.1"))
+            .setDstIp(Ip.parse("20.0.0.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(12345)
+            .setDstPort(12346)
+            .build();
+
+    List<TraceAndReverseFlow> forwardTracerouteResult =
+        tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+
+    assertThat(forwardTracerouteResult, hasSize(1));
+
+    Flow reverseFlow = forwardTracerouteResult.get(0).getReverseFlow();
+    assertNotNull(reverseFlow);
+
+    Set<FirewallSessionTraceInfo> newSessions =
+        forwardTracerouteResult.get(0).getNewFirewallSessions();
+
+    // reverse direction
+    List<TraceAndReverseFlow> reverseResult =
+        tracerouteEngine
+            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), newSessions, false)
+            .get(reverseFlow);
+
+    assertThat(reverseResult, hasSize(1));
+
+    List<Hop> reverseHops = reverseResult.get(0).getTrace().getHops();
+    assertThat(reverseHops, hasSize(1));
+
+    assertThat(reverseHops.get(0).getSteps(), hasSize(5));
+    assertTrue(reverseHops.get(0).getSteps().get(0) instanceof EnterInputIfaceStep);
+    assertTrue(reverseHops.get(0).getSteps().get(1) instanceof MatchSessionStep);
+    assertTrue(reverseHops.get(0).getSteps().get(2) instanceof RoutingStep);
+    assertTrue(reverseHops.get(0).getSteps().get(3) instanceof ExitOutputIfaceStep);
+    assertTrue(reverseHops.get(0).getSteps().get(4) instanceof ArpErrorStep);
   }
 }

@@ -23,7 +23,7 @@ public class RouteMapMatchTag implements RouteMapMatch {
 
   @Nonnull
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     return new MatchTag(IntComparator.EQ, new LiteralLong(_tag));
   }
 }

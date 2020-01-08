@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -21,6 +22,8 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
   @Nullable private Ip _clusterId;
+  @Nullable private Long _confederationIdentifier;
+  @Nullable private LongSpace _confederationPeers;
   @Nullable private Long _defaultMetric;
   @Nullable private Integer _ebgpAdminDistance;
   @Nullable private Boolean _enforceFirstAs;
@@ -35,6 +38,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Integer _maxPaths;
   @Nullable private Integer _maxPathsEcmp;
   @Nonnull private final String _name;
+  @Nullable private Boolean _nextHopUnchanged;
 
   @Nonnull
   private final Map<AristaRedistributeType, AristaBgpRedistributionPolicy> _redistributionPolicies;
@@ -120,6 +124,24 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setClusterId(@Nullable Ip clusterId) {
     _clusterId = clusterId;
+  }
+
+  @Nullable
+  public Long getConfederationIdentifier() {
+    return _confederationIdentifier;
+  }
+
+  public void setConfederationIdentifier(@Nullable Long confederationIdentifier) {
+    _confederationIdentifier = confederationIdentifier;
+  }
+
+  @Nullable
+  public LongSpace getConfederationPeers() {
+    return _confederationPeers;
+  }
+
+  public void setConfederationPeers(@Nullable LongSpace confederationPeers) {
+    _confederationPeers = confederationPeers;
   }
 
   @Nullable
@@ -265,6 +287,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setMaxPathsEcmp(@Nullable Integer maxPathsEcmp) {
     _maxPathsEcmp = maxPathsEcmp;
+  }
+
+  @Nullable
+  public Boolean getNextHopUnchanged() {
+    return _nextHopUnchanged;
+  }
+
+  public void setNextHopUnchanged(@Nullable Boolean nextHopUnchanged) {
+    _nextHopUnchanged = nextHopUnchanged;
   }
 
   @Nonnull

@@ -45,6 +45,18 @@ literal_standard_community
   high = uint16 COLON low = uint16
 ;
 
+loglevel
+:
+    ALERTS
+    | CRITICAL
+    | DEBUGGING
+    | EMERGENCIES
+    | ERRORS
+    | INFORMATIONAL
+    | NOTIFICATIONS
+    | WARNINGS
+;
+
 prefix
 :
   IP_PREFIX

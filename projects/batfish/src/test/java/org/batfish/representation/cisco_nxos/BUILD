@@ -14,6 +14,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco_nxos",
         "@maven//:com_google_guava_guava_testlib",
+        "@maven//:junit_junit",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
     ],

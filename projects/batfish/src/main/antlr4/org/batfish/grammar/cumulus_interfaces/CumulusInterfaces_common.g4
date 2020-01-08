@@ -19,6 +19,16 @@ number_or_range
   lo = number (DASH hi = number)?
 ;
 
+prefix
+:
+  IP_PREFIX
+;
+
+prefix6
+:
+  IPV6_PREFIX
+;
+
 vlan_id
 :
   v = NUMBER
@@ -33,4 +43,9 @@ vrf_name
 vrf_table_name
 :
   WORD
+;
+
+null_rest_of_line
+:
+  ~NEWLINE* NEWLINE
 ;

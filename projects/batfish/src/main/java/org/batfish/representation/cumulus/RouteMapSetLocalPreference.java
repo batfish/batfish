@@ -23,7 +23,7 @@ public class RouteMapSetLocalPreference implements RouteMapSet {
 
   @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     return Stream.of(new SetLocalPreference(new LiteralLong(_localPreference)));
   }
 }

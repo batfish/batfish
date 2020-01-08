@@ -51,6 +51,11 @@ public class IpAccessList implements Serializable {
       return this;
     }
 
+    public Builder setLines(AclLine... lines) {
+      _lines = ImmutableList.copyOf(lines);
+      return this;
+    }
+
     public Builder setName(String name) {
       _name = name;
       return this;
@@ -138,15 +143,6 @@ public class IpAccessList implements Serializable {
       String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
-    return filter(flow, srcInterface, availableAcls, namedIpSpaces, LineAction.DENY);
-  }
-
-  public FilterResult filter(
-      Flow flow,
-      String srcInterface,
-      Map<String, IpAccessList> availableAcls,
-      Map<String, IpSpace> namedIpSpaces,
-      LineAction defaultAction) {
     AclLineEvaluator lineEvaluator =
         new AclLineEvaluator(flow, srcInterface, availableAcls, namedIpSpaces);
     for (int i = 0; i < _lines.size(); i++) {
@@ -155,7 +151,7 @@ public class IpAccessList implements Serializable {
         return new FilterResult(i, action);
       }
     }
-    return new FilterResult(null, defaultAction);
+    return new FilterResult(null, LineAction.DENY);
   }
 
   @JsonProperty(PROP_NAME)

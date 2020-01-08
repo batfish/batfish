@@ -473,7 +473,7 @@ public class JuniperConfigurationTest {
                     ImmutableList.of(
                         ExprAclLine.accepting(
                             new AndMatchExpr(
-                                ImmutableList.of(new PermittedByAcl("~SCREEN~screen1", false))))))
+                                ImmutableList.of(new PermittedByAcl("~SCREEN~screen1"))))))
                 .build()));
     assertThat(config._c.getIpAccessLists().get("~SCREEN~screen1"), notNullValue());
     assertThat(config._c.getIpAccessLists().get("~SCREEN~screen2"), nullValue());

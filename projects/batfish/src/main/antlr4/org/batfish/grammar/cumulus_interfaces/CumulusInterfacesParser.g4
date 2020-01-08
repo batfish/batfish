@@ -53,12 +53,18 @@ si_no_inet
 l_property
 :
     l_address
+  | l_alias
   | l_clagd_vxlan_anycast_ip
 ;
 
 l_address
 :
-  ADDRESS IP_PREFIX NEWLINE
+  ADDRESS prefix NEWLINE
+;
+
+l_alias
+:
+   ALIAS TEXT NEWLINE
 ;
 
 l_clagd_vxlan_anycast_ip
@@ -98,6 +104,7 @@ i_property
   | i_mstpctl_bpduguard
   | i_mstpctl_portadminedge
   | i_mstpctl_portbpdufilter
+  | i_mtu
   | i_post_up
   | i_vlan_id
   | i_vlan_raw_device
@@ -109,7 +116,11 @@ i_property
 
 i_address
 :
-  ADDRESS IP_PREFIX NEWLINE
+  ADDRESS
+  (
+    prefix
+    | prefix6
+  ) NEWLINE
 ;
 
 i_address_virtual
@@ -252,6 +263,11 @@ i_mstpctl_portbpdufilter
   MSTPCTL_PORTBPDUFILTER NEWLINE
 ;
 
+i_mtu
+:
+   MTU number NEWLINE
+;
+
 i_post_up
 :
   POST_UP
@@ -264,8 +280,22 @@ ipu_ip
 :
   IP
   (
-     ipui_route
+     ipui_link
+     | ipui_route
   )
+;
+
+ipui_link
+:
+   LINK
+   (
+     ipuil_set
+   )
+;
+
+ipuil_set
+:
+   SET NEWLINE
 ;
 
 ipui_route

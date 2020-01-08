@@ -9,6 +9,7 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePr
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -54,6 +55,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -313,7 +315,7 @@ final class AristaConversions {
       boolean dynamic,
       @Nullable AristaEosVxlan vxlan,
       Warnings warnings) {
-    // We should be convering only concrete (active or dynamic) neighbors
+    // We should be converting only concrete (active or dynamic) neighbors
     assert neighbor instanceof AristaBgpHasPeerGroup;
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
@@ -449,6 +451,15 @@ final class AristaConversions {
       // TODO(handle different types of RemovePrivateAs)
       exportStatements.add(RemovePrivateAs.toStaticStatement());
     }
+    if (firstNonNull(
+        v4Enabled ? naf4.getNextHopUnchanged() : null,
+        firstNonNull(
+            neighbor.getNextHopUnchanged(),
+            firstNonNull(
+                af4.getNextHopUnchanged(),
+                firstNonNull(vrfConfig.getNextHopUnchanged(), Boolean.FALSE))))) {
+      exportStatements.add(new SetNextHop(UnchangedNextHop.getInstance()));
+    }
 
     // Peer-specific export policy, after matching default-originate route.
     Conjunction peerExportGuard = new Conjunction();
@@ -512,8 +523,11 @@ final class AristaConversions {
               AddressFamilyCapabilities.builder()
                   .setAdvertiseInactive(
                       firstNonNull(vrfConfig.getAdvertiseInactive(), Boolean.FALSE))
-                  .setAllowLocalAsIn(Boolean.FALSE) // todo
-                  .setAllowRemoteAsOut(Boolean.FALSE) // todo
+                  .setAllowLocalAsIn(
+                      firstNonNull(
+                              neighbor.getAllowAsIn(), firstNonNull(vrfConfig.getAllowAsIn(), 0))
+                          > 0)
+                  .setAllowRemoteAsOut(true) // this is always true on Arista
                   .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
                   .setSendExtendedCommunity(
                       firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
@@ -608,7 +622,18 @@ final class AristaConversions {
       }
       String policyName = generatedBgpPeerEvpnExportPolicyName(vrfConfig.getName(), neighborKey);
 
-      // TODO: handle modifiers (next-hop-unchanged, next-hop-self, etc.) and export route map
+      // TODO: handle other modifiers (next-hop-self, etc.) and export route map
+      Builder<Statement> exportStatementsBuilder = ImmutableList.builder();
+      if (firstNonNull(
+          nEvpn.getNextHopUnchanged(),
+          firstNonNull(
+              neighbor.getNextHopUnchanged(),
+              firstNonNull(
+                  evpnAf.getNextHopUnchanged(),
+                  firstNonNull(vrfConfig.getNextHopUnchanged(), Boolean.FALSE))))) {
+        exportStatementsBuilder.add(new SetNextHop(UnchangedNextHop.getInstance()));
+      }
+      exportStatementsBuilder.add(Statements.ExitAccept.toStaticStatement());
       RoutingPolicy.builder()
           .addStatement(
               new If(
@@ -616,12 +641,16 @@ final class AristaConversions {
                   new Conjunction(
                       Collections.singletonList(
                           new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP))),
-                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                  exportStatementsBuilder.build(),
                   ImmutableList.of(Statements.ExitReject.toStaticStatement())))
           .setName(policyName)
           .setOwner(c)
           .build();
       evpnFamilyBuilder.setExportPolicy(policyName);
+      String importPolicyName = nEvpn.getRouteMapIn();
+      if (importPolicyName != null && c.getRoutingPolicies().get(importPolicyName) != null) {
+        evpnFamilyBuilder.setImportPolicy(importPolicyName);
+      }
       newNeighborBuilder.setEvpnAddressFamily(evpnFamilyBuilder.build());
     }
 
