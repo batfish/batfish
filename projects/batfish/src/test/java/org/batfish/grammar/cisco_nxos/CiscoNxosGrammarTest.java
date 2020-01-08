@@ -2515,7 +2515,8 @@ public final class CiscoNxosGrammarTest {
               tb.toBDD(matchDst(Ip.parse("10.0.2.2"))),
               tb.toBDD(AclLineMatchExprs.TRUE)));
       // test that we preserve the content of the line
-      assertThat(acl.getLines().get(0).getName(), equalTo("permit ip any 10.0.0.0 0.0.0.255"));
+      assertThat(
+          acl.getLines().get(0).getNameAsString(), equalTo("permit ip any 10.0.0.0 0.0.0.255"));
     }
     {
       org.batfish.datamodel.IpAccessList acl =

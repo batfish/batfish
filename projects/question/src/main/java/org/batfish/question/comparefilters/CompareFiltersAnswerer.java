@@ -135,7 +135,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .get(index);
       ret.put(COL_CURRENT_LINE, index)
           .put(COL_CURRENT_ACTION, actionGetter.visit(line))
-          .put(COL_CURRENT_NAME, line.getName());
+          .put(COL_CURRENT_NAME, line.getNameAsString());
     }
 
     if (difference.getReferenceIndex() == null) {
@@ -150,7 +150,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .get(filtername)
               .getLines()
               .get(index);
-      ret.put(COL_REFERENCE_LINE, index).put(COL_REFERENCE_NAME, line.getName());
+      ret.put(COL_REFERENCE_LINE, index).put(COL_REFERENCE_NAME, line.getNameAsString());
     }
 
     return ret.build();

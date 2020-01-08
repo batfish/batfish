@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -20,7 +21,7 @@ public final class ExprAclLine extends AclLine {
 
     private AclLineMatchExpr _matchCondition;
 
-    private String _name;
+    private TraceElement _name;
 
     private Builder() {}
 
@@ -48,7 +49,12 @@ public final class ExprAclLine extends AclLine {
       return this;
     }
 
-    public Builder setName(String name) {
+    public Builder setName(@Nullable String name) {
+      _name = name == null ? null : TraceElement.of(name);
+      return this;
+    }
+
+    public Builder setName(@Nullable TraceElement name) {
       _name = name;
       return this;
     }
@@ -120,7 +126,14 @@ public final class ExprAclLine extends AclLine {
   public ExprAclLine(
       @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
       @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
-      @JsonProperty(PROP_NAME) String name) {
+      @JsonProperty(PROP_NAME) TraceElement name) {
+    super(name);
+    _action = Objects.requireNonNull(action);
+    _matchCondition = Objects.requireNonNull(matchCondition);
+  }
+
+  public ExprAclLine(
+      @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name) {
     super(name);
     _action = Objects.requireNonNull(action);
     _matchCondition = Objects.requireNonNull(matchCondition);

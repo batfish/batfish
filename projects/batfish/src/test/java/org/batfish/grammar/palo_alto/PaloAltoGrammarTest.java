@@ -1913,7 +1913,7 @@ public final class PaloAltoGrammarTest {
     IpAccessList service1 = c.getIpAccessLists().get(service1AclName);
     IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
     AclLine line1 = sg1.getLines().get(0);
-    assertThat(line1.getName(), equalTo(service1.getSourceName()));
+    assertThat(line1.getNameAsString(), equalTo(service1.getSourceName()));
   }
 
   @Test

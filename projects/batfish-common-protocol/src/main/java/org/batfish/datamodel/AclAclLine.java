@@ -23,7 +23,7 @@ public final class AclAclLine extends AclLine {
 
   @JsonCreator
   private static AclAclLine jsonCreator(
-      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_NAME) TraceElement name,
       @Nullable @JsonProperty(PROP_ACL_NAME) String aclName) {
     checkNotNull(name, "%s must be provided", PROP_NAME);
     checkNotNull(aclName, "%s must be provided", PROP_ACL_NAME);
@@ -31,6 +31,11 @@ public final class AclAclLine extends AclLine {
   }
 
   public AclAclLine(String name, String aclName) {
+    super(name);
+    _aclName = aclName;
+  }
+
+  public AclAclLine(TraceElement name, String aclName) {
     super(name);
     _aclName = aclName;
   }

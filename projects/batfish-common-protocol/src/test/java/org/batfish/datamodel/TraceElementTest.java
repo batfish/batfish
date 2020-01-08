@@ -54,8 +54,8 @@ public final class TraceElementTest {
 
   @Test
   public void testTraceElement_equals() {
-    List<Fragment> fragments1 = ImmutableList.of();
-    List<Fragment> fragments2 = ImmutableList.of(new TextFragment(""));
+    List<Fragment> fragments1 = ImmutableList.of(new TextFragment("a"));
+    List<Fragment> fragments2 = ImmutableList.of(new TextFragment("b"));
     new EqualsTester()
         .addEqualityGroup(new TraceElement(fragments1), new TraceElement(fragments1))
         .addEqualityGroup(new TraceElement(fragments2))

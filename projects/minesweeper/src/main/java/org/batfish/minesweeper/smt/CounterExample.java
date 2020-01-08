@@ -343,7 +343,7 @@ class CounterExample {
                 acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
             String line = "default deny";
             if (filterResult.getMatchLine() != null) {
-              line = acl.getLines().get(filterResult.getMatchLine()).getName();
+              line = acl.getLines().get(filterResult.getMatchLine()).getNameAsString();
             }
             String note = String.format("DENIED_IN{%s}{%s}", acl.getName(), line);
             FlowTrace flowTrace = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
@@ -386,7 +386,7 @@ class CounterExample {
           IpAccessList acl = interf.getOutgoingFilter();
           FilterResult filterResult = acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
           AclLine line = acl.getLines().get(filterResult.getMatchLine());
-          String note = String.format("DENIED_OUT{%s}{%s}", acl.getName(), line.getName());
+          String note = String.format("DENIED_OUT{%s}{%s}", acl.getName(), line.getNameAsString());
           FlowTrace flowTrace = new FlowTrace(FlowDisposition.DENIED_OUT, hops, note);
           return new Tuple<>(flow, flowTrace);
         }

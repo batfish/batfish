@@ -165,21 +165,21 @@ public class FindMatchingFilterLinesAnswererTest {
         allOf(
             hasColumn(COL_NODE, "c1", Schema.STRING),
             hasColumn(COL_FILTER, "acl1", Schema.STRING),
-            hasColumn(COL_LINE, ExprAclLine.ACCEPT_ALL.getName(), Schema.STRING),
+            hasColumn(COL_LINE, ExprAclLine.ACCEPT_ALL.getNameAsString(), Schema.STRING),
             hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
             hasColumn(COL_ACTION, LineAction.PERMIT.toString(), Schema.STRING));
     Matcher<Row> c1Acl2Matcher =
         allOf(
             hasColumn(COL_NODE, "c1", Schema.STRING),
             hasColumn(COL_FILTER, "acl2", Schema.STRING),
-            hasColumn(COL_LINE, ExprAclLine.REJECT_ALL.getName(), Schema.STRING),
+            hasColumn(COL_LINE, ExprAclLine.REJECT_ALL.getNameAsString(), Schema.STRING),
             hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
             hasColumn(COL_ACTION, LineAction.DENY.toString(), Schema.STRING));
     Matcher<Row> c2Acl1Matcher =
         allOf(
             hasColumn(COL_NODE, "c2", Schema.STRING),
             hasColumn(COL_FILTER, "acl1", Schema.STRING),
-            hasColumn(COL_LINE, ExprAclLine.ACCEPT_ALL.getName(), Schema.STRING),
+            hasColumn(COL_LINE, ExprAclLine.ACCEPT_ALL.getNameAsString(), Schema.STRING),
             hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
             hasColumn(COL_ACTION, LineAction.PERMIT.toString(), Schema.STRING));
 
