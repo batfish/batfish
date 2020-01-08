@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
@@ -33,6 +34,18 @@ public class ExprAclLineTest {
         .addEqualityGroup(lineBuilder.setTraceElement(traceElement2).build())
         .addEqualityGroup(new Object())
         .testEquals();
+  }
+
+  @Test
+  public void testToBuilder() {
+    ExprAclLine line =
+        ExprAclLine.builder()
+            .setAction(LineAction.PERMIT)
+            .setMatchCondition(TRUE)
+            .setName("name")
+            .setTraceElement(TraceElement.of("a"))
+            .build();
+    assertEquals(line, line.toBuilder().build());
   }
 
   @Test
