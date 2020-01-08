@@ -180,7 +180,11 @@ public final class ExprAclLine extends AclLine {
   }
 
   public Builder toBuilder() {
-    return builder().setAction(_action).setMatchCondition(_matchCondition).setName(_name).setTraceElement(_traceElement);
+    return builder()
+        .setAction(_action)
+        .setMatchCondition(_matchCondition)
+        .setName(_name)
+        .setTraceElement(_traceElement);
   }
 
   @Override
@@ -190,7 +194,9 @@ public final class ExprAclLine extends AclLine {
         .add(PROP_ACTION, _action)
         .add(PROP_MATCH_CONDITION, _matchCondition)
         .add(PROP_NAME, _name)
-        .add(PROP_TRACE_ELEMENT, Optional.ofNullable(_traceElement).map(TraceElement::toString).orElse(null))
+        .add(
+            PROP_TRACE_ELEMENT,
+            Optional.ofNullable(_traceElement).map(TraceElement::toString).orElse(null))
         .toString();
   }
 }
