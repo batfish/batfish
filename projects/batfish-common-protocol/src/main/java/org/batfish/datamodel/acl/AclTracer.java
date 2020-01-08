@@ -1,6 +1,7 @@
 package org.batfish.datamodel.acl;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Traverser;
@@ -51,8 +52,6 @@ public final class AclTracer extends AclLineEvaluator {
 
   private final Map<IpSpace, String> _ipSpaceNames;
 
-  private final TraceNode _traceRoot;
-
   private Stack<TraceNode> _nodeStack = new Stack<>();
 
   public AclTracer(
@@ -64,8 +63,7 @@ public final class AclTracer extends AclLineEvaluator {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceNames = new IdentityHashMap<>();
     _ipSpaceMetadata = new IdentityHashMap<>();
-    _traceRoot = TraceNode.withParent(null);
-    _nodeStack.push(_traceRoot);
+    _nodeStack.push(new TraceNode());
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
     namedIpSpaceMetadata.forEach(
         (name, ipSpaceMetadata) -> _ipSpaceMetadata.put(namedIpSpaces.get(name), ipSpaceMetadata));
@@ -96,9 +94,10 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   public @Nonnull AclTrace getTrace() {
+    checkState(!_nodeStack.isEmpty(), "Trace is missing");
+    TraceNode root = _nodeStack.get(0);
     return new AclTrace(
-        ImmutableList.copyOf(
-                Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(_traceRoot))
+        ImmutableList.copyOf(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(root))
             .stream()
             .map(TraceNode::getEvent)
             .filter(Objects::nonNull)
@@ -115,11 +114,15 @@ public final class AclTracer extends AclLineEvaluator {
         String.format(
             "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
     if (action == LineAction.PERMIT) {
-      _nodeStack.peek().setEvent(
-          new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      _nodeStack
+          .peek()
+          .setEvent(
+              new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     } else {
-      _nodeStack.peek().setEvent(
-          new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      _nodeStack
+          .peek()
+          .setEvent(
+              new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     }
   }
 
@@ -132,30 +135,38 @@ public final class AclTracer extends AclLineEvaluator {
       String ipDescription,
       IpSpaceDescriber describer) {
     if (line.getAction() == LineAction.PERMIT) {
-      _nodeStack.peek().setEvent(
-          new PermittedByAclIpSpaceLine(
-              aclIpSpaceName,
-              ipSpaceMetadata,
-              index,
-              computeLineDescription(line, describer),
-              ip,
-              ipDescription));
+      _nodeStack
+          .peek()
+          .setEvent(
+              new PermittedByAclIpSpaceLine(
+                  aclIpSpaceName,
+                  ipSpaceMetadata,
+                  index,
+                  computeLineDescription(line, describer),
+                  ip,
+                  ipDescription));
     } else {
-      _nodeStack.peek().setEvent(
-          new DeniedByAclIpSpaceLine(
-              aclIpSpaceName,
-              ipSpaceMetadata,
-              index,
-              computeLineDescription(line, describer),
-              ip,
-              ipDescription));
+      _nodeStack
+          .peek()
+          .setEvent(
+              new DeniedByAclIpSpaceLine(
+                  aclIpSpaceName,
+                  ipSpaceMetadata,
+                  index,
+                  computeLineDescription(line, describer),
+                  ip,
+                  ipDescription));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _nodeStack.peek().setEvent(
-        new DefaultDeniedByIpAccessList(
-            ipAccessList.getName(), ipAccessList.getSourceName(), ipAccessList.getSourceType()));
+    _nodeStack
+        .peek()
+        .setEvent(
+            new DefaultDeniedByIpAccessList(
+                ipAccessList.getName(),
+                ipAccessList.getSourceName(),
+                ipAccessList.getSourceType()));
   }
 
   public void recordDefaultDeny(
@@ -163,8 +174,10 @@ public final class AclTracer extends AclLineEvaluator {
       @Nullable IpSpaceMetadata ipSpaceMetadata,
       Ip ip,
       String ipDescription) {
-    _nodeStack.peek().setEvent(
-        new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
+    _nodeStack
+        .peek()
+        .setEvent(
+            new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -179,12 +192,17 @@ public final class AclTracer extends AclLineEvaluator {
       Ip ip,
       String ipDescription) {
     if (permit) {
-      _nodeStack.peek().setEvent(
-          new PermittedByNamedIpSpace(
-              ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
+      _nodeStack
+          .peek()
+          .setEvent(
+              new PermittedByNamedIpSpace(
+                  ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
     } else {
-      _nodeStack.peek().setEvent(
-          new DeniedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
+      _nodeStack
+          .peek()
+          .setEvent(
+              new DeniedByNamedIpSpace(
+                  ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
     }
   }
 
@@ -440,8 +458,7 @@ public final class AclTracer extends AclLineEvaluator {
    */
   public void newTrace() {
     // Add new child, set it as current node
-    TraceNode currentNode = _nodeStack.peek();
-    _nodeStack.push(currentNode.addChild(TraceNode.withParent(currentNode)));
+    _nodeStack.push(_nodeStack.peek().addChild());
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */
@@ -462,30 +479,20 @@ public final class AclTracer extends AclLineEvaluator {
   /** For building trace event trees */
   private static final class TraceNode {
     private @Nullable TraceEvent _event;
-    private final @Nullable TraceNode _parent;
     private final @Nonnull List<TraceNode> _children;
 
-    private TraceNode(
-        @Nullable TraceEvent event,
-        @Nullable TraceNode parent,
-        @Nonnull List<TraceNode> children) {
-      _event = event;
-      _parent = parent;
-      _children = children;
+    private TraceNode() {
+      this(null, new ArrayList<>());
     }
 
-    private static TraceNode withParent(@Nullable TraceNode parent) {
-      return new TraceNode(null, parent, new ArrayList<>());
+    private TraceNode(@Nullable TraceEvent event, @Nonnull List<TraceNode> children) {
+      _event = event;
+      _children = children;
     }
 
     @Nonnull
     private List<TraceNode> getChildren() {
       return _children;
-    }
-
-    @Nullable
-    private TraceNode getParent() {
-      return _parent;
     }
 
     @Nullable
@@ -498,9 +505,10 @@ public final class AclTracer extends AclLineEvaluator {
     }
 
     /** Adds a new child to this node trace node. Returns pointer to given node */
-    private TraceNode addChild(@Nonnull TraceNode node) {
-      _children.add(node);
-      return node;
+    private TraceNode addChild() {
+      TraceNode child = new TraceNode();
+      _children.add(child);
+      return child;
     }
 
     /** Clears all children from this node */
