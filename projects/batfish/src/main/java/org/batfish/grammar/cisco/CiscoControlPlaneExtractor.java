@@ -2345,6 +2345,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2369,6 +2371,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2439,6 +2443,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2463,6 +2469,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2513,6 +2521,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
           _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
@@ -2886,6 +2896,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.pg.getText();
       _currentAristaBgpNeighbor =
           _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
     } else if (ctx.v6 != null) {
       // TODO: v6 neighbors
       _currentAristaBgpNeighbor = new AristaBgpPeerGroupNeighbor("dummy");
