@@ -23,11 +23,9 @@ route-map permit-all permit 10
 router bgp 2
  router-id 10.2.2.2
  neighbor 10.0.12.1 remote-as 1
- neighbor 10.0.12.1 activate
  neighbor 10.0.12.1 route-map permit-all in
  neighbor 10.0.12.1 route-map deny-all out
  neighbor 10.0.23.3 remote-as 3
- neighbor 10.0.23.3 activate
  neighbor 10.0.23.3 route-map deny-all in
  neighbor 10.0.23.3 route-map permit-all out
 !

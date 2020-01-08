@@ -31,7 +31,6 @@ router bgp 2
  neighbor r3r4group peer-group
  bgp listen range 9.9.9.0/24 peer-group r3r4group
  neighbor r3r4group remote-as 3
- neighbor r3r4group activate
  neighbor r3r4group update-source Loopback0
 !
 ip route 9.9.9.3 255.255.255.255 FastEthernet1/0
