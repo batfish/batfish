@@ -803,7 +803,7 @@ eos_rbi_network
 eos_rbi_network4
 :
   (
-    ip = IP_ADDRESS mask = IP_ADDRESS
+    ip = IP_ADDRESS MASK mask = IP_ADDRESS
     | prefix = IP_PREFIX
   )
   (ROUTE_MAP rm = variable)?
