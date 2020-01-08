@@ -86880,6 +86880,13 @@
       },
       "referencedStructures" : {
         "configs/arista_bgp" : {
+          "bgp peer-group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp neighbor peer-group" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "ROUTE_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
@@ -92442,6 +92449,13 @@
       },
       "undefinedReferences" : {
         "configs/arista_bgp" : {
+          "bgp peer-group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp neighbor peer-group" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
