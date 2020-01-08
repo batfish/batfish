@@ -60,12 +60,14 @@ public final class AclAclLine extends AclLine {
       return false;
     }
     AclAclLine other = (AclAclLine) obj;
-    return Objects.equals(_aclName, other._aclName) && Objects.equals(_name, other._name);
+    return Objects.equals(_aclName, other._aclName)
+        && Objects.equals(_name, other._name)
+        && Objects.equals(_traceElement, other._traceElement);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, _name);
+    return Objects.hash(_aclName, _name, _traceElement);
   }
 
   @Override

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -153,7 +154,8 @@ public final class ExprAclLine extends AclLine {
     ExprAclLine other = (ExprAclLine) obj;
     return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
-        && Objects.equals(_name, other._name);
+        && Objects.equals(_name, other._name)
+        && Objects.equals(_traceElement, other._traceElement);
   }
 
   /** The action the underlying access-list will take when this line matches an IPV4 packet. */
@@ -174,11 +176,11 @@ public final class ExprAclLine extends AclLine {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action, _matchCondition, _name);
+    return Objects.hash(_action, _matchCondition, _name, _traceElement);
   }
 
   public Builder toBuilder() {
-    return builder().setAction(_action).setMatchCondition(_matchCondition).setName(_name);
+    return builder().setAction(_action).setMatchCondition(_matchCondition).setName(_name).setTraceElement(_traceElement);
   }
 
   @Override
@@ -188,6 +190,7 @@ public final class ExprAclLine extends AclLine {
         .add(PROP_ACTION, _action)
         .add(PROP_MATCH_CONDITION, _matchCondition)
         .add(PROP_NAME, _name)
+        .add(PROP_TRACE_ELEMENT, Optional.ofNullable(_traceElement).map(TraceElement::toString).orElse(null))
         .toString();
   }
 }

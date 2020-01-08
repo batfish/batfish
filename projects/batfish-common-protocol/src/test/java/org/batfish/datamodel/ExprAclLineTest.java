@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
@@ -15,26 +14,43 @@ import org.junit.Test;
 public class ExprAclLineTest {
   @Test
   public void testEquals() {
+    TraceElement traceElement1 = TraceElement.of("a");
+    TraceElement traceElement2 = TraceElement.of("b");
     ExprAclLine.Builder lineBuilder =
         ExprAclLine.builder()
             .setAction(LineAction.PERMIT)
             .setMatchCondition(FalseExpr.INSTANCE)
-            .setName("name");
+            .setName("name")
+            .setTraceElement(traceElement1);
     new EqualsTester()
         .addEqualityGroup(
             lineBuilder.build(),
             lineBuilder.build(),
-            new ExprAclLine(LineAction.PERMIT, FalseExpr.INSTANCE, "name"))
+            new ExprAclLine(LineAction.PERMIT, FalseExpr.INSTANCE, "name", traceElement1))
         .addEqualityGroup(lineBuilder.setAction(LineAction.DENY).build())
         .addEqualityGroup(lineBuilder.setMatchCondition(TrueExpr.INSTANCE).build())
         .addEqualityGroup(lineBuilder.setName("another name").build())
+        .addEqualityGroup(lineBuilder.setTraceElement(traceElement2).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    ExprAclLine l = new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
-    assertThat(BatfishObjectMapper.clone(l, ExprAclLine.class), equalTo(l));
+    {
+      ExprAclLine l = new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
+      ExprAclLine clone = (ExprAclLine) BatfishObjectMapper.clone(l, AclLine.class);
+      assertEquals(l, clone);
+    }
+    {
+      ExprAclLine l =
+          new ExprAclLine(
+              LineAction.PERMIT,
+              OriginatingFromDevice.INSTANCE,
+              "name",
+              TraceElement.builder().add("a").build());
+      ExprAclLine clone = (ExprAclLine) BatfishObjectMapper.clone(l, AclLine.class);
+      assertEquals(l, clone);
+    }
   }
 }
