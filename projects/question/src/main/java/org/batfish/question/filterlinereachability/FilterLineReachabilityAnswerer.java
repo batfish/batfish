@@ -110,7 +110,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       AclLine originalLine = _sanitizedLines.remove(lineNum);
 
       // If the original line has a concrete action, preserve it; otherwise default to DENY
-      ActionGetter actionGetter = new ActionGetter(false);
+      ActionGetter actionGetter = new ActionGetter();
       LineAction unmatchableLineAction =
           firstNonNull(actionGetter.visit(originalLine), LineAction.DENY);
       _sanitizedLines.add(
@@ -562,7 +562,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */
     BDD unmatchedPackets = bddFactory.one(); // The packets that are not yet matched by the ACL.
     ListIterator<BDD> lineIt = ipLineToBDDMap.listIterator();
-    ActionGetter actionGetter = new ActionGetter(false);
+    ActionGetter actionGetter = new ActionGetter();
     while (lineIt.hasNext()) {
       int lineNum = lineIt.nextIndex();
       BDD lineBDD = lineIt.next();

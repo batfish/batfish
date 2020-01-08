@@ -108,7 +108,7 @@ public class FilterLineReachabilityRows {
 
     // Mark diffAction true if any blocking line takes an action different from blocked line, or if
     // blocked line or any blocking line has no concrete action (actionGetter.visit() returns null).
-    ActionGetter actionGetter = new ActionGetter(false);
+    ActionGetter actionGetter = new ActionGetter();
     LineAction blockedLineAction = actionGetter.visit(blockedLine);
     boolean diffAction =
         blockedLineAction == null

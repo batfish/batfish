@@ -26,7 +26,6 @@ import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
@@ -124,7 +123,7 @@ public class CompareFiltersAnswerer extends Answerer {
           .put(COL_CURRENT_NAME, "");
     } else {
       int index = difference.getCurrentIndex();
-      ActionGetter actionGetter = new ActionGetter(false);
+      ActionGetter actionGetter = new ActionGetter();
       AclLine line =
           currentContext
               .getConfigs()
@@ -166,10 +165,10 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> currentAcls = currentConfig.getIpAccessLists();
     Map<String, IpSpace> currentIpSpaces = currentConfig.getIpSpaces();
     IpAccessList currentAcl = currentAcls.get(filtername);
+    ActionGetter actionGetter = new ActionGetter();
     List<LineAction> currentActions =
         currentAcl.getLines().stream()
-            // TODO Better handle line types without concrete actions
-            .map(l -> l instanceof ExprAclLine ? ((ExprAclLine) l).getAction() : null)
+            .map(actionGetter::visit)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
@@ -181,7 +180,6 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
-    ActionGetter actionGetter = new ActionGetter(false);
     List<LineAction> referenceActions =
         referenceAcl.getLines().stream()
             .map(actionGetter::visit)
