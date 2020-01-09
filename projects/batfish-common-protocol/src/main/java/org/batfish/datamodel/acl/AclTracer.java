@@ -90,14 +90,16 @@ public final class AclTracer extends AclLineEvaluator {
         String.format(
             "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
     if (action == LineAction.PERMIT) {
-      setEvent(new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      _tracer.setEvent(
+          new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     } else {
-      setEvent(new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      _tracer.setEvent(
+          new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    setEvent(
+    _tracer.setEvent(
         new DefaultDeniedByIpAccessList(
             ipAccessList.getName(), ipAccessList.getSourceName(), ipAccessList.getSourceType()));
   }
@@ -290,19 +292,20 @@ public final class AclTracer extends AclLineEvaluator {
 
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
     List<AclLine> lines = ipAccessList.getLines();
-    newTrace();
+    _tracer.newSubTrace();
     for (int i = 0; i < lines.size(); i++) {
       AclLine line = lines.get(i);
       LineAction action = visit(line);
       if (action != null) {
         recordAction(ipAccessList, i, line, action);
-        endTrace();
+        _tracer.endSubTrace();
         return action == LineAction.PERMIT;
       }
-      nextLine();
+      // All previous children are of no interest since they resulted in a no-match on previous line
+      _tracer.resetSubTrace();
     }
     recordDefaultDeny(ipAccessList);
-    endTrace();
+    _tracer.endSubTrace();
     return false;
   }
 
@@ -339,9 +342,9 @@ public final class AclTracer extends AclLineEvaluator {
     return andMatchExpr.getConjuncts().stream()
         .allMatch(
             c -> {
-              newTrace();
+              _tracer.newSubTrace();
               Boolean result = c.accept(this);
-              endTrace();
+              _tracer.endSubTrace();
               return result;
             });
   }
@@ -351,37 +354,10 @@ public final class AclTracer extends AclLineEvaluator {
     return orMatchExpr.getDisjuncts().stream()
         .anyMatch(
             d -> {
-              newTrace();
+              _tracer.newSubTrace();
               Boolean result = d.accept(this);
-              endTrace();
+              _tracer.endSubTrace();
               return result;
             });
-  }
-
-  /**
-   * Start a new trace at the current depth level. Indicates jump in a level of indirection to a new
-   * structure (even though said structure can still be part of a single ACL line.
-   */
-  private void newTrace() {
-    _tracer.newSubTrace();
-  }
-
-  /** End a trace: indicates that tracing of a structure is finished. */
-  private void endTrace() {
-    _tracer.endSubTrace();
-  }
-
-  /** Set the event of the current node. Precondition: current node's event is null. */
-  private void setEvent(TraceEvent event) {
-    _tracer.setEvent(event);
-  }
-
-  /**
-   * Indicate we are moving on to the next line in current data structure (i.e., did not match
-   * previous line)
-   */
-  private void nextLine() {
-    // All previous children are of no interest since they resulted in a no-match on previous line
-    _tracer.resetSubTrace();
   }
 }
