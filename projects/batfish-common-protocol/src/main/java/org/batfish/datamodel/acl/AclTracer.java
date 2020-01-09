@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -24,7 +23,6 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.trace.TraceNode;
 import org.batfish.datamodel.trace.Tracer;
-import org.batfish.datamodel.visitors.IpSpaceDescriber;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
 /**
@@ -66,14 +64,6 @@ public final class AclTracer extends AclLineEvaluator {
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
     namedIpSpaceMetadata.forEach(
         (name, ipSpaceMetadata) -> _ipSpaceMetadata.put(namedIpSpaces.get(name), ipSpaceMetadata));
-  }
-
-  private String computeLineDescription(AclIpSpaceLine line, IpSpaceDescriber describer) {
-    String srcText = line.getSrcText();
-    if (srcText != null) {
-      return srcText;
-    }
-    return line.getIpSpace().accept(describer);
   }
 
   public Flow getFlow() {
@@ -118,68 +108,14 @@ public final class AclTracer extends AclLineEvaluator {
     }
   }
 
-  public void recordAction(
-      @Nonnull String aclIpSpaceName,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
-      int index,
-      @Nonnull AclIpSpaceLine line,
-      Ip ip,
-      String ipDescription,
-      IpSpaceDescriber describer) {
-    if (line.getAction() == LineAction.PERMIT) {
-      setEvent(
-          new PermittedByAclIpSpaceLine(
-              aclIpSpaceName,
-              ipSpaceMetadata,
-              index,
-              computeLineDescription(line, describer),
-              ip,
-              ipDescription));
-    } else {
-      setEvent(
-          new DeniedByAclIpSpaceLine(
-              aclIpSpaceName,
-              ipSpaceMetadata,
-              index,
-              computeLineDescription(line, describer),
-              ip,
-              ipDescription));
-    }
-  }
-
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
     setEvent(
         new DefaultDeniedByIpAccessList(
             ipAccessList.getName(), ipAccessList.getSourceName(), ipAccessList.getSourceType()));
   }
 
-  public void recordDefaultDeny(
-      @Nonnull String aclIpSpaceName,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
-      Ip ip,
-      String ipDescription) {
-    setEvent(new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
-  }
-
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
     return num != null && ranges.stream().anyMatch(sr -> sr.includes(num));
-  }
-
-  public void recordNamedIpSpaceAction(
-      @Nonnull String name,
-      @Nonnull String ipSpaceDescription,
-      IpSpaceMetadata ipSpaceMetadata,
-      boolean permit,
-      Ip ip,
-      String ipDescription) {
-    if (permit) {
-      setEvent(
-          new PermittedByNamedIpSpace(
-              ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
-    } else {
-      setEvent(
-          new DeniedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
-    }
   }
 
   private boolean trace(@Nonnull HeaderSpace headerSpace) {
@@ -383,15 +319,21 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip, @Nonnull String ipDescription) {
-    return ipSpace.accept(new IpSpaceTracer(this, ip, ipDescription));
+    return ipSpace.accept(
+        new IpSpaceTracer(
+            _tracer, ip, ipDescription, _ipSpaceNames, _ipSpaceMetadata, _namedIpSpaces));
   }
 
-  public boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(new IpSpaceTracer(this, ip, "destination IP"));
+  private boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
+    return ipSpace.accept(
+        new IpSpaceTracer(
+            _tracer, ip, "destination IP", _ipSpaceNames, _ipSpaceMetadata, _namedIpSpaces));
   }
 
-  public boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(new IpSpaceTracer(this, ip, "source IP"));
+  private boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
+    return ipSpace.accept(
+        new IpSpaceTracer(
+            _tracer, ip, "source IP", _ipSpaceNames, _ipSpaceMetadata, _namedIpSpaces));
   }
 
   @Override
@@ -432,12 +374,12 @@ public final class AclTracer extends AclLineEvaluator {
    * Start a new trace at the current depth level. Indicates jump in a level of indirection to a new
    * structure (even though said structure can still be part of a single ACL line.
    */
-  public void newTrace() {
+  private void newTrace() {
     _tracer.newSubTrace();
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */
-  public void endTrace() {
+  private void endTrace() {
     _tracer.endSubTrace();
   }
 
@@ -450,7 +392,7 @@ public final class AclTracer extends AclLineEvaluator {
    * Indicate we are moving on to the next line in current data structure (i.e., did not match
    * previous line)
    */
-  public void nextLine() {
+  private void nextLine() {
     // All previous children are of no interest since they resulted in a no-match on previous line
     _tracer.resetSubTrace();
   }
