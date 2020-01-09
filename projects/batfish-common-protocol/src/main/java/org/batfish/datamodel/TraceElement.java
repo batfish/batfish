@@ -35,7 +35,7 @@ public final class TraceElement implements Serializable {
     private final String _text;
 
     TextFragment(String text) {
-      checkNotNull(text, "%s cannot be null", PROP_TEXT);
+      checkArgument(!text.isEmpty(), "%s cannot be empty", PROP_TEXT);
       _text = text;
     }
 
@@ -75,6 +75,7 @@ public final class TraceElement implements Serializable {
     private final VendorStructureId _vendorStructureId;
 
     LinkFragment(String text, VendorStructureId vendorStructureId) {
+      checkArgument(!text.isEmpty(), "%s cannot be empty", PROP_TEXT);
       _text = text;
       _vendorStructureId = vendorStructureId;
     }

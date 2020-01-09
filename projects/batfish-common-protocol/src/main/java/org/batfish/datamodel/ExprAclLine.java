@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
@@ -126,21 +128,29 @@ public final class ExprAclLine extends AclLine {
   private final AclLineMatchExpr _matchCondition;
 
   @JsonCreator
-  public ExprAclLine(
-      @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
-      @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
-      @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
-    super(name, traceElement);
-    _action = Objects.requireNonNull(action);
-    _matchCondition = Objects.requireNonNull(matchCondition);
+  private static ExprAclLine jsonCreator(
+      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
+      @Nullable @JsonProperty(PROP_MATCH_CONDITION) AclLineMatchExpr matchCondition,
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+    return new ExprAclLine(
+        checkNotNull(action, "%s cannot be null", PROP_ACTION),
+        checkNotNull(matchCondition, "%s cannot be null", PROP_MATCH_CONDITION),
+        name,
+        traceElement);
+
   }
 
   public ExprAclLine(
       @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name) {
-    super(name);
-    _action = Objects.requireNonNull(action);
-    _matchCondition = Objects.requireNonNull(matchCondition);
+    this(action,matchCondition,name,null);
+  }
+
+  public ExprAclLine(
+      @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name, TraceElement traceElement) {
+    super(name,traceElement);
+    _action = action;
+    _matchCondition = matchCondition;
   }
 
   @Override

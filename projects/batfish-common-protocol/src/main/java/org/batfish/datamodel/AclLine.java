@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
@@ -21,10 +20,7 @@ public abstract class AclLine implements Serializable {
     _traceElement = null;
   }
 
-  @JsonCreator
-  AclLine(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+  AclLine(@Nullable String name, @Nullable TraceElement traceElement) {
     _name = name;
     _traceElement = traceElement;
   }
