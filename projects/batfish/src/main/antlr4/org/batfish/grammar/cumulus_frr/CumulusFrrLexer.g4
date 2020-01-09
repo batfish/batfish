@@ -29,6 +29,11 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ADDITIVE
+:
+   'additive'
+;
+
 ADVERTISE
 :
   'advertise'
