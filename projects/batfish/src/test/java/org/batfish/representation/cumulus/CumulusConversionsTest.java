@@ -539,16 +539,6 @@ public final class CumulusConversionsTest {
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
         viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
-
-    // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
-    // tested in testRejectDefaultRoute()
-    assertThat(
-        viConfig
-            .getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
-            .getStatements()
-            .get(0),
-        equalTo(REJECT_DEFAULT_ROUTE));
   }
 
   @Test
@@ -646,6 +636,16 @@ public final class CumulusConversionsTest {
     assertThat(
         newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
         equalTo(ImmutableSet.of(GENERATED_DEFAULT_ROUTE)));
+
+    // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
+    // tested in testRejectDefaultRoute()
+    assertThat(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
+            .getStatements()
+            .get(1),
+        equalTo(REJECT_DEFAULT_ROUTE));
   }
 
   @Test
