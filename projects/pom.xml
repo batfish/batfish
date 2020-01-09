@@ -408,10 +408,9 @@
           <version>${maven-license-plugin.version}</version>
           <configuration>
             <licenseMerges>
-              <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version
-                2.0|Apache 2.0|Apache License 2.0
+              <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0
               </licenseMerge>
-              <licenseMerge>MIT License|MIT|MIT license</licenseMerge>
+              <licenseMerge>MIT|MIT License|MIT license|The MIT License</licenseMerge>
             </licenseMerges>
           </configuration>
         </plugin>
