@@ -108,12 +108,11 @@ public class FilterLineReachabilityRows {
 
     // Mark diffAction true if any blocking line takes an action different from blocked line, or if
     // blocked line or any blocking line has no concrete action (actionGetter.visit() returns null).
-    ActionGetter actionGetter = new ActionGetter();
-    LineAction blockedLineAction = actionGetter.visit(blockedLine);
+    LineAction blockedLineAction = ActionGetter.getAction(blockedLine);
     boolean diffAction =
         blockedLineAction == null
             || blockingLines.stream()
-                .map(i -> actionGetter.visit(acl.getLines().get(i)))
+                .map(i -> ActionGetter.getAction(acl.getLines().get(i)))
                 .anyMatch(action -> action == null || blockedLineAction != action);
 
     // All the host-acl pairs that contain this canonical acl

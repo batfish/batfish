@@ -123,7 +123,6 @@ public class CompareFiltersAnswerer extends Answerer {
           .put(COL_CURRENT_NAME, "");
     } else {
       int index = difference.getCurrentIndex();
-      ActionGetter actionGetter = new ActionGetter();
       AclLine line =
           currentContext
               .getConfigs()
@@ -133,7 +132,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .getLines()
               .get(index);
       ret.put(COL_CURRENT_LINE, index)
-          .put(COL_CURRENT_ACTION, actionGetter.visit(line))
+          .put(COL_CURRENT_ACTION, ActionGetter.getAction(line))
           .put(COL_CURRENT_NAME, line.getName());
     }
 
@@ -165,10 +164,9 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> currentAcls = currentConfig.getIpAccessLists();
     Map<String, IpSpace> currentIpSpaces = currentConfig.getIpSpaces();
     IpAccessList currentAcl = currentAcls.get(filtername);
-    ActionGetter actionGetter = new ActionGetter();
     List<LineAction> currentActions =
         currentAcl.getLines().stream()
-            .map(actionGetter::visit)
+            .map(ActionGetter::getAction)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
@@ -182,7 +180,7 @@ public class CompareFiltersAnswerer extends Answerer {
     IpAccessList referenceAcl = referenceAcls.get(filtername);
     List<LineAction> referenceActions =
         referenceAcl.getLines().stream()
-            .map(actionGetter::visit)
+            .map(ActionGetter::getAction)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);
