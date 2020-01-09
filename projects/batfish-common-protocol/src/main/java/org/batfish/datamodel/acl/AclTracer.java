@@ -71,7 +71,7 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   public @Nonnull AclTrace getTrace() {
-    TraceNode root = _tracer.getRootNode();
+    TraceNode root = _tracer.getTrace();
     return new AclTrace(
         ImmutableList.copyOf(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(root))
             .stream()

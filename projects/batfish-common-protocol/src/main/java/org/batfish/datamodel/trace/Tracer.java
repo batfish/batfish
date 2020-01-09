@@ -4,27 +4,30 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Stack;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.TraceEvent;
-import org.batfish.datamodel.trace.TraceNode.Builder;
 
 /** A class for building Traces. */
 public class Tracer {
+
+  // the complete trace. once set, can't create new subtraces
+  private @Nullable TraceNode _trace;
 
   // invariant: never empty
   private final Stack<TraceNode.Builder> _nodeStack;
 
   public Tracer() {
     _nodeStack = new Stack<>();
-    _nodeStack.push(TraceNode.builder());
   }
 
-  public TraceNode getRootNode() {
-    checkState(!_nodeStack.isEmpty(), "Trace is missing");
-    return _nodeStack.get(0).build();
+  public TraceNode getTrace() {
+    checkState(_trace != null, "cannot get incomplete trace");
+    return _trace;
   }
 
   /** Set the {@link TraceEvent} for the current trace node. Must not already be set. */
   public void setEvent(@Nonnull TraceEvent traceEvent) {
+    checkState(!_nodeStack.isEmpty(), "no trace in progress");
     TraceNode.Builder currentNode = _nodeStack.peek();
     currentNode.setTraceEvent(traceEvent);
   }
@@ -34,21 +37,25 @@ public class Tracer {
    * structure (even though said structure can still be part of a single ACL line.
    */
   public void newSubTrace() {
+    checkState(_trace == null, "trace already completed");
     // Add new child, set it as current node
     _nodeStack.push(TraceNode.builder());
   }
 
-  /** End a trace: indicates that tracing of a structure is finished. */
+  /** Complete the current (sub)trace. If it's a subtrace, add it as a child of the parent trace. */
   public void endSubTrace() {
-    // make sure we're ending a subtrace, not the root trace.
-    checkState(_nodeStack.size() > 1, "Not in a subTrace");
-    // Go up level of a tree, do not delete children
+    checkState(!_nodeStack.isEmpty(), "no trace in progress");
     TraceNode child = _nodeStack.pop().build();
-    _nodeStack.peek().addChild(child);
+    if (!_nodeStack.isEmpty()) {
+      _nodeStack.peek().addChild(child);
+    } else {
+      _trace = child;
+    }
   }
 
   /** Clear the current subtrace. */
   public void resetSubTrace() {
+    checkState(!_nodeStack.isEmpty(), "no trace in progress");
     _nodeStack.pop();
     newSubTrace();
   }
