@@ -16,10 +16,7 @@ public class BgpVrf implements Serializable {
   private @Nullable Long _autonomousSystem;
   private @Nullable Boolean _asPathMultipathRelax;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
-
-  // TODO: this needs to move to VI after testing behavior
   private @Nonnull Map<Prefix, BgpNetwork> _networks;
-
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
   private @Nullable Ip _routerId;
@@ -32,6 +29,10 @@ public class BgpVrf implements Serializable {
     _vrfName = vrfName;
     _neighbors = new HashMap<>();
     _networks = ImmutableMap.of();
+  }
+
+  public boolean isIpv4UnicastActive() {
+    return _defaultIpv4Unicast || (_ipv4Unicast != null);
   }
 
   public boolean getDefaultIpv4Unicast() {
