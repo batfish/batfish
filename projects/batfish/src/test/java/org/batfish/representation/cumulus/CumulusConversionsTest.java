@@ -73,8 +73,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -89,14 +87,8 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -556,19 +548,13 @@ public final class CumulusConversionsTest {
     // generation policy exists
     assertTrue(viBgp.getOriginationSpace().containsPrefix(prefix));
 
-    RoutingPolicy bgpCommonExportPolicy =
-        viConfig.getRoutingPolicies().get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
-
-    assertEquals(
-        ((Conjunction)
-                ((Disjunction) ((If) bgpCommonExportPolicy.getStatements().get(0)).getGuard())
-                    .getDisjuncts()
-                    .get(1))
-            .getConjuncts()
-            .get(0),
-        new MatchPrefixSet(
-            DestinationNetwork.instance(),
-            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+    // the prefix is allowed to leave
+    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    assertTrue(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .process(route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   /**
@@ -603,20 +589,13 @@ public final class CumulusConversionsTest {
     // generation policy exists
     assertFalse(viBgp.getOriginationSpace().containsPrefix(prefix));
 
-    RoutingPolicy bgpCommonExportPolicy =
-        viConfig.getRoutingPolicies().get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
-
-    // only match protocol statement
-    assertEquals(
-        ((Disjunction) ((If) bgpCommonExportPolicy.getStatements().get(0)).getGuard())
-            .getDisjuncts()
-            .size(),
-        1);
-    assertEquals(
-        ((Disjunction) ((If) bgpCommonExportPolicy.getStatements().get(0)).getGuard())
-            .getDisjuncts()
-            .get(0),
-        new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
+    // the prefix is blocked
+    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    assertFalse(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .process(route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   @Test
