@@ -815,7 +815,12 @@ public final class CumulusConversions {
     // Always export BGP and iBGP routes
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
-    // Use an empty BgpIpv4UnicastAddressFamily object to simplify the subsequent code
+    // we don't need to process redist policies and network statements (inside v4 address family or
+    // bgp-vrf-level) if v4 address family is not turned on
+    if (!bgpVrf.getDefaultIpv4Unicast() && bgpVrf.getIpv4Unicast() == null) {
+      return exportConditions;
+    }
+
     BgpIpv4UnicastAddressFamily bgpIpv4UnicastAddressFamily =
         firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
 
