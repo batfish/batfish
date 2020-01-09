@@ -70,18 +70,6 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public Map<IpSpace, IpSpaceMetadata> getIpSpaceMetadata() {
-    return _ipSpaceMetadata;
-  }
-
-  public @Nonnull Map<IpSpace, String> getIpSpaceNames() {
-    return _ipSpaceNames;
-  }
-
-  public @Nonnull Map<String, IpSpace> getNamedIpSpaces() {
-    return _namedIpSpaces;
-  }
-
   public @Nonnull AclTrace getTrace() {
     TraceNode root = _tracer.getRootNode();
     return new AclTrace(
