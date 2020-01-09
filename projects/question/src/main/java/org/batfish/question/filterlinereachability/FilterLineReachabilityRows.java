@@ -5,18 +5,16 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.ActionGetter;
-import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -24,6 +22,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.BlockingProperties;
 
 /** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
@@ -93,28 +92,32 @@ public class FilterLineReachabilityRows {
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
-  public void addUnreachableLine(
-      AclSpecs aclSpecs,
-      int lineNumber,
-      boolean unmatchable,
-      @Nonnull SortedSet<Integer> blockingLines) {
+  /** Adds row for unmatchable line at index {@code lineNumber}. */
+  public void addUnmatchableLine(AclSpecs aclSpecs, int lineNumber) {
+    Reason reason =
+        aclSpecs.acl.hasUndefinedRef(lineNumber)
+            ? Reason.UNDEFINED_REFERENCE
+            : Reason.INDEPENDENTLY_UNMATCHABLE;
+    addRowForLine(
+        aclSpecs, lineNumber, reason, new BlockingProperties(ImmutableSortedSet.of(), false));
+  }
 
+  /** Adds row for blocked line at index {@code lineNumber}. */
+  public void addBlockedLine(AclSpecs aclSpecs, int lineNumber, BlockingProperties blockingProps) {
+    addRowForLine(aclSpecs, lineNumber, Reason.BLOCKING_LINES, blockingProps);
+  }
+
+  /** Adds row for line at index {@code lineNumber} with reason {@code reason}. */
+  private void addRowForLine(
+      AclSpecs aclSpecs, int lineNumber, Reason reason, BlockingProperties blockingProps) {
     if (aclSpecs.acl.inCycle(lineNumber)) {
       return;
     }
 
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
     AclLine blockedLine = acl.getLines().get(lineNumber);
-
-    // Mark diffAction true if any blocking line takes an action different from blocked line, or if
-    // blocked line or any blocking line has no concrete action (actionGetter.visit() returns null).
     ActionGetter actionGetter = new ActionGetter(false);
     LineAction blockedLineAction = actionGetter.visit(blockedLine);
-    boolean diffAction =
-        blockedLineAction == null
-            || blockingLines.stream()
-                .map(i -> actionGetter.visit(acl.getLines().get(i)))
-                .anyMatch(action -> action == null || blockedLineAction != action);
 
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =
@@ -122,11 +125,6 @@ public class FilterLineReachabilityRows {
             .map(e -> e.getKey() + ": " + String.join(", ", e.getValue()))
             .collect(Collectors.toList());
 
-    CanonicalAcl canonicalAcl = aclSpecs.acl;
-    Reason reason =
-        canonicalAcl.hasUndefinedRef(lineNumber)
-            ? Reason.UNDEFINED_REFERENCE
-            : unmatchable ? Reason.INDEPENDENTLY_UNMATCHABLE : Reason.BLOCKING_LINES;
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
@@ -134,14 +132,14 @@ public class FilterLineReachabilityRows {
             .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
             .put(
                 COL_BLOCKING_LINES,
-                blockingLines.stream()
+                blockingProps.getBlockingLineNums().stream()
                     .map(
                         i -> {
                           AclLine l = acl.getLines().get(i);
                           return firstNonNull(l.getName(), l.toString());
                         })
                     .collect(ImmutableList.toImmutableList()))
-            .put(COL_DIFF_ACTION, diffAction)
+            .put(COL_DIFF_ACTION, blockingProps.getDiffAction())
             .put(COL_REASON, reason)
             .build());
   }
