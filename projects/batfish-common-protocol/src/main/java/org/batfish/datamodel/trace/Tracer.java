@@ -2,52 +2,12 @@ package org.batfish.datamodel.trace;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.TraceEvent;
 
 /** A class for building Traces. */
 public class Tracer {
-
-  /** A node in a trace */
-  public static final class TraceNode {
-    private @Nullable TraceEvent _traceEvent;
-    private final @Nonnull List<TraceNode> _children;
-
-    private TraceNode() {
-      _children = new ArrayList<>();
-    }
-
-    @Nonnull
-    public List<TraceNode> getChildren() {
-      return _children;
-    }
-
-    @Nullable
-    public TraceEvent getTraceEvent() {
-      return _traceEvent;
-    }
-
-    private void setTraceEvent(@Nonnull TraceEvent traceEvent) {
-      _traceEvent = traceEvent;
-    }
-
-    /** Adds a new child to this node trace node. Returns pointer to given node */
-    private TraceNode addChild() {
-      TraceNode child = new TraceNode();
-      _children.add(child);
-      return child;
-    }
-
-    /** Clears all children from this node */
-    public void reset() {
-      _traceEvent = null;
-      _children.clear();
-    }
-  }
 
   // invariant: never empty
   private final Stack<TraceNode> _nodeStack;
@@ -65,7 +25,7 @@ public class Tracer {
   /** Set the {@link TraceEvent} for the current trace node. Must not already be set. */
   public void setEvent(@Nonnull TraceEvent traceEvent) {
     TraceNode currentNode = _nodeStack.peek();
-    checkState(currentNode._traceEvent == null, "TraceNode event already set.");
+    checkState(currentNode.getTraceEvent() == null, "TraceNode event already set.");
     currentNode.setTraceEvent(traceEvent);
   }
 
@@ -75,7 +35,7 @@ public class Tracer {
    */
   public void newSubTrace() {
     // Add new child, set it as current node
-    _nodeStack.push(_nodeStack.peek().addChild());
+    _nodeStack.push(_nodeStack.peek().createChild());
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */

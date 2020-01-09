@@ -22,8 +22,8 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.trace.TraceNode;
 import org.batfish.datamodel.trace.Tracer;
-import org.batfish.datamodel.trace.Tracer.TraceNode;
 import org.batfish.datamodel.visitors.IpSpaceDescriber;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
