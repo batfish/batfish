@@ -974,7 +974,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListNoSeq() {
+  public void testCumulusFrrIpPrefixListNoSeqOnFirstEntry() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    parse(String.format("ip prefix-list %s permit %s\n", name, prefix1));
+    assertThat(_frr.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = _frr.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(5L);
+    assertThat(line1.getLine(), equalTo(5L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(SubRange.singleton(24)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListNoSeqOnLaterEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";

@@ -1006,7 +1006,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       // Round up to the next multiple of 5
       // http://docs.frrouting.org/en/latest/filter.html#clicmd-ipprefix-listNAMEseqNUMBER(permit|deny)PREFIX[leLEN][geLEN]
-      Long lastNum = _currentIpPrefixList.getLines().lastKey();
+      Long lastNum =
+          _currentIpPrefixList.getLines().isEmpty()
+              ? 0L
+              : _currentIpPrefixList.getLines().lastKey();
       num = nextMultipleOfFive(lastNum);
     }
     LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;
