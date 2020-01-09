@@ -770,7 +770,7 @@
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
-              "tieBreaker" : "ARRIVAL_ORDER"
+              "tieBreaker" : "ROUTER_ID"
             }
           }
         }

@@ -1,6 +1,6 @@
 package org.batfish.config;
 
-import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
+import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_NO_USE_ARISTA_BGP;
 
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
@@ -450,7 +450,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   @Override
   public boolean getUseAristaBgp() {
-    return debugFlagEnabled(DEBUG_FLAG_USE_ARISTA_BGP);
+    return !debugFlagEnabled(DEBUG_FLAG_NO_USE_ARISTA_BGP);
   }
 
   public boolean getVerboseParse() {

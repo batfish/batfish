@@ -46,7 +46,7 @@
         "File_Name" : "configs/arista_bgp",
         "Struct_Type" : "bgp peer-group",
         "Ref_Name" : "UNDEFINED_PEER_GROUP",
-        "Context" : "bgp neighbor statement",
+        "Context" : "bgp neighbor peer-group",
         "Lines" : {
           "filename" : "configs/arista_bgp",
           "lines" : [
