@@ -534,6 +534,8 @@ public final class CumulusConversions {
             .setOwner(c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    // If default originate is set for a neighbor, we will send it a "fresh" default route is not
+    // subjected to the neighbor's outgoing route map. We will drop other default routes.
     if (bgpDefaultOriginate(neighbor)) {
       initBgpDefaultRouteExportPolicy(vrfName, neighbor.getName(), true, null, c);
       peerExportPolicy.addStatement(
@@ -543,10 +545,9 @@ public final class CumulusConversions {
                   computeBgpDefaultRouteExportPolicyName(true, vrfName, neighbor.getName())),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
+
+      peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
     }
-    // FRR does not advertise default routes even if they are in the routing table:
-    // https://readthedocs.org/projects/frrouting/downloads/pdf/stable-5.0/
-    peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);

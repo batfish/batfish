@@ -12,6 +12,6 @@ interface Loopback0
  ip address 1.1.1.1 255.255.255.255
 !
 router bgp 1
- bgp router-id 1.1.1.1
+ router-id 1.1.1.1
  neighbor 1.2.0.2 remote-as 2
 !

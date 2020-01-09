@@ -1,0 +1,42 @@
+set_community_additive_test
+# This file describes the network interfaces
+
+iface eth0
+ address 10.20.30.0/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+agentx
+!
+router bgp 12345
+ bgp router-id 1.2.3.4
+ address-family ipv4 unicast
+  network 10.20.0.0/16
+ exit-address-family
+!
+route-map RM_SET_ADDITIVE_TEST_1 permit 1
+ match interface eth0
+ ! Note: On an FRR device, the second "set community" overwrites the prior set.
+ set community 1:1
+ set community 2:2 3:3 additive
+
+route-map RM_SET_ADDITIVE_TEST_2 permit 1
+ match interface eth0
+ ! Note: On an FRR device, the second "set community" overwrites the prior set.
+ set community 2:2 3:3 additive
+ set community 1:1
+
+route-map RM_SET_ADDITIVE_TEST_3 permit 1
+ match interface eth0
+ ! Note: On an FRR device, the second "set community" overwrites the prior set.
+ set community 1:1 additive
+ set community 2:2 3:3 additive
+
+!
+line vty
+!
+!### end frr.conf

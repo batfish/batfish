@@ -43,7 +43,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -382,11 +381,22 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpAddressFamilyNeighborDefaultOriginate_behavior() throws IOException {
     /*
-    The implemented behavior with default-originate is that the default route will be advertised unconditionally.
-    TODO: Check if this behavior is actually correct.
+     There are four nodes in the topology arranged in a line.
+       - frr-originator -- frr-reoriginator -- frr-propagator -- ios-listener
+
+     frr-originator has default-originate.
+
+     frr-reoriginator also has default-originate. it should generate a fresh route not propagate
+        the one it got from frr-originator. it also has a route map toward frr-propagator that
+        drops default (but shouldn't interfere with default-originate)
+
+     frr-propagator does not default-originate. it should propagate the default it got from
+         frr-reoriginator to ios-listener
     */
+
     String snapshotName = "default-originate";
-    List<String> configurationNames = ImmutableList.of("frr-originator", "ios-listener");
+    List<String> configurationNames =
+        ImmutableList.of("frr-originator", "frr-reoriginator", "frr-propagator", "ios-listener");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -397,23 +407,60 @@ public class CumulusFrrGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    Bgpv4Route expectedDefaultRoute =
-        Bgpv4Route.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setAsPath(AsPath.ofSingletonAsSets(1L))
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    // frr-reoriginator should get a default route from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-reoriginator").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
+
+    // frr-propagator should get a fresh default route from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-propagator").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("20.1.1.2"))
+                    .setReceivedFromIp(Ip.parse("20.1.1.2"))
+                    .setOriginatorIp(Ip.parse("2.2.2.2"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(2L)) // fresh route with only one AS
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
+
+    // ios-listener should get a propagated route from frr-propagator
+    assertThat(
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("30.1.1.3"))
+                    .setReceivedFromIp(Ip.parse("30.1.1.3"))
+                    .setOriginatorIp(Ip.parse("3.3.3.3"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(3L, 2L)) // propagated route
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
   }
 
   @Test
@@ -974,7 +1021,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListNoSeq() {
+  public void testCumulusFrrIpPrefixListNoSeqOnFirstEntry() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    parse(String.format("ip prefix-list %s permit %s\n", name, prefix1));
+    assertThat(_frr.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = _frr.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(5L);
+    assertThat(line1.getLine(), equalTo(5L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(SubRange.singleton(24)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListNoSeqOnLaterEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";

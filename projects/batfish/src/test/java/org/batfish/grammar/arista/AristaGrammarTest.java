@@ -13,7 +13,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
-import static org.batfish.grammar.cisco.CiscoCombinedParser.DEBUG_FLAG_USE_ARISTA_BGP;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
@@ -38,7 +37,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
@@ -124,7 +122,6 @@ public class AristaGrammarTest {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    settings.setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_ARISTA_BGP));
     CiscoCombinedParser ciscoParser =
         new CiscoCombinedParser(src, settings, ConfigurationFormat.ARISTA);
     CiscoControlPlaneExtractor extractor =
@@ -145,9 +142,7 @@ public class AristaGrammarTest {
       throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    Batfish batfish = BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
-    batfish.getSettings().setDebugFlags(ImmutableList.of(DEBUG_FLAG_USE_ARISTA_BGP));
-    return batfish;
+    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
   private @Nonnull Configuration parseConfig(String hostname) {
