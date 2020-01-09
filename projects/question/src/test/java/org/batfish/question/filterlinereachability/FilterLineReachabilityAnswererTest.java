@@ -650,14 +650,14 @@ public class FilterLineReachabilityAnswererTest {
 
     // last line (#4) is really blocked by (#3). Also report #0 as first line with diff action.
     List<LineAction> actions = ImmutableList.of(DENY, DENY, DENY, PERMIT, PERMIT);
-    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions);
     BlockingProperties blockingProperties = findBlockingPropsForLine(4, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(0, 3));
     assertTrue(blockingProperties.getDiffAction());
 
     // if there are no lines with different actions, only report #3.
     List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT, PERMIT, PERMIT);
-    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions);
     blockingProperties = findBlockingPropsForLine(4, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(3));
     assertFalse(blockingProperties.getDiffAction());
@@ -678,14 +678,14 @@ public class FilterLineReachabilityAnswererTest {
     List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
 
     // last line (#2) is blocked by both first two lines.
-    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions);
     BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(0, 1));
     assertTrue(blockingProperties.getDiffAction());
 
     //  Action should not matter.
     List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT);
-    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions);
     blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(0, 1));
     assertFalse(blockingProperties.getDiffAction());
@@ -706,7 +706,7 @@ public class FilterLineReachabilityAnswererTest {
     List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
 
     // last line (#2) is blocked only by #0. #1 is ignored since it terminates no flows.
-    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions);
     BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(0));
     assertFalse(blockingProperties.getDiffAction());
@@ -728,21 +728,21 @@ public class FilterLineReachabilityAnswererTest {
 
     // last line (#2) is blocked entirely by #1. But #0 is included since it matches with different
     // action.
-    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions);
     BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(0, 1));
     assertTrue(blockingProperties.getDiffAction());
 
     // #0 is not included when all lines have same action.
     List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT);
-    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions);
     blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(1));
     assertFalse(blockingProperties.getDiffAction());
 
     // #0 is not included despite different action when #1 already has different action.
     List<LineAction> actionsAndCover = ImmutableList.of(DENY, DENY, PERMIT);
-    permitAndDenyBdds = toPermitAndDenyBdds(bdds, actionsAndCover, ZERO);
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, actionsAndCover);
     blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(1));
     assertTrue(blockingProperties.getDiffAction());
@@ -768,13 +768,13 @@ public class FilterLineReachabilityAnswererTest {
     // last line (#2) is blocked entirely by #1. Since #1 has a different action, and even though #0
     // matches many packets, we will not include #0 independent of action of #0.
     List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
-    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions);
     BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(1));
     assertTrue(blockingProperties.getDiffAction());
 
     List<LineAction> sameActions = ImmutableList.of(DENY, DENY, PERMIT);
-    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions);
     blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
     assertThat(blockingProperties.getBlockingLineNums(), contains(1));
     assertTrue(blockingProperties.getDiffAction());
@@ -850,7 +850,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   private static List<PermitAndDenyBdds> toPermitAndDenyBdds(
-      List<BDD> bdds, List<LineAction> actions, BDD ZERO) {
+      List<BDD> bdds, List<LineAction> actions) {
     assert bdds.size() == actions.size();
     return IntStream.range(0, bdds.size())
         .mapToObj(
