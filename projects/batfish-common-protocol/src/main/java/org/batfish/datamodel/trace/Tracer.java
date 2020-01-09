@@ -5,27 +5,27 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Stack;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.TraceEvent;
+import org.batfish.datamodel.trace.TraceNode.Builder;
 
 /** A class for building Traces. */
 public class Tracer {
 
   // invariant: never empty
-  private final Stack<TraceNode> _nodeStack;
+  private final Stack<TraceNode.Builder> _nodeStack;
 
   public Tracer() {
     _nodeStack = new Stack<>();
-    _nodeStack.push(new TraceNode());
+    _nodeStack.push(TraceNode.builder());
   }
 
   public TraceNode getRootNode() {
     checkState(!_nodeStack.isEmpty(), "Trace is missing");
-    return _nodeStack.get(0);
+    return _nodeStack.get(0).build();
   }
 
   /** Set the {@link TraceEvent} for the current trace node. Must not already be set. */
   public void setEvent(@Nonnull TraceEvent traceEvent) {
-    TraceNode currentNode = _nodeStack.peek();
-    checkState(currentNode.getTraceEvent() == null, "TraceNode event already set.");
+    TraceNode.Builder currentNode = _nodeStack.peek();
     currentNode.setTraceEvent(traceEvent);
   }
 
@@ -35,7 +35,7 @@ public class Tracer {
    */
   public void newSubTrace() {
     // Add new child, set it as current node
-    _nodeStack.push(_nodeStack.peek().createChild());
+    _nodeStack.push(TraceNode.builder());
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */
@@ -43,11 +43,13 @@ public class Tracer {
     // make sure we're ending a subtrace, not the root trace.
     checkState(_nodeStack.size() > 1, "Not in a subTrace");
     // Go up level of a tree, do not delete children
-    _nodeStack.pop();
+    TraceNode child = _nodeStack.pop().build();
+    _nodeStack.peek().addChild(child);
   }
 
   /** Clear the current subtrace. */
   public void resetSubTrace() {
-    _nodeStack.peek().reset();
+    _nodeStack.pop();
+    newSubTrace();
   }
 }

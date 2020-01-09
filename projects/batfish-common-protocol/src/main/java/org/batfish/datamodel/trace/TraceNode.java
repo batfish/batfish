@@ -1,18 +1,47 @@
 package org.batfish.datamodel.trace;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.TraceEvent;
 
 /** A node in a trace */
+@ParametersAreNonnullByDefault
 public final class TraceNode {
-  private @Nullable TraceEvent _traceEvent;
+  /** Builder for {@link TraceNode}. */
+  public static class Builder {
+    private @Nullable TraceEvent _traceEvent;
+    private final List<TraceNode> _children = new ArrayList<>();
+
+    public Builder setTraceEvent(TraceEvent traceEvent) {
+      _traceEvent = traceEvent;
+      return this;
+    }
+
+    public Builder addChild(TraceNode child) {
+      _children.add(child);
+      return this;
+    }
+
+    public TraceNode build() {
+      //      checkState(_traceEvent != null, "traceEvent cannot be null");
+      return new TraceNode(_traceEvent, _children);
+    }
+  }
+
+  private final @Nullable TraceEvent _traceEvent;
   private final @Nonnull List<TraceNode> _children;
 
-  TraceNode() {
-    _children = new ArrayList<>();
+  TraceNode(@Nullable TraceEvent traceEvent, List<TraceNode> children) {
+    _traceEvent = traceEvent;
+    _children = ImmutableList.copyOf(children);
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   @Nonnull
@@ -20,25 +49,8 @@ public final class TraceNode {
     return _children;
   }
 
-  @Nullable
+  @Nonnull
   public TraceEvent getTraceEvent() {
     return _traceEvent;
-  }
-
-  void setTraceEvent(@Nonnull TraceEvent traceEvent) {
-    _traceEvent = traceEvent;
-  }
-
-  /** Adds a new child to this node trace node. Returns pointer to given node */
-  TraceNode createChild() {
-    TraceNode child = new TraceNode();
-    _children.add(child);
-    return child;
-  }
-
-  /** Clears all children from this node */
-  void reset() {
-    _traceEvent = null;
-    _children.clear();
   }
 }
