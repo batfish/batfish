@@ -1,6 +1,7 @@
 package org.batfish.question.comparefilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.bdd.PermitAndDenyBdds.takeDifferentActions;
 import static org.batfish.question.FilterQuestionUtils.getSpecifiedFilters;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -14,7 +15,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -23,10 +23,10 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
@@ -166,73 +166,58 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> currentAcls = currentConfig.getIpAccessLists();
     Map<String, IpSpace> currentIpSpaces = currentConfig.getIpSpaces();
     IpAccessList currentAcl = currentAcls.get(filtername);
-    List<LineAction> currentActions =
-        currentAcl.getLines().stream()
-            // TODO Better handle line types without concrete actions
-            .map(l -> l instanceof ExprAclLine ? ((ExprAclLine) l).getAction() : null)
-            .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
     IpAccessListToBdd currentToBdd =
         new IpAccessListToBddImpl(bddPacket, currentSrcMgr, currentAcls, currentIpSpaces);
-    List<BDD> currentBdds = currentToBdd.reachAndMatchLines(currentAcl);
+    List<PermitAndDenyBdds> currentBdds = currentToBdd.reachAndMatchLines(currentAcl);
 
     Configuration referenceConfig = referenceContext.getConfigs().get(hostname);
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
-    ActionGetter actionGetter = new ActionGetter(false);
-    List<LineAction> referenceActions =
-        referenceAcl.getLines().stream()
-            .map(actionGetter::visit)
-            .collect(ImmutableList.toImmutableList());
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);
-    List<BDD> referenceBdds =
+    List<PermitAndDenyBdds> referenceBdds =
         new IpAccessListToBddImpl(bddPacket, referenceSrcMgr, referenceAcls, referenceIpSpaces)
             .reachAndMatchLines(referenceAcl);
-    return compareFilters(
-        hostname, filtername, currentActions, currentBdds, referenceActions, referenceBdds);
+    return compareFilters(hostname, filtername, currentBdds, referenceBdds);
   }
 
   @VisibleForTesting
   static Stream<FilterDifference> compareFilters(
       String hostname,
       String filtername,
-      List<LineAction> currentActions,
-      List<BDD> currentLineBdds,
-      List<LineAction> referenceActions,
-      List<BDD> referenceLineBdds) {
+      List<PermitAndDenyBdds> currentLineBdds,
+      List<PermitAndDenyBdds> referenceLineBdds) {
     checkArgument(!currentLineBdds.isEmpty());
     checkArgument(!referenceLineBdds.isEmpty());
-    checkArgument(currentActions.size() == currentLineBdds.size() - 1);
-    checkArgument(referenceActions.size() == referenceLineBdds.size() - 1);
-    assert currentLineBdds.stream().reduce(BDD::or).get().isOne();
-    assert referenceLineBdds.stream().reduce(BDD::or).get().isOne();
+    assert currentLineBdds.stream()
+        .map(PermitAndDenyBdds::getMatchBdd)
+        .reduce(BDD::or)
+        .get()
+        .isOne();
+    assert referenceLineBdds.stream()
+        .map(PermitAndDenyBdds::getMatchBdd)
+        .reduce(BDD::or)
+        .get()
+        .isOne();
 
     return IntStream.range(0, currentLineBdds.size())
         .mapToObj(
             i -> {
-              @Nullable
-              LineAction currentAction =
-                  i < currentActions.size() ? currentActions.get(i) : LineAction.DENY;
-              BDD currentLineBdd = currentLineBdds.get(i);
+              PermitAndDenyBdds currentLineBdd = currentLineBdds.get(i);
               return IntStream.range(0, referenceLineBdds.size())
-                  .filter(
-                      j -> {
-                        @Nullable
-                        LineAction referenceAction =
-                            j < referenceActions.size() ? referenceActions.get(j) : LineAction.DENY;
-                        return referenceAction != currentAction;
-                      })
-                  .filter(j -> currentLineBdd.andSat(referenceLineBdds.get(j)))
+                  // Filter to reference lines that cover packets in common with the current line
+                  // but take different actions on them
+                  .filter(j -> takeDifferentActions(currentLineBdd, referenceLineBdds.get(j)))
                   .mapToObj(
                       j ->
                           new FilterDifference(
                               hostname,
                               filtername,
-                              i < currentActions.size() ? i : null,
-                              j < referenceActions.size() ? j : null));
+                              i < currentLineBdds.size() - 1 ? i : null,
+                              j < referenceLineBdds.size() - 1 ? j : null));
             })
         .flatMap(Function.identity());
   }
