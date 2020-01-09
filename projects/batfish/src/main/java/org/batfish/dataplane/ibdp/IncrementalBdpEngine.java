@@ -26,6 +26,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -67,6 +69,8 @@ class IncrementalBdpEngine {
   private final BatfishLogger _bfLogger;
   private final IncrementalDataPlaneSettings _settings;
 
+  private static final Logger _logger = LogManager.getLogger();
+
   IncrementalBdpEngine(IncrementalDataPlaneSettings settings, BatfishLogger logger) {
     _settings = settings;
     _bfLogger = logger;
@@ -82,6 +86,7 @@ class IncrementalBdpEngine {
       _bfLogger.resetTimer();
       IncrementalDataPlane.Builder dpBuilder = IncrementalDataPlane.builder();
       _bfLogger.info("\nComputing Data Plane using iBDP\n");
+      _logger.info("Computing Data Plane");
 
       // TODO: switch to topologies and owners from TopologyProvider
       Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
@@ -121,6 +126,7 @@ class IncrementalBdpEngine {
       int topologyIterations = 0;
       TopologyContext currentTopologyContext = initialTopologyContext;
       boolean converged = false;
+      _logger.info("Begin dataplane topology fixed-point");
       while (!converged && topologyIterations++ < MAX_TOPOLOGY_ITERATIONS) {
         try (ActiveSpan iterSpan =
             GlobalTracer.get()
@@ -236,6 +242,7 @@ class IncrementalBdpEngine {
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .build();
       _bfLogger.printElapsedTime();
+      _logger.info("Data Plane computation complete");
       return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);
     }
   }
