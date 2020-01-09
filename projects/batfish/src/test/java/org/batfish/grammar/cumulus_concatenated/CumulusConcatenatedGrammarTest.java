@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -31,19 +32,26 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpConfederation;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -134,6 +142,12 @@ public class CumulusConcatenatedGrammarTest {
     String canonicalHostname = hostname.toLowerCase();
     assertThat(configs, hasEntry(equalTo(canonicalHostname), hasHostname(canonicalHostname)));
     return configs.get(canonicalHostname);
+  }
+
+  private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
+    Bgpv4Route.Builder builder = route.toBuilder();
+    assertTrue(routingPolicy.process(route, builder, Direction.IN));
+    return builder.build();
   }
 
   @Test
@@ -303,5 +317,38 @@ public class CumulusConcatenatedGrammarTest {
             .iterator()
             .next(),
         equalTo(new BgpPeerConfigId("n1", vrf, Prefix.parse("10.0.0.2/32"), false)));
+  }
+
+  @Test
+  public void testSetCommunityAdditive() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("set_community_additive_test");
+    RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_SET_ADDITIVE_TEST_1");
+    RoutingPolicy rp2 = c.getRoutingPolicies().get("RM_SET_ADDITIVE_TEST_2");
+    RoutingPolicy rp3 = c.getRoutingPolicies().get("RM_SET_ADDITIVE_TEST_3");
+    Bgpv4Route inRoute =
+        base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(4, 4))).build();
+    Bgpv4Route outputRoute1 = processRouteIn(rp1, inRoute);
+    Bgpv4Route outputRoute2 = processRouteIn(rp2, inRoute);
+    Bgpv4Route outputRoute3 = processRouteIn(rp3, inRoute);
+    assertThat(
+        outputRoute1.getCommunities(),
+        contains(
+            StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
+    assertThat(outputRoute2.getCommunities(), contains(StandardCommunity.of(1, 1)));
+    assertThat(
+        outputRoute3.getCommunities(),
+        contains(
+            StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
   }
 }
