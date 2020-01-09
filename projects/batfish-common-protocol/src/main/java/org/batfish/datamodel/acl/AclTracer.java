@@ -1,17 +1,14 @@
 package org.batfish.datamodel.acl;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Traverser;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpaceLine;
@@ -25,6 +22,8 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.trace.Tracer;
+import org.batfish.datamodel.trace.Tracer.TraceNode;
 import org.batfish.datamodel.visitors.IpSpaceDescriber;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
@@ -52,7 +51,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   private final Map<IpSpace, String> _ipSpaceNames;
 
-  private Stack<TraceNode> _nodeStack = new Stack<>();
+  private final @Nonnull Tracer _tracer;
 
   public AclTracer(
       @Nonnull Flow flow,
@@ -63,7 +62,7 @@ public final class AclTracer extends AclLineEvaluator {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceNames = new IdentityHashMap<>();
     _ipSpaceMetadata = new IdentityHashMap<>();
-    _nodeStack.push(new TraceNode());
+    _tracer = new Tracer();
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
     namedIpSpaceMetadata.forEach(
         (name, ipSpaceMetadata) -> _ipSpaceMetadata.put(namedIpSpaces.get(name), ipSpaceMetadata));
@@ -94,12 +93,11 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   public @Nonnull AclTrace getTrace() {
-    checkState(!_nodeStack.isEmpty(), "Trace is missing");
-    TraceNode root = _nodeStack.get(0);
+    TraceNode root = _tracer.getRootNode();
     return new AclTrace(
         ImmutableList.copyOf(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(root))
             .stream()
-            .map(TraceNode::getEvent)
+            .map(TraceNode::getTraceEvent)
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -435,21 +433,17 @@ public final class AclTracer extends AclLineEvaluator {
    * structure (even though said structure can still be part of a single ACL line.
    */
   public void newTrace() {
-    // Add new child, set it as current node
-    _nodeStack.push(_nodeStack.peek().addChild());
+    _tracer.newSubTrace();
   }
 
   /** End a trace: indicates that tracing of a structure is finished. */
   public void endTrace() {
-    // Go up level of a tree, do not delete children
-    _nodeStack.pop();
+    _tracer.endSubTrace();
   }
 
   /** Set the event of the current node. Precondition: current node's event is null. */
   private void setEvent(TraceEvent event) {
-    TraceNode currentNode = _nodeStack.peek();
-    checkState(currentNode.getEvent() == null, "Clobbered current node's event");
-    currentNode.setEvent(event);
+    _tracer.setEvent(event);
   }
 
   /**
@@ -458,47 +452,6 @@ public final class AclTracer extends AclLineEvaluator {
    */
   public void nextLine() {
     // All previous children are of no interest since they resulted in a no-match on previous line
-    _nodeStack.peek().clearChildren();
-  }
-
-  /** For building trace event trees */
-  private static final class TraceNode {
-    private @Nullable TraceEvent _event;
-    private final @Nonnull List<TraceNode> _children;
-
-    private TraceNode() {
-      this(null, new ArrayList<>());
-    }
-
-    private TraceNode(@Nullable TraceEvent event, @Nonnull List<TraceNode> children) {
-      _event = event;
-      _children = children;
-    }
-
-    @Nonnull
-    private List<TraceNode> getChildren() {
-      return _children;
-    }
-
-    @Nullable
-    private TraceEvent getEvent() {
-      return _event;
-    }
-
-    private void setEvent(@Nonnull TraceEvent event) {
-      _event = event;
-    }
-
-    /** Adds a new child to this node trace node. Returns pointer to given node */
-    private TraceNode addChild() {
-      TraceNode child = new TraceNode();
-      _children.add(child);
-      return child;
-    }
-
-    /** Clears all children from this node */
-    private void clearChildren() {
-      _children.clear();
-    }
+    _tracer.resetSubTrace();
   }
 }
