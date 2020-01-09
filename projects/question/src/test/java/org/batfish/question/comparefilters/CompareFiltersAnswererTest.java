@@ -1,8 +1,8 @@
 package org.batfish.question.comparefilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.LineAction.DENY;
-import static org.batfish.datamodel.LineAction.PERMIT;
+import static org.batfish.datamodel.acl.ActionGetter.LineBehavior.DENY;
+import static org.batfish.datamodel.acl.ActionGetter.LineBehavior.PERMIT;
 import static org.batfish.question.comparefilters.CompareFiltersAnswerer.compareFilters;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.ActionGetter.LineBehavior;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,9 +30,9 @@ public final class CompareFiltersAnswererTest {
   }
 
   private static List<FilterDifference> compare(
-      List<LineAction> currentActions,
+      List<LineBehavior> currentActions,
       List<BDD> currentBdds,
-      List<LineAction> referenceActions,
+      List<LineBehavior> referenceActions,
       List<BDD> referenceBdds) {
     return compareFilters(
             HOSTNAME, FILTER, currentActions, currentBdds, referenceActions, referenceBdds)
@@ -70,10 +70,10 @@ public final class CompareFiltersAnswererTest {
 
     // Representation of an empty Acl.
     List<BDD> emptyAclBdds = ImmutableList.of(_pkt.getFactory().one());
-    List<LineAction> emptyAclActions = ImmutableList.of();
+    List<LineBehavior> emptyAclActions = ImmutableList.of();
 
-    List<LineAction> pppp = ImmutableList.of(PERMIT, PERMIT, PERMIT, PERMIT);
-    List<LineAction> dpdp = ImmutableList.of(DENY, PERMIT, DENY, PERMIT);
+    List<LineBehavior> pppp = ImmutableList.of(PERMIT, PERMIT, PERMIT, PERMIT);
+    List<LineBehavior> dpdp = ImmutableList.of(DENY, PERMIT, DENY, PERMIT);
 
     // If nothing has changed, return no differences
     assertThat(compare(pppp, zeroBdds, pppp, zeroBdds), empty());

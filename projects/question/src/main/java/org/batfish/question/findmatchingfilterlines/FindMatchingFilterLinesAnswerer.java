@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -41,6 +40,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.ActionGetter.LineBehavior;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -79,25 +79,6 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
               false));
 
   private static final Map<String, ColumnMetadata> METADATA_MAP = toColumnMap(COLUMN_METADATA);
-
-  /** Possible actions for the {@link FindMatchingFilterLinesAnswerer#COL_ACTION} column */
-  enum ReportedAction {
-    PERMIT,
-    DENY,
-    VARIABLE;
-
-    static ReportedAction fromLineAction(@Nonnull LineAction lineAction) {
-      switch (lineAction) {
-        case PERMIT:
-          return PERMIT;
-        case DENY:
-          return DENY;
-        default:
-          throw new IllegalArgumentException(
-              String.format("Unrecognized ACL line action %s", lineAction));
-      }
-    }
-  }
 
   FindMatchingFilterLinesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -171,7 +152,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
         .flatMap(
             aclName -> {
               List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
-              return getReportedActions(aclLines, headerSpaceBdd, bddConverter, action).entrySet()
+              return getBehaviorToReport(aclLines, headerSpaceBdd, bddConverter, action).entrySet()
                   .stream()
                   .map(
                       e -> {
@@ -188,41 +169,41 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
   }
 
   /**
-   * Returns a map of line index in {@code aclLines} to action to report for that line. Only
+   * Returns a map of line index in {@code aclLines} to behavior to report for that line. Only
    * includes lines that should be reported.
    */
   @VisibleForTesting
-  static SortedMap<Integer, ReportedAction> getReportedActions(
+  static SortedMap<Integer, LineBehavior> getBehaviorToReport(
       List<AclLine> aclLines,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
       @Nullable Action action) {
-    ReportedActionFinder actionFinder =
-        new ReportedActionFinder(bddConverter, action, headerSpaceBdd);
-    ImmutableSortedMap.Builder<Integer, ReportedAction> actionsToReport =
+    LineBehaviorFinder behaviorFinder =
+        new LineBehaviorFinder(bddConverter, action, headerSpaceBdd);
+    ImmutableSortedMap.Builder<Integer, LineBehavior> actionsToReport =
         ImmutableSortedMap.naturalOrder();
     for (int i = 0; i < aclLines.size(); i++) {
-      ReportedAction reportedAction = actionFinder.visit(aclLines.get(i));
-      if (reportedAction != null) {
-        actionsToReport.put(i, reportedAction);
+      LineBehavior lineBehavior = behaviorFinder.visit(aclLines.get(i));
+      if (lineBehavior != null) {
+        actionsToReport.put(i, lineBehavior);
       }
     }
     return actionsToReport.build();
   }
 
   /**
-   * Returns the line's action if the answer should include the visited line based on provided
+   * Returns the line's behavior if the answer should include the visited line based on provided
    * parameters, otherwise null.
    */
   @VisibleForTesting
-  static final class ReportedActionFinder implements GenericAclLineVisitor<ReportedAction> {
+  static final class LineBehaviorFinder implements GenericAclLineVisitor<LineBehavior> {
     private final IpAccessListToBdd _ipAccessListToBdd;
 
     // Restrictions on lines to include, based on question parameters
     @Nullable private final Action _action;
     private final BDD _headerSpaceBdd;
 
-    ReportedActionFinder(
+    LineBehaviorFinder(
         IpAccessListToBdd ipAccessListToBdd, @Nullable Action action, BDD headerSpaceBdd) {
       _ipAccessListToBdd = ipAccessListToBdd;
       _action = action;
@@ -236,36 +217,36 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     }
 
     @Override
-    public ReportedAction visitAclAclLine(AclAclLine aclAclLine) {
+    public LineBehavior visitAclAclLine(AclAclLine aclAclLine) {
       PermitAndDenyBdds permitAndDenyBdds = _ipAccessListToBdd.toPermitAndDenyBdds(aclAclLine);
       boolean permitsAnything = _headerSpaceBdd.andSat(permitAndDenyBdds.getPermitBdd());
       boolean deniesAnything = _headerSpaceBdd.andSat(permitAndDenyBdds.getDenyBdd());
 
       if (permitsAnything && deniesAnything) {
         // The line can both permit and deny packets within the specified headerspace.
-        // Don't care what action the question specifies; this line matches with variable action.
-        return ReportedAction.VARIABLE;
+        // Don't care what action the question specifies; this line can perform either action.
+        return LineBehavior.VARIABLE;
       }
 
       // The line either doesn't match the headerspace or only takes one action on matching packets.
       // In the latter case, report the line if question says to include that action.
       if (permitsAnything && actionMatches(LineAction.PERMIT)) {
-        return ReportedAction.PERMIT;
+        return LineBehavior.PERMIT;
       } else if (deniesAnything && actionMatches(LineAction.DENY)) {
-        return ReportedAction.DENY;
+        return LineBehavior.DENY;
       }
       return null;
     }
 
     @Override
-    public ReportedAction visitExprAclLine(ExprAclLine exprAclLine) {
+    public LineBehavior visitExprAclLine(ExprAclLine exprAclLine) {
       if (!actionMatches(exprAclLine.getAction())) {
         return null;
       }
       // If there is any overlap between the header space BDD and this line, include it
       BDD lineBdd = _ipAccessListToBdd.toBdd(exprAclLine.getMatchCondition());
       return _headerSpaceBdd.andSat(lineBdd)
-          ? ReportedAction.fromLineAction(exprAclLine.getAction())
+          ? LineBehavior.fromLineAction(exprAclLine.getAction())
           : null;
     }
   }

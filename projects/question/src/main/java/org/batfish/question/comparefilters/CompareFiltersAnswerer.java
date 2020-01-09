@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -30,6 +29,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.ActionGetter;
+import org.batfish.datamodel.acl.ActionGetter.LineBehavior;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -132,7 +132,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .getLines()
               .get(index);
       ret.put(COL_CURRENT_LINE, index)
-          .put(COL_CURRENT_ACTION, ActionGetter.getAction(line))
+          .put(COL_CURRENT_ACTION, ActionGetter.getLineBehavior(line))
           .put(COL_CURRENT_NAME, line.getName());
     }
 
@@ -164,9 +164,9 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> currentAcls = currentConfig.getIpAccessLists();
     Map<String, IpSpace> currentIpSpaces = currentConfig.getIpSpaces();
     IpAccessList currentAcl = currentAcls.get(filtername);
-    List<LineAction> currentActions =
+    List<LineBehavior> currentActions =
         currentAcl.getLines().stream()
-            .map(ActionGetter::getAction)
+            .map(ActionGetter::getLineBehavior)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
@@ -178,9 +178,9 @@ public class CompareFiltersAnswerer extends Answerer {
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
-    List<LineAction> referenceActions =
+    List<LineBehavior> referenceActions =
         referenceAcl.getLines().stream()
-            .map(ActionGetter::getAction)
+            .map(ActionGetter::getLineBehavior)
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);
@@ -195,9 +195,9 @@ public class CompareFiltersAnswerer extends Answerer {
   static Stream<FilterDifference> compareFilters(
       String hostname,
       String filtername,
-      List<LineAction> currentActions,
+      List<LineBehavior> currentActions,
       List<BDD> currentLineBdds,
-      List<LineAction> referenceActions,
+      List<LineBehavior> referenceActions,
       List<BDD> referenceLineBdds) {
     checkArgument(!currentLineBdds.isEmpty());
     checkArgument(!referenceLineBdds.isEmpty());
@@ -209,16 +209,16 @@ public class CompareFiltersAnswerer extends Answerer {
     return IntStream.range(0, currentLineBdds.size())
         .mapToObj(
             i -> {
-              @Nullable
-              LineAction currentAction =
-                  i < currentActions.size() ? currentActions.get(i) : LineAction.DENY;
+              LineBehavior currentAction =
+                  i < currentActions.size() ? currentActions.get(i) : LineBehavior.DENY;
               BDD currentLineBdd = currentLineBdds.get(i);
               return IntStream.range(0, referenceLineBdds.size())
                   .filter(
                       j -> {
-                        @Nullable
-                        LineAction referenceAction =
-                            j < referenceActions.size() ? referenceActions.get(j) : LineAction.DENY;
+                        LineBehavior referenceAction =
+                            j < referenceActions.size()
+                                ? referenceActions.get(j)
+                                : LineBehavior.DENY;
                         return referenceAction != currentAction;
                       })
                   .filter(j -> currentLineBdd.andSat(referenceLineBdds.get(j)))
