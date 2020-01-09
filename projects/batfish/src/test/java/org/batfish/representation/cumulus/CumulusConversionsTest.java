@@ -96,6 +96,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -526,15 +527,15 @@ public final class CumulusConversionsTest {
 
   /**
    * Test that networks statements at BGP VRF level (outside of ipv4 address family stanza) are
-   * accounted for
+   * accounted for when the address family is active
    */
   @Test
-  public void testToBgpProcess_vrfLevelNetworks() {
+  public void testToBgpProcess_vrfLevelNetworks_activeV4Family() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
-    Vrf viVrf = nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
 
     // setup VS model
     CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
@@ -558,17 +559,64 @@ public final class CumulusConversionsTest {
     RoutingPolicy bgpCommonExportPolicy =
         viConfig.getRoutingPolicies().get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
 
-    assertThat(
+    assertEquals(
         ((Conjunction)
                 ((Disjunction) ((If) bgpCommonExportPolicy.getStatements().get(0)).getGuard())
                     .getDisjuncts()
                     .get(1))
             .getConjuncts()
             .get(0),
-        equalTo(
-            new MatchPrefixSet(
-                DestinationNetwork.instance(),
-                new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix))))));
+        new MatchPrefixSet(
+            DestinationNetwork.instance(),
+            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+  }
+
+  /**
+   * Test that networks statements at BGP VRF level (outside of ipv4 address family stanza) are
+   * ignored when the address family is not active
+   */
+  @Test
+  public void testToBgpProcess_vrfLevelNetworks_inactiveV4family() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+
+    // setup VS model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    BgpProcess bgpProcess = new BgpProcess();
+    vsConfig.setBgpProcess(bgpProcess);
+    vsConfig.setConfiguration(viConfig);
+
+    // setup BgpVrf
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    vrf.setRouterId(Ip.parse("1.1.1.1"));
+    vrf.addNetwork(prefix);
+    vrf.setDefaultIpv4Unicast(false);
+
+    // the method under test
+    org.batfish.datamodel.BgpProcess viBgp =
+        toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+
+    // generation policy exists
+    assertFalse(viBgp.getOriginationSpace().containsPrefix(prefix));
+
+    RoutingPolicy bgpCommonExportPolicy =
+        viConfig.getRoutingPolicies().get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+
+    // only match protocol statement
+    assertEquals(
+        ((Disjunction) ((If) bgpCommonExportPolicy.getStatements().get(0)).getGuard())
+            .getDisjuncts()
+            .size(),
+        1);
+    assertEquals(
+        ((Disjunction) ((If) bgpCommonExportPolicy.getStatements().get(0)).getGuard())
+            .getDisjuncts()
+            .get(0),
+        new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
   }
 
   @Test

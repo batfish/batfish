@@ -31,6 +31,10 @@ public class BgpVrf implements Serializable {
     _networks = ImmutableMap.of();
   }
 
+  public boolean isIpv4UnicastActive() {
+    return _defaultIpv4Unicast || (_ipv4Unicast != null);
+  }
+
   public boolean getDefaultIpv4Unicast() {
     return _defaultIpv4Unicast;
   }

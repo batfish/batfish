@@ -388,15 +388,17 @@ public final class CumulusConversions {
       newProc.setConfederation(new BgpConfederation(confederationId, ImmutableSet.of(asn)));
     }
 
-    BgpIpv4UnicastAddressFamily ipv4Unicast =
-        firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
+    if (bgpVrf.isIpv4UnicastActive()) {
+      BgpIpv4UnicastAddressFamily ipv4Unicast =
+          firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
 
-    // Add networks from network statements to new process's origination space
-    Sets.union(bgpVrf.getNetworks().keySet(), ipv4Unicast.getNetworks().keySet())
-        .forEach(newProc::addToOriginationSpace);
+      // Add networks from network statements to new process's origination space
+      Sets.union(bgpVrf.getNetworks().keySet(), ipv4Unicast.getNetworks().keySet())
+          .forEach(newProc::addToOriginationSpace);
 
-    // Generate aggregate routes
-    generateGeneratedRoutes(c, c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks());
+      // Generate aggregate routes
+      generateGeneratedRoutes(c, c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks());
+    }
 
     generateBgpCommonExportPolicy(c, vrfName, bgpVrf, vsConfig.getRouteMaps());
 
@@ -816,8 +818,8 @@ public final class CumulusConversions {
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     // we don't need to process redist policies and network statements (inside v4 address family or
-    // bgp-vrf-level) if v4 address family is not turned on
-    if (!bgpVrf.getDefaultIpv4Unicast() && bgpVrf.getIpv4Unicast() == null) {
+    // bgp-vrf-level) if v4 address family is not active
+    if (!bgpVrf.isIpv4UnicastActive()) {
       return exportConditions;
     }
 
