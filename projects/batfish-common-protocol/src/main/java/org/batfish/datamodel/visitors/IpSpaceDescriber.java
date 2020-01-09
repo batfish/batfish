@@ -15,14 +15,14 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.trace.Tracer;
 
 public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
 
   private final Map<IpSpace, IpSpaceMetadata> _ipSpaceMetadata;
   private final Map<String, IpSpace> _namedIpSpaces;
 
-  public IpSpaceDescriber(Map<IpSpace, IpSpaceMetadata> ipSpaceMetadata, Map<String, IpSpace> namedIpSpaces) {
+  public IpSpaceDescriber(
+      Map<IpSpace, IpSpaceMetadata> ipSpaceMetadata, Map<String, IpSpace> namedIpSpaces) {
     _ipSpaceMetadata = ipSpaceMetadata;
     _namedIpSpaces = namedIpSpaces;
   }
