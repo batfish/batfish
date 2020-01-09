@@ -18,9 +18,8 @@ route-map permit-all permit 10
 !
 !
 router bgp 1
- bgp router-id 10.1.1.1
+ router-id 10.1.1.1
  neighbor 10.0.12.2 remote-as 2
- neighbor 10.0.12.2 activate
  neighbor 10.0.12.2 route-map deny-all in
  neighbor 10.0.12.2 route-map permit-all out
  network 0.0.0.0 mask 0.0.0.0
