@@ -4,12 +4,14 @@ import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.findBlockingLinesForLine;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.findBlockingPropsForLine;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.getSpecifiedFilters;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,8 +23,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
@@ -48,6 +53,7 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclSpecs;
+import org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.BlockingProperties;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
@@ -68,6 +74,9 @@ public class FilterLineReachabilityAnswererTest {
 
   private static final ExprAclLine UNMATCHABLE =
       ExprAclLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build();
+
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final BDD ZERO = PKT.getFactory().zero();
 
   @Before
   public void setup() {
@@ -619,16 +628,15 @@ public class FilterLineReachabilityAnswererTest {
 
   @Test
   public void testSmallBlockersIgnored() {
-    BDDPacket p = new BDDPacket();
     // deny IP <ddos src> any
-    BDD ddos1 = p.getSrcIp().value(Ip.parse("1.2.3.1").asLong());
-    BDD ddos2 = p.getSrcIp().value(Ip.parse("1.2.3.2").asLong());
-    BDD ddos3 = p.getSrcIp().value(Ip.parse("1.2.3.3").asLong());
+    BDD ddos1 = PKT.getSrcIp().value(Ip.parse("1.2.3.1").asLong());
+    BDD ddos2 = PKT.getSrcIp().value(Ip.parse("1.2.3.2").asLong());
+    BDD ddos3 = PKT.getSrcIp().value(Ip.parse("1.2.3.3").asLong());
     // permit tcp any any eq ssh
-    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP);
-    BDD ssh = tcp.and(p.getDstPort().value(22));
+    BDD tcp = PKT.getIpProtocol().value(IpProtocol.TCP);
+    BDD ssh = tcp.and(PKT.getDstPort().value(22));
     // permit tcp any DST_IP eq ssh
-    BDD selectiveSSH = ssh.and(p.getDstIp().value(Ip.parse("2.3.4.5").asLong()));
+    BDD selectiveSSH = ssh.and(PKT.getDstIp().value(Ip.parse("2.3.4.5").asLong()));
 
     /*
      * [deny|permit] ip   1.2.3.1  any
@@ -642,18 +650,23 @@ public class FilterLineReachabilityAnswererTest {
 
     // last line (#4) is really blocked by (#3). Also report #0 as first line with diff action.
     List<LineAction> actions = ImmutableList.of(DENY, DENY, DENY, PERMIT, PERMIT);
-    assertThat(findBlockingLinesForLine(4, actions, bdds), contains(0, 3));
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    BlockingProperties blockingProperties = findBlockingPropsForLine(4, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0, 3));
+    assertTrue(blockingProperties.getDiffAction());
 
     // if there are no lines with different actions, only report #3.
     List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT, PERMIT, PERMIT);
-    assertThat(findBlockingLinesForLine(4, sameActions, bdds), contains(3));
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    blockingProperties = findBlockingPropsForLine(4, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(3));
+    assertFalse(blockingProperties.getDiffAction());
   }
 
   @Test
   public void testPartialOverlaps() {
-    BDDPacket p = new BDDPacket();
-    BDD first32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
-    BDD second32 = p.getDstIp().value(Ip.parse("1.2.3.5").asLong());
+    BDD first32 = PKT.getDstIp().value(Ip.parse("1.2.3.4").asLong());
+    BDD second32 = PKT.getDstIp().value(Ip.parse("1.2.3.5").asLong());
     BDD slash31 = first32.or(second32);
 
     /*
@@ -665,18 +678,23 @@ public class FilterLineReachabilityAnswererTest {
     List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
 
     // last line (#2) is blocked by both first two lines.
-    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(0, 1));
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0, 1));
+    assertTrue(blockingProperties.getDiffAction());
 
     //  Action should not matter.
     List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT);
-    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(0, 1));
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0, 1));
+    assertFalse(blockingProperties.getDiffAction());
   }
 
   @Test
   public void testPartialOverlapsDominateFull() {
-    BDDPacket p = new BDDPacket();
-    BDD first32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
-    BDD second32 = p.getDstIp().value(Ip.parse("1.2.3.5").asLong());
+    BDD first32 = PKT.getDstIp().value(Ip.parse("1.2.3.4").asLong());
+    BDD second32 = PKT.getDstIp().value(Ip.parse("1.2.3.5").asLong());
     BDD slash31 = first32.or(second32);
 
     /*
@@ -684,50 +702,60 @@ public class FilterLineReachabilityAnswererTest {
      * deny   ip   any  any
      * permit ip   any  1.2.3.5/32
      */
-    List<BDD> bdds = ImmutableList.of(slash31, p.getFactory().one(), second32);
+    List<BDD> bdds = ImmutableList.of(slash31, PKT.getFactory().one(), second32);
     List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
 
     // last line (#2) is blocked only by #0. #1 is ignored since it terminates no flows.
-    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(0));
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0));
+    assertFalse(blockingProperties.getDiffAction());
   }
 
   @Test
   public void testDifferentActionPreservation() {
-    BDDPacket p = new BDDPacket();
-    BDD slash32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
-    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP);
-    BDD not80 = tcp.and(p.getDstPort().value(80).not());
+    BDD slash32 = PKT.getDstIp().value(Ip.parse("1.2.3.4").asLong());
+    BDD tcp = PKT.getIpProtocol().value(IpProtocol.TCP);
+    BDD not80 = tcp.and(PKT.getDstPort().value(80).not());
 
     /*
      * [deny|permit]   tcp any 1.2.3.4/32 neq 80
      * [permit|deny]   ip  any any
      * permit          ip  any 1.2.3.4/32
      */
-    List<BDD> bdds = ImmutableList.of(slash32.and(not80), p.getFactory().one(), slash32);
+    List<BDD> bdds = ImmutableList.of(slash32.and(not80), PKT.getFactory().one(), slash32);
     List<LineAction> actions = ImmutableList.of(DENY, PERMIT, PERMIT);
 
     // last line (#2) is blocked entirely by #1. But #0 is included since it matches with different
     // action.
-    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(0, 1));
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0, 1));
+    assertTrue(blockingProperties.getDiffAction());
 
     // #0 is not included when all lines have same action.
     List<LineAction> sameActions = ImmutableList.of(PERMIT, PERMIT, PERMIT);
-    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(1));
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(1));
+    assertFalse(blockingProperties.getDiffAction());
 
     // #0 is not included despite different action when #1 already has different action.
     List<LineAction> actionsAndCover = ImmutableList.of(DENY, DENY, PERMIT);
-    assertThat(findBlockingLinesForLine(2, actionsAndCover, bdds), contains(1));
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, actionsAndCover, ZERO);
+    blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(1));
+    assertTrue(blockingProperties.getDiffAction());
   }
 
   // This is really a documentation test for a case where we might want #0 to be reported, but
   // it won't be.
   @Test
   public void testSameActionNotReported() {
-    BDDPacket p = new BDDPacket();
-    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP);
-    BDD tcpEstablished = p.getTcpAck().or(p.getTcpRst());
-    BDD slash32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
-    BDD port80 = p.getDstPort().value(80);
+    BDD tcp = PKT.getIpProtocol().value(IpProtocol.TCP);
+    BDD tcpEstablished = PKT.getTcpAck().or(PKT.getTcpRst());
+    BDD slash32 = PKT.getDstIp().value(Ip.parse("1.2.3.4").asLong());
+    BDD port80 = PKT.getDstPort().value(80);
 
     /*
      * permit tcp any any established   ! means ACK or RST is true.
@@ -740,10 +768,71 @@ public class FilterLineReachabilityAnswererTest {
     // last line (#2) is blocked entirely by #1. Since #1 has a different action, and even though #0
     // matches many packets, we will not include #0 independent of action of #0.
     List<LineAction> actions = ImmutableList.of(PERMIT, DENY, PERMIT);
-    assertThat(findBlockingLinesForLine(2, actions, bdds), contains(1));
+    List<PermitAndDenyBdds> permitAndDenyBdds = toPermitAndDenyBdds(bdds, actions, ZERO);
+    BlockingProperties blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(1));
+    assertTrue(blockingProperties.getDiffAction());
 
     List<LineAction> sameActions = ImmutableList.of(DENY, DENY, PERMIT);
-    assertThat(findBlockingLinesForLine(2, sameActions, bdds), contains(1));
+    permitAndDenyBdds = toPermitAndDenyBdds(bdds, sameActions, ZERO);
+    blockingProperties = findBlockingPropsForLine(2, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(1));
+    assertTrue(blockingProperties.getDiffAction());
+  }
+
+  @Test
+  public void testFindBlockingLines_AclAclLine() {
+    // prefix1 contains ip1; prefix2 contains ip2; the prefixes do not overlap.
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    Prefix prefix1 = Prefix.create(ip1, 24);
+    Prefix prefix2 = Prefix.create(ip2, 24);
+    HeaderSpaceToBDD headerSpaceToBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    BDD ip1Bdd = headerSpaceToBDD.toBDD(HeaderSpace.builder().setDstIps(ip1.toIpSpace()).build());
+    BDD ip2Bdd = headerSpaceToBDD.toBDD(HeaderSpace.builder().setDstIps(ip2.toIpSpace()).build());
+    BDD prefix1Bdd =
+        headerSpaceToBDD.toBDD(HeaderSpace.builder().setDstIps(prefix1.toIpSpace()).build());
+    BDD prefix2Bdd =
+        headerSpaceToBDD.toBDD(HeaderSpace.builder().setDstIps(prefix2.toIpSpace()).build());
+
+    /*
+     * permit prefix1 and deny prefix2
+     * permit ip1 and deny ip2
+     */
+    // Line 1 is blocked by line 0, but should not show different actions since line 0 takes the
+    // same actions that line 1 would take.
+    List<PermitAndDenyBdds> permitAndDenyBdds =
+        ImmutableList.of(
+            new PermitAndDenyBdds(prefix1Bdd, prefix2Bdd), new PermitAndDenyBdds(ip1Bdd, ip2Bdd));
+    BlockingProperties blockingProperties = findBlockingPropsForLine(1, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0));
+    assertFalse(blockingProperties.getDiffAction());
+
+    /*
+     * permit both prefixes
+     * permit ip1 and deny ip2
+     */
+    // Line 1 is blocked, and line 0 takes a different action for ip2 than line 1 would take.
+    permitAndDenyBdds =
+        ImmutableList.of(
+            new PermitAndDenyBdds(prefix1Bdd.or(prefix2Bdd), ZERO),
+            new PermitAndDenyBdds(ip1Bdd, ip2Bdd));
+    blockingProperties = findBlockingPropsForLine(1, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0));
+    assertTrue(blockingProperties.getDiffAction());
+
+    /*
+     * permit prefix1 and deny prefix2
+     * permit both ips
+     */
+    // Line 1 is blocked, and line 0 takes a different action for ip2 than line 1 would take.
+    permitAndDenyBdds =
+        ImmutableList.of(
+            new PermitAndDenyBdds(prefix1Bdd, prefix2Bdd),
+            new PermitAndDenyBdds(ip1Bdd.or(ip2Bdd), ZERO));
+    blockingProperties = findBlockingPropsForLine(1, permitAndDenyBdds);
+    assertThat(blockingProperties.getBlockingLineNums(), contains(0));
+    assertTrue(blockingProperties.getDiffAction());
   }
 
   private List<AclSpecs> getAclSpecs(Set<String> configNames) {
@@ -758,5 +847,19 @@ public class FilterLineReachabilityAnswererTest {
                     : ImmutableSet.of());
     return FilterLineReachabilityAnswerer.getAclSpecs(
         configs, acls, new FilterLineReachabilityRows());
+  }
+
+  private static List<PermitAndDenyBdds> toPermitAndDenyBdds(
+      List<BDD> bdds, List<LineAction> actions, BDD ZERO) {
+    assert bdds.size() == actions.size();
+    return IntStream.range(0, bdds.size())
+        .mapToObj(
+            i -> {
+              LineAction action = actions.get(i);
+              return action == PERMIT
+                  ? new PermitAndDenyBdds(bdds.get(i), ZERO)
+                  : new PermitAndDenyBdds(ZERO, bdds.get(i));
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 }

@@ -41,4 +41,16 @@ public final class PermitAndDenyBdds {
     }
     return _matchBdd;
   }
+
+  /**
+   * Returns a new {@link PermitAndDenyBdds} with BDDs created by subtracting {@code subtrahend}
+   * from this object's BDDs.
+   */
+  public PermitAndDenyBdds diff(BDD subtrahend) {
+    return new PermitAndDenyBdds(_permitBdd.diff(subtrahend), _denyBdd.diff(subtrahend));
+  }
+
+  public boolean isZero() {
+    return _permitBdd.isZero() && _denyBdd.isZero();
+  }
 }
