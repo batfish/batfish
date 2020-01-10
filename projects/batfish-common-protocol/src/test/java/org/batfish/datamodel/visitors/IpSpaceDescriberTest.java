@@ -75,6 +75,17 @@ public final class IpSpaceDescriberTest {
   }
 
   @Test
+  public void testVisitAclIpSpace_annotation() {
+    IpSpace ipSpace =
+        AclIpSpace.builder()
+            .setTraceElement(TraceElement.of("trace"))
+            .thenPermitting(Ip.parse("1.1.1.1").toIpSpace())
+            .thenPermitting(Ip.parse("1.1.1.2").toIpSpace())
+            .build();
+    assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo("trace"));
+  }
+
+  @Test
   public void testVisitEmptyIpSpace() {
     IpSpace ipSpace = EmptyIpSpace.INSTANCE;
     IpSpaceDescriber describerWithMetadata =

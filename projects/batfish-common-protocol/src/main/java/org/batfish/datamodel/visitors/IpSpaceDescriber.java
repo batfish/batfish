@@ -1,6 +1,8 @@
 package org.batfish.datamodel.visitors;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
@@ -30,11 +32,11 @@ public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
   }
 
   private @Nullable String computeMetadataDescription(IpSpace ipSpace) {
-    TraceElement traceElement = _aclTracer.getTraceElement().get(ipSpace);
-    if (traceElement != null) {
-      return traceElement.toString();
-    }
-    return null;
+    return Stream.of(ipSpace.getTraceElement(), _aclTracer.getTraceElement().get(ipSpace))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .map(TraceElement::toString)
+        .orElse(null);
   }
 
   @Override
