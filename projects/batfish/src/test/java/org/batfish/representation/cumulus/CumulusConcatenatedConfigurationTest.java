@@ -92,6 +92,18 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
+  public void testInitializeAllInterfaces_vxlanInterfaces() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    InterfacesInterface iface1 = new InterfacesInterface("vni4001");
+    iface1.setVxlanId(10001);
+    CumulusConcatenatedConfiguration.builder()
+        .addInterfaces(ImmutableMap.of(iface1.getName(), iface1))
+        .build()
+        .initializeAllInterfaces(c);
+    assertFalse(c.getAllInterfaces().containsKey("vni4001"));
+  }
+
+  @Test
   public void testToInterface_active() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =

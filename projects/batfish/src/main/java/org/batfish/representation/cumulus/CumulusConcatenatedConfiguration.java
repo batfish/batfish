@@ -411,12 +411,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     viIface.setVrf(getOrCreateVrf(c, iface.getName()));
   }
 
-  /** properties for VRF loopback interfaces */
-  private void populateVxlanInterfaceProperties(Configuration c, InterfacesInterface iface) {
-    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
-    viIface.setInterfaceType(InterfaceType.TUNNEL);
-  }
-
   private void populateSubInterfaceProperties(
       Configuration c, InterfacesInterface iface, String superInterfaceName) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
