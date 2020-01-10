@@ -366,7 +366,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private static final String PROP_PACKET_LENGTH = "packetLength";
   static final String PROP_SRC_IP = "srcIp";
   static final String PROP_SRC_PORT = "srcPort";
-  private static final String PROP_TAG = "tag";
   private static final String PROP_TCP_FLAGS_ACK = "tcpFlagsAck";
   private static final String PROP_TCP_FLAGS_CWR = "tcpFlagsCwr";
   private static final String PROP_TCP_FLAGS_ECE = "tcpFlagsEce";
@@ -376,6 +375,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
   private static final String PROP_DEPRECATED_STATE = "state";
+  private static final String PROP_DEPRECATED_TAG = "tag";
 
   public static Builder builder() {
     return new Builder();
@@ -487,7 +487,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @JsonProperty(PROP_TCP_FLAGS_RST) int tcpFlagsRst,
       @JsonProperty(PROP_TCP_FLAGS_SYN) int tcpFlagsSyn,
       @JsonProperty(PROP_TCP_FLAGS_FIN) int tcpFlagsFin,
-      @JsonProperty(PROP_TAG) String tag,
+      @JsonProperty(PROP_DEPRECATED_TAG) String tag,
       @JsonProperty(PROP_DEPRECATED_STATE) Object ignored) {
     return new Flow(
         requireNonNull(ingressNode, PROP_INGRESS_NODE + " must not be null"),
@@ -639,11 +639,18 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   /** Jackson use only. */
-  @JsonProperty(PROP_TAG)
+  @JsonProperty(PROP_DEPRECATED_TAG)
   @Nonnull
   @Deprecated
   private String getTag() {
     return "tag"; // For backwards compatibility. Older clients expect a tag
+  }
+
+  @JsonProperty(PROP_DEPRECATED_STATE)
+  @Nonnull
+  @Deprecated
+  private String getState() {
+    return "NEW";
   }
 
   // Again, backwards-compatibility tcp-flag ugliness below
