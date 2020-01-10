@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.DEFAULT_MTU;
+import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
@@ -366,5 +367,14 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder().setHostname("Node").build();
     assertThat(vsConfig.getHostname(), equalTo("node"));
+  }
+
+  @Test
+  public void testIsValidVIInterface() {
+    assertFalse(isValidVIInterface(new InterfacesInterface(BRIDGE_NAME)));
+    InterfacesInterface vxlan = new InterfacesInterface("vni4001");
+    vxlan.setVxlanId(10001);
+    assertFalse(isValidVIInterface(vxlan));
+    assertTrue(isValidVIInterface(new InterfacesInterface("iface")));
   }
 }
