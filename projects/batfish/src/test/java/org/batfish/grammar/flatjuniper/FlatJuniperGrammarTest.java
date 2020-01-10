@@ -122,7 +122,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
-import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
@@ -212,7 +211,6 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
@@ -359,15 +357,10 @@ public final class FlatJuniperGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    return createFlow(sourceAddress, destinationAddress, FlowState.NEW);
-  }
-
-  private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
     Flow.Builder fb = Flow.builder();
     fb.setIngressNode("node");
     fb.setSrcIp(Ip.parse(sourceAddress));
     fb.setDstIp(Ip.parse(destinationAddress));
-    fb.setState(state);
     return fb.build();
   }
 
@@ -1535,7 +1528,6 @@ public final class FlatJuniperGrammarTest {
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_GLOBAL_POLICY,
-            ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
 
@@ -1615,7 +1607,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
-            ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
 
@@ -1639,10 +1630,6 @@ public final class FlatJuniperGrammarTest {
 
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
-    Flow trustToUntrustReturnFlow =
-        createFlow(trustedIpAddr, untrustedIpAddr, FlowState.ESTABLISHED);
-    Flow untrustToTrustReturnFlow =
-        createFlow(untrustedIpAddr, trustedIpAddr, FlowState.ESTABLISHED);
 
     IpAccessList aclTrustOut =
         c.getAllInterfaces().get(interfaceNameTrust).getPreTransformationOutgoingFilter();
@@ -1660,11 +1647,7 @@ public final class FlatJuniperGrammarTest {
      */
     assertThat(
         c.getIpAccessLists().keySet(),
-        containsInAnyOrder(
-            securityPolicyName,
-            aclTrustOut.getName(),
-            aclUntrustOut.getName(),
-            ACL_NAME_EXISTING_CONNECTION));
+        containsInAnyOrder(securityPolicyName, aclTrustOut.getName(), aclUntrustOut.getName()));
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
@@ -1675,16 +1658,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         aclTrustOut,
         rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
-
-    /* Return flow in either direction should be permitted */
-    assertThat(
-        aclUntrustOut,
-        accepts(
-            trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(
-        aclTrustOut,
-        accepts(
-            untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test

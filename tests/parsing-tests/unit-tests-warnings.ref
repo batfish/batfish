@@ -219,6 +219,13 @@
       },
       {
         "Filename" : "configs/cisco_acl",
+        "Line" : 6,
+        "Text" : "20 permit ip any any tracked",
+        "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "Unsupported clause in extended access list: tracked"
+      },
+      {
+        "Filename" : "configs/cisco_acl",
         "Line" : 10,
         "Text" : "60 permit tcp any any eq mlag ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
@@ -1479,10 +1486,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 205 results",
+      "notes" : "Found 206 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 205
+      "numResults" : 206
     }
   }
 ]

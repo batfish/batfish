@@ -205,7 +205,6 @@ public class DestinationClasses {
     h1.setNotIcmpCodes(h2.getNotIcmpCodes());
     h1.setIcmpTypes(h2.getIcmpTypes());
     h1.setNotIcmpTypes(h2.getNotIcmpTypes());
-    h1.setStates(h2.getStates());
     h1.setTcpFlags(h2.getTcpFlags());
   }
 

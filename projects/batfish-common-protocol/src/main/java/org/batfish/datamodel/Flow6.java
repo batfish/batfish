@@ -18,7 +18,6 @@ public final class Flow6 implements Comparable<Flow6> {
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_SRC_IP = "srcIp";
   private static final String PROP_SRC_PORT = "srcPort";
-  private static final String PROP_STATE = "state";
   private static final String PROP_TAG = "tag";
   private static final String PROP_TCP_FLAGS_ACK = "tcpFlagsAck";
   private static final String PROP_TCP_FLAGS_CWR = "tcpFlagsCwr";
@@ -28,6 +27,7 @@ public final class Flow6 implements Comparable<Flow6> {
   private static final String PROP_TCP_FLAGS_RST = "tcpFlagsRst";
   private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
+  private static final String PROP_DEPRECATED_STATE = "state";
 
   private final int _dscp;
 
@@ -50,8 +50,6 @@ public final class Flow6 implements Comparable<Flow6> {
   private final Ip6 _srcIp;
 
   private final int _srcPort;
-
-  private final FlowState _state;
 
   private final String _tag;
 
@@ -84,7 +82,6 @@ public final class Flow6 implements Comparable<Flow6> {
       @JsonProperty(PROP_FRAGMENT_OFFSET) int fragmentOffset,
       @JsonProperty(PROP_ICMP_TYPE) int icmpType,
       @JsonProperty(PROP_ICMP_CODE) int icmpCode,
-      @JsonProperty(PROP_STATE) FlowState state,
       @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
       @JsonProperty(PROP_TCP_FLAGS_ECE) int tcpFlagsEce,
       @JsonProperty(PROP_TCP_FLAGS_URG) int tcpFlagsUrg,
@@ -93,7 +90,8 @@ public final class Flow6 implements Comparable<Flow6> {
       @JsonProperty(PROP_TCP_FLAGS_RST) int tcpFlagsRst,
       @JsonProperty(PROP_TCP_FLAGS_SYN) int tcpFlagsSyn,
       @JsonProperty(PROP_TCP_FLAGS_FIN) int tcpFlagsFin,
-      @JsonProperty(PROP_TAG) String tag) {
+      @JsonProperty(PROP_TAG) String tag,
+      @JsonProperty(PROP_DEPRECATED_STATE) Object ignored) {
     _ingressNode = ingressNode;
     _srcIp = srcIp;
     _dstIp = dstIp;
@@ -105,7 +103,6 @@ public final class Flow6 implements Comparable<Flow6> {
     _fragmentOffset = fragmentOffset;
     _icmpType = icmpType;
     _icmpCode = icmpCode;
-    _state = state;
     _tcpFlagsCwr = tcpFlagsCwr;
     _tcpFlagsEce = tcpFlagsEce;
     _tcpFlagsUrg = tcpFlagsUrg;
@@ -161,10 +158,6 @@ public final class Flow6 implements Comparable<Flow6> {
       return ret;
     }
     ret = Integer.compare(_icmpCode, rhs._icmpCode);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = _state.compareTo(rhs._state);
     if (ret != 0) {
       return ret;
     }
@@ -238,9 +231,6 @@ public final class Flow6 implements Comparable<Flow6> {
       return false;
     }
     if (_icmpCode != other._icmpCode) {
-      return false;
-    }
-    if (_state != other._state) {
       return false;
     }
     if (_tcpFlagsCwr != other._tcpFlagsCwr) {
@@ -325,11 +315,6 @@ public final class Flow6 implements Comparable<Flow6> {
     return _srcPort;
   }
 
-  @JsonProperty(PROP_STATE)
-  public FlowState getState() {
-    return _state;
-  }
-
   @JsonProperty(PROP_TAG)
   public String getTag() {
     return _tag;
@@ -390,7 +375,6 @@ public final class Flow6 implements Comparable<Flow6> {
     result = prime * result + _srcPort;
     result = prime * result + _icmpType;
     result = prime * result + _icmpCode;
-    result = prime * result + _state.ordinal();
     result = prime * result + _tag.hashCode();
     result = prime * result + _tcpFlagsCwr;
     result = prime * result + _tcpFlagsEce;
@@ -452,8 +436,6 @@ public final class Flow6 implements Comparable<Flow6> {
         + _fragmentOffset
         + icmpTypeStr
         + icmpCodeStr
-        + " state:"
-        + _state
         + tcpFlagsStr
         + " tag:"
         + _tag
