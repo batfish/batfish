@@ -44,6 +44,11 @@ BOND_LACP_RATE
   'bond-lacp-rate' -> pushMode(M_DropUntilNewline)
 ;
 
+BOND_MASTER
+:
+  'bond-master' -> pushMode(M_DropUntilNewline)
+;
+
 BOND_MIIMON
 :
   'bond-miimon' -> pushMode(M_DropUntilNewline)

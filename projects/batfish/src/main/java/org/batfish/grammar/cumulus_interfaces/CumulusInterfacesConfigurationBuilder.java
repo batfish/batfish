@@ -25,6 +25,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_address_virtualContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_masterContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bond_slavesContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_accessContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_bridge_portsContext;
@@ -188,6 +189,15 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_vrf_table(I_vrf_tableContext ctx) {
     _currentIface.setVrfTable(ctx.vrf_table_name().getText());
+  }
+
+  @Override
+  public void exitI_bond_master(I_bond_masterContext ctx) {
+    _w.addWarning(
+        ctx,
+        "bond-master",
+        _parser,
+        "bond-master command is not supported. use bond-slaves to configure bonds.");
   }
 
   @Override
