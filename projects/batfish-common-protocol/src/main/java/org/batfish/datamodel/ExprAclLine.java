@@ -138,17 +138,19 @@ public final class ExprAclLine extends AclLine {
         checkNotNull(matchCondition, "%s cannot be null", PROP_MATCH_CONDITION),
         name,
         traceElement);
-
   }
 
   public ExprAclLine(
       @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name) {
-    this(action,matchCondition,name,null);
+    this(action, matchCondition, name, null);
   }
 
   public ExprAclLine(
-      @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name, TraceElement traceElement) {
-    super(name,traceElement);
+      @Nonnull LineAction action,
+      @Nonnull AclLineMatchExpr matchCondition,
+      String name,
+      TraceElement traceElement) {
+    super(name, traceElement);
     _action = action;
     _matchCondition = matchCondition;
   }
