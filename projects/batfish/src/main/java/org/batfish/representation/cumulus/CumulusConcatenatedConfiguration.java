@@ -314,9 +314,15 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   /** Add interface properties based on what we saw in the interfaces file */
   private void populateInterfacesInterfaceProperties(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(iface -> populateInterfaceProperties(c, iface));
     populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
+  }
+
+  @VisibleForTesting
+  static boolean isValidVIInterface(InterfacesInterface iface) {
+    return !iface.getName().equals(BRIDGE_NAME) /* not bridge */
+        && !InterfaceConverter.isVxlan(iface) /* not vxlans */;
   }
 
   private void populateInterfaceProperties(Configuration c, InterfacesInterface iface) {
@@ -520,7 +526,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   @VisibleForTesting
   void initializeAllInterfaces(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME)) // not a bridge
+        .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(
             iface ->
                 org.batfish.datamodel.Interface.builder()
