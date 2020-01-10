@@ -8,7 +8,7 @@ import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLin
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE_INDEX;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_NODE;
-import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getReportedActions;
+import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getBehaviorToReport;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -44,10 +44,10 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.ActionGetter.LineBehavior;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row;
-import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.ReportedAction;
-import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.ReportedActionFinder;
+import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.LineBehaviorFinder;
 import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
@@ -112,9 +112,9 @@ public class FindMatchingFilterLinesAnswererTest {
           HeaderSpace.builder()
               .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() - 8).toIpSpace())
               .build();
-      Map<Integer, ReportedAction> reportedActions =
-          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(reportedActions, equalTo(ImmutableMap.of(0, ReportedAction.PERMIT)));
+      Map<Integer, LineBehavior> reportedActions =
+          getBehaviorToReport(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(0, LineBehavior.PERMIT)));
     }
     {
       // Constrain dstIp to a subset of first line's dstIps
@@ -122,42 +122,41 @@ public class FindMatchingFilterLinesAnswererTest {
           HeaderSpace.builder()
               .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() + 4).toIpSpace())
               .build();
-      Map<Integer, ReportedAction> reportedActions =
-          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(reportedActions, equalTo(ImmutableMap.of(0, ReportedAction.PERMIT)));
+      Map<Integer, LineBehavior> reportedActions =
+          getBehaviorToReport(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(0, LineBehavior.PERMIT)));
     }
     {
       // Constrain protocol to TCP
       HeaderSpace headerSpace =
           HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.TCP)).build();
-      Map<Integer, ReportedAction> reportedActions =
-          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
-      assertThat(reportedActions, equalTo(ImmutableMap.of(0, ReportedAction.PERMIT)));
+      Map<Integer, LineBehavior> reportedActions =
+          getBehaviorToReport(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(0, LineBehavior.PERMIT)));
     }
     {
       // Constrain action to DENY
       HeaderSpace headerSpace = HeaderSpace.builder().build();
-      Map<Integer, ReportedAction> reportedActions =
-          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, Action.DENY);
-      assertThat(reportedActions, equalTo(ImmutableMap.of(1, ReportedAction.DENY)));
+      Map<Integer, LineBehavior> reportedActions =
+          getBehaviorToReport(aclLines, hsConverter.toBDD(headerSpace), bddConverter, Action.DENY);
+      assertThat(reportedActions, equalTo(ImmutableMap.of(1, LineBehavior.DENY)));
     }
     {
       // Constrain dstIp to 3.3.3.0/24 (shouldn't match either line)
       HeaderSpace headerSpace =
           HeaderSpace.builder().setDstIps(Prefix.parse("3.3.3.0/24").toIpSpace()).build();
-      Map<Integer, ReportedAction> reportedActions =
-          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      Map<Integer, LineBehavior> reportedActions =
+          getBehaviorToReport(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
       assertThat(reportedActions, anEmptyMap());
     }
     {
       // Constrain srcIp to 3.3.3.0/24 (should match both lines)
       HeaderSpace headerSpace =
           HeaderSpace.builder().setSrcIps(Prefix.parse("3.3.3.0/24").toIpSpace()).build();
-      Map<Integer, ReportedAction> reportedActions =
-          getReportedActions(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      Map<Integer, LineBehavior> reportedActions =
+          getBehaviorToReport(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
       assertThat(
-          reportedActions,
-          equalTo(ImmutableMap.of(0, ReportedAction.PERMIT, 1, ReportedAction.DENY)));
+          reportedActions, equalTo(ImmutableMap.of(0, LineBehavior.PERMIT, 1, LineBehavior.DENY)));
     }
   }
 
@@ -202,75 +201,74 @@ public class FindMatchingFilterLinesAnswererTest {
 
     {
       // No action specified: Reported action should match all possible actions of referenced ACL
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, null, pkt.getFactory().one());
-      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
-      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.VARIABLE));
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, null, pkt.getFactory().one());
+      assertThat(behaviorFinder.visit(permitAclAclLine), equalTo(LineBehavior.PERMIT));
+      assertThat(behaviorFinder.visit(denyAclAclLine), equalTo(LineBehavior.DENY));
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.VARIABLE));
     }
     {
       // Action PERMIT: Only lines that can PERMIT should be reported
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, Action.PERMIT, pkt.getFactory().one());
-      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
-      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.VARIABLE));
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, Action.PERMIT, pkt.getFactory().one());
+      assertThat(behaviorFinder.visit(permitAclAclLine), equalTo(LineBehavior.PERMIT));
+      assertThat(behaviorFinder.visit(denyAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.VARIABLE));
     }
     {
       // Action DENY: Only lines that can DENY should be reported
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, Action.DENY, pkt.getFactory().one());
-      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.VARIABLE));
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, Action.DENY, pkt.getFactory().one());
+      assertThat(behaviorFinder.visit(permitAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(denyAclAclLine), equalTo(LineBehavior.DENY));
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.VARIABLE));
     }
     {
       // No action specified, only permitHeaderSpace counts
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, null, permitSpaceBdd);
-      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
-      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.PERMIT));
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, null, permitSpaceBdd);
+      assertThat(behaviorFinder.visit(permitAclAclLine), equalTo(LineBehavior.PERMIT));
+      assertThat(behaviorFinder.visit(denyAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.PERMIT));
     }
     {
       // Action PERMIT and only permitHeaderSpace counts
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, Action.PERMIT, permitSpaceBdd);
-      assertThat(reportedActionFinder.visit(permitAclAclLine), equalTo(ReportedAction.PERMIT));
-      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.PERMIT));
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, Action.PERMIT, permitSpaceBdd);
+      assertThat(behaviorFinder.visit(permitAclAclLine), equalTo(LineBehavior.PERMIT));
+      assertThat(behaviorFinder.visit(denyAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.PERMIT));
     }
     {
       // Action DENY, but only permitHeaderSpace counts
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, Action.DENY, permitSpaceBdd);
-      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), nullValue());
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, Action.DENY, permitSpaceBdd);
+      assertThat(behaviorFinder.visit(permitAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(denyAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(mixedAclAclLine), nullValue());
     }
     {
       // No action specified, only denyHeaderSpace counts
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, null, denySpaceBdd);
-      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.DENY));
+      LineBehaviorFinder behaviorFinder = new LineBehaviorFinder(bddConverter, null, denySpaceBdd);
+      assertThat(behaviorFinder.visit(permitAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(denyAclAclLine), equalTo(LineBehavior.DENY));
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.DENY));
     }
     {
       // Action PERMIT, but only denyHeaderSpace counts
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, Action.PERMIT, denySpaceBdd);
-      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(denyAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), nullValue());
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, Action.PERMIT, denySpaceBdd);
+      assertThat(behaviorFinder.visit(permitAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(denyAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(mixedAclAclLine), nullValue());
     }
     {
       // Action DENY and only denyHeaderSpace counts
-      ReportedActionFinder reportedActionFinder =
-          new ReportedActionFinder(bddConverter, Action.DENY, denySpaceBdd);
-      assertThat(reportedActionFinder.visit(permitAclAclLine), nullValue());
-      assertThat(reportedActionFinder.visit(denyAclAclLine), equalTo(ReportedAction.DENY));
-      assertThat(reportedActionFinder.visit(mixedAclAclLine), equalTo(ReportedAction.DENY));
+      LineBehaviorFinder behaviorFinder =
+          new LineBehaviorFinder(bddConverter, Action.DENY, denySpaceBdd);
+      assertThat(behaviorFinder.visit(permitAclAclLine), nullValue());
+      assertThat(behaviorFinder.visit(denyAclAclLine), equalTo(LineBehavior.DENY));
+      assertThat(behaviorFinder.visit(mixedAclAclLine), equalTo(LineBehavior.DENY));
     }
   }
 

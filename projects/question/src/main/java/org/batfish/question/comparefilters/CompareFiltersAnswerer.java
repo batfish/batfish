@@ -123,7 +123,6 @@ public class CompareFiltersAnswerer extends Answerer {
           .put(COL_CURRENT_NAME, "");
     } else {
       int index = difference.getCurrentIndex();
-      ActionGetter actionGetter = new ActionGetter(false);
       AclLine line =
           currentContext
               .getConfigs()
@@ -133,7 +132,7 @@ public class CompareFiltersAnswerer extends Answerer {
               .getLines()
               .get(index);
       ret.put(COL_CURRENT_LINE, index)
-          .put(COL_CURRENT_ACTION, actionGetter.visit(line))
+          .put(COL_CURRENT_ACTION, ActionGetter.getLineBehavior(line))
           .put(COL_CURRENT_NAME, line.getName());
     }
 
