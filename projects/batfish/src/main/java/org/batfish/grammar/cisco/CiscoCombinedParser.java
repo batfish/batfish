@@ -13,7 +13,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoLexer.NEWLINE, "\n");
 
-  public static final String DEBUG_FLAG_USE_ARISTA_BGP = "aristabgp";
+  public static final String DEBUG_FLAG_NO_USE_ARISTA_BGP = "noaristabgp";
 
   public CiscoCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
     super(

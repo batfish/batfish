@@ -66,12 +66,12 @@ _pmd_test = rule(
         ),
         "ruleset": attr.label(
             allow_single_file = True,
-            default = "@//projects/build-tools:src/main/resources/org/batfish/pmd/pmd-ruleset.xml",
+            default = "@batfish//projects/build-tools:src/main/resources/org/batfish/pmd/pmd-ruleset.xml",
         ),
         "_pmd": attr.label(
             executable = True,
             cfg = "host",
-            default = Label("@//projects/build-tools:pmd"),
+            default = Label("@batfish//projects/build-tools:pmd"),
         ),
     },
     test = True,

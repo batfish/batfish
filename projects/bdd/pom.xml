@@ -11,6 +11,21 @@
 
   <artifactId>bdd</artifactId>
 
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>manual</distribution>
+      <comments>John Whaley gave permission to use this project under MIT license. See LICENSE.email.</comments>
+    </license>
+    <license>
+      <name>LGPL-2.0</name>
+      <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.0.html</url>
+      <distribution>manual</distribution>
+      <comments>Original project license on sourceforge.net.</comments>
+    </license>
+  </licenses>
+
   <packaging>jar</packaging>
   <build>
     <plugins>

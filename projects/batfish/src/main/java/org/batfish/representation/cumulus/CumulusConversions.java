@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -381,10 +382,13 @@ public final class CumulusConversions {
       newProc.setConfederation(new BgpConfederation(confederationId, ImmutableSet.of(asn)));
     }
 
-    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
-    if (ipv4Unicast != null) {
+    if (bgpVrf.isIpv4UnicastActive()) {
+      BgpIpv4UnicastAddressFamily ipv4Unicast =
+          firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
+
       // Add networks from network statements to new process's origination space
-      ipv4Unicast.getNetworks().keySet().forEach(newProc::addToOriginationSpace);
+      Sets.union(bgpVrf.getNetworks().keySet(), ipv4Unicast.getNetworks().keySet())
+          .forEach(newProc::addToOriginationSpace);
 
       // Generate aggregate routes
       generateGeneratedRoutes(c, c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks());
@@ -572,6 +576,8 @@ public final class CumulusConversions {
             .setOwner(c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    // If default originate is set for a neighbor, we will send it a "fresh" default route is not
+    // subjected to the neighbor's outgoing route map. We will drop other default routes.
     if (bgpDefaultOriginate(neighbor)) {
       initBgpDefaultRouteExportPolicy(vrfName, neighbor.getName(), true, null, c);
       peerExportPolicy.addStatement(
@@ -581,10 +587,9 @@ public final class CumulusConversions {
                   computeBgpDefaultRouteExportPolicyName(true, vrfName, neighbor.getName())),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
+
+      peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
     }
-    // FRR does not advertise default routes even if they are in the routing table:
-    // https://readthedocs.org/projects/frrouting/downloads/pdf/stable-5.0/
-    peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
@@ -851,15 +856,18 @@ public final class CumulusConversions {
     // Always export BGP and iBGP routes
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
-    // If no IPv4 address family is not defined, there is no capability to explicitly advertise v4
-    // networks or redistribute protocols, so no non-BGP routes can be exported.
-    if (bgpVrf.getIpv4Unicast() == null) {
+    // we don't need to process redist policies and network statements (inside v4 address family or
+    // bgp-vrf-level) if v4 address family is not active
+    if (!bgpVrf.isIpv4UnicastActive()) {
       return exportConditions;
     }
 
+    BgpIpv4UnicastAddressFamily bgpIpv4UnicastAddressFamily =
+        firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
+
     // Add conditions to redistribute other protocols
     for (BgpRedistributionPolicy redistributeProtocolPolicy :
-        bgpVrf.getIpv4Unicast().getRedistributionPolicies().values()) {
+        bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values()) {
 
       // Get a match expression for the protocol to be redistributed
       CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
@@ -881,11 +889,9 @@ public final class CumulusConversions {
     }
 
     // create origination prefilter from listed advertised networks
-    bgpVrf
-        .getIpv4Unicast()
-        .getNetworks()
+    Sets.union(bgpVrf.getNetworks().keySet(), bgpIpv4UnicastAddressFamily.getNetworks().keySet())
         .forEach(
-            (prefix, bgpNetwork) -> {
+            prefix -> {
               BooleanExpr weExpr = BooleanExprs.TRUE;
               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
               Conjunction exportNetworkConditions = new Conjunction();
