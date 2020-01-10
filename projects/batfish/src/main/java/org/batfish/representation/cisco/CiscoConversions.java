@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.TraceElements.namedStructure;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
@@ -50,7 +51,6 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
@@ -821,7 +821,10 @@ public class CiscoConversions {
   }
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
-    return firstNonNull(AclIpSpace.union(networkObjectGroup.getLines()), EmptyIpSpace.INSTANCE);
+    return AclIpSpace.builder()
+        .setTraceElement(namedStructure(networkObjectGroup.getName(), CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription()))
+        .thenPermitting(networkObjectGroup.getLines())
+        .build();
   }
 
   /** Converts a {@link Tunnel} to an {@link IpsecPeerConfig} */
