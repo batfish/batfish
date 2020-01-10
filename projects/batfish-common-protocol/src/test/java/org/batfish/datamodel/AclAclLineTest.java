@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -70,6 +71,11 @@ public class AclAclLineTest {
   }
 
   @Test
+  public void testDefaultTraceElement() {
+    assertNull(new AclAclLine("n", "a").getTraceElement());
+  }
+
+  @Test
   public void testEquals() {
     TraceElement traceElement1 = TraceElement.builder().add("a").build();
     TraceElement traceElement2 = TraceElement.builder().add("b").build();
@@ -78,8 +84,8 @@ public class AclAclLineTest {
         .addEqualityGroup(
             new AclAclLine("name1", "acl1", traceElement1),
             new AclAclLine("name1", "acl1", traceElement1))
-        .addEqualityGroup(new AclAclLine("name2", "acl1"))
-        .addEqualityGroup(new AclAclLine("name1", "acl2"))
+        .addEqualityGroup(new AclAclLine("name2", "acl1", traceElement1))
+        .addEqualityGroup(new AclAclLine("name1", "acl2", traceElement1))
         .addEqualityGroup(new AclAclLine("name1", "acl1", traceElement2))
         .addEqualityGroup(new Object())
         .testEquals();

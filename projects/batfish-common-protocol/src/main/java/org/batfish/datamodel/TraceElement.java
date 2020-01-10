@@ -147,7 +147,7 @@ public final class TraceElement implements Serializable {
   }
 
   @JsonCreator
-  public static TraceElement jsonCreator(
+  private static TraceElement jsonCreator(
       @Nullable @JsonProperty(PROP_FRAGMENTS) List<Fragment> fragments) {
     return new TraceElement(firstNonNull(fragments, ImmutableList.of()));
   }
