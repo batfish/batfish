@@ -42,7 +42,6 @@ public class Variable {
     FILTER_NAME("filterName", true),
     FILTER_SPEC("filterSpec", true),
     FLOAT("float", false),
-    FLOW_STATE("flowState", true),
     HEADER_CONSTRAINT("headerConstraint", false),
     INTEGER("integer", false),
     INTEGER_SPACE("integerSpace", true),
@@ -94,7 +93,8 @@ public class Variable {
     SUBRANGE("subrange", true),
     VRF("vrf", true),
     VXLAN_VNI_PROPERTY_SPEC("vxlanVniPropertySpec", true),
-    ZONE("zone", true);
+    ZONE("zone", true),
+    DEPRECATED_FLOW_STATE("flowState", false);
 
     private static final Map<String, Variable.Type> MAP = initMap();
 

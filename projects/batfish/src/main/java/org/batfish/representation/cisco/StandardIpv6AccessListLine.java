@@ -2,9 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.LineAction;
 
@@ -60,7 +58,6 @@ public class StandardIpv6AccessListLine implements Serializable {
         _ecns,
         null,
         null,
-        EnumSet.noneOf(FlowState.class),
         Collections.emptyList());
   }
 }

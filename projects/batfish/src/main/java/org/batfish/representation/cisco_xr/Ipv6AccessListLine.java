@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
@@ -40,8 +39,6 @@ public class Ipv6AccessListLine implements Serializable {
 
   private final List<SubRange> _srcPortRanges;
 
-  private Set<FlowState> _states;
-
   private final List<TcpFlagsMatchConditions> _tcpFlags;
 
   public Ipv6AccessListLine(
@@ -58,7 +55,6 @@ public class Ipv6AccessListLine implements Serializable {
       Set<Integer> ecns,
       @Nullable Integer icmpType,
       @Nullable Integer icmpCode,
-      Set<FlowState> states,
       List<TcpFlagsMatchConditions> tcpFlags) {
     _name = name;
     _action = action;
@@ -73,7 +69,6 @@ public class Ipv6AccessListLine implements Serializable {
     _dstPortRanges = dstPortRanges;
     _icmpType = icmpType;
     _icmpCode = icmpCode;
-    _states = states;
     _tcpFlags = tcpFlags;
   }
 
@@ -127,10 +122,6 @@ public class Ipv6AccessListLine implements Serializable {
 
   public List<SubRange> getSrcPorts() {
     return _srcPortRanges;
-  }
-
-  public Set<FlowState> getStates() {
-    return _states;
   }
 
   public List<TcpFlagsMatchConditions> getTcpFlags() {

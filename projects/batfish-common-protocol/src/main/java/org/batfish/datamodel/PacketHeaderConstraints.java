@@ -42,7 +42,7 @@ public class PacketHeaderConstraints {
   private static final String PROP_DST_IPS = "dstIps";
   private static final String PROP_DST_PORTS = "dstPorts";
   private static final String PROP_ECNS = "ecns";
-  private static final String PROP_FLOW_STATES = "flowStates";
+  private static final String PROP_DEPRECATED_FLOW_STATES = "flowStates";
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
   private static final String PROP_ICMP_CODES = "icmpCodes";
   private static final String PROP_ICMP_TYPES = "icmpTypes";
@@ -59,7 +59,6 @@ public class PacketHeaderConstraints {
   @Nullable private final IntegerSpace _dscps;
   @Nullable private final IntegerSpace _ecns;
   @Nullable private final IntegerSpace _packetLengths;
-  @Nullable private final Set<FlowState> _flowStates;
   @Nullable private final IntegerSpace _fragmentOffsets;
 
   // Ip fields, likely to be specified
@@ -99,7 +98,6 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_DSCPS) IntegerSpace.Builder dscps,
       @Nullable @JsonProperty(PROP_ECNS) IntegerSpace.Builder ecns,
       @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace.Builder packetLengths,
-      @Nullable @JsonProperty(PROP_FLOW_STATES) Set<FlowState> flowStates,
       @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace.Builder fragmentOffsets,
       @Nullable @JsonProperty(PROP_IP_PROTOCOLS) JsonNode ipProtocols,
       @Nullable @JsonProperty(PROP_SRC_IPS) String srcIps,
@@ -109,13 +107,13 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace.Builder srcPorts,
       @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace.Builder dstPorts,
       @Nullable @JsonProperty(PROP_APPLICATIONS) JsonNode applications,
-      @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags)
+      @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags,
+      @Nullable @JsonProperty(PROP_DEPRECATED_FLOW_STATES) Object ignored)
       throws IllegalArgumentException {
     return new PacketHeaderConstraints(
         processBuilder(dscps, VALID_DSCP),
         processBuilder(ecns, VALID_ECN),
         processBuilder(packetLengths, VALID_PACKET_LENGTH),
-        flowStates,
         processBuilder(fragmentOffsets, VALID_FRAGMENT_OFFSET),
         parseIpProtocols(ipProtocols),
         srcIps,
@@ -132,7 +130,6 @@ public class PacketHeaderConstraints {
       @Nullable IntegerSpace dscps,
       @Nullable IntegerSpace ecns,
       @Nullable IntegerSpace packetLengths,
-      @Nullable Set<FlowState> flowStates,
       @Nullable IntegerSpace fragmentOffsets,
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable String srcIp,
@@ -146,7 +143,6 @@ public class PacketHeaderConstraints {
     _dscps = dscps;
     _ecns = ecns;
     _packetLengths = packetLengths;
-    _flowStates = flowStates;
     _fragmentOffsets = fragmentOffsets;
     _ipProtocols = ipProtocols;
     _srcIp = srcIp;
@@ -233,7 +229,7 @@ public class PacketHeaderConstraints {
   /** Create new object with all fields unconstrained */
   public static PacketHeaderConstraints unconstrained() {
     return new PacketHeaderConstraints(
-        null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
 
   @Nullable
@@ -252,12 +248,6 @@ public class PacketHeaderConstraints {
   @JsonProperty(PROP_PACKET_LENGTHS)
   public IntegerSpace getPacketLengths() {
     return _packetLengths;
-  }
-
-  @Nullable
-  @JsonProperty(PROP_FLOW_STATES)
-  public Set<FlowState> getFlowStates() {
-    return _flowStates;
   }
 
   @Nullable
@@ -598,7 +588,6 @@ public class PacketHeaderConstraints {
     return Objects.equals(_dscps, that._dscps)
         && Objects.equals(_ecns, that._ecns)
         && Objects.equals(_packetLengths, that._packetLengths)
-        && Objects.equals(_flowStates, that._flowStates)
         && Objects.equals(_fragmentOffsets, that._fragmentOffsets)
         && Objects.equals(_ipProtocols, that._ipProtocols)
         && Objects.equals(_srcIp, that._srcIp)
@@ -617,7 +606,6 @@ public class PacketHeaderConstraints {
         _dscps,
         _ecns,
         _packetLengths,
-        _flowStates,
         _fragmentOffsets,
         _ipProtocols,
         _srcIp,
@@ -642,7 +630,6 @@ public class PacketHeaderConstraints {
     private @Nullable IntegerSpace _dscps;
     private @Nullable IntegerSpace _ecns;
     private @Nullable IntegerSpace _packetLengths;
-    private @Nullable Set<FlowState> _flowStates;
     private @Nullable IntegerSpace _fragmentOffsets;
     // Ip fields, likely to be specified
     private @Nullable Set<IpProtocol> _ipProtocols;
@@ -672,11 +659,6 @@ public class PacketHeaderConstraints {
 
     public Builder setPacketLengths(@Nullable IntegerSpace packetLengths) {
       this._packetLengths = packetLengths;
-      return this;
-    }
-
-    public Builder setFlowStates(@Nullable Set<FlowState> flowStates) {
-      this._flowStates = flowStates;
       return this;
     }
 
@@ -735,7 +717,6 @@ public class PacketHeaderConstraints {
           _dscps,
           _ecns,
           _packetLengths,
-          _flowStates,
           _fragmentOffsets,
           _ipProtocols,
           _srcIps,

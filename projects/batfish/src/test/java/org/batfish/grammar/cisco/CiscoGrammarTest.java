@@ -297,7 +297,6 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
@@ -438,14 +437,9 @@ public final class CiscoGrammarTest {
   }
 
   private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort) {
-    return createFlow(protocol, srcPort, dstPort, FlowState.NEW);
-  }
-
-  private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort, FlowState state) {
     return Flow.builder()
         .setIngressNode("")
         .setIpProtocol(protocol)
-        .setState(state)
         .setSrcPort(srcPort)
         .setDstPort(dstPort)
         .build();
@@ -1098,7 +1092,7 @@ public final class CiscoGrammarTest {
 
     Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
-    Flow anyFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow anyFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Confirm access list permits only traffic matching both ACL and security level restrictions
     // highIface1 has inbound filter permitting all IP traffic
@@ -5312,8 +5306,7 @@ public final class CiscoGrammarTest {
     String explicit45Interface = "some-trust";
     String outsideInterface = "outside";
 
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
-    Flow establishedFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.ESTABLISHED);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Confirm zones are created for each level
     assertThat(c, hasZone(computeSecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
@@ -5389,28 +5382,6 @@ public final class CiscoGrammarTest {
         hasInterface(
             explicit45Interface,
             hasPreTransformationOutgoingFilter(rejects(newFlow, outsideInterface, c))));
-
-    // All established flows are accepted
-    assertThat(
-        c,
-        hasInterface(
-            explicit45Interface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
-    assertThat(
-        c,
-        hasInterface(
-            insideInterface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
-    assertThat(
-        c,
-        hasInterface(
-            insideInterface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, explicit45Interface, c))));
-    assertThat(
-        c,
-        hasInterface(
-            insideInterface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, explicit100Interface, c))));
   }
 
   @Test
@@ -5418,7 +5389,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Allow traffic in and out of the same interface
     assertThat(
@@ -5446,7 +5417,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-inter");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // No traffic in and out of the same interface
     assertThat(
@@ -5474,7 +5445,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-intra");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Allow traffic in and out of the same interface
     assertThat(

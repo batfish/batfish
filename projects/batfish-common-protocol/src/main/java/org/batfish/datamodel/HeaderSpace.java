@@ -57,7 +57,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     private SortedSet<Protocol> _srcOrDstProtocols;
     private SortedSet<SubRange> _srcPorts;
     private SortedSet<Protocol> _srcProtocols;
-    private SortedSet<FlowState> _states;
     private List<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {
@@ -74,7 +73,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _srcOrDstProtocols = ImmutableSortedSet.of();
       _srcPorts = ImmutableSortedSet.of();
       _srcProtocols = ImmutableSortedSet.of();
-      _states = ImmutableSortedSet.of();
       _tcpFlags = ImmutableList.of();
       _notDscps = ImmutableSortedSet.of();
       _notDstPorts = ImmutableSortedSet.of();
@@ -231,10 +229,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     public SortedSet<Protocol> getSrcProtocols() {
       return _srcProtocols;
-    }
-
-    public SortedSet<FlowState> getStates() {
-      return _states;
     }
 
     public List<TcpFlagsMatchConditions> getTcpFlags() {
@@ -454,11 +448,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return this;
     }
 
-    public Builder setStates(Iterable<FlowState> states) {
-      _states = ImmutableSortedSet.copyOf(states);
-      return this;
-    }
-
     public Builder setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
       _tcpFlags = ImmutableList.copyOf(tcpFlags);
       return this;
@@ -512,7 +501,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getSrcPorts, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(
               HeaderSpace::getSrcProtocols, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(HeaderSpace::getStates, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getTcpFlags, Comparators.lexicographical(Ordering.natural()));
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";
@@ -544,8 +532,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private static final String PROP_SRC_OR_DST_PROTOCOLS = "srcOrDstProtocols";
   private static final String PROP_SRC_PORTS = "srcPorts";
   private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
-  private static final String PROP_STATES = "states";
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
+  private static final String PROP_DEPRECATED_STATES = "states";
 
   public static Builder builder() {
     return new Builder();
@@ -581,7 +569,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private SortedSet<Protocol> _srcOrDstProtocols;
   private SortedSet<SubRange> _srcPorts;
   private SortedSet<Protocol> _srcProtocols;
-  private SortedSet<FlowState> _states;
   private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public HeaderSpace() {
@@ -598,7 +585,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _srcOrDstProtocols = Collections.emptySortedSet();
     _srcPorts = Collections.emptySortedSet();
     _srcProtocols = Collections.emptySortedSet();
-    _states = Collections.emptySortedSet();
     _tcpFlags = Collections.emptyList();
     _notDscps = Collections.emptySortedSet();
     _notDstPorts = Collections.emptySortedSet();
@@ -644,7 +630,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _srcProtocols = ImmutableSortedSet.copyOf(builder._srcProtocols);
     _icmpTypes = ImmutableSortedSet.copyOf(builder._icmpTypes);
     _icmpCodes = ImmutableSortedSet.copyOf(builder._icmpCodes);
-    _states = ImmutableSortedSet.copyOf(builder._states);
     _tcpFlags = ImmutableList.copyOf(builder._tcpFlags);
   }
 
@@ -691,7 +676,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _srcOrDstProtocols.equals(other._srcOrDstProtocols)
         && _srcPorts.equals(other._srcPorts)
         && _srcProtocols.equals(other._srcProtocols)
-        && _states.equals(other._states)
         && _tcpFlags.equals(other._tcpFlags);
   }
 
@@ -878,12 +862,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _srcProtocols;
   }
 
-  /** A set of acceptable abstract firewall states for a packet to match. */
-  @JsonProperty(PROP_STATES)
-  public SortedSet<FlowState> getStates() {
-    return _states;
-  }
-
   /** A set of acceptable TCP flag bitmasks for a TCP packet to match. */
   @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public List<TcpFlagsMatchConditions> getTcpFlags() {
@@ -923,7 +901,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         _srcOrDstProtocols,
         _srcPorts,
         _srcProtocols,
-        _states,
         _tcpFlags);
   }
 
@@ -1051,9 +1028,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             notSrcProtocol ->
                 notSrcProtocol.getPort().equals(flow.getSrcPort())
                     && notSrcProtocol.getIpProtocol() == flow.getIpProtocol())) {
-      return false;
-    }
-    if (!_states.isEmpty() && !_states.contains(flow.getState())) {
       return false;
     }
     if (!_tcpFlags.isEmpty() && _tcpFlags.stream().noneMatch(tcpFlags -> tcpFlags.match(flow))) {
@@ -1232,10 +1206,9 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _srcProtocols = ImmutableSortedSet.copyOf(srcProtocols);
   }
 
-  @JsonProperty(PROP_STATES)
-  public void setStates(Iterable<FlowState> states) {
-    _states = ImmutableSortedSet.copyOf(states);
-  }
+  @Deprecated
+  @JsonProperty(PROP_DEPRECATED_STATES)
+  private void setStates(Object ignored) {}
 
   @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public void setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
@@ -1274,7 +1247,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .setSrcOrDstProtocols(_srcOrDstProtocols)
         .setSrcPorts(_srcPorts)
         .setSrcProtocols(_srcProtocols)
-        .setStates(_states)
         .setTcpFlags(_tcpFlags);
   }
 
@@ -1312,7 +1284,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .add(PROP_SRC_OR_DST_PROTOCOLS, nullIfEmpty(_srcOrDstProtocols))
         .add(PROP_SRC_PORTS, nullIfEmpty(_srcPorts))
         .add(PROP_SRC_PROTOCOLS, nullIfEmpty(_srcProtocols))
-        .add(PROP_STATES, nullIfEmpty(_states))
         .add(PROP_TCP_FLAGS_MATCH_CONDITIONS, nullIfEmpty(_tcpFlags))
         .toString();
   }
@@ -1348,7 +1319,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             && _notSrcPorts.isEmpty()
             && _srcProtocols.isEmpty()
             && _notSrcProtocols.isEmpty()
-            && _states.isEmpty()
             && _tcpFlags.isEmpty();
     return ret;
   }

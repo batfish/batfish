@@ -4,7 +4,6 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_L
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setDscpValue;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setDstPort;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setEcnValue;
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setFlowStates;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setFragmentOffsets;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setIcmpValues;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setPacketLength;
@@ -41,7 +40,6 @@ public class PacketHeaderConstraintsUtilTest {
             .setDstPorts(IntegerSpace.of(new SubRange(11, 12)))
             .setEcns(IntegerSpace.of(new SubRange(1, 3)))
             .setIpProtocols(Collections.singleton(IpProtocol.TCP))
-            .setFlowStates(ImmutableSet.of(FlowState.RELATED))
             .build();
 
     HeaderSpace hs = PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(phc).build();
@@ -50,7 +48,6 @@ public class PacketHeaderConstraintsUtilTest {
     assertThat(hs.getDstPorts(), equalTo(Collections.singleton(new SubRange(11, 12))));
     assertThat(hs.getIpProtocols(), equalTo(Collections.singleton(IpProtocol.TCP)));
     assertThat(hs.getNotDstPorts(), empty());
-    assertThat(hs.getStates(), equalTo(ImmutableSet.of(FlowState.RELATED)));
   }
 
   @Test
@@ -185,28 +182,6 @@ public class PacketHeaderConstraintsUtilTest {
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setFragmentOffsets(phc, builder);
-  }
-
-  @Test
-  public void testSetFlowStates() {
-    Builder builder = Flow.builder().setIngressNode("node").setIngressInterface("iface");
-    PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder()
-            .setFlowStates(Collections.singleton(FlowState.ESTABLISHED))
-            .build();
-    setFlowStates(phc, builder);
-    assertThat(builder.build().getState(), equalTo(FlowState.ESTABLISHED));
-  }
-
-  @Test
-  public void testSetFlowStatesMultiple() {
-    PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder()
-            .setFlowStates(ImmutableSet.of(FlowState.NEW, FlowState.ESTABLISHED))
-            .build();
-    Builder builder = Flow.builder();
-    thrown.expect(IllegalArgumentException.class);
-    setFlowStates(phc, builder);
   }
 
   @Test
