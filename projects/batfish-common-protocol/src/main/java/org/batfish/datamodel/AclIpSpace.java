@@ -29,6 +29,8 @@ public class AclIpSpace extends IpSpace {
 
   public static class Builder {
 
+    private TraceElement _traceElement;
+
     private final ImmutableList.Builder<AclIpSpaceLine> _lines;
     /*
      * Whether we know this Builder is full, aka whether it has an empty complement. If true, we
@@ -54,7 +56,12 @@ public class AclIpSpace extends IpSpace {
         }
         return EmptyIpSpace.INSTANCE;
       }
-      return new AclIpSpace(lines);
+      return new AclIpSpace(_traceElement, lines);
+    }
+
+    public Builder setTraceElement(TraceElement traceElement) {
+      _traceElement = traceElement;
+      return this;
     }
 
     public Builder then(AclIpSpaceLine line) {
@@ -268,10 +275,17 @@ public class AclIpSpace extends IpSpace {
 
   @Nonnull private final List<AclIpSpaceLine> _lines;
 
-  @JsonCreator
-  private AclIpSpace(@Nullable @JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
-    checkArgument(lines != null, "Missing %s", PROP_LINES);
+  private AclIpSpace(@Nullable TraceElement traceElement, @Nonnull List<AclIpSpaceLine> lines) {
+    super(traceElement);
     _lines = lines;
+  }
+
+  @JsonCreator
+  private static AclIpSpace jsonCreator(
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
+      @Nullable @JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
+    checkArgument(lines != null, "Missing %s", PROP_LINES);
+    return new AclIpSpace(traceElement, lines);
   }
 
   @Override
