@@ -292,7 +292,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -329,7 +328,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -5728,7 +5726,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
       Set<Integer> dscps = new TreeSet<>();
       Set<Integer> ecns = new TreeSet<>();
-      Set<FlowState> states = EnumSet.noneOf(FlowState.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
         if (feature.ACK() != null) {
           tcpFlags.add(
@@ -5889,8 +5886,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpType = IcmpType.TIMESTAMP_REQUEST;
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
-        } else if (feature.TRACKED() != null) {
-          states.add(FlowState.ESTABLISHED);
         } else if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
           icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
@@ -5920,7 +5915,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .setIcmpType(icmpType)
           .setProtocol(protocol)
           .setSrcPortRanges(srcPortRanges)
-          .setStates(states)
           .setTcpFlags(tcpFlags)
           .build();
     } else if (ctx.ogs != null) {
@@ -6020,7 +6014,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
-    Set<FlowState> states = EnumSet.noneOf(FlowState.class);
     for (Extended_access_list_additional_featureContext feature : ctx.features) {
       if (feature.ACK() != null) {
         tcpFlags.add(
@@ -6112,8 +6105,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         icmpType = IcmpType.TIME_EXCEEDED;
       } else if (feature.TRACEROUTE() != null) {
         icmpType = IcmpType.TRACEROUTE;
-      } else if (feature.TRACKED() != null) {
-        states.add(FlowState.ESTABLISHED);
       } else if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
       } else if (feature.URG() != null) {
@@ -6142,7 +6133,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ecns,
             icmpType,
             icmpCode,
-            states,
             tcpFlags);
     _currentExtendedIpv6Acl.addLine(line);
   }

@@ -4,7 +4,7 @@
     "flowHistory" : {
       "class" : "org.batfish.minesweeper.answers.FlowHistory",
       "traces" : {
-        "Flow<ingressNode:r1 ingressVrf:default srcIp:0.0.0.0 dstIp:42.42.42.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW>" : {
+        "Flow<ingressNode:r1 ingressVrf:default srcIp:0.0.0.0 dstIp:42.42.42.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0>" : {
           "environments" : {
             "BASE" : {
               "testrigName" : "tr-smt-bgp1"
@@ -20,7 +20,6 @@
             "ipProtocol" : "HOPOPT",
             "packetLength" : 0,
             "srcIp" : "0.0.0.0",
-            "state" : "NEW",
             "tag" : "tag",
             "tcpFlagsAck" : 1,
             "tcpFlagsCwr" : 1,
@@ -40,7 +39,7 @@
             ]
           }
         },
-        "Flow<ingressNode:r2 ingressVrf:default srcIp:0.0.0.0 dstIp:42.42.42.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW>" : {
+        "Flow<ingressNode:r2 ingressVrf:default srcIp:0.0.0.0 dstIp:42.42.42.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0>" : {
           "environments" : {
             "BASE" : {
               "testrigName" : "tr-smt-bgp1"
@@ -56,7 +55,6 @@
             "ipProtocol" : "HOPOPT",
             "packetLength" : 0,
             "srcIp" : "0.0.0.0",
-            "state" : "NEW",
             "tag" : "tag",
             "tcpFlagsAck" : 1,
             "tcpFlagsCwr" : 1,

@@ -52,7 +52,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeKeyType;
@@ -728,8 +727,6 @@ public class CiscoConversions {
       if (icmpCode != null) {
         newLine.setIcmpCodes(new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
       }
-      Set<FlowState> states = fromLine.getStates();
-      newLine.getStates().addAll(states);
       List<TcpFlagsMatchConditions> tcpFlags = fromLine.getTcpFlags();
       newLine.getTcpFlags().addAll(tcpFlags);
       Set<Integer> dscps = fromLine.getDscps();

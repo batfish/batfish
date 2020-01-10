@@ -34,7 +34,7 @@ public class Header6Space implements Serializable {
   private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
   private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
   private static final String PROP_SRC_PORTS = "srcPorts";
-  private static final String PROP_STATES = "states";
+  private static final String PROP_DEPRECATED_STATES = "states";
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
 
   private static boolean rangesContain(Collection<SubRange> ranges, int num) {
@@ -101,8 +101,6 @@ public class Header6Space implements Serializable {
 
   private SortedSet<SubRange> _srcPorts;
 
-  private Set<FlowState> _states;
-
   private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public Header6Space() {
@@ -118,7 +116,6 @@ public class Header6Space implements Serializable {
     _srcPorts = new TreeSet<>();
     _icmpTypes = new TreeSet<>();
     _icmpCodes = new TreeSet<>();
-    _states = EnumSet.noneOf(FlowState.class);
     _tcpFlags = new ArrayList<>();
     _notDscps = new TreeSet<>();
     _notDstIps = new TreeSet<>();
@@ -207,9 +204,6 @@ public class Header6Space implements Serializable {
       return false;
     }
     if (!_srcPorts.equals(other._srcPorts)) {
-      return false;
-    }
-    if (!_states.equals(other._states)) {
       return false;
     }
     if (!_tcpFlags.equals(other._tcpFlags)) {
@@ -333,11 +327,6 @@ public class Header6Space implements Serializable {
     return _srcPorts;
   }
 
-  @JsonProperty(PROP_STATES)
-  public Set<FlowState> getStates() {
-    return _states;
-  }
-
   @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
@@ -413,9 +402,6 @@ public class Header6Space implements Serializable {
       return false;
     }
     if (!_notSrcPorts.isEmpty() && rangesContain(_notSrcPorts, flow.getSrcPort())) {
-      return false;
-    }
-    if (!_states.isEmpty() && !_states.contains(flow.getState())) {
       return false;
     }
     if (!_tcpFlags.isEmpty() && _tcpFlags.stream().noneMatch(tcpFlags -> tcpFlags.match(flow))) {
@@ -541,10 +527,9 @@ public class Header6Space implements Serializable {
     _srcPorts = srcPorts;
   }
 
-  @JsonProperty(PROP_STATES)
-  public void setStates(Set<FlowState> states) {
-    _states = states;
-  }
+  @JsonProperty(PROP_DEPRECATED_STATES)
+  @Deprecated
+  private void setStates(Object ignored) {}
 
   @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public void setTcpFlags(List<TcpFlagsMatchConditions> tcpFlags) {
@@ -595,8 +580,6 @@ public class Header6Space implements Serializable {
         + _icmpCodes
         + ", NotIcmpCode:"
         + _notIcmpCodes
-        + ", States:"
-        + _states
         + ", TcpFlagsMatchConditions:"
         + _tcpFlags
         + "]";

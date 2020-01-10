@@ -3,9 +3,6 @@ package org.batfish.datamodel.answers;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
-import static org.batfish.datamodel.FlowState.ESTABLISHED;
-import static org.batfish.datamodel.FlowState.NEW;
-import static org.batfish.datamodel.FlowState.RELATED;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
@@ -17,6 +14,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EBGP;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_IBGP;
+import static org.batfish.datamodel.questions.BgpSessionStatus.ESTABLISHED;
 import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_ESTABLISHED;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
@@ -255,15 +253,6 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggestion)));
-  }
-
-  @Test
-  public void testFlowStateAutocomplete() {
-    assertThat(
-        AutoCompleteUtils.autoComplete(Type.FLOW_STATE, "e", 5).stream()
-            .map(AutocompleteSuggestion::getText)
-            .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(ESTABLISHED.toString(), RELATED.toString(), NEW.toString())));
   }
 
   @Test

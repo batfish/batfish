@@ -96,10 +96,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -142,7 +140,6 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -217,13 +214,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
-
-  private static final ExprAclLine ACL_LINE_EXISTING_CONNECTION =
-      new ExprAclLine(
-          LineAction.PERMIT,
-          new MatchHeaderSpace(
-              HeaderSpace.builder().setStates(ImmutableList.of(FlowState.ESTABLISHED)).build()),
-          "~EXISTING_CONNECTION~");
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
@@ -4365,8 +4355,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     !((MatchSrcInterface) line.getMatchCondition()).getSrcInterfaces().isEmpty())
             .collect(Collectors.toList()));
 
-    // Allow traffic for existing connections
-    lines.add(ACL_LINE_EXISTING_CONNECTION);
     return lines;
   }
 

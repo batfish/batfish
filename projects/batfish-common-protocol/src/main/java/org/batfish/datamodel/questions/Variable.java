@@ -42,7 +42,6 @@ public class Variable {
     FILTER_NAME("filterName", true),
     FILTER_SPEC("filterSpec", true),
     FLOAT("float", false),
-    FLOW_STATE("flowState", true),
     HEADER_CONSTRAINT("headerConstraint", false),
     INTEGER("integer", false),
     INTEGER_SPACE("integerSpace", true),

@@ -50,7 +50,6 @@ import static org.batfish.datamodel.questions.Variable.Type.DOUBLE;
 import static org.batfish.datamodel.questions.Variable.Type.FILTER;
 import static org.batfish.datamodel.questions.Variable.Type.FILTER_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
-import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACE;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
@@ -512,15 +511,6 @@ public final class ClientTest {
     String input = "\"string\"";
     Type expectedType = FLOAT;
     String expectedMessage = String.format("It is not a valid JSON %s value", FLOAT.getName());
-    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
-  }
-
-  @Test
-  public void testInvalidFlowStateValue() throws IOException {
-    String input = "5";
-    Type expectedType = FLOW_STATE;
-    String expectedMessage =
-        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -1606,14 +1596,6 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(FLOAT);
     Client.validateType(floatNode, variable);
-  }
-
-  @Test
-  public void testValidFlowStateValue() throws IOException {
-    JsonNode flowStateNode = _mapper.readTree("\"ESTABLISHED\"");
-    Variable variable = new Variable();
-    variable.setType(FLOW_STATE);
-    Client.validateType(flowStateNode, variable);
   }
 
   @Test
