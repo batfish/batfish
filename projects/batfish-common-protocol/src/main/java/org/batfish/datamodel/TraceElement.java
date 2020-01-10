@@ -162,6 +162,10 @@ public final class TraceElement implements Serializable, Comparable<TraceElement
     _fragments = ImmutableList.copyOf(fragments);
   }
 
+  public static TraceElement of(String text) {
+    return builder().add(text).build();
+  }
+
   @JsonCreator
   public static TraceElement jsonCreator(
       @Nullable @JsonProperty(PROP_FRAGMENTS) List<Fragment> fragments) {
