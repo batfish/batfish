@@ -37,7 +37,7 @@ net add vxlan vni4001 vxlan id 1004001
 net add bridge bridge ports vni4001
 net add bridge bridge vids 4001
 net add bridge bridge vlan-aware
-net add interface swp1
+net add interface swp1 ip address 10.10.102.2/24
 net add interface swp1 vrf vrf1
 net add loopback lo ip address 2.2.2.2/32
 net add vlan 4001 hwaddress 44:39:39:FF:40:94

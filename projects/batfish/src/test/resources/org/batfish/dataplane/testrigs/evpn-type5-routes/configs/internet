@@ -23,7 +23,7 @@ net add ptp global use-syslog yes
 net add ptp global verbose no
 net add ptp global summary-interval 0
 net add ptp global time-stamping
-net add interface swp1
+net add interface swp1 ip address 10.10.102.1/24
 net add interface swp2
 net add loopback lo ip address 100.100.100.100/32
 net add loopback lo ip address 100.100.100.101/32
