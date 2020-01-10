@@ -97,7 +97,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
   }
 
   @Override
