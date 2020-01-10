@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
@@ -181,7 +180,7 @@ public class CompareFiltersAnswerer extends Answerer {
     List<PermitAndDenyBdds> referenceBdds =
         new IpAccessListToBddImpl(bddPacket, referenceSrcMgr, referenceAcls, referenceIpSpaces)
             .reachAndMatchLines(referenceAcl);
-    return compareFilters(hostname, filtername, currentBdds, referenceBdds);
+    return compareFilters(hostname, filtername, currentBdds, referenceBdds, bddPacket);
   }
 
   @VisibleForTesting
@@ -189,18 +188,23 @@ public class CompareFiltersAnswerer extends Answerer {
       String hostname,
       String filtername,
       List<PermitAndDenyBdds> currentLineBdds,
-      List<PermitAndDenyBdds> referenceLineBdds) {
+      List<PermitAndDenyBdds> referenceLineBdds,
+      BDDPacket bddPacket) {
     checkArgument(!currentLineBdds.isEmpty());
     checkArgument(!referenceLineBdds.isEmpty());
-    assert currentLineBdds.stream()
-        .map(PermitAndDenyBdds::getMatchBdd)
-        .reduce(BDD::or)
-        .get()
+    assert bddPacket
+        .getFactory()
+        .orAll(
+            currentLineBdds.stream()
+                .flatMap(bdds -> Stream.of(bdds.getPermitBdd(), bdds.getDenyBdd()))
+                .collect(ImmutableList.toImmutableList()))
         .isOne();
-    assert referenceLineBdds.stream()
-        .map(PermitAndDenyBdds::getMatchBdd)
-        .reduce(BDD::or)
-        .get()
+    assert bddPacket
+        .getFactory()
+        .orAll(
+            referenceLineBdds.stream()
+                .flatMap(bdds -> Stream.of(bdds.getPermitBdd(), bdds.getDenyBdd()))
+                .collect(ImmutableList.toImmutableList()))
         .isOne();
 
     return IntStream.range(0, currentLineBdds.size())

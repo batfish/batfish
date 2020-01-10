@@ -37,7 +37,7 @@ public final class CompareFiltersAnswererTest {
 
   private static List<FilterDifference> compare(
       List<PermitAndDenyBdds> currentBdds, List<PermitAndDenyBdds> referenceBdds) {
-    return compareFilters(HOSTNAME, FILTER, currentBdds, referenceBdds)
+    return compareFilters(HOSTNAME, FILTER, currentBdds, referenceBdds, PKT)
         .collect(Collectors.toList());
   }
 
