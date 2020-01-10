@@ -111,9 +111,8 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       AclLine originalLine = _sanitizedLines.remove(lineNum);
 
       // If the original line has a concrete action, preserve it; otherwise default to DENY
-      ActionGetter actionGetter = new ActionGetter(false);
       LineAction unmatchableLineAction =
-          firstNonNull(actionGetter.visit(originalLine), LineAction.DENY);
+          firstNonNull(ActionGetter.getAction(originalLine), LineAction.DENY);
       _sanitizedLines.add(
           lineNum,
           ExprAclLine.builder()
