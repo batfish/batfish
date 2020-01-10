@@ -822,7 +822,10 @@ public class CiscoConversions {
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
     return AclIpSpace.builder()
-        .setTraceElement(namedStructure(networkObjectGroup.getName(), CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription()))
+        .setTraceElement(
+            namedStructure(
+                networkObjectGroup.getName(),
+                CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription()))
         .thenPermitting(networkObjectGroup.getLines())
         .build();
   }

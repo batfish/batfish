@@ -77,6 +77,6 @@ public final class VendorStructureId implements Serializable, Comparable<VendorS
     return Comparator.comparing(VendorStructureId::getFilename)
         .thenComparing(VendorStructureId::getStructureType)
         .thenComparing(VendorStructureId::getStructureName)
-        .compare(this,o);
+        .compare(this, o);
   }
 }
