@@ -2439,16 +2439,6 @@
             "sourceType" : "object-group service"
           }
         },
-        "ipSpaceMetadata" : {
-          "range-10.0.0.10-20" : {
-            "sourceName" : "range-10.0.0.10-20",
-            "sourceType" : "object network"
-          },
-          "server02" : {
-            "sourceName" : "server02",
-            "sourceType" : "object network"
-          }
-        },
         "ipSpaces" : {
           "range-10.0.0.10-20" : {
             "class" : "org.batfish.datamodel.AclIpSpace",
@@ -2486,6 +2476,24 @@
           "server02" : {
             "class" : "org.batfish.datamodel.IpIpSpace",
             "ip" : "192.168.126.64"
+          }
+        },
+        "traceElement" : {
+          "range-10.0.0.10-20" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'object network' named 'range-10.0.0.10-20'"
+              }
+            ]
+          },
+          "server02" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'object network' named 'server02'"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -11222,24 +11230,6 @@
             "sourceType" : "policy-map type inspect"
           }
         },
-        "ipSpaceMetadata" : {
-          "1.2.3.4-24" : {
-            "sourceName" : "1.2.3.4-24",
-            "sourceType" : "object-group network"
-          },
-          "dns_servers" : {
-            "sourceName" : "dns_servers",
-            "sourceType" : "object-group network"
-          },
-          "ntp_servers" : {
-            "sourceName" : "ntp_servers",
-            "sourceType" : "object-group network"
-          },
-          "obj_any" : {
-            "sourceName" : "obj_any",
-            "sourceType" : "object network"
-          }
-        },
         "ipSpaces" : {
           "1.2.3.4-24" : {
             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
@@ -11266,10 +11256,52 @@
                   "ipWildcard" : "1.1.1.1"
                 }
               }
-            ]
+            ],
+            "traceElement" : {
+              "fragments" : [
+                {
+                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                  "text" : "'object-group network' named 'ntp_servers'"
+                }
+              ]
+            }
           },
           "obj_any" : {
             "class" : "org.batfish.datamodel.UniverseIpSpace"
+          }
+        },
+        "traceElement" : {
+          "1.2.3.4-24" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'object-group network' named '1.2.3.4-24'"
+              }
+            ]
+          },
+          "dns_servers" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'object-group network' named 'dns_servers'"
+              }
+            ]
+          },
+          "ntp_servers" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'object-group network' named 'ntp_servers'"
+              }
+            ]
+          },
+          "obj_any" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'object network' named 'obj_any'"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -27268,20 +27300,6 @@
             "sourceType" : "firewall filter"
           }
         },
-        "ipSpaceMetadata" : {
-          "global~ASET" : {
-            "sourceName" : "global~ASET",
-            "sourceType" : "address-book"
-          },
-          "notglobalAttached~ASET" : {
-            "sourceName" : "notglobalAttached~ASET",
-            "sourceType" : "address-book"
-          },
-          "notglobalUnattached~ASET" : {
-            "sourceName" : "notglobalUnattached~ASET",
-            "sourceType" : "address-book"
-          }
-        },
         "ipSpaces" : {
           "global~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
@@ -27291,6 +27309,32 @@
           },
           "notglobalUnattached~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          }
+        },
+        "traceElement" : {
+          "global~ASET" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'address-book' named 'global~ASET'"
+              }
+            ]
+          },
+          "notglobalAttached~ASET" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'address-book' named 'notglobalAttached~ASET'"
+              }
+            ]
+          },
+          "notglobalUnattached~ASET" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'address-book' named 'notglobalUnattached~ASET'"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -31885,16 +31929,20 @@
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "ipSpaceMetadata" : {
-          "rfc1918_10" : {
-            "sourceName" : "rfc1918_10",
-            "sourceType" : "address object"
-          }
-        },
         "ipSpaces" : {
           "rfc1918_10" : {
             "class" : "org.batfish.datamodel.PrefixIpSpace",
             "prefix" : "10.0.0.0/8"
+          }
+        },
+        "traceElement" : {
+          "rfc1918_10" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "'address object' named 'rfc1918_10'"
+              }
+            ]
           }
         },
         "vendorFamily" : { }
