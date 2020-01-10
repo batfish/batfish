@@ -348,4 +348,11 @@ public class CumulusConcatenatedConfigurationTest {
         c.getVrfs().get("vrf0").getStaticRoutes(),
         equalTo(ImmutableSortedSet.of(route0.convert())));
   }
+
+  @Test
+  public void testLowerCaseHostname() {
+    CumulusConcatenatedConfiguration vsConfig =
+        CumulusConcatenatedConfiguration.builder().setHostname("Node").build();
+    assertThat(vsConfig.getHostname(), equalTo("node"));
+  }
 }

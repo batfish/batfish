@@ -11,31 +11,33 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.datamodel.LineAction;
-import org.junit.Before;
 import org.junit.Test;
 
 public final class CompareFiltersAnswererTest {
   private static final String HOSTNAME = "hostname";
   private static final String FILTER = "filter";
-
-  private BDDPacket _pkt;
-
-  @Before
-  public void setup() {
-    _pkt = new BDDPacket();
-  }
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final BDD ZERO = PKT.getFactory().zero();
 
   private static List<FilterDifference> compare(
       List<LineAction> currentActions,
       List<BDD> currentBdds,
       List<LineAction> referenceActions,
       List<BDD> referenceBdds) {
-    return compareFilters(
-            HOSTNAME, FILTER, currentActions, currentBdds, referenceActions, referenceBdds)
+    List<PermitAndDenyBdds> currentLineBdds = toPermitAndDenyBdds(currentActions, currentBdds);
+    List<PermitAndDenyBdds> refLineBdds = toPermitAndDenyBdds(referenceActions, referenceBdds);
+    return compare(currentLineBdds, refLineBdds);
+  }
+
+  private static List<FilterDifference> compare(
+      List<PermitAndDenyBdds> currentBdds, List<PermitAndDenyBdds> referenceBdds) {
+    return compareFilters(HOSTNAME, FILTER, currentBdds, referenceBdds, PKT)
         .collect(Collectors.toList());
   }
 
@@ -48,7 +50,7 @@ public final class CompareFiltersAnswererTest {
     checkArgument(lineBdds.length > 0);
 
     ImmutableList.Builder<BDD> aclBdds = ImmutableList.builder();
-    BDD reach = _pkt.getFactory().one();
+    BDD reach = PKT.getFactory().one();
     for (BDD lineBdd : lineBdds) {
       aclBdds.add(reach.and(lineBdd));
       reach = reach.and(lineBdd.not());
@@ -60,16 +62,16 @@ public final class CompareFiltersAnswererTest {
 
   @Test
   public void testCompareFilters() {
-    BDD dstIp0 = _pkt.getDstIp().value(0);
-    BDD dstIp1 = _pkt.getDstIp().value(1);
-    BDD srcIp0 = _pkt.getSrcIp().value(0);
-    BDD dstPort0 = _pkt.getDstPort().value(0);
-    BDD srcPort0 = _pkt.getSrcPort().value(0);
+    BDD dstIp0 = PKT.getDstIp().value(0);
+    BDD dstIp1 = PKT.getDstIp().value(1);
+    BDD srcIp0 = PKT.getSrcIp().value(0);
+    BDD dstPort0 = PKT.getDstPort().value(0);
+    BDD srcPort0 = PKT.getSrcPort().value(0);
 
     List<BDD> zeroBdds = aclBdds(dstIp0, srcIp0, dstPort0, srcPort0);
 
     // Representation of an empty Acl.
-    List<BDD> emptyAclBdds = ImmutableList.of(_pkt.getFactory().one());
+    List<BDD> emptyAclBdds = ImmutableList.of(PKT.getFactory().one());
     List<LineAction> emptyAclActions = ImmutableList.of();
 
     List<LineAction> pppp = ImmutableList.of(PERMIT, PERMIT, PERMIT, PERMIT);
@@ -111,5 +113,20 @@ public final class CompareFiltersAnswererTest {
           compare,
           contains(difference(0, 1), difference(0, 3), difference(1, 0), difference(3, 0)));
     }
+  }
+
+  private static List<PermitAndDenyBdds> toPermitAndDenyBdds(
+      List<LineAction> actions, List<BDD> bdds) {
+    // bdds should have one more element than actions, representing the default denied packets
+    assert bdds.size() == actions.size() + 1;
+    return IntStream.range(0, bdds.size())
+        .mapToObj(
+            i -> {
+              LineAction action = i == actions.size() ? DENY : actions.get(i);
+              return action == PERMIT
+                  ? new PermitAndDenyBdds(bdds.get(i), ZERO)
+                  : new PermitAndDenyBdds(ZERO, bdds.get(i));
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 }
