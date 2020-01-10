@@ -93,7 +93,8 @@ public class Variable {
     SUBRANGE("subrange", true),
     VRF("vrf", true),
     VXLAN_VNI_PROPERTY_SPEC("vxlanVniPropertySpec", true),
-    ZONE("zone", true);
+    ZONE("zone", true),
+    DEPRECATED_FLOW_STATE("flowState", false);
 
     private static final Map<String, Variable.Type> MAP = initMap();
 

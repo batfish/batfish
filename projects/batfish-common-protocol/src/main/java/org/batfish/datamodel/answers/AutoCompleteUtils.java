@@ -323,6 +323,11 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case DEPRECATED_FLOW_STATE:
+          {
+            suggestions = baseAutoComplete(query, ImmutableSet.of("NEW", "ESTABLISHED", "RELATED"));
+            break;
+          }
         case DISPOSITION_SPEC:
           {
             suggestions = DispositionSpecifier.autoComplete(query);
