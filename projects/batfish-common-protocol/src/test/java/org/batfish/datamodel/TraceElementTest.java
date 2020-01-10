@@ -18,7 +18,7 @@ public final class TraceElementTest {
   @Test
   public void testTextFragment_equals() {
     new EqualsTester()
-        .addEqualityGroup(new TextFragment(""), new TextFragment(""))
+        .addEqualityGroup(new TextFragment("a"), new TextFragment("a"))
         .addEqualityGroup(new TextFragment("x"))
         .testEquals();
   }
