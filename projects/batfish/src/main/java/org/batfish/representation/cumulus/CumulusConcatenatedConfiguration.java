@@ -302,7 +302,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   /** Add interface properties based on what we saw in the interfaces file */
   private void populateInterfacesInterfaceProperties(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(
+            iface ->
+                !iface.getName().equals(BRIDGE_NAME)
+                    && !InterfaceConverter.isVxlan(iface)) // do not popular vxlans
         .forEach(iface -> populateInterfaceProperties(c, iface));
     populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
   }
@@ -406,6 +409,12 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     viIface.setActive(true);
     // this loopback should be in its own vrf
     viIface.setVrf(getOrCreateVrf(c, iface.getName()));
+  }
+
+  /** properties for VRF loopback interfaces */
+  private void populateVxlanInterfaceProperties(Configuration c, InterfacesInterface iface) {
+    org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
+    viIface.setInterfaceType(InterfaceType.TUNNEL);
   }
 
   private void populateSubInterfaceProperties(
@@ -513,7 +522,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   @VisibleForTesting
   void initializeAllInterfaces(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME)) // not a bridge
+        .filter(
+            iface ->
+                !iface.getName().equals(BRIDGE_NAME) // not a bridge
+                    && !InterfaceConverter.isVxlan(iface) // not vxlan
+            )
         .forEach(
             iface ->
                 org.batfish.datamodel.Interface.builder()
