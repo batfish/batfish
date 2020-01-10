@@ -123,6 +123,18 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     populatePortsInterfaceProperties(c);
     populateFrrInterfaceProperties(c);
 
+    // for interfaces that didn't get an address via either interfaces or FRR, give them a link
+    // local address if they are being used for BGP unnumbered
+    c.getAllInterfaces()
+        .forEach(
+            (iname, iface) -> {
+              if (iface.getAllAddresses().size() == 0
+                  && isUsedForBgpUnnumbered(iface.getName(), _frrConfiguration.getBgpProcess())) {
+                iface.setAddress(LINK_LOCAL_ADDRESS);
+                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
+              }
+            });
+
     initVrfStaticRoutes(c);
 
     convertIpAsPathAccessLists(c, _frrConfiguration.getIpAsPathAccessLists());
@@ -451,11 +463,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       List<ConcreteInterfaceAddress> addresses = vsIface.getAddresses();
       viIface.setAddress(addresses.get(0));
       viIface.setAllAddresses(addresses);
-    } else {
-      if (isUsedForBgpUnnumbered(vsIface.getName(), _frrConfiguration.getBgpProcess())) {
-        viIface.setAddress(LINK_LOCAL_ADDRESS);
-        viIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
-      }
     }
 
     // description

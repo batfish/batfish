@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.DEFAULT_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -155,6 +156,63 @@ public class CumulusConcatenatedConfigurationTest {
             .getAllInterfaces()
             .get(vsIface.getName())
             .getActive());
+  }
+
+  /** Tests that interfaces are assigned LLAs iff needed */
+  @Test
+  public void testInterface_assignLla() {
+    /*
+     - swp1 -- no address in interfaces or frr, not used for unnumbered
+     - swp2 -- no address in interfaces or frr, used for unnumbered
+     - swp3 -- no address in interfaces, address in frr
+     - swp4 -- address in interfaces, no address in frr
+
+     LLA should assigned only to swp2
+    */
+    CumulusInterfacesConfiguration interfacesConfiguration = new CumulusInterfacesConfiguration();
+    interfacesConfiguration.createOrGetInterface("swp1");
+    interfacesConfiguration.createOrGetInterface("swp2");
+    interfacesConfiguration.createOrGetInterface("swp3");
+    interfacesConfiguration
+        .createOrGetInterface("swp4")
+        .addAddress(ConcreteInterfaceAddress.parse("4.4.4.4/31"));
+
+    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    frrConfiguration.getInterfaces().put("swp1", new FrrInterface("swp1"));
+    frrConfiguration.getInterfaces().put("swp2", new FrrInterface("swp2"));
+    frrConfiguration.getInterfaces().put("swp3", new FrrInterface("swp3"));
+    frrConfiguration.getInterfaces().put("swp4", new FrrInterface("swp4"));
+    frrConfiguration
+        .getInterfaces()
+        .get("swp3")
+        .getIpAddresses()
+        .add(ConcreteInterfaceAddress.parse("3.3.3.3/31"));
+
+    BgpProcess bgpProc = new BgpProcess();
+    BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
+    BgpNeighbor neighbpr = new BgpInterfaceNeighbor("swp2");
+    neighbpr.setRemoteAsType(RemoteAsType.EXTERNAL);
+    frrConfiguration.setBgpProcess(bgpProc);
+    bgpProc.getVrfs().put(DEFAULT_VRF_NAME, bgpVrf);
+    bgpVrf.getNeighbors().put(neighbpr.getName(), neighbpr);
+
+    Configuration c =
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("test")
+            .setInterfacesConfiguration(interfacesConfiguration)
+            .setFrrConfiguration(frrConfiguration)
+            .build()
+            .toVendorIndependentConfiguration();
+
+    assertEquals(c.getAllInterfaces().get("swp1").getAllAddresses(), ImmutableSet.of());
+    assertEquals(
+        c.getAllInterfaces().get("swp2").getAllAddresses(), ImmutableSet.of(LINK_LOCAL_ADDRESS));
+    assertEquals(
+        c.getAllInterfaces().get("swp3").getAllAddresses(),
+        ImmutableSet.of(ConcreteInterfaceAddress.parse("3.3.3.3/31")));
+    assertEquals(
+        c.getAllInterfaces().get("swp4").getAllAddresses(),
+        ImmutableSet.of(ConcreteInterfaceAddress.parse("4.4.4.4/31")));
   }
 
   @Test
