@@ -1396,4 +1396,12 @@ public final class CumulusConversionsTest {
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
     assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
   }
+
+  @Test
+  public void testGetOtherAddress() {
+    assertEquals(
+        getOtherAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")), Ip.parse("1.1.1.0"));
+    assertEquals(
+        getOtherAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")), Ip.parse("1.1.1.1"));
+  }
 }
