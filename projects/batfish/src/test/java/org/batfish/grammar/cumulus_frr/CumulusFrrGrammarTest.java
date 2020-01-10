@@ -14,6 +14,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -31,10 +32,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
@@ -44,6 +48,8 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -595,6 +601,60 @@ public class CumulusFrrGrammarTest {
     BgpNeighbor neighbor = neighbors.get("1.2.3.4");
     assertThat(neighbor, isA(BgpIpNeighbor.class));
     assertThat(neighbor.getRemoteAs(), equalTo(2L));
+  }
+
+  @Test
+  public void testBgpNeighborCompatiblity() throws IOException {
+    String snapshotName = "bgp-neighbor-compatibility";
+    /*
+    There are two nodes in the snapshot, each with XX interfaces
+      u swp1: both nodes have an interface neighbor with no IP address
+      n swp2: both nodes have an interface neighbor with a /31 address (same subnet)
+      u swp3: both nodes have an interface neighbor with a /24 address (same subnet)
+      u swp4: both nodes have an interface neighbor with a /31 and a /24 address
+      - swp5: node1 has an interface neighbor with /31 and node2 has an interface neighbor with no IP address
+      u swp6: node1 has an interface neighbor with /24 and node2 has an interface neighbor with no IP address
+      u swp7: node1 has an interface neighbor with /31 and /24 addresses and node 2 has an interface neighbor with no IP address
+      n swp8: node1 has an interface neighbor with /31 and node2 has an IP neighbor in the same subnet
+      - swp9: node1 has an interface neighbor with /24 and node2 has an IP neighbor in the same subnet
+
+    The layer1 topology file connects matching swpX interfaces on each node (swp1<>swp1, ...)
+
+    Combinations marked 'u' should be unnumbered sessions, combinations marked 'n' should be numbered sessions, and those marked '-' are invalid combinations.
+     */
+    List<String> configurationNames = ImmutableList.of("node1", "node2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .setLayer1TopologyText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpGraph =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot()).getGraph();
+
+    // unnumbered sessions
+    assertThat(
+        bgpGraph.edges().stream()
+            .map(e -> e.nodeU().getPeerInterface())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet()),
+        containsInAnyOrder("swp1", "swp3", "swp4", "swp6", "swp7"));
+
+    // numbered sessions: swp2 and swp8
+    assertThat(
+        bgpGraph.edges().stream()
+            .map(e -> e.nodeU().getRemotePeerPrefix())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet()),
+        containsInAnyOrder(
+            Prefix.parse("2.2.2.0/32"),
+            Prefix.parse("2.2.2.1/32"),
+            Prefix.parse("8.8.8.0/32"),
+            Prefix.parse("8.8.8.1/32")));
   }
 
   @Test
