@@ -80,6 +80,7 @@ i_property
   | i_alias
   | i_bond_lacp_bypass_allow
   | i_bond_lacp_rate
+  | i_bond_master
   | i_bond_miimon
   | i_bond_min_links
   | i_bond_mode
@@ -141,6 +142,11 @@ i_bond_lacp_bypass_allow
 i_bond_lacp_rate
 :
   BOND_LACP_RATE NEWLINE
+;
+
+i_bond_master
+:
+   BOND_MASTER NEWLINE
 ;
 
 i_bond_miimon
