@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -45,7 +46,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.CommunityList;
@@ -54,7 +54,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -164,6 +163,18 @@ public final class CumulusConversions {
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
+  }
+
+  @VisibleForTesting
+  static Ip getOtherAddress(ConcreteInterfaceAddress concreteAddress) {
+    checkArgument(
+        concreteAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 1,
+        "Method otherAddress only works for /31 addresses. Got %s",
+        concreteAddress);
+    Prefix prefix = concreteAddress.getPrefix();
+    return concreteAddress.getIp().equals(prefix.getStartIp())
+        ? prefix.getEndIp()
+        : prefix.getStartIp();
   }
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -399,20 +410,11 @@ public final class CumulusConversions {
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
       interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
-      String ifaceName = interfaceNeighbor.getName();
-      // if an interface neighbor has explicit address on the interface, it is a
-      // passive (numbered) peer
-      if (c.getAllInterfaces().containsKey(ifaceName)
-          && c.getAllInterfaces().get(ifaceName).getAddress() != null
-          && c.getAllInterfaces().get(ifaceName).getAddress() instanceof ConcreteInterfaceAddress) {
-        addIpv4PassiveBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
-      } else {
-        addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
-      }
+      addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
       ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
-      addIpv4ActiveBgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+      addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
       throw new IllegalArgumentException(
           "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
@@ -431,10 +433,28 @@ public final class CumulusConversions {
       w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
-        BgpUnnumberedPeerConfig.builder()
-            .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface(neighbor.getName());
+
+    BgpPeerConfig.Builder<?, ?> peerConfigBuilder;
+
+    // if an interface neighbor has only one address and that address is a /31, it gets treated as
+    // numbered peer
+    InterfaceAddress ifaceAddress =
+        c.getAllInterfaces().get(neighbor.getName()).getAllAddresses().iterator().next();
+    if (c.getAllInterfaces().get(neighbor.getName()).getAllAddresses().size() == 1
+        && ifaceAddress instanceof ConcreteInterfaceAddress
+        && ((ConcreteInterfaceAddress) ifaceAddress).getNetworkBits()
+            == Prefix.MAX_PREFIX_LENGTH - 1) {
+      ConcreteInterfaceAddress concreteAddrress = (ConcreteInterfaceAddress) ifaceAddress;
+      peerConfigBuilder =
+          BgpActivePeerConfig.builder()
+              .setLocalIp(concreteAddrress.getIp())
+              .setPeerAddress(getOtherAddress(concreteAddrress));
+    } else {
+      peerConfigBuilder =
+          BgpUnnumberedPeerConfig.builder()
+              .setLocalIp(BGP_UNNUMBERED_IP)
+              .setPeerInterface(neighbor.getName());
+    }
     generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 
@@ -517,7 +537,7 @@ public final class CumulusConversions {
         .build();
   }
 
-  private static void addIpv4ActiveBgpNeighbor(
+  private static void addIpv4BgpNeighbor(
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       BgpIpNeighbor neighbor,
@@ -539,29 +559,6 @@ public final class CumulusConversions {
                     .orElse(
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
-  }
-
-  private static void addIpv4PassiveBgpNeighbor(
-      Configuration c,
-      CumulusNodeConfiguration vsConfig,
-      BgpInterfaceNeighbor neighbor,
-      @Nullable Long localAs,
-      BgpVrf bgpVrf,
-      org.batfish.datamodel.BgpProcess newProc,
-      Warnings w) {
-    if (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null) {
-      w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
-      return;
-    }
-
-    Interface viIface = c.getAllInterfaces().get(neighbor.getName());
-    ConcreteInterfaceAddress ifaceAddress = (ConcreteInterfaceAddress) viIface.getAddress();
-
-    BgpPassivePeerConfig.Builder peerConfigBuilder =
-        BgpPassivePeerConfig.builder()
-            .setLocalIp(ifaceAddress.getIp())
-            .setPeerPrefix(ifaceAddress.getPrefix());
     generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
   }
 

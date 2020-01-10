@@ -19,6 +19,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateBgpC
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
+import static org.batfish.representation.cumulus.CumulusConversions.getOtherAddress;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
@@ -1278,9 +1279,9 @@ public final class CumulusConversionsTest {
     assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
   }
 
-  /** An interface neighbor with an explicit address should be treated as a passive neighbor */
+  /** An interface neighbor with (only) a /31 address should be treated as a numbered neighbor */
   @Test
-  public void testAddBgpNeighbor_numberedPassiveInterface() {
+  public void testAddBgpNeighbor_numberedInterface() {
     // set up the VI bgp process
     org.batfish.datamodel.BgpProcess bgpProc =
         new org.batfish.datamodel.BgpProcess(
@@ -1289,15 +1290,13 @@ public final class CumulusConversionsTest {
     viVrf.setBgpProcess(bgpProc);
 
     // set up the vi interface
-    Prefix ifacePrefix = Prefix.parse("1.1.1.1/31");
+    ConcreteInterfaceAddress ifaceAddress = ConcreteInterfaceAddress.parse("1.1.1.1/31");
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder()
             .setName("iface")
             .setOwner(c)
-            .setAddress(
-                ConcreteInterfaceAddress.create(
-                    ifacePrefix.getStartIp(), ifacePrefix.getPrefixLength()))
+            .setAddress(ifaceAddress)
             .build();
     c.getAllInterfaces().put(viIface.getName(), viIface);
     c.getVrfs().put(viVrf.getName(), viVrf);
@@ -1312,7 +1311,8 @@ public final class CumulusConversionsTest {
         neighbor,
         new Warnings());
 
-    assertTrue(bgpProc.getPassiveNeighbors().containsKey(ifacePrefix));
-    assertEquals(bgpProc.getPassiveNeighbors().get(ifacePrefix).getPeerPrefix(), ifacePrefix);
+    Prefix peerPrefix = Prefix.create(getOtherAddress(ifaceAddress), Prefix.MAX_PREFIX_LENGTH);
+    assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
+    assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
   }
 }
