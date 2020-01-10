@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 /** A firewall filter on Juniper. */
@@ -37,6 +38,11 @@ public final class ConcreteFirewallFilter extends FirewallFilter {
   @Override
   public boolean isUsedForFBF() {
     return _usedForFBF;
+  }
+
+  @Override
+  public Stream<String> getFromZones() {
+    return _fromZone == null ? Stream.of() : Stream.of(_fromZone);
   }
 
   public Map<String, FwTerm> getTerms() {

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 /** A firewall filter on Juniper that is a concatenation of its member filters. */
@@ -37,6 +38,11 @@ public final class CompositeFirewallFilter extends FirewallFilter {
   @Override
   public boolean isUsedForFBF() {
     return _inner.stream().anyMatch(FirewallFilter::isUsedForFBF);
+  }
+
+  @Override
+  public Stream<String> getFromZones() {
+    return _inner.stream().flatMap(FirewallFilter::getFromZones);
   }
 
   private final @Nonnull List<FirewallFilter> _inner;

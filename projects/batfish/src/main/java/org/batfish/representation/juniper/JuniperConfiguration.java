@@ -2073,13 +2073,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
-      for (String fromZone : zone.getFromZonePolicies().keySet()) {
-        String zonePolicyLineDesc =
-            fromZone.equals(zone.getName())
-                ? String.format("Match intra-zone policy for zone %s", fromZone)
-                : String.format(
-                    "Match cross-zone policy from-zone %s to-zone %s", fromZone, zone.getName());
-        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, fromZone));
+      for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
+        String filterName = e.getKey();
+        FirewallFilter filter = e.getValue();
+
+        // Name the ACL line that will apply zone policy
+        String zonePolicyLineDesc;
+        String fromZones =
+            filter.getFromZones().distinct().sorted().collect(Collectors.joining(", "));
+        if (fromZones.isEmpty()) {
+          // General inbound policy
+          zonePolicyLineDesc = String.format("Match inbound zone policy %s", filterName);
+        } else if (fromZones.contains(", ")) {
+          // Cross-zone policy for multiple from-zones
+          zonePolicyLineDesc =
+              String.format(
+                  "Match cross-zone policy from zones %s to zone %s", fromZones, zone.getName());
+        } else if (fromZones.equals(zone.getName())) {
+          // Intra-zone policy
+          zonePolicyLineDesc = String.format("Match intra-zone policy for zone %s", fromZones);
+        } else {
+          // Cross-zone policy for a single from-zone
+          zonePolicyLineDesc =
+              String.format(
+                  "Match cross-zone policy from zone %s to zone %s", fromZones, zone.getName());
+        }
+
+        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, filterName));
       }
     }
 
