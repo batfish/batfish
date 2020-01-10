@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpaceMetadata;
+import org.batfish.datamodel.TraceElement;
 
 public final class PermittedByAclIpSpaceLine extends IpSpaceTraceEvent {
   private static final String PROP_INDEX = "index";
@@ -22,11 +22,10 @@ public final class PermittedByAclIpSpaceLine extends IpSpaceTraceEvent {
       @Nonnull String lineDescription,
       @Nonnull Ip ip,
       @Nonnull String ipDescription,
-      @Nullable IpSpaceMetadata ipSpaceMetadata) {
+      @Nullable TraceElement traceElement) {
     String displayName =
-        ipSpaceMetadata != null
-            ? String.format(
-                "'%s' named '%s'", ipSpaceMetadata.getSourceType(), ipSpaceMetadata.getSourceName())
+        traceElement != null
+            ? traceElement.toString()
             : String.format("'%s' named '%s'", AclIpSpace.class.getSimpleName(), name);
     return String.format(
         "%s %s permitted by %s line %d: %s",
@@ -58,13 +57,13 @@ public final class PermittedByAclIpSpaceLine extends IpSpaceTraceEvent {
 
   public PermittedByAclIpSpaceLine(
       @Nonnull String name,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nullable TraceElement traceElement,
       int index,
       @Nonnull String lineDescription,
       @Nonnull Ip ip,
       @Nonnull String ipDescription) {
     super(
-        computeDescription(name, index, lineDescription, ip, ipDescription, ipSpaceMetadata),
+        computeDescription(name, index, lineDescription, ip, ipDescription, traceElement),
         ip,
         ipDescription);
     _name = name;

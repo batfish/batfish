@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceMetadata;
+import org.batfish.datamodel.TraceElement;
 
 public final class DeniedByNamedIpSpace extends IpSpaceTraceEvent {
   private static final String PROP_DESCRIPTION = "description";
@@ -19,20 +19,14 @@ public final class DeniedByNamedIpSpace extends IpSpaceTraceEvent {
       @Nonnull Ip ip,
       @Nonnull String ipDescription,
       @Nonnull String ipSpaceDescription,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nullable TraceElement traceElement,
       @Nonnull String name) {
-    String type;
-    String displayName;
-    String description;
-    if (ipSpaceMetadata != null) {
-      type = ipSpaceMetadata.getSourceType();
-      displayName = ipSpaceMetadata.getSourceName();
-      description = "";
-    } else {
-      type = IpSpace.class.getSimpleName();
-      displayName = name;
-      description = String.format(": %s", ipSpaceDescription);
+    if (traceElement != null) {
+      return traceElement.toString();
     }
+    String type = IpSpace.class.getSimpleName();
+    String displayName = name;
+    String description = String.format(": %s", ipSpaceDescription);
     return String.format(
         "%s %s denied by '%s' named '%s'%s", ipDescription, ip, type, displayName, description);
   }
@@ -56,10 +50,10 @@ public final class DeniedByNamedIpSpace extends IpSpaceTraceEvent {
       @Nonnull Ip ip,
       @Nonnull String ipDescription,
       @Nonnull String ipSpaceDescription,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nullable TraceElement traceElement,
       @Nonnull String name) {
     this(
-        computeDescription(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name),
+        computeDescription(ip, ipDescription, ipSpaceDescription, traceElement, name),
         ip,
         ipDescription,
         name);

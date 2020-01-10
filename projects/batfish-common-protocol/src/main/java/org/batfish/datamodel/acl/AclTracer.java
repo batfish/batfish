@@ -21,10 +21,10 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.visitors.IpSpaceDescriber;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
@@ -41,14 +41,14 @@ public final class AclTracer extends AclLineEvaluator {
       @Nullable String srcInterface,
       @Nonnull Map<String, IpAccessList> availableAcls,
       @Nonnull Map<String, IpSpace> namedIpSpaces,
-      @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
+      @Nonnull Map<String, TraceElement> namedTraceElement) {
     AclTracer tracer =
-        new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
+        new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedTraceElement);
     tracer.trace(ipAccessList);
     return tracer.getTrace();
   }
 
-  private final Map<IpSpace, IpSpaceMetadata> _ipSpaceMetadata;
+  private final Map<IpSpace, TraceElement> _traceElement;
 
   private final Map<IpSpace, String> _ipSpaceNames;
 
@@ -59,14 +59,14 @@ public final class AclTracer extends AclLineEvaluator {
       @Nullable String srcInterface,
       @Nonnull Map<String, IpAccessList> availableAcls,
       @Nonnull Map<String, IpSpace> namedIpSpaces,
-      @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
+      @Nonnull Map<String, TraceElement> namedTraceElement) {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceNames = new IdentityHashMap<>();
-    _ipSpaceMetadata = new IdentityHashMap<>();
+    _traceElement = new IdentityHashMap<>();
     _nodeStack.push(new TraceNode());
     namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
-    namedIpSpaceMetadata.forEach(
-        (name, ipSpaceMetadata) -> _ipSpaceMetadata.put(namedIpSpaces.get(name), ipSpaceMetadata));
+    namedTraceElement.forEach(
+        (name, traceElement) -> _traceElement.put(namedIpSpaces.get(name), traceElement));
   }
 
   private String computeLineDescription(AclIpSpaceLine line, IpSpaceDescriber describer) {
@@ -81,8 +81,8 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public Map<IpSpace, IpSpaceMetadata> getIpSpaceMetadata() {
-    return _ipSpaceMetadata;
+  public Map<IpSpace, TraceElement> getTraceElement() {
+    return _traceElement;
   }
 
   public @Nonnull Map<IpSpace, String> getIpSpaceNames() {
@@ -122,7 +122,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   public void recordAction(
       @Nonnull String aclIpSpaceName,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nullable TraceElement traceElement,
       int index,
       @Nonnull AclIpSpaceLine line,
       Ip ip,
@@ -132,7 +132,7 @@ public final class AclTracer extends AclLineEvaluator {
       setEvent(
           new PermittedByAclIpSpaceLine(
               aclIpSpaceName,
-              ipSpaceMetadata,
+              traceElement,
               index,
               computeLineDescription(line, describer),
               ip,
@@ -141,7 +141,7 @@ public final class AclTracer extends AclLineEvaluator {
       setEvent(
           new DeniedByAclIpSpaceLine(
               aclIpSpaceName,
-              ipSpaceMetadata,
+              traceElement,
               index,
               computeLineDescription(line, describer),
               ip,
@@ -157,10 +157,10 @@ public final class AclTracer extends AclLineEvaluator {
 
   public void recordDefaultDeny(
       @Nonnull String aclIpSpaceName,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nullable TraceElement traceElement,
       Ip ip,
       String ipDescription) {
-    setEvent(new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
+    setEvent(new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, traceElement));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -170,17 +170,15 @@ public final class AclTracer extends AclLineEvaluator {
   public void recordNamedIpSpaceAction(
       @Nonnull String name,
       @Nonnull String ipSpaceDescription,
-      IpSpaceMetadata ipSpaceMetadata,
+      TraceElement traceElement,
       boolean permit,
       Ip ip,
       String ipDescription) {
     if (permit) {
       setEvent(
-          new PermittedByNamedIpSpace(
-              ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
+          new PermittedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, traceElement, name));
     } else {
-      setEvent(
-          new DeniedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, ipSpaceMetadata, name));
+      setEvent(new DeniedByNamedIpSpace(ip, ipDescription, ipSpaceDescription, traceElement, name));
     }
   }
 

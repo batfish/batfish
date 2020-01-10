@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.TraceElements.namedStructure;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
@@ -70,7 +71,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -2882,10 +2882,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .keySet()
                   .forEach(
                       ipSpaceName ->
-                          _c.getIpSpaceMetadata()
+                          _c.getTraceElement()
                               .put(
                                   ipSpaceName,
-                                  new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
+                                  namedStructure(ipSpaceName, ADDRESS_BOOK.getDescription())));
             });
 
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
@@ -3036,10 +3036,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .keySet()
             .forEach(
                 ipSpaceName ->
-                    _c.getIpSpaceMetadata()
+                    _c.getTraceElement()
                         .put(
                             ipSpaceName,
-                            new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
+                            namedStructure(ipSpaceName, ADDRESS_BOOK.getDescription())));
       }
     }
     // If there are zones, then assume we will need to support existing connection ACL

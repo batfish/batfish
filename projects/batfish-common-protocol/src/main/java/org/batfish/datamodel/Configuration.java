@@ -129,7 +129,7 @@ public final class Configuration implements Serializable {
   private static final String PROP_IP6_ACCESS_LISTS = "ip6AccessLists";
   private static final String PROP_IP_ACCESS_LISTS = "ipAccessLists";
   private static final String PROP_IP_SPACES = "ipSpaces";
-  private static final String PROP_IP_SPACE_METADATA = "ipSpaceMetadata";
+  private static final String PROP_IP_SPACE_METADATA = "traceElement";
   private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
   private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
   private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
@@ -197,7 +197,7 @@ public final class Configuration implements Serializable {
 
   private NavigableMap<String, IpSpace> _ipSpaces;
 
-  private NavigableMap<String, IpSpaceMetadata> _ipSpaceMetadata;
+  private NavigableMap<String, TraceElement> _traceElement;
 
   private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
 
@@ -274,7 +274,7 @@ public final class Configuration implements Serializable {
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
     _ipSpaces = new TreeMap<>();
-    _ipSpaceMetadata = new TreeMap<>();
+    _traceElement = new TreeMap<>();
     _ipsecPeerConfigs = ImmutableSortedMap.of();
     _ipsecPhase2Policies = ImmutableSortedMap.of();
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
@@ -532,8 +532,8 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_IP_SPACE_METADATA)
-  public NavigableMap<String, IpSpaceMetadata> getIpSpaceMetadata() {
-    return _ipSpaceMetadata;
+  public NavigableMap<String, TraceElement> getTraceElement() {
+    return _traceElement;
   }
 
   /** Dictionary of all IPSec phase 2 policies for this node. */

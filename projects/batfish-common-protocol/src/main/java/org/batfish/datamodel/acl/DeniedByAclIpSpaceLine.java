@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpaceMetadata;
+import org.batfish.datamodel.TraceElement;
 
 public final class DeniedByAclIpSpaceLine extends IpSpaceTraceEvent {
   private static final String PROP_INDEX = "index";
@@ -22,12 +22,11 @@ public final class DeniedByAclIpSpaceLine extends IpSpaceTraceEvent {
       @Nonnull String lineDescription,
       @Nonnull Ip ip,
       @Nonnull String ipDescription,
-      @Nullable IpSpaceMetadata ipSpaceMetadata) {
-    String displayName =
-        ipSpaceMetadata != null
-            ? String.format(
-                "'%s' named '%s'", ipSpaceMetadata.getSourceType(), ipSpaceMetadata.getSourceName())
-            : String.format("'%s' named '%s'", AclIpSpace.class.getSimpleName(), name);
+      @Nullable TraceElement traceElement) {
+    if (traceElement != null) {
+      return traceElement.toString();
+    }
+    String displayName = String.format("'%s' named '%s'", AclIpSpace.class.getSimpleName(), name);
     return String.format(
         "%s %s denied by %s line %d: %s", ipDescription, ip, displayName, index, lineDescription);
   }
@@ -57,13 +56,13 @@ public final class DeniedByAclIpSpaceLine extends IpSpaceTraceEvent {
 
   public DeniedByAclIpSpaceLine(
       @Nonnull String name,
-      @Nullable IpSpaceMetadata ipSpaceMetadata,
+      @Nullable TraceElement traceElement,
       int index,
       @Nonnull String lineDescription,
       @Nonnull Ip ip,
       @Nonnull String ipDescription) {
     super(
-        computeDescription(name, index, lineDescription, ip, ipDescription, ipSpaceMetadata),
+        computeDescription(name, index, lineDescription, ip, ipDescription, traceElement),
         ip,
         ipDescription);
     _name = name;

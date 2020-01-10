@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpaceMetadata;
+import org.batfish.datamodel.TraceElement;
 
 public final class DefaultDeniedByAclIpSpace extends IpSpaceTraceEvent {
   private static final String PROP_NAME = "name";
@@ -18,11 +18,10 @@ public final class DefaultDeniedByAclIpSpace extends IpSpaceTraceEvent {
       @Nonnull String name,
       @Nonnull Ip ip,
       @Nonnull String ipDescription,
-      @Nullable IpSpaceMetadata ipSpaceMetadata) {
+      @Nullable TraceElement traceElement) {
     String displayName =
-        ipSpaceMetadata != null
-            ? String.format(
-                "'%s' named '%s'", ipSpaceMetadata.getSourceType(), ipSpaceMetadata.getSourceName())
+        traceElement != null
+            ? traceElement.toString()
             : String.format("'%s' named '%s'", AclIpSpace.class.getSimpleName(), name);
     return String.format("%s %s default-denied by %s", ipDescription, ip, displayName);
   }
@@ -46,8 +45,8 @@ public final class DefaultDeniedByAclIpSpace extends IpSpaceTraceEvent {
       @Nonnull String name,
       @Nonnull Ip ip,
       @Nonnull String ipDescription,
-      @Nullable IpSpaceMetadata ipSpaceMetadata) {
-    super(computeDescription(name, ip, ipDescription, ipSpaceMetadata), ip, ipDescription);
+      @Nullable TraceElement traceElement) {
+    super(computeDescription(name, ip, ipDescription, traceElement), ip, ipDescription);
     _name = name;
   }
 

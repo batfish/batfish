@@ -1454,7 +1454,7 @@ public final class FlatJuniperGrammarTest {
             specificSpaceName, wildcardSpaceName, indirectSpaceName, rangeSpaceName));
     // And associated metadata
     assertThat(
-        c.getIpSpaceMetadata().keySet(),
+        c.getTraceElement().keySet(),
         containsInAnyOrder(
             specificSpaceName, wildcardSpaceName, indirectSpaceName, rangeSpaceName));
 
@@ -1720,7 +1720,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
 
     // There should be metadata for this ipspace
-    assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
+    assertThat(c.getTraceElement(), hasKey(ipSpaceName));
 
     // Specifically allowed source address should be accepted
     assertThat(
@@ -1769,7 +1769,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
 
     // There should be metadata for this ipspace
-    assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
+    assertThat(c.getTraceElement(), hasKey(ipSpaceName));
 
     // Specifically allowed source address should be accepted
     assertThat(
@@ -1818,7 +1818,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
 
     // There should be metadata for this ipspace
-    assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
+    assertThat(c.getTraceElement(), hasKey(ipSpaceName));
 
     // Specifically allowed source address should be accepted
     assertThat(

@@ -8,11 +8,11 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTracer;
 
@@ -30,10 +30,9 @@ public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
   }
 
   private @Nullable String computeMetadataDescription(IpSpace ipSpace) {
-    IpSpaceMetadata ipSpaceMetadata = _aclTracer.getIpSpaceMetadata().get(ipSpace);
-    if (ipSpaceMetadata != null) {
-      return String.format(
-          "'%s' named '%s'", ipSpaceMetadata.getSourceType(), ipSpaceMetadata.getSourceName());
+    TraceElement traceElement = _aclTracer.getTraceElement().get(ipSpace);
+    if (traceElement != null) {
+      return traceElement.toString();
     }
     return null;
   }

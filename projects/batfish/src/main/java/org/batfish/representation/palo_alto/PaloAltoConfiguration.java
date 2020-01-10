@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.TraceElements.namedStructure;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -81,7 +82,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
@@ -526,8 +526,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                   .forEach(
                       (name, addressObject) -> {
                         _c.getIpSpaces().put(name, addressObject.getIpSpace());
-                        _c.getIpSpaceMetadata()
-                            .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription()));
+                        _c.getTraceElement()
+                            .put(name, namedStructure(name, ADDRESS_OBJECT.getDescription()));
                       });
 
               namespace
@@ -539,8 +539,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                                 name,
                                 addressGroup.getIpSpace(
                                     namespace.getAddressObjects(), namespace.getAddressGroups()));
-                        _c.getIpSpaceMetadata()
-                            .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
+                        _c.getTraceElement()
+                            .put(name, namedStructure(name, ADDRESS_GROUP.getDescription()));
                       });
 
               // Convert PAN zones

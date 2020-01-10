@@ -54,7 +54,7 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
         if (name != null) {
           _aclTracer.recordAction(
               name,
-              _aclTracer.getIpSpaceMetadata().get(aclIpSpace),
+              _aclTracer.getTraceElement().get(aclIpSpace),
               i,
               line,
               _ip,
@@ -68,7 +68,7 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
     }
     if (name != null) {
       _aclTracer.recordDefaultDeny(
-          name, _aclTracer.getIpSpaceMetadata().get(aclIpSpace), _ip, _ipDescription);
+          name, _aclTracer.getTraceElement().get(aclIpSpace), _ip, _ipDescription);
     }
     _aclTracer.endTrace();
     return false;
@@ -105,7 +105,7 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
       _aclTracer.recordNamedIpSpaceAction(
           name,
           ipSpace.accept(_ipSpaceDescriber),
-          _aclTracer.getIpSpaceMetadata().get(ipSpace),
+          _aclTracer.getTraceElement().get(ipSpace),
           result,
           _ip,
           _ipDescription);

@@ -207,7 +207,7 @@ public class TestFiltersAnswerer extends Answerer {
             flow.getIngressInterface(),
             c.getIpAccessLists(),
             c.getIpSpaces(),
-            c.getIpSpaceMetadata());
+            c.getTraceElement());
     FilterResult result =
         filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
     Integer matchLine = result.getMatchLine();

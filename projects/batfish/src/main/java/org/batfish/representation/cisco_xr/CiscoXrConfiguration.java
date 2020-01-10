@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.TraceElements.namedStructure;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
@@ -94,7 +95,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -2140,10 +2140,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         .keySet()
         .forEach(
             name ->
-                c.getIpSpaceMetadata()
+                c.getTraceElement()
                     .put(
                         name,
-                        new IpSpaceMetadata(
+                        namedStructure(
                             name, CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription())));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
@@ -2151,10 +2151,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         .keySet()
         .forEach(
             name ->
-                c.getIpSpaceMetadata()
+                c.getTraceElement()
                     .put(
                         name,
-                        new IpSpaceMetadata(
+                        namedStructure(
                             name, CiscoXrStructureType.NETWORK_OBJECT.getDescription())));
 
     // convert each IcmpTypeGroup to IpAccessList
