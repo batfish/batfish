@@ -23,8 +23,9 @@ public final class TraceElement implements Serializable {
   private static final String PROP_TEXT = "text";
   private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
 
+  /** A fragment of a {@link TraceElement}. */
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-  public interface Fragment {
+  public interface Fragment extends Serializable {
     String getText();
   }
 
