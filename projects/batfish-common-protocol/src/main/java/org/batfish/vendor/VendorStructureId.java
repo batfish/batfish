@@ -5,13 +5,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Identifies a vendor structure in a configuration file. */
 @ParametersAreNonnullByDefault
-public final class VendorStructureId implements Serializable {
+public final class VendorStructureId implements Serializable, Comparable<VendorStructureId> {
   private static final String PROP_FILENAME = "filename";
   private static final String PROP_STRUCTURE_TYPE = "structureType";
   private static final String PROP_STRUCTURE_NAME = "structureName";
@@ -69,5 +70,13 @@ public final class VendorStructureId implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_filename, _structureType, _structureName);
+  }
+
+  @Override
+  public int compareTo(VendorStructureId o) {
+    return Comparator.comparing(VendorStructureId::getFilename)
+        .thenComparing(VendorStructureId::getStructureType)
+        .thenComparing(VendorStructureId::getStructureName)
+        .compare(this,o);
   }
 }
