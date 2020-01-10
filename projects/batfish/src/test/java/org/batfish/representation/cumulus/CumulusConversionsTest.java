@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
@@ -20,6 +21,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateBgpC
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
+import static org.batfish.representation.cumulus.CumulusConversions.getOtherAddress;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
@@ -1356,5 +1358,50 @@ public final class CumulusConversionsTest {
         .build();
 
     assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
+  }
+
+  /** An interface neighbor with (only) a /31 address should be treated as a numbered neighbor */
+  @Test
+  public void testAddBgpNeighbor_numberedInterface() {
+    // set up the VI bgp process
+    org.batfish.datamodel.BgpProcess bgpProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf viVrf = Vrf.builder().setName("vrf").build();
+    viVrf.setBgpProcess(bgpProc);
+
+    // set up the vi interface
+    ConcreteInterfaceAddress ifaceAddress = ConcreteInterfaceAddress.parse("1.1.1.1/31");
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setName("iface")
+            .setOwner(c)
+            .setAddress(ifaceAddress)
+            .build();
+    c.getAllInterfaces().put(viIface.getName(), viIface);
+    c.getVrfs().put(viVrf.getName(), viVrf);
+
+    BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
+    neighbor.setRemoteAs(123L);
+
+    addBgpNeighbor(
+        c,
+        CumulusConcatenatedConfiguration.builder().build(),
+        new BgpVrf(viVrf.getName()),
+        neighbor,
+        new Warnings());
+
+    Prefix peerPrefix = Prefix.create(getOtherAddress(ifaceAddress), Prefix.MAX_PREFIX_LENGTH);
+    assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
+    assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
+  }
+
+  @Test
+  public void testGetOtherAddress() {
+    assertEquals(
+        getOtherAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")), Ip.parse("1.1.1.0"));
+    assertEquals(
+        getOtherAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")), Ip.parse("1.1.1.1"));
   }
 }
