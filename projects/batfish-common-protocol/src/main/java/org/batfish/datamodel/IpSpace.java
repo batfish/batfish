@@ -1,13 +1,34 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
+/** A representation of a set of {@link Ip} addresses. */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
+  static final String PROP_TRACE_ELEMENT = "traceElement";
+
+  private final @Nullable TraceElement _traceElement;
+
+  IpSpace(@Nullable TraceElement traceElement) {
+    _traceElement = traceElement;
+  }
+
+  IpSpace() {
+    this(null);
+  }
+
+  @JsonProperty(PROP_TRACE_ELEMENT)
+  public @Nullable TraceElement getTraceElement() {
+    return _traceElement;
+  }
 
   public abstract <R> R accept(GenericIpSpaceVisitor<R> visitor);
 
@@ -34,6 +55,12 @@ public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
     if (ret != 0) {
       return ret;
     }
+    ret =
+        Comparator.nullsLast(TraceElement::compareTo)
+            .compare(this._traceElement, o.getTraceElement());
+    if (ret != 0) {
+      return ret;
+    }
     return compareSameClass(o);
   }
 
@@ -50,7 +77,8 @@ public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
     if (!(getClass() == o.getClass())) {
       return false;
     }
-    return exprEquals(o);
+    IpSpace other = (IpSpace) o;
+    return Objects.equals(_traceElement, other.getTraceElement()) && exprEquals(o);
   }
 
   protected abstract boolean exprEquals(Object o);
