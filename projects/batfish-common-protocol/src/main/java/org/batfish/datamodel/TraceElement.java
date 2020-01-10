@@ -6,9 +6,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -18,14 +20,14 @@ import org.batfish.vendor.VendorStructureId;
 
 /** Metadata used to create human-readable traces. */
 @ParametersAreNonnullByDefault
-public final class TraceElement implements Serializable {
+public final class TraceElement implements Serializable, Comparable<TraceElement> {
   private static final String PROP_FRAGMENTS = "fragments";
   private static final String PROP_TEXT = "text";
   private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
 
   /** A fragment of a {@link TraceElement}. */
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-  public interface Fragment extends Serializable {
+  public interface Fragment extends Serializable, Comparable<Fragment> {
     String getText();
   }
 
@@ -64,6 +66,15 @@ public final class TraceElement implements Serializable {
     @Override
     public int hashCode() {
       return _text.hashCode();
+    }
+
+    @Override
+    public int compareTo(Fragment o) {
+      if (!(o instanceof TextFragment)) {
+        return TextFragment.class.getName().compareTo(o.getClass().getName());
+      }
+      TextFragment other = (TextFragment) o;
+      return _text.compareTo(other._text);
     }
   }
 
@@ -112,6 +123,17 @@ public final class TraceElement implements Serializable {
     @Override
     public int hashCode() {
       return Objects.hash(_text, _vendorStructureId);
+    }
+
+    @Override
+    public int compareTo(Fragment o) {
+      if (!(o instanceof LinkFragment)) {
+        return TextFragment.class.getName().compareTo(o.getClass().getName());
+      }
+      LinkFragment other = (LinkFragment) o;
+      return Comparator.comparing(LinkFragment::getText)
+          .thenComparing(LinkFragment::getVendorStructureId)
+          .compare(this, other);
     }
   }
 
@@ -165,6 +187,11 @@ public final class TraceElement implements Serializable {
     }
     TraceElement other = (TraceElement) o;
     return this._fragments.equals(other._fragments);
+  }
+
+  @Override
+  public int compareTo(TraceElement other) {
+    return Comparators.lexicographical(Fragment::compareTo).compare(_fragments, other._fragments);
   }
 
   @Override
