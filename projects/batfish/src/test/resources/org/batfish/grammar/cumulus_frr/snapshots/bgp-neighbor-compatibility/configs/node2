@@ -36,12 +36,13 @@ auto swp9
 iface swp9
   address 9.9.9.1/24
 
+auto swp10
+iface swp10
+  address 10.10.10.2/30
+
 # ports.conf --
 frr version
 frr defaults datacenter
-!
-interface swp1
- ip address 10.1.1.1/24
 !
 router bgp 2
  bgp router-id 2.2.2.2
@@ -54,6 +55,7 @@ router bgp 2
  neighbor swp7 interface remote-as external
  neighbor 8.8.8.0 remote-as external
  neighbor 9.9.9.0 remote-as external
+ neighbor swp10 interface remote-as external
 !
 end
 

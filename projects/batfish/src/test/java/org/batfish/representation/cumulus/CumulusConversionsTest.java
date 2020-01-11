@@ -21,8 +21,8 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateBgpC
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.getOtherAddress;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
+import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
@@ -49,6 +49,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -1360,7 +1361,9 @@ public final class CumulusConversionsTest {
     assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
   }
 
-  /** An interface neighbor with (only) a /31 address should be treated as a numbered neighbor */
+  /**
+   * An interface neighbor with (only) a /31 or /30 address should be treated as a numbered neighbor
+   */
   @Test
   public void testAddBgpNeighbor_numberedInterface() {
     // set up the VI bgp process
@@ -1392,16 +1395,88 @@ public final class CumulusConversionsTest {
         neighbor,
         new Warnings());
 
-    Prefix peerPrefix = Prefix.create(getOtherAddress(ifaceAddress), Prefix.MAX_PREFIX_LENGTH);
+    Prefix peerPrefix = Prefix.parse("1.1.1.0/31");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
     assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
   }
 
   @Test
-  public void testGetOtherAddress() {
+  public void testInferPeerIp_slash31() {
     assertEquals(
-        getOtherAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")), Ip.parse("1.1.1.0"));
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")) // first address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.1")));
     assertEquals(
-        getOtherAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")), Ip.parse("1.1.1.1"));
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")) // second address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.0")));
+  }
+
+  @Test
+  public void testInferPeerIp_slash30() {
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/30")) // first address (network)
+                .setName("iface")
+                .build()),
+        Optional.empty());
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")) // second address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.2")));
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")) // third address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.1")));
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/30")) // fourth address (bcast)
+                .setName("iface")
+                .build()),
+        Optional.empty());
+  }
+
+  @Test
+  public void testInferPeerIp_otherLength() {
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/32"))
+                .setName("iface")
+                .build()),
+        Optional.empty());
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/29"))
+                .setName("iface")
+                .build()),
+        Optional.empty());
+  }
+
+  @Test
+  public void testInferPeerIp_multipleAddresses() {
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setAddresses(
+                ConcreteInterfaceAddress.parse("1.1.1.1/31"),
+                ConcreteInterfaceAddress.parse("2.2.2.2/31"))
+            .setName("iface")
+            .build();
+    assertEquals(inferPeerIp(viIface), Optional.empty());
   }
 }

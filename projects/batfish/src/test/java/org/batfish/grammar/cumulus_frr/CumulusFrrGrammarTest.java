@@ -617,6 +617,7 @@ public class CumulusFrrGrammarTest {
       u swp7: node1 has an interface neighbor with /31 and /24 addresses and node 2 has an interface neighbor with no IP address
       n swp8: node1 has an interface neighbor with /31 and node2 has an IP neighbor in the same subnet
       - swp9: node1 has an interface neighbor with /24 and node2 has an IP neighbor in the same subnet
+      n swp10: both nodes have an interface neighbor with /30 addresses (host addresses in same subnet)
 
     The layer1 topology file connects matching swpX interfaces on each node (swp1<>swp1, ...)
 
@@ -654,7 +655,9 @@ public class CumulusFrrGrammarTest {
             Prefix.parse("2.2.2.0/32"),
             Prefix.parse("2.2.2.1/32"),
             Prefix.parse("8.8.8.0/32"),
-            Prefix.parse("8.8.8.1/32")));
+            Prefix.parse("8.8.8.1/32"),
+            Prefix.parse("10.10.10.1/32"),
+            Prefix.parse("10.10.10.2/32")));
   }
 
   @Test

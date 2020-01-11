@@ -1,7 +1,6 @@
 package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -55,6 +54,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -166,16 +166,44 @@ public final class CumulusConversions {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
   }
 
+  /**
+   * Infers the peer Ip for the interface. This is doable only if the interface has exactly one
+   * (primary) address that is a /30 or /31. For a /30, the address must NOT be the first or last
+   * address in the range.
+   *
+   * @return the inferred Ip or empty optiona if that is not possible.
+   */
   @VisibleForTesting
-  static Ip getOtherAddress(ConcreteInterfaceAddress concreteAddress) {
-    checkArgument(
-        concreteAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 1,
-        "Method otherAddress only works for /31 addresses. Got %s",
-        concreteAddress);
-    Prefix prefix = concreteAddress.getPrefix();
-    return concreteAddress.getIp().equals(prefix.getStartIp())
-        ? prefix.getEndIp()
-        : prefix.getStartIp();
+  @Nonnull
+  static Optional<Ip> inferPeerIp(Interface viIface) {
+    // one concrete interface address
+    if (viIface.getAllAddresses().size() != 1
+        || viIface.getAddress() == null
+        || !(viIface.getAddress() instanceof ConcreteInterfaceAddress)) {
+      return Optional.empty();
+    }
+    ConcreteInterfaceAddress ifaceAddress =
+        (ConcreteInterfaceAddress) viIface.getAllAddresses().iterator().next();
+    Prefix prefix = ifaceAddress.getPrefix();
+
+    if (ifaceAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 1) { // 31
+      return Optional.of(
+          ifaceAddress.getIp().equals(prefix.getStartIp())
+              ? prefix.getEndIp()
+              : prefix.getStartIp());
+    }
+    if (ifaceAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 2) { // 30
+      if (ifaceAddress.getIp().equals(prefix.getStartIp())
+          || ifaceAddress.getIp().equals(prefix.getEndIp())) {
+        return Optional.empty();
+      }
+      return Optional.of(
+          ifaceAddress.getIp().equals(prefix.getFirstHostIp())
+              ? prefix.getLastHostIp()
+              : prefix.getFirstHostIp());
+    }
+
+    return Optional.empty();
   }
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -442,17 +470,13 @@ public final class CumulusConversions {
 
     // if an interface neighbor has only one address and that address is a /31, it gets treated as
     // numbered peer
-    InterfaceAddress ifaceAddress =
-        c.getAllInterfaces().get(neighbor.getName()).getAllAddresses().iterator().next();
-    if (c.getAllInterfaces().get(neighbor.getName()).getAllAddresses().size() == 1
-        && ifaceAddress instanceof ConcreteInterfaceAddress
-        && ((ConcreteInterfaceAddress) ifaceAddress).getNetworkBits()
-            == Prefix.MAX_PREFIX_LENGTH - 1) {
-      ConcreteInterfaceAddress concreteAddrress = (ConcreteInterfaceAddress) ifaceAddress;
+    Interface viIface = c.getAllInterfaces().get(neighbor.getName());
+    Optional<Ip> inferredIp = inferPeerIp(viIface);
+    if (inferredIp.isPresent()) {
       peerConfigBuilder =
           BgpActivePeerConfig.builder()
-              .setLocalIp(concreteAddrress.getIp())
-              .setPeerAddress(getOtherAddress(concreteAddrress));
+              .setLocalIp(((ConcreteInterfaceAddress) viIface.getAddress()).getIp())
+              .setPeerAddress(inferredIp.get());
     } else {
       peerConfigBuilder =
           BgpUnnumberedPeerConfig.builder()
