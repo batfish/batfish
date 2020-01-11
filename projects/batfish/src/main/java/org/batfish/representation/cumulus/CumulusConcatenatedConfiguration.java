@@ -262,7 +262,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   void initVrfStaticRoutes(Configuration c) {
     // post-up routes from the interfaces file
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(
             iface -> {
               if (!c.getAllInterfaces().get(iface.getName()).getActive()) {
