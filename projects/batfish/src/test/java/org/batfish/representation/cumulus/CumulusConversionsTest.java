@@ -622,7 +622,14 @@ public final class CumulusConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+        viConfig,
+        vsConfig,
+        neighbor,
+        10000L,
+        new BgpVrf("vrf"),
+        newProc,
+        peerConfigBuilder,
+        new Warnings());
   }
 
   @Test
@@ -680,7 +687,14 @@ public final class CumulusConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+        viConfig,
+        vsConfig,
+        neighbor,
+        10000L,
+        new BgpVrf("vrf"),
+        newProc,
+        peerConfigBuilder,
+        new Warnings());
 
     // there should be no generated default route
     assertThat(
@@ -714,7 +728,14 @@ public final class CumulusConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+        viConfig,
+        vsConfig,
+        neighbor,
+        10000L,
+        new BgpVrf("vrf"),
+        newProc,
+        peerConfigBuilder,
+        new Warnings());
 
     // there should be a generated default route
     assertThat(
@@ -763,7 +784,8 @@ public final class CumulusConversionsTest {
         10000L,
         new BgpVrf("Vrf"),
         newProc,
-        peerConfigBuilder);
+        peerConfigBuilder,
+        new Warnings());
 
     BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(peerIp.toPrefix());
     assertTrue(peerConfig.getEbgpMultihop());
