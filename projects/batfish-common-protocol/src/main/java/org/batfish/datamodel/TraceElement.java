@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.vendor.VendorStructureId;
@@ -24,7 +26,7 @@ public final class TraceElement implements Serializable {
   private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-  public interface Fragment {
+  public interface Fragment extends Serializable {
     String getText();
   }
 
@@ -33,6 +35,7 @@ public final class TraceElement implements Serializable {
     private final String _text;
 
     TextFragment(String text) {
+      checkArgument(!text.isEmpty(), "%s cannot be empty", PROP_TEXT);
       _text = text;
     }
 
@@ -72,6 +75,7 @@ public final class TraceElement implements Serializable {
     private final VendorStructureId _vendorStructureId;
 
     LinkFragment(String text, VendorStructureId vendorStructureId) {
+      checkArgument(!text.isEmpty(), "%s cannot be empty", PROP_TEXT);
       _text = text;
       _vendorStructureId = vendorStructureId;
     }
@@ -133,20 +137,27 @@ public final class TraceElement implements Serializable {
     }
   }
 
-  private final List<Fragment> _fragments;
+  private final @Nonnull List<Fragment> _fragments;
 
   TraceElement(List<Fragment> fragments) {
+    checkArgument(
+        !fragments.isEmpty(),
+        "TraceElement fragments must be non-empty. Use null TraceElement instead.");
     _fragments = ImmutableList.copyOf(fragments);
   }
 
   @JsonCreator
-  public static TraceElement jsonCreator(
+  private static TraceElement jsonCreator(
       @Nullable @JsonProperty(PROP_FRAGMENTS) List<Fragment> fragments) {
     return new TraceElement(firstNonNull(fragments, ImmutableList.of()));
   }
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  public static TraceElement of(String text) {
+    return TraceElement.builder().add(text).build();
   }
 
   @JsonProperty(PROP_FRAGMENTS)

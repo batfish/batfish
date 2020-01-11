@@ -1,11 +1,15 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -22,6 +26,8 @@ public final class ExprAclLine extends AclLine {
 
     private String _name;
 
+    private TraceElement _traceElement;
+
     private Builder() {}
 
     public Builder accepting() {
@@ -30,7 +36,7 @@ public final class ExprAclLine extends AclLine {
     }
 
     public ExprAclLine build() {
-      return new ExprAclLine(_action, _matchCondition, _name);
+      return new ExprAclLine(_action, _matchCondition, _name, _traceElement);
     }
 
     public Builder rejecting() {
@@ -48,8 +54,13 @@ public final class ExprAclLine extends AclLine {
       return this;
     }
 
-    public Builder setName(String name) {
+    public Builder setName(@Nullable String name) {
       _name = name;
+      return this;
+    }
+
+    public Builder setTraceElement(@Nullable TraceElement traceElement) {
+      _traceElement = traceElement;
       return this;
     }
   }
@@ -117,13 +128,31 @@ public final class ExprAclLine extends AclLine {
   private final AclLineMatchExpr _matchCondition;
 
   @JsonCreator
+  private static ExprAclLine jsonCreator(
+      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
+      @Nullable @JsonProperty(PROP_MATCH_CONDITION) AclLineMatchExpr matchCondition,
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+    return new ExprAclLine(
+        checkNotNull(action, "%s cannot be null", PROP_ACTION),
+        checkNotNull(matchCondition, "%s cannot be null", PROP_MATCH_CONDITION),
+        name,
+        traceElement);
+  }
+
   public ExprAclLine(
-      @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
-      @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
-      @JsonProperty(PROP_NAME) String name) {
-    super(name);
-    _action = Objects.requireNonNull(action);
-    _matchCondition = Objects.requireNonNull(matchCondition);
+      @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name) {
+    this(action, matchCondition, name, null);
+  }
+
+  public ExprAclLine(
+      @Nonnull LineAction action,
+      @Nonnull AclLineMatchExpr matchCondition,
+      String name,
+      TraceElement traceElement) {
+    super(name, traceElement);
+    _action = action;
+    _matchCondition = matchCondition;
   }
 
   @Override
@@ -137,7 +166,8 @@ public final class ExprAclLine extends AclLine {
     ExprAclLine other = (ExprAclLine) obj;
     return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
-        && Objects.equals(_name, other._name);
+        && Objects.equals(_name, other._name)
+        && Objects.equals(_traceElement, other._traceElement);
   }
 
   /** The action the underlying access-list will take when this line matches an IPV4 packet. */
@@ -158,11 +188,15 @@ public final class ExprAclLine extends AclLine {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action, _matchCondition, _name);
+    return Objects.hash(_action, _matchCondition, _name, _traceElement);
   }
 
   public Builder toBuilder() {
-    return builder().setAction(_action).setMatchCondition(_matchCondition).setName(_name);
+    return builder()
+        .setAction(_action)
+        .setMatchCondition(_matchCondition)
+        .setName(_name)
+        .setTraceElement(_traceElement);
   }
 
   @Override
@@ -172,6 +206,9 @@ public final class ExprAclLine extends AclLine {
         .add(PROP_ACTION, _action)
         .add(PROP_MATCH_CONDITION, _matchCondition)
         .add(PROP_NAME, _name)
+        .add(
+            PROP_TRACE_ELEMENT,
+            Optional.ofNullable(_traceElement).map(TraceElement::toString).orElse(null))
         .toString();
   }
 }
