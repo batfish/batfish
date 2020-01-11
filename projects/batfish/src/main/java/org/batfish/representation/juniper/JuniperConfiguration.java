@@ -2073,13 +2073,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
-      for (String fromZone : zone.getFromZonePolicies().keySet()) {
-        String zonePolicyLineDesc =
-            fromZone.equals(zone.getName())
-                ? String.format("Match intra-zone policy for zone %s", fromZone)
-                : String.format(
-                    "Match cross-zone policy from-zone %s to-zone %s", fromZone, zone.getName());
-        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, fromZone));
+      for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
+        String filterName = e.getKey();
+        FirewallFilter filter = e.getValue();
+
+        // Name the ACL line that will apply zone policy.
+        String zonePolicyLineDesc;
+        // Not possible to configure a zone policy for multiple from zones.
+        String fromZone = filter.getFromZone().orElse(null);
+        if (fromZone == null) {
+          // Zone egress policy for traffic originating from device
+          zonePolicyLineDesc = String.format("Match policy from junos-host to zone %s", filterName);
+        } else if (fromZone.equals(zone.getName())) {
+          // Intra-zone policy
+          zonePolicyLineDesc = String.format("Match intra-zone policy for zone %s", fromZone);
+        } else {
+          // Cross-zone policy
+          zonePolicyLineDesc =
+              String.format(
+                  "Match cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
+        }
+
+        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, filterName));
       }
     }
 
@@ -2199,7 +2214,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
        * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
        * need to make a match condition for that
        */
-      String zoneName = filter.getFromZone();
+      String zoneName = filter.getFromZone().orElse(null);
       if (zoneName != null) {
         matchSrcInterface =
             new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
