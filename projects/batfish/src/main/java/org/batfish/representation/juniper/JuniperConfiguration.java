@@ -2082,8 +2082,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // Not possible to configure a zone policy for multiple from zones.
         String fromZone = filter.getFromZone().orElse(null);
         if (fromZone == null) {
-          // General inbound policy
-          zonePolicyLineDesc = String.format("Match inbound zone policy %s", filterName);
+          // Zone egress policy for traffic originating from device
+          zonePolicyLineDesc = String.format("Match policy from junos-host to zone %s", filterName);
         } else if (fromZone.equals(zone.getName())) {
           // Intra-zone policy
           zonePolicyLineDesc = String.format("Match intra-zone policy for zone %s", fromZone);
