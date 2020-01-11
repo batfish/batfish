@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -37,6 +38,11 @@ public final class CompositeFirewallFilter extends FirewallFilter {
   @Override
   public boolean isUsedForFBF() {
     return _inner.stream().anyMatch(FirewallFilter::isUsedForFBF);
+  }
+
+  @Override
+  public Optional<String> getFromZone() {
+    return Optional.empty();
   }
 
   private final @Nonnull List<FirewallFilter> _inner;
