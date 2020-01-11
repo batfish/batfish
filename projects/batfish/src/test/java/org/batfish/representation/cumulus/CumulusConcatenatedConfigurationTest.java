@@ -279,7 +279,7 @@ public class CumulusConcatenatedConfigurationTest {
 
     Ip clagIp = Ip.parse("1.1.1.1");
     InterfacesInterface vsLoopback = new InterfacesInterface("lo");
-    vsLoopback.createOrGetClagSettings().setVxlanAnycastIp(clagIp);
+    vsLoopback.setClagVxlanAnycastIp(clagIp);
 
     populateLoopbackProperties(vsLoopback, viLoopback);
 

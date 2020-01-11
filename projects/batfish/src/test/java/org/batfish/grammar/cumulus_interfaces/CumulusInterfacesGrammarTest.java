@@ -508,9 +508,7 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopbackClagdVxlanAnycastIp() {
     parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
-    assertThat(
-        _ic.getInterfaces().get("lo").getClagSettings().getVxlanAnycastIp(),
-        equalTo(Ip.parse("1.2.3.4")));
+    assertThat(_ic.getInterfaces().get("lo").getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test

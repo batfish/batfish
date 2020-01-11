@@ -296,8 +296,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_clagd_vxlan_anycast_ip(I_clagd_vxlan_anycast_ipContext ctx) {
-    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
-    clag.setVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _currentIface.setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override

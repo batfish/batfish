@@ -192,10 +192,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
     @Nullable
     Ip loopbackClagVxlanAnycastIp =
-        vsLoopback != null
-                && vsLoopback.getClagSettings() != null
-                && vsLoopback.getClagSettings().getVxlanAnycastIp() != null
-            ? vsLoopback.getClagSettings().getVxlanAnycastIp()
+        vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null
+            ? vsLoopback.getClagVxlanAnycastIp()
             : null;
 
     // Put all valid VXLAN VNIs into appropriate VRF
@@ -378,16 +376,14 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   @VisibleForTesting
   static void populateLoopbackProperties(
       @Nullable InterfacesInterface vsLoopback, org.batfish.datamodel.Interface viLoopback) {
-    if (vsLoopback != null
-        && vsLoopback.getClagSettings() != null
-        && vsLoopback.getClagSettings().getVxlanAnycastIp() != null) {
+    if (vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null) {
       // Just assume CLAG is correctly configured and comes up
       viLoopback.setAllAddresses(
           ImmutableSet.<InterfaceAddress>builder()
               .addAll(viLoopback.getAllAddresses())
               .add(
                   ConcreteInterfaceAddress.create(
-                      vsLoopback.getClagSettings().getVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH))
+                      vsLoopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH))
               .build());
     }
   }
