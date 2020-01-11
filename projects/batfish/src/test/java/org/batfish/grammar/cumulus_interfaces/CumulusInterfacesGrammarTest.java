@@ -488,34 +488,29 @@ public class CumulusInterfacesGrammarTest {
   @Test
   public void testLoopback() {
     parse("iface lo inet loopback\n");
-    assertTrue(_ic.getLoopback().getConfigured());
-    assertThat(
-        getDefinedStructureInfo(CumulusStructureType.LOOPBACK, "lo").getDefinitionLines(),
-        contains(1));
-    assertThat(
-        getStructureReferences(
-            CumulusStructureType.LOOPBACK, "lo", CumulusStructureUsage.LOOPBACK_SELF_REFERENCE),
-        contains(1));
+    assertTrue(_ic.getInterfaces().containsKey("lo"));
   }
 
   @Test
   public void testLoopbackAddress() {
     parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
-        _ic.getLoopback().getAddresses(), contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+        _ic.getInterfaces().get("lo").getAddresses(),
+        contains(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
   }
 
   @Test
   public void testLoopbackAlias() {
     parse("iface lo inet loopback\n alias my aliases\n");
-    assertThat(
-        _config.getInterfacesConfiguration().getLoopback().getAlias(), equalTo("my aliases"));
+    assertThat(_ic.getInterfaces().get("lo").getDescription(), equalTo("my aliases"));
   }
 
   @Test
   public void testLoopbackClagdVxlanAnycastIp() {
     parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
-    assertThat(_ic.getLoopback().getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(
+        _ic.getInterfaces().get("lo").getClagSettings().getVxlanAnycastIp(),
+        equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test

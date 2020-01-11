@@ -37,6 +37,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_ba
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_peer_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_priorityContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_sys_macContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_link_speedContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_mtuContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vlan_idContext;
@@ -47,9 +48,6 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_id
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Ipuir_addContext;
-import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_addressContext;
-import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_aliasContext;
-import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.L_clagd_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_rangeContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.PrefixContext;
@@ -139,14 +137,7 @@ public final class CumulusInterfacesConfigurationBuilder
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }
-      _config.getInterfacesConfiguration().getLoopback().setConfigured(true);
-      _config.defineStructure(
-          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, ctx);
-      _config.referenceStructure(
-          CumulusStructureType.LOOPBACK,
-          CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
-          CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
-          ctx.getStart().getLine());
+      _currentIface = _config.getInterfacesConfiguration().createOrGetInterface(_currentIfaceName);
     } else if (ctx.STATIC() != null) {
       _currentIface = _config.getInterfacesConfiguration().createOrGetInterface(_currentIfaceName);
     } else if (ctx.DHCP() != null) {
@@ -304,6 +295,12 @@ public final class CumulusInterfacesConfigurationBuilder
   }
 
   @Override
+  public void exitI_clagd_vxlan_anycast_ip(I_clagd_vxlan_anycast_ipContext ctx) {
+    InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
+    clag.setVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
   public void exitI_link_speed(I_link_speedContext ctx) {
     _currentIface.setLinkSpeed(Integer.parseInt(ctx.number().getText()));
   }
@@ -384,28 +381,6 @@ public final class CumulusInterfacesConfigurationBuilder
     StaticRoute sr =
         new StaticRoute(Prefix.parse(ctx.IP_PREFIX().getText()), gatewayIp, nextHopInterface);
     _currentIface.addPostUpIpRoute(sr);
-  }
-
-  @Override
-  public void exitL_address(L_addressContext ctx) {
-    _config
-        .getInterfacesConfiguration()
-        .getLoopback()
-        .getAddresses()
-        .add(toConcreteInterfaceAddress(ctx.prefix()));
-  }
-
-  @Override
-  public void exitL_alias(L_aliasContext ctx) {
-    _config.getInterfacesConfiguration().getLoopback().setAlias(ctx.TEXT().getText());
-  }
-
-  @Override
-  public void exitL_clagd_vxlan_anycast_ip(L_clagd_vxlan_anycast_ipContext ctx) {
-    _config
-        .getInterfacesConfiguration()
-        .getLoopback()
-        .setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override

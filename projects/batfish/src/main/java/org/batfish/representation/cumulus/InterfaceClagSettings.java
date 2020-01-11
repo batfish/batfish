@@ -15,6 +15,7 @@ public final class InterfaceClagSettings implements Serializable {
   private boolean _peerIpLinkLocal;
   private @Nullable Integer _priority;
   private @Nullable MacAddress _sysMac;
+  private @Nullable Ip _vxlanAnycastIp;
 
   public @Nullable Ip getBackupIp() {
     return _backupIp;
@@ -73,5 +74,14 @@ public final class InterfaceClagSettings implements Serializable {
         .setPriority(_priority)
         .setSysMac(_sysMac)
         .build();
+  }
+
+  @Nullable
+  public Ip getVxlanAnycastIp() {
+    return _vxlanAnycastIp;
+  }
+
+  public void setVxlanAnycastIp(@Nullable Ip vxlanAnycastIp) {
+    _vxlanAnycastIp = vxlanAnycastIp;
   }
 }

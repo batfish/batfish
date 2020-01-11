@@ -15,12 +15,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class CumulusInterfacesConfiguration implements Serializable {
   @Nonnull private final Set<String> _autoIfaces;
   @Nonnull private final Map<String, InterfacesInterface> _interfaces;
-  @Nonnull private final Loopback _loopback;
 
   public CumulusInterfacesConfiguration() {
     _autoIfaces = new HashSet<>();
     _interfaces = new HashMap<>();
-    _loopback = new Loopback();
   }
 
   /** Register an interface as being enabled on boot. */
@@ -42,11 +40,6 @@ public final class CumulusInterfacesConfiguration implements Serializable {
   public boolean hasVrf(String vrfName) {
     return _interfaces.values().stream()
         .anyMatch(iface -> iface.getName().equals(vrfName) && isVrf(iface));
-  }
-
-  @Nonnull
-  public Loopback getLoopback() {
-    return _loopback;
   }
 
   @Nonnull
