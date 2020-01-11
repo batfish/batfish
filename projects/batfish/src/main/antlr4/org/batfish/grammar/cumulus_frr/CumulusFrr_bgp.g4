@@ -124,6 +124,7 @@ sbaf_l2vpn_evpn
 sbafl_statement
 :
   sbafls_advertise_all_vni
+| sbafls_advertise_default_gw
 | sbafls_advertise_ipv4_unicast
 | sbafls_neighbor_activate
 ;
@@ -152,6 +153,11 @@ sbafi_redistribute
 sbafls_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
+;
+
+sbafls_advertise_default_gw
+:
+  ADVERTISE_DEFAULT_GW NEWLINE
 ;
 
 sbafls_advertise_ipv4_unicast
