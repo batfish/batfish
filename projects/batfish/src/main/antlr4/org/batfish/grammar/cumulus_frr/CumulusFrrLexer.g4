@@ -44,6 +44,11 @@ ADVERTISE_ALL_VNI
   'advertise-all-vni'
 ;
 
+ADVERTISE_DEFAULT_GW
+:
+   'advertise-default-gw'
+;
+
 AGENTX
 :
   'agentx'
