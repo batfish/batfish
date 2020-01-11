@@ -109,6 +109,8 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
+          volumes:
+            - $HOME/.bazelrc:/home/batfish/.bazelrc
 EOF
 
 ###### Ref tests
