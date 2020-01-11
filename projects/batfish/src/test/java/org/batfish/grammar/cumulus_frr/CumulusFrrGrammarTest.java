@@ -286,6 +286,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseDefaultGw() {
+    parseLines(
+        "router bgp 1", "address-family l2vpn evpn", "advertise-default-gw", "exit-address-family");
+    assertTrue(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseDefaultGw());
+  }
+
+  @Test
   public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
     parseLines(
         "router bgp 1",
