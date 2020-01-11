@@ -88,6 +88,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfCont
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
@@ -318,6 +319,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+  }
+
+  @Override
+  public void exitSbafls_advertise_default_gw(Sbafls_advertise_default_gwContext ctx) {
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
   }
 
   @Override
