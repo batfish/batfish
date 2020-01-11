@@ -171,7 +171,7 @@ public final class CumulusConversions {
    * (primary) address that is a /30 or /31. For a /30, the address must NOT be the first or last
    * address in the range.
    *
-   * @return the inferred Ip or empty optiona if that is not possible.
+   * @return the inferred Ip or empty optional if that is not possible.
    */
   @VisibleForTesting
   @Nonnull
