@@ -1395,7 +1395,7 @@ public final class CumulusConversionsTest {
         neighbor,
         new Warnings());
 
-    Prefix peerPrefix = Prefix.parse("1.1.1.0/31");
+    Prefix peerPrefix = Prefix.parse("1.1.1.0/32");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
     assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
   }
