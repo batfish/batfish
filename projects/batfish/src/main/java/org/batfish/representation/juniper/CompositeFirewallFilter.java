@@ -4,9 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 /** A firewall filter on Juniper that is a concatenation of its member filters. */
@@ -41,8 +41,8 @@ public final class CompositeFirewallFilter extends FirewallFilter {
   }
 
   @Override
-  public Stream<String> getFromZones() {
-    return _inner.stream().flatMap(FirewallFilter::getFromZones);
+  public Optional<String> getFromZone() {
+    return Optional.empty();
   }
 
   private final @Nonnull List<FirewallFilter> _inner;

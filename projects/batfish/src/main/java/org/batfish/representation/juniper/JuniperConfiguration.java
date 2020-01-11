@@ -2080,7 +2080,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // Name the ACL line that will apply zone policy.
         String zonePolicyLineDesc;
         // Not possible to configure a zone policy for multiple from zones.
-        String fromZone = filter.getFromZones().findFirst().orElse(null);
+        String fromZone = filter.getFromZone().orElse(null);
         if (fromZone == null) {
           // General inbound policy
           zonePolicyLineDesc = String.format("Match inbound zone policy %s", filterName);
@@ -2214,7 +2214,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
        * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
        * need to make a match condition for that
        */
-      String zoneName = filter.getFromZone();
+      String zoneName = filter.getFromZone().orElse(null);
       if (zoneName != null) {
         matchSrcInterface =
             new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
