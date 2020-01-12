@@ -483,7 +483,8 @@ public final class CumulusConversions {
               .setLocalIp(BGP_UNNUMBERED_IP)
               .setPeerInterface(neighbor.getName());
     }
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @VisibleForTesting
@@ -494,7 +495,8 @@ public final class CumulusConversions {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      BgpPeerConfig.Builder<?, ?> peerConfigBuilder) {
+      BgpPeerConfig.Builder<?, ?> peerConfigBuilder,
+      Warnings w) {
 
     RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf);
     @Nullable
@@ -519,7 +521,7 @@ public final class CumulusConversions {
                 importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
-                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
+                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
         .build();
   }
 
@@ -587,7 +589,8 @@ public final class CumulusConversions {
                     .orElse(
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @Nonnull
@@ -968,7 +971,8 @@ public final class CumulusConversions {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy routingPolicy) {
+      RoutingPolicy routingPolicy,
+      Warnings w) {
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
     // sadly, we allow localAs == null in VI datamodel
     if (evpnConfig == null
@@ -1024,6 +1028,10 @@ public final class CumulusConversions {
               }
               Integer l3Vni = vsVrf.getVni();
               if (l3Vni == null) {
+                return;
+              }
+              if (!vniToIndex.containsKey(l3Vni)) {
+                w.redFlag(String.format("vni %s for vrf %s does not exist", l3Vni, innerVrfName));
                 return;
               }
               RouteDistinguisher rd =
