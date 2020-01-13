@@ -2128,7 +2128,7 @@ public final class CiscoGrammarTest {
     // Listener 1
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
-    Long originatorAs = 1L;
+    long originatorAs = 1L;
     Bgpv4Route expected =
         Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
