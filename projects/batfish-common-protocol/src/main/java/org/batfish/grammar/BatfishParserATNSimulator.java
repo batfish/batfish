@@ -47,8 +47,7 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
             case ATNState.STAR_LOOP_ENTRY:
               if (alt == 2) {
                 // 2 means we want to leave the loop. But perhaps we won't have to if we throw out
-                // the
-                // current line.
+                // the current line.
                 // So throw to trigger recovery and another call to adaptive prediction.
                 NoViableAltException exception = _exception;
                 _exception = null;
