@@ -133,9 +133,9 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
   @Override
   public Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
     String name = _ipSpaceNames.get(aclIpSpace);
-    _tracer.newSubTrace();
     List<AclIpSpaceLine> lines = aclIpSpace.getLines();
     for (int i = 0; i < lines.size(); i++) {
+      _tracer.newSubTrace();
       AclIpSpaceLine line = lines.get(i);
       if (line.getIpSpace().accept(this)) {
         if (name != null) {
@@ -154,9 +154,10 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
       _tracer.discardSubTrace();
     }
     if (name != null) {
+      _tracer.newSubTrace();
       recordDefaultDeny(name, _ipSpaceMetadata.get(aclIpSpace), _ip, _ipDescription);
+      _tracer.endSubTrace();
     }
-    _tracer.endSubTrace();
     return false;
   }
 
