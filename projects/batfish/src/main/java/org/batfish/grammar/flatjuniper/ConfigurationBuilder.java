@@ -171,6 +171,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_application_setCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_destination_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
@@ -5726,22 +5727,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSepctxpm_destination_address(Sepctxpm_destination_addressContext ctx) {
-    if (ctx.address_specifier().ANY() != null) {
+    Address_specifierContext addressSpecifierContext = ctx.address_specifier();
+    if (addressSpecifierContext.ANY() != null || addressSpecifierContext.ANY_IPV4() != null) {
       return;
-    } else if (ctx.address_specifier().ANY_IPV4() != null) {
-      return;
-    } else if (ctx.address_specifier().ANY_IPV6() != null) {
+    }
+
+    if (addressSpecifierContext.ANY_IPV6() != null) {
       _currentFwTerm.setIpv6(true);
       return;
-    } else if (ctx.address_specifier().variable() != null) {
-      String addressBookEntryName = ctx.address_specifier().variable().getText();
+    }
+
+    VariableContext variable = addressSpecifierContext.variable();
+    if (variable != null) {
       FwFrom match =
           new FwFromDestinationAddressBookEntry(
-              _currentToZone, _currentLogicalSystem.getGlobalAddressBook(), addressBookEntryName);
+              _currentToZone, _currentLogicalSystem.getGlobalAddressBook(), variable.getText());
       _currentFwTerm.getFroms().add(match);
-    } else {
-      throw new BatfishException("Invalid address-specifier");
+      return;
     }
+
+    throw new BatfishException("Invalid address-specifier");
   }
 
   @Override
