@@ -1257,7 +1257,7 @@ class TransferSSA {
       } else if (stmt instanceof PrependAsPath) {
         curP.debug("PrependAsPath");
         PrependAsPath pap = (PrependAsPath) stmt;
-        Integer prependCost = prependLength(pap.getExpr());
+        int prependCost = prependLength(pap.getExpr());
         ArithExpr newValue = _enc.mkSum(curP.getData().getMetric(), _enc.mkInt(prependCost));
         newValue =
             _enc.mkIf(curResult.getReturnAssignedValue(), curP.getData().getMetric(), newValue);

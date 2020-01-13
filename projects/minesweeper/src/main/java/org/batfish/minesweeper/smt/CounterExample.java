@@ -276,7 +276,7 @@ class CounterExample {
    * Reconstruct the prefix from a symbolic record
    */
   Prefix buildPrefix(SymbolicRoute symbolicRoute, Flow flow) {
-    Integer pfxLen = intVal(symbolicRoute.getPrefixLength());
+    int pfxLen = intVal(symbolicRoute.getPrefixLength());
     return Prefix.create(flow.getDstIp(), pfxLen);
   }
 
@@ -288,7 +288,7 @@ class CounterExample {
     if (symbolicRoute.getProtocolHistory().getBitVec() == null) {
       proto = slice.getProtocols().get(router).get(0);
     } else {
-      Integer idx = intVal(symbolicRoute.getProtocolHistory().getBitVec());
+      int idx = intVal(symbolicRoute.getProtocolHistory().getBitVec());
       proto = symbolicRoute.getProtocolHistory().value(idx);
     }
     return proto;
