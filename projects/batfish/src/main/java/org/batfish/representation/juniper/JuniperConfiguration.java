@@ -2880,17 +2880,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
     preprocessFilters();
 
-    // convert firewall filters to ipaccesslists
-    for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
-      String name = e.getKey();
-      FirewallFilter filter = e.getValue();
-      // TODO: support other filter families
-      if (filter.getFamily() != Family.INET) {
-        continue;
-      }
-      IpAccessList list = toIpAccessList(filter);
-      _c.getIpAccessLists().put(name, list);
-    }
+    convertFirewallFiltersToIpAccessLists();
 
     // convert firewall filters implementing packet policy to PacketPolicy objects
     for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
@@ -3292,6 +3282,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private void convertFirewallFiltersToIpAccessLists() {
+    for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
+      String name = e.getKey();
+      FirewallFilter filter = e.getValue();
+      // TODO: support other filter families
+      if (filter.getFamily() != Family.INET) {
+        continue;
+      }
+      IpAccessList list = toIpAccessList(filter);
+      _c.getIpAccessLists().put(name, list);
+    }
   }
 
   private void preprocessFilters() {
