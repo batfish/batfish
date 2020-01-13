@@ -264,18 +264,21 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     TokenStream tokens = recognizer.getInputStream();
     int la = tokens.LA(1);
     IntervalSet nextTokens = recognizer.getATN().nextTokens(s);
-    /**
+    /*
      * If next token is unmatchable (i.e. from a lexer error), we need to hide the whole line before
      * returning so we don't unnecessarily pop out of the star or plus loop (if in one) afterwards.
      */
     int atnStateType = s.getStateType();
-    boolean atBackOfLoop =
-        (atnStateType == ATNState.STAR_LOOP_BACK || atnStateType == ATNState.PLUS_LOOP_BACK);
-    boolean lexerErrorAtBackOfLoop = la == BatfishLexer.UNMATCHABLE_TOKEN && atBackOfLoop;
-    boolean lexerErrorAtStartOfLineInBackOfLoop =
-        lexerErrorAtBackOfLoop
+    boolean atLoopExitDecision =
+        (atnStateType == ATNState.STAR_LOOP_BACK
+            || atnStateType == ATNState.PLUS_LOOP_BACK
+            || atnStateType == ATNState.STAR_LOOP_ENTRY);
+    boolean lexerErrorAtLoopExitDecision =
+        la == BatfishLexer.UNMATCHABLE_TOKEN && atLoopExitDecision;
+    boolean lexerErrorAtStartOfLineAtLoopExitDecision =
+        lexerErrorAtLoopExitDecision
             && ((BatfishParser) recognizer).getLastConsumedToken() == _separatorToken;
-    if (!lexerErrorAtStartOfLineInBackOfLoop
+    if (!lexerErrorAtStartOfLineAtLoopExitDecision
         && (nextTokens.contains(Token.EPSILON) || nextTokens.contains(la))) {
       return;
     }
@@ -292,7 +295,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
       case ATNState.STAR_LOOP_ENTRY:
       case ATNState.PLUS_LOOP_BACK:
       case ATNState.STAR_LOOP_BACK:
-        if (topLevel || lexerErrorAtStartOfLineInBackOfLoop) {
+        if (topLevel || lexerErrorAtStartOfLineAtLoopExitDecision) {
           /*
            * When at top level, we cannot pop up. So consume every "line" until we have one that
            * starts with a token acceptable at the top level.
