@@ -154,9 +154,10 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
       _tracer.discardSubTrace();
     }
     if (name != null) {
+      _tracer.newSubTrace();
       recordDefaultDeny(name, _ipSpaceMetadata.get(aclIpSpace), _ip, _ipDescription);
+      _tracer.endSubTrace();
     }
-    _tracer.endSubTrace();
     return false;
   }
 

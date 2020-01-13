@@ -301,6 +301,8 @@ public final class AclTracer extends AclLineEvaluator {
       // All previous children are of no interest since they resulted in a no-match on previous line
       _tracer.discardSubTrace();
     }
+
+    _tracer.newSubTrace();
     recordDefaultDeny(ipAccessList);
     _tracer.endSubTrace();
     return false;
