@@ -60,6 +60,8 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
               // now.
               assert alt == 1;
               break;
+            default:
+              break;
           }
         }
         return alt;
