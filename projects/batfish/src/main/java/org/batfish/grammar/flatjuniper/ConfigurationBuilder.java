@@ -5713,12 +5713,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       FwFromJunosApplicationSet from = new FwFromJunosApplicationSet(applicationSet);
       _currentFwTerm.getFromApplicationSetMembers().add(from);
     } else {
-      String name;
-      int line;
-      name = ctx.name.getText();
-      line = getLine(ctx.name.getStart());
+      String name = ctx.name.getText();
       _configuration.referenceStructure(
-          APPLICATION_OR_APPLICATION_SET, name, SECURITY_POLICY_MATCH_APPLICATION, line);
+          APPLICATION_OR_APPLICATION_SET,
+          name,
+          SECURITY_POLICY_MATCH_APPLICATION,
+          getLine(ctx.name.getStart()));
       FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet(name);
       _currentFwTerm.getFromApplicationSetMembers().add(from);
     }
