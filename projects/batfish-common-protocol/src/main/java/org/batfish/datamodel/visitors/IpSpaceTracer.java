@@ -151,7 +151,7 @@ public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
         _tracer.endSubTrace();
         return line.getAction() == LineAction.PERMIT;
       }
-      _tracer.resetSubTrace();
+      _tracer.discardSubTrace();
     }
     if (name != null) {
       recordDefaultDeny(name, _ipSpaceMetadata.get(aclIpSpace), _ip, _ipDescription);

@@ -7,7 +7,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.TraceEvent;
 
-/** A class for building Traces. */
+/**
+ * A class for building Trace trees. The tracer tracks a current trace, which is updated by creating
+ * subtraces, and then completing or discarding them. Clients can set a {@link TraceEvent} for the
+ * current (sub)trace.
+ */
 public class Tracer {
 
   // the complete trace. once set, can't create new subtraces
@@ -53,8 +57,11 @@ public class Tracer {
     }
   }
 
-  /** Clear the current subtrace. */
-  public void resetSubTrace() {
+  /**
+   * Discard the current (sub)trace. Returns to the parent trace (if one exists), and does not add
+   * the current subtrace as a child.
+   */
+  public void discardSubTrace() {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
     _nodeStack.pop();
     newSubTrace();

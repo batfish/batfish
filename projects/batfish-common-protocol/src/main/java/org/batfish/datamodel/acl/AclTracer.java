@@ -299,7 +299,7 @@ public final class AclTracer extends AclLineEvaluator {
         return action == LineAction.PERMIT;
       }
       // All previous children are of no interest since they resulted in a no-match on previous line
-      _tracer.resetSubTrace();
+      _tracer.discardSubTrace();
     }
     recordDefaultDeny(ipAccessList);
     _tracer.endSubTrace();
