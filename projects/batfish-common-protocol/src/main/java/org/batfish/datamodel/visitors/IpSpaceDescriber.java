@@ -1,6 +1,7 @@
 package org.batfish.datamodel.visitors;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
@@ -14,14 +15,16 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.AclTracer;
 
 public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
 
-  private final AclTracer _aclTracer;
+  private final Map<IpSpace, IpSpaceMetadata> _ipSpaceMetadata;
+  private final Map<String, IpSpace> _namedIpSpaces;
 
-  public IpSpaceDescriber(AclTracer aclTracer) {
-    _aclTracer = aclTracer;
+  public IpSpaceDescriber(
+      Map<IpSpace, IpSpaceMetadata> ipSpaceMetadata, Map<String, IpSpace> namedIpSpaces) {
+    _ipSpaceMetadata = ipSpaceMetadata;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   @Override
@@ -30,7 +33,7 @@ public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
   }
 
   private @Nullable String computeMetadataDescription(IpSpace ipSpace) {
-    IpSpaceMetadata ipSpaceMetadata = _aclTracer.getIpSpaceMetadata().get(ipSpace);
+    IpSpaceMetadata ipSpaceMetadata = _ipSpaceMetadata.get(ipSpace);
     if (ipSpaceMetadata != null) {
       return String.format(
           "'%s' named '%s'", ipSpaceMetadata.getSourceType(), ipSpaceMetadata.getSourceName());
@@ -76,7 +79,7 @@ public class IpSpaceDescriber implements GenericIpSpaceVisitor<String> {
       return metadataDescription;
     }
     String name = ipSpaceReference.getName();
-    IpSpace referencedSpace = _aclTracer.getNamedIpSpaces().get(name);
+    IpSpace referencedSpace = _namedIpSpaces.get(name);
     String defaultValue = String.format("An IpSpace named '%s'", name);
     if (referencedSpace == null) {
       return defaultValue;

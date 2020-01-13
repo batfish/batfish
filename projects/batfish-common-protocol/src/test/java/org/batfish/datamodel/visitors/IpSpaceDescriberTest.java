@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
@@ -15,7 +14,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.AclTracer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,14 +29,9 @@ public final class IpSpaceDescriberTest {
 
   private IpSpaceDescriber _describerNoNamesNorMetadata;
 
-  private Flow _flow;
-
   @Before
   public void setup() {
-    _flow = Flow.builder().setIngressNode("ingress").setDstIp(Ip.parse("1.1.1.1")).build();
-    _describerNoNamesNorMetadata =
-        new IpSpaceDescriber(
-            new AclTracer(_flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of()));
+    _describerNoNamesNorMetadata = new IpSpaceDescriber(ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test
@@ -51,20 +44,11 @@ public final class IpSpaceDescriberTest {
         AclIpSpace.builder().thenPermitting(lineIpSpace).thenPermitting(line2IpSpace).build();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
     IpSpaceDescriber describerWithLineMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(lineIpSpaceName, lineIpSpace),
-                ImmutableMap.of(lineIpSpaceName, lineIpSpaceMetadata)));
+            ImmutableMap.of(lineIpSpace, lineIpSpaceMetadata),
+            ImmutableMap.of(lineIpSpaceName, lineIpSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo("[0: 1.2.3.4, 1: 1.2.3.5]"));
     assertThat(
@@ -78,12 +62,7 @@ public final class IpSpaceDescriberTest {
     IpSpace ipSpace = EmptyIpSpace.INSTANCE;
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo(ipSpace.toString()));
     assertThat(ipSpace.accept(describerWithMetadata), equalTo(TEST_METADATA_DESCRIPTION));
@@ -94,12 +73,7 @@ public final class IpSpaceDescriberTest {
     IpSpace ipSpace = Ip.parse("1.0.0.0").toIpSpace();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo("1.0.0.0"));
     assertThat(ipSpace.accept(describerWithMetadata), equalTo(TEST_METADATA_DESCRIPTION));
@@ -111,31 +85,15 @@ public final class IpSpaceDescriberTest {
     IpSpace ipSpace = new IpSpaceReference(referencedIpSpaceName);
     IpSpaceDescriber describerWithReferencerMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
     IpSpaceDescriber describerWithReferencedMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(
-                    TEST_NAME, ipSpace, referencedIpSpaceName, UniverseIpSpace.INSTANCE),
-                ImmutableMap.of(
-                    referencedIpSpaceName, new IpSpaceMetadata("ref_name", "ref_type"))));
+            ImmutableMap.of(UniverseIpSpace.INSTANCE, new IpSpaceMetadata("ref_name", "ref_type")),
+            ImmutableMap.of(TEST_NAME, ipSpace, referencedIpSpaceName, UniverseIpSpace.INSTANCE));
     IpSpaceDescriber describerWithReferencedButNoMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(
-                    TEST_NAME, ipSpace, referencedIpSpaceName, UniverseIpSpace.INSTANCE),
-                ImmutableMap.of()));
+            ImmutableMap.of(),
+            ImmutableMap.of(TEST_NAME, ipSpace, referencedIpSpaceName, UniverseIpSpace.INSTANCE));
 
     assertThat(
         ipSpace.accept(_describerNoNamesNorMetadata), equalTo("An IpSpace named 'referenced'"));
@@ -152,12 +110,7 @@ public final class IpSpaceDescriberTest {
     IpSpace ipSpace = IpWildcard.parse("1.0.1.4:4.3.2.1").toIpSpace();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo("1.0.1.4:4.3.2.1"));
     assertThat(ipSpace.accept(describerWithMetadata), equalTo(TEST_METADATA_DESCRIPTION));
@@ -172,12 +125,7 @@ public final class IpSpaceDescriberTest {
             .build();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo(ipSpace.toString()));
     assertThat(ipSpace.accept(describerWithMetadata), equalTo(TEST_METADATA_DESCRIPTION));
@@ -188,12 +136,7 @@ public final class IpSpaceDescriberTest {
     IpSpace ipSpace = Prefix.parse("1.0.0.0/24").toIpSpace();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo("1.0.0.0/24"));
     assertThat(ipSpace.accept(describerWithMetadata), equalTo(TEST_METADATA_DESCRIPTION));
@@ -204,12 +147,7 @@ public final class IpSpaceDescriberTest {
     IpSpace ipSpace = UniverseIpSpace.INSTANCE;
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
-            new AclTracer(
-                _flow,
-                null,
-                ImmutableMap.of(),
-                ImmutableMap.of(TEST_NAME, ipSpace),
-                ImmutableMap.of(TEST_NAME, TEST_METADATA)));
+            ImmutableMap.of(ipSpace, TEST_METADATA), ImmutableMap.of(TEST_NAME, ipSpace));
 
     assertThat(ipSpace.accept(_describerNoNamesNorMetadata), equalTo(ipSpace.toString()));
     assertThat(ipSpace.accept(describerWithMetadata), equalTo(TEST_METADATA_DESCRIPTION));
