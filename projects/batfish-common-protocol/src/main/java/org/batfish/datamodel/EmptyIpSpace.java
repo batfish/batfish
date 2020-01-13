@@ -4,7 +4,7 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class EmptyIpSpace extends IpSpace {
 
-  public static final IpSpace INSTANCE = new EmptyIpSpace();
+  public static final EmptyIpSpace INSTANCE = new EmptyIpSpace();
 
   private EmptyIpSpace() {}
 
