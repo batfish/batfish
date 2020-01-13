@@ -49,6 +49,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.NamedPort;
@@ -186,6 +187,15 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             .filter(vrf -> vrf.getVni() != null)
             .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
 
+    @Nullable
+    InterfacesInterface vsLoopback =
+        _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
+    @Nullable
+    Ip loopbackClagVxlanAnycastIp =
+        vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null
+            ? vsLoopback.getClagVxlanAnycastIp()
+            : null;
+
     // Put all valid VXLAN VNIs into appropriate VRF
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(InterfaceConverter::isVxlan)
@@ -209,9 +219,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                                     .setVni(vxlan.getVxlanId())
                                     .setSourceAddress(
                                         firstNonNull(
-                                            _interfacesConfiguration
-                                                .getLoopback()
-                                                .getClagVxlanAnycastIp(),
+                                            loopbackClagVxlanAnycastIp,
                                             vxlan.getVxlanLocalTunnelIp()))
                                     .setUdpPort(NamedPort.VXLAN.number())
                                     .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
@@ -233,9 +241,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                                     .setVlan(vxlan.getBridgeSettings().getAccess())
                                     .setSourceAddress(
                                         firstNonNull(
-                                            _interfacesConfiguration
-                                                .getLoopback()
-                                                .getClagVxlanAnycastIp(),
+                                            loopbackClagVxlanAnycastIp,
                                             vxlan.getVxlanLocalTunnelIp()))
                                     .setUdpPort(NamedPort.VXLAN.number())
                                     .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
@@ -316,7 +322,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(iface -> populateInterfaceProperties(c, iface));
-    populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
+    populateLoopbackProperties(
+        _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME),
+        c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
   }
 
   @VisibleForTesting
@@ -366,34 +374,18 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @VisibleForTesting
-  void populateLoopbackProperties(org.batfish.datamodel.Interface viLoopback) {
-    Loopback vsLoopback = _interfacesConfiguration.getLoopback();
-
-    viLoopback.setDescription(vsLoopback.getAlias());
-
-    // addresses in interface configuration, if present, have been transferred via
-    // populateCommonProperties. we need to take care of other sources of addresses.
-
-    List<InterfaceAddress> addresses = new LinkedList<>(vsLoopback.getAddresses());
-
-    if (viLoopback.getAddress() == null && !addresses.isEmpty()) {
-      viLoopback.setAddress(addresses.get(0));
-    }
-
-    if (vsLoopback.getClagVxlanAnycastIp() != null) {
+  static void populateLoopbackProperties(
+      @Nullable InterfacesInterface vsLoopback, org.batfish.datamodel.Interface viLoopback) {
+    if (vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null) {
       // Just assume CLAG is correctly configured and comes up
-      addresses.add(
-          ConcreteInterfaceAddress.create(
-              vsLoopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH));
+      viLoopback.setAllAddresses(
+          ImmutableSet.<InterfaceAddress>builder()
+              .addAll(viLoopback.getAllAddresses())
+              .add(
+                  ConcreteInterfaceAddress.create(
+                      vsLoopback.getClagVxlanAnycastIp(), Prefix.MAX_PREFIX_LENGTH))
+              .build());
     }
-    viLoopback.setAllAddresses(
-        ImmutableSet.<InterfaceAddress>builder()
-            .addAll(viLoopback.getAllAddresses())
-            .addAll(addresses)
-            .build());
-
-    // set bandwidth
-    viLoopback.setBandwidth(firstNonNull(vsLoopback.getBandwidth(), DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
   private static void populateVlanInterfaceProperties(Configuration c, InterfacesInterface iface) {
@@ -462,7 +454,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @VisibleForTesting
-  void populateCommonInterfaceProperties(
+  static void populateCommonInterfaceProperties(
       InterfacesInterface vsIface, org.batfish.datamodel.Interface viIface) {
     // addresses
     if (vsIface.getAddresses() != null && !vsIface.getAddresses().isEmpty()) {
@@ -485,7 +477,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       viIface.setSpeed(speed);
       viIface.setBandwidth(speed);
     } else {
-      viIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
+      viIface.setBandwidth(
+          viIface.getName().equals(LOOPBACK_INTERFACE_NAME)
+              ? DEFAULT_LOOPBACK_BANDWIDTH
+              : DEFAULT_PORT_BANDWIDTH);
     }
   }
 

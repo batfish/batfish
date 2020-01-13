@@ -37,7 +37,7 @@ si_inet
 :
   INET
   (
-    LOOPBACK NEWLINE l_property*
+    LOOPBACK NEWLINE i_property*
     | DHCP NEWLINE i_property*
     | MANUAL NEWLINE i_property*
     | STATIC NEWLINE i_property*
@@ -49,30 +49,6 @@ si_no_inet
     NEWLINE i_property*
 ;
 
-// loopback interface properties
-l_property
-:
-    l_address
-  | l_alias
-  | l_clagd_vxlan_anycast_ip
-;
-
-l_address
-:
-  ADDRESS prefix NEWLINE
-;
-
-l_alias
-:
-   ALIAS TEXT NEWLINE
-;
-
-l_clagd_vxlan_anycast_ip
-:
-  CLAGD_VXLAN_ANYCAST_IP IP_ADDRESS NEWLINE
-;
-
-// regular (non-loopback) interface properties
 i_property
 :
     i_address
@@ -98,6 +74,7 @@ i_property
   | i_clagd_peer_ip
   | i_clagd_priority
   | i_clagd_sys_mac
+  | i_clagd_vxlan_anycast_ip
   | i_gateway
   | i_hwaddress
   | i_link_speed
@@ -232,6 +209,11 @@ i_clagd_priority
 i_clagd_sys_mac
 :
   CLAGD_SYS_MAC MAC_ADDRESS NEWLINE
+;
+
+i_clagd_vxlan_anycast_ip
+:
+  CLAGD_VXLAN_ANYCAST_IP IP_ADDRESS NEWLINE
 ;
 
 i_gateway
