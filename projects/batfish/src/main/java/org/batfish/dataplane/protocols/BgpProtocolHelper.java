@@ -103,6 +103,12 @@ public final class BgpProtocolHelper {
             && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
+    // Also do not export if route has NO_EXPORT community and this is a true ebgp session
+    if (route.getCommunities().contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT))
+        && sessionProperties.isEbgp()
+        && sessionProperties.getConfedSessionType() != ConfedSessionType.WITHIN_CONFED) {
+      return null;
+    }
 
     // Set transformed route's communities
     builder.setCommunities(ImmutableSet.of());
