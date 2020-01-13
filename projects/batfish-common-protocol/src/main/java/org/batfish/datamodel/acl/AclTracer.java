@@ -289,8 +289,8 @@ public final class AclTracer extends AclLineEvaluator {
 
   private boolean trace(@Nonnull IpAccessList ipAccessList) {
     List<AclLine> lines = ipAccessList.getLines();
-    _tracer.newSubTrace();
     for (int i = 0; i < lines.size(); i++) {
+      _tracer.newSubTrace();
       AclLine line = lines.get(i);
       LineAction action = visit(line);
       if (action != null) {
