@@ -12,7 +12,7 @@ import org.batfish.datamodel.acl.TraceEvent;
  * subtraces, and then completing or discarding them. Clients can set a {@link TraceEvent} for the
  * current (sub)trace.
  */
-public class Tracer {
+public final class Tracer {
 
   // the complete trace. once set, can't create new subtraces
   private @Nullable TraceNode _trace;

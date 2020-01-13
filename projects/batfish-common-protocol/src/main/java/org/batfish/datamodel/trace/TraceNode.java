@@ -27,7 +27,6 @@ public final class TraceNode {
     }
 
     public TraceNode build() {
-      //      checkState(_traceEvent != null, "traceEvent cannot be null");
       return new TraceNode(_traceEvent, _children);
     }
   }
