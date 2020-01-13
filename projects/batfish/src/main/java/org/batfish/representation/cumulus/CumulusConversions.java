@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -53,6 +54,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -162,6 +164,46 @@ public final class CumulusConversions {
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
+  }
+
+  /**
+   * Infers the peer Ip for the interface. This is doable only if the interface has exactly one
+   * (primary) address that is a /30 or /31. For a /30, the address must NOT be the first or last
+   * address in the range.
+   *
+   * @return the inferred Ip or empty optional if that is not possible.
+   */
+  @VisibleForTesting
+  @Nonnull
+  static Optional<Ip> inferPeerIp(Interface viIface) {
+    // one concrete interface address
+    if (viIface.getAllAddresses().size() != 1
+        || viIface.getAddress() == null
+        || !(viIface.getAddress() instanceof ConcreteInterfaceAddress)) {
+      return Optional.empty();
+    }
+    ConcreteInterfaceAddress ifaceAddress =
+        (ConcreteInterfaceAddress) viIface.getAllAddresses().iterator().next();
+    Prefix prefix = ifaceAddress.getPrefix();
+
+    if (ifaceAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 1) { // 31
+      return Optional.of(
+          ifaceAddress.getIp().equals(prefix.getStartIp())
+              ? prefix.getEndIp()
+              : prefix.getStartIp());
+    }
+    if (ifaceAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 2) { // 30
+      if (ifaceAddress.getIp().equals(prefix.getStartIp())
+          || ifaceAddress.getIp().equals(prefix.getEndIp())) {
+        return Optional.empty();
+      }
+      return Optional.of(
+          ifaceAddress.getIp().equals(prefix.getFirstHostIp())
+              ? prefix.getLastHostIp()
+              : prefix.getFirstHostIp());
+    }
+
+    return Optional.empty();
   }
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -328,29 +370,10 @@ public final class CumulusConversions {
     Iterables.concat(ImmutableSet.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values())
         .forEach(
             bgpVrf -> {
-              Long localAs = bgpVrf.getAutonomousSystem();
-              org.batfish.datamodel.BgpProcess viBgpProcess =
-                  c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
               bgpVrf
                   .getNeighbors()
-                  .forEach(
-                      (neighborName, neighbor) -> {
-                        if (neighbor instanceof BgpInterfaceNeighbor) {
-                          BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-                          interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                          addInterfaceNeighbor(
-                              c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
-                        } else if (neighbor instanceof BgpIpNeighbor) {
-                          BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-                          ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                          addIpv4BgpNeighbor(
-                              c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-                        } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
-                          throw new IllegalArgumentException(
-                              "Unsupported BGP neighbor type: "
-                                  + neighbor.getClass().getSimpleName());
-                        }
-                      });
+                  .values()
+                  .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
             });
   }
 
@@ -387,10 +410,13 @@ public final class CumulusConversions {
       newProc.setConfederation(new BgpConfederation(confederationId, ImmutableSet.of(asn)));
     }
 
-    BgpIpv4UnicastAddressFamily ipv4Unicast = bgpVrf.getIpv4Unicast();
-    if (ipv4Unicast != null) {
+    if (bgpVrf.isIpv4UnicastActive()) {
+      BgpIpv4UnicastAddressFamily ipv4Unicast =
+          firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
+
       // Add networks from network statements to new process's origination space
-      ipv4Unicast.getNetworks().keySet().forEach(newProc::addToOriginationSpace);
+      Sets.union(bgpVrf.getNetworks().keySet(), ipv4Unicast.getNetworks().keySet())
+          .forEach(newProc::addToOriginationSpace);
 
       // Generate aggregate routes
       generateGeneratedRoutes(c, c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks());
@@ -401,7 +427,33 @@ public final class CumulusConversions {
     return newProc;
   }
 
-  private static void addInterfaceNeighbor(
+  @VisibleForTesting
+  static void addBgpNeighbor(
+      Configuration c,
+      CumulusNodeConfiguration vsConfig,
+      BgpVrf bgpVrf,
+      BgpNeighbor neighbor,
+      Warnings w) {
+
+    Long localAs = bgpVrf.getAutonomousSystem();
+    org.batfish.datamodel.BgpProcess viBgpProcess =
+        c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
+
+    if (neighbor instanceof BgpInterfaceNeighbor) {
+      BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+      interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+    } else if (neighbor instanceof BgpIpNeighbor) {
+      BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
+      ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+    } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
+      throw new IllegalArgumentException(
+          "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
+    }
+  }
+
+  private static void addInterfaceBgpNeighbor(
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       BgpInterfaceNeighbor neighbor,
@@ -413,11 +465,26 @@ public final class CumulusConversions {
       w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
-        BgpUnnumberedPeerConfig.builder()
-            .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface(neighbor.getName());
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+
+    BgpPeerConfig.Builder<?, ?> peerConfigBuilder;
+
+    // if an interface neighbor has only one address and that address is a /31, it gets treated as
+    // numbered peer
+    Interface viIface = c.getAllInterfaces().get(neighbor.getName());
+    Optional<Ip> inferredIp = inferPeerIp(viIface);
+    if (inferredIp.isPresent()) {
+      peerConfigBuilder =
+          BgpActivePeerConfig.builder()
+              .setLocalIp(((ConcreteInterfaceAddress) viIface.getAddress()).getIp())
+              .setPeerAddress(inferredIp.get());
+    } else {
+      peerConfigBuilder =
+          BgpUnnumberedPeerConfig.builder()
+              .setLocalIp(BGP_UNNUMBERED_IP)
+              .setPeerInterface(neighbor.getName());
+    }
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @VisibleForTesting
@@ -428,7 +495,8 @@ public final class CumulusConversions {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      BgpPeerConfig.Builder<?, ?> peerConfigBuilder) {
+      BgpPeerConfig.Builder<?, ?> peerConfigBuilder,
+      Warnings w) {
 
     RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf);
     @Nullable
@@ -453,7 +521,7 @@ public final class CumulusConversions {
                 importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
-                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
+                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
         .build();
   }
 
@@ -521,7 +589,8 @@ public final class CumulusConversions {
                     .orElse(
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @Nonnull
@@ -534,6 +603,8 @@ public final class CumulusConversions {
             .setOwner(c)
             .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
+    // If default originate is set for a neighbor, we will send it a "fresh" default route is not
+    // subjected to the neighbor's outgoing route map. We will drop other default routes.
     if (bgpDefaultOriginate(neighbor)) {
       initBgpDefaultRouteExportPolicy(vrfName, neighbor.getName(), true, null, c);
       peerExportPolicy.addStatement(
@@ -543,10 +614,9 @@ public final class CumulusConversions {
                   computeBgpDefaultRouteExportPolicyName(true, vrfName, neighbor.getName())),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
+
+      peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
     }
-    // FRR does not advertise default routes even if they are in the routing table:
-    // https://readthedocs.org/projects/frrouting/downloads/pdf/stable-5.0/
-    peerExportPolicy.addStatement(REJECT_DEFAULT_ROUTE);
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
@@ -813,15 +883,18 @@ public final class CumulusConversions {
     // Always export BGP and iBGP routes
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
-    // If no IPv4 address family is not defined, there is no capability to explicitly advertise v4
-    // networks or redistribute protocols, so no non-BGP routes can be exported.
-    if (bgpVrf.getIpv4Unicast() == null) {
+    // we don't need to process redist policies and network statements (inside v4 address family or
+    // bgp-vrf-level) if v4 address family is not active
+    if (!bgpVrf.isIpv4UnicastActive()) {
       return exportConditions;
     }
 
+    BgpIpv4UnicastAddressFamily bgpIpv4UnicastAddressFamily =
+        firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
+
     // Add conditions to redistribute other protocols
     for (BgpRedistributionPolicy redistributeProtocolPolicy :
-        bgpVrf.getIpv4Unicast().getRedistributionPolicies().values()) {
+        bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values()) {
 
       // Get a match expression for the protocol to be redistributed
       CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
@@ -843,11 +916,9 @@ public final class CumulusConversions {
     }
 
     // create origination prefilter from listed advertised networks
-    bgpVrf
-        .getIpv4Unicast()
-        .getNetworks()
+    Sets.union(bgpVrf.getNetworks().keySet(), bgpIpv4UnicastAddressFamily.getNetworks().keySet())
         .forEach(
-            (prefix, bgpNetwork) -> {
+            prefix -> {
               BooleanExpr weExpr = BooleanExprs.TRUE;
               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
               Conjunction exportNetworkConditions = new Conjunction();
@@ -900,7 +971,8 @@ public final class CumulusConversions {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy routingPolicy) {
+      RoutingPolicy routingPolicy,
+      Warnings w) {
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
     // sadly, we allow localAs == null in VI datamodel
     if (evpnConfig == null
@@ -956,6 +1028,10 @@ public final class CumulusConversions {
               }
               Integer l3Vni = vsVrf.getVni();
               if (l3Vni == null) {
+                return;
+              }
+              if (!vniToIndex.containsKey(l3Vni)) {
+                w.redFlag(String.format("vni %s for vrf %s does not exist", l3Vni, innerVrfName));
                 return;
               }
               RouteDistinguisher rd =

@@ -23,7 +23,6 @@ public class HeaderSpaceMatchesTest {
   private static final int _packetLength = 5;
   private static final Ip _srcIp = Ip.parse("1.1.1.1");
   private static final int _srcPort = 22;
-  private static final FlowState _state = FlowState.NEW;
   private static final TcpFlags _tcpFlags = TcpFlags.builder().setAck(true).build();
 
   /** SSH {@link Flow} from 1.1.1.1 to 2.2.2.2 with arbitrary values for other fields */
@@ -39,7 +38,6 @@ public class HeaderSpaceMatchesTest {
           .setPacketLength(_packetLength)
           .setSrcIp(_srcIp)
           .setSrcPort(_srcPort)
-          .setState(_state)
           .setTcpFlags(_tcpFlags)
           .build();
 
@@ -56,7 +54,6 @@ public class HeaderSpaceMatchesTest {
           .setIpProtocol(IpProtocol.ICMP)
           .setPacketLength(_packetLength)
           .setSrcIp(_srcIp)
-          .setState(_state)
           .build();
 
   @Test
@@ -247,19 +244,6 @@ public class HeaderSpaceMatchesTest {
     assertThat(withSshAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(true));
     assertThat(withHttpAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(true));
     assertThat(withDnsAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(false));
-  }
-
-  @Test
-  public void testStatesMatchers() {
-    // Actual state is FlowState.NEW
-    HeaderSpace withRightState =
-        HeaderSpace.builder().setStates(ImmutableSet.of(_state, FlowState.ESTABLISHED)).build();
-    HeaderSpace withWrongState =
-        HeaderSpace.builder()
-            .setStates(ImmutableSet.of(FlowState.ESTABLISHED, FlowState.ESTABLISHED))
-            .build();
-    assertThat(withRightState.matches(_sshFlow, _namedIpSpaces), equalTo(true));
-    assertThat(withWrongState.matches(_sshFlow, _namedIpSpaces), equalTo(false));
   }
 
   @Test

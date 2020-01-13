@@ -88,6 +88,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfCont
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
@@ -318,6 +319,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+  }
+
+  @Override
+  public void exitSbafls_advertise_default_gw(Sbafls_advertise_default_gwContext ctx) {
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
   }
 
   @Override
@@ -907,11 +913,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (old != null) {
       _w.addWarning(ctx, ctx.getText(), _parser, "overwriting set community");
     }
+    boolean additive = ctx.ADDITIVE() != null;
     _currentRouteMapEntry.setSetCommunity(
         new RouteMapSetCommunity(
             ctx.communities.stream()
                 .map(this::toStandardCommunity)
-                .collect(ImmutableList.toImmutableList())));
+                .collect(ImmutableList.toImmutableList()),
+            additive));
   }
 
   @Override
@@ -1004,7 +1012,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       // Round up to the next multiple of 5
       // http://docs.frrouting.org/en/latest/filter.html#clicmd-ipprefix-listNAMEseqNUMBER(permit|deny)PREFIX[leLEN][geLEN]
-      Long lastNum = _currentIpPrefixList.getLines().lastKey();
+      Long lastNum =
+          _currentIpPrefixList.getLines().isEmpty()
+              ? 0L
+              : _currentIpPrefixList.getLines().lastKey();
       num = nextMultipleOfFive(lastNum);
     }
     LineAction action = ctx.action.permit != null ? LineAction.PERMIT : LineAction.DENY;

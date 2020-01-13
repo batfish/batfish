@@ -280,9 +280,6 @@ public final class AclTracer extends AclLineEvaluator {
         }
       }
     }
-    if (!headerSpace.getStates().isEmpty() && !headerSpace.getStates().contains(_flow.getState())) {
-      return false;
-    }
     if (!headerSpace.getTcpFlags().isEmpty()
         && headerSpace.getTcpFlags().stream().noneMatch(tcpFlags -> tcpFlags.match(_flow))) {
       return false;

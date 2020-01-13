@@ -97,7 +97,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    _hostname = hostname == null ? null : hostname.toLowerCase();
   }
 
   @Override
@@ -122,6 +122,18 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     populateInterfacesInterfaceProperties(c);
     populatePortsInterfaceProperties(c);
     populateFrrInterfaceProperties(c);
+
+    // for interfaces that didn't get an address via either interfaces or FRR, give them a link
+    // local address if they are being used for BGP unnumbered
+    c.getAllInterfaces()
+        .forEach(
+            (iname, iface) -> {
+              if (iface.getAllAddresses().size() == 0
+                  && isUsedForBgpUnnumbered(iface.getName(), _frrConfiguration.getBgpProcess())) {
+                iface.setAddress(LINK_LOCAL_ADDRESS);
+                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
+              }
+            });
 
     initVrfStaticRoutes(c);
 
@@ -250,7 +262,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   void initVrfStaticRoutes(Configuration c) {
     // post-up routes from the interfaces file
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(
             iface -> {
               if (!c.getAllInterfaces().get(iface.getName()).getActive()) {
@@ -302,9 +314,15 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   /** Add interface properties based on what we saw in the interfaces file */
   private void populateInterfacesInterfaceProperties(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME))
+        .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(iface -> populateInterfaceProperties(c, iface));
     populateLoopbackProperties(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME));
+  }
+
+  @VisibleForTesting
+  static boolean isValidVIInterface(InterfacesInterface iface) {
+    return !iface.getName().equals(BRIDGE_NAME) /* not bridge */
+        && !InterfaceConverter.isVxlan(iface) /* not vxlans */;
   }
 
   private void populateInterfaceProperties(Configuration c, InterfacesInterface iface) {
@@ -451,11 +469,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       List<ConcreteInterfaceAddress> addresses = vsIface.getAddresses();
       viIface.setAddress(addresses.get(0));
       viIface.setAllAddresses(addresses);
-    } else {
-      if (isUsedForBgpUnnumbered(vsIface.getName(), _frrConfiguration.getBgpProcess())) {
-        viIface.setAddress(LINK_LOCAL_ADDRESS);
-        viIface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
-      }
     }
 
     // description
@@ -513,7 +526,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   @VisibleForTesting
   void initializeAllInterfaces(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !iface.getName().equals(BRIDGE_NAME)) // not a bridge
+        .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(
             iface ->
                 org.batfish.datamodel.Interface.builder()

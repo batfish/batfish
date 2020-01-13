@@ -58,7 +58,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
@@ -167,10 +166,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static final String ACL_NAME_COMBINED_INCOMING = "~COMBINED_INCOMING_FILTER~";
 
-  public static final String ACL_NAME_COMBINED_OUTGOING = "~COMBINED_OUTGOING_FILTER~";
-
-  public static final String ACL_NAME_EXISTING_CONNECTION = "~EXISTING_CONNECTION~";
-
   public static final String ACL_NAME_GLOBAL_POLICY = "~GLOBAL_SECURITY_POLICY~";
 
   public static final String ACL_NAME_SCREEN = "~SCREEN~";
@@ -197,20 +192,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   static final int DEFAULT_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_HELLO_INTERVAL;
-
-  private static final IpAccessList ACL_EXISTING_CONNECTION =
-      IpAccessList.builder()
-          .setName(ACL_NAME_EXISTING_CONNECTION)
-          .setLines(
-              ImmutableList.of(
-                  new ExprAclLine(
-                      LineAction.PERMIT,
-                      new MatchHeaderSpace(
-                          HeaderSpace.builder()
-                              .setStates(ImmutableList.of(FlowState.ESTABLISHED))
-                              .build()),
-                      ACL_NAME_EXISTING_CONNECTION)))
-          .build();
 
   private static final BgpAuthenticationAlgorithm DEFAULT_BGP_AUTHENTICATION_ALGORITHM =
       BgpAuthenticationAlgorithm.HMAC_SHA_1_96;
@@ -2086,26 +2067,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
     List<AclLine> zoneAclLines = new LinkedList<>();
 
-    /* Default ACL that allows existing connections should be added to all security policies */
-    zoneAclLines.add(
-        new ExprAclLine(
-            LineAction.PERMIT,
-            new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION),
-            "EXISTING_CONNECTION"));
-
     /* Default policy allows traffic originating from the device to be accepted */
     zoneAclLines.add(
         new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
-      for (String fromZone : zone.getFromZonePolicies().keySet()) {
-        String zonePolicyLineDesc =
-            fromZone.equals(zone.getName())
-                ? String.format("Match intra-zone policy for zone %s", fromZone)
-                : String.format(
-                    "Match cross-zone policy from-zone %s to-zone %s", fromZone, zone.getName());
-        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, fromZone));
+      for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
+        String filterName = e.getKey();
+        FirewallFilter filter = e.getValue();
+
+        // Name the ACL line that will apply zone policy.
+        String zonePolicyLineDesc;
+        // Not possible to configure a zone policy for multiple from zones.
+        String fromZone = filter.getFromZone().orElse(null);
+        if (fromZone == null) {
+          // Zone egress policy for traffic originating from device
+          zonePolicyLineDesc = String.format("Match policy from junos-host to zone %s", filterName);
+        } else if (fromZone.equals(zone.getName())) {
+          // Intra-zone policy
+          zonePolicyLineDesc = String.format("Match intra-zone policy for zone %s", fromZone);
+        } else {
+          // Cross-zone policy
+          zonePolicyLineDesc =
+              String.format(
+                  "Match cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
+        }
+
+        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, filterName));
       }
     }
 
@@ -2225,7 +2214,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
        * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
        * need to make a match condition for that
        */
-      String zoneName = filter.getFromZone();
+      String zoneName = filter.getFromZone().orElse(null);
       if (zoneName != null) {
         matchSrcInterface =
             new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
@@ -3041,10 +3030,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                             ipSpaceName,
                             new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
       }
-    }
-    // If there are zones, then assume we will need to support existing connection ACL
-    if (!_masterLogicalSystem.getZones().isEmpty()) {
-      _c.getIpAccessLists().put(ACL_NAME_EXISTING_CONNECTION, ACL_EXISTING_CONNECTION);
     }
 
     // default zone behavior

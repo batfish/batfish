@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
@@ -32,8 +31,6 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
     private IpProtocol _protocol;
 
     private List<SubRange> _srcPortRanges = ImmutableList.of();
-
-    private Set<FlowState> _states = ImmutableSet.of();
 
     private List<TcpFlagsMatchConditions> _tcpFlags = ImmutableList.of();
 
@@ -76,11 +73,6 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return this;
     }
 
-    public Builder setStates(Iterable<FlowState> states) {
-      _states = ImmutableSet.copyOf(states);
-      return this;
-    }
-
     public Builder setTcpFlags(Iterable<TcpFlagsMatchConditions> tcpFlags) {
       _tcpFlags = ImmutableList.copyOf(tcpFlags);
       return this;
@@ -105,8 +97,6 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
   private final List<SubRange> _srcPortRanges;
 
-  private final Set<FlowState> _states;
-
   private final List<TcpFlagsMatchConditions> _tcpFlags;
 
   private SimpleExtendedAccessListServiceSpecifier(Builder builder) {
@@ -117,7 +107,6 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
     _icmpType = builder._icmpType;
     _protocol = builder._protocol;
     _srcPortRanges = builder._srcPortRanges;
-    _states = builder._states;
     _tcpFlags = builder._tcpFlags;
   }
 
@@ -135,7 +124,6 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
                 _icmpType != null ? ImmutableSet.of(new SubRange(_icmpType)) : ImmutableSet.of())
             .setIpProtocols(_protocol != null ? ImmutableSet.of(_protocol) : ImmutableSet.of())
             .setSrcPorts(_srcPortRanges)
-            .setStates(_states)
             .setTcpFlags(_tcpFlags)
             .build());
   }
@@ -150,7 +138,6 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
         .add("icmpType", _icmpType)
         .add("protocol", _protocol)
         .add("srcPortRanges", _srcPortRanges)
-        .add("states", _states)
         .add("tcpFlags", _tcpFlags)
         .toString();
   }

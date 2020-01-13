@@ -155,10 +155,11 @@ rmsipnh_literal
 
 rms_community
 :
-  COMMUNITY communities += literal_standard_community+ NEWLINE
+  COMMUNITY communities += literal_standard_community+ ADDITIVE? NEWLINE
 ;
 
 rms_local_preference
 :
   LOCAL_PREFERENCE pref = uint32 NEWLINE
 ;
+

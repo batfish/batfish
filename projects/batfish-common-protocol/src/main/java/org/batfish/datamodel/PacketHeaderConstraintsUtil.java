@@ -91,8 +91,7 @@ public class PacketHeaderConstraintsUtil {
             .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
             .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
             .setPacketLengths(extractSubranges(phc.getPacketLengths()))
-            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()))
-            .setStates(firstNonNull(phc.getFlowStates(), ImmutableSortedSet.of()));
+            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));
 
     if (phc.getDscps() != null) {
       builder.setDscps(phc.getDscps().enumerate());
@@ -121,7 +120,6 @@ public class PacketHeaderConstraintsUtil {
     setPacketLength(phc, builder);
     setEcnValue(phc, builder);
     setFragmentOffsets(phc, builder);
-    setFlowStates(phc, builder);
     setTcpFlags(phc, builder);
     return builder;
   }
@@ -216,17 +214,6 @@ public class PacketHeaderConstraintsUtil {
     checkArgument(fragmentOffsets == null || fragmentOffsets.isSingleton(), errorMessage);
     if (fragmentOffsets != null) {
       builder.setFragmentOffset(fragmentOffsets.singletonValue());
-    }
-  }
-
-  @VisibleForTesting
-  static void setFlowStates(PacketHeaderConstraints phc, Builder builder) {
-    Set<FlowState> flowStates = phc.getFlowStates();
-    checkArgument(
-        flowStates == null || flowStates.size() == 1,
-        "Cannot construct flow  with multiple packet lengths");
-    if (flowStates != null) {
-      builder.setState(flowStates.iterator().next());
     }
   }
 

@@ -14,6 +14,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -31,10 +32,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
@@ -43,8 +47,9 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -281,6 +286,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseDefaultGw() {
+    parseLines(
+        "router bgp 1", "address-family l2vpn evpn", "advertise-default-gw", "exit-address-family");
+    assertTrue(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseDefaultGw());
+  }
+
+  @Test
   public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
     parseLines(
         "router bgp 1",
@@ -382,11 +394,22 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpAddressFamilyNeighborDefaultOriginate_behavior() throws IOException {
     /*
-    The implemented behavior with default-originate is that the default route will be advertised unconditionally.
-    TODO: Check if this behavior is actually correct.
+     There are four nodes in the topology arranged in a line.
+       - frr-originator -- frr-reoriginator -- frr-propagator -- ios-listener
+
+     frr-originator has default-originate.
+
+     frr-reoriginator also has default-originate. it should generate a fresh route not propagate
+        the one it got from frr-originator. it also has a route map toward frr-propagator that
+        drops default (but shouldn't interfere with default-originate)
+
+     frr-propagator does not default-originate. it should propagate the default it got from
+         frr-reoriginator to ios-listener
     */
+
     String snapshotName = "default-originate";
-    List<String> configurationNames = ImmutableList.of("frr-originator", "ios-listener");
+    List<String> configurationNames =
+        ImmutableList.of("frr-originator", "frr-reoriginator", "frr-propagator", "ios-listener");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -397,23 +420,60 @@ public class CumulusFrrGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    Bgpv4Route expectedDefaultRoute =
-        Bgpv4Route.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setAsPath(AsPath.ofSingletonAsSets(1L))
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    // frr-reoriginator should get a default route from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-reoriginator").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
+
+    // frr-propagator should get a fresh default route from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-propagator").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("20.1.1.2"))
+                    .setReceivedFromIp(Ip.parse("20.1.1.2"))
+                    .setOriginatorIp(Ip.parse("2.2.2.2"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(2L)) // fresh route with only one AS
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
+
+    // ios-listener should get a propagated route from frr-propagator
+    assertThat(
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(Ip.parse("30.1.1.3"))
+                    .setReceivedFromIp(Ip.parse("30.1.1.3"))
+                    .setOriginatorIp(Ip.parse("3.3.3.3"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(3L, 2L)) // propagated route
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())));
   }
 
   @Test
@@ -548,6 +608,63 @@ public class CumulusFrrGrammarTest {
     BgpNeighbor neighbor = neighbors.get("1.2.3.4");
     assertThat(neighbor, isA(BgpIpNeighbor.class));
     assertThat(neighbor.getRemoteAs(), equalTo(2L));
+  }
+
+  @Test
+  public void testBgpNeighborCompatiblity() throws IOException {
+    String snapshotName = "bgp-neighbor-compatibility";
+    /*
+    There are two nodes in the snapshot, each with XX interfaces
+      u swp1: both nodes have an interface neighbor with no IP address
+      n swp2: both nodes have an interface neighbor with a /31 address (same subnet)
+      u swp3: both nodes have an interface neighbor with a /24 address (same subnet)
+      u swp4: both nodes have an interface neighbor with a /31 and a /24 address
+      - swp5: node1 has an interface neighbor with /31 and node2 has an interface neighbor with no IP address
+      u swp6: node1 has an interface neighbor with /24 and node2 has an interface neighbor with no IP address
+      u swp7: node1 has an interface neighbor with /31 and /24 addresses and node 2 has an interface neighbor with no IP address
+      n swp8: node1 has an interface neighbor with /31 and node2 has an IP neighbor in the same subnet
+      - swp9: node1 has an interface neighbor with /24 and node2 has an IP neighbor in the same subnet
+      n swp10: both nodes have an interface neighbor with /30 addresses (host addresses in same subnet)
+
+    The layer1 topology file connects matching swpX interfaces on each node (swp1<>swp1, ...)
+
+    Combinations marked 'u' should be unnumbered sessions, combinations marked 'n' should be numbered sessions, and those marked '-' are invalid combinations.
+     */
+    List<String> configurationNames = ImmutableList.of("node1", "node2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .setLayer1TopologyText(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpGraph =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot()).getGraph();
+
+    // unnumbered sessions
+    assertThat(
+        bgpGraph.edges().stream()
+            .map(e -> e.nodeU().getPeerInterface())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet()),
+        containsInAnyOrder("swp1", "swp3", "swp4", "swp6", "swp7"));
+
+    // numbered sessions: swp2 and swp8
+    assertThat(
+        bgpGraph.edges().stream()
+            .map(e -> e.nodeU().getRemotePeerPrefix())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet()),
+        containsInAnyOrder(
+            Prefix.parse("2.2.2.0/32"),
+            Prefix.parse("2.2.2.1/32"),
+            Prefix.parse("8.8.8.0/32"),
+            Prefix.parse("8.8.8.1/32"),
+            Prefix.parse("10.10.10.1/32"),
+            Prefix.parse("10.10.10.2/32")));
   }
 
   @Test
@@ -974,7 +1091,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testCumulusFrrIpPrefixListNoSeq() {
+  public void testCumulusFrrIpPrefixListNoSeqOnFirstEntry() {
+    String name = "NAME";
+    String prefix1 = "10.0.0.1/24";
+    parse(String.format("ip prefix-list %s permit %s\n", name, prefix1));
+    assertThat(_frr.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
+    IpPrefixList prefixList = _frr.getIpPrefixLists().get(name);
+    IpPrefixListLine line1 = prefixList.getLines().get(5L);
+    assertThat(line1.getLine(), equalTo(5L));
+    assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(line1.getLengthRange(), equalTo(SubRange.singleton(24)));
+    assertThat(line1.getPrefix(), equalTo(Prefix.parse("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testCumulusFrrIpPrefixListNoSeqOnLaterEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";

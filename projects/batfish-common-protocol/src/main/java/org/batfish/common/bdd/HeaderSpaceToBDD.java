@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -146,11 +145,6 @@ public final class HeaderSpaceToBDD {
     // allocation in BDDPacket.
     BDD positiveSpace =
         _bddOps.and(
-            toBDD(
-                headerSpace.getStates().stream()
-                    .map(FlowState::number)
-                    .collect(Collectors.toList()),
-                _bddPacket.getState()),
             toBDD(headerSpace.getFragmentOffsets(), _bddPacket.getFragmentOffset()),
             BDDOps.negateIfNonNull(
                 toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset())),

@@ -82,7 +82,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -428,13 +427,6 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
-        break;
-      case FLOW_STATE:
-        if (!value.isTextual()) {
-          throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
-        }
-        FlowState.fromString(value.textValue());
         break;
       case HEADER_CONSTRAINT:
         if (!value.isObject() && !value.isNull()) {

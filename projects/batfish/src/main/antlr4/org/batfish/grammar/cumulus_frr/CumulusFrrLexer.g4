@@ -29,6 +29,11 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ADDITIVE
+:
+   'additive'
+;
+
 ADVERTISE
 :
   'advertise'
@@ -37,6 +42,11 @@ ADVERTISE
 ADVERTISE_ALL_VNI
 :
   'advertise-all-vni'
+;
+
+ADVERTISE_DEFAULT_GW
+:
+   'advertise-default-gw'
 ;
 
 AGENTX

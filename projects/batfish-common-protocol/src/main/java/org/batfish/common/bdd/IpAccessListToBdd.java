@@ -155,18 +155,19 @@ public abstract class IpAccessListToBdd {
   }
 
   /**
-   * Return the set matched by each line (and no earlier line). The last element is the set
-   * unmatched by any line.
+   * Return the {@link PermitAndDenyBdds} matched by each line (and no earlier line). The last
+   * element is a {@link PermitAndDenyBdds} representing default action: permits nothing, denies all
+   * unmatched packets.
    */
-  public List<BDD> reachAndMatchLines(IpAccessList acl) {
-    ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
+  public List<PermitAndDenyBdds> reachAndMatchLines(IpAccessList acl) {
+    ImmutableList.Builder<PermitAndDenyBdds> bdds = ImmutableList.builder();
     BDD reach = _pkt.getFactory().one();
     for (AclLine line : acl.getLines()) {
-      BDD match = convert(line).getMatchBdd();
-      bdds.add(reach.and(match));
-      reach = reach.diff(match);
+      PermitAndDenyBdds match = convert(line);
+      bdds.add(match.and(reach));
+      reach = reach.diff(match.getMatchBdd());
     }
-    bdds.add(reach);
+    bdds.add(new PermitAndDenyBdds(_pkt.getFactory().zero(), reach));
     return bdds.build();
   }
 

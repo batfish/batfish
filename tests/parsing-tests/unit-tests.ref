@@ -76218,6 +76218,12 @@
         "configs/cisco_acl" : {
           "Parse warnings" : [
             {
+              "Comment" : "Unsupported clause in extended access list: tracked",
+              "Line" : 6,
+              "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+              "Text" : "20 permit ip any any tracked"
+            },
+            {
               "Comment" : "Unsupported clause in extended access list: ttleq255",
               "Line" : 10,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",

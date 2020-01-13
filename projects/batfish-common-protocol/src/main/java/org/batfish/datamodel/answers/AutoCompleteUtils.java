@@ -24,7 +24,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
@@ -324,6 +323,11 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case DEPRECATED_FLOW_STATE:
+          {
+            suggestions = baseAutoComplete(query, ImmutableSet.of("NEW", "ESTABLISHED", "RELATED"));
+            break;
+          }
         case DISPOSITION_SPEC:
           {
             suggestions = DispositionSpecifier.autoComplete(query);
@@ -353,14 +357,6 @@ public final class AutoCompleteUtils {
                     completionMetadata,
                     nodeRolesData,
                     referenceLibrary);
-            break;
-          }
-        case FLOW_STATE:
-          {
-            suggestions =
-                baseAutoComplete(
-                    query,
-                    Stream.of(FlowState.values()).map(FlowState::name).collect(Collectors.toSet()));
             break;
           }
         case INTERFACE:

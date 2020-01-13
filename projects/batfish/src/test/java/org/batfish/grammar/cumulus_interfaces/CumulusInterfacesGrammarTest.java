@@ -140,6 +140,15 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testBondMaster() {
+    parse("iface swp1\n bond-master bond0\n");
+    assertThat(_warnings.getParseWarnings().size(), equalTo(1));
+    assertEquals(
+        _warnings.getParseWarnings().get(0).getComment(),
+        "bond-master command is not supported. use bond-slaves to configure bonds.");
+  }
+
+  @Test
   public void testBondMiimon() {
     parse("iface swp1\n bond-miimon 100\n");
   }
