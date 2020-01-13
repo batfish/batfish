@@ -2880,17 +2880,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
     preprocessFilters();
 
-    // convert firewall filters to ipaccesslists
-    for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
-      String name = e.getKey();
-      FirewallFilter filter = e.getValue();
-      // TODO: support other filter families
-      if (filter.getFamily() != Family.INET) {
-        continue;
-      }
-      IpAccessList list = toIpAccessList(filter);
-      _c.getIpAccessLists().put(name, list);
-    }
+    convertFirewallFiltersToIpAccessLists();
 
     // convert firewall filters implementing packet policy to PacketPolicy objects
     for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
@@ -3294,6 +3284,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _c;
   }
 
+  private void convertFirewallFiltersToIpAccessLists() {
+    for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
+      String name = e.getKey();
+      FirewallFilter filter = e.getValue();
+      // TODO: support other filter families
+      if (filter.getFamily() != Family.INET) {
+        continue;
+      }
+      IpAccessList list = toIpAccessList(filter);
+      _c.getIpAccessLists().put(name, list);
+    }
+  }
+
   private void preprocessFilters() {
     _masterLogicalSystem.getInterfaces().values().stream()
         .flatMap(i -> Stream.concat(Stream.of(i), i.getUnits().values().stream()))
@@ -3308,14 +3311,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       assert aFilter instanceof ConcreteFirewallFilter;
       ConcreteFirewallFilter filter = (ConcreteFirewallFilter) aFilter;
-      Set<String> toRemove = new HashSet<>();
-      for (Entry<String, FwTerm> e2 : filter.getTerms().entrySet()) {
-        String termName = e2.getKey();
-        FwTerm term = e2.getValue();
-        if (term.getIpv6()) {
-          toRemove.add(termName);
-        }
-      }
+
+      Set<String> toRemove =
+          filter.getTerms().entrySet().stream()
+              .filter(entry -> entry.getValue().getIpv6())
+              .map(Entry::getKey)
+              .collect(ImmutableSet.toImmutableSet());
+
       for (String termName : toRemove) {
         filter.getTerms().remove(termName);
       }
