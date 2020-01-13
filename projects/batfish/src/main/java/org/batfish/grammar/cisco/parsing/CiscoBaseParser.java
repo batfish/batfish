@@ -14,7 +14,7 @@ public abstract class CiscoBaseParser extends BatfishParser {
   /** Returns {@code true} iff {@code t}'s text represents a valid vlan ID (1-4094) in base 10. */
   protected static boolean isVlanId(Token t) {
     try {
-      Integer val = Integer.parseInt(t.getText(), 10);
+      int val = Integer.parseInt(t.getText(), 10);
       checkArgument(1 <= val && val <= 4094);
     } catch (IllegalArgumentException e) {
       return false;

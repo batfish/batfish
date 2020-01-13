@@ -264,7 +264,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   @Test
   public void testAsPathInTransformedRoute() {
     setUpPeers(false);
-    Long asInPath = 3L;
+    long asInPath = 3L;
     AsPath originalAsPath = AsPath.of(AsSet.of(asInPath));
     Bgpv4Route.Builder transformedAggregateRoute =
         runTransformBgpRoutePreExport(_baseAggRouteBuilder.setAsPath(originalAsPath).build());
