@@ -1,0 +1,14 @@
+ip routing
+illegal
+interface eth0
+  ip ospf cost 1
+illegal
+ip routing
+illegal
+ip routing
+illegal
+illegal
+ip routing
+illegal
+ip illegal
+ip routing

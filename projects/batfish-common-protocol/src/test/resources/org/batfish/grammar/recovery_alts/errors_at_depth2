@@ -1,0 +1,13 @@
+ip routing
+interface eth0
+  illegaltext
+  mtu 1
+  illegaltext 
+  mtu 2
+  ip address illegaltext
+  mtu 3
+  ip ospf cost 5
+  ip illegaltext
+  mtu illegaltext
+  mtu 4
+ip routing
