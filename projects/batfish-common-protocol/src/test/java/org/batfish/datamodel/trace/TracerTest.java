@@ -3,7 +3,6 @@ package org.batfish.datamodel.trace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.batfish.datamodel.acl.TraceEvent;
 import org.junit.Test;
