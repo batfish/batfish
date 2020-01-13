@@ -64,6 +64,5 @@ public final class Tracer {
   public void discardSubTrace() {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
     _nodeStack.pop();
-    newSubTrace();
   }
 }
