@@ -7,6 +7,7 @@ import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRout
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -254,6 +255,62 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
       assertThat(transformedAggregateRoute, nullValue());
       assertThat(transformedBgpRoute, nullValue());
+    }
+  }
+
+  /**
+   * Test that transformBgpRouteOnExport returns {@code null} (meaning do not export the route) if
+   * it has the {@value org.batfish.common.WellKnownCommunity#NO_EXPORT} community and the session
+   * is EBGP.
+   */
+  @Test
+  public void testRoutesWithNoExportSetNotExported() {
+    Set<Community> noExportCommunitySet =
+        ImmutableSortedSet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+
+    {
+      // iBGP
+      setUpPeers(true);
+      Bgpv4Route.Builder transformedAggregateRoute =
+          runTransformBgpRoutePreExport(
+              _baseAggRouteBuilder.setCommunities(noExportCommunitySet).build());
+      Bgpv4Route.Builder transformedBgpRoute =
+          runTransformBgpRoutePreExport(
+              _baseBgpRouteBuilder.setCommunities(noExportCommunitySet).build());
+      assertThat(transformedAggregateRoute, notNullValue());
+      assertThat(transformedBgpRoute, notNullValue());
+    }
+
+    {
+      // eBGP
+      setUpPeers(false);
+      Bgpv4Route.Builder transformedAggregateRoute =
+          runTransformBgpRoutePreExport(
+              _baseAggRouteBuilder.setCommunities(noExportCommunitySet).build());
+      Bgpv4Route.Builder transformedBgpRoute =
+          runTransformBgpRoutePreExport(
+              _baseBgpRouteBuilder.setCommunities(noExportCommunitySet).build());
+      assertThat(transformedAggregateRoute, nullValue());
+      assertThat(transformedBgpRoute, nullValue());
+    }
+    {
+      // eBGP within confederation
+      _sessionProperties =
+          BgpSessionProperties.builder()
+              .setTailIp(_tailNeighbor.getLocalIp())
+              .setTailAs(_tailNeighbor.getLocalAs())
+              .setHeadAs(_headNeighbor.getLocalAs())
+              .setHeadIp(_headNeighbor.getLocalIp())
+              .setConfedSessionType(ConfedSessionType.WITHIN_CONFED)
+              .build();
+      Bgpv4Route.Builder transformedAggregateRoute =
+          runTransformBgpRoutePreExport(
+              _baseAggRouteBuilder.setCommunities(noExportCommunitySet).build());
+      Bgpv4Route.Builder transformedBgpRoute =
+          runTransformBgpRoutePreExport(
+              _baseBgpRouteBuilder.setCommunities(noExportCommunitySet).build());
+      assertThat(transformedAggregateRoute, notNullValue());
+      assertThat(transformedBgpRoute, notNullValue());
     }
   }
 

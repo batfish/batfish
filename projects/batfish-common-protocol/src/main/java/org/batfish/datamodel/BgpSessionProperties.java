@@ -152,6 +152,11 @@ public final class BgpSessionProperties {
       _sessionType = sessionType;
       return this;
     }
+
+    public Builder setConfedSessionType(ConfedSessionType confedSessionType) {
+      _confedSessionType = confedSessionType;
+      return this;
+    }
   }
 
   public static @Nonnull Builder builder() {
