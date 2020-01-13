@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -97,12 +96,6 @@ public final class IpWildcardSetIpSpace extends IpSpace {
         .thenComparing(
             IpWildcardSetIpSpace::getWhitelist, Comparators.lexicographical(Ordering.natural()))
         .compare(this, (IpWildcardSetIpSpace) o);
-  }
-
-  @Override
-  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-    return _blacklist.stream().noneMatch(w -> w.containsIp(ip))
-        && _whitelist.stream().anyMatch(w -> w.containsIp(ip));
   }
 
   @Override

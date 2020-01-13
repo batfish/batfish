@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import java.util.Map;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class EmptyIpSpace extends IpSpace {
@@ -17,11 +16,6 @@ public class EmptyIpSpace extends IpSpace {
   @Override
   protected int compareSameClass(IpSpace o) {
     return 0;
-  }
-
-  @Override
-  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-    return false;
   }
 
   @Override

@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.util.Map;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -26,11 +25,6 @@ public final class PrefixIpSpace extends IpSpace {
   @Override
   protected int compareSameClass(IpSpace o) {
     return _prefix.compareTo(((PrefixIpSpace) o)._prefix);
-  }
-
-  @Override
-  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-    return _prefix.containsIp(ip);
   }
 
   @Override
