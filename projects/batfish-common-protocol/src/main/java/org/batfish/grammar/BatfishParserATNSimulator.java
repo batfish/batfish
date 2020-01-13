@@ -54,9 +54,8 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
                 throw exception;
               }
               // 1 means we can definitely parse at least one more element in the loop, and the
-              // error
-              // will just occur later. We can just deal with it later anyway, so don't intercede
-              // now.
+              // error will just occur later. We can just deal with it later anyway, so don't
+              // intercede now.
               assert alt == 1;
               break;
             default:
