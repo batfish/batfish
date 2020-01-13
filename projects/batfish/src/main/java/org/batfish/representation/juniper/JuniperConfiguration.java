@@ -3308,9 +3308,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       assert aFilter instanceof ConcreteFirewallFilter;
       ConcreteFirewallFilter filter = (ConcreteFirewallFilter) aFilter;
-      filter.getTerms().entrySet().stream()
-          .filter(entry -> entry.getValue().getIpv6())
-          .forEach(entry -> filter.getTerms().remove(entry.getKey()));
+
+      Set<String> toRemove =
+          filter.getTerms().entrySet().stream()
+              .filter(entry -> entry.getValue().getIpv6())
+              .map(Entry::getKey)
+              .collect(ImmutableSet.toImmutableSet());
+
+      for (String termName : toRemove) {
+        filter.getTerms().remove(termName);
+      }
     }
 
     // remove empty firewall filters (ipv6-only filters)
