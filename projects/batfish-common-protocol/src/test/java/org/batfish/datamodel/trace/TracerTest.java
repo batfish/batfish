@@ -44,7 +44,7 @@ public class TracerTest {
 
     TraceNode trace = tracer.getTrace();
     assertEquals(E1, trace.getTraceEvent());
-    assertEquals(1,trace.getChildren().size());
+    assertEquals(1, trace.getChildren().size());
 
     TraceNode subTrace = trace.getChildren().get(0);
     assertEquals(E2, subTrace.getTraceEvent());
