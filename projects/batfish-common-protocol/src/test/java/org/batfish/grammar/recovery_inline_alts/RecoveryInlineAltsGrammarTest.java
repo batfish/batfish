@@ -24,7 +24,7 @@ public final class RecoveryInlineAltsGrammarTest {
     assertThat(extractor.getInterfaceCount(), equalTo(1));
     assertThat(extractor.getInterfaceIpOspfCostCount(), equalTo(1));
     assertThat(extractor.getIpRoutingCount(), equalTo(5));
-    assertThat(extractor.getPermitCount(), equalTo(3));
+    assertThat(extractor.getPermitCount(), equalTo(5));
   }
 
   @Test
@@ -34,7 +34,7 @@ public final class RecoveryInlineAltsGrammarTest {
     assertThat(extractor.getInterfaceCount(), equalTo(1));
     assertThat(extractor.getInterfaceIpOspfCostCount(), equalTo(1));
     assertThat(extractor.getInterfaceMtuCount(), equalTo(4));
-    assertThat(extractor.getInterfacePermitCount(), equalTo(3));
+    assertThat(extractor.getInterfacePermitCount(), equalTo(6));
     assertThat(extractor.getIpRoutingCount(), equalTo(2));
   }
 

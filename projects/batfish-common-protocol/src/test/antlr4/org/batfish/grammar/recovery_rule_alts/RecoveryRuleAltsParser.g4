@@ -60,7 +60,7 @@ i_mtu
 
 i_permit
 :
-  PERMIT protocol* NEWLINE
+  PERMIT protocol+ NEWLINE
 ;
 
 s_ip
@@ -75,7 +75,7 @@ ip_routing
 
 s_permit
 :
-  PERMIT protocol* NEWLINE
+  PERMIT protocol+ NEWLINE
 ;
 
 protocol

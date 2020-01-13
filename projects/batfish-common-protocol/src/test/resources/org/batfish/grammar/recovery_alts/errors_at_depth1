@@ -18,3 +18,7 @@ permit ssh dns
 permit illegal
 permit ssh illegal dns
 permit dns
+permit ssh permit dns
+permit dns
+permit permit dns
+permit dns

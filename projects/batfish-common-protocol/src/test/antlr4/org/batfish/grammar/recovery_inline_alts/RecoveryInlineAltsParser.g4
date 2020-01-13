@@ -55,7 +55,7 @@ i_permit
   (
     DNS
     | SSH
-  )* NEWLINE
+  )+ NEWLINE
 ;
 
 s_ip
@@ -74,7 +74,7 @@ s_permit
   (
     DNS
     | SSH
-  )* NEWLINE
+  )+ NEWLINE
 ;
 
 ip_address
