@@ -12,3 +12,9 @@ ip routing
 illegal
 ip illegal
 ip routing
+permit ssh
+permit illegal
+permit ssh dns
+permit illegal
+permit ssh illegal dns
+permit dns

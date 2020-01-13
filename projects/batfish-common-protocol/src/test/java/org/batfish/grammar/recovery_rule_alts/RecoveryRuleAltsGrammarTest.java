@@ -21,6 +21,7 @@ public final class RecoveryRuleAltsGrammarTest {
     assertThat(extractor.getInterfaceCount(), equalTo(1));
     assertThat(extractor.getInterfaceIpOspfCostCount(), equalTo(1));
     assertThat(extractor.getIpRoutingCount(), equalTo(5));
+    assertThat(extractor.getPermitCount(), equalTo(3));
   }
 
   @Test
@@ -30,6 +31,7 @@ public final class RecoveryRuleAltsGrammarTest {
     assertThat(extractor.getInterfaceCount(), equalTo(1));
     assertThat(extractor.getInterfaceIpOspfCostCount(), equalTo(1));
     assertThat(extractor.getInterfaceMtuCount(), equalTo(4));
+    assertThat(extractor.getInterfacePermitCount(), equalTo(3));
     assertThat(extractor.getIpRoutingCount(), equalTo(2));
   }
 

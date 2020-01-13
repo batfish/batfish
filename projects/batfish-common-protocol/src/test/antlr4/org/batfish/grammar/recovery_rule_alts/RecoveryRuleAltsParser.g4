@@ -17,6 +17,7 @@ statement
 :
   s_interface
   | s_ip
+  | s_permit
 ;
 
 s_interface
@@ -26,22 +27,20 @@ s_interface
 
 si
 :
-  i_mtu
-  | i_ip
-;
-
-i_mtu
-:
-  MTU mtu = uint32 NEWLINE
+  i_ip
+  | i_mtu
+  | i_permit
 ;
 
 i_ip
 :
-  IP
-  (
-    iip_address
-    | iip_ospf_cost
-  )
+  IP iip
+;
+
+iip
+:
+  iip_address
+  | iip_ospf_cost
 ;
 
 iip_address
@@ -54,6 +53,16 @@ iip_ospf_cost
   OSPF COST cost = uint32 NEWLINE
 ;
 
+i_mtu
+:
+  MTU mtu = uint32 NEWLINE
+;
+
+i_permit
+:
+  PERMIT protocol* NEWLINE
+;
+
 s_ip
 :
   IP ip_routing
@@ -62,6 +71,17 @@ s_ip
 ip_routing
 :
   ROUTING NEWLINE
+;
+
+s_permit
+:
+  PERMIT protocol* NEWLINE
+;
+
+protocol
+:
+  DNS
+  | SSH
 ;
 
 ip_address

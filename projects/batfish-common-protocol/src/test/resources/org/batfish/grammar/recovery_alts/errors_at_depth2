@@ -10,4 +10,11 @@ interface eth0
   ip illegaltext
   mtu illegaltext
   mtu 4
+  permit ssh
+  permit illegal
+  permit ssh dns
+  permit illegal
+  permit ssh illegal dns
+  permit dns
 ip routing
+permit ssh

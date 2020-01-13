@@ -20,6 +20,11 @@ COST
   'cost'
 ;
 
+DNS
+:
+  'dns'
+;
+
 INTERFACE
 :
   'interface' -> pushMode ( M_Word )
@@ -40,9 +45,19 @@ OSPF
   'ospf'
 ;
 
+PERMIT
+:
+  'permit'
+;
+
 ROUTING
 :
   'routing'
+;
+
+SSH
+:
+  'ssh'
 ;
 
 // Complext tokens
