@@ -1,5 +1,7 @@
 package org.batfish.datamodel.trace;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +29,7 @@ public class TracerTest {
 
     TraceNode trace = tracer.getTrace();
     assertEquals(E1, trace.getTraceEvent());
-    assertTrue(trace.getChildren().isEmpty());
+    assertThat(trace.getChildren(), empty());
   }
 
   @Test
@@ -48,7 +50,7 @@ public class TracerTest {
 
     TraceNode subTrace = trace.getChildren().get(0);
     assertEquals(E2, subTrace.getTraceEvent());
-    assertTrue(subTrace.getChildren().isEmpty());
+    assertThat(subTrace.getChildren(), empty());
   }
 
   @Test
@@ -65,6 +67,6 @@ public class TracerTest {
 
     TraceNode trace = tracer.getTrace();
     assertEquals(E1, trace.getTraceEvent());
-    assertTrue(trace.getChildren().isEmpty());
+    assertThat(trace.getChildren(), empty());
   }
 }
