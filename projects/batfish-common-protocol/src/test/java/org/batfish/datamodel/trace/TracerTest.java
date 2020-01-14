@@ -9,15 +9,8 @@ import org.junit.Test;
 
 /** Test for {@link Tracer}. */
 public class TracerTest {
-  private static final class TestTraceEvent implements TraceEvent {
-    @Override
-    public String getDescription() {
-      return null;
-    }
-  }
-
-  private static TraceEvent E1 = new TestTraceEvent();
-  private static TraceEvent E2 = new TestTraceEvent();
+  private static TraceEvent E1 = new TraceEvent("1");
+  private static TraceEvent E2 = new TraceEvent("2");
 
   @Test
   public void testBasic() {
