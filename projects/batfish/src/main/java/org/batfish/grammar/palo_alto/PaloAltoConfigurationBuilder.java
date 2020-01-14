@@ -678,7 +678,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPr_used_by(Pr_used_byContext ctx) {
-    _currentPolicyRule.setUsedBy(getText(ctx.name));
+    _currentPolicyRule.addUsedBy(getText(ctx.name));
   }
 
   @Override

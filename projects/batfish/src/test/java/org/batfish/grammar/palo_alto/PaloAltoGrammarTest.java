@@ -627,7 +627,7 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getExportPolicyRules(), hasKey("export1"));
     PolicyRule export1 = bgp.getExportPolicyRules().get("export1");
     assertThat(export1.getAction(), equalTo(Action.ALLOW));
-    assertThat(export1.getUsedBy(), equalTo("pg1"));
+    assertThat(export1.getUsedBy(), contains("pg1"));
     assertThat(export1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(IGP)));
     assertThat(export1.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
@@ -638,7 +638,7 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getImportPolicyRules(), hasKey("import1"));
     PolicyRule import1 = bgp.getImportPolicyRules().get("import1");
     assertThat(import1.getAction(), equalTo(Action.ALLOW));
-    assertThat(import1.getUsedBy(), equalTo("pg2"));
+    assertThat(import1.getUsedBy(), containsInAnyOrder("pg2", "pg4"));
     assertThat(import1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(OriginType.EGP)));
     assertThat(import1.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
@@ -656,7 +656,7 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getImportPolicyRules(), hasKey("import2"));
     PolicyRule import2 = bgp.getImportPolicyRules().get("import2");
     assertThat(import2.getAction(), equalTo(Action.DENY));
-    assertThat(import2.getUsedBy(), equalTo("pg3"));
+    assertThat(import2.getUsedBy(), contains("pg3"));
     assertThat(import2.getEnable(), equalTo(true));
     assertThat(import2.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
