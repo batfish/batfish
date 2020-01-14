@@ -418,6 +418,8 @@ import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -1270,13 +1272,28 @@ import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
-    implements ControlPlaneExtractor {
+    implements BatfishListener, ControlPlaneExtractor {
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
+
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Override
+  public Warnings getWarnings() {
+    return _w;
+  }
 
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
@@ -10415,12 +10432,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return _configuration;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
-  }
-
   private String getLocation(ParserRuleContext ctx) {
     return ctx.getStart().getLine() + ":" + ctx.getStart().getCharPositionInLine() + ": ";
   }
@@ -10583,14 +10594,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(IpsecAuthenticationAlgorithm.class, ctx);
     }
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
