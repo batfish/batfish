@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
@@ -310,6 +311,13 @@ public class BDDInteger {
 
   public BDD[] getBitvec() {
     return _bitvec;
+  }
+
+  /** Returns a {@link BDD} containing all the variables of this {@link BDDInteger}. */
+  public @Nonnull BDD getVars() {
+    BDD ret = BDDOps.andNull(_bitvec);
+    assert ret != null;
+    return ret;
   }
 
   /**
