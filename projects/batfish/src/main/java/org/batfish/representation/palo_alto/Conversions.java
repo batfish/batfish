@@ -237,7 +237,7 @@ final class Conversions {
       BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
     List<PolicyRule> exportPolicyRulesUsedByThisPeer =
         bgpVr.getExportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
+            .filter(ep -> ep.getUsedBy().contains(peerGroupName))
             .collect(ImmutableList.toImmutableList());
 
     List<Statement> statementsForExportPolicyRules =
@@ -283,7 +283,7 @@ final class Conversions {
       BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
     List<PolicyRule> importPolicyRulesUsedByThisPeer =
         bgpVr.getImportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
+            .filter(ep -> ep.getUsedBy().contains(peerGroupName))
             .collect(ImmutableList.toImmutableList());
 
     if (importPolicyRulesUsedByThisPeer.isEmpty()) {
