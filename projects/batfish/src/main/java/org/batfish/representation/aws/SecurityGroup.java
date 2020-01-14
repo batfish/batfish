@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +81,32 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
               false, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
           .ifPresent(outboundRules::add);
     }
+  }
+
+  /** Converts this security group's ingress permission terms to List of AclLines */
+  List<AclLine> toIngressAclLines(Region region, Warnings warnings) {
+    ImmutableList.Builder<AclLine> ingressAclLines = ImmutableList.builder();
+    for (ListIterator<IpPermissions> it = _ipPermsIngress.listIterator(); it.hasNext(); ) {
+      int seq = it.nextIndex();
+      IpPermissions p = it.next();
+      p.toIpAccessListLine(
+              true, region, _groupId + " - " + _groupName + " [ingress] " + seq, warnings)
+          .ifPresent(ingressAclLines::add);
+    }
+    return ingressAclLines.build();
+  }
+
+  /** Converts this security group's egress permission terms to List of AclLines */
+  List<AclLine> toEgressAclLines(Region region, Warnings warnings) {
+    ImmutableList.Builder<AclLine> egressAclLines = ImmutableList.builder();
+    for (ListIterator<IpPermissions> it = _ipPermsEgress.listIterator(); it.hasNext(); ) {
+      int seq = it.nextIndex();
+      IpPermissions p = it.next();
+      p.toIpAccessListLine(
+              true, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
+          .ifPresent(egressAclLines::add);
+    }
+    return egressAclLines.build();
   }
 
   @Nonnull
