@@ -28,5 +28,6 @@ ro_passive_interface
 
 ro_router_id
 :
+  // router-id without OSPF is accepted by FRR (even though its not documented)
   OSPF? ROUTER_ID ip = IP_ADDRESS NEWLINE
 ;
