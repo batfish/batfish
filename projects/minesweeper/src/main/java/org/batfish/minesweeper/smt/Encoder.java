@@ -524,7 +524,7 @@ public class Encoder {
       packetModel.put("icmpType", icmpType);
     }
     if (ipProtocol != null && !ipProtocol.equals("0")) {
-      Integer number = Integer.parseInt(ipProtocol);
+      int number = Integer.parseInt(ipProtocol);
       IpProtocol proto = IpProtocol.fromNumber(number);
       packetModel.put("protocol", proto.toString());
     }
@@ -606,7 +606,7 @@ public class Encoder {
           if (r.getOspfType() != null && r.getOspfType().getBitVec() != null) {
             String x = valuation.get(r.getOspfType().getBitVec());
             if (x != null) {
-              Integer i = Integer.parseInt(x);
+              int i = Integer.parseInt(x);
               OspfType type = r.getOspfType().value(i);
               recordMap.put("OSPF Type", type.toString());
             }

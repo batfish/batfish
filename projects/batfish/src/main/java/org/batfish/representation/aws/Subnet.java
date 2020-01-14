@@ -85,7 +85,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   Ip getNextIp() {
-    for (Long ipAsLong = _lastGeneratedIp + 1;
+    for (long ipAsLong = _lastGeneratedIp + 1;
         ipAsLong < _cidrBlock.getEndIp().asLong();
         ipAsLong++) {
       if (!_allocatedIps.contains(ipAsLong)) {
@@ -99,7 +99,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   Ip computeInstancesIfaceIp() {
-    Long generatedIp = _cidrBlock.getStartIp().asLong() + 1L;
+    long generatedIp = _cidrBlock.getStartIp().asLong() + 1L;
     _allocatedIps.add(generatedIp);
     _lastGeneratedIp = generatedIp;
     return Ip.create(generatedIp);

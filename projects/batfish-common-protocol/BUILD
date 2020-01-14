@@ -145,6 +145,7 @@ junit_tests(
         ":recovery_grammar",
         ":recovery_inline_alts_grammar",
         ":recovery_rule_alts_grammar",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",

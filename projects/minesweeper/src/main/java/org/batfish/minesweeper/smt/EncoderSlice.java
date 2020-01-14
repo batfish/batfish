@@ -1986,7 +1986,7 @@ class EncoderSlice {
       if (proto.isOspf() || proto.isBgp()) {
 
         // BGP cost based on export
-        Integer cost = proto.isBgp() ? addedCost(proto, ge) : 0;
+        int cost = proto.isBgp() ? addedCost(proto, ge) : 0;
 
         BoolExpr val = mkNot(vars.getPermitted());
         BoolExpr active = interfaceActive(iface, proto);
@@ -2139,7 +2139,7 @@ class EncoderSlice {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       for (Protocol proto : getProtocols().get(router)) {
-        Boolean usedExport = false;
+        boolean usedExport = false;
         boolean hasEdge = false;
 
         List<ArrayList<LogicalEdge>> les = _logicalGraph.getLogicalEdges().get(router, proto);

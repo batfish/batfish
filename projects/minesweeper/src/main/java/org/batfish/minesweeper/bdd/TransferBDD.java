@@ -639,7 +639,7 @@ class TransferBDD {
       } else if (stmt instanceof PrependAsPath) {
         curP.debug("PrependAsPath");
         PrependAsPath pap = (PrependAsPath) stmt;
-        Integer prependCost = prependLength(pap.getExpr());
+        int prependCost = prependLength(pap.getExpr());
         curP.indent().debug("Cost: " + prependCost);
         BDDInteger met = curP.getData().getMetric();
         BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
