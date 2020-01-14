@@ -1,4 +1,4 @@
-## Grammar for rich parameter types   
+## Specifier grammars
 
 Batfish questions support parameters with rich specifications for nodes, interfaces etc. The grammar for parameter types is described below. Before reading those grammars, we recommend reading the general notes.
 
@@ -50,7 +50,7 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`vxlanVniPropertySpec`](#vxlan-vni-property-specifier)
 
-## General notes on the grammar
+### General notes on the grammar
 
 * **Set operations:** Specifiers denote sets of entities (e.g., nodeSpec resolves to a set of nodes). In many cases, the grammar allows for union, intersection, and difference of such sets, respectively, using `,`, `&`, and `\`. Thus, `(node1, node2)\node1` will resolve to `node1`.
 
@@ -96,26 +96,26 @@ enumSetTerm :=
 </pre>
 
 
-## Application Specifier
+### Application Specifier
 
 A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
 
 An application specifier follows the [enum set grammar](#set-of-enums-or-names) with the following values (with the corresponding IP protocol and destination port in parenthesis): `DNS` (UDP, 53), `HTTP` (TCP, 80), `HTTPS` (TCP, 443), `SNMP` (UDP, 161), `SSH` (TCP, 22), `TELNET` (TCP, 23).
 
-## BGP Peer Property Specifier
+### BGP Peer Property Specifier
 
 A specification for a set of BGP peer properties (e.g., those returned by the `bgpPeerConfiguration` question).
 
 A BGP peer property property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Local_AS`, `Local_IP`, `Is_Passive`, `Remote_AS`, `Route_Reflector_Client`, `Cluster_ID`, `Peer_Group`, `Import_Policy`, `Export_Policy`, `Send_Community`.
 
 
-## BGP Process Property Specifier
+### BGP Process Property Specifier
 
 A specification for a set of BGP process properties (e.g., those returned by the `bgpProcessConfiguration` question).
 
 A BGP process property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Multipath_Match_Mode`, `Multipath_EBGP`, `Multipath_IBGP`, `Neighbors`, `Route_Reflector`, `Tie_Breaker`.
 
-## BGP Session Compat Status Specifier
+### BGP Session Compat Status Specifier
 
 A specification for a set of BGP session compatibility statuses.
 
@@ -135,7 +135,7 @@ A BGP session compat status specifier follows the [enum set grammar](#set-of-enu
 * `DYNAMIC_MATCH` — at least one compatible match found for a dynamic peer
 * `NO_MATCH_FOUND` — no compatible match found for a dynamic peer
 
-## BGP Session Status Specifier
+### BGP Session Status Specifier
 
 A specification for a set of BGP session statuses.
 
@@ -145,13 +145,13 @@ A BGP session status specifier follows the [enum set grammar](#set-of-enums-or-n
 * `NOT_ESTABLISHED` — the BGP session configuration is compatible but the session was not established  
 * `ESTABLISHED` — the BGP session is established
 
-## BGP Session Type Specifier
+### BGP Session Type Specifier
 
 A specification for a set of BGP session types.
 
 A BGP session type specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `IBGP`, `EBGP_SINGLEHOP`, `EBGP_MULTIHOP`, `EBGP_UNNUMBERED`, `IBGP_UNNUMBERED`, `UNSET`.
 
-## Disposition Specifier
+### Disposition Specifier
 
 Flow dispositions are used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.reachability) to identify flow outcomes. The disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
 
@@ -173,7 +173,7 @@ The following fine-grained disposition values are also supported:
     * `Loop`: the flow encountered a forwarding loop
     * `Insufficient_info`: Batfish does not have enough information to make a determination with certainty (e.g., some device configs are missing)
 
-## Filter Specifier
+### Filter Specifier
 
 A specification for filters (ACLs or firewall rules) in the network.
 
@@ -216,13 +216,13 @@ filterWithoutNodeTerm :=
 
 * `resolveFilterSpecifier` shows the set of filters represented by the given input.
 
-## Interface Property Specifier
+### Interface Property Specifier
 
 A specification for a set of interface-level properties (e.g., those returned by the `interfaceProperties` question).
 
 An interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Access_VLAN`, `Active`, `Allowed_VLANs`, `All_Prefixes`, `Auto_State_VLAN`, `Bandwidth`, `Blacklisted`, `Channel_Group`, `Channel_Group_Members`, `Declared_Names`, `Description`, `DHCP_Relay_Addresses`, `Encapsulation_VLAN`, `HSRP_Groups`, `HSRP_Version`, `Incoming_Filter_Name`, `MLAG_ID`, `MTU`, `Native_VLAN`, `Outgoing_Filter_Name`, `PBR_Policy_Name`, `Primary_Address`, `Primary_Network`, `Proxy_ARP`, `Rip_Enabled`, `Rip_Passive`, `Spanning_Tree_Portfast`, `Speed`, `Switchport`, `Switchport_Mode`, `Switchport_Trunk_Encapsulation`, `VRF`, `VRRP_Groups`, `Zone_Name`.
 
-## Interface Specifier
+### Interface Specifier
 
 A specification for interfaces in the network.
 
@@ -272,7 +272,7 @@ interfaceFunc :=
 
 * `resolveInterfaceSpecifier` shows the set of interfaces represented by the given input.
 
-## IP Protocol Specifier
+### IP Protocol Specifier
 
 A specification for a set of IP protocols.
 
@@ -306,7 +306,7 @@ ipProtocol :=
 Batfish understands the following protocol names (with corresponding numbers in parenthesis): `AHP` (51), `AN` (107), `ANY_0_HOP_PROTOCOL` (114), `ANY_DISTRIBUTED_FILE_SYSTEM` (68), `ANY_HOST_INTERNAL_PROTOCOL` (61), `ANY_LOCAL_NETWORK` (63), `ANY_PRIVATE_ENCRYPTION_SCHEME` (99), `ARGUS` (13), `ARIS` (104), `AX25` (93), `BBN_RCC_MON` (10), `BNA` (49), `BR_SAT_MON` (76), `CBT` (7), `CFTP` (62), `CHAOS` (16), `COMPAQ_PEER` (110), `CPHB` (73), `CPNX` (72), `CRTP` (126), `CRUDP` (127), `DCCP` (33), `DCN_MEAS` (19), `DDP` (37), `DDX` (116), `DGP` (86), `EGP` (8), `EIGRP` (88), `EMCON` (14), `ENCAP` (98), `ESP` (50), `ETHERIP` (97), `FC` (133), `FIRE` (125), `GGP` (3), `GMTP` (100), `GRE` (47), `HIP` (139), `HMP` (20), `HOPOPT` (0), `I_NLSP` (52), `IATP` (117), `IPV6_ROUTE` (43), `IPX_IN_IP` (111), `IRTP` (28), `ISIS` (124), `ISO_IP` (80), `ISO_TP4` (29), `KRYPTOLAN` (65), `L2TP` (115), `LARP` (91), `LEAF1` (25), `LEAF2` (26), `MANAET` (138), `MERIT_INP` (32), `MFE_NSP` (31), `MHRP` (48), `MICP` (95), `MOBILE` (55), `MOBILITY` (135), `MPLS_IN_IP` (137), `MTP` (92), `MUX` (18), `NARP` (54), `NETBLT` (30), `NSFNET_IGP` (85), `NVPII` (11), `OSPF` (89), `PGM` (113), `PIM` (103), `PIPE` (131), `PNNI` (102), `PRM` (21), `PTP` (123), `PUP` (12), `PVP` (75), `QNX` (106), `RDP` (27), `ROHC` (142), `RSVP` (46), `RSVP_E2E_IGNORE` (134), `RVD` (66), `SAT_EXPAK` (64), `SAT_MON` (69), `SCC_SP` (96), `SCPS` (105), `SCTP` (132), `SDRP` (42), `SECURE_VMTP` (82), `SHIM6` (140), `SKIP` (57), `SM` (122), `SMP` (121), `SNP` (109), `SPRITE_RPC` (90), `SPS` (130), `SRP` (119), `SSCOPMCE` (128), `ST` (5), `STP` (118), `SUN_ND` (77), `SWIPE` (53), `TCF` (87), `TCP` (6), `THREE_PC` (34), `TLSP` (56), `TPPLUSPLUS` (39), `TRUNK1` (23), `TRUNK2` (24), `TTP` (84), `UDP` (17), `UDP_LITE` (136), `UTI` (120), `VINES` (83), `VISA` (70), `VMTP` (81), `VRRP` (112), `WB_EXPAK` (79), `WB_MON` (78), `WESP` (141), `WSN` (74), `XNET` (15), `XNS_IDP` (22), `XTP` (36).
 
 
-## IP Specifier
+### IP Specifier
 
 A specification for a set of IPv4 addresses.
 
@@ -335,11 +335,11 @@ ipTerm :=
 
 * `resolveIpSpecifier` shows the set of IP addresses represented by the given input.
 
-## IPSec Session Status Specifier
+### IPSec Session Status Specifier
 
  An IPSec session status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values:   `IPSEC_SESSION_ESTABLISHED`, `IKE_PHASE1_FAILED`, `IKE_PHASE1_KEY_MISMATCH`, `IPSEC_PHASE2_FAILED`, `MISSING_END_POINT`.
 
-## Location Specifier
+### Location Specifier
 
 A specification for locations of packets, including where they start or terminate.
 
@@ -384,27 +384,27 @@ locationInterface :=
 * `resolveIpsOfLocationSpecifier` shows the mapping from locations to IPs that will be used in `traceroute` and   `reachability` questions when IPs are not explicitly specified.
 
 
-## MLAG ID Specifier
+### MLAG ID Specifier
 
 A specification for a set of MLAG domain identifiers.
 
 An MLAG ID specifier follows the [enum set grammar](#set-of-enums-or-names) over the domain ID values that appear in the snapshot.
 
-## Named Structure Specifier
+### Named Structure Specifier
 
 A specification for a set of structure types in Batfish's vendor independent model.
 
 A named structure specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_PATH_ACCESS_LIST`, `AUTHENTICATION_KEY_CHAIN`, `COMMUNITY_LIST`, `IKE_PHASE1_KEYS`, `IKE_PHASE1_POLICIES`, `IKE_PHASE1_PROPOSALS`, `IP_ACCESS_LIST`, `IP_6_ACCESS_LIST`, `IPSEC_PEER_CONFIGS`, `IPSEC_PHASE2_POLICIES`, `IPSEC_PHASE2_PROPOSALS`, `PBR_POLICY`, `ROUTE_FILTER_LIST`, `ROUTE_6_FILTER_LIST`, `ROUTING_POLICY`, `VRF`, `ZONE`.
 
 
-## Node Property Specifier
+### Node Property Specifier
 
 A specification for a set of node-level properties (e.g., those returned by the `nodeProperties` question).
 
 A node property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_Path_Access_Lists`, `Authentication_Key_Chains`, `Canonical_IP`, `Community_Lists`, `Configuration_Format`, `Default_Cross_Zone_Action`, `Default_Inbound_Action`, `Device_Type`, `DNS_Servers`, `DNS_Source_Interface`, `Domain_Name`, `Hostname`, `IKE_Phase1_Keys`, `IKE_Phase1_Policies`, `IKE_Phase1_Proposals`, `Interfaces`, `IP_Access_Lists`, `IP_Spaces`, `IP6_Access_Lists`, `IPsec_Peer_Configs`, `IPsec_Phase2_Policies`, `IPsec_Phase2_Proposals`, `IPSec_Vpns`, `Logging_Servers`, `Logging_Source_Interface`, `NTP_Servers`, `NTP_Source_Interface`, `PBR_Policies`, `Route_Filter_Lists`, `Route6_Filter_Lists`, `Routing_Policies`, `SNMP_Source_Interface`, `SNMP_Trap_Servers`, `TACACS_Servers`, `TACACS_Source_Interface`, `VRFs`, `Zones`.
 
 
-## Node Specifier
+### Node Specifier
 
 A specification for nodes in the network.
 
@@ -445,25 +445,25 @@ Batfish has the following device types.
 * `Router`: A device that does L3 routing and forwarding.
 * `Switch`: A device that only does L2 forwarding.
 
-## OSPF Interface Property Specifier
+### OSPF Interface Property Specifier
 
 A specification for a set of OSPF interface properties.
 
 An OSPF interface property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `OSPF_AREA_NAME`, `OSPF_COST`, `OSPF_ENABLED`, `OSPF_PASSIVE`, `OSPF_NETWORK_TYPE`.
 
-## OSPF Process Property Specifier
+### OSPF Process Property Specifier
 
 A specification for a set of OSPF process properties.
 
 An OSPF process property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AREA_BORDER_ROUTER`, `AREAS`, `EXPORT_POLICY_SOURCES`, `REFERENCE_BANDWIDTH`, `RFC_1583_COMPATIBLE`, `ROUTER_ID`.
 
-## OSPF Session Status Specifier
+### OSPF Session Status Specifier
 
 A specification for a set of OSPF session statuses.
 
 An OSPF session status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AREA_INVALID`, `AREA_MISMATCH`, `AREA_TYPE_MISMATCH`, `DEAD_INTERVAL_MISMATCH`, `DUPLICATE_ROUTER_ID`, `ESTABLISHED`, `HELLO_INTERVAL_MISMATCH`, `MTU_MISMATCH`, `NETWORK_TYPE_MISMATCH`, `NO_SESSION`, `PASSIVE_MISMATCH`, `PROCESS_INVALID`, `UNKNOWN_COMPATIBILITY_ISSUE`.
 
-## Routing Protocol Specifier
+### Routing Protocol Specifier
 
  A specification for a set of routing protocols.
 
@@ -494,7 +494,7 @@ The routing protocol specifier grammar follows the [enum set grammar](#set-of-en
  * `LOCAL`
  * `CONNECTED`
 
-## Routing Policy Specifier
+### Routing Policy Specifier
 
 A specification for routing policies in the network.
 
@@ -512,7 +512,7 @@ routingPolicyTerm :=
     | <b>(</b>routingPolicySpec<b>)</b>
 </pre>
 
-## VXLAN VNI Property Specifier
+### VXLAN VNI Property Specifier
 
  A specification for a set of VXLAN VNI properties.
 
