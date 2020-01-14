@@ -222,6 +222,8 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_use_vrfContext;
@@ -778,7 +780,8 @@ import org.batfish.representation.cisco_nxos.VrfAddressFamily;
  * metadata and defaults by {@link CiscoNxosPreprocessor}.
  */
 @ParametersAreNonnullByDefault
-public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener {
+public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener
+    implements BatfishListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
@@ -1148,8 +1151,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else if (ctx.STATIC() != null) {
       return Optional.of(RoutingProtocolInstance.staticc());
     }
-    _w.addWarning(
-        messageCtx, getFullText(messageCtx), _parser, "Unknown routing protocol instance");
+    warn(messageCtx, "Unknown routing protocol instance");
     return Optional.empty();
   }
 
@@ -1172,8 +1174,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else if (ctx.STATIC() != null) {
       return Optional.of(RoutingProtocolInstance.staticc());
     }
-    _w.addWarning(
-        messageCtx, getFullText(messageCtx), _parser, "Unknown routing protocol instance");
+    warn(messageCtx, "Unknown routing protocol instance");
     return Optional.empty();
   }
 
@@ -1286,6 +1287,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     getPreferredName(MANAGEMENT_VRF_NAME, VRF);
   }
 
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Override
+  public Warnings getWarnings() {
+    return _w;
+  }
+
   /**
    * Clears layer-3 configuration of an interface to enable safe assignment to a new VRF.
    *
@@ -1296,16 +1312,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private void clearLayer3Configuration(Interface iface) {
     iface.setAddress(null);
     iface.getSecondaryAddresses().clear();
-  }
-
-  private @Nonnull String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
-    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
-  }
-
-  private @Nullable <T, U extends T> T convProblem(
-      Class<T> returnType, ParserRuleContext ctx, @Nullable U defaultReturnValue) {
-    _w.redFlag(convErrorMessage(returnType, ctx));
-    return defaultReturnValue;
   }
 
   /** This function must be kept in sync with {@link #copyPortChannelCompatibilitySettings}. */
@@ -1516,10 +1522,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     IpCommunityList communityList =
         _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
     if (!(communityList instanceof IpCommunityListExpanded)) {
-      _w.addWarning(
+      warn(
           ctx,
-          getFullText(ctx),
-          _parser,
           String.format(
               "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
               name));
@@ -1565,10 +1569,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     IpCommunityList communityList =
         _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
     if (!(communityList instanceof IpCommunityListStandard)) {
-      _w.addWarning(
+      warn(
           ctx,
-          getFullText(ctx),
-          _parser,
           String.format(
               "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
               name));
@@ -2752,7 +2754,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRoa_nssa(Roa_nssaContext ctx) {
     if (_currentOspfArea.getId() == 0L) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Backbone area cannot be an NSSA");
+      warn(ctx, "Backbone area cannot be an NSSA");
       return;
     }
     String routeMap = null;
@@ -2810,7 +2812,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRoa_stub(Roa_stubContext ctx) {
     if (_currentOspfArea.getId() == 0L) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Backbone area cannot be a stub");
+      warn(ctx, "Backbone area cannot be a stub");
       return;
     }
     OspfAreaStub stub =
@@ -3025,10 +3027,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitNvg_ingress_replication(Nvg_ingress_replicationContext ctx) {
     if (_currentNves.stream()
         .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
-      _w.addWarning(
+      warn(
           ctx,
-          getFullText(ctx),
-          _parser,
           "Cannot configure Ingress replication protocol BGP for nve without host reachability protocol bgp.");
       return;
     }
@@ -3525,7 +3525,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else if (ctx.MED() != null && ctx.NON_DETERMINISTIC() != null) {
       _currentBgpVrfConfiguration.setBestpathMedNonDeterministic(true);
     } else {
-      _w.redFlag("Unsupported BGP bestpath configuration: " + ctx.getText());
+      warn(ctx, "Unsupported BGP bestpath configuration");
     }
   }
 
@@ -4935,10 +4935,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       // If some incompatible interface found, warn, do not set the group,
       // do not create the port-channel, and do not copy settings.
       if (incompatibleInterface.isPresent()) {
-        _w.addWarning(
+        warn(
             ctx,
-            getFullText(ctx),
-            _parser,
             String.format(
                 "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s'",
                 incompatibleInterface.get().getName(), referenceIface.getName()));
@@ -5213,7 +5211,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             iface ->
                 iface.getSwitchportModeEffective(_c.getSystemDefaultSwitchport())
                     != SwitchportMode.NONE)) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot assign VRF to switchport interface(s)");
+      warn(ctx, "Cannot assign VRF to switchport interface(s)");
       return;
     }
     String name = nameOrErr.get();
@@ -5310,10 +5308,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .flatMap(nve -> nve.getMemberVnis().values().stream())
         .anyMatch(
             vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
-      _w.addWarning(
+      warn(
           ctx,
-          getFullText(ctx),
-          _parser,
           "Please remove ingress replication static under VNIs before configuring host reachability bgp.");
       return;
     }
@@ -5520,7 +5516,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     int continueTarget = continueTargetOrErr.get();
     if (continueTarget <= _currentRouteMapEntry.getSequence()) {
       // CLI rejects continue to lower sequence
-      _w.addWarning(ctx, getFullText(ctx), _parser, "Cannot continue to earlier sequence");
+      warn(ctx, "Cannot continue to earlier sequence");
       return;
     }
     _currentRouteMapName.ifPresent(
@@ -5638,11 +5634,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     if (_currentRouteMapEntry.getMatchIpAddress() != null) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "route-map entry cannot match more than one ip access-list");
+      warn(ctx, "route-map entry cannot match more than one ip access-list");
       return;
     }
     _currentRouteMapEntry.setMatchIpAddress(new RouteMapMatchIpAddress(nameOpt.get()));
@@ -5680,11 +5672,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     if (_currentRouteMapEntry.getMatchIpv6Address() != null) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "route-map entry cannot match more than one ipv6 access-list");
+      warn(ctx, "route-map entry cannot match more than one ipv6 access-list");
       return;
     }
     String name = nameOpt.get();
@@ -5780,10 +5768,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     RouteMapSetIpNextHop old = _currentRouteMapEntry.getSetIpNextHop();
     if (old != null) {
       if (!(old instanceof RouteMapSetIpNextHopLiteral)) {
-        _w.addWarning(
+        warn(
             ctx,
-            getFullText(ctx),
-            _parser,
             "Cannot mix literal next-hop IP(s) with peer-address, redist-unchanged, nor unchanged");
         return;
       }
@@ -5800,11 +5786,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     // - peer-address (TODO)
     RouteMapSetIpNextHop old = _currentRouteMapEntry.getSetIpNextHop();
     if (old != null && !(old instanceof RouteMapSetIpNextHopUnchanged)) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx),
-          _parser,
-          "Cannot mix unchanged with literal next-hop IP(s) nor peer-address");
+      warn(ctx, "Cannot mix unchanged with literal next-hop IP(s) nor peer-address");
     }
     _currentRouteMapEntry.setSetIpNextHop(RouteMapSetIpNextHopUnchanged.INSTANCE);
   }
@@ -5998,31 +5980,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentVlans.forEach(v -> v.setVni(vni));
   }
 
-  private @Nonnull String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
-  }
-
   private @Nullable Integer toBandwidth(
       ParserRuleContext messageCtx, Interface_bandwidth_kbpsContext ctx) {
     int bandwidth = Integer.parseInt(ctx.getText());
     if (!BANDWIDTH_RANGE.contains(bandwidth)) {
-      _w.redFlag(
+      warn(
+          messageCtx,
           String.format(
-              "Expected bandwidth in range %s, but got '%d' in: %s",
-              BANDWIDTH_RANGE, bandwidth, getFullText(messageCtx)));
+              "Expected bandwidth in range %s, but got '%d'", BANDWIDTH_RANGE, bandwidth));
       return null;
     }
     return bandwidth;
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private @Nonnull Optional<Integer> toInteger(
@@ -6338,11 +6306,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
     int num = Integer.parseInt(ctx.getText());
     if (!space.contains(num)) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
     }
     return Optional.of(num);
@@ -6476,11 +6440,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
     long num = Long.parseLong(ctx.getText());
     if (!space.contains(num)) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
     }
     return Optional.of(num);
@@ -6490,10 +6450,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     int id = Integer.parseInt(ctx.getText());
     // not a mistake; range is 1-4096 (not zero-based).
     if (!PORT_CHANNEL_RANGE.contains(id)) {
-      _w.redFlag(
+      warn(
+          messageCtx,
           String.format(
-              "Expected port-channel id in range %s, but got '%d' in: %s",
-              PORT_CHANNEL_RANGE, id, getFullText(messageCtx)));
+              "Expected port-channel id in range %s, but got '%d'", PORT_CHANNEL_RANGE, id));
       return null;
     }
     return getCanonicalInterfaceNamePrefix("port-channel") + id;
@@ -6530,10 +6490,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nullable Short toShort(ParserRuleContext messageCtx, Track_object_numberContext ctx) {
     short track = Short.parseShort(ctx.getText());
     if (!STATIC_ROUTE_TRACK_RANGE.contains((int) track)) {
-      _w.redFlag(
+      warn(
+          messageCtx,
           String.format(
-              "Expected track in range %s, but got '%d' in: %s",
-              STATIC_ROUTE_TRACK_RANGE, track, getFullText(messageCtx)));
+              "Expected track in range %s, but got '%d'", STATIC_ROUTE_TRACK_RANGE, track));
       return null;
     }
     return track;
@@ -6653,20 +6613,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String prefix = ctx.prefix.getText();
     CiscoNxosInterfaceType type = toType(ctx.prefix);
     if (type == null) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Unsupported interface type: %s", prefix));
+      warn(messageCtx, String.format("Unsupported interface type: %s", prefix));
       return Optional.empty();
     }
     String canonicalPrefix = getCanonicalInterfaceNamePrefix(prefix);
     if (canonicalPrefix == null) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Unsupported interface name: %s", declaredName));
+      warn(messageCtx, String.format("Unsupported interface name: %s", declaredName));
       return Optional.empty();
     }
     String middle = ctx.middle != null ? ctx.middle.getText() : "";
@@ -6683,20 +6635,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
     CiscoNxosInterfaceType type = toType(ctx.iname.prefix);
     if (type == null) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Unsupported interface type: %s", prefix));
+      warn(messageCtx, String.format("Unsupported interface type: %s", prefix));
       return Optional.empty();
     }
     String canonicalPrefix = getCanonicalInterfaceNamePrefix(prefix);
     if (canonicalPrefix == null) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Unsupported interface name/range: %s", declaredName));
+      warn(messageCtx, String.format("Unsupported interface name/range: %s", declaredName));
       return Optional.empty();
     }
 
@@ -6722,31 +6666,22 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (type != CiscoNxosInterfaceType.ETHERNET
         && type != CiscoNxosInterfaceType.PORT_CHANNEL
         && parentInterface != null) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Cannot construct subinterface for interface type '%s'", type));
+      warn(
+          messageCtx, String.format("Cannot construct subinterface for interface type '%s'", type));
       return Optional.empty();
     }
 
     if (type == CiscoNxosInterfaceType.VLAN
         && !_currentValidVlanRange.contains(IntegerSpace.of(Range.closed(first, last)))) {
-      _w.addWarning(
-          messageCtx,
-          getFullText(messageCtx),
-          _parser,
-          String.format("Vlan number(s) outside of range %s", _currentValidVlanRange));
+      warn(messageCtx, String.format("Vlan number(s) outside of range %s", _currentValidVlanRange));
       return Optional.empty();
     }
 
     // Validate port-channel numbers
     if (type == CiscoNxosInterfaceType.PORT_CHANNEL
         && !PORT_CHANNEL_RANGE.contains(IntegerSpace.of(Range.closed(first, last)))) {
-      _w.addWarning(
+      warn(
           messageCtx,
-          getFullText(messageCtx),
-          _parser,
           String.format("port-channel number(s) outside of range %s", PORT_CHANNEL_RANGE));
       return Optional.empty();
     }
@@ -6939,10 +6874,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {
     String name = ctx.getText();
     if (name.length() > StaticRoute.MAX_NAME_LENGTH) {
-      _w.redFlag(
+      warn(
+          messageCtx,
           String.format(
-              "Expected name <= %d characters,but got '%s' in: %s",
-              StaticRoute.MAX_NAME_LENGTH, name, getFullText(messageCtx)));
+              "Expected name <= %d characters,but got '%s'", StaticRoute.MAX_NAME_LENGTH, name));
       return null;
     }
     return name;
@@ -6969,8 +6904,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             .map(name -> getPreferredName(name, VRF));
 
     if (vrfName.isPresent() && vrfName.get().equals(DEFAULT_VRF_NAME)) {
-      _w.addWarning(
-          messageCtx, getFullText(messageCtx), _parser, "Cannot use default VRF in this context");
+      warn(messageCtx, "Cannot use default VRF in this context");
       return Optional.empty();
     }
     return vrfName;
@@ -6984,10 +6918,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
     String text = ctx.getText();
     if (!lengthSpace.contains(text.length())) {
-      _w.addWarning(
+      warn(
           messageCtx,
-          getFullText(messageCtx),
-          _parser,
           String.format(
               "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
       return Optional.empty();
@@ -7023,10 +6955,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String rangeText = ctx.getText();
     IntegerSpace value = IntegerSpace.parse(rangeText);
     if (!_currentValidVlanRange.contains(value)) {
-      _w.redFlag(
+      warn(
+          messageCtx,
           String.format(
-              "Expected VLANs in range %s, but got '%s' in: %s",
-              _currentValidVlanRange, rangeText, getFullText(messageCtx)));
+              "Expected VLANs in range %s, but got '%s'", _currentValidVlanRange, rangeText));
       return null;
     }
     return value;
@@ -7037,10 +6969,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     String rangeText = ctx.getText();
     IntegerSpace value = IntegerSpace.parse(rangeText);
     if (!VLAN_RANGE.contains(value)) {
-      _w.redFlag(
-          String.format(
-              "Expected VLANs in range %s, but got '%s' in: %s",
-              VLAN_RANGE, rangeText, getFullText(messageCtx)));
+      warn(
+          messageCtx,
+          String.format("Expected VLANs in range %s, but got '%s'", VLAN_RANGE, rangeText));
       return null;
     }
     return value;
