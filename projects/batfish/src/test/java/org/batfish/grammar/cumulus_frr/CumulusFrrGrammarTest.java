@@ -1446,6 +1446,13 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouterOspfRouterId_noOspf() {
+    // router-id without preceding OSPF is legal
+    parse("router ospf\n router-id 1.1.1.3\n");
+    assertThat(_frr.getOspfProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.1.1.3")));
+  }
+
+  @Test
   public void testCreatePhysicalInterfaceInFRR() {
     String name = "eth1";
     parse(String.format("interface %s\n", name));
