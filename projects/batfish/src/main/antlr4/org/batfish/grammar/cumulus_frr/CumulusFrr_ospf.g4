@@ -28,5 +28,5 @@ ro_passive_interface
 
 ro_router_id
 :
-  OSPF ROUTER_ID ip = IP_ADDRESS NEWLINE
+  OSPF? ROUTER_ID ip = IP_ADDRESS NEWLINE
 ;
