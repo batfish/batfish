@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.lang.Math;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 @ParametersAreNonnullByDefault
 public final class IncrementMetric extends LongExpr {
   private static final String PROP_ADDEND = "addend";
+  private static final long MAX_METRIC_VALUE = (long)Math.pow(2, 32) - 1;
 
   @Nonnull private long _addend;
 
@@ -44,7 +46,13 @@ public final class IncrementMetric extends LongExpr {
   @Override
   public long evaluate(Environment environment) {
     long oldMetric = environment.getOriginalRoute().getMetric();
-    long newVal = oldMetric + _addend;
+    long newVal = 0;
+    if (oldMetric > MAX_METRIC_VALUE - _addend) {
+      // Overflow.
+      newVal = MAX_METRIC_VALUE;
+    } else {
+      newVal = oldMetric + _addend;
+    }
     return newVal;
   }
 

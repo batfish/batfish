@@ -180,6 +180,11 @@ CRITICAL
   'critical'
 ;
 
+DASH
+:
+   '-'
+;
+
 DATACENTER
 :
   'datacenter'
@@ -511,6 +516,11 @@ PEER_GROUP
 PERMIT
 :
   'permit'
+;
+
+PLUS
+:
+   '+'
 ;
 
 POINT_TO_POINT

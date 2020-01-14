@@ -5,25 +5,26 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** Clause of set metric in route map. */
 public class RouteMapSetMetric implements RouteMapSet {
 
-  private final long _metric;
+  private final LongExpr _metric;
 
-  public RouteMapSetMetric(long metric) {
+  public RouteMapSetMetric(LongExpr metric) {
     _metric = metric;
   }
 
-  public long getMetric() {
+  public LongExpr getMetric() {
     return _metric;
   }
 
   @Nonnull
   @Override
   public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
-    return Stream.of(new SetMetric(new LiteralLong(_metric)));
+    return Stream.of(new SetMetric(_metric));
   }
 }

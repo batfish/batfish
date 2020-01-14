@@ -41,6 +41,10 @@ public class DecrementMetric extends LongExpr {
   public long evaluate(Environment environment) {
     long oldMetric = environment.getOriginalRoute().getMetric();
     long newVal = oldMetric - _subtrahend;
+    if (newVal < 0) {
+      // Underflow.
+      newVal = 0;
+    }
     return newVal;
   }
 

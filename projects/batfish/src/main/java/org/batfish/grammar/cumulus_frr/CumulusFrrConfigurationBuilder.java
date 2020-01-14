@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -33,6 +34,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -42,6 +44,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
@@ -227,6 +234,29 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private void warn(ParserRuleContext ctx, String message) {
     _w.addWarning(ctx, ctx.getText(), _parser, message);
+  }
+
+  private LongExpr toMetricLongExpr(Int_exprContext ctx) {
+    if (ctx.uint32() != null) {
+        long val = toLong(ctx.uint32());
+        if (ctx.PLUS() != null) {
+            return new IncrementMetric(val);
+        } else if (ctx.DASH() != null) {
+            return new DecrementMetric(val);
+        } else {
+            return new LiteralLong(val);
+        }
+    } else {
+        /*
+         * Unsupported metric long expression - do not add cases unless you
+         * know what you are doing
+         */
+        throw new BatfishException(String.format("Invalid BGP MED metric : " + ctx.getText()));
+    }
+  }
+
+  private static long toLong(TerminalNode t) {
+        return Long.parseLong(t.getText());
   }
 
   @Override
@@ -886,7 +916,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_metric(Rms_metricContext ctx) {
-    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(parseLong(ctx.metric.getText())));
+    LongExpr val = toMetricLongExpr(ctx.metric);
+    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(val));
+    //long test = toLong(val);
   }
 
   @Override

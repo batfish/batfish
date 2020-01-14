@@ -51,16 +51,16 @@ public class RouteMapConvertorTest {
     */
     ENTRY1 = new RouteMapEntry(10, LineAction.PERMIT);
     ENTRY1.setMatchTag(new RouteMapMatchTag(1));
-    ENTRY1.setSetMetric(new RouteMapSetMetric(10));
+    ENTRY1.setSetMetric(new RouteMapSetMetric(new LiteralLong(10)));
     ENTRY1.setContinue(new RouteMapContinue(30));
 
     ENTRY2 = new RouteMapEntry(20, LineAction.DENY);
     ENTRY2.setMatchTag(new RouteMapMatchTag(2));
-    ENTRY2.setSetMetric(new RouteMapSetMetric(20));
+    ENTRY2.setSetMetric(new RouteMapSetMetric(new LiteralLong(20)));
 
     ENTRY3 = new RouteMapEntry(30, LineAction.PERMIT);
     ENTRY3.setMatchTag(new RouteMapMatchTag(1));
-    ENTRY3.setSetMetric(new RouteMapSetMetric(30));
+    ENTRY3.setSetMetric(new RouteMapSetMetric(new LiteralLong(30)));
 
     ROUTEMAP = new RouteMap("routeMap");
     ROUTEMAP
