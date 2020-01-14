@@ -10933,11 +10933,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private String toJavaRegex(String rawRegex) {
-    // TODO: fix so it actually works
-    return rawRegex;
-  }
-
   private LineAction toLineAction(Access_list_actionContext ctx) {
     if (ctx.PERMIT() != null) {
       return LineAction.PERMIT;
