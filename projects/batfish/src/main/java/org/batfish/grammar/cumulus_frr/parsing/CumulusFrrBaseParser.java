@@ -21,7 +21,7 @@ public abstract class CumulusFrrBaseParser extends BatfishParser {
    */
   protected static boolean isVniNumber(ParserRuleContext v) {
     try {
-      Integer val = Integer.parseInt(v.getText(), 10);
+      int val = Integer.parseInt(v.getText(), 10);
       checkArgument(1 <= val && val <= 0xFFFFFF);
     } catch (IllegalArgumentException e) {
       return false;

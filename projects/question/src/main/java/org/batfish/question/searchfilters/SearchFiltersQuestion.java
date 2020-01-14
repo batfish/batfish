@@ -16,7 +16,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
-import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
@@ -163,7 +162,7 @@ public final class SearchFiltersQuestion extends Question {
   @Nonnull
   private LocationSpecifier getStartLocationSpecifier() {
     return SpecifierFactories.getLocationSpecifierOrDefault(
-        _startLocation, AllInterfacesLocationSpecifier.INSTANCE);
+        _startLocation, LocationSpecifier.ALL_LOCATIONS);
   }
 
   @Nonnull

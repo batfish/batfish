@@ -21,6 +21,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,11 +62,13 @@ public class SearchFiltersQuestionTest {
     assertThat(q.getNodesSpecifier(), notNullValue());
     assertThat(q.getDataPlane(), equalTo(false));
     assertThat(q.getNodes(), nullValue());
+    assertThat(q.getStartLocation(), nullValue());
     // src/dst IPs NOT stored in headerspace at this stage
     assertThat(q.getHeaderSpace().getDstIps(), nullValue());
     assertThat(q.getHeaderSpace().getSrcIps(), nullValue());
     // src/dst IPs are in specifiers at this stage
     SearchFiltersParameters parameters = q.toSearchFiltersParameters();
+    assertThat(parameters.getStartLocationSpecifier(), equalTo(LocationSpecifier.ALL_LOCATIONS));
 
     for (IpSpaceSpecifier s :
         Arrays.asList(
