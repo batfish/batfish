@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Traverser;
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,9 +44,7 @@ public final class AclTracer extends AclLineEvaluator {
     return tracer.getTrace();
   }
 
-  private final Map<IpSpace, IpSpaceMetadata> _ipSpaceMetadata;
-
-  private final Map<IpSpace, String> _ipSpaceNames;
+  private final Map<String, IpSpaceMetadata> _ipSpaceMetadata;
 
   private final @Nonnull Tracer _tracer;
 
@@ -58,12 +55,8 @@ public final class AclTracer extends AclLineEvaluator {
       @Nonnull Map<String, IpSpace> namedIpSpaces,
       @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
-    _ipSpaceNames = new IdentityHashMap<>();
-    _ipSpaceMetadata = new IdentityHashMap<>();
+    _ipSpaceMetadata = namedIpSpaceMetadata;
     _tracer = new Tracer();
-    namedIpSpaces.forEach((name, ipSpace) -> _ipSpaceNames.put(ipSpace, name));
-    namedIpSpaceMetadata.forEach(
-        (name, ipSpaceMetadata) -> _ipSpaceMetadata.put(namedIpSpaces.get(name), ipSpaceMetadata));
   }
 
   public Flow getFlow() {
@@ -310,20 +303,17 @@ public final class AclTracer extends AclLineEvaluator {
 
   public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip, @Nonnull String ipDescription) {
     return ipSpace.accept(
-        new IpSpaceTracer(
-            _tracer, ip, ipDescription, _ipSpaceNames, _ipSpaceMetadata, _namedIpSpaces));
+        new IpSpaceTracer(_tracer, ip, ipDescription, _ipSpaceMetadata, _namedIpSpaces));
   }
 
   private boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(
-        new IpSpaceTracer(
-            _tracer, ip, "destination IP", _ipSpaceNames, _ipSpaceMetadata, _namedIpSpaces));
+        new IpSpaceTracer(_tracer, ip, "destination IP", _ipSpaceMetadata, _namedIpSpaces));
   }
 
   private boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(
-        new IpSpaceTracer(
-            _tracer, ip, "source IP", _ipSpaceNames, _ipSpaceMetadata, _namedIpSpaces));
+        new IpSpaceTracer(_tracer, ip, "source IP", _ipSpaceMetadata, _namedIpSpaces));
   }
 
   @Override
