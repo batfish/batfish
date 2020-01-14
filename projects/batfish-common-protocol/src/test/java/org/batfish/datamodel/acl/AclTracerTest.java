@@ -3,7 +3,6 @@ package org.batfish.datamodel.acl;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDefaultDeniedByIpAccessListNamed;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByAclLineThat;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclIpSpaceLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByNamedIpSpace;
 import static org.hamcrest.Matchers.allOf;
@@ -27,7 +26,6 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.matchers.DeniedByAclLineMatchers;
-import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchers;
 import org.batfish.datamodel.matchers.PermittedByAclLineMatchers;
 import org.junit.Test;
 
@@ -276,47 +274,6 @@ public class AclTracerTest {
                     allOf(
                         PermittedByAclLineMatchers.hasName(ACL_NAME),
                         PermittedByAclLineMatchers.hasIndex(0))))));
-  }
-
-  @Test
-  public void testPermittedByNamedAclIpSpaceLine() {
-    IpSpace aclIpSpace =
-        AclIpSpace.permitting(Prefix.parse("1.0.0.0/1").toIpSpace())
-            .thenPermitting(Prefix.parse("0.0.0.0/1").toIpSpace())
-            .build();
-    assertThat(aclIpSpace, instanceOf(AclIpSpace.class));
-
-    IpAccessList acl =
-        IpAccessList.builder()
-            .setName(ACL_NAME)
-            .setLines(
-                ImmutableList.of(
-                    ExprAclLine.acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
-                            .build())))
-            .build();
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
-    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
-    Map<String, IpSpaceMetadata> namedIpSpaceMetadata =
-        ImmutableMap.of(ACL_IP_SPACE_NAME, new IpSpaceMetadata(ACL_IP_SPACE_NAME, TEST_ACL));
-    AclTrace trace =
-        AclTracer.trace(
-            acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
-
-    assertThat(
-        trace,
-        hasEvents(
-            contains(
-                ImmutableList.of(
-                    isPermittedByAclLineThat(
-                        allOf(
-                            PermittedByAclLineMatchers.hasName(ACL_NAME),
-                            PermittedByAclLineMatchers.hasIndex(0))),
-                    isPermittedByAclIpSpaceLineThat(
-                        allOf(
-                            PermittedByAclIpSpaceLineMatchers.hasName(ACL_IP_SPACE_NAME),
-                            PermittedByAclIpSpaceLineMatchers.hasIndex(0)))))));
   }
 
   @Test
