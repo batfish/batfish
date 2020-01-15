@@ -824,6 +824,8 @@ public final class CiscoGrammarTest {
             .setLocalPreference(100)
             .build();
     assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    // Ensure 10.10.10.0/24 doesn't get blocked
+    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.parse("10.10.10.0/24"))));
   }
 
   @Test
