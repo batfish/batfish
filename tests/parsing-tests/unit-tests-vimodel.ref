@@ -15280,7 +15280,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15309,7 +15309,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15337,7 +15337,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15366,7 +15366,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15394,7 +15394,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15424,7 +15424,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15670,7 +15670,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -15708,7 +15708,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : true,
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
