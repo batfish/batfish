@@ -171,14 +171,14 @@ public class RdsInstanceTest {
           equalTo(
               ImmutableList.of(
                   new AclAclLine(
-                      "Permitted by Test Security Group",
+                      "Permitted by security group 'Test Security Group'",
                       "~EGRESS-Test Security Group-sg-0de0ddfa8a5a45810~"))));
       assertThat(
           iface.getIncomingFilter().getLines(),
           equalTo(
               ImmutableList.of(
                   new AclAclLine(
-                      "Permitted by Test Security Group",
+                      "Permitted by security group 'Test Security Group'",
                       "~INGRESS-Test Security Group-sg-0de0ddfa8a5a45810~"))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),

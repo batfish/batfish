@@ -663,11 +663,13 @@ final class Region implements Serializable {
                     securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings);
                 inAclAclLines.add(
                     new AclAclLine(
-                        String.format("Permitted by %s", securityGroup.getGroupName()),
+                        String.format(
+                            "Permitted by security group '%s'", securityGroup.getGroupName()),
                         sgInAcl.getName()));
                 outAclAclLines.add(
                     new AclAclLine(
-                        String.format("Permitted by %s", securityGroup.getGroupName()),
+                        String.format(
+                            "Permitted by security group '%s'", securityGroup.getGroupName()),
                         sgOutAcl.getName()));
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);

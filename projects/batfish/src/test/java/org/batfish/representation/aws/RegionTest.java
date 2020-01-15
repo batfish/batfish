@@ -87,7 +87,7 @@ public class RegionTest {
         CONFIGURATION_NAME,
         new SecurityGroup(
             "sg-001",
-            "security group 1",
+            "sg-1",
             ImmutableList.of(),
             ImmutableList.of(
                 new IpPermissions(
@@ -101,7 +101,7 @@ public class RegionTest {
         CONFIGURATION_NAME,
         new SecurityGroup(
             "sg-002",
-            "security group 2",
+            "sg-2",
             ImmutableList.of(),
             ImmutableList.of(
                 new IpPermissions(
@@ -133,11 +133,11 @@ public class RegionTest {
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
     assertThat(
-        c.getIpAccessLists().get("~INGRESS-security group 1-sg-001~").getLines(),
+        c.getIpAccessLists().get("~INGRESS-sg-1-sg-001~").getLines(),
         equalTo(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setName("sg-001 - security group 1 [ingress] 0")
+                    .setName("sg-001 - sg-1 [ingress] 0")
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
@@ -147,11 +147,11 @@ public class RegionTest {
                                 .build()))
                     .build())));
     assertThat(
-        c.getIpAccessLists().get("~INGRESS-security group 2-sg-002~").getLines(),
+        c.getIpAccessLists().get("~INGRESS-sg-2-sg-002~").getLines(),
         equalTo(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setName("sg-002 - security group 2 [ingress] 0")
+                    .setName("sg-002 - sg-2 [ingress] 0")
                     .setMatchCondition(
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
@@ -166,9 +166,7 @@ public class RegionTest {
         c.getAllInterfaces().get("~Interface_0~").getIncomingFilter().getLines(),
         equalTo(
             ImmutableList.of(
-                new AclAclLine(
-                    "Permitted by security group 2", "~INGRESS-security group 2-sg-002~"),
-                new AclAclLine(
-                    "Permitted by security group 1", "~INGRESS-security group 1-sg-001~"))));
+                new AclAclLine("Permitted by security group 'sg-2'", "~INGRESS-sg-2-sg-002~"),
+                new AclAclLine("Permitted by security group 'sg-1'", "~INGRESS-sg-1-sg-001~"))));
   }
 }
