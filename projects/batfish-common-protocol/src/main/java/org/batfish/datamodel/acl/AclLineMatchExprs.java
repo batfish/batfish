@@ -4,10 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DscpType;
@@ -49,9 +45,7 @@ public final class AclLineMatchExprs {
       implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
 
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
-    return and(
-        Arrays.stream(exprs)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+    return and(ImmutableList.copyOf(exprs));
   }
 
   /**
@@ -273,8 +267,7 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
-    return or(
-        Arrays.stream(exprs).collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+    return or(ImmutableList.copyOf(exprs));
   }
 
   /**

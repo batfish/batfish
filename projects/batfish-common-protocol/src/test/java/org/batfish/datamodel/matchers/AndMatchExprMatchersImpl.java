@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -9,14 +10,14 @@ import org.hamcrest.Matcher;
 
 public class AndMatchExprMatchersImpl {
 
-  static class HasConjuncts extends FeatureMatcher<AndMatchExpr, SortedSet<AclLineMatchExpr>> {
+  static class HasConjuncts extends FeatureMatcher<AndMatchExpr, List<AclLineMatchExpr>> {
 
-    public HasConjuncts(@Nonnull Matcher<? super SortedSet<AclLineMatchExpr>> subMatcher) {
+    public HasConjuncts(@Nonnull Matcher<? super List<AclLineMatchExpr>> subMatcher) {
       super(subMatcher, "An AndMatchExpr with conjuncts:", "conjuncts");
     }
 
     @Override
-    protected SortedSet<AclLineMatchExpr> featureValueOf(AndMatchExpr actual) {
+    protected List<AclLineMatchExpr> featureValueOf(AndMatchExpr actual) {
       return actual.getConjuncts();
     }
   }

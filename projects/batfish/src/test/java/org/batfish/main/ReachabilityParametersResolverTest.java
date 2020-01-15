@@ -71,7 +71,7 @@ public class ReachabilityParametersResolverTest {
         resolvedReachabilityParameters.getHeaderSpace(),
         equalTo(
             AclLineMatchExprs.and(
-                AclLineMatchExprs.matchDst(UniverseIpSpace.INSTANCE), AclLineMatchExprs.TRUE)));
+                AclLineMatchExprs.TRUE, AclLineMatchExprs.matchDst(UniverseIpSpace.INSTANCE))));
 
     // test setting destination IpSpace
     IpIpSpace dstIpSpace = Ip.parse("1.1.1.1").toIpSpace();
@@ -84,7 +84,7 @@ public class ReachabilityParametersResolverTest {
     assertThat(
         resolvedReachabilityParameters.getHeaderSpace(),
         equalTo(
-            AclLineMatchExprs.and(AclLineMatchExprs.matchDst(dstIpSpace), AclLineMatchExprs.TRUE)));
+            AclLineMatchExprs.and(AclLineMatchExprs.TRUE, AclLineMatchExprs.matchDst(dstIpSpace))));
   }
 
   @Test

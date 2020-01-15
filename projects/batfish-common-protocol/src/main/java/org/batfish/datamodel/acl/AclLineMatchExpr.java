@@ -1,17 +1,14 @@
 package org.batfish.datamodel.acl;
 
-import static java.util.Comparator.nullsFirst;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLineMatchExpr> {
+public abstract class AclLineMatchExpr implements Serializable {
   protected static final String PROP_DESCRIPTION = "description";
 
   protected final @Nullable String _description;
@@ -22,19 +19,6 @@ public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLi
   }
 
   public abstract <R> R accept(GenericAclLineMatchExprVisitor<R> visitor);
-
-  protected abstract int compareSameClass(AclLineMatchExpr o);
-
-  @Override
-  public final int compareTo(AclLineMatchExpr o) {
-    if (this == o) {
-      return 0;
-    }
-    return Comparator.comparing((AclLineMatchExpr e) -> e.getClass().getSimpleName())
-        .thenComparing(this::compareSameClass)
-        .thenComparing(AclLineMatchExpr::getDescription, nullsFirst(Comparator.naturalOrder()))
-        .compare(this, o);
-  }
 
   @Override
   public boolean equals(Object o) {
