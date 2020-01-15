@@ -11,7 +11,7 @@ public final class TraceTreeMatchersImpl {
 
   public static final class HasChildren extends FeatureMatcher<TraceTree, List<TraceTree>> {
     public HasChildren(Matcher<? super List<TraceTree>> subMatcher) {
-      super(subMatcher, "a TraceNode with children: ", "children");
+      super(subMatcher, "a TraceTree with children: ", "children");
     }
 
     @Override
@@ -22,7 +22,7 @@ public final class TraceTreeMatchersImpl {
 
   public static final class HasTraceElement extends FeatureMatcher<TraceTree, TraceElement> {
     public HasTraceElement(Matcher<? super TraceElement> subMatcher) {
-      super(subMatcher, "a TraceNode with traceElement: ", "traceElement");
+      super(subMatcher, "a TraceTree with traceElement: ", "traceElement");
     }
 
     @Override
