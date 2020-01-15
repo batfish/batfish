@@ -7,19 +7,17 @@ import com.google.common.collect.Table;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 public class RipProcess implements Serializable {
 
-  public static class Builder extends NetworkFactoryBuilder<RipProcess> {
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
 
     private Vrf _vrf;
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, RipProcess.class);
-    }
-
-    @Override
     public RipProcess build() {
       RipProcess ripProcess = new RipProcess();
       if (_vrf != null) {

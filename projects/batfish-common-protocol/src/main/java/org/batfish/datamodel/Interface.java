@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,13 +22,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -37,16 +38,12 @@ import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
 
-  public static class Builder extends NetworkFactoryBuilder<Interface> {
+  public static class Builder {
 
     private @Nullable Integer _accessVlan;
     private boolean _active;
     private InterfaceAddress _address;
-
-    @Nonnull
-    private Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata =
-        ImmutableMap.of();
-
+    private @Nonnull Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
     private @Nullable IntegerSpace _allowedVlans;
     private boolean _autoState;
     @Nullable private Double _bandwidth;
@@ -59,7 +56,6 @@ public final class Interface extends ComparableStructure<String> {
     private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
     @Nullable private EigrpInterfaceSettings _eigrp;
     @Nullable private Integer _encapsulationVlan;
-
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
@@ -68,7 +64,8 @@ public final class Interface extends ComparableStructure<String> {
     private IsisInterfaceSettings _isis;
     private @Nullable Integer _mlagId;
     private @Nullable Integer _mtu;
-    private String _name;
+    private @Nullable String _name;
+    private @Nullable Supplier<String> _nameGenerator;
     private @Nullable Integer _nativeVlan;
     private OspfInterfaceSettings _ospfSettings;
     private IpAccessList _outgoingFilter;
@@ -89,22 +86,23 @@ public final class Interface extends ComparableStructure<String> {
     private Vrf _vrf;
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, Interface.class);
+    private Builder(@Nullable Supplier<String> nameGenerator) {
       _active = true;
+      _addressMetadata = ImmutableMap.of();
       _additionalArpIps = EmptyIpSpace.INSTANCE;
       _autoState = true;
       _channelGroupMembers = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _dhcpRelayAddresses = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
+      _nameGenerator = nameGenerator;
       _secondaryAddresses = ImmutableSet.of();
       _vrrpGroups = ImmutableSortedMap.of();
     }
 
-    @Override
     public Interface build() {
-      String name = _name != null ? _name : generateName();
+      checkArgument(_name != null || _nameGenerator != null, "Must set name before building");
+      String name = _name != null ? _name : _nameGenerator.get();
       Interface iface =
           _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
 
@@ -583,6 +581,10 @@ public final class Interface extends ComparableStructure<String> {
 
   public static Builder builder() {
     return new Builder(null);
+  }
+
+  public static Builder builder(Supplier<String> nameGenerator) {
+    return new Builder(nameGenerator);
   }
 
   private static InterfaceType computeAosInteraceType(String name) {

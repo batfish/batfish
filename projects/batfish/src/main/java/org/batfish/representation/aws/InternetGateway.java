@@ -26,7 +26,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -153,8 +152,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
               addStaticRoute(cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME));
             });
 
-    installRoutingPolicyAdvertiseStatic(
-        BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace, new NetworkFactory());
+    installRoutingPolicyAdvertiseStatic(BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace);
 
     BgpActivePeerConfig.builder()
         .setPeerAddress(bbInterfaceSubnet.getEndIp())

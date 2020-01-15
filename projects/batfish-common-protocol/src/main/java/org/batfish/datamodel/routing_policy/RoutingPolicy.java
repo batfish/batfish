@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -24,8 +26,6 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -38,20 +38,21 @@ public class RoutingPolicy implements Serializable {
    *
    * <p><b>Note:</b> the resulting statements will be an immutable list.
    */
-  public static final class Builder extends NetworkFactoryBuilder<RoutingPolicy> {
+  public static final class Builder {
 
-    private String _name;
+    private @Nullable String _name;
+    private @Nullable Supplier<String> _nameGenerator;
     private Configuration _owner;
     private ImmutableList.Builder<Statement> _statements;
 
-    public Builder(NetworkFactory networkFactory) {
-      super(networkFactory, RoutingPolicy.class);
+    private Builder(@Nullable Supplier<String> nameGenerator) {
+      _nameGenerator = nameGenerator;
       _statements = ImmutableList.builder();
     }
 
-    @Override
     public @Nonnull RoutingPolicy build() {
-      String name = _name != null ? _name : generateName();
+      checkArgument(_name != null || _nameGenerator != null, "Must set name before building");
+      String name = _name != null ? _name : _nameGenerator.get();
       RoutingPolicy routingPolicy = new RoutingPolicy(name, _owner);
       if (_owner != null) {
         _owner.getRoutingPolicies().put(name, routingPolicy);
@@ -100,13 +101,12 @@ public class RoutingPolicy implements Serializable {
     _statements = new ArrayList<>();
   }
 
-  /** Builder to be used with a {@link NetworkFactory} for tests */
-  public static Builder builder(@Nullable NetworkFactory nf) {
-    return new Builder(nf);
-  }
-
   public static Builder builder() {
     return new Builder(null);
+  }
+
+  public static Builder builder(Supplier<String> nameGenerator) {
+    return new Builder(nameGenerator);
   }
 
   public static boolean isGenerated(String s) {

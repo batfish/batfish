@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.not;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,12 +23,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
@@ -46,25 +47,32 @@ import org.batfish.referencelibrary.ReferenceBook;
  */
 public final class Configuration implements Serializable {
 
-  public static class Builder extends NetworkFactoryBuilder<Configuration> {
+  public static Builder builder() {
+    return new Builder(null);
+  }
+
+  public static Builder builder(@Nonnull Supplier<String> hostnameGenerator) {
+    return new Builder(hostnameGenerator);
+  }
+
+  public static class Builder {
 
     private ConfigurationFormat _configurationFormat;
-
-    private String _domainName;
-
     private String _hostname;
-
+    private Supplier<String> _hostnameGenerator;
+    private String _domainName;
     private LineAction _defaultCrossZoneAction;
-
     private LineAction _defaultInboundAction;
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, Configuration.class);
+    private Builder(@Nullable Supplier<String> hostnameGenerator) {
+      _hostnameGenerator = hostnameGenerator;
     }
 
-    @Override
     public Configuration build() {
-      String name = _hostname != null ? _hostname : generateName().toLowerCase();
+      checkArgument(
+          _hostname != null || _hostnameGenerator != null,
+          "Must set hostname or supply name generator");
+      String name = _hostname != null ? _hostname : _hostnameGenerator.get().toLowerCase();
       Configuration configuration = new Configuration(name, _configurationFormat);
       if (_defaultCrossZoneAction != null) {
         configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
