@@ -5,8 +5,8 @@ import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessLis
 import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
-import static org.batfish.datamodel.acl.TraceNodeMatchers.hasChildren;
-import static org.batfish.datamodel.acl.TraceNodeMatchers.hasTraceElement;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;

@@ -6,8 +6,8 @@ import org.batfish.datamodel.trace.TraceTree;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public final class TraceNodeMatchersImpl {
-  private TraceNodeMatchersImpl() {}
+public final class TraceTreeMatchersImpl {
+  private TraceTreeMatchersImpl() {}
 
   public static final class HasChildren extends FeatureMatcher<TraceTree, List<TraceTree>> {
     public HasChildren(Matcher<? super List<TraceTree>> subMatcher) {

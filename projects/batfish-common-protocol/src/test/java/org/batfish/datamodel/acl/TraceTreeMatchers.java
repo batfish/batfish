@@ -4,13 +4,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.TraceNodeMatchersImpl.HasChildren;
-import org.batfish.datamodel.acl.TraceNodeMatchersImpl.HasTraceElement;
+import org.batfish.datamodel.acl.TraceTreeMatchersImpl.HasChildren;
+import org.batfish.datamodel.acl.TraceTreeMatchersImpl.HasTraceElement;
 import org.batfish.datamodel.trace.TraceTree;
 import org.hamcrest.Matcher;
 
-public final class TraceNodeMatchers {
-  private TraceNodeMatchers() {}
+public final class TraceTreeMatchers {
+  private TraceTreeMatchers() {}
 
   /** A {@link TraceTree} matcher on {@link TraceTree#getTraceElement()}. */
   public static Matcher<TraceTree> hasTraceElement(Matcher<? super TraceElement> subMatcher) {
