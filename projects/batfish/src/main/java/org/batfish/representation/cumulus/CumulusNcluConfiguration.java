@@ -16,6 +16,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertIpCom
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpPrefixLists;
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
+import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -41,7 +42,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
-import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -54,13 +54,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
-import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
@@ -305,77 +301,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     _vrfs.forEach(this::initVrf);
   }
 
-  /**
-   * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
-   * be properly initialized
-   */
-  private void convertVxlans() {
-    if (_vxlans.isEmpty()) {
-      return;
-    }
-
-    // Compute explicit VNI -> VRF mappings for L3 VNIs:
-    Map<Integer, String> vniToVrf =
-        _vrfs.values().stream()
-            .filter(vrf -> vrf.getVni() != null)
-            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
-
-    // Put all valid VXLAN VNIs into appropriate VRF
-    _vxlans
-        .values()
-        .forEach(
-            vxlan -> {
-              if (vxlan.getId() == null
-                  || vxlan.getLocalTunnelip() == null
-                  || vxlan.getBridgeAccessVlan() == null) {
-                // Not a valid VNI configuration
-                return;
-              }
-              @Nullable String vrfName = vniToVrf.get(vxlan.getId());
-              if (vrfName != null) {
-                // This is an L3 VNI.
-                Optional.ofNullable(_c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer3Vni(
-                                Layer3Vni.builder()
-                                    .setVni(vxlan.getId())
-                                    .setSourceAddress(
-                                        firstNonNull(
-                                            _loopback.getClagVxlanAnycastIp(),
-                                            vxlan.getLocalTunnelip()))
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
-              } else {
-                // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = getVrfForVlan(vxlan.getBridgeAccessVlan());
-                if (vrfName == null) {
-                  // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
-                  vrfName = DEFAULT_VRF_NAME;
-                }
-                Optional.ofNullable(_c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer2Vni(
-                                Layer2Vni.builder()
-                                    .setVni(vxlan.getId())
-                                    .setVlan(vxlan.getBridgeAccessVlan())
-                                    .setSourceAddress(
-                                        firstNonNull(
-                                            _loopback.getClagVxlanAnycastIp(),
-                                            vxlan.getLocalTunnelip()))
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
-              }
-            });
-  }
-
+  @Override
   @Nullable
-  private String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
+  public String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
       return null;
     }
@@ -442,6 +370,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _vrfs;
   }
 
+  @Override
   public @Nonnull Map<String, Vxlan> getVxlans() {
     return _vxlans;
   }
@@ -702,7 +631,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     convertRouteMaps(_c, this, _routeMaps, _w);
     convertDnsServers(_c, _ipv4Nameservers);
     convertClags(_c, this, _w);
-    convertVxlans();
+
+    // Compute explicit VNI -> VRF mappings for L3 VNIs:
+    Map<Integer, String> vniToVrf =
+        _vrfs.values().stream()
+            .filter(vrf -> vrf.getVni() != null)
+            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
+
+    convertVxlans(_c, this, vniToVrf, _loopback.getClagVxlanAnycastIp(), getVxlans());
     convertOspfProcess(_c, this, _w);
     convertBgpProcess(_c, this, _w);
 
@@ -748,12 +684,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
   @Nullable
   public Vrf getVrf(String vrfName) {
     return _vrfs.get(vrfName);
-  }
-
-  @Override
-  @Nullable
-  public List<Integer> getVxlanIds() {
-    return _vxlans.values().stream().map(Vxlan::getId).collect(ImmutableList.toImmutableList());
   }
 
   @Override

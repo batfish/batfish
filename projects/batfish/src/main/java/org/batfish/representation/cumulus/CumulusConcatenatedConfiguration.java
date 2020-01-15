@@ -14,6 +14,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertIpCom
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpPrefixLists;
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
+import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
@@ -144,7 +145,24 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     convertRouteMaps(c, this, _frrConfiguration.getRouteMaps(), _w);
     convertDnsServers(c, _frrConfiguration.getIpv4Nameservers());
     convertClags(c, this, _w);
-    convertVxlans(c);
+
+    // Compute explicit VNI -> VRF mappings for L3 VNIs:
+    Map<Integer, String> vniToVrf =
+        _frrConfiguration.getVrfs().values().stream()
+            .filter(vrf -> vrf.getVni() != null)
+            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
+
+    @Nullable
+    InterfacesInterface vsLoopback =
+        _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
+    @Nullable
+    Ip loopbackClagVxlanAnycastIp =
+        vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null
+            ? vsLoopback.getClagVxlanAnycastIp()
+            : null;
+
+    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, getVxlans());
+
     convertOspfProcess(c, this, _w);
     convertBgpProcess(c, this, _w);
 
@@ -179,7 +197,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
    * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
    * be properly initialized
    */
-  private void convertVxlans(Configuration c) {
+  private void convertVxlansOld(Configuration c) {
 
     // Compute explicit VNI -> VRF mappings for L3 VNIs:
     Map<Integer, String> vniToVrf =
@@ -252,7 +270,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @Nullable
-  private String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
+  @Override
+  public String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
       return null;
     }
@@ -722,11 +741,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
 
   @Override
   @Nullable
-  public List<Integer> getVxlanIds() {
+  public Map<String, Vxlan> getVxlans() {
     return _interfacesConfiguration.getInterfaces().values().stream()
         .filter(InterfaceConverter::isVxlan)
-        .map(InterfacesInterface::getVxlanId)
-        .collect(ImmutableList.toImmutableList());
+        .map(InterfaceConverter::convertVxlan)
+        .collect(ImmutableMap.toImmutableMap(Vxlan::getName, vxlan -> vxlan));
   }
 
   @Override
