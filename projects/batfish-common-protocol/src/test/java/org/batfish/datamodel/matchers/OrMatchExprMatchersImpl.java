@@ -1,7 +1,6 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.List;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
