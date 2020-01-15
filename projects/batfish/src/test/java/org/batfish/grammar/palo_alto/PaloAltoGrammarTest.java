@@ -751,7 +751,7 @@ public final class PaloAltoGrammarTest {
     EbgpPeerGroupType ebgpOptions = (EbgpPeerGroupType) ebgp.getTypeAndOptions();
     assertThat(ebgpOptions.getExportNexthop(), equalTo(ExportNexthopMode.USE_SELF));
     assertThat(ebgpOptions.getImportNexthop(), equalTo(ImportNexthopMode.USE_PEER));
-    assertThat(ebgpOptions.getRemotePrivateAs(), equalTo(false));
+    assertThat(ebgpOptions.getRemovePrivateAs(), equalTo(false));
 
     assertThat(pg.getPeers().keySet(), contains("PEER"));
     BgpPeer peer = pg.getOrCreatePeerGroup("PEER");
