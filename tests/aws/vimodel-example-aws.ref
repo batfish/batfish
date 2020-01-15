@@ -1101,12 +1101,12 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "240.254.254.1/30"
+              "240.254.254.1/29"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "prefix" : "240.254.254.1/30",
+            "prefix" : "240.254.254.1/29",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
