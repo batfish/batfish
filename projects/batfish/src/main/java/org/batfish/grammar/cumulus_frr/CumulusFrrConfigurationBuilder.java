@@ -918,7 +918,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitRms_metric(Rms_metricContext ctx) {
     LongExpr val = toMetricLongExpr(ctx.metric);
     _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(val));
-    //long test = toLong(val);
   }
 
   @Override

@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 @ParametersAreNonnullByDefault
 public final class IncrementMetric extends LongExpr {
   private static final String PROP_ADDEND = "addend";
-  private static final long MAX_METRIC_VALUE = (long)Math.pow(2, 32) - 1;
+  private static final long MAX_INT_VALUE = (long)Math.pow(2, 32) - 1;
 
   @Nonnull private long _addend;
 
@@ -47,9 +47,9 @@ public final class IncrementMetric extends LongExpr {
   public long evaluate(Environment environment) {
     long oldMetric = environment.getOriginalRoute().getMetric();
     long newVal = 0;
-    if (oldMetric > MAX_METRIC_VALUE - _addend) {
+    if (oldMetric > MAX_INT_VALUE - _addend) {
       // Overflow.
-      newVal = MAX_METRIC_VALUE;
+      newVal = MAX_INT_VALUE;
     } else {
       newVal = oldMetric + _addend;
     }
