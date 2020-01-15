@@ -48,7 +48,7 @@ public final class TraceNode {
     return _children;
   }
 
-  @Nonnull
+  @Nullable
   public TraceElement getTraceElement() {
     return _traceElement;
   }
