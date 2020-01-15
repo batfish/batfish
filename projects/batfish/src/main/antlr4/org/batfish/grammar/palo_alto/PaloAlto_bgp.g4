@@ -205,7 +205,26 @@ bgppg_type
 bgppgt_ebgp
 :
     EBGP
-    // TODO ebgp-specific options
+    (
+        bgppgte_export_nexthop
+        | bgppgte_import_nexthop
+        | bgppgte_remove_private_as
+    )?
+;
+
+bgppgte_export_nexthop
+:
+    EXPORT_NEXTHOP (RESOLVE | USE_SELF)
+;
+
+bgppgte_import_nexthop
+:
+    IMPORT_NEXTHOP (ORIGINAL | USE_PEER)
+;
+
+bgppgte_remove_private_as
+:
+    REMOVE_PRIVATE_AS yn = yes_or_no
 ;
 
 bgppgt_ibgp

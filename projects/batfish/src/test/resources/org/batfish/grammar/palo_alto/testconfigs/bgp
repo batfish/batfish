@@ -58,6 +58,19 @@ network {
            }
            enable yes;
           }
+          EBGP {
+           type {
+            ebgp {
+             remove-private-as yes;
+             remove-private-as no;
+             import-nexthop original;
+             import-nexthop use-peer;
+             export-nexthop resolve;
+             export-nexthop use-self;
+            }
+           }
+           enable yes;
+          }
         }
         enable yes;
         reject-default-route no;
