@@ -1440,6 +1440,26 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testRouterOspfPassiveInterfaceDefault() {
+    _frr.getOrCreateInterface("ifaceTrue").getOrCreateOspf().setPassive(true);
+    _frr.getOrCreateInterface("ifaceFalse").getOrCreateOspf().setPassive(false);
+    parse("router ospf\n passive-interface default\n");
+    assertTrue(_frr.getOspfProcess().getDefaultPassiveInterface());
+    assertNull(_frr.getInterfaces().get("ifaceTrue").getOspf().getPassive());
+    assertNull(_frr.getInterfaces().get("ifaceFalse").getOspf().getPassive());
+  }
+
+  @Test
+  public void testRouterOspfNoPassiveInterfaceDefault() {
+    _frr.getOrCreateInterface("ifaceTrue").getOrCreateOspf().setPassive(true);
+    _frr.getOrCreateInterface("ifaceFalse").getOrCreateOspf().setPassive(false);
+    parse("router ospf\n no passive-interface default\n");
+    assertFalse(_frr.getOspfProcess().getDefaultPassiveInterface());
+    assertNull(_frr.getInterfaces().get("ifaceTrue").getOspf().getPassive());
+    assertNull(_frr.getInterfaces().get("ifaceFalse").getOspf().getPassive());
+  }
+
+  @Test
   public void testRouterOspfRouterId() {
     parse("router ospf\n ospf router-id 1.1.1.3\n");
     assertThat(_frr.getOspfProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.1.1.3")));

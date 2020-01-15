@@ -1211,7 +1211,9 @@ public final class CumulusConversions {
           OspfInterface ospfInterface = ospfOpt.get();
           iface.setOspfSettings(
               OspfInterfaceSettings.builder()
-                  .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
+                  .setPassive(
+                      Optional.ofNullable(ospfInterface.getPassive())
+                          .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
                   .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
                   .setDeadInterval(

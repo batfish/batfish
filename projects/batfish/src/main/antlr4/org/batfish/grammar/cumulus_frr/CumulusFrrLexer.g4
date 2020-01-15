@@ -495,7 +495,7 @@ OUT
 
 PASSIVE_INTERFACE
 :
-  'passive-interface' -> pushMode(M_Word)
+  'passive-interface' -> pushMode(M_Default_Or_Word)
 ;
 
 PASSWORD
@@ -871,6 +871,24 @@ F_Whitespace
 ;
 
 // modes
+mode M_Default_Or_Word;
+
+M_Default_Or_Word_DEFAULT
+:
+  'default' -> type (DEFAULT) , popMode
+;
+
+
+M_Default_Or_Word_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Default_Or_Word_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Neighbor;
 
 M_Neighbor_IP_Address
