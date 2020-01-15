@@ -873,7 +873,7 @@ F_Whitespace
 // modes
 mode M_Default_Or_Word;
 
-M_Default_Or_Word_WORD
+M_Default_Or_Word_DEFAULT
 :
   'default' -> type (DEFAULT) , popMode
 ;
