@@ -66,8 +66,11 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceCont
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_defaultContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_interface_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
@@ -228,6 +231,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private void warn(ParserRuleContext ctx, String message) {
     _w.addWarning(ctx, ctx.getText(), _parser, message);
+  }
+
+  private void clearOspfPassiveInterface() {
+    _frr.getInterfaces()
+        .values()
+        .forEach(
+            iface -> {
+              if (iface.getOspf() != null) {
+                iface.getOspf().setPassive(null);
+              }
+            });
   }
 
   @Override
@@ -777,7 +791,31 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
+  public void exitRonopi_default(Ronopi_defaultContext ctx) {
+    clearOspfPassiveInterface();
+    _frr.getOspfProcess().setDefaultPassiveInterface(false);
+  }
+
+  @Override
+  public void exitRonopi_interface_name(Ronopi_interface_nameContext ctx) {
+    String ifaceName = ctx.name.getText();
+    if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
+        && !_frr.getInterfaces().containsKey(ifaceName)) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
+      return;
+    }
+    _frr.getOrCreateInterface(ifaceName).getOrCreateOspf().setPassive(false);
+  }
+
+  @Override
+  public void exitRopi_default(Ropi_defaultContext ctx) {
+    clearOspfPassiveInterface();
+    _frr.getOspfProcess().setDefaultPassiveInterface(true);
+  }
+
+  @Override
+  public void exitRopi_interface_name(Ropi_interface_nameContext ctx) {
     String ifaceName = ctx.name.getText();
     if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
         && !_frr.getInterfaces().containsKey(ifaceName)) {

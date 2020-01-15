@@ -10,6 +10,7 @@ import org.batfish.datamodel.Configuration;
 public class OspfProcess implements Serializable {
 
   private final @Nonnull OspfVrf _defaultVrf;
+  private boolean _defaultPassiveInterface;
   private final @Nonnull Map<String, OspfVrf> _vrfs;
   public static final double DEFAULT_REFERENCE_BANDWIDTH =
       100E9D; // https://docs.cumulusnetworks.com/cumulus-linux/Layer-3/Open-Shortest-Path-First-OSPF/#auto-cost-reference-bandwidth
@@ -17,6 +18,8 @@ public class OspfProcess implements Serializable {
 
   public OspfProcess() {
     _defaultVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
+    // default value
+    _defaultPassiveInterface = false;
     _vrfs = new HashMap<>();
   }
 
@@ -26,5 +29,13 @@ public class OspfProcess implements Serializable {
 
   public @Nonnull Map<String, OspfVrf> getVrfs() {
     return _vrfs;
+  }
+
+  public boolean getDefaultPassiveInterface() {
+    return _defaultPassiveInterface;
+  }
+
+  public void setDefaultPassiveInterface(boolean defaultPassiveInterface) {
+    _defaultPassiveInterface = defaultPassiveInterface;
   }
 }
