@@ -156,7 +156,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
             ? vsLoopback.getClagVxlanAnycastIp()
             : null;
 
-    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, getVxlans());
+    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp);
 
     convertOspfProcess(c, this, _w);
     convertBgpProcess(c, this, _w);

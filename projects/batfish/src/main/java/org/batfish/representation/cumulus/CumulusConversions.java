@@ -1398,11 +1398,11 @@ public final class CumulusConversions {
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       Map<Integer, String> vniToVrf,
-      @Nullable Ip loopbackClagVxlanAnycastIp,
-      Map<String, Vxlan> vxlans) {
+      @Nullable Ip loopbackClagVxlanAnycastIp) {
 
     // Put all valid VXLAN VNIs into appropriate VRF
-    vxlans
+    vsConfig
+        .getVxlans()
         .values()
         .forEach(
             vxlan -> {
