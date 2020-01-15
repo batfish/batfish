@@ -6,24 +6,24 @@ import java.util.List;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.TraceNodeMatchersImpl.HasChildren;
 import org.batfish.datamodel.acl.TraceNodeMatchersImpl.HasTraceElement;
-import org.batfish.datamodel.trace.TraceNode;
+import org.batfish.datamodel.trace.TraceTree;
 import org.hamcrest.Matcher;
 
 public final class TraceNodeMatchers {
   private TraceNodeMatchers() {}
 
-  /** A {@link TraceNode} matcher on {@link TraceNode#getTraceElement()}. */
-  public static Matcher<TraceNode> hasTraceElement(Matcher<? super TraceElement> subMatcher) {
+  /** A {@link TraceTree} matcher on {@link TraceTree#getTraceElement()}. */
+  public static Matcher<TraceTree> hasTraceElement(Matcher<? super TraceElement> subMatcher) {
     return new HasTraceElement(subMatcher);
   }
 
-  /** A {@link TraceNode} matcher on {@link TraceNode#getTraceElement()}. */
-  public static Matcher<TraceNode> hasTraceElement(TraceElement traceElement) {
+  /** A {@link TraceTree} matcher on {@link TraceTree#getTraceElement()}. */
+  public static Matcher<TraceTree> hasTraceElement(TraceElement traceElement) {
     return new HasTraceElement(equalTo(traceElement));
   }
 
-  /** A {@link TraceNode} matcher on {@link TraceNode#getChildren()}. */
-  public static Matcher<TraceNode> hasChildren(Matcher<? super List<TraceNode>> subMatcher) {
+  /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
+  public static Matcher<TraceTree> hasChildren(Matcher<? super List<TraceTree>> subMatcher) {
     return new HasChildren(subMatcher);
   }
 }

@@ -20,7 +20,7 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.trace.TraceNode;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.trace.Tracer;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
@@ -34,7 +34,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   @VisibleForTesting static String SRC_IP_DESCRIPTION = "source IP";
 
-  public static TraceNode trace(
+  public static TraceTree trace(
       @Nonnull IpAccessList ipAccessList,
       @Nonnull Flow flow,
       @Nullable String srcInterface,
@@ -66,7 +66,7 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public @Nonnull TraceNode getTrace() {
+  public @Nonnull TraceTree getTrace() {
     return _tracer.getTrace();
   }
 
