@@ -201,13 +201,14 @@ public class TestFiltersAnswerer extends Answerer {
    */
   public static Row getRow(IpAccessList filter, Flow flow, Configuration c) {
     AclTrace trace =
-        AclTracer.trace(
-            filter,
-            flow,
-            flow.getIngressInterface(),
-            c.getIpAccessLists(),
-            c.getIpSpaces(),
-            c.getIpSpaceMetadata());
+        new AclTrace(
+            AclTracer.trace(
+                filter,
+                flow,
+                flow.getIngressInterface(),
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata()));
     FilterResult result =
         filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
     Integer matchLine = result.getMatchLine();
