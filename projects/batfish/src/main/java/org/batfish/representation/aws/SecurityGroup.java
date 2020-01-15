@@ -103,7 +103,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
       int seq = it.nextIndex();
       IpPermissions p = it.next();
       p.toIpAccessListLine(
-              true, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
+              false, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
           .ifPresent(egressAclLines::add);
     }
     return egressAclLines.build();
