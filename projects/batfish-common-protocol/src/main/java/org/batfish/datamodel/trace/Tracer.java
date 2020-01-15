@@ -5,11 +5,11 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Stack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.acl.TraceEvent;
+import org.batfish.datamodel.TraceElement;
 
 /**
  * A class for building Trace trees. The tracer tracks a current trace, which is updated by creating
- * subtraces, and then completing or discarding them. Clients can set a {@link TraceEvent} for the
+ * subtraces, and then completing or discarding them. Clients can set a {@link TraceElement} for the
  * current (sub)trace.
  */
 public final class Tracer {
@@ -29,11 +29,11 @@ public final class Tracer {
     return _trace;
   }
 
-  /** Set the {@link TraceEvent} for the current trace node. Must not already be set. */
-  public void setEvent(@Nonnull TraceEvent traceEvent) {
+  /** Set the {@link TraceElement} for the current trace node. Must not already be set. */
+  public void setTraceElement(@Nonnull TraceElement traceElement) {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
     TraceNode.Builder currentNode = _nodeStack.peek();
-    currentNode.setTraceEvent(traceEvent);
+    currentNode.setTraceElement(traceElement);
   }
 
   /**
