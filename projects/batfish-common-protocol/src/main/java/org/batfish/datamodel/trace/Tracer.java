@@ -15,16 +15,16 @@ import org.batfish.datamodel.TraceElement;
 public final class Tracer {
 
   // the complete trace. once set, can't create new subtraces
-  private @Nullable TraceNode _trace;
+  private @Nullable TraceTree _trace;
 
   // invariant: never empty
-  private final Stack<TraceNode.Builder> _nodeStack;
+  private final Stack<TraceTree.Builder> _nodeStack;
 
   public Tracer() {
     _nodeStack = new Stack<>();
   }
 
-  public TraceNode getTrace() {
+  public TraceTree getTrace() {
     checkState(_trace != null, "cannot get incomplete trace");
     return _trace;
   }
@@ -32,7 +32,7 @@ public final class Tracer {
   /** Set the {@link TraceElement} for the current trace node. Must not already be set. */
   public void setTraceElement(@Nonnull TraceElement traceElement) {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
-    TraceNode.Builder currentNode = _nodeStack.peek();
+    TraceTree.Builder currentNode = _nodeStack.peek();
     currentNode.setTraceElement(traceElement);
   }
 
@@ -43,13 +43,13 @@ public final class Tracer {
   public void newSubTrace() {
     checkState(_trace == null, "trace already completed");
     // Add new child, set it as current node
-    _nodeStack.push(TraceNode.builder());
+    _nodeStack.push(TraceTree.builder());
   }
 
   /** Complete the current (sub)trace. If it's a subtrace, add it as a child of the parent trace. */
   public void endSubTrace() {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
-    TraceNode child = _nodeStack.pop().build();
+    TraceTree child = _nodeStack.pop().build();
     if (!_nodeStack.isEmpty()) {
       _nodeStack.peek().addChild(child);
     } else {

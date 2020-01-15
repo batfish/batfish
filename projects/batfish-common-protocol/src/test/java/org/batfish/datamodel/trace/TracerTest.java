@@ -19,7 +19,7 @@ public class TracerTest {
     tracer.setTraceElement(E1);
     tracer.endSubTrace();
 
-    TraceNode trace = tracer.getTrace();
+    TraceTree trace = tracer.getTrace();
     assertEquals(E1, trace.getTraceElement());
     assertThat(trace.getChildren(), empty());
   }
@@ -36,11 +36,11 @@ public class TracerTest {
 
     tracer.endSubTrace();
 
-    TraceNode trace = tracer.getTrace();
+    TraceTree trace = tracer.getTrace();
     assertEquals(E1, trace.getTraceElement());
     assertEquals(1, trace.getChildren().size());
 
-    TraceNode subTrace = trace.getChildren().get(0);
+    TraceTree subTrace = trace.getChildren().get(0);
     assertEquals(E2, subTrace.getTraceElement());
     assertThat(subTrace.getChildren(), empty());
   }
@@ -57,7 +57,7 @@ public class TracerTest {
 
     tracer.endSubTrace();
 
-    TraceNode trace = tracer.getTrace();
+    TraceTree trace = tracer.getTrace();
     assertEquals(E1, trace.getTraceElement());
     assertThat(trace.getChildren(), empty());
   }
