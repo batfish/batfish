@@ -41,7 +41,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
-import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -53,13 +52,9 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
-import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -189,82 +184,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
                 viIface.setSpeed(speed);
                 viIface.setBandwidth(speed);
-              }
-            });
-  }
-
-  /**
-   * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
-   * be properly initialized
-   */
-  private void convertVxlansOld(Configuration c) {
-
-    // Compute explicit VNI -> VRF mappings for L3 VNIs:
-    Map<Integer, String> vniToVrf =
-        _frrConfiguration.getVrfs().values().stream()
-            .filter(vrf -> vrf.getVni() != null)
-            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
-
-    @Nullable
-    InterfacesInterface vsLoopback =
-        _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
-    @Nullable
-    Ip loopbackClagVxlanAnycastIp =
-        vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null
-            ? vsLoopback.getClagVxlanAnycastIp()
-            : null;
-
-    // Put all valid VXLAN VNIs into appropriate VRF
-    _interfacesConfiguration.getInterfaces().values().stream()
-        .filter(InterfaceConverter::isVxlan)
-        .forEach(
-            vxlan -> {
-              if (vxlan.getVxlanId() == null
-                  || vxlan.getVxlanLocalTunnelIp() == null
-                  || vxlan.getBridgeSettings() == null
-                  || vxlan.getBridgeSettings().getAccess() == null) {
-                // Not a valid VNI configuration
-                return;
-              }
-              @Nullable String vrfName = vniToVrf.get(vxlan.getVxlanId());
-              if (vrfName != null) {
-                // This is an L3 VNI.
-                Optional.ofNullable(c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer3Vni(
-                                Layer3Vni.builder()
-                                    .setVni(vxlan.getVxlanId())
-                                    .setSourceAddress(
-                                        firstNonNull(
-                                            loopbackClagVxlanAnycastIp,
-                                            vxlan.getVxlanLocalTunnelIp()))
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
-              } else {
-                // This is an L2 VNI. Find the VRF by looking up the VLAN
-                vrfName = getVrfForVlan(vxlan.getBridgeSettings().getAccess());
-                if (vrfName == null) {
-                  // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
-                  vrfName = DEFAULT_VRF_NAME;
-                }
-                Optional.ofNullable(c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer2Vni(
-                                Layer2Vni.builder()
-                                    .setVni(vxlan.getVxlanId())
-                                    .setVlan(vxlan.getBridgeSettings().getAccess())
-                                    .setSourceAddress(
-                                        firstNonNull(
-                                            loopbackClagVxlanAnycastIp,
-                                            vxlan.getVxlanLocalTunnelIp()))
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
               }
             });
   }
