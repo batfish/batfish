@@ -10,13 +10,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
+import org.batfish.datamodel.TraceElement;
 
 /** Utility methods for creating {@link TraceEvent TraceEvents}. */
 @ParametersAreNonnullByDefault
-public final class TraceEvents {
-  private TraceEvents() {}
+public final class TraceElements {
+  private TraceElements() {}
 
-  public static TraceEvent permittedByAclLine(IpAccessList acl, int index) {
+  public static TraceElement permittedByAclLine(IpAccessList acl, int index) {
     String type = firstNonNull(acl.getSourceType(), "filter");
     String name = firstNonNull(acl.getSourceName(), acl.getName());
     AclLine line = acl.getLines().get(index);
@@ -24,10 +25,10 @@ public final class TraceEvents {
     String description =
         String.format(
             "Flow permitted by %s named %s, index %d: %s", type, name, index, lineDescription);
-    return new TraceEvent(description);
+    return TraceElement.of(description);
   }
 
-  static TraceEvent deniedByAclLine(IpAccessList acl, int index) {
+  static TraceElement deniedByAclLine(IpAccessList acl, int index) {
     String type = firstNonNull(acl.getSourceType(), "filter");
     String name = firstNonNull(acl.getSourceName(), acl.getName());
     AclLine line = acl.getLines().get(index);
@@ -35,10 +36,10 @@ public final class TraceEvents {
     String description =
         String.format(
             "Flow denied by %s named %s, index %d: %s", type, name, index, lineDescription);
-    return new TraceEvent(description);
+    return TraceElement.of(description);
   }
 
-  public static TraceEvent defaultDeniedByIpAccessList(IpAccessList ipAccessList) {
+  public static TraceElement defaultDeniedByIpAccessList(IpAccessList ipAccessList) {
     String name = ipAccessList.getName();
     @Nullable String sourceName = ipAccessList.getSourceName();
     @Nullable String sourceType = ipAccessList.getSourceType();
@@ -46,10 +47,10 @@ public final class TraceEvents {
         sourceName != null
             ? String.format("Flow did not match '%s' named '%s'", sourceType, sourceName)
             : String.format("Flow did not match ACL named '%s'", name);
-    return new TraceEvent(description);
+    return TraceElement.of(description);
   }
 
-  public static TraceEvent permittedByNamedIpSpace(
+  public static TraceElement permittedByNamedIpSpace(
       Ip ip,
       String ipDescription,
       @Nullable IpSpaceMetadata ipSpaceMetadata,
@@ -63,7 +64,7 @@ public final class TraceEvents {
       type = IpSpace.class.getSimpleName();
       displayName = name;
     }
-    return new TraceEvent(
+    return TraceElement.of(
         String.format("%s %s permitted by '%s' named '%s'", ipDescription, ip, type, displayName));
   }
 }

@@ -1,8 +1,8 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.acl.TraceEvents.defaultDeniedByIpAccessList;
-import static org.batfish.datamodel.acl.TraceEvents.deniedByAclLine;
-import static org.batfish.datamodel.acl.TraceEvents.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
+import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -74,21 +74,22 @@ public final class AclTracer extends AclLineEvaluator {
     return new AclTrace(
         ImmutableList.copyOf(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(root))
             .stream()
-            .map(TraceNode::getTraceEvent)
+            .map(TraceNode::getTraceElement)
             .filter(Objects::nonNull)
+            .map(TraceEvent::of)
             .collect(ImmutableList.toImmutableList()));
   }
 
   public void recordAction(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
     if (action == LineAction.PERMIT) {
-      _tracer.setEvent(permittedByAclLine(ipAccessList, index));
+      _tracer.setTraceElement(permittedByAclLine(ipAccessList, index));
     } else {
-      _tracer.setEvent(deniedByAclLine(ipAccessList, index));
+      _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _tracer.setEvent(defaultDeniedByIpAccessList(ipAccessList));
+    _tracer.setTraceElement(defaultDeniedByIpAccessList(ipAccessList));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
