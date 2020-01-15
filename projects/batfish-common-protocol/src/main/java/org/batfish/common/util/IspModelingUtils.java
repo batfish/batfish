@@ -72,7 +72,8 @@ public final class IspModelingUtils {
   public static final String INTERNET_HOST_NAME = "internet";
   static final Ip INTERNET_OUT_ADDRESS = Ip.parse("240.254.254.1");
   static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
-  static final int INTERNET_OUT_SUBNET = 30;
+  // picking a value < 30 so that @enter(internet) is meaningful
+  static final int INTERNET_OUT_SUBNET = 29;
   private static final int ISP_INTERNET_SUBNET = 31;
 
   public static String getDefaultIspNodeName(Long asn) {
