@@ -1,9 +1,15 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +25,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -30,11 +37,16 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.PolicyRule.Action;
 import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 
@@ -70,16 +82,6 @@ final class Conversions {
 
     // if the condition of this policy rule does not match then fall through (no false statements)
     return new If(new Conjunction(conjuncts.build()), trueStatements.build(), ImmutableList.of());
-  }
-
-  /** Creates and stores a routing policy from the given statement in configuration object */
-  static void statementToRoutingPolicy(
-      Statement statement, Configuration c, String routingPolicyName) {
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(routingPolicyName)
-        .setStatements(ImmutableList.of(statement))
-        .build();
   }
 
   private static @Nonnull BooleanExpr toBooleanExpr(PolicyRuleMatch match) {
@@ -231,11 +233,45 @@ final class Conversions {
         ImmutableList.of());
   }
 
+  @VisibleForTesting
+  static List<Statement> makeEbgpExportTransformations(EbgpPeerGroupType ebgpOptions) {
+    ImmutableList.Builder<Statement> ret = ImmutableList.builder();
+    if (firstNonNull(ebgpOptions.getRemovePrivateAs(), Boolean.TRUE)) {
+      ret.add(RemovePrivateAs.toStaticStatement());
+    }
+    ExportNexthopMode nexthopMode =
+        firstNonNull(ebgpOptions.getExportNexthop(), ExportNexthopMode.RESOLVE);
+    if (nexthopMode == ExportNexthopMode.RESOLVE) {
+      // TODO: export mode resolve requires FIB lookup and is not yet supported. Self is equivalent
+      //  in directly-connected cases.
+      ret.add(new SetNextHop(SelfNextHop.getInstance()));
+    } else {
+      assert nexthopMode == ExportNexthopMode.USE_SELF;
+      ret.add(new SetNextHop(SelfNextHop.getInstance()));
+    }
+
+    return ret.build();
+  }
+
+  @VisibleForTesting
+  static List<Statement> makeEbgpImportTransformations(EbgpPeerGroupType ebgpOptions) {
+    ImmutableList.Builder<Statement> ret = ImmutableList.builder();
+    ImportNexthopMode nexthopMode =
+        firstNonNull(ebgpOptions.getImportNexthop(), ImportNexthopMode.ORIGINAL);
+    if (nexthopMode == ImportNexthopMode.USE_PEER) {
+      ret.add(new SetNextHop(BgpPeerAddressNextHop.getInstance()));
+    } else {
+      assert nexthopMode == ImportNexthopMode.ORIGINAL;
+      ret.add(new SetNextHop(UnchangedNextHop.getInstance()));
+    }
+    return ret.build();
+  }
+
   static RoutingPolicy computeAndSetPerPeerExportPolicy(
-      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
+      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, BgpPeerGroup peerGroup) {
     List<PolicyRule> exportPolicyRulesUsedByThisPeer =
         bgpVr.getExportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy().contains(peerGroupName))
+            .filter(ep -> ep.getUsedBy().contains(peerGroup.getName()))
             .collect(ImmutableList.toImmutableList());
 
     List<Statement> statementsForExportPolicyRules =
@@ -246,13 +282,12 @@ final class Conversions {
     // making a routing policy for the above statements so we can use it later in a CallExpr (we
     // need CallExpr to use in a Conjunction as list of If statements cannot be used in a
     // Conjunction)
-    String policyRulesRpNameForPeer =
-        getRoutingPolicyNameForExportPolicyRulesForPeer(vr.getName(), peer.getName());
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(policyRulesRpNameForPeer)
-        .setStatements(statementsForExportPolicyRules)
-        .build();
+    RoutingPolicy exportPolicyRules =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(getRoutingPolicyNameForExportPolicyRulesForPeer(vr.getName(), peer.getName()))
+            .setStatements(statementsForExportPolicyRules)
+            .build();
 
     // for a route to be exported by this peer, it has to match the common BGP export policy AND
     // "any" of the policy rules used by this peer
@@ -260,7 +295,22 @@ final class Conversions {
         new Conjunction(
             ImmutableList.of(
                 new CallExpr(generatedBgpCommonExportPolicyName(vr.getName())),
-                new CallExpr(policyRulesRpNameForPeer)));
+                new CallExpr(exportPolicyRules.getName())));
+
+    // After a route is chosen to be exported, we will transform it according to peer-group config
+    // and then accept it.
+    List<Statement> exportTransformations = ImmutableList.of();
+    if (peerGroup.getTypeAndOptions() instanceof EbgpPeerGroupType) {
+      // EbgpPeerGroupType contains configuration of how exported routes are transformed.
+      // Do this on accept.
+      exportTransformations =
+          makeEbgpExportTransformations((EbgpPeerGroupType) peerGroup.getTypeAndOptions());
+    }
+    List<Statement> transformAndAccept =
+        ImmutableList.<Statement>builder()
+            .addAll(exportTransformations)
+            .add(ExitAccept.toStaticStatement())
+            .build();
 
     return RoutingPolicy.builder()
         .setOwner(c)
@@ -269,22 +319,17 @@ final class Conversions {
             ImmutableList.of(
                 new If(
                     canMatchRedistributeAndAllExportRules,
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    transformAndAccept,
                     ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
         .build();
   }
 
-  @Nullable
   static RoutingPolicy computeAndSetPerPeerImportPolicy(
-      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
+      BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, BgpPeerGroup peerGroup) {
     List<PolicyRule> importPolicyRulesUsedByThisPeer =
         bgpVr.getImportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy().contains(peerGroupName))
+            .filter(ep -> ep.getUsedBy().contains(peerGroup.getName()))
             .collect(ImmutableList.toImmutableList());
-
-    if (importPolicyRulesUsedByThisPeer.isEmpty()) {
-      return null;
-    }
 
     List<Statement> statementsForImportPolicyRules =
         Stream.concat(
@@ -293,16 +338,42 @@ final class Conversions {
                 // above policy rules
                 Stream.of(Statements.ReturnFalse.toStaticStatement()))
             .collect(ImmutableList.toImmutableList());
+    RoutingPolicy importPolicyRules =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(getRoutingPolicyNameForImportPolicyRulesForPeer(vr.getName(), peer.getName()))
+            .setStatements(statementsForImportPolicyRules)
+            .build();
+
+    // Before importing a route, we will transform it according to peer-group config.
+    List<Statement> importTransformations = ImmutableList.of();
+    if (peerGroup.getTypeAndOptions() instanceof EbgpPeerGroupType) {
+      importTransformations =
+          makeEbgpImportTransformations((EbgpPeerGroupType) peerGroup.getTypeAndOptions());
+    }
+    List<Statement> transformAndImport =
+        ImmutableList.<Statement>builder()
+            .addAll(importTransformations)
+            .add(
+                new If(
+                    new CallExpr(importPolicyRules.getName()),
+                    ImmutableList.of(ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(ReturnFalse.toStaticStatement())))
+            .build();
 
     return RoutingPolicy.builder()
         .setOwner(c)
         .setName(generatedBgpPeerImportPolicyName(vr.getName(), peer.getName()))
-        .setStatements(statementsForImportPolicyRules)
+        .setStatements(transformAndImport)
         .build();
   }
 
   static String getRoutingPolicyNameForExportPolicyRulesForPeer(String vrName, String peerName) {
     return String.format("~BGP_POLICY_RULE_EXPORT_POLICY:%s:%s~", vrName, peerName);
+  }
+
+  static String getRoutingPolicyNameForImportPolicyRulesForPeer(String vrName, String peerName) {
+    return String.format("~BGP_POLICY_RULE_IMPORT_POLICY:%s:%s~", vrName, peerName);
   }
 
   private Conversions() {} // don't allow instantiation
