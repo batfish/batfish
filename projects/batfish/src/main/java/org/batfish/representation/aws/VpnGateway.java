@@ -25,7 +25,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -131,8 +130,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
                 addStaticRoute(cfgNode, toStaticRoute(pfx, NULL_INTERFACE_NAME));
               });
 
-      installRoutingPolicyAdvertiseStatic(
-          VGW_EXPORT_POLICY_NAME, cfgNode, originationSpace, new NetworkFactory());
+      installRoutingPolicyAdvertiseStatic(VGW_EXPORT_POLICY_NAME, cfgNode, originationSpace);
 
       RoutingPolicy.builder()
           .setName(VGW_IMPORT_POLICY_NAME)

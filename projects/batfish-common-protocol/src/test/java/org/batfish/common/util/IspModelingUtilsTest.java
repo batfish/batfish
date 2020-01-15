@@ -385,7 +385,7 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testCreateInternetNode() {
-    Configuration internet = IspModelingUtils.createInternetNode(new NetworkFactory());
+    Configuration internet = IspModelingUtils.createInternetNode();
     InterfaceAddress interfaceAddress =
         ConcreteInterfaceAddress.create(
             IspModelingUtils.INTERNET_OUT_ADDRESS, IspModelingUtils.INTERNET_OUT_SUBNET);
@@ -583,8 +583,7 @@ public class IspModelingUtilsTest {
         IspModelingUtils.installRoutingPolicyAdvertiseStatic(
             IspModelingUtils.EXPORT_POLICY_ON_INTERNET,
             internet,
-            new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)),
-            nf);
+            new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)));
 
     PrefixSpace prefixSpace = new PrefixSpace();
     prefixSpace.addPrefix(Prefix.ZERO);
@@ -616,7 +615,7 @@ public class IspModelingUtilsTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname("fakeIsp")
             .build();
-    RoutingPolicy ispRoutingPolicy = IspModelingUtils.getRoutingPolicyForIsp(isp, nf);
+    RoutingPolicy ispRoutingPolicy = IspModelingUtils.getRoutingPolicyForIsp(isp);
 
     RoutingPolicy expectedRoutingPolicy =
         nf.routingPolicyBuilder()

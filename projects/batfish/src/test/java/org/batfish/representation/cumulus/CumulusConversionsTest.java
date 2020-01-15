@@ -118,7 +118,7 @@ public final class CumulusConversionsTest {
 
   private Environment finalEnvironment(Statement statement, String network) {
     RoutingPolicy policy =
-        RoutingPolicy.builder(_nf).setOwner(_c).setStatements(ImmutableList.of(statement)).build();
+        _nf.routingPolicyBuilder().setOwner(_c).setStatements(ImmutableList.of(statement)).build();
     Environment env =
         Environment.builder(_c)
             .setOriginalRoute(
@@ -137,7 +137,7 @@ public final class CumulusConversionsTest {
 
   private boolean value(BooleanExpr expr, Environment env) {
     RoutingPolicy policy =
-        RoutingPolicy.builder(_nf)
+        _nf.routingPolicyBuilder()
             .setOwner(_c)
             .setStatements(
                 ImmutableList.of(

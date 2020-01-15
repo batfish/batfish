@@ -275,7 +275,7 @@ public final class IspModelingUtils {
       return ispConfigurations;
     }
 
-    Configuration internet = createInternetNode(nf);
+    Configuration internet = createInternetNode();
     connectIspsToInternet(internet, ispConfigurations, nf);
 
     return ImmutableMap.<String, Configuration>builder()
@@ -285,17 +285,16 @@ public final class IspModelingUtils {
   }
 
   @VisibleForTesting
-  static Configuration createInternetNode(NetworkFactory nf) {
-
-    Configuration.Builder cb = nf.configurationBuilder();
+  static Configuration createInternetNode() {
+    Configuration.Builder cb = Configuration.builder();
     Configuration internetConfiguration =
         cb.setHostname(INTERNET_HOST_NAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     internetConfiguration.setDeviceType(DeviceType.INTERNET);
     Vrf defaultVrf =
-        nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(internetConfiguration).build();
-    nf.interfaceBuilder()
+        Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(internetConfiguration).build();
+    Interface.builder()
         .setName(INTERNET_OUT_INTERFACE)
         .setOwner(internetConfiguration)
         .setVrf(defaultVrf)
@@ -313,7 +312,7 @@ public final class IspModelingUtils {
                     .build()));
 
     BgpProcess bgpProcess =
-        nf.bgpProcessBuilder()
+        BgpProcess.builder()
             .setRouterId(INTERNET_OUT_ADDRESS)
             .setVrf(defaultVrf)
             .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
@@ -328,8 +327,7 @@ public final class IspModelingUtils {
             installRoutingPolicyAdvertiseStatic(
                 EXPORT_POLICY_ON_INTERNET,
                 internetConfiguration,
-                new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)),
-                nf)));
+                new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)))));
     return internetConfiguration;
   }
 
@@ -487,14 +485,14 @@ public final class IspModelingUtils {
     }
 
     Configuration ispConfiguration =
-        nf.configurationBuilder()
+        Configuration.builder()
             .setHostname(ispInfo.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
     ispConfiguration.setRoutingPolicies(
-        ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getRoutingPolicyForIsp(ispConfiguration, nf)));
-    Vrf defaultVrf = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
+        ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getRoutingPolicyForIsp(ispConfiguration)));
+    Vrf defaultVrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
 
     ispInfo
         .getInterfaceAddresses()
@@ -572,8 +570,8 @@ public final class IspModelingUtils {
    * routes to {@code prefixSpace}. Returns the created policy.
    */
   public static RoutingPolicy installRoutingPolicyAdvertiseStatic(
-      String policyName, Configuration node, PrefixSpace prefixSpace, NetworkFactory nf) {
-    return nf.routingPolicyBuilder()
+      String policyName, Configuration node, PrefixSpace prefixSpace) {
+    return RoutingPolicy.builder()
         .setName(policyName)
         .setOwner(node)
         .setStatements(Collections.singletonList(getAdvertiseStaticStatement(prefixSpace)))
@@ -595,8 +593,8 @@ public final class IspModelingUtils {
 
   /** Creates a routing policy to export all BGP routes */
   @VisibleForTesting
-  static RoutingPolicy getRoutingPolicyForIsp(Configuration isp, NetworkFactory nf) {
-    return nf.routingPolicyBuilder()
+  static RoutingPolicy getRoutingPolicyForIsp(Configuration isp) {
+    return RoutingPolicy.builder()
         .setName(EXPORT_POLICY_ON_ISP)
         .setOwner(isp)
         .setStatements(

@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -33,11 +34,6 @@ public class NetworkFactory {
 
     public abstract T build();
 
-    protected long generateLong() {
-      checkState(_networkFactory != null, "Cannot generate a long value without a network factory");
-      return _networkFactory.generateLong(_outputClass);
-    }
-
     protected String generateName() {
       checkState(_networkFactory != null, "Cannot generate a name without a network factory");
       return _networkFactory.generateName(_outputClass);
@@ -54,7 +50,7 @@ public class NetworkFactory {
   }
 
   public IpAccessList.Builder aclBuilder() {
-    return new IpAccessList.Builder(this);
+    return IpAccessList.builder(() -> generateName(IpAccessList.class));
   }
 
   public BgpActivePeerConfig.Builder bgpNeighborBuilder() {
@@ -68,11 +64,11 @@ public class NetworkFactory {
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {
-    return BgpProcess.builder(this);
+    return BgpProcess.builder();
   }
 
   public Configuration.Builder configurationBuilder() {
-    return new Configuration.Builder(this);
+    return Configuration.builder(() -> generateName(Configuration.class));
   }
 
   private long generateLong(Class<?> forClass) {
@@ -89,27 +85,28 @@ public class NetworkFactory {
   }
 
   public Interface.Builder interfaceBuilder() {
-    return new Interface.Builder(this);
+    return Interface.builder(() -> generateName(Interface.class));
   }
 
   public OspfArea.Builder ospfAreaBuilder() {
-    return OspfArea.builder(this);
+    return OspfArea.builder(() -> generateLong(OspfArea.class));
   }
 
   /** Return an OSPF builder. Pre-defines required fields (e.g., reference bandwidth) */
   public OspfProcess.Builder ospfProcessBuilder() {
-    return OspfProcess.builder(this).setReferenceBandwidth(1e8);
+    return OspfProcess.builder(() -> generateName(OspfProcess.class)).setReferenceBandwidth(1e8);
   }
 
   public RipProcess.Builder ripProcessBuilder() {
-    return new RipProcess.Builder(this);
+    return RipProcess.builder();
   }
 
+  @VisibleForTesting
   public RoutingPolicy.Builder routingPolicyBuilder() {
-    return new RoutingPolicy.Builder(this);
+    return RoutingPolicy.builder(() -> generateName(RoutingPolicy.class));
   }
 
   public Vrf.Builder vrfBuilder() {
-    return new Vrf.Builder(this);
+    return Vrf.builder(() -> generateName(Vrf.class));
   }
 }
