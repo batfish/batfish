@@ -1,7 +1,9 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,12 +20,13 @@ public final class PolicyRule implements Serializable {
   private @Nullable Boolean _enable;
   private @Nullable PolicyRuleUpdateOrigin _updateOrigin;
   private @Nullable PolicyRuleUpdateMetric _updateMetric;
-  private @Nullable String _usedBy;
+  private @Nonnull Set<String> _usedBy;
   private @Nullable PolicyRuleMatchFromPeerSet _matchFromPeerSet;
   private @Nullable PolicyRuleMatchAddressPrefixSet _matchAddressPrefixSet;
 
   public PolicyRule(String name) {
     _name = name;
+    _usedBy = new HashSet<>(1);
   }
 
   public @Nonnull String getName() {
@@ -62,12 +65,12 @@ public final class PolicyRule implements Serializable {
     _enable = enable;
   }
 
-  public @Nullable String getUsedBy() {
+  public @Nonnull Set<String> getUsedBy() {
     return _usedBy;
   }
 
-  public void setUsedBy(@Nullable String usedBy) {
-    _usedBy = usedBy;
+  public void addUsedBy(@Nonnull String usedBy) {
+    _usedBy.add(usedBy);
   }
 
   public void setUpdateOrigin(@Nullable PolicyRuleUpdateOrigin updateOrigin) {

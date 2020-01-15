@@ -560,6 +560,7 @@ public final class CumulusConversions {
                 .setAllowLocalAsIn(
                     (ipv4UnicastAddressFamily != null
                         && (firstNonNull(ipv4UnicastAddressFamily.getAllowAsIn(), 0) > 0)))
+                .setAllowRemoteAsOut(true) // this is always true
                 .build())
         .setExportPolicy(exportRoutingPolicy.getName())
         .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
@@ -1070,6 +1071,7 @@ public final class CumulusConversions {
             AddressFamilyCapabilities.builder()
                 .setSendCommunity(true)
                 .setSendExtendedCommunity(true)
+                .setAllowRemoteAsOut(true) // this is always true
                 .build())
         .setRouteReflectorClient(
             firstNonNull(

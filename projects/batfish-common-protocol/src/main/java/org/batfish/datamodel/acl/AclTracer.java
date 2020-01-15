@@ -1,16 +1,13 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.acl.TraceEvents.defaultDeniedByIpAccessList;
-import static org.batfish.datamodel.acl.TraceEvents.deniedByAclLine;
-import static org.batfish.datamodel.acl.TraceEvents.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
+import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.graph.Traverser;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclLine;
@@ -37,7 +34,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   @VisibleForTesting static String SRC_IP_DESCRIPTION = "source IP";
 
-  public static AclTrace trace(
+  public static TraceNode trace(
       @Nonnull IpAccessList ipAccessList,
       @Nonnull Flow flow,
       @Nullable String srcInterface,
@@ -69,26 +66,20 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public @Nonnull AclTrace getTrace() {
-    TraceNode root = _tracer.getTrace();
-    return new AclTrace(
-        ImmutableList.copyOf(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(root))
-            .stream()
-            .map(TraceNode::getTraceEvent)
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList()));
+  public @Nonnull TraceNode getTrace() {
+    return _tracer.getTrace();
   }
 
   public void recordAction(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
     if (action == LineAction.PERMIT) {
-      _tracer.setEvent(permittedByAclLine(ipAccessList, index));
+      _tracer.setTraceElement(permittedByAclLine(ipAccessList, index));
     } else {
-      _tracer.setEvent(deniedByAclLine(ipAccessList, index));
+      _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _tracer.setEvent(defaultDeniedByIpAccessList(ipAccessList));
+    _tracer.setTraceElement(defaultDeniedByIpAccessList(ipAccessList));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {

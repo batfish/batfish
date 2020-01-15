@@ -1,6 +1,6 @@
 package org.batfish.datamodel.visitors;
 
-import static org.batfish.datamodel.acl.TraceEvents.permittedByNamedIpSpace;
+import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
 
 import java.util.Map;
 import org.batfish.datamodel.AbstractIpSpaceContainsIp;
@@ -51,7 +51,7 @@ public class IpSpaceTracer extends AbstractIpSpaceContainsIp {
       _tracer.newSubTrace();
       Boolean accepted = ipSpace.accept(this);
       if (accepted) {
-        _tracer.setEvent(permittedByNamedIpSpace(_ip, _ipDescription, metadata, name));
+        _tracer.setTraceElement(permittedByNamedIpSpace(_ip, _ipDescription, metadata, name));
         _tracer.endSubTrace();
       } else {
         _tracer.discardSubTrace();

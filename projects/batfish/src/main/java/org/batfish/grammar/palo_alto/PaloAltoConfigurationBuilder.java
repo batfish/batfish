@@ -120,6 +120,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_reflector_clientContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ebgpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgt_ibgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgte_export_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgte_import_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgte_remove_private_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_as_formatContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_default_local_preferenceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpro_reflector_cluster_idContext;
@@ -320,12 +323,16 @@ import org.batfish.representation.palo_alto.ApplicationGroup;
 import org.batfish.representation.palo_alto.BgpPeer;
 import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
 import org.batfish.representation.palo_alto.BgpPeerGroup;
+import org.batfish.representation.palo_alto.BgpPeerGroupTypeAndOptions;
 import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.DestinationTranslation;
 import org.batfish.representation.palo_alto.DynamicIpAndPort;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
@@ -678,7 +685,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPr_used_by(Pr_used_byContext ctx) {
-    _currentPolicyRule.setUsedBy(getText(ctx.name));
+    _currentPolicyRule.addUsedBy(getText(ctx.name));
   }
 
   @Override
@@ -824,6 +831,32 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterBgppgt_ebgp(Bgppgt_ebgpContext ctx) {
     _currentBgpPeerGroup.updateAndGetEbgpType();
+  }
+
+  @Override
+  public void exitBgppgte_export_nexthop(Bgppgte_export_nexthopContext ctx) {
+    BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
+    assert options instanceof EbgpPeerGroupType;
+    EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
+    ebgp.setExportNexthop(
+        ctx.RESOLVE() != null ? ExportNexthopMode.RESOLVE : ExportNexthopMode.USE_SELF);
+  }
+
+  @Override
+  public void exitBgppgte_import_nexthop(Bgppgte_import_nexthopContext ctx) {
+    BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
+    assert options instanceof EbgpPeerGroupType;
+    EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
+    ebgp.setImportNexthop(
+        ctx.ORIGINAL() != null ? ImportNexthopMode.ORIGINAL : ImportNexthopMode.USE_PEER);
+  }
+
+  @Override
+  public void exitBgppgte_remove_private_as(Bgppgte_remove_private_asContext ctx) {
+    BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
+    assert options instanceof EbgpPeerGroupType;
+    EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
+    ebgp.setRemotePrivateAs(toBoolean(ctx.yn));
   }
 
   @Override
