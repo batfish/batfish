@@ -8,6 +8,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.TraceElement;
 
 /** An event in an {@link AclTrace}. */
 @ParametersAreNonnullByDefault
@@ -24,6 +25,10 @@ public final class TraceEvent implements Serializable {
   private static TraceEvent jsonCreator(
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description) {
     return new TraceEvent(firstNonNull(description, ""));
+  }
+
+  public static TraceEvent of(TraceElement traceElement) {
+    return new TraceEvent(traceElement.toString());
   }
 
   @JsonProperty(PROP_DESCRIPTION)

@@ -6,18 +6,18 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.acl.TraceEvent;
+import org.batfish.datamodel.TraceElement;
 
 /** A node in a trace */
 @ParametersAreNonnullByDefault
 public final class TraceNode {
   /** Builder for {@link TraceNode}. */
   public static class Builder {
-    private @Nullable TraceEvent _traceEvent;
+    private @Nullable TraceElement _traceElement;
     private final List<TraceNode> _children = new ArrayList<>();
 
-    public Builder setTraceEvent(TraceEvent traceEvent) {
-      _traceEvent = traceEvent;
+    public Builder setTraceElement(TraceElement traceElement) {
+      _traceElement = traceElement;
       return this;
     }
 
@@ -27,15 +27,15 @@ public final class TraceNode {
     }
 
     public TraceNode build() {
-      return new TraceNode(_traceEvent, _children);
+      return new TraceNode(_traceElement, _children);
     }
   }
 
-  private final @Nullable TraceEvent _traceEvent;
+  private final @Nullable TraceElement _traceElement;
   private final @Nonnull List<TraceNode> _children;
 
-  TraceNode(@Nullable TraceEvent traceEvent, List<TraceNode> children) {
-    _traceEvent = traceEvent;
+  TraceNode(@Nullable TraceElement traceElement, List<TraceNode> children) {
+    _traceElement = traceElement;
     _children = ImmutableList.copyOf(children);
   }
 
@@ -49,7 +49,7 @@ public final class TraceNode {
   }
 
   @Nonnull
-  public TraceEvent getTraceEvent() {
-    return _traceEvent;
+  public TraceElement getTraceElement() {
+    return _traceElement;
   }
 }
