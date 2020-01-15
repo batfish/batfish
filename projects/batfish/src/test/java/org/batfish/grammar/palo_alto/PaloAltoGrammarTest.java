@@ -170,6 +170,9 @@ import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
+import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.NatRule;
@@ -627,7 +630,7 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getExportPolicyRules(), hasKey("export1"));
     PolicyRule export1 = bgp.getExportPolicyRules().get("export1");
     assertThat(export1.getAction(), equalTo(Action.ALLOW));
-    assertThat(export1.getUsedBy(), equalTo("pg1"));
+    assertThat(export1.getUsedBy(), contains("pg1"));
     assertThat(export1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(IGP)));
     assertThat(export1.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
@@ -638,7 +641,7 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getImportPolicyRules(), hasKey("import1"));
     PolicyRule import1 = bgp.getImportPolicyRules().get("import1");
     assertThat(import1.getAction(), equalTo(Action.ALLOW));
-    assertThat(import1.getUsedBy(), equalTo("pg2"));
+    assertThat(import1.getUsedBy(), containsInAnyOrder("pg2", "pg4"));
     assertThat(import1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(OriginType.EGP)));
     assertThat(import1.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
@@ -656,7 +659,7 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getImportPolicyRules(), hasKey("import2"));
     PolicyRule import2 = bgp.getImportPolicyRules().get("import2");
     assertThat(import2.getAction(), equalTo(Action.DENY));
-    assertThat(import2.getUsedBy(), equalTo("pg3"));
+    assertThat(import2.getUsedBy(), contains("pg3"));
     assertThat(import2.getEnable(), equalTo(true));
     assertThat(import2.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
@@ -737,10 +740,18 @@ public final class PaloAltoGrammarTest {
     assertThat(bgp.getRoutingOptions().getGracefulRestartEnable(), equalTo(Boolean.FALSE));
     assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.5")));
 
-    assertThat(bgp.getPeerGroups().keySet(), contains("PG"));
+    assertThat(bgp.getPeerGroups().keySet(), containsInAnyOrder("PG", "EBGP"));
     BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
     assertThat(pg.getEnable(), equalTo(true));
     assertThat(pg.getTypeAndOptions(), instanceOf(IbgpPeerGroupType.class));
+
+    BgpPeerGroup ebgp = bgp.getPeerGroups().get("EBGP");
+    assertThat(ebgp.getEnable(), equalTo(true));
+    assertThat(ebgp.getTypeAndOptions(), instanceOf(EbgpPeerGroupType.class));
+    EbgpPeerGroupType ebgpOptions = (EbgpPeerGroupType) ebgp.getTypeAndOptions();
+    assertThat(ebgpOptions.getExportNexthop(), equalTo(ExportNexthopMode.USE_SELF));
+    assertThat(ebgpOptions.getImportNexthop(), equalTo(ImportNexthopMode.USE_PEER));
+    assertThat(ebgpOptions.getRemotePrivateAs(), equalTo(false));
 
     assertThat(pg.getPeers().keySet(), contains("PEER"));
     BgpPeer peer = pg.getOrCreatePeerGroup("PEER");

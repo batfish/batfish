@@ -82,6 +82,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.routing_policy.Common;
@@ -835,29 +836,32 @@ public final class CumulusConversionsTest {
 
     {
       // address family is null
-      assertFalse(
-          convertIpv4UnicastAddressFamily(null, true, policy, null)
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn());
+      AddressFamilyCapabilities capabilities =
+          convertIpv4UnicastAddressFamily(null, true, policy, null).getAddressFamilyCapabilities();
+      assertFalse(capabilities.getAllowLocalAsIn());
+      // Counter-part to allow-as-in. Always true
+      assertTrue(capabilities.getAllowRemoteAsOut());
     }
 
     {
       // address family is non-null but allowasin is not set
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
-      assertFalse(
-          convertIpv4UnicastAddressFamily(af, true, policy, null)
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn());
+      AddressFamilyCapabilities capabilities =
+          convertIpv4UnicastAddressFamily(af, true, policy, null).getAddressFamilyCapabilities();
+      assertFalse(capabilities.getAllowLocalAsIn());
+      // Counter-part to allow-as-in. Always true
+      assertTrue(capabilities.getAllowRemoteAsOut());
     }
 
     {
       // address family is non-null and allowasin is  set
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setAllowAsIn(5);
-      assertTrue(
-          convertIpv4UnicastAddressFamily(af, true, policy, null)
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn());
+      AddressFamilyCapabilities capabilities =
+          convertIpv4UnicastAddressFamily(af, true, policy, null).getAddressFamilyCapabilities();
+      assertTrue(capabilities.getAllowLocalAsIn());
+      // Counter-part to allow-as-in. Always true
+      assertTrue(capabilities.getAllowRemoteAsOut());
     }
   }
 

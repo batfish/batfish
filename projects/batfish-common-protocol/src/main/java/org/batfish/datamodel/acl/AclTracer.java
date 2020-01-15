@@ -1,13 +1,13 @@
 package org.batfish.datamodel.acl;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
+import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.graph.Traverser;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclLine;
@@ -30,8 +30,11 @@ import org.batfish.datamodel.visitors.IpSpaceTracer;
  * encountering traceable classes.
  */
 public final class AclTracer extends AclLineEvaluator {
+  @VisibleForTesting static String DEST_IP_DESCRIPTION = "destination IP";
 
-  public static AclTrace trace(
+  @VisibleForTesting static String SRC_IP_DESCRIPTION = "source IP";
+
+  public static TraceNode trace(
       @Nonnull IpAccessList ipAccessList,
       @Nonnull Flow flow,
       @Nullable String srcInterface,
@@ -63,38 +66,20 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public @Nonnull AclTrace getTrace() {
-    TraceNode root = _tracer.getTrace();
-    return new AclTrace(
-        ImmutableList.copyOf(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(root))
-            .stream()
-            .map(TraceNode::getTraceEvent)
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList()));
+  public @Nonnull TraceNode getTrace() {
+    return _tracer.getTrace();
   }
 
-  public void recordAction(
-      @Nonnull IpAccessList ipAccessList, int index, @Nonnull AclLine line, LineAction action) {
-    String lineDescription = firstNonNull(line.getName(), line.toString());
-    String type = firstNonNull(ipAccessList.getSourceType(), "filter");
-    String name = firstNonNull(ipAccessList.getSourceName(), ipAccessList.getName());
-    String actionStr = action == LineAction.PERMIT ? "permitted" : "denied";
-    String description =
-        String.format(
-            "Flow %s by %s named %s, index %d: %s", actionStr, type, name, index, lineDescription);
+  public void recordAction(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
     if (action == LineAction.PERMIT) {
-      _tracer.setEvent(
-          new PermittedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      _tracer.setTraceElement(permittedByAclLine(ipAccessList, index));
     } else {
-      _tracer.setEvent(
-          new DeniedByAclLine(description, index, lineDescription, ipAccessList.getName()));
+      _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
     }
   }
 
   public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _tracer.setEvent(
-        new DefaultDeniedByIpAccessList(
-            ipAccessList.getName(), ipAccessList.getSourceName(), ipAccessList.getSourceType()));
+    _tracer.setTraceElement(defaultDeniedByIpAccessList(ipAccessList));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -287,7 +272,7 @@ public final class AclTracer extends AclLineEvaluator {
       AclLine line = lines.get(i);
       LineAction action = visit(line);
       if (action != null) {
-        recordAction(ipAccessList, i, line, action);
+        recordAction(ipAccessList, i, action);
         _tracer.endSubTrace();
         return action == LineAction.PERMIT;
       }
@@ -308,12 +293,12 @@ public final class AclTracer extends AclLineEvaluator {
 
   private boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, "destination IP", _ipSpaceMetadata, _namedIpSpaces));
+        new IpSpaceTracer(_tracer, ip, DEST_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces));
   }
 
   private boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, "source IP", _ipSpaceMetadata, _namedIpSpaces));
+        new IpSpaceTracer(_tracer, ip, SRC_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces));
   }
 
   @Override

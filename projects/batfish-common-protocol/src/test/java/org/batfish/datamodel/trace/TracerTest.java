@@ -4,30 +4,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 
-import org.batfish.datamodel.acl.TraceEvent;
+import org.batfish.datamodel.TraceElement;
 import org.junit.Test;
 
 /** Test for {@link Tracer}. */
 public class TracerTest {
-  private static final class TestTraceEvent implements TraceEvent {
-    @Override
-    public String getDescription() {
-      return null;
-    }
-  }
-
-  private static TraceEvent E1 = new TestTraceEvent();
-  private static TraceEvent E2 = new TestTraceEvent();
+  private static TraceElement E1 = TraceElement.of("1");
+  private static TraceElement E2 = TraceElement.of("2");
 
   @Test
   public void testBasic() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    tracer.setEvent(E1);
+    tracer.setTraceElement(E1);
     tracer.endSubTrace();
 
     TraceNode trace = tracer.getTrace();
-    assertEquals(E1, trace.getTraceEvent());
+    assertEquals(E1, trace.getTraceElement());
     assertThat(trace.getChildren(), empty());
   }
 
@@ -35,20 +28,20 @@ public class TracerTest {
   public void testSubTrace() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    tracer.setEvent(E1);
+    tracer.setTraceElement(E1);
 
     tracer.newSubTrace();
-    tracer.setEvent(E2);
+    tracer.setTraceElement(E2);
     tracer.endSubTrace();
 
     tracer.endSubTrace();
 
     TraceNode trace = tracer.getTrace();
-    assertEquals(E1, trace.getTraceEvent());
+    assertEquals(E1, trace.getTraceElement());
     assertEquals(1, trace.getChildren().size());
 
     TraceNode subTrace = trace.getChildren().get(0);
-    assertEquals(E2, subTrace.getTraceEvent());
+    assertEquals(E2, subTrace.getTraceElement());
     assertThat(subTrace.getChildren(), empty());
   }
 
@@ -56,16 +49,16 @@ public class TracerTest {
   public void testDiscardSubTrace() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    tracer.setEvent(E1);
+    tracer.setTraceElement(E1);
 
     tracer.newSubTrace();
-    tracer.setEvent(E2);
+    tracer.setTraceElement(E2);
     tracer.discardSubTrace();
 
     tracer.endSubTrace();
 
     TraceNode trace = tracer.getTrace();
-    assertEquals(E1, trace.getTraceEvent());
+    assertEquals(E1, trace.getTraceElement());
     assertThat(trace.getChildren(), empty());
   }
 }
