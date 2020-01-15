@@ -6,7 +6,6 @@ import java.util.Stack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.TraceEvent;
 
 /**
  * A class for building Trace trees. The tracer tracks a current trace, which is updated by creating
@@ -30,9 +29,7 @@ public final class Tracer {
     return _trace;
   }
 
-  /**
-   * Set the {@link TraceElement} for the current trace node. Must not already be set.
-   */
+  /** Set the {@link TraceElement} for the current trace node. Must not already be set. */
   public void setTraceElement(@Nonnull TraceElement traceElement) {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
     TraceNode.Builder currentNode = _nodeStack.peek();
