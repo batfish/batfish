@@ -43,7 +43,7 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Trace",
-          "schema" : "AclTrace"
+          "schema" : "TraceTree"
         }
       ],
       "textDesc" : "Filter ${Filter_Name} on node ${Node} will ${Action} flow ${Flow} at line ${Line_Content}"
@@ -54,45 +54,6 @@
           "id" : "node-host1",
           "name" : "host1"
         },
-        "Filter_Name" : "filter::OUTPUT",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 80,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "ingressNode" : "host1",
-          "ingressVrf" : "default",
-          "ipProtocol" : "TCP",
-          "packetLength" : 512,
-          "srcIp" : "2.128.0.101",
-          "srcPort" : 49152,
-          "state" : "NEW",
-          "tag" : "tag",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "description" : "Flow permitted by filter named filter::OUTPUT, index 0: default"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
-          "id" : "node-host1",
-          "name" : "host1"
-        },
         "Filter_Name" : "filter::INPUT",
         "Flow" : {
           "dscp" : 0,
@@ -120,30 +81,33 @@
         "Action" : "DENY",
         "Line_Content" : "default",
         "Trace" : {
-          "events" : [
-            {
-              "description" : "Flow denied by filter named filter::INPUT, index 2: default"
-            }
-          ]
+          "traceElement" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "Flow denied by filter named filter::INPUT, index 2: default"
+              }
+            ]
+          }
         }
       },
       {
         "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
+          "id" : "node-host1",
+          "name" : "host1"
         },
-        "Filter_Name" : "filter::FORWARD",
+        "Filter_Name" : "filter::OUTPUT",
         "Flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
           "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "ingressNode" : "host2",
+          "ingressNode" : "host1",
           "ingressVrf" : "default",
           "ipProtocol" : "TCP",
           "packetLength" : 512,
-          "srcIp" : "2.128.1.101",
+          "srcIp" : "2.128.0.101",
           "srcPort" : 49152,
           "state" : "NEW",
           "tag" : "tag",
@@ -159,11 +123,14 @@
         "Action" : "PERMIT",
         "Line_Content" : "default",
         "Trace" : {
-          "events" : [
-            {
-              "description" : "Flow permitted by filter named filter::FORWARD, index 0: default"
-            }
-          ]
+          "traceElement" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "Flow permitted by filter named filter::OUTPUT, index 0: default"
+              }
+            ]
+          }
         }
       },
       {
@@ -198,50 +165,14 @@
         "Action" : "PERMIT",
         "Line_Content" : "default",
         "Trace" : {
-          "events" : [
-            {
-              "description" : "Flow permitted by filter named filter::OUTPUT, index 1: default"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
-          "id" : "node-host1",
-          "name" : "host1"
-        },
-        "Filter_Name" : "filter::FORWARD",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 80,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "ingressNode" : "host1",
-          "ingressVrf" : "default",
-          "ipProtocol" : "TCP",
-          "packetLength" : 512,
-          "srcIp" : "2.128.0.101",
-          "srcPort" : 49152,
-          "state" : "NEW",
-          "tag" : "tag",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "description" : "Flow permitted by filter named filter::FORWARD, index 0: default"
-            }
-          ]
+          "traceElement" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "Flow permitted by filter named filter::OUTPUT, index 1: default"
+              }
+            ]
+          }
         }
       },
       {
@@ -276,11 +207,98 @@
         "Action" : "DENY",
         "Line_Content" : "default",
         "Trace" : {
-          "events" : [
-            {
-              "description" : "Flow denied by filter named filter::INPUT, index 1: default"
-            }
-          ]
+          "traceElement" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "Flow denied by filter named filter::INPUT, index 1: default"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "Node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "Filter_Name" : "filter::FORWARD",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 80,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "TCP",
+          "packetLength" : 512,
+          "srcIp" : "2.128.0.101",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "tag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Content" : "default",
+        "Trace" : {
+          "traceElement" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "Flow permitted by filter named filter::FORWARD, index 0: default"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "Filter_Name" : "filter::FORWARD",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 80,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "TCP",
+          "packetLength" : 512,
+          "srcIp" : "2.128.1.101",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "tag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Content" : "default",
+        "Trace" : {
+          "traceElement" : {
+            "fragments" : [
+              {
+                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                "text" : "Flow permitted by filter named filter::FORWARD, index 0: default"
+              }
+            ]
+          }
         }
       }
     ],
