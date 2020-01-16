@@ -221,6 +221,7 @@ a_loopback
   (
     l_clag
     | l_ip_address
+    | l_vxlan
     | NEWLINE
   )
 ;
@@ -238,6 +239,19 @@ lc_vxlan_anycast_ip
 l_ip_address
 :
   IP ADDRESS address = interface_address NEWLINE
+;
+
+l_vxlan
+:
+   VXLAN
+   (
+     lv_local_tunnelip
+   )
+;
+
+lv_local_tunnelip
+:
+   LOCAL_TUNNELIP ip = ip_address NEWLINE
 ;
 
 a_ptp

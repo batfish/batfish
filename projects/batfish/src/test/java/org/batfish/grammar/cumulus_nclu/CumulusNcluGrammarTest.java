@@ -1136,6 +1136,7 @@ public final class CumulusNcluGrammarTest {
         contains(
             ConcreteInterfaceAddress.parse("10.0.0.1/32"),
             ConcreteInterfaceAddress.parse("10.0.1.1/24")));
+    assertThat(vc.getLoopback().getVxlanLocalTunnelip(), equalTo(Ip.parse("10.11.11.11")));
   }
 
   @Test

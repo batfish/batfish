@@ -16,6 +16,7 @@ public class Loopback implements Serializable {
   private @Nullable Ip _clagVxlanAnycastIp;
   private boolean _configured;
   private @Nullable Double _bandwidth;
+  private @Nullable Ip _vxlanLocalTunnelip;
 
   public Loopback() {
     _addresses = new LinkedList<>();
@@ -57,5 +58,14 @@ public class Loopback implements Serializable {
 
   public void setAlias(@Nullable String alias) {
     _alias = alias;
+  }
+
+  @Nullable
+  public Ip getVxlanLocalTunnelip() {
+    return _vxlanLocalTunnelip;
+  }
+
+  public void setVxlanLocalTunnelip(@Nullable Ip vxlanLocalTunnelip) {
+    _vxlanLocalTunnelip = vxlanLocalTunnelip;
   }
 }
