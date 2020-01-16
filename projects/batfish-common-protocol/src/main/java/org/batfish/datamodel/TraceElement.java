@@ -21,8 +21,6 @@ import org.batfish.vendor.VendorStructureId;
 /** Metadata used to create human-readable traces. */
 @ParametersAreNonnullByDefault
 public final class TraceElement implements Serializable {
-  public static final TraceElement AUTO_GENERATE_LEGACY_TRACE = TraceElement.of("~AUTO~");
-
   private static final String PROP_FRAGMENTS = "fragments";
   private static final String PROP_TEXT = "text";
   private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
