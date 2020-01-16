@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -445,19 +444,10 @@ public class AclTracerTest {
             hasChildren(
                 contains(
                     allOf(
-                        hasTraceElement(nullValue()), // and conjunct
-                        hasChildren(
-                            contains(
-                                allOf(
-                                    hasTraceElement(permittedByAclLine(aclIndirect1, 0)),
-                                    hasChildren(empty()))))),
+                        hasTraceElement(permittedByAclLine(aclIndirect1, 0)), hasChildren(empty())),
                     allOf(
-                        hasTraceElement(nullValue()), // and conjunct
-                        hasChildren(
-                            contains(
-                                allOf(
-                                    hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
-                                    hasChildren(empty())))))))));
+                        hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
+                        hasChildren(empty()))))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(

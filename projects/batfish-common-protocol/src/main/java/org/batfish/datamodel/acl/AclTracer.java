@@ -313,14 +313,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   @Override
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return andMatchExpr.getConjuncts().stream()
-        .allMatch(
-            c -> {
-              _tracer.newSubTrace();
-              Boolean result = c.accept(this);
-              _tracer.endSubTrace();
-              return result;
-            });
+    return andMatchExpr.getConjuncts().stream().allMatch(this::visit);
   }
 
   @Override
