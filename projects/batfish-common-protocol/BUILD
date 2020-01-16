@@ -118,6 +118,8 @@ java_library(
     deps = [
         ":common",
         ":recovery_grammar",
+        ":recovery_inline_alts_grammar",
+        ":recovery_rule_alts_grammar",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
@@ -141,6 +143,8 @@ junit_tests(
         ":common",
         ":common_testlib",
         ":recovery_grammar",
+        ":recovery_inline_alts_grammar",
+        ":recovery_rule_alts_grammar",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
@@ -197,6 +201,82 @@ java -cp $(location @antlr4_tool//jar) \
        $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryLexer.g4) \
        $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryParser.g4) \
     -package org.batfish.grammar.recovery \
+    -encoding UTF-8 \
+    -Werror \
+    -o $(@D)""",
+    tools = ["@antlr4_tool//jar"],
+)
+
+java_library(
+    name = "recovery_inline_alts_grammar",
+    srcs = [
+        ":RecoveryInlineAltsLexer.java",
+        ":RecoveryInlineAltsParser.java",
+        ":RecoveryInlineAltsParserBaseListener.java",
+        ":RecoveryInlineAltsParserListener.java",
+    ],
+    deps = [
+        ":parser_common",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+genrule(
+    name = "recovery_inline_alts_grammar_src",
+    srcs = glob([
+        "src/test/antlr4/org/batfish/grammar/recovery_inline_alts/*.g4",
+    ]),
+    outs = [
+        "RecoveryInlineAltsLexer.java",
+        "RecoveryInlineAltsParser.java",
+        "RecoveryInlineAltsParserBaseListener.java",
+        "RecoveryInlineAltsParserListener.java",
+    ],
+    cmd = """
+java -cp $(location @antlr4_tool//jar) \
+    org.antlr.v4.Tool \
+    -Xexact-output-dir \
+       $(location src/test/antlr4/org/batfish/grammar/recovery_inline_alts/RecoveryInlineAltsLexer.g4) \
+       $(location src/test/antlr4/org/batfish/grammar/recovery_inline_alts/RecoveryInlineAltsParser.g4) \
+    -package org.batfish.grammar.recovery_inline_alts \
+    -encoding UTF-8 \
+    -Werror \
+    -o $(@D)""",
+    tools = ["@antlr4_tool//jar"],
+)
+
+java_library(
+    name = "recovery_rule_alts_grammar",
+    srcs = [
+        ":RecoveryRuleAltsLexer.java",
+        ":RecoveryRuleAltsParser.java",
+        ":RecoveryRuleAltsParserBaseListener.java",
+        ":RecoveryRuleAltsParserListener.java",
+    ],
+    deps = [
+        ":parser_common",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+genrule(
+    name = "recovery_rule_alts_grammar_src",
+    srcs = glob([
+        "src/test/antlr4/org/batfish/grammar/recovery_rule_alts/*.g4",
+    ]),
+    outs = [
+        "RecoveryRuleAltsLexer.java",
+        "RecoveryRuleAltsParser.java",
+        "RecoveryRuleAltsParserBaseListener.java",
+        "RecoveryRuleAltsParserListener.java",
+    ],
+    cmd = """
+java -cp $(location @antlr4_tool//jar) \
+    org.antlr.v4.Tool \
+    -Xexact-output-dir \
+       $(location src/test/antlr4/org/batfish/grammar/recovery_rule_alts/RecoveryRuleAltsLexer.g4) \
+       $(location src/test/antlr4/org/batfish/grammar/recovery_rule_alts/RecoveryRuleAltsParser.g4) \
+    -package org.batfish.grammar.recovery_rule_alts \
     -encoding UTF-8 \
     -Werror \
     -o $(@D)""",
