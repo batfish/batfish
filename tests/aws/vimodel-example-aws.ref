@@ -315,7 +315,7 @@
           }
         },
         "ipAccessLists" : {
-          "~EGRESS-default-sg-3dfb3140~" : {
+          "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -335,9 +335,9 @@
                 "name" : "sg-3dfb3140 - default [egress] 0"
               }
             ],
-            "name" : "~EGRESS-default-sg-3dfb3140~"
+            "name" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
           },
-          "~INGRESS-default-sg-3dfb3140~" : {
+          "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -357,14 +357,14 @@
                 "name" : "sg-3dfb3140 - default [ingress] 0"
               }
             ],
-            "name" : "~INGRESS-default-sg-3dfb3140~"
+            "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
           },
           "~SECURITY_GROUP_EGRESS_ACL~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS-default-sg-3dfb3140~",
-                "name" : "Permitted by security group 'default'"
+                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
+                "name" : "Security Group default"
               }
             ],
             "name" : "~SECURITY_GROUP_EGRESS_ACL~"
@@ -373,8 +373,8 @@
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~INGRESS-default-sg-3dfb3140~",
-                "name" : "Permitted by security group 'default'"
+                "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
+                "name" : "Security Group default"
               }
             ],
             "name" : "~SECURITY_GROUP_INGRESS_ACL~"
@@ -4646,7 +4646,7 @@
           }
         },
         "ipAccessLists" : {
-          "~EGRESS-default-sg-55510831~" : {
+          "~EGRESS~SECURITY-GROUP~default~sg-55510831~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4666,9 +4666,9 @@
                 "name" : "sg-55510831 - default [egress] 0"
               }
             ],
-            "name" : "~EGRESS-default-sg-55510831~"
+            "name" : "~EGRESS~SECURITY-GROUP~default~sg-55510831~"
           },
-          "~INGRESS-default-sg-55510831~" : {
+          "~INGRESS~SECURITY-GROUP~default~sg-55510831~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4698,14 +4698,14 @@
                 "name" : "sg-55510831 - default [ingress] 0"
               }
             ],
-            "name" : "~INGRESS-default-sg-55510831~"
+            "name" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~"
           },
           "~SECURITY_GROUP_EGRESS_ACL~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS-default-sg-55510831~",
-                "name" : "Permitted by security group 'default'"
+                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-55510831~",
+                "name" : "Security Group default"
               }
             ],
             "name" : "~SECURITY_GROUP_EGRESS_ACL~"
@@ -4714,8 +4714,8 @@
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~INGRESS-default-sg-55510831~",
-                "name" : "Permitted by security group 'default'"
+                "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~",
+                "name" : "Security Group default"
               }
             ],
             "name" : "~SECURITY_GROUP_INGRESS_ACL~"
