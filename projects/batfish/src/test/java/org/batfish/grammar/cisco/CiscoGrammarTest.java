@@ -5087,12 +5087,12 @@ public final class CiscoGrammarTest {
     assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
     Transformation destTransformation =
-        when(and(matchIface, permittedByAcl(nat2AclName)))
+        when(and(permittedByAcl(nat2AclName), matchIface))
             .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
             .build();
 
     Transformation outTransformation =
-        when(and(matchIface, permittedByAcl(nat1AclName)))
+        when(and(permittedByAcl(nat1AclName), matchIface))
             .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
             .setAndThen(destTransformation)
             .setOrElse(destTransformation)
@@ -5186,10 +5186,10 @@ public final class CiscoGrammarTest {
 
     // Check that the inside-to-outside transformation evaluates the static NAT first
     Transformation outTransformation =
-        when(and(matchIface, matchSrc(staticNatLocal)))
+        when(and(matchSrc(staticNatLocal), matchIface))
             .apply(shiftSourceIp(staticNatGlobal))
             .setOrElse(
-                when(and(matchIface, permittedByAcl(dynamicNatAcl)))
+                when(and(permittedByAcl(dynamicNatAcl), matchIface))
                     .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
                     .build())
             .build();
@@ -5718,8 +5718,7 @@ public final class CiscoGrammarTest {
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
 
     MatchHeaderSpace matchSourceSubnet =
-        matchSrc(
-            new IpSpaceReference("source-subnet", "Match network object-group: 'source-subnet'"));
+        matchSrc(new IpSpaceReference("source-subnet", "Match network object: 'source-subnet'"));
     MatchHeaderSpace matchSourceGroup =
         matchSrc(
             new IpSpaceReference("source-group", "Match network object-group: 'source-group'"));
@@ -5740,7 +5739,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("inside"), matchSourceSubnet))
+            when(and(matchSourceSubnet, matchSrcInterface("inside")))
                 .apply(assignSourceRange)
                 .build()));
 
@@ -5753,7 +5752,7 @@ public final class CiscoGrammarTest {
         twice,
         equalTo(
             when(and(
-                    and(matchSrcInterface("inside"), matchSourceGroup),
+                    and(matchSourceGroup, matchSrcInterface("inside")),
                     matchDst(mappedDestination)))
                 .apply(ImmutableList.of(assignSourceRange, shiftDestinationIp(realDestination)))
                 .build()));
@@ -5861,7 +5860,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("inside"), matchSrc(realSourceHost)))
+            when(and(matchSrc(realSourceHost), matchSrcInterface("inside")))
                 .apply(shiftSourceIp(mappedSourceHost))
                 .build()));
 
@@ -5882,7 +5881,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("outside"), matchSrc(Prefix.ZERO)))
+            when(and(matchSrc(Prefix.ZERO), matchSrcInterface("outside")))
                 .apply(shiftSourceIp(Prefix.ZERO))
                 .build()));
 
@@ -5894,7 +5893,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("inside"), matchSrc(realSourceSubnet)))
+            when(and(matchSrc(realSourceSubnet), matchSrcInterface("inside")))
                 .apply(shiftSourceIp(mappedSourceSubnet))
                 .build()));
 
@@ -5927,7 +5926,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchDst(mappedDestHost), matchSrc(realSourceSubnet)))
+            when(and(matchSrc(realSourceSubnet), matchDst(mappedDestHost)))
                 .apply(
                     ImmutableList.of(
                         shiftSourceIp(mappedSourceSubnet), shiftDestinationIp(realDestHost)))
@@ -5938,7 +5937,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrc(realDestHost), matchDst(mappedSourceSubnet)))
+            when(and(matchDst(mappedSourceSubnet), matchSrc(realDestHost)))
                 .apply(
                     ImmutableList.of(
                         shiftDestinationIp(realSourceSubnet), shiftSourceIp(mappedDestHost)))
@@ -5965,7 +5964,7 @@ public final class CiscoGrammarTest {
         twice,
         equalTo(
             when(and(
-                    and(matchSrcInterface("inside"), matchSrc(realSource)),
+                    and(matchSrc(realSource), matchSrcInterface("inside")),
                     matchDst(mappedDestination)))
                 .apply(
                     ImmutableList.of(

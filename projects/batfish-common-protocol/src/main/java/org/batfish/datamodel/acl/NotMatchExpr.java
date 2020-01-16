@@ -29,11 +29,6 @@ public class NotMatchExpr extends AclLineMatchExpr {
   }
 
   @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return _operand.compareTo(((NotMatchExpr) o)._operand);
-  }
-
-  @Override
   protected boolean exprEquals(Object o) {
     return Objects.equals(_operand, ((NotMatchExpr) o)._operand);
   }

@@ -30,11 +30,6 @@ public class MatchHeaderSpace extends AclLineMatchExpr {
   }
 
   @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return _headerSpace.compareTo(((MatchHeaderSpace) o)._headerSpace);
-  }
-
-  @Override
   protected boolean exprEquals(Object o) {
     return Objects.equals(_headerSpace, ((MatchHeaderSpace) o)._headerSpace);
   }

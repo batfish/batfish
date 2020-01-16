@@ -28,11 +28,6 @@ public class PermittedByAcl extends AclLineMatchExpr {
   }
 
   @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return _aclName.compareTo(((PermittedByAcl) o)._aclName);
-  }
-
-  @Override
   protected boolean exprEquals(Object o) {
     return _aclName.equals(((PermittedByAcl) o)._aclName);
   }

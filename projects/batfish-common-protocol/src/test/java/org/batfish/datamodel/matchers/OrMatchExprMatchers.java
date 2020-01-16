@@ -1,6 +1,6 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.SortedSet;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -14,7 +14,7 @@ public class OrMatchExprMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the OrMatchExpr's
    * disjuncts.
    */
-  public static HasDisjuncts hasDisjuncts(Matcher<? super SortedSet<AclLineMatchExpr>> subMatcher) {
+  public static HasDisjuncts hasDisjuncts(Matcher<? super List<AclLineMatchExpr>> subMatcher) {
     return new HasDisjuncts(subMatcher);
   }
 

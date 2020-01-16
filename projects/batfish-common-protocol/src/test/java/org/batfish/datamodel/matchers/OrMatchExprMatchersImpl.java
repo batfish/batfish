@@ -1,6 +1,6 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.SortedSet;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -9,14 +9,14 @@ import org.hamcrest.Matcher;
 
 public class OrMatchExprMatchersImpl {
 
-  static class HasDisjuncts extends FeatureMatcher<OrMatchExpr, SortedSet<AclLineMatchExpr>> {
+  static class HasDisjuncts extends FeatureMatcher<OrMatchExpr, List<AclLineMatchExpr>> {
 
-    public HasDisjuncts(@Nonnull Matcher<? super SortedSet<AclLineMatchExpr>> subMatcher) {
+    public HasDisjuncts(@Nonnull Matcher<? super List<AclLineMatchExpr>> subMatcher) {
       super(subMatcher, "An OrMatchExpr with disjuncts:", "disjuncts");
     }
 
     @Override
-    protected SortedSet<AclLineMatchExpr> featureValueOf(OrMatchExpr actual) {
+    protected List<AclLineMatchExpr> featureValueOf(OrMatchExpr actual) {
       return actual.getDisjuncts();
     }
   }
