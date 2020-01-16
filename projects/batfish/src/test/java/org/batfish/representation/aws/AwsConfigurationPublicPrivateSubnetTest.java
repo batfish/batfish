@@ -73,7 +73,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   private static String _privateInstance = "i-099cf38911942421c";
   private static Ip _privateInstancePrivateIp = Ip.parse("10.0.1.204");
 
-  private static Prefix _sitePrefix = Prefix.parse("192.168.0.0/16");
+  private static Prefix _sitePrefix = Prefix.parse("19.168.0.0/16");
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -158,7 +158,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     testTrace(
         IspModelingUtils.INTERNET_HOST_NAME,
         _publicInstancePrivateIp,
-        FlowDisposition.INSUFFICIENT_INFO,
+        FlowDisposition.NULL_ROUTED,
         ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
   }
 
