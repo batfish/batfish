@@ -39,6 +39,9 @@ public class CumulusConcatenatedConfigurationTest {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration.builder().build().initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
+    assertThat(
+        c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getBandwidth(),
+        equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
   /** Test that bridge is not included as an interface */
@@ -65,6 +68,8 @@ public class CumulusConcatenatedConfigurationTest {
         .initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(iface1.getName()));
     assertEquals(c.getAllInterfaces().get(iface1.getName()).getVrfName(), iface1.getVrf());
+    assertThat(
+        c.getAllInterfaces().get(iface1.getName()).getBandwidth(), equalTo(DEFAULT_PORT_BANDWIDTH));
   }
 
   /** Interfaces in frrConfiguration are included */
@@ -80,6 +85,8 @@ public class CumulusConcatenatedConfigurationTest {
         .initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(iface1.getName()));
     assertEquals(c.getAllInterfaces().get(iface1.getName()).getVrfName(), iface1.getVrfName());
+    assertThat(
+        c.getAllInterfaces().get(iface1.getName()).getBandwidth(), equalTo(DEFAULT_PORT_BANDWIDTH));
   }
 
   /** Missing super interfaces are included */
@@ -229,26 +236,6 @@ public class CumulusConcatenatedConfigurationTest {
     assertEquals(
         c.getAllInterfaces().get("swp4").getAllAddresses(),
         ImmutableSet.of(ConcreteInterfaceAddress.parse("4.4.4.4/31")));
-  }
-
-  @Test
-  public void testPopulateCommonProperties_defaultBandwidthLoopback() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    Interface viLoopback =
-        org.batfish.datamodel.Interface.builder()
-            .setName(LOOPBACK_INTERFACE_NAME)
-            .setOwner(c)
-            .build();
-    populateCommonInterfaceProperties(new InterfacesInterface(LOOPBACK_INTERFACE_NAME), viLoopback);
-    assertThat(viLoopback.getBandwidth(), equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
-  }
-
-  @Test
-  public void testPopulateCommonProperties_defaultBandwidthNonLoopback() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    Interface viSwp = org.batfish.datamodel.Interface.builder().setName("swp1").setOwner(c).build();
-    populateCommonInterfaceProperties(new InterfacesInterface("swp1"), viSwp);
-    assertThat(viSwp.getBandwidth(), equalTo(DEFAULT_PORT_BANDWIDTH));
   }
 
   @Test
