@@ -22,7 +22,7 @@ public final class TraceElements {
   }
 
   static TraceElement deniedByAclLine(IpAccessList acl, int index) {
-    return matchedByAclLine(acl,index,"denied");
+    return matchedByAclLine(acl, index, "denied");
   }
 
   private static TraceElement matchedByAclLine(IpAccessList acl, int index, String action) {
@@ -35,7 +35,6 @@ public final class TraceElements {
             "Flow %s by %s named %s, index %d%s", action, type, name, index, lineDescription);
     return TraceElement.of(description);
   }
-
 
   public static TraceElement defaultDeniedByIpAccessList(IpAccessList ipAccessList) {
     String name = ipAccessList.getName();
