@@ -64,49 +64,22 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     _usersIpSpace = new HashSet<>();
   }
 
-  /** Adds any access lines for this security group to the inbound and outbound rules. */
-  void addInOutAccessLines(
-      List<AclLine> inboundRules, List<AclLine> outboundRules, Region region, Warnings warnings) {
-    for (ListIterator<IpPermissions> it = _ipPermsIngress.listIterator(); it.hasNext(); ) {
-      int seq = it.nextIndex();
-      IpPermissions p = it.next();
-      p.toIpAccessListLine(
-              true, region, _groupId + " - " + _groupName + " [ingress] " + seq, warnings)
-          .ifPresent(inboundRules::add);
-    }
-    for (ListIterator<IpPermissions> it = _ipPermsEgress.listIterator(); it.hasNext(); ) {
-      int seq = it.nextIndex();
-      IpPermissions p = it.next();
-      p.toIpAccessListLine(
-              false, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
-          .ifPresent(outboundRules::add);
-    }
-  }
-
   /** Converts this security group's ingress permission terms to List of AclLines */
-  List<AclLine> toIngressAclLines(Region region, Warnings warnings) {
-    ImmutableList.Builder<AclLine> ingressAclLines = ImmutableList.builder();
-    for (ListIterator<IpPermissions> it = _ipPermsIngress.listIterator(); it.hasNext(); ) {
+  List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
+    ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
+    List<IpPermissions> ipPerms = ingress ? _ipPermsIngress : _ipPermsEgress;
+    for (ListIterator<IpPermissions> it = ipPerms.listIterator(); it.hasNext(); ) {
       int seq = it.nextIndex();
       IpPermissions p = it.next();
       p.toIpAccessListLine(
-              true, region, _groupId + " - " + _groupName + " [ingress] " + seq, warnings)
-          .ifPresent(ingressAclLines::add);
+              ingress,
+              region,
+              String.format(
+                  "%s - %s [%s] %s", _groupId, _groupName, ingress ? "ingress" : "egress", seq),
+              warnings)
+          .ifPresent(aclLines::add);
     }
-    return ingressAclLines.build();
-  }
-
-  /** Converts this security group's egress permission terms to List of AclLines */
-  List<AclLine> toEgressAclLines(Region region, Warnings warnings) {
-    ImmutableList.Builder<AclLine> egressAclLines = ImmutableList.builder();
-    for (ListIterator<IpPermissions> it = _ipPermsEgress.listIterator(); it.hasNext(); ) {
-      int seq = it.nextIndex();
-      IpPermissions p = it.next();
-      p.toIpAccessListLine(
-              false, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
-          .ifPresent(egressAclLines::add);
-    }
-    return egressAclLines.build();
+    return aclLines.build();
   }
 
   @Nonnull

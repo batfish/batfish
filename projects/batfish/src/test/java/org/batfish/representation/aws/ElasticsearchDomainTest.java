@@ -168,7 +168,7 @@ public class ElasticsearchDomainTest {
     Configuration esDomain = configurations.get("es-domain");
     assertThat(esDomain.getAllInterfaces().entrySet(), hasSize(2));
     assertThat(
-        esDomain.getIpAccessLists().get("~EGRESS-Test Security Group-sg-0de0ddfa8a5a45810~"),
+        esDomain.getIpAccessLists().get("~EGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
@@ -177,7 +177,7 @@ public class ElasticsearchDomainTest {
                             .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                             .build())))));
     assertThat(
-        esDomain.getIpAccessLists().get("~INGRESS-Test Security Group-sg-0de0ddfa8a5a45810~"),
+        esDomain.getIpAccessLists().get("~INGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
@@ -190,21 +190,22 @@ public class ElasticsearchDomainTest {
                                     IpWildcard.parse("10.193.16.105/32")))
                             .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                             .build())))));
+    assertThat(
+        esDomain.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
+        equalTo(
+            ImmutableList.of(
+                new AclAclLine(
+                    "Test Security Group", "~INGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"))));
+    assertThat(
+        esDomain.getIpAccessLists().get("~SECURITY_GROUP_EGRESS_ACL~").getLines(),
+        equalTo(
+            ImmutableList.of(
+                new AclAclLine(
+                    "Test Security Group",
+                    "~EGRESS~Test Security Group~" + "sg-0de0ddfa8a5a45810~"))));
     for (Interface iface : esDomain.getAllInterfaces().values()) {
-      assertThat(
-          iface.getOutgoingFilter().getLines(),
-          equalTo(
-              ImmutableList.of(
-                  new AclAclLine(
-                      "Permitted by security group 'Test Security Group'",
-                      "~EGRESS-Test Security Group-sg-0de0ddfa8a5a45810~"))));
-      assertThat(
-          iface.getIncomingFilter().getLines(),
-          equalTo(
-              ImmutableList.of(
-                  new AclAclLine(
-                      "Permitted by security group 'Test Security Group'",
-                      "~INGRESS-Test Security Group-sg-0de0ddfa8a5a45810~"))));
+      assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
+      assertThat(iface.getOutgoingFilter().getName(), equalTo("~SECURITY_GROUP_EGRESS_ACL~"));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(

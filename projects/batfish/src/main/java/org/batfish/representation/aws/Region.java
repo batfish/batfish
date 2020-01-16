@@ -661,16 +661,9 @@ final class Region implements Serializable {
                     securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings);
                 IpAccessList sgOutAcl =
                     securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings);
-                inAclAclLines.add(
-                    new AclAclLine(
-                        String.format(
-                            "Permitted by security group '%s'", securityGroup.getGroupName()),
-                        sgInAcl.getName()));
+                inAclAclLines.add(new AclAclLine(securityGroup.getGroupName(), sgInAcl.getName()));
                 outAclAclLines.add(
-                    new AclAclLine(
-                        String.format(
-                            "Permitted by security group '%s'", securityGroup.getGroupName()),
-                        sgOutAcl.getName()));
+                    new AclAclLine(securityGroup.getGroupName(), sgOutAcl.getName()));
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
@@ -708,17 +701,22 @@ final class Region implements Serializable {
 
   private IpAccessList securityGroupToIpAccessList(
       SecurityGroup securityGroup, boolean ingress, Configuration owner, Warnings warnings) {
+    List<AclLine> aclLines =
+        ingress
+            ? securityGroup.toAclLines(this, true, warnings)
+            : securityGroup.toAclLines(this, false, warnings);
+
     return IpAccessList.builder()
         .setName(
             String.format(
-                "~%s-%s-%s~",
+                "~%s~%s~%s~",
                 ingress ? INGRESS : EGRESS,
                 securityGroup.getGroupName(),
                 securityGroup.getGroupId()))
         .setLines(
             ingress
-                ? securityGroup.toIngressAclLines(this, warnings)
-                : securityGroup.toEgressAclLines(this, warnings))
+                ? securityGroup.toAclLines(this, true, warnings)
+                : securityGroup.toAclLines(this, false, warnings))
         .setOwner(owner)
         .build();
   }
