@@ -40,11 +40,7 @@ public class DecrementMetric extends LongExpr {
   @Override
   public long evaluate(Environment environment) {
     long oldMetric = environment.getOriginalRoute().getMetric();
-    long newVal = oldMetric - _subtrahend;
-    if (newVal < 0) {
-      // Underflow.
-      newVal = 0;
-    }
+    long newVal = Math.max(oldMetric - _subtrahend, 0);
     return newVal;
   }
 

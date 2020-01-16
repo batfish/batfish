@@ -382,7 +382,7 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(outputRoute1.getMetric(), equalTo(10L));
     assertThat(outputRoute2.getMetric(), equalTo(2L));
     assertThat(outputRoute3.getMetric(), equalTo(0L));
-    assertThat(outputRoute4.getMetric(), equalTo(4294967295L));
+    assertThat(outputRoute4.getMetric(), equalTo(0xFFFFFFFFL));
     assertThat(outputRoute5.getMetric(), equalTo(0L));
   }
 }

@@ -185,11 +185,6 @@ CRITICAL
   'critical'
 ;
 
-DASH
-:
-   '-'
-;
-
 DATACENTER
 :
   'datacenter'
@@ -523,11 +518,6 @@ PERMIT
   'permit'
 ;
 
-PLUS
-:
-   '+'
-;
-
 POINT_TO_POINT
 :
   'point-to-point'
@@ -734,11 +724,23 @@ WS
 
 ;
 
+// Complex tokens
+
 BLANK_LINE
 :
   F_Whitespace* F_Newline+
   {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
     -> channel ( HIDDEN )
+;
+
+DASH
+:
+   '-'
+;
+
+PLUS
+:
+   '+'
 ;
 
 // Fragments

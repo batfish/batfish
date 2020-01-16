@@ -8,12 +8,10 @@ options {
 
 int_expr
 :
-   (
-      (
-         PLUS
-         | DASH
-      )? uint32
-   )
+  (
+     PLUS
+     | DASH
+  )? uint32
 ;
 
 s_routemap
