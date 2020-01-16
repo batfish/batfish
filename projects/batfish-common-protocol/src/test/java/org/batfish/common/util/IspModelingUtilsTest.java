@@ -2,10 +2,12 @@ package org.batfish.common.util;
 
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP;
+import static org.batfish.common.util.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
 import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
 import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
@@ -37,6 +39,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
@@ -402,12 +405,25 @@ public class IspModelingUtilsTest {
                 allOf(
                     hasStaticRoutes(
                         equalTo(
-                            ImmutableSortedSet.of(
-                                StaticRoute.builder()
-                                    .setNetwork(Prefix.ZERO)
-                                    .setNextHopInterface(IspModelingUtils.INTERNET_OUT_INTERFACE)
-                                    .setAdministrativeCost(1)
-                                    .build()))),
+                            new ImmutableSortedSet.Builder<StaticRoute>(Comparator.naturalOrder())
+                                .add(
+                                    StaticRoute.builder()
+                                        .setNetwork(Prefix.ZERO)
+                                        .setNextHopInterface(
+                                            IspModelingUtils.INTERNET_OUT_INTERFACE)
+                                        .setAdministrativeCost(1)
+                                        .build())
+                                .addAll(
+                                    INTERNET_NULL_ROUTED_PREFIXES.stream()
+                                        .map(
+                                            prefix ->
+                                                StaticRoute.builder()
+                                                    .setNetwork(prefix)
+                                                    .setNextHopInterface(NULL_INTERFACE_NAME)
+                                                    .setAdministrativeCost(1)
+                                                    .build())
+                                        .collect(ImmutableSet.toImmutableSet()))
+                                .build())),
                     hasBgpProcess(
                         allOf(
                             hasRouterId(IspModelingUtils.INTERNET_OUT_ADDRESS),
