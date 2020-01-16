@@ -701,11 +701,6 @@ final class Region implements Serializable {
 
   private IpAccessList securityGroupToIpAccessList(
       SecurityGroup securityGroup, boolean ingress, Configuration owner, Warnings warnings) {
-    List<AclLine> aclLines =
-        ingress
-            ? securityGroup.toAclLines(this, true, warnings)
-            : securityGroup.toAclLines(this, false, warnings);
-
     return IpAccessList.builder()
         .setName(
             String.format(

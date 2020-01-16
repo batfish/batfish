@@ -1,10 +1,6 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
-import static org.batfish.datamodel.acl.TraceNodeMatchers.hasTraceElement;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasKey;
@@ -31,8 +27,11 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
+import org.batfish.datamodel.acl.TraceElements;
 import org.batfish.datamodel.acl.TraceEvent;
+import org.batfish.datamodel.acl.TraceNodeMatchers;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceNode;
 import org.junit.Test;
 
@@ -209,13 +208,19 @@ public class RegionTest {
     TraceNode root =
         AclTracer.trace(
             ingressAcl, permittedFlow, null, availableAcls, ImmutableMap.of(), ImmutableMap.of());
-    assertThat(root, hasTraceElement(permittedByAclLine(ingressAcl, 1)));
+    assertThat(
+        root, TraceNodeMatchers.hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)));
     AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(ingressAcl, 1)))));
+    assertThat(
+        trace,
+        DataModelMatchers.hasEvents(
+            contains(TraceEvent.of(TraceElements.permittedByAclLine(ingressAcl, 1)))));
 
     root =
         AclTracer.trace(
             ingressAcl, deniedFlow, null, availableAcls, ImmutableMap.of(), ImmutableMap.of());
-    assertThat(root, hasTraceElement(defaultDeniedByIpAccessList(ingressAcl)));
+    assertThat(
+        root,
+        TraceNodeMatchers.hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)));
   }
 }
