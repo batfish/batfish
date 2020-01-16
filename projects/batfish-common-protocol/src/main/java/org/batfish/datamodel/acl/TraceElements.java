@@ -18,26 +18,24 @@ public final class TraceElements {
   private TraceElements() {}
 
   public static TraceElement permittedByAclLine(IpAccessList acl, int index) {
-    String type = firstNonNull(acl.getSourceType(), "filter");
-    String name = firstNonNull(acl.getSourceName(), acl.getName());
-    AclLine line = acl.getLines().get(index);
-    String lineDescription = firstNonNull(line.getName(), line.toString());
-    String description =
-        String.format(
-            "Flow permitted by %s named %s, index %d: %s", type, name, index, lineDescription);
-    return TraceElement.of(description);
+    return matchedByAclLine(acl, index, "permitted");
   }
 
   static TraceElement deniedByAclLine(IpAccessList acl, int index) {
+    return matchedByAclLine(acl,index,"denied");
+  }
+
+  private static TraceElement matchedByAclLine(IpAccessList acl, int index, String action) {
     String type = firstNonNull(acl.getSourceType(), "filter");
     String name = firstNonNull(acl.getSourceName(), acl.getName());
     AclLine line = acl.getLines().get(index);
-    String lineDescription = firstNonNull(line.getName(), line.toString());
+    String lineDescription = line.getName() == null ? "" : ": " + line.getName();
     String description =
         String.format(
-            "Flow denied by %s named %s, index %d: %s", type, name, index, lineDescription);
+            "Flow %s by %s named %s, index %d%s", action, type, name, index, lineDescription);
     return TraceElement.of(description);
   }
+
 
   public static TraceElement defaultDeniedByIpAccessList(IpAccessList ipAccessList) {
     String name = ipAccessList.getName();
