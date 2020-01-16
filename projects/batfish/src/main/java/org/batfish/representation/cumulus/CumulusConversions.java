@@ -1418,6 +1418,11 @@ public final class CumulusConversions {
                         vxlan.getId() == null ? "vxlan id" : "bridge access vlan"));
                 return;
               }
+              // Cumulus documents complex conditions for when clag-anycast address is a valid
+              // source:
+              // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
+              // In testing, we couldn't reproduce that behavior and the address was always active.
+              // We go with that assumption here until we can reproduce the exact behavior.
               Ip localIp =
                   Stream.of(
                           loopbackClagVxlanAnycastIp,
