@@ -657,13 +657,14 @@ final class Region implements Serializable {
           .getValue()
           .forEach(
               securityGroup -> {
-                IpAccessList sgInAcl =
-                    securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings);
-                IpAccessList sgOutAcl =
-                    securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings);
-                inAclAclLines.add(new AclAclLine(securityGroup.getGroupName(), sgInAcl.getName()));
-                outAclAclLines.add(
-                    new AclAclLine(securityGroup.getGroupName(), sgOutAcl.getName()));
+                Optional.ofNullable(
+                        securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
+                    .map(acl -> new AclAclLine(securityGroup.getGroupName(), acl.getName()))
+                    .ifPresent(inAclAclLines::add);
+                Optional.ofNullable(
+                        securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
+                    .map(acl -> new AclAclLine(securityGroup.getGroupName(), acl.getName()))
+                    .ifPresent(outAclAclLines::add);
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
@@ -699,8 +700,16 @@ final class Region implements Serializable {
             });
   }
 
+  @Nullable
   private IpAccessList securityGroupToIpAccessList(
       SecurityGroup securityGroup, boolean ingress, Configuration owner, Warnings warnings) {
+    List<AclLine> aclLines =
+        ingress
+            ? securityGroup.toAclLines(this, true, warnings)
+            : securityGroup.toAclLines(this, false, warnings);
+    if (aclLines.isEmpty()) {
+      return null;
+    }
     return IpAccessList.builder()
         .setName(
             String.format(
@@ -708,10 +717,7 @@ final class Region implements Serializable {
                 ingress ? INGRESS : EGRESS,
                 securityGroup.getGroupName(),
                 securityGroup.getGroupId()))
-        .setLines(
-            ingress
-                ? securityGroup.toAclLines(this, true, warnings)
-                : securityGroup.toAclLines(this, false, warnings))
+        .setLines(aclLines)
         .setOwner(owner)
         .build();
   }

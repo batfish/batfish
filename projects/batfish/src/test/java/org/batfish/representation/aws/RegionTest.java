@@ -1,9 +1,12 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -29,10 +32,9 @@ import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.TraceElements;
 import org.batfish.datamodel.acl.TraceEvent;
-import org.batfish.datamodel.acl.TraceNodeMatchers;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
-import org.batfish.datamodel.trace.TraceNode;
+import org.batfish.datamodel.trace.TraceTree;
 import org.junit.Test;
 
 /** Tests for {@link Region} */
@@ -141,8 +143,8 @@ public class RegionTest {
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~sg-1~sg-001~"));
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~sg-2~sg-002~"));
 
-    assertThat(c.getIpAccessLists(), hasKey("~EGRESS~sg-1~sg-001~"));
-    assertThat(c.getIpAccessLists(), hasKey("~EGRESS~sg-2~sg-002~"));
+    assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~sg-1~sg-001~")));
+    assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~sg-2~sg-002~")));
 
     // incoming and outgoing filter on the interface refers to the two ACLs using AclAclLines
     assertThat(
@@ -153,18 +155,14 @@ public class RegionTest {
                 new AclAclLine("sg-1", "~INGRESS~sg-1~sg-001~"))));
 
     assertThat(
-        c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine("sg-2", "~EGRESS~sg-2~sg-002~"),
-                new AclAclLine("sg-1", "~EGRESS~sg-1~sg-001~"))));
+        c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));
   }
 
   @Test
   public void testSecurityGroupAclTracer() {
     String ingressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
-    String ingressSg2AclName = "~INGRESS-sg-2-sg-002~";
-    String ingressSg1AclName = "~INGRESS-sg-1-sg-001~";
+    String ingressSg2AclName = "~INGRESS~sg-2~sg-002~";
+    String ingressSg1AclName = "~INGRESS~sg-1~sg-001~";
 
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -205,11 +203,10 @@ public class RegionTest {
             .setDstPort(23)
             .setIngressNode("c")
             .build();
-    TraceNode root =
+    TraceTree root =
         AclTracer.trace(
             ingressAcl, permittedFlow, null, availableAcls, ImmutableMap.of(), ImmutableMap.of());
-    assertThat(
-        root, TraceNodeMatchers.hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)));
+    assertThat(root, hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
@@ -219,8 +216,6 @@ public class RegionTest {
     root =
         AclTracer.trace(
             ingressAcl, deniedFlow, null, availableAcls, ImmutableMap.of(), ImmutableMap.of());
-    assertThat(
-        root,
-        TraceNodeMatchers.hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)));
+    assertThat(root, hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)));
   }
 }
