@@ -175,7 +175,7 @@ public class OspfRoutingProcessTest {
                     .build())
             .build();
     AREA0_CONFIG =
-        OspfArea.builder(nf)
+        OspfArea.builder()
             .setNumber(0)
             .setInterfaces(
                 ImmutableSet.of(
@@ -1162,7 +1162,7 @@ public class OspfRoutingProcessTest {
             .build();
 
     AREA0_CONFIG =
-        OspfArea.builder(nf)
+        OspfArea.builder()
             .setNumber(0)
             .setInterfaces(ImmutableSet.of(activeIface.getName()))
             .build();

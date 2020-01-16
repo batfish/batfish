@@ -1121,12 +1121,12 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "240.254.254.1/30"
+              "240.254.254.1/29"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "prefix" : "240.254.254.1/30",
+            "prefix" : "240.254.254.1/29",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -1254,6 +1254,33 @@
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Internet_out_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.0.0/8",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.16.0.0/12",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.0.0/16",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }

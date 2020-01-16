@@ -11,34 +11,31 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.acl.AclLineEvaluator;
 
 /** An access-list used to filter IPV4 packets */
 public class IpAccessList implements Serializable {
 
-  public static class Builder extends NetworkFactoryBuilder<IpAccessList> {
+  public static class Builder {
 
     private List<AclLine> _lines;
-
-    private String _name;
-
+    private @Nullable String _name;
+    private @Nullable Supplier<String> _nameGenerator;
     private Configuration _owner;
-
     private String _sourceName;
-
     private String _sourceType;
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, IpAccessList.class);
+    private Builder(@Nullable Supplier<String> nameGenerator) {
       _lines = ImmutableList.of();
+      _nameGenerator = nameGenerator;
     }
 
-    @Override
     public IpAccessList build() {
-      String name = _name != null ? _name : generateName();
+      checkArgument(_name != null || _nameGenerator != null, "Must set name before building");
+      String name = _name != null ? _name : _nameGenerator.get();
       IpAccessList ipAccessList = new IpAccessList(name, _lines, _sourceName, _sourceType);
       if (_owner != null) {
         _owner.getIpAccessLists().put(name, ipAccessList);
@@ -94,6 +91,10 @@ public class IpAccessList implements Serializable {
 
   public static Builder builder() {
     return new Builder(null);
+  }
+
+  public static Builder builder(@Nullable Supplier<String> nameGenerator) {
+    return new Builder(nameGenerator);
   }
 
   @Nonnull private final List<AclLine> _lines;

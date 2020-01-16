@@ -14,12 +14,12 @@ public class EbgpPeerGroupType implements BgpPeerGroupTypeAndOptions, Serializab
     USE_SELF
   }
 
-  public @Nullable Boolean getRemotePrivateAs() {
-    return _remotePrivateAs;
+  public @Nullable Boolean getRemovePrivateAs() {
+    return _removePrivateAs;
   }
 
-  public void setRemotePrivateAs(@Nullable Boolean remotePrivateAs) {
-    _remotePrivateAs = remotePrivateAs;
+  public void setRemovePrivateAs(@Nullable Boolean removePrivateAs) {
+    _removePrivateAs = removePrivateAs;
   }
 
   public @Nullable ExportNexthopMode getExportNexthop() {
@@ -38,7 +38,7 @@ public class EbgpPeerGroupType implements BgpPeerGroupTypeAndOptions, Serializab
     _importNexthop = importNexthop;
   }
 
-  private @Nullable Boolean _remotePrivateAs;
+  private @Nullable Boolean _removePrivateAs;
   private @Nullable ExportNexthopMode _exportNexthop;
   private @Nullable ImportNexthopMode _importNexthop;
 }

@@ -2,8 +2,6 @@ package org.batfish.datamodel.acl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -56,7 +54,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
       return new AndMatchExpr(
           andMatchExpr.getConjuncts().stream()
               .map(this::visit)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+              .collect(ImmutableList.toImmutableList()));
     }
 
     @Override
@@ -107,7 +105,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
       return new OrMatchExpr(
           orMatchExpr.getDisjuncts().stream()
               .map(this::visit)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+              .collect(ImmutableList.toImmutableList()));
     }
 
     @Override

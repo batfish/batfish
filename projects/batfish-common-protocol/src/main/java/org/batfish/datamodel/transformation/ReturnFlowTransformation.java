@@ -8,11 +8,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.SortedSet;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -88,11 +85,11 @@ public final class ReturnFlowTransformation {
       if (andMatchExpr.getConjuncts().isEmpty()) {
         return TRUE;
       }
-      SortedSet<AclLineMatchExpr> conjuncts =
+      ImmutableList<AclLineMatchExpr> conjuncts =
           andMatchExpr.getConjuncts().stream()
               .map(this::visit)
               .filter(Objects::nonNull)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+              .collect(ImmutableList.toImmutableList());
       return conjuncts.isEmpty() ? null : and(conjuncts);
     }
 
@@ -151,11 +148,11 @@ public final class ReturnFlowTransformation {
       if (orMatchExpr.getDisjuncts().isEmpty()) {
         return FALSE;
       }
-      ImmutableSortedSet<AclLineMatchExpr> disjuncts =
+      ImmutableList<AclLineMatchExpr> disjuncts =
           orMatchExpr.getDisjuncts().stream()
               .map(this::visit)
               .filter(Objects::nonNull)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+              .collect(ImmutableList.toImmutableList());
       return disjuncts.isEmpty() ? null : or(disjuncts);
     }
 

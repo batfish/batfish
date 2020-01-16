@@ -856,7 +856,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
     assert options instanceof EbgpPeerGroupType;
     EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
-    ebgp.setRemotePrivateAs(toBoolean(ctx.yn));
+    ebgp.setRemovePrivateAs(toBoolean(ctx.yn));
   }
 
   @Override

@@ -142,7 +142,7 @@ public class AwsConfigurationPublicSubnetTest {
     testTraceNodesAndDisposition(
         IspModelingUtils.INTERNET_HOST_NAME,
         _privateIp,
-        FlowDisposition.INSUFFICIENT_INFO,
+        FlowDisposition.NULL_ROUTED,
         ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
 
     // we get exits network for arbitrary private IPs

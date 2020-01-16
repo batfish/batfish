@@ -15,43 +15,43 @@ import org.batfish.datamodel.TraceElement;
 
 /** A node in a trace */
 @ParametersAreNonnullByDefault
-public final class TraceNode {
+public final class TraceTree {
   private static final String PROP_TRACE_ELEMENT = "traceElement";
   private static final String PROP_CHILDREN = "children";
 
-  /** Builder for {@link TraceNode}. */
+  /** Builder for {@link TraceTree}. */
   public static class Builder {
     private @Nullable TraceElement _traceElement;
-    private final List<TraceNode> _children = new ArrayList<>();
+    private final List<TraceTree> _children = new ArrayList<>();
 
     public Builder setTraceElement(TraceElement traceElement) {
       _traceElement = traceElement;
       return this;
     }
 
-    public Builder addChild(TraceNode child) {
+    public Builder addChild(TraceTree child) {
       _children.add(child);
       return this;
     }
 
-    public TraceNode build() {
-      return new TraceNode(_traceElement, _children);
+    public TraceTree build() {
+      return new TraceTree(_traceElement, _children);
     }
   }
 
   private final @Nullable TraceElement _traceElement;
-  private final @Nonnull List<TraceNode> _children;
+  private final @Nonnull List<TraceTree> _children;
 
-  TraceNode(@Nullable TraceElement traceElement, List<TraceNode> children) {
+  TraceTree(@Nullable TraceElement traceElement, List<TraceTree> children) {
     _traceElement = traceElement;
     _children = ImmutableList.copyOf(children);
   }
 
   @JsonCreator
-  private static TraceNode jsonCreator(
+  private static TraceTree jsonCreator(
       @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
-      @Nullable @JsonProperty(PROP_CHILDREN) List<TraceNode> children) {
-    return new TraceNode(traceElement, firstNonNull(children, ImmutableList.of()));
+      @Nullable @JsonProperty(PROP_CHILDREN) List<TraceTree> children) {
+    return new TraceTree(traceElement, firstNonNull(children, ImmutableList.of()));
   }
 
   public static Builder builder() {
@@ -60,7 +60,7 @@ public final class TraceNode {
 
   @JsonProperty(PROP_CHILDREN)
   @Nonnull
-  public List<TraceNode> getChildren() {
+  public List<TraceTree> getChildren() {
     return _children;
   }
 
@@ -75,10 +75,10 @@ public final class TraceNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof TraceNode)) {
+    if (!(o instanceof TraceTree)) {
       return false;
     }
-    TraceNode other = (TraceNode) o;
+    TraceTree other = (TraceTree) o;
     return Objects.equals(_traceElement, other._traceElement) && _children.equals(other._children);
   }
 

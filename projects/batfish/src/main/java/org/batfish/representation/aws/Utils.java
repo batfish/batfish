@@ -19,7 +19,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -36,8 +35,6 @@ import org.w3c.dom.NodeList;
 /** A collection for utilities for AWS vendor model */
 @ParametersAreNonnullByDefault
 final class Utils {
-
-  private static final NetworkFactory FACTORY = new NetworkFactory();
 
   static final Statement ACCEPT_ALL_BGP =
       new If(
@@ -61,15 +58,14 @@ final class Utils {
 
   static Configuration newAwsConfiguration(String name, String domainName) {
     Configuration c =
-        FACTORY
-            .configurationBuilder()
+        Configuration.builder()
             .setHostname(name)
             .setDomainName(domainName)
             .setConfigurationFormat(ConfigurationFormat.AWS)
             .setDefaultInboundAction(LineAction.PERMIT)
             .setDefaultCrossZoneAction(LineAction.PERMIT)
             .build();
-    FACTORY.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
+    Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
     c.getVendorFamily().setAws(new AwsFamily());
     return c;
   }
@@ -92,8 +88,7 @@ final class Utils {
       String description) {
     checkArgument(
         c.getVrfs().containsKey(vrfName), "VRF %s does not exist on %s", vrfName, c.getHostname());
-    return FACTORY
-        .interfaceBuilder()
+    return Interface.builder()
         .setName(name)
         .setOwner(c)
         .setVrf(c.getVrfs().get(vrfName))

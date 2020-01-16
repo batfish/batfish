@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.trace.TraceNode;
+import org.batfish.datamodel.trace.TraceTree;
 
 public final class AclTrace implements Serializable {
   private static final String PROP_EVENTS = "events";
@@ -23,10 +23,10 @@ public final class AclTrace implements Serializable {
     _events = events != null ? ImmutableList.copyOf(events) : ImmutableList.of();
   }
 
-  public AclTrace(TraceNode traceTree) {
+  public AclTrace(TraceTree traceTree) {
     this(
-        Streams.stream(Traverser.forTree(TraceNode::getChildren).depthFirstPreOrder(traceTree))
-            .map(TraceNode::getTraceElement)
+        Streams.stream(Traverser.forTree(TraceTree::getChildren).depthFirstPreOrder(traceTree))
+            .map(TraceTree::getTraceElement)
             .filter(Objects::nonNull)
             .map(TraceEvent::of)
             .collect(ImmutableList.toImmutableList()));
