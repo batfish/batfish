@@ -126,6 +126,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ipv6_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.L_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Lc_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Line_actionContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Lv_local_tunnelipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Mac_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_defaults_datacenterContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_logContext;
@@ -1297,6 +1298,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitLc_vxlan_anycast_ip(Lc_vxlan_anycast_ipContext ctx) {
     _c.getLoopback().setClagVxlanAnycastIp(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitLv_local_tunnelip(Lv_local_tunnelipContext ctx) {
+    _c.getLoopback().setVxlanLocalTunnelip(toIp(ctx.ip));
   }
 
   @Override
