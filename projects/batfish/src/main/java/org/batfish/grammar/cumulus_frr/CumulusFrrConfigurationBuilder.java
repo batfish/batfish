@@ -48,7 +48,6 @@ import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
-import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
@@ -242,27 +241,27 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
     if (ctx.uint32() != null) {
-        long val = toLong(ctx.uint32());
-        if (ctx.PLUS() != null) {
-            return new IncrementMetric(val);
-        } else if (ctx.DASH() != null) {
-            return new DecrementMetric(val);
-        } else {
-            return new LiteralLong(val);
-        }
+      long val = toLong(ctx.uint32());
+      if (ctx.PLUS() != null) {
+        return new IncrementMetric(val);
+      } else if (ctx.DASH() != null) {
+        return new DecrementMetric(val);
+      } else {
+        return new LiteralLong(val);
+      }
     } else {
-        /*
-         * Unsupported metric long expression - do not add cases unless you
-         * know what you are doing
-         */
-        throw new BatfishException(String.format("Invalid BGP MED metric : " + ctx.getText()));
+      /*
+       * Unsupported metric long expression - do not add cases unless you
+       * know what you are doing
+       */
+      throw new BatfishException(String.format("Invalid BGP MED metric : " + ctx.getText()));
     }
   }
 
   private static long toLong(TerminalNode t) {
     return Long.parseLong(t.getText());
   }
-  
+
   private void clearOspfPassiveInterface() {
     _frr.getInterfaces()
         .values()

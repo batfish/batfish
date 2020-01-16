@@ -356,16 +356,16 @@ public class CumulusConcatenatedGrammarTest {
   public void testSetMetric() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-            Bgpv4Route.builder()
-                    .setAsPath(AsPath.ofSingletonAsSets(2L))
-                    .setOriginatorIp(Ip.ZERO)
-                    .setOriginType(OriginType.INCOMPLETE)
-                    .setProtocol(RoutingProtocol.BGP)
-                    .setNextHopIp(origNextHopIp)
-                    .setNetwork(Prefix.parse("10.20.30.0/31"))
-                    .setTag(0L)
-                    .setMetric(1L)
-                    .build();
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .setMetric(1L)
+            .build();
     Configuration c = parseConfig("set_metric_test");
     RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_METRIC_TEST");
     RoutingPolicy rp2 = c.getRoutingPolicies().get("RM_METRIC_PLUS_TEST");
@@ -373,7 +373,7 @@ public class CumulusConcatenatedGrammarTest {
     RoutingPolicy rp4 = c.getRoutingPolicies().get("RM_METRIC_OVERFLOW_TEST");
     RoutingPolicy rp5 = c.getRoutingPolicies().get("RM_METRIC_UNDERFLOW_TEST");
     Bgpv4Route inRoute =
-            base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(4, 4))).build();
+        base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(4, 4))).build();
     Bgpv4Route outputRoute1 = processRouteIn(rp1, inRoute);
     Bgpv4Route outputRoute2 = processRouteIn(rp2, inRoute);
     Bgpv4Route outputRoute3 = processRouteIn(rp3, inRoute);
@@ -385,7 +385,4 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(outputRoute4.getMetric(), equalTo(4294967295L));
     assertThat(outputRoute5.getMetric(), equalTo(0L));
   }
-
-
-
 }
