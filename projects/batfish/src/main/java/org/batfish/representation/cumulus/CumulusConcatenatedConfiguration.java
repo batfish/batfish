@@ -151,12 +151,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     InterfacesInterface vsLoopback =
         _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
     @Nullable
-    Ip loopbackClagVxlanAnycastIp =
-        vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null
-            ? vsLoopback.getClagVxlanAnycastIp()
-            : null;
+    Ip loopbackClagVxlanAnycastIp = vsLoopback == null ? null : vsLoopback.getClagVxlanAnycastIp();
+    @Nullable
+    Ip loopbackVxlanLocalTunnelIp = vsLoopback == null ? null : vsLoopback.getVxlanLocalTunnelIp();
 
-    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp);
+    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, loopbackVxlanLocalTunnelIp, _w);
 
     convertOspfProcess(c, this, _w);
     convertBgpProcess(c, this, _w);

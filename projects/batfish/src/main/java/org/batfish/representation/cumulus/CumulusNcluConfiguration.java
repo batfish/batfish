@@ -638,7 +638,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration
             .filter(vrf -> vrf.getVni() != null)
             .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
 
-    convertVxlans(_c, this, vniToVrf, _loopback.getClagVxlanAnycastIp());
+    convertVxlans(
+        _c,
+        this,
+        vniToVrf,
+        _loopback.getClagVxlanAnycastIp(),
+        _loopback.getVxlanLocalTunnelip(),
+        _w);
     convertOspfProcess(_c, this, _w);
     convertBgpProcess(_c, this, _w);
 
