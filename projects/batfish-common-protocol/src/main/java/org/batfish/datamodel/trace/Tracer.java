@@ -2,6 +2,8 @@ package org.batfish.datamodel.trace;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Stack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,7 +17,7 @@ import org.batfish.datamodel.TraceElement;
 public final class Tracer {
 
   // the complete trace. once set, can't create new subtraces
-  private @Nullable TraceTree _trace;
+  private @Nullable List<TraceTree> _trace;
 
   // invariant: never empty
   private final Stack<TraceTree.Builder> _nodeStack;
@@ -24,7 +26,7 @@ public final class Tracer {
     _nodeStack = new Stack<>();
   }
 
-  public TraceTree getTrace() {
+  public List<TraceTree> getTrace() {
     checkState(_trace != null, "cannot get incomplete trace");
     return _trace;
   }
@@ -51,9 +53,17 @@ public final class Tracer {
     checkState(!_nodeStack.isEmpty(), "no trace in progress");
     TraceTree child = _nodeStack.pop().build();
     if (!_nodeStack.isEmpty()) {
-      _nodeStack.peek().addChild(child);
+      if (child.getTraceElement() != null) {
+        _nodeStack.peek().addChild(child);
+      } else {
+        child.getChildren().forEach(_nodeStack.peek()::addChild);
+      }
     } else {
-      _trace = child;
+      if (child.getTraceElement() == null) {
+        _trace = child.getChildren();
+      } else {
+        _trace = ImmutableList.of(child);
+      }
     }
   }
 

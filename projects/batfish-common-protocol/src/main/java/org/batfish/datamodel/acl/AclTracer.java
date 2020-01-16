@@ -34,7 +34,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   @VisibleForTesting static String SRC_IP_DESCRIPTION = "source IP";
 
-  public static TraceTree trace(
+  public static List<TraceTree> trace(
       @Nonnull IpAccessList ipAccessList,
       @Nonnull Flow flow,
       @Nullable String srcInterface,
@@ -66,7 +66,7 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public @Nonnull TraceTree getTrace() {
+  public @Nonnull List<TraceTree> getTrace() {
     return _tracer.getTrace();
   }
 
