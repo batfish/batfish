@@ -1,8 +1,10 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -140,19 +142,19 @@ public class RegionTest {
     region.applySecurityGroupsAcls(configurationMap, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
-    assertThat(c.getIpAccessLists(), hasKey("~INGRESS~sg-1~sg-001~"));
-    assertThat(c.getIpAccessLists(), hasKey("~INGRESS~sg-2~sg-002~"));
+    assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-1~sg-001~"));
+    assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-2~sg-002~"));
 
-    assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~sg-1~sg-001~")));
-    assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~sg-2~sg-002~")));
+    assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~SECURITY-GROUP~sg-1~sg-001~")));
+    assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~SECURITY-GROUP~sg-2~sg-002~")));
 
     // incoming and outgoing filter on the interface refers to the two ACLs using AclAclLines
     assertThat(
         c.getAllInterfaces().get("~Interface_0~").getIncomingFilter().getLines(),
         equalTo(
             ImmutableList.of(
-                new AclAclLine("sg-2", "~INGRESS~sg-2~sg-002~"),
-                new AclAclLine("sg-1", "~INGRESS~sg-1~sg-001~"))));
+                new AclAclLine("Security Group sg-2", "~INGRESS~SECURITY-GROUP~sg-2~sg-002~"),
+                new AclAclLine("Security Group sg-1", "~INGRESS~SECURITY-GROUP~sg-1~sg-001~"))));
 
     assertThat(
         c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));
@@ -160,10 +162,6 @@ public class RegionTest {
 
   @Test
   public void testSecurityGroupAclTracer() {
-    String ingressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
-    String ingressSg2AclName = "~INGRESS~sg-2~sg-002~";
-    String ingressSg1AclName = "~INGRESS~sg-1~sg-001~";
-
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -179,14 +177,6 @@ public class RegionTest {
     region.applySecurityGroupsAcls(configurationMap, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
 
-    Map<String, IpAccessList> availableAcls =
-        ImmutableMap.of(
-            ingressAclName,
-            ingressAcl,
-            ingressSg1AclName,
-            c.getIpAccessLists().get(ingressSg1AclName),
-            ingressSg2AclName,
-            c.getIpAccessLists().get(ingressSg2AclName));
     Flow permittedFlow =
         Flow.builder()
             .setIpProtocol(TCP)
@@ -205,8 +195,18 @@ public class RegionTest {
             .build();
     TraceTree root =
         AclTracer.trace(
-            ingressAcl, permittedFlow, null, availableAcls, ImmutableMap.of(), ImmutableMap.of());
-    assertThat(root, hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)));
+            ingressAcl,
+            permittedFlow,
+            null,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    // TODO: there should be children in the TraceTree
+    assertThat(
+        root,
+        allOf(
+            hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)),
+            hasChildren(equalTo(ImmutableList.of()))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
@@ -215,7 +215,21 @@ public class RegionTest {
 
     root =
         AclTracer.trace(
-            ingressAcl, deniedFlow, null, availableAcls, ImmutableMap.of(), ImmutableMap.of());
-    assertThat(root, hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)));
+            ingressAcl,
+            deniedFlow,
+            null,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        root,
+        allOf(
+            hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)),
+            hasChildren(equalTo(ImmutableList.of()))));
+    trace = new AclTrace(root);
+    assertThat(
+        trace,
+        DataModelMatchers.hasEvents(
+            contains(TraceEvent.of(TraceElements.defaultDeniedByIpAccessList(ingressAcl)))));
   }
 }

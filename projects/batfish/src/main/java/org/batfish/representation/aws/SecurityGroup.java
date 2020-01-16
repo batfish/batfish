@@ -64,7 +64,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     _usersIpSpace = new HashSet<>();
   }
 
-  /** Converts this security group's ingress permission terms to List of AclLines */
+  /** Converts this security group's ingress or egress permission terms to List of AclLines */
   List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
     ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
     List<IpPermissions> ipPerms = ingress ? _ipPermsIngress : _ipPermsEgress;

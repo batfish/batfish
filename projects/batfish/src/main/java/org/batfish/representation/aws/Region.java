@@ -657,13 +657,14 @@ final class Region implements Serializable {
           .getValue()
           .forEach(
               securityGroup -> {
+                String sgName = String.format("Security Group %s", securityGroup.getGroupName());
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(securityGroup.getGroupName(), acl.getName()))
+                    .map(acl -> new AclAclLine(sgName, acl.getName()))
                     .ifPresent(inAclAclLines::add);
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(securityGroup.getGroupName(), acl.getName()))
+                    .map(acl -> new AclAclLine(sgName, acl.getName()))
                     .ifPresent(outAclAclLines::add);
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
@@ -703,17 +704,14 @@ final class Region implements Serializable {
   @Nullable
   private IpAccessList securityGroupToIpAccessList(
       SecurityGroup securityGroup, boolean ingress, Configuration owner, Warnings warnings) {
-    List<AclLine> aclLines =
-        ingress
-            ? securityGroup.toAclLines(this, true, warnings)
-            : securityGroup.toAclLines(this, false, warnings);
+    List<AclLine> aclLines = securityGroup.toAclLines(this, ingress, warnings);
     if (aclLines.isEmpty()) {
       return null;
     }
     return IpAccessList.builder()
         .setName(
             String.format(
-                "~%s~%s~%s~",
+                "~%s~SECURITY-GROUP~%s~%s~",
                 ingress ? INGRESS : EGRESS,
                 securityGroup.getGroupName(),
                 securityGroup.getGroupId()))
