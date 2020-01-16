@@ -1,0 +1,24 @@
+ip routing
+illegal
+interface eth0
+  ip ospf cost 1
+illegal
+ip routing
+illegal
+ip routing
+illegal
+illegal
+ip routing
+illegal
+ip illegal
+ip routing
+permit ssh
+permit illegal
+permit ssh dns
+permit illegal
+permit ssh illegal dns
+permit dns
+permit ssh permit dns
+permit dns
+permit permit dns
+permit dns

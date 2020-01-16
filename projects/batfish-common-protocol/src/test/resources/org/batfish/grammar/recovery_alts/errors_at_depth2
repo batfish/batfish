@@ -1,0 +1,26 @@
+ip routing
+interface eth0
+  illegal
+  mtu 1
+  illegal
+  mtu 2
+  ip address illegal
+  mtu 3
+  ip ospf cost 5
+  ip illegal
+  mtu illegal
+  mtu 4
+  permit ssh
+  permit
+  permit ssh
+  permit illegal
+  permit ssh dns
+  permit illegal
+  permit ssh illegal dns
+  permit dns
+  permit ssh permit dns
+  permit dns
+  permit permit dns
+  permit dns
+ip routing
+permit ssh

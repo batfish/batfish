@@ -18,6 +18,7 @@ public abstract class BatfishParser extends Parser {
     Token o = getCurrentToken();
     if (o.getType() != EOF) {
       getInputStream().consume();
+      _lastConsumedToken = o.getType();
     }
     boolean hasListener = _parseListeners != null && !_parseListeners.isEmpty();
     if ((_buildParseTrees || hasListener) && !_errHandler.inErrorRecoveryMode(this)) {
@@ -29,6 +30,14 @@ public abstract class BatfishParser extends Parser {
       }
     }
     return o;
+  }
+
+  /**
+   * Returns the ID of the last consumed token. This is needed by recovery to tell whether current
+   * token is the first word on the line (i.e., last token was a NEWLINE or equivalent).
+   */
+  public int getLastConsumedToken() {
+    return _lastConsumedToken;
   }
 
   @Nullable
@@ -47,4 +56,6 @@ public abstract class BatfishParser extends Parser {
   public void createErrorNodeLine() {
     ((BatfishANTLRErrorStrategy) _errHandler).recoverInCurrentNode(this);
   }
+
+  private int _lastConsumedToken;
 }
