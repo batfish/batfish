@@ -12,7 +12,6 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.stream.Stream;
@@ -279,23 +278,10 @@ public class AclIpSpace extends IpSpace {
     return ipSpaceVisitor.visitAclIpSpace(this);
   }
 
-  private LineAction action(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-    return _lines.stream()
-        .filter(line -> line.getIpSpace().containsIp(ip, namedIpSpaces))
-        .map(AclIpSpaceLine::getAction)
-        .findFirst()
-        .orElse(LineAction.DENY);
-  }
-
   @Override
   protected int compareSameClass(IpSpace o) {
     return Comparators.lexicographical(Ordering.<AclIpSpaceLine>natural())
         .compare(_lines, ((AclIpSpace) o)._lines);
-  }
-
-  @Override
-  public boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
-    return action(ip, namedIpSpaces) == LineAction.PERMIT;
   }
 
   @Override

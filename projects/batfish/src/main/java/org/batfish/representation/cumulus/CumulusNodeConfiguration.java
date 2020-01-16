@@ -1,6 +1,5 @@
 package org.batfish.representation.cumulus;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -32,10 +31,17 @@ public interface CumulusNodeConfiguration {
 
   /** Returns all the vxlan Ids for this node */
   @Nonnull
-  List<Integer> getVxlanIds();
+  Map<String, Vxlan> getVxlans();
 
   /** Returns a map from interface names to clag settings, for interfaces with Clag settings */
   Map<String, InterfaceClagSettings> getClagSettings();
 
   OspfProcess getOspfProcess();
+
+  /**
+   * Returns the VRF for the specified access VLAN or null if the input was null or a VRF wasn't
+   * configured
+   */
+  @Nullable
+  String getVrfForVlan(@Nullable Integer bridgeAccessVlan);
 }

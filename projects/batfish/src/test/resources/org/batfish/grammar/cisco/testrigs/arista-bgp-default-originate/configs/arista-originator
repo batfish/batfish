@@ -12,7 +12,10 @@ router bgp 1
  router-id 1.1.1.1
  neighbor 10.1.1.2 remote-as 2
  neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
+ network 10.10.10.0/24
 !
 route-map ROUTE_MAP permit 10
  set community 111:222 additive
  set community 333:444 additive
+!
+ip route 10.10.10.0/24 Null0

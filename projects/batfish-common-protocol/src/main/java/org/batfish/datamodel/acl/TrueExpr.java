@@ -16,11 +16,6 @@ public class TrueExpr extends AclLineMatchExpr {
   }
 
   @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return 0;
-  }
-
-  @Override
   protected boolean exprEquals(Object o) {
     return true;
   }

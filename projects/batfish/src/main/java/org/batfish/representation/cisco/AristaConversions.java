@@ -452,13 +452,14 @@ final class AristaConversions {
       trueStatementsForGeneratedDefaultRoute.add(Statements.ReturnTrue.toStaticStatement());
       exportStatements.add(
           new If(
-              new Conjunction(
-                  ImmutableList.of(
-                      Common.matchDefaultRoute(),
-                      // AGGREGATE means we generated it in this context
-                      new MatchProtocol(RoutingProtocol.AGGREGATE))),
-              trueStatementsForGeneratedDefaultRoute.build(),
-              ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
+              Common.matchDefaultRoute(), // we are exporting some default route
+              ImmutableList.of(
+                  new If(
+                      new MatchProtocol(RoutingProtocol.AGGREGATE),
+                      // default-originate (we generated it): call the routemap, etc.
+                      trueStatementsForGeneratedDefaultRoute.build(),
+                      // not default-originate: deny.
+                      ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))));
     }
     if (firstNonNull(neighbor.getNextHopSelf(), Boolean.FALSE)) {
       exportStatements.add(new SetNextHop(SelfNextHop.getInstance()));

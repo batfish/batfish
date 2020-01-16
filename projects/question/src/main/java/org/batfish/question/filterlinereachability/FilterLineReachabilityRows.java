@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.datamodel.answers.Schema;
@@ -116,8 +115,6 @@ public class FilterLineReachabilityRows {
 
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
     AclLine blockedLine = acl.getLines().get(lineNumber);
-    ActionGetter actionGetter = new ActionGetter(false);
-    LineAction blockedLineAction = actionGetter.visit(blockedLine);
 
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =
@@ -128,7 +125,7 @@ public class FilterLineReachabilityRows {
     _rows.add(
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
-            .put(COL_UNREACHABLE_LINE_ACTION, blockedLineAction)
+            .put(COL_UNREACHABLE_LINE_ACTION, ActionGetter.getLineBehavior(blockedLine))
             .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
             .put(
                 COL_BLOCKING_LINES,

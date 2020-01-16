@@ -1,0 +1,65 @@
+node1
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+auto swp2
+iface swp2
+  address 2.2.2.0/31
+
+auto swp3
+iface swp3
+  address 3.3.3.0/24
+
+auto swp4
+iface swp4
+  address 4.4.4.0/31
+  address 4.4.5.0/24
+
+auto swp5
+iface swp5
+  address 5.5.5.0/31
+
+auto swp6
+iface swp6
+  address 6.6.6.0/24
+
+auto swp7
+iface swp7
+  address 7.7.7.0/31
+  address 7.7.7.0/24
+
+auto swp8
+iface swp8
+  address 8.8.8.0/31
+
+auto swp9
+iface swp9
+  address 9.9.9.0/24
+
+auto swp10
+iface swp10
+  address 10.10.10.1/30
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ neighbor swp1 interface remote-as external
+ neighbor swp2 interface remote-as external
+ neighbor swp3 interface remote-as external
+ neighbor swp4 interface remote-as external
+ neighbor swp5 interface remote-as external
+ neighbor swp6 interface remote-as external
+ neighbor swp7 interface remote-as external
+ neighbor swp8 interface remote-as external
+ neighbor swp9 interface remote-as external
+ neighbor swp10 interface remote-as external
+!
+end
+

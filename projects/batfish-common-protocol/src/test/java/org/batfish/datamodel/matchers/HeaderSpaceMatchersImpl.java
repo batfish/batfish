@@ -2,7 +2,6 @@ package org.batfish.datamodel.matchers;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -97,17 +96,6 @@ public class HeaderSpaceMatchersImpl {
     @Override
     protected SortedSet<SubRange> featureValueOf(HeaderSpace actual) {
       return actual.getSrcOrDstPorts();
-    }
-  }
-
-  static class HasStates extends FeatureMatcher<HeaderSpace, SortedSet<FlowState>> {
-    HasStates(@Nonnull Matcher<? super SortedSet<FlowState>> subMatcher) {
-      super(subMatcher, "A HeaderSpace with states:", "states");
-    }
-
-    @Override
-    protected SortedSet<FlowState> featureValueOf(HeaderSpace actual) {
-      return actual.getStates();
     }
   }
 

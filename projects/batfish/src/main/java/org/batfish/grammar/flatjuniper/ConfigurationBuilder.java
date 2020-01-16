@@ -171,6 +171,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aas_application_setCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_destination_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
@@ -5713,12 +5714,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       FwFromJunosApplicationSet from = new FwFromJunosApplicationSet(applicationSet);
       _currentFwTerm.getFromApplicationSetMembers().add(from);
     } else {
-      String name;
-      int line;
-      name = ctx.name.getText();
-      line = getLine(ctx.name.getStart());
+      String name = ctx.name.getText();
       _configuration.referenceStructure(
-          APPLICATION_OR_APPLICATION_SET, name, SECURITY_POLICY_MATCH_APPLICATION, line);
+          APPLICATION_OR_APPLICATION_SET,
+          name,
+          SECURITY_POLICY_MATCH_APPLICATION,
+          getLine(ctx.name.getStart()));
       FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet(name);
       _currentFwTerm.getFromApplicationSetMembers().add(from);
     }
@@ -5726,22 +5727,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSepctxpm_destination_address(Sepctxpm_destination_addressContext ctx) {
-    if (ctx.address_specifier().ANY() != null) {
+    Address_specifierContext addressSpecifierContext = ctx.address_specifier();
+    if (addressSpecifierContext.ANY() != null || addressSpecifierContext.ANY_IPV4() != null) {
       return;
-    } else if (ctx.address_specifier().ANY_IPV4() != null) {
-      return;
-    } else if (ctx.address_specifier().ANY_IPV6() != null) {
+    }
+
+    if (addressSpecifierContext.ANY_IPV6() != null) {
       _currentFwTerm.setIpv6(true);
       return;
-    } else if (ctx.address_specifier().variable() != null) {
-      String addressBookEntryName = ctx.address_specifier().variable().getText();
+    }
+
+    VariableContext variable = addressSpecifierContext.variable();
+    if (variable != null) {
       FwFrom match =
           new FwFromDestinationAddressBookEntry(
-              _currentToZone, _currentLogicalSystem.getGlobalAddressBook(), addressBookEntryName);
+              _currentToZone, _currentLogicalSystem.getGlobalAddressBook(), variable.getText());
       _currentFwTerm.getFroms().add(match);
-    } else {
-      throw new BatfishException("Invalid address-specifier");
+      return;
     }
+
+    throw new BatfishException("Invalid address-specifier");
   }
 
   @Override

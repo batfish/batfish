@@ -1,0 +1,104 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp1"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp2"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp2"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp3"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp3"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp4"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp4"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp5"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp5"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp6"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp6"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp7"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp7"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp8"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp8"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp9"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp9"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "node1",
+        "interfaceName": "swp10"
+      },
+      "node2": {
+        "hostname": "node2",
+        "interfaceName": "swp10"
+      }
+    }
+  ]
+}

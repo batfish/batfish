@@ -381,12 +381,12 @@ public class EdgesAnswererTest {
   public void testGetOspfEdges() {
     NetworkFactory nf = new NetworkFactory();
     OspfProcess ospf1 =
-        OspfProcess.builder(nf).setRouterId(Ip.parse("1.1.1.1")).setReferenceBandwidth(1e8).build();
+        nf.ospfProcessBuilder().setRouterId(Ip.parse("1.1.1.1")).setReferenceBandwidth(1e8).build();
     OspfProcess ospf2 =
-        OspfProcess.builder(nf).setRouterId(Ip.parse("2.2.2.2")).setReferenceBandwidth(1e8).build();
+        nf.ospfProcessBuilder().setRouterId(Ip.parse("2.2.2.2")).setReferenceBandwidth(1e8).build();
 
-    OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf1).addInterface("int1").build();
-    OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf2).addInterface("int2").build();
+    OspfArea.builder().setNumber(1L).setOspfProcess(ospf1).addInterface("int1").build();
+    OspfArea.builder().setNumber(1L).setOspfProcess(ospf2).addInterface("int2").build();
 
     Vrf vrf1 = new Vrf("vrf1");
     vrf1.setOspfProcesses(Stream.of(ospf1));

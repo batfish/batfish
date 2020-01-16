@@ -43,6 +43,7 @@ public final class InterfacesInterface implements Serializable {
   private @Nullable InterfaceBridgeSettings _bridgeSettings;
   private @Nullable InterfaceClagSettings _clagSettings;
   private @Nullable Integer _clagId;
+  private @Nullable Ip _clagVxlanAnycastIp;
   private @Nullable String _description;
   private @Nullable String _vrfTable;
   private @Nullable Integer _linkSpeed;
@@ -264,5 +265,14 @@ public final class InterfacesInterface implements Serializable {
 
   public void addPostUpIpRoute(StaticRoute sr) {
     _postUpIpRoutes = ImmutableList.<StaticRoute>builder().addAll(_postUpIpRoutes).add(sr).build();
+  }
+
+  @Nullable
+  public Ip getClagVxlanAnycastIp() {
+    return _clagVxlanAnycastIp;
+  }
+
+  public void setClagVxlanAnycastIp(@Nullable Ip clagVxlanAnycastIp) {
+    _clagVxlanAnycastIp = clagVxlanAnycastIp;
   }
 }

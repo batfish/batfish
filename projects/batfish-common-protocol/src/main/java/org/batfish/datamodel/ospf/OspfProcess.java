@@ -23,6 +23,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,8 +34,6 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -44,7 +43,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class OspfProcess implements Serializable {
 
   /** Builder for {@link OspfProcess} */
-  public static class Builder extends NetworkFactoryBuilder<OspfProcess> {
+  public static class Builder {
 
     @Nullable private Map<RoutingProtocol, Integer> _adminCosts;
     @Nullable private String _exportPolicy;
@@ -54,6 +53,7 @@ public final class OspfProcess implements Serializable {
     @Nullable private Long _maxMetricTransitLinks;
     @Nonnull private Map<OspfNeighborConfigId, OspfNeighborConfig> _neighborConfigs;
     @Nullable private String _processId;
+    @Nullable private Supplier<String> _processIdGenerator;
     @Nullable private Double _referenceBandwidth;
     @Nullable private Vrf _vrf;
     @Nullable private Map<Long, OspfArea> _areas;
@@ -63,21 +63,22 @@ public final class OspfProcess implements Serializable {
     @Nullable private Ip _routerId;
     @Nullable private Integer _summaryAdminCost;
 
-    private Builder(@Nullable NetworkFactory networkFactory) {
-      super(networkFactory, OspfProcess.class);
+    private Builder(@Nullable Supplier<String> processIdGenerator) {
       // Default to Cisco IOS values
       _adminCosts = computeDefaultAdminCosts(ConfigurationFormat.CISCO_IOS);
       _areas = ImmutableMap.of();
       _exportPolicySources = ImmutableSet.of();
       _neighborConfigs = ImmutableMap.of();
+      _processIdGenerator = processIdGenerator;
       // Default to Cisco IOS value
       _summaryAdminCost =
           RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS);
       _generatedRoutes = ImmutableSet.of();
     }
 
-    @Override
     public @Nonnull OspfProcess build() {
+      checkArgument(
+          _processId != null || _processIdGenerator != null, "Missing %s", PROP_PROCESS_ID);
       checkArgument(_referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
       checkArgument(_adminCosts.keySet().containsAll(REQUIRES_ADMIN));
@@ -99,7 +100,7 @@ public final class OspfProcess implements Serializable {
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
               _neighborConfigs,
-              _processId != null ? _processId : generateName(),
+              _processId != null ? _processId : _processIdGenerator.get(),
               _referenceBandwidth,
               _rfc1583Compatible,
               _routerId,
@@ -223,9 +224,8 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_RFC1583 = "rfc1583Compatible";
   private static final String PROP_SUMMARY_ADMIN = "summaryAdminCost";
 
-  /** Builder to be used for tests (maintains pointer to {@link NetworkFactory} */
-  public static @Nonnull Builder builder(@Nullable NetworkFactory networkFactory) {
-    return new Builder(networkFactory);
+  public static @Nonnull Builder builder(@Nullable Supplier<String> processIdGenerator) {
+    return new Builder(processIdGenerator);
   }
 
   public static @Nonnull Builder builder() {

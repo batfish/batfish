@@ -21,11 +21,11 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
@@ -36,19 +36,20 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 /** A virtual routing and forwarding (VRF) instance on a node. */
 public class Vrf extends ComparableStructure<String> {
 
-  public static class Builder extends NetworkFactoryBuilder<Vrf> {
+  public static class Builder {
 
     @Nullable private String _name;
+    @Nullable private Supplier<String> _nameGenerator;
     @Nullable private Configuration _owner;
     @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, Vrf.class);
+    private Builder(Supplier<String> nameGenerator) {
+      _nameGenerator = nameGenerator;
     }
 
-    @Override
     public Vrf build() {
-      String name = _name != null ? _name : generateName();
+      checkArgument(_name != null || _nameGenerator != null, "Must set name before building");
+      String name = _name != null ? _name : _nameGenerator.get();
       Vrf vrf = new Vrf(name);
       if (_owner != null) {
         _owner.getVrfs().put(name, vrf);
@@ -88,6 +89,10 @@ public class Vrf extends ComparableStructure<String> {
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
+  }
+
+  public static @Nonnull Builder builder(@Nonnull Supplier<String> nameGenerator) {
+    return new Builder(nameGenerator);
   }
 
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;

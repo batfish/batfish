@@ -30,9 +30,4 @@ public class FalseExpr extends AclLineMatchExpr {
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).toString();
   }
-
-  @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return 0;
-  }
 }

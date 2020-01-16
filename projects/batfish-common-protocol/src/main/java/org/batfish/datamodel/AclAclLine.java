@@ -24,15 +24,20 @@ public final class AclAclLine extends AclLine {
   @JsonCreator
   private static AclAclLine jsonCreator(
       @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_ACL_NAME) String aclName) {
+      @Nullable @JsonProperty(PROP_ACL_NAME) String aclName,
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
     checkNotNull(name, "%s must be provided", PROP_NAME);
     checkNotNull(aclName, "%s must be provided", PROP_ACL_NAME);
-    return new AclAclLine(name, aclName);
+    return new AclAclLine(name, aclName, traceElement);
+  }
+
+  public AclAclLine(String name, String aclName, @Nullable TraceElement traceElement) {
+    super(name, traceElement);
+    _aclName = aclName;
   }
 
   public AclAclLine(String name, String aclName) {
-    super(name);
-    _aclName = aclName;
+    this(name, aclName, null);
   }
 
   @Nonnull
@@ -55,12 +60,14 @@ public final class AclAclLine extends AclLine {
       return false;
     }
     AclAclLine other = (AclAclLine) obj;
-    return Objects.equals(_aclName, other._aclName) && Objects.equals(_name, other._name);
+    return Objects.equals(_aclName, other._aclName)
+        && Objects.equals(_name, other._name)
+        && Objects.equals(_traceElement, other._traceElement);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, _name);
+    return Objects.hash(_aclName, _name, _traceElement);
   }
 
   @Override

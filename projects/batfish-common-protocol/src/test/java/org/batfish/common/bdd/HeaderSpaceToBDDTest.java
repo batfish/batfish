@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -155,19 +154,6 @@ public class HeaderSpaceToBDDTest {
     BDD bdd = _toBDD.toBDD(headerSpace);
     BDD protoBDD = _pkt.getIpProtocol().value(proto1).or(_pkt.getIpProtocol().value(proto2));
     assertThat(bdd, equalTo(protoBDD));
-  }
-
-  @Test
-  public void test_state() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setStates(ImmutableSet.of(FlowState.fromNum(0), FlowState.fromNum(1)))
-            .build();
-    BDD bdd = _toBDD.toBDD(headerSpace);
-
-    BDDInteger state = _pkt.getState();
-    BDD stateBDD = state.value(0).or(state.value(1));
-    assertThat(bdd, equalTo(stateBDD));
   }
 
   @Test

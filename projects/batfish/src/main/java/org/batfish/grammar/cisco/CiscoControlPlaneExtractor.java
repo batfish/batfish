@@ -292,7 +292,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -329,7 +328,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -420,6 +418,8 @@ import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -1272,13 +1272,28 @@ import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
-    implements ControlPlaneExtractor {
+    implements BatfishListener, ControlPlaneExtractor {
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
+
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Override
+  public Warnings getWarnings() {
+    return _w;
+  }
 
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
@@ -5728,7 +5743,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
       Set<Integer> dscps = new TreeSet<>();
       Set<Integer> ecns = new TreeSet<>();
-      Set<FlowState> states = EnumSet.noneOf(FlowState.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
         if (feature.ACK() != null) {
           tcpFlags.add(
@@ -5889,8 +5903,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           icmpType = IcmpType.TIMESTAMP_REQUEST;
         } else if (feature.TRACEROUTE() != null) {
           icmpType = IcmpType.TRACEROUTE;
-        } else if (feature.TRACKED() != null) {
-          states.add(FlowState.ESTABLISHED);
         } else if (feature.TTL_EXCEEDED() != null) {
           icmpType = IcmpType.TIME_EXCEEDED;
           icmpCode = IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
@@ -5920,7 +5932,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .setIcmpType(icmpType)
           .setProtocol(protocol)
           .setSrcPortRanges(srcPortRanges)
-          .setStates(states)
           .setTcpFlags(tcpFlags)
           .build();
     } else if (ctx.ogs != null) {
@@ -6020,7 +6031,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
-    Set<FlowState> states = EnumSet.noneOf(FlowState.class);
     for (Extended_access_list_additional_featureContext feature : ctx.features) {
       if (feature.ACK() != null) {
         tcpFlags.add(
@@ -6112,8 +6122,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         icmpType = IcmpType.TIME_EXCEEDED;
       } else if (feature.TRACEROUTE() != null) {
         icmpType = IcmpType.TRACEROUTE;
-      } else if (feature.TRACKED() != null) {
-        states.add(FlowState.ESTABLISHED);
       } else if (feature.UNREACHABLE() != null) {
         icmpType = IcmpType.DESTINATION_UNREACHABLE;
       } else if (feature.URG() != null) {
@@ -6142,7 +6150,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ecns,
             icmpType,
             icmpCode,
-            states,
             tcpFlags);
     _currentExtendedIpv6Acl.addLine(line);
   }
@@ -10425,12 +10432,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return _configuration;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
-  }
-
   private String getLocation(ParserRuleContext ctx) {
     return ctx.getStart().getLine() + ":" + ctx.getStart().getCharPositionInLine() + ": ";
   }
@@ -10593,14 +10594,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(IpsecAuthenticationAlgorithm.class, ctx);
     }
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
@@ -10938,11 +10931,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(IpProtocol.class, ctx);
     }
-  }
-
-  private String toJavaRegex(String rawRegex) {
-    // TODO: fix so it actually works
-    return rawRegex;
   }
 
   private LineAction toLineAction(Access_list_actionContext ctx) {

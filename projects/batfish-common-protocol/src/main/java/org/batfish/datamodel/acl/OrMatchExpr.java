@@ -3,17 +3,15 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Comparators;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Objects;
-import java.util.SortedSet;
 import javax.annotation.Nullable;
 
 public class OrMatchExpr extends AclLineMatchExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
 
-  private final SortedSet<AclLineMatchExpr> _disjuncts;
+  private final List<AclLineMatchExpr> _disjuncts;
 
   public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts) {
     this(disjuncts, null);
@@ -24,7 +22,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
       @JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
     super(description);
-    _disjuncts = disjuncts != null ? ImmutableSortedSet.copyOf(disjuncts) : ImmutableSortedSet.of();
+    _disjuncts = disjuncts != null ? ImmutableList.copyOf(disjuncts) : ImmutableList.of();
   }
 
   @Override
@@ -33,18 +31,12 @@ public class OrMatchExpr extends AclLineMatchExpr {
   }
 
   @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return Comparators.lexicographical(Ordering.<AclLineMatchExpr>natural())
-        .compare(_disjuncts, ((OrMatchExpr) o)._disjuncts);
-  }
-
-  @Override
   protected boolean exprEquals(Object o) {
     return Objects.equals(_disjuncts, ((OrMatchExpr) o)._disjuncts);
   }
 
   @JsonProperty(PROP_DISJUNCTS)
-  public SortedSet<AclLineMatchExpr> getDisjuncts() {
+  public List<AclLineMatchExpr> getDisjuncts() {
     return _disjuncts;
   }
 

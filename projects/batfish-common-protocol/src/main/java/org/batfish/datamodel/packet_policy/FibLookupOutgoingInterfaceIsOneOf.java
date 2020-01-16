@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -41,6 +42,7 @@ public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
   }
 
   @Nonnull
+  @JsonIgnore
   public Set<String> getInterfaceNames() {
     return _interfaceNames;
   }

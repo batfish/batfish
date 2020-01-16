@@ -76218,6 +76218,12 @@
         "configs/cisco_acl" : {
           "Parse warnings" : [
             {
+              "Comment" : "Unsupported clause in extended access list: tracked",
+              "Line" : 6,
+              "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+              "Text" : "20 permit ip any any tracked"
+            },
+            {
               "Comment" : "Unsupported clause in extended access list: ttleq255",
               "Line" : 10,
               "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
@@ -77921,9 +77927,9 @@
         "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
         "cumulus_nclu_bond" : "PASSED",
         "cumulus_nclu_interface" : "PASSED",
-        "cumulus_nclu_invalid_bonds" : "PASSED",
-        "cumulus_nclu_invalid_interfaces" : "PASSED",
-        "cumulus_nclu_invalid_vrfs" : "PASSED",
+        "cumulus_nclu_invalid_bonds" : "WARNINGS",
+        "cumulus_nclu_invalid_interfaces" : "WARNINGS",
+        "cumulus_nclu_invalid_vrfs" : "WARNINGS",
         "cumulus_nclu_invalid_vxlans" : "PASSED",
         "cumulus_nclu_routing" : "PASSED",
         "cumulus_nclu_stp" : "PASSED",
@@ -94841,6 +94847,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Vxlan vni10004 is not configured properly: bridge access vlan is not defined"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Vxlan vni10001 is not configured properly: bridge access vlan is not defined"
             }
           ]
         },
@@ -94853,6 +94867,30 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Skipping invalidly configured BGP peer 1.1.1.2"
+            }
+          ]
+        },
+        "cumulus_nclu_invalid_bonds" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Vxlan v1 is not configured properly: bridge access vlan is not defined"
+            }
+          ]
+        },
+        "cumulus_nclu_invalid_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Vxlan v1 is not configured properly: bridge access vlan is not defined"
+            }
+          ]
+        },
+        "cumulus_nclu_invalid_vrfs" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Vxlan vx1 is not configured properly: bridge access vlan is not defined"
             }
           ]
         },

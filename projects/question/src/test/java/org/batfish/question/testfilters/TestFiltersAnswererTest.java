@@ -1,11 +1,11 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
+import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isDefaultDeniedByIpAccessListNamed;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclLineThat;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
@@ -36,8 +36,8 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.matchers.PermittedByAclLineMatchers;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
@@ -151,11 +151,7 @@ public class TestFiltersAnswererTest {
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
                     TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(
-                        contains(
-                            ImmutableList.of(
-                                isPermittedByAclLineThat(
-                                    PermittedByAclLineMatchers.hasName(acl.getName()))))),
+                    hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 1)))),
                     Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
@@ -165,8 +161,7 @@ public class TestFiltersAnswererTest {
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
                 hasColumn(
                     TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(
-                        contains(isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()))),
+                    hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(referencedAcl)))),
                     Schema.ACL_TRACE))));
   }
 

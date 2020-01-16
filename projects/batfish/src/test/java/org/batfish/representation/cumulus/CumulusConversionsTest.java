@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
+import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
@@ -16,11 +17,13 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeLocal
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
+import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
+import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
@@ -47,6 +50,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -79,6 +83,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.routing_policy.Common;
@@ -114,7 +119,7 @@ public final class CumulusConversionsTest {
 
   private Environment finalEnvironment(Statement statement, String network) {
     RoutingPolicy policy =
-        RoutingPolicy.builder(_nf).setOwner(_c).setStatements(ImmutableList.of(statement)).build();
+        _nf.routingPolicyBuilder().setOwner(_c).setStatements(ImmutableList.of(statement)).build();
     Environment env =
         Environment.builder(_c)
             .setOriginalRoute(
@@ -133,7 +138,7 @@ public final class CumulusConversionsTest {
 
   private boolean value(BooleanExpr expr, Environment env) {
     RoutingPolicy policy =
-        RoutingPolicy.builder(_nf)
+        _nf.routingPolicyBuilder()
             .setOwner(_c)
             .setStatements(
                 ImmutableList.of(
@@ -619,7 +624,14 @@ public final class CumulusConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+        viConfig,
+        vsConfig,
+        neighbor,
+        10000L,
+        new BgpVrf("vrf"),
+        newProc,
+        peerConfigBuilder,
+        new Warnings());
   }
 
   @Test
@@ -677,7 +689,14 @@ public final class CumulusConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+        viConfig,
+        vsConfig,
+        neighbor,
+        10000L,
+        new BgpVrf("vrf"),
+        newProc,
+        peerConfigBuilder,
+        new Warnings());
 
     // there should be no generated default route
     assertThat(
@@ -711,7 +730,14 @@ public final class CumulusConversionsTest {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder().setPeerAddress(peerIp);
     generateBgpCommonPeerConfig(
-        viConfig, vsConfig, neighbor, 10000L, new BgpVrf("vrf"), newProc, peerConfigBuilder);
+        viConfig,
+        vsConfig,
+        neighbor,
+        10000L,
+        new BgpVrf("vrf"),
+        newProc,
+        peerConfigBuilder,
+        new Warnings());
 
     // there should be a generated default route
     assertThat(
@@ -760,7 +786,8 @@ public final class CumulusConversionsTest {
         10000L,
         new BgpVrf("Vrf"),
         newProc,
-        peerConfigBuilder);
+        peerConfigBuilder,
+        new Warnings());
 
     BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(peerIp.toPrefix());
     assertTrue(peerConfig.getEbgpMultihop());
@@ -810,29 +837,32 @@ public final class CumulusConversionsTest {
 
     {
       // address family is null
-      assertFalse(
-          convertIpv4UnicastAddressFamily(null, true, policy, null)
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn());
+      AddressFamilyCapabilities capabilities =
+          convertIpv4UnicastAddressFamily(null, true, policy, null).getAddressFamilyCapabilities();
+      assertFalse(capabilities.getAllowLocalAsIn());
+      // Counter-part to allow-as-in. Always true
+      assertTrue(capabilities.getAllowRemoteAsOut());
     }
 
     {
       // address family is non-null but allowasin is not set
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
-      assertFalse(
-          convertIpv4UnicastAddressFamily(af, true, policy, null)
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn());
+      AddressFamilyCapabilities capabilities =
+          convertIpv4UnicastAddressFamily(af, true, policy, null).getAddressFamilyCapabilities();
+      assertFalse(capabilities.getAllowLocalAsIn());
+      // Counter-part to allow-as-in. Always true
+      assertTrue(capabilities.getAllowRemoteAsOut());
     }
 
     {
       // address family is non-null and allowasin is  set
       BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
       af.setAllowAsIn(5);
-      assertTrue(
-          convertIpv4UnicastAddressFamily(af, true, policy, null)
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn());
+      AddressFamilyCapabilities capabilities =
+          convertIpv4UnicastAddressFamily(af, true, policy, null).getAddressFamilyCapabilities();
+      assertTrue(capabilities.getAllowLocalAsIn());
+      // Counter-part to allow-as-in. Always true
+      assertTrue(capabilities.getAllowRemoteAsOut());
     }
   }
 
@@ -1049,6 +1079,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_HasArea() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     vsIface.getOrCreateOspf().setOspfArea(1L);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
@@ -1080,6 +1111,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_NoNetworkType() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
@@ -1097,9 +1129,11 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_NoPassiveInterface() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
-    vsIface.getOrCreateOspf();
+    OspfInterface ospf = vsIface.getOrCreateOspf();
+    ospf.setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
@@ -1112,8 +1146,30 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testAddOspfInterfaces_NoPassiveInterface_DefaultPassive() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
+    ncluConfiguration.getOspfProcess().setDefaultPassiveInterface(true);
+
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    OspfInterface ospf = vsIface.getOrCreateOspf();
+    ospf.setOspfArea(0L);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
+    assertTrue(viIface.getOspfPassive());
+  }
+
+  @Test
   public void testAddOspfInterfaces_PassiveInterface() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     OspfInterface ospf = vsIface.getOrCreateOspf();
@@ -1133,6 +1189,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_NetworkTypeP2P() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
@@ -1153,6 +1210,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_HelloInterval() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
@@ -1179,6 +1237,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_DeadInterval() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
@@ -1205,6 +1264,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testAddOspfInterfaces_ProcessId() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
     Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
     ncluConfiguration.getInterfaces().put("iface", vsIface);
     vsIface.getOrCreateOspf().setOspfArea(0L);
@@ -1356,5 +1416,166 @@ public final class CumulusConversionsTest {
         .build();
 
     assertEquals(resolveLocalIpFromUpdateSource(source, c, warnings), Ip.parse("1.1.1.1"));
+  }
+
+  /**
+   * An interface neighbor with (only) a /31 or /30 address should be treated as a numbered neighbor
+   */
+  @Test
+  public void testAddBgpNeighbor_numberedInterface() {
+    // set up the VI bgp process
+    org.batfish.datamodel.BgpProcess bgpProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf viVrf = Vrf.builder().setName("vrf").build();
+    viVrf.setBgpProcess(bgpProc);
+
+    // set up the vi interface
+    ConcreteInterfaceAddress ifaceAddress = ConcreteInterfaceAddress.parse("1.1.1.1/31");
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setName("iface")
+            .setOwner(c)
+            .setAddress(ifaceAddress)
+            .build();
+    c.getAllInterfaces().put(viIface.getName(), viIface);
+    c.getVrfs().put(viVrf.getName(), viVrf);
+
+    BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
+    neighbor.setRemoteAs(123L);
+
+    addBgpNeighbor(
+        c,
+        CumulusConcatenatedConfiguration.builder().build(),
+        new BgpVrf(viVrf.getName()),
+        neighbor,
+        new Warnings());
+
+    Prefix peerPrefix = Prefix.parse("1.1.1.0/32");
+    assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
+    assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
+  }
+
+  @Test
+  public void testInferPeerIp_slash31() {
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")) // first address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.1")));
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")) // second address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.0")));
+  }
+
+  @Test
+  public void testInferPeerIp_slash30() {
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/30")) // first address (network)
+                .setName("iface")
+                .build()),
+        Optional.empty());
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")) // second address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.2")));
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")) // third address
+                .setName("iface")
+                .build()),
+        Optional.of(Ip.parse("1.1.1.1")));
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/30")) // fourth address (bcast)
+                .setName("iface")
+                .build()),
+        Optional.empty());
+  }
+
+  @Test
+  public void testInferPeerIp_otherLength() {
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/32"))
+                .setName("iface")
+                .build()),
+        Optional.empty());
+    assertEquals(
+        inferPeerIp(
+            org.batfish.datamodel.Interface.builder()
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/29"))
+                .setName("iface")
+                .build()),
+        Optional.empty());
+  }
+
+  @Test
+  public void testInferPeerIp_multipleAddresses() {
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setAddresses(
+                ConcreteInterfaceAddress.parse("1.1.1.1/31"),
+                ConcreteInterfaceAddress.parse("2.2.2.2/31"))
+            .setName("iface")
+            .build();
+    assertEquals(inferPeerIp(viIface), Optional.empty());
+  }
+
+  @Test
+  public void testConvertVxlan_localIpPrecedence() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf vrf = new Vrf("vrf");
+    c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
+
+    Ip vxlanLocalTunnelIp = Ip.parse("1.1.1.1");
+    Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
+    Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
+
+    Vxlan vxlan = new Vxlan("vxlan1001");
+    vxlan.setId(1001);
+    vxlan.setBridgeAccessVlan(101);
+    vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
+
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setVxlans(ImmutableMap.of(vxlan.getName(), vxlan));
+
+    // vxlan's local tunnel ip should win when anycast is null
+    convertVxlans(
+        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(vxlanLocalTunnelIp));
+
+    // anycast should win if non-null
+    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
+    convertVxlans(
+        c,
+        vsConfig,
+        ImmutableMap.of(1001, vrf.getName()),
+        loopbackAnycastIp,
+        loopbackTunnelIp,
+        new Warnings());
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackAnycastIp));
+
+    // loopback tunnel ip should win when nothing else is present
+    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
+    vxlan.setLocalTunnelip(null);
+    convertVxlans(
+        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
   }
 }

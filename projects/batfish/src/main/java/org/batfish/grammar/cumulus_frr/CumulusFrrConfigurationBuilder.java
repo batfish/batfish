@@ -73,8 +73,11 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceCont
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_defaultContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_interface_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
@@ -95,6 +98,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfCont
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
@@ -256,7 +260,18 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   private static long toLong(TerminalNode t) {
-        return Long.parseLong(t.getText());
+    return Long.parseLong(t.getText());
+  }
+  
+  private void clearOspfPassiveInterface() {
+    _frr.getInterfaces()
+        .values()
+        .forEach(
+            iface -> {
+              if (iface.getOspf() != null) {
+                iface.getOspf().setPassive(null);
+              }
+            });
   }
 
   @Override
@@ -348,6 +363,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+  }
+
+  @Override
+  public void exitSbafls_advertise_default_gw(Sbafls_advertise_default_gwContext ctx) {
+    _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
   }
 
   @Override
@@ -801,7 +821,31 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
+  public void exitRonopi_default(Ronopi_defaultContext ctx) {
+    clearOspfPassiveInterface();
+    _frr.getOspfProcess().setDefaultPassiveInterface(false);
+  }
+
+  @Override
+  public void exitRonopi_interface_name(Ronopi_interface_nameContext ctx) {
+    String ifaceName = ctx.name.getText();
+    if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
+        && !_frr.getInterfaces().containsKey(ifaceName)) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
+      return;
+    }
+    _frr.getOrCreateInterface(ifaceName).getOrCreateOspf().setPassive(false);
+  }
+
+  @Override
+  public void exitRopi_default(Ropi_defaultContext ctx) {
+    clearOspfPassiveInterface();
+    _frr.getOspfProcess().setDefaultPassiveInterface(true);
+  }
+
+  @Override
+  public void exitRopi_interface_name(Ropi_interface_nameContext ctx) {
     String ifaceName = ctx.name.getText();
     if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
         && !_frr.getInterfaces().containsKey(ifaceName)) {

@@ -11,7 +11,9 @@ public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
 
   public abstract <R> R accept(GenericIpSpaceVisitor<R> visitor);
 
-  public abstract boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces);
+  public final boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
+    return accept(new IpSpaceContainsIp(ip, namedIpSpaces));
+  }
 
   /** Return the {@link IpSpace} of all IPs not in {@code this}. */
   public final IpSpace complement() {

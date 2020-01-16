@@ -438,6 +438,11 @@ EXPORT
     'export'
 ;
 
+EXPORT_NEXTHOP
+:
+    'export-nexthop'
+;
+
 EXT_1
 :
     'ext-1'
@@ -626,6 +631,11 @@ IKE_CRYPTO_PROFILES
 IMPORT
 :
     'import'
+;
+
+IMPORT_NEXTHOP
+:
+    'import-nexthop'
 ;
 
 INCOMING_BGP_CONNECTION
@@ -883,6 +893,11 @@ ORIGIN
     'origin'
 ;
 
+ORIGINAL
+:
+    'original'
+;
+
 OSPF
 :
     'ospf'
@@ -1073,6 +1088,11 @@ REMOTE_PORT
     'remote-port'
 ;
 
+REMOVE_PRIVATE_AS
+:
+    'remove-private-as'
+;
+
 RESET_BOTH
 :
     'reset-both'
@@ -1086,6 +1106,11 @@ RESET_CLIENT
 RESET_SERVER
 :
     'reset-server'
+;
+
+RESOLVE
+:
+    'resolve'
 ;
 
 RETRANSMIT_INTERVAL
@@ -1406,6 +1431,16 @@ UPDATE_SERVER
 URL
 :
     'url'
+;
+
+USE_PEER
+:
+    'use-peer'
+;
+
+USE_SELF
+:
+    'use-self'
 ;
 
 USED_BY

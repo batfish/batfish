@@ -24,7 +24,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.SearchFiltersAnswerer.DiffConfigContext;
-import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,28 +40,22 @@ public class SearchFiltersAnswererDifferentialTest {
   private static final String IFACE2 = "iface2";
   private static final Ip IP = Ip.parse("1.2.3.4");
   private static final SearchFiltersQuery PERMIT_QUERY = PermitQuery.INSTANCE;
+  private static final SearchFiltersParameters DEFAULT_PARAMS =
+      new SearchFiltersQuestion().toSearchFiltersParameters();
 
-  private NetworkFactory _nf;
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
   private IpAccessList.Builder _ab;
-  private SearchFiltersParameters _params;
 
   @Before
   public void setup() {
-    _nf = new NetworkFactory();
+    NetworkFactory nf = new NetworkFactory();
     _cb =
-        _nf.configurationBuilder()
+        nf.configurationBuilder()
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder();
-    _ab = _nf.aclBuilder();
-    _params =
-        new SearchFiltersQuestion()
-            .toSearchFiltersParameters()
-            .toBuilder()
-            .setStartLocationSpecifier(LocationSpecifier.ALL_LOCATIONS)
-            .build();
+    _ib = nf.interfaceBuilder();
+    _ab = nf.aclBuilder();
   }
 
   private static IBatfish getBatfish(Configuration baseConfig, Configuration deltaConfig) {
@@ -97,7 +90,7 @@ public class SearchFiltersAnswererDifferentialTest {
             snapshot,
             reference,
             batfish,
-            _params,
+            DEFAULT_PARAMS,
             PKT);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
@@ -114,7 +107,7 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             snapshot,
             getBatfish(refConfig, config),
-            _params,
+            DEFAULT_PARAMS,
             PKT);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
@@ -144,7 +137,7 @@ public class SearchFiltersAnswererDifferentialTest {
             snapshot,
             reference,
             batfish,
-            _params,
+            DEFAULT_PARAMS,
             PKT);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
@@ -161,7 +154,7 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             snapshot,
             getBatfish(refConfig, config),
-            _params,
+            DEFAULT_PARAMS,
             PKT);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
@@ -192,7 +185,7 @@ public class SearchFiltersAnswererDifferentialTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     NetworkSnapshot reference = batfish.getReferenceSnapshot();
     SearchFiltersParameters params =
-        _params
+        DEFAULT_PARAMS
             .toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
@@ -208,7 +201,7 @@ public class SearchFiltersAnswererDifferentialTest {
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     params =
-        _params
+        DEFAULT_PARAMS
             .toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE2))
             .build();

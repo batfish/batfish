@@ -1,6 +1,6 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.SortedSet;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -14,7 +14,7 @@ public class AndMatchExprMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the AndMatchExpr's
    * conjuncts.
    */
-  public static HasConjuncts hasConjuncts(Matcher<? super SortedSet<AclLineMatchExpr>> subMatcher) {
+  public static HasConjuncts hasConjuncts(Matcher<? super List<AclLineMatchExpr>> subMatcher) {
     return new HasConjuncts(subMatcher);
   }
 

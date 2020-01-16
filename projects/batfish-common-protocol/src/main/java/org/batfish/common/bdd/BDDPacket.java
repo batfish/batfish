@@ -20,7 +20,6 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
@@ -64,7 +63,6 @@ public class BDDPacket {
   private static final int IP_LENGTH = 32;
   private static final int IP_PROTOCOL_LENGTH = 8;
   private static final int PORT_LENGTH = 16;
-  private static final int STATE_LENGTH = 2;
   private static final int TCP_FLAG_LENGTH = 1;
 
   private final Map<Integer, String> _bitNames;
@@ -82,7 +80,6 @@ public class BDDPacket {
   private final @Nonnull BDDIpProtocol _ipProtocol;
   private final @Nonnull BDDInteger _srcIp;
   private final @Nonnull BDDInteger _srcPort;
-  private final @Nonnull BDDInteger _state;
   private final @Nonnull BDD _tcpAck;
   private final @Nonnull BDD _tcpCwr;
   private final @Nonnull BDD _tcpEce;
@@ -132,8 +129,7 @@ public class BDDPacket {
             + TCP_FLAG_LENGTH * 8
             + DSCP_LENGTH
             + ECN_LENGTH
-            + FRAGMENT_OFFSET_LENGTH
-            + STATE_LENGTH;
+            + FRAGMENT_OFFSET_LENGTH;
     if (_factory.varNum() < numNeeded) {
       _factory.setVarNum(numNeeded);
     }
@@ -158,7 +154,6 @@ public class BDDPacket {
     _dscp = allocateBDDInteger("dscp", DSCP_LENGTH, false);
     _ecn = allocateBDDInteger("ecn", ECN_LENGTH, false);
     _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH, false);
-    _state = allocateBDDInteger("state", STATE_LENGTH, false);
 
     _pairing = _factory.makePair();
     _swapSourceAndDestinationPairing =
@@ -213,7 +208,7 @@ public class BDDPacket {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
     BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, reverse);
-    addBitNames(name, STATE_LENGTH, _nextFreeBDDVarIdx, false);
+    addBitNames(name, bits, _nextFreeBDDVarIdx, false);
     _nextFreeBDDVarIdx += bits;
     return var;
   }
@@ -283,7 +278,6 @@ public class BDDPacket {
     fb.setDscp(_dscp.satAssignmentToLong(satAssignment).intValue());
     fb.setEcn(_ecn.satAssignmentToLong(satAssignment).intValue());
     fb.setFragmentOffset(_fragmentOffset.satAssignmentToLong(satAssignment).intValue());
-    fb.setState(FlowState.fromNum(_state.satAssignmentToLong(satAssignment).intValue()));
     return fb;
   }
 
@@ -335,11 +329,6 @@ public class BDDPacket {
   @Nonnull
   public BDDInteger getSrcPort() {
     return _srcPort;
-  }
-
-  @Nonnull
-  public BDDInteger getState() {
-    return _state;
   }
 
   @Nonnull
@@ -402,7 +391,6 @@ public class BDDPacket {
     result = 31 * result + _dscp.hashCode();
     result = 31 * result + _ecn.hashCode();
     result = 31 * result + _fragmentOffset.hashCode();
-    result = 31 * result + _state.hashCode();
     return result;
   }
 
@@ -430,8 +418,7 @@ public class BDDPacket {
         && _tcpUrg.equals(other._tcpUrg)
         && _dscp.equals(other._dscp)
         && _ecn.equals(other._ecn)
-        && _fragmentOffset.equals(other._fragmentOffset)
-        && _state.equals(other._state);
+        && _fragmentOffset.equals(other._fragmentOffset);
   }
 
   public BDD restrict(BDD bdd, Prefix pfx) {

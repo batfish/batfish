@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -76,8 +75,7 @@ final class Conversions {
   /** Creates and stores a routing policy from the given statement in configuration object */
   static void statementToRoutingPolicy(
       Statement statement, Configuration c, String routingPolicyName) {
-    new NetworkFactory()
-        .routingPolicyBuilder()
+    RoutingPolicy.builder()
         .setOwner(c)
         .setName(routingPolicyName)
         .setStatements(ImmutableList.of(statement))
@@ -237,7 +235,7 @@ final class Conversions {
       BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
     List<PolicyRule> exportPolicyRulesUsedByThisPeer =
         bgpVr.getExportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
+            .filter(ep -> ep.getUsedBy().contains(peerGroupName))
             .collect(ImmutableList.toImmutableList());
 
     List<Statement> statementsForExportPolicyRules =
@@ -250,8 +248,7 @@ final class Conversions {
     // Conjunction)
     String policyRulesRpNameForPeer =
         getRoutingPolicyNameForExportPolicyRulesForPeer(vr.getName(), peer.getName());
-    new NetworkFactory()
-        .routingPolicyBuilder()
+    RoutingPolicy.builder()
         .setOwner(c)
         .setName(policyRulesRpNameForPeer)
         .setStatements(statementsForExportPolicyRules)
@@ -265,8 +262,7 @@ final class Conversions {
                 new CallExpr(generatedBgpCommonExportPolicyName(vr.getName())),
                 new CallExpr(policyRulesRpNameForPeer)));
 
-    return new NetworkFactory()
-        .routingPolicyBuilder()
+    return RoutingPolicy.builder()
         .setOwner(c)
         .setName(generatedBgpPeerExportPolicyName(vr.getName(), peer.getName()))
         .setStatements(
@@ -283,7 +279,7 @@ final class Conversions {
       BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
     List<PolicyRule> importPolicyRulesUsedByThisPeer =
         bgpVr.getImportPolicyRules().values().stream()
-            .filter(ep -> ep.getUsedBy() != null && ep.getUsedBy().equals(peerGroupName))
+            .filter(ep -> ep.getUsedBy().contains(peerGroupName))
             .collect(ImmutableList.toImmutableList());
 
     if (importPolicyRulesUsedByThisPeer.isEmpty()) {
@@ -298,8 +294,7 @@ final class Conversions {
                 Stream.of(Statements.ReturnFalse.toStaticStatement()))
             .collect(ImmutableList.toImmutableList());
 
-    return new NetworkFactory()
-        .routingPolicyBuilder()
+    return RoutingPolicy.builder()
         .setOwner(c)
         .setName(generatedBgpPeerImportPolicyName(vr.getName(), peer.getName()))
         .setStatements(statementsForImportPolicyRules)

@@ -19,13 +19,12 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.bgp.BgpConfederation;
 
 /** Represents a bgp process on a router */
 public class BgpProcess implements Serializable {
 
-  public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
+  public static class Builder {
 
     @Nullable private BgpConfederation _confederation;
     @Nullable private Integer _ebgpAdminCost;
@@ -33,11 +32,6 @@ public class BgpProcess implements Serializable {
     @Nullable private Ip _routerId;
     @Nullable private Vrf _vrf;
 
-    private Builder(@Nullable NetworkFactory networkFactory) {
-      super(networkFactory, BgpProcess.class);
-    }
-
-    @Override
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
       checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
@@ -197,11 +191,7 @@ public class BgpProcess implements Serializable {
   }
 
   public static Builder builder() {
-    return new Builder(null);
-  }
-
-  static Builder builder(@Nullable NetworkFactory nf) {
-    return new Builder(nf);
+    return new Builder();
   }
 
   /**

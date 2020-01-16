@@ -1,6 +1,7 @@
 package org.batfish.datamodel.ospf;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,22 +15,22 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.Prefix;
 
 /** Represents an OSPF area configuration */
 public class OspfArea implements Serializable {
 
   /** A builder for {@link OspfArea} */
-  public static class Builder extends NetworkFactoryBuilder<OspfArea> {
+  public static class Builder {
 
     private boolean _injectDefaultRoute = DEFAULT_INJECT_DEFAULT_ROUTE;
     @Nonnull private ImmutableSortedSet.Builder<String> _interfaces;
     @Nullable private NssaSettings _nssa;
     @Nullable private Long _number;
+    @Nullable private Supplier<Long> _numberGenerator;
     private int _metricOfDefaultRoute = DEFAULT_METRIC_OF_DEFAULT_ROUTE;
     @Nullable private OspfProcess _ospfProcess;
     @Nullable private StubSettings _stub;
@@ -37,16 +38,16 @@ public class OspfArea implements Serializable {
     @Nonnull private ImmutableSortedMap.Builder<Prefix, OspfAreaSummary> _summaries;
     @Nullable private String _summaryFilter;
 
-    Builder(NetworkFactory networkFactory) {
-      super(networkFactory, OspfArea.class);
+    private Builder(@Nullable Supplier<Long> numberGenerator) {
+      _numberGenerator = numberGenerator;
       _interfaces = new ImmutableSortedSet.Builder<>(Ordering.natural());
       _stubType = StubType.NONE;
       _summaries = new ImmutableSortedMap.Builder<>(Ordering.natural());
     }
 
-    @Override
     public OspfArea build() {
-      long number = _number != null ? _number : generateLong();
+      checkArgument(_number != null || _numberGenerator != null, "Must set number before building");
+      long number = _number != null ? _number : _numberGenerator.get();
       OspfArea ospfArea =
           new OspfArea(
               number,
@@ -190,8 +191,8 @@ public class OspfArea implements Serializable {
   private static final String PROP_SUMMARIES = "summaries";
   private static final String PROP_SUMMARY_FILTER = "summaryFilter";
 
-  public static Builder builder(NetworkFactory networkFactory) {
-    return new Builder(networkFactory);
+  public static Builder builder(Supplier<Long> nameGenerator) {
+    return new Builder(nameGenerator);
   }
 
   public static Builder builder() {

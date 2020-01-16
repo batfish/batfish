@@ -1,6 +1,7 @@
 package org.batfish.question.filterlinereachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.bdd.PermitAndDenyBdds.takeDifferentActions;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityRows.createMetadata;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedAcls;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedInterfaces;
@@ -110,9 +111,8 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       AclLine originalLine = _sanitizedLines.remove(lineNum);
 
       // If the original line has a concrete action, preserve it; otherwise default to DENY
-      ActionGetter actionGetter = new ActionGetter(false);
       LineAction unmatchableLineAction =
-          firstNonNull(actionGetter.visit(originalLine), LineAction.DENY);
+          firstNonNull(ActionGetter.getAction(originalLine), LineAction.DENY);
       _sanitizedLines.add(
           lineNum,
           ExprAclLine.builder()
@@ -566,15 +566,6 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     }
 
     return new BlockingProperties(answerLines.build(), diffAction);
-  }
-
-  /**
-   * Returns true if the lines represented by the given {@link PermitAndDenyBdds} can take different
-   * actions on the same packet
-   */
-  private static boolean takeDifferentActions(PermitAndDenyBdds bdds1, PermitAndDenyBdds bdds2) {
-    return bdds1.getPermitBdd().andSat(bdds2.getDenyBdd())
-        || bdds1.getDenyBdd().andSat(bdds2.getPermitBdd());
   }
 
   private static void answerAclReachabilityLine(

@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.function.Function;
@@ -48,18 +49,21 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -101,6 +105,8 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.datamodel.vxlan.Vni;
 
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -163,6 +169,46 @@ public final class CumulusConversions {
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
+  }
+
+  /**
+   * Infers the peer Ip for the interface. This is doable only if the interface has exactly one
+   * (primary) address that is a /30 or /31. For a /30, the address must NOT be the first or last
+   * address in the range.
+   *
+   * @return the inferred Ip or empty optional if that is not possible.
+   */
+  @VisibleForTesting
+  @Nonnull
+  static Optional<Ip> inferPeerIp(Interface viIface) {
+    // one concrete interface address
+    if (viIface.getAllAddresses().size() != 1
+        || viIface.getAddress() == null
+        || !(viIface.getAddress() instanceof ConcreteInterfaceAddress)) {
+      return Optional.empty();
+    }
+    ConcreteInterfaceAddress ifaceAddress =
+        (ConcreteInterfaceAddress) viIface.getAllAddresses().iterator().next();
+    Prefix prefix = ifaceAddress.getPrefix();
+
+    if (ifaceAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 1) { // 31
+      return Optional.of(
+          ifaceAddress.getIp().equals(prefix.getStartIp())
+              ? prefix.getEndIp()
+              : prefix.getStartIp());
+    }
+    if (ifaceAddress.getNetworkBits() == Prefix.MAX_PREFIX_LENGTH - 2) { // 30
+      if (ifaceAddress.getIp().equals(prefix.getStartIp())
+          || ifaceAddress.getIp().equals(prefix.getEndIp())) {
+        return Optional.empty();
+      }
+      return Optional.of(
+          ifaceAddress.getIp().equals(prefix.getFirstHostIp())
+              ? prefix.getLastHostIp()
+              : prefix.getFirstHostIp());
+    }
+
+    return Optional.empty();
   }
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -329,29 +375,10 @@ public final class CumulusConversions {
     Iterables.concat(ImmutableSet.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values())
         .forEach(
             bgpVrf -> {
-              Long localAs = bgpVrf.getAutonomousSystem();
-              org.batfish.datamodel.BgpProcess viBgpProcess =
-                  c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
               bgpVrf
                   .getNeighbors()
-                  .forEach(
-                      (neighborName, neighbor) -> {
-                        if (neighbor instanceof BgpInterfaceNeighbor) {
-                          BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-                          interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                          addInterfaceNeighbor(
-                              c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
-                        } else if (neighbor instanceof BgpIpNeighbor) {
-                          BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-                          ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
-                          addIpv4BgpNeighbor(
-                              c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-                        } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
-                          throw new IllegalArgumentException(
-                              "Unsupported BGP neighbor type: "
-                                  + neighbor.getClass().getSimpleName());
-                        }
-                      });
+                  .values()
+                  .forEach(neighbor -> addBgpNeighbor(c, vsConfig, bgpVrf, neighbor, w));
             });
   }
 
@@ -405,7 +432,33 @@ public final class CumulusConversions {
     return newProc;
   }
 
-  private static void addInterfaceNeighbor(
+  @VisibleForTesting
+  static void addBgpNeighbor(
+      Configuration c,
+      CumulusNodeConfiguration vsConfig,
+      BgpVrf bgpVrf,
+      BgpNeighbor neighbor,
+      Warnings w) {
+
+    Long localAs = bgpVrf.getAutonomousSystem();
+    org.batfish.datamodel.BgpProcess viBgpProcess =
+        c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
+
+    if (neighbor instanceof BgpInterfaceNeighbor) {
+      BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
+      interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
+    } else if (neighbor instanceof BgpIpNeighbor) {
+      BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
+      ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
+    } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
+      throw new IllegalArgumentException(
+          "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
+    }
+  }
+
+  private static void addInterfaceBgpNeighbor(
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       BgpInterfaceNeighbor neighbor,
@@ -417,11 +470,26 @@ public final class CumulusConversions {
       w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
       return;
     }
-    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
-        BgpUnnumberedPeerConfig.builder()
-            .setLocalIp(BGP_UNNUMBERED_IP)
-            .setPeerInterface(neighbor.getName());
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+
+    BgpPeerConfig.Builder<?, ?> peerConfigBuilder;
+
+    // if an interface neighbor has only one address and that address is a /31, it gets treated as
+    // numbered peer
+    Interface viIface = c.getAllInterfaces().get(neighbor.getName());
+    Optional<Ip> inferredIp = inferPeerIp(viIface);
+    if (inferredIp.isPresent()) {
+      peerConfigBuilder =
+          BgpActivePeerConfig.builder()
+              .setLocalIp(((ConcreteInterfaceAddress) viIface.getAddress()).getIp())
+              .setPeerAddress(inferredIp.get());
+    } else {
+      peerConfigBuilder =
+          BgpUnnumberedPeerConfig.builder()
+              .setLocalIp(BGP_UNNUMBERED_IP)
+              .setPeerInterface(neighbor.getName());
+    }
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @VisibleForTesting
@@ -432,7 +500,8 @@ public final class CumulusConversions {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      BgpPeerConfig.Builder<?, ?> peerConfigBuilder) {
+      BgpPeerConfig.Builder<?, ?> peerConfigBuilder,
+      Warnings w) {
 
     RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf);
     @Nullable
@@ -457,7 +526,7 @@ public final class CumulusConversions {
                 importRoutingPolicy))
         .setEvpnAddressFamily(
             toEvpnAddressFamily(
-                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy))
+                c, vsConfig, neighbor, localAs, bgpVrf, newProc, exportRoutingPolicy, w))
         .build();
   }
 
@@ -496,6 +565,7 @@ public final class CumulusConversions {
                 .setAllowLocalAsIn(
                     (ipv4UnicastAddressFamily != null
                         && (firstNonNull(ipv4UnicastAddressFamily.getAllowAsIn(), 0) > 0)))
+                .setAllowRemoteAsOut(true) // this is always true
                 .build())
         .setExportPolicy(exportRoutingPolicy.getName())
         .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
@@ -525,7 +595,8 @@ public final class CumulusConversions {
                     .orElse(
                         computeLocalIpForBgpNeighbor(neighbor.getPeerIp(), c, bgpVrf.getVrfName())))
             .setPeerAddress(neighbor.getPeerIp());
-    generateBgpCommonPeerConfig(c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder);
+    generateBgpCommonPeerConfig(
+        c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
   @Nonnull
@@ -906,7 +977,8 @@ public final class CumulusConversions {
       @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
-      RoutingPolicy routingPolicy) {
+      RoutingPolicy routingPolicy,
+      Warnings w) {
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
     // sadly, we allow localAs == null in VI datamodel
     if (evpnConfig == null
@@ -922,7 +994,10 @@ public final class CumulusConversions {
     CommonUtil.forEachWithIndex(
         // Keep indices in deterministic order
         ImmutableList.sortedCopyOf(
-            Comparator.nullsLast(Comparator.naturalOrder()), vsConfig.getVxlanIds()),
+            Comparator.nullsLast(Comparator.naturalOrder()),
+            vsConfig.getVxlans().values().stream()
+                .map(Vxlan::getId)
+                .collect(ImmutableSet.toImmutableSet())),
         (index, vni) -> {
           if (vni == null) {
             return;
@@ -964,6 +1039,10 @@ public final class CumulusConversions {
               if (l3Vni == null) {
                 return;
               }
+              if (!vniToIndex.containsKey(l3Vni)) {
+                w.redFlag(String.format("vni %s for vrf %s does not exist", l3Vni, innerVrfName));
+                return;
+              }
               RouteDistinguisher rd =
                   RouteDistinguisher.from(
                       Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
@@ -1000,6 +1079,7 @@ public final class CumulusConversions {
             AddressFamilyCapabilities.builder()
                 .setSendCommunity(true)
                 .setSendExtendedCommunity(true)
+                .setAllowRemoteAsOut(true) // this is always true
                 .build())
         .setRouteReflectorClient(
             firstNonNull(
@@ -1139,7 +1219,9 @@ public final class CumulusConversions {
           OspfInterface ospfInterface = ospfOpt.get();
           iface.setOspfSettings(
               OspfInterfaceSettings.builder()
-                  .setPassive(Optional.ofNullable(ospfInterface.getPassive()).orElse(false))
+                  .setPassive(
+                      Optional.ofNullable(ospfInterface.getPassive())
+                          .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
                   .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
                   .setDeadInterval(
@@ -1307,5 +1389,88 @@ public final class CumulusConversions {
                 .setPeerAddress(peerAddress)
                 .setPeerInterface(peerInterfaceName)
                 .build()));
+  }
+
+  /**
+   * Converts {@link Vxlan} into appropriate {@link Vni} for each VRF. Requires VI Vrfs to already
+   * be properly initialized
+   */
+  static void convertVxlans(
+      Configuration c,
+      CumulusNodeConfiguration vsConfig,
+      Map<Integer, String> vniToVrf,
+      @Nullable Ip loopbackClagVxlanAnycastIp,
+      @Nullable Ip loopbackVxlanLocalTunnelIp,
+      Warnings w) {
+
+    // Put all valid VXLAN VNIs into appropriate VRF
+    vsConfig
+        .getVxlans()
+        .values()
+        .forEach(
+            vxlan -> {
+              if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
+                // Not a valid VNI configuration
+                w.redFlag(
+                    String.format(
+                        "Vxlan %s is not configured properly: %s is not defined",
+                        vxlan.getName(),
+                        vxlan.getId() == null ? "vxlan id" : "bridge access vlan"));
+                return;
+              }
+              // Cumulus documents complex conditions for when clag-anycast address is a valid
+              // source:
+              // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
+              // In testing, we couldn't reproduce that behavior and the address was always active.
+              // We go with that assumption here until we can reproduce the exact behavior.
+              Ip localIp =
+                  Stream.of(
+                          loopbackClagVxlanAnycastIp,
+                          vxlan.getLocalTunnelip(),
+                          loopbackVxlanLocalTunnelIp)
+                      .filter(Objects::nonNull)
+                      .findFirst()
+                      .orElse(null);
+              if (localIp == null) {
+                w.redFlag(
+                    String.format(
+                        "Local tunnel IP for vxlan %s is not configured", vxlan.getName()));
+                return;
+              }
+              @Nullable String vrfName = vniToVrf.get(vxlan.getId());
+              if (vrfName != null) {
+                // This is an L3 VNI.
+                Optional.ofNullable(c.getVrfs().get(vrfName))
+                    .ifPresent(
+                        vrf ->
+                            vrf.addLayer3Vni(
+                                Layer3Vni.builder()
+                                    .setVni(vxlan.getId())
+                                    .setSourceAddress(localIp)
+                                    .setUdpPort(NamedPort.VXLAN.number())
+                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                                    .setSrcVrf(DEFAULT_VRF_NAME)
+                                    .build()));
+              } else {
+                // This is an L2 VNI. Find the VRF by looking up the VLAN
+                vrfName = vsConfig.getVrfForVlan(vxlan.getBridgeAccessVlan());
+                if (vrfName == null) {
+                  // This is a workaround until we properly support pure-L2 VNIs (with no IRBs)
+                  vrfName = DEFAULT_VRF_NAME;
+                }
+                Optional.ofNullable(c.getVrfs().get(vrfName))
+                    .ifPresent(
+                        vrf ->
+                            vrf.addLayer2Vni(
+                                Layer2Vni.builder()
+                                    .setVni(vxlan.getId())
+                                    .setVlan(vxlan.getBridgeAccessVlan())
+                                    .setSourceAddress(localIp)
+                                    .setUdpPort(NamedPort.VXLAN.number())
+                                    .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                                    .setSrcVrf(DEFAULT_VRF_NAME)
+                                    .build()));
+              }
+            });
   }
 }

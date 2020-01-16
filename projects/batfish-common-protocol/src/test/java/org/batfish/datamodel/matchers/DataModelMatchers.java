@@ -24,13 +24,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTrace;
-import org.batfish.datamodel.acl.DefaultDeniedByAclIpSpace;
-import org.batfish.datamodel.acl.DefaultDeniedByIpAccessList;
-import org.batfish.datamodel.acl.DeniedByAclIpSpaceLine;
-import org.batfish.datamodel.acl.DeniedByAclLine;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.PermittedByAclIpSpaceLine;
-import org.batfish.datamodel.acl.PermittedByAclLine;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -43,17 +37,9 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterLi
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
-import org.batfish.datamodel.matchers.DefaultDeniedByAclIpSpaceMatchers.IsDefaultDeniedByAclIpSpaceThat;
-import org.batfish.datamodel.matchers.DefaultDeniedByIpAccessListMatchers.IsDefaultDeniedByIpAccessListThat;
-import org.batfish.datamodel.matchers.DeniedByAclIpSpaceLineMatchersImpl.IsDeniedByAclIpSpaceLineThat;
-import org.batfish.datamodel.matchers.DeniedByAclLineMatchersImpl.IsDeniedByAclLineThat;
-import org.batfish.datamodel.matchers.DeniedByNamedIpSpaceMatchers.IsDeniedByNamedIpSpaceThat;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
-import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPermittedByAclIpSpaceLineThat;
-import org.batfish.datamodel.matchers.PermittedByAclLineMatchersImpl.IsPermittedByAclLineThat;
-import org.batfish.datamodel.matchers.PermittedByNamedIpSpaceMatchers.IsPermittedByNamedIpSpaceThat;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -379,99 +365,6 @@ public final class DataModelMatchers {
       @Nonnull String structureName,
       int numReferrers) {
     return new HasNumReferrers(hostname, type, structureName, numReferrers);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DefaultDeniedByAclIpSpace} for the
-   * {@link AclIpSpace} named {@code aclName}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByAclIpSpaceNamed(
-      @Nonnull String aclName) {
-    return new IsDefaultDeniedByAclIpSpaceThat(
-        new DefaultDeniedByAclIpSpaceMatchers.HasName(equalTo(aclName)));
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DefaultDeniedByAclIpSpace} matched by
-   * the provided {@code subMatcher}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByAclIpSpaceThat(
-      Matcher<? super DefaultDeniedByAclIpSpace> subMatcher) {
-    return new IsDefaultDeniedByAclIpSpaceThat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DefaultDeniedByIpAccessList} for the
-   * {@link IpAccessList} named {@code aclName}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByIpAccessListNamed(
-      @Nonnull String aclName) {
-    return new IsDefaultDeniedByIpAccessListThat(
-        new DefaultDeniedByIpAccessListMatchers.HasName(equalTo(aclName)));
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DefaultDeniedByIpAccessList} matched
-   * by the provided {@code subMatcher}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByIpAccessListThat(
-      Matcher<? super DefaultDeniedByIpAccessList> subMatcher) {
-    return new IsDefaultDeniedByIpAccessListThat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DeniedByAclIpSpaceLine} matched by
-   * the provided {@code subMatcher}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDeniedByAclIpSpaceLineThat(
-      Matcher<? super DeniedByAclIpSpaceLine> subMatcher) {
-    return new IsDeniedByAclIpSpaceLineThat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DeniedByAclLine} matched by the
-   * provided {@code subMatcher}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDeniedByAclLineThat(
-      Matcher<? super DeniedByAclLine> subMatcher) {
-    return new IsDeniedByAclLineThat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link DeniedByNamedIpSpace} for the {@link
-   * IpSpace} named {@code ipSpaceName}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isDeniedByNamedIpSpace(@Nonnull String ipSpaceName) {
-    return new IsDeniedByNamedIpSpaceThat(
-        new DeniedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link PermittedByAclIpSpaceLine} matched by
-   * the provided {@code subMatcher}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isPermittedByAclIpSpaceLineThat(
-      Matcher<? super PermittedByAclIpSpaceLine> subMatcher) {
-    return new IsPermittedByAclIpSpaceLineThat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link PermittedByAclLine} matched by the
-   * provided {@code subMatcher}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isPermittedByAclLineThat(
-      Matcher<? super PermittedByAclLine> subMatcher) {
-    return new IsPermittedByAclLineThat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the object is a {@link PermittedByNamedIpSpace} for the
-   * {@link IpSpace} named {@code ipSpaceName}.
-   */
-  public static @Nonnull Matcher<TraceEvent> isPermittedByNamedIpSpace(
-      @Nonnull String ipSpaceName) {
-    return new IsPermittedByNamedIpSpaceThat(
-        new PermittedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));
   }
 
   /**

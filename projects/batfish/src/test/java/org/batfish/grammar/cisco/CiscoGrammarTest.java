@@ -297,7 +297,6 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
@@ -438,14 +437,9 @@ public final class CiscoGrammarTest {
   }
 
   private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort) {
-    return createFlow(protocol, srcPort, dstPort, FlowState.NEW);
-  }
-
-  private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort, FlowState state) {
     return Flow.builder()
         .setIngressNode("")
         .setIpProtocol(protocol)
-        .setState(state)
         .setSrcPort(srcPort)
         .setDstPort(dstPort)
         .build();
@@ -830,6 +824,8 @@ public final class CiscoGrammarTest {
             .setLocalPreference(100)
             .build();
     assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    // Ensure 10.10.10.0/24 doesn't get blocked
+    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.parse("10.10.10.0/24"))));
   }
 
   @Test
@@ -1098,7 +1094,7 @@ public final class CiscoGrammarTest {
 
     Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
-    Flow anyFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow anyFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Confirm access list permits only traffic matching both ACL and security level restrictions
     // highIface1 has inbound filter permitting all IP traffic
@@ -2134,7 +2130,7 @@ public final class CiscoGrammarTest {
     // Listener 1
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
-    Long originatorAs = 1L;
+    long originatorAs = 1L;
     Bgpv4Route expected =
         Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
@@ -5091,12 +5087,12 @@ public final class CiscoGrammarTest {
     assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
     Transformation destTransformation =
-        when(and(matchIface, permittedByAcl(nat2AclName)))
+        when(and(permittedByAcl(nat2AclName), matchIface))
             .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
             .build();
 
     Transformation outTransformation =
-        when(and(matchIface, permittedByAcl(nat1AclName)))
+        when(and(permittedByAcl(nat1AclName), matchIface))
             .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
             .setAndThen(destTransformation)
             .setOrElse(destTransformation)
@@ -5190,10 +5186,10 @@ public final class CiscoGrammarTest {
 
     // Check that the inside-to-outside transformation evaluates the static NAT first
     Transformation outTransformation =
-        when(and(matchIface, matchSrc(staticNatLocal)))
+        when(and(matchSrc(staticNatLocal), matchIface))
             .apply(shiftSourceIp(staticNatGlobal))
             .setOrElse(
-                when(and(matchIface, permittedByAcl(dynamicNatAcl)))
+                when(and(permittedByAcl(dynamicNatAcl), matchIface))
                     .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
                     .build())
             .build();
@@ -5312,8 +5308,7 @@ public final class CiscoGrammarTest {
     String explicit45Interface = "some-trust";
     String outsideInterface = "outside";
 
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
-    Flow establishedFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.ESTABLISHED);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Confirm zones are created for each level
     assertThat(c, hasZone(computeSecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
@@ -5389,28 +5384,6 @@ public final class CiscoGrammarTest {
         hasInterface(
             explicit45Interface,
             hasPreTransformationOutgoingFilter(rejects(newFlow, outsideInterface, c))));
-
-    // All established flows are accepted
-    assertThat(
-        c,
-        hasInterface(
-            explicit45Interface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
-    assertThat(
-        c,
-        hasInterface(
-            insideInterface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
-    assertThat(
-        c,
-        hasInterface(
-            insideInterface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, explicit45Interface, c))));
-    assertThat(
-        c,
-        hasInterface(
-            insideInterface,
-            hasPreTransformationOutgoingFilter(accepts(establishedFlow, explicit100Interface, c))));
   }
 
   @Test
@@ -5418,7 +5391,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Allow traffic in and out of the same interface
     assertThat(
@@ -5446,7 +5419,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-inter");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // No traffic in and out of the same interface
     assertThat(
@@ -5474,7 +5447,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("asa-security-level-permit-intra");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
-    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0, FlowState.NEW);
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Allow traffic in and out of the same interface
     assertThat(
@@ -5745,8 +5718,7 @@ public final class CiscoGrammarTest {
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
 
     MatchHeaderSpace matchSourceSubnet =
-        matchSrc(
-            new IpSpaceReference("source-subnet", "Match network object-group: 'source-subnet'"));
+        matchSrc(new IpSpaceReference("source-subnet", "Match network object: 'source-subnet'"));
     MatchHeaderSpace matchSourceGroup =
         matchSrc(
             new IpSpaceReference("source-group", "Match network object-group: 'source-group'"));
@@ -5767,7 +5739,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("inside"), matchSourceSubnet))
+            when(and(matchSourceSubnet, matchSrcInterface("inside")))
                 .apply(assignSourceRange)
                 .build()));
 
@@ -5780,7 +5752,7 @@ public final class CiscoGrammarTest {
         twice,
         equalTo(
             when(and(
-                    and(matchSrcInterface("inside"), matchSourceGroup),
+                    and(matchSourceGroup, matchSrcInterface("inside")),
                     matchDst(mappedDestination)))
                 .apply(ImmutableList.of(assignSourceRange, shiftDestinationIp(realDestination)))
                 .build()));
@@ -5888,7 +5860,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("inside"), matchSrc(realSourceHost)))
+            when(and(matchSrc(realSourceHost), matchSrcInterface("inside")))
                 .apply(shiftSourceIp(mappedSourceHost))
                 .build()));
 
@@ -5909,7 +5881,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("outside"), matchSrc(Prefix.ZERO)))
+            when(and(matchSrc(Prefix.ZERO), matchSrcInterface("outside")))
                 .apply(shiftSourceIp(Prefix.ZERO))
                 .build()));
 
@@ -5921,7 +5893,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrcInterface("inside"), matchSrc(realSourceSubnet)))
+            when(and(matchSrc(realSourceSubnet), matchSrcInterface("inside")))
                 .apply(shiftSourceIp(mappedSourceSubnet))
                 .build()));
 
@@ -5954,7 +5926,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchDst(mappedDestHost), matchSrc(realSourceSubnet)))
+            when(and(matchSrc(realSourceSubnet), matchDst(mappedDestHost)))
                 .apply(
                     ImmutableList.of(
                         shiftSourceIp(mappedSourceSubnet), shiftDestinationIp(realDestHost)))
@@ -5965,7 +5937,7 @@ public final class CiscoGrammarTest {
     assertThat(
         twice,
         equalTo(
-            when(and(matchSrc(realDestHost), matchDst(mappedSourceSubnet)))
+            when(and(matchDst(mappedSourceSubnet), matchSrc(realDestHost)))
                 .apply(
                     ImmutableList.of(
                         shiftDestinationIp(realSourceSubnet), shiftSourceIp(mappedDestHost)))
@@ -5992,7 +5964,7 @@ public final class CiscoGrammarTest {
         twice,
         equalTo(
             when(and(
-                    and(matchSrcInterface("inside"), matchSrc(realSource)),
+                    and(matchSrc(realSource), matchSrcInterface("inside")),
                     matchDst(mappedDestination)))
                 .apply(
                     ImmutableList.of(

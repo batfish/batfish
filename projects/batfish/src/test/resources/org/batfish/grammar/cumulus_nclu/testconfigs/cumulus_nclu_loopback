@@ -6,5 +6,6 @@ net add loopback lo
 net add loopback lo clag vxlan-anycast-ip 192.0.2.1
 net add loopback lo ip address 10.0.0.1/32
 net add loopback lo ip address 10.0.1.1/24
+net add loopback lo vxlan local-tunnelip 10.11.11.11
 #
 net commit

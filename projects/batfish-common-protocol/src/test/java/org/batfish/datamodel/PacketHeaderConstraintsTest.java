@@ -201,7 +201,6 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getPacketLengths(), nullValue());
     assertThat(constraints.getFragmentOffsets(), nullValue());
     assertThat(constraints.getIpProtocols(), nullValue());
-    assertThat(constraints.getFlowStates(), nullValue());
     assertThat(constraints.getSrcIps(), nullValue());
     assertThat(constraints.getDstIps(), nullValue());
     assertThat(constraints.getIcmpCodes(), nullValue());
@@ -223,7 +222,6 @@ public class PacketHeaderConstraintsTest {
     assertThat(constraints.getFragmentOffsets(), nullValue());
     assertThat(constraints.getIpProtocols(), nullValue());
     assertThat(constraints.getSrcIps(), nullValue());
-    assertThat(constraints.getFlowStates(), nullValue());
     assertThat(constraints.getDstIps(), nullValue());
     assertThat(constraints.getIcmpCodes(), nullValue());
     assertThat(constraints.getIcmpTypes(), nullValue());

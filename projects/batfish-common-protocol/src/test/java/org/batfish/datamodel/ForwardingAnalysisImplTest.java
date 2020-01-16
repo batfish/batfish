@@ -1604,11 +1604,6 @@ public class ForwardingAnalysisImplTest {
     }
 
     @Override
-    public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-      throw new UnsupportedOperationException("no implementation for generated method");
-    }
-
-    @Override
     protected boolean exprEquals(Object o) {
       return _num == ((MockIpSpace) o)._num;
     }

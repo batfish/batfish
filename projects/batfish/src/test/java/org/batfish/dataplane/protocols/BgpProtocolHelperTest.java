@@ -29,7 +29,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -309,7 +308,7 @@ public class BgpProtocolHelperTest {
     Bgpv4Route result =
         convertGeneratedRouteToBgp(
             GeneratedRoute.builder().setNetwork(Prefix.ZERO).setDiscard(true).build(),
-            RoutingPolicy.builder(nf)
+            nf.routingPolicyBuilder()
                 .setOwner(c)
                 .setStatements(
                     ImmutableList.of(
