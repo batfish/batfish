@@ -5,9 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Ordering;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -32,12 +30,6 @@ public class MatchSrcInterface extends AclLineMatchExpr {
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
     return visitor.visitMatchSrcInterface(this);
-  }
-
-  @Override
-  protected int compareSameClass(AclLineMatchExpr o) {
-    return Comparators.lexicographical(Ordering.<String>natural())
-        .compare(_srcInterfaces, ((MatchSrcInterface) o)._srcInterfaces);
   }
 
   @Override

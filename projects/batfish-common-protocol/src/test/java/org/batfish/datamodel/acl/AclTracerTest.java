@@ -449,14 +449,14 @@ public class AclTracerTest {
                         hasChildren(
                             contains(
                                 allOf(
-                                    hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
+                                    hasTraceElement(permittedByAclLine(aclIndirect1, 0)),
                                     hasChildren(empty()))))),
                     allOf(
                         hasTraceElement(nullValue()), // and conjunct
                         hasChildren(
                             contains(
                                 allOf(
-                                    hasTraceElement(permittedByAclLine(aclIndirect1, 0)),
+                                    hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
                                     hasChildren(empty())))))))));
 
     AclTrace trace = new AclTrace(root);
@@ -465,7 +465,7 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 TraceEvent.of(permittedByAclLine(acl, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect2, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect1, 0)))));
+                TraceEvent.of(permittedByAclLine(aclIndirect1, 0)),
+                TraceEvent.of(permittedByAclLine(aclIndirect2, 0)))));
   }
 }

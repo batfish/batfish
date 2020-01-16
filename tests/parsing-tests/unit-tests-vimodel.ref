@@ -2573,11 +2573,11 @@
                   "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_0'",
                   "disjuncts" : [
                     {
-                      "class" : "org.batfish.datamodel.acl.FalseExpr"
-                    },
-                    {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                       "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
                     }
                   ]
                 }
@@ -8670,11 +8670,11 @@
                   "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_100'",
                   "disjuncts" : [
                     {
-                      "class" : "org.batfish.datamodel.acl.FalseExpr"
-                    },
-                    {
                       "class" : "org.batfish.datamodel.acl.PermittedByAcl",
                       "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
                     }
                   ]
                 }
