@@ -168,7 +168,9 @@ public class ElasticsearchDomainTest {
     Configuration esDomain = configurations.get("es-domain");
     assertThat(esDomain.getAllInterfaces().entrySet(), hasSize(2));
     assertThat(
-        esDomain.getIpAccessLists().get("~EGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"),
+        esDomain
+            .getIpAccessLists()
+            .get("~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
@@ -177,7 +179,9 @@ public class ElasticsearchDomainTest {
                             .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                             .build())))));
     assertThat(
-        esDomain.getIpAccessLists().get("~INGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"),
+        esDomain
+            .getIpAccessLists()
+            .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
@@ -195,14 +199,15 @@ public class ElasticsearchDomainTest {
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
-                    "Test Security Group", "~INGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"))));
+                    "Security Group Test Security Group",
+                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"))));
     assertThat(
         esDomain.getIpAccessLists().get("~SECURITY_GROUP_EGRESS_ACL~").getLines(),
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
-                    "Test Security Group",
-                    "~EGRESS~Test Security Group~" + "sg-0de0ddfa8a5a45810~"))));
+                    "Security Group Test Security Group",
+                    "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~"))));
     for (Interface iface : esDomain.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
       assertThat(iface.getOutgoingFilter().getName(), equalTo("~SECURITY_GROUP_EGRESS_ACL~"));

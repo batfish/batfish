@@ -143,7 +143,9 @@ public class RdsInstanceTest {
     Configuration testRds = configurations.get("test-rds");
     assertThat(testRds.getAllInterfaces().entrySet(), hasSize(2));
     assertThat(
-        testRds.getIpAccessLists().get("~EGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"),
+        testRds
+            .getIpAccessLists()
+            .get("~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
@@ -152,7 +154,9 @@ public class RdsInstanceTest {
                             .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                             .build())))));
     assertThat(
-        testRds.getIpAccessLists().get("~INGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"),
+        testRds
+            .getIpAccessLists()
+            .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
@@ -170,13 +174,15 @@ public class RdsInstanceTest {
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
-                    "Test Security Group", "~INGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"))));
+                    "Security Group Test Security Group",
+                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"))));
     assertThat(
         testRds.getIpAccessLists().get("~SECURITY_GROUP_EGRESS_ACL~").getLines(),
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
-                    "Test Security Group", "~EGRESS~Test Security Group~sg-0de0ddfa8a5a45810~"))));
+                    "Security Group Test Security Group",
+                    "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~"))));
     for (Interface iface : testRds.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
       assertThat(iface.getOutgoingFilter().getName(), equalTo("~SECURITY_GROUP_EGRESS_ACL~"));
