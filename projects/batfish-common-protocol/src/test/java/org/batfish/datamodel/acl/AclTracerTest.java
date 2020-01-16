@@ -458,4 +458,56 @@ public class AclTracerTest {
                 TraceEvent.of(permittedByAclLine(aclIndirect1, 0)),
                 TraceEvent.of(permittedByAclLine(aclIndirect2, 0)))));
   }
+
+  @Test
+  public void testTraceOrExpr() {
+    String aclIndirectName1 = "aclIndirect1";
+    String aclIndirectName2 = "aclIndirect2";
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName(ACL_NAME)
+            .setLines(
+                ImmutableList.of(
+                    ExprAclLine.accepting()
+                        .setMatchCondition(
+                            new OrMatchExpr(
+                                ImmutableList.of(
+                                    new PermittedByAcl(aclIndirectName1),
+                                    new PermittedByAcl(aclIndirectName2))))
+                        .build()))
+            .build();
+    IpAccessList aclIndirect1 =
+        IpAccessList.builder().setName(aclIndirectName1).setLines(ImmutableList.of()).build();
+    IpAccessList aclIndirect2 =
+        IpAccessList.builder()
+            .setName(aclIndirectName2)
+            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
+            .build();
+    Map<String, IpAccessList> availableAcls =
+        ImmutableMap.of(
+            ACL_NAME, acl, aclIndirectName1, aclIndirect1, aclIndirectName2, aclIndirect2);
+    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
+    Map<String, IpSpaceMetadata> namedIpSpaceMetadata = ImmutableMap.of();
+    TraceTree root =
+        AclTracer.trace(
+            acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
+
+    assertThat(
+        root,
+        allOf(
+            hasTraceElement(permittedByAclLine(acl, 0)),
+            hasChildren(
+                contains(
+                    allOf(
+                        hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
+                        hasChildren(empty()))))));
+
+    AclTrace trace = new AclTrace(root);
+    assertThat(
+        trace,
+        hasEvents(
+            contains(
+                TraceEvent.of(permittedByAclLine(acl, 0)),
+                TraceEvent.of(permittedByAclLine(aclIndirect2, 0)))));
+  }
 }

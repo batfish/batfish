@@ -321,9 +321,12 @@ public final class AclTracer extends AclLineEvaluator {
     return orMatchExpr.getDisjuncts().stream()
         .anyMatch(
             d -> {
-              _tracer.newSubTrace();
               Boolean result = d.accept(this);
-              _tracer.endSubTrace();
+              if (!result) {
+                // Throw away tracing for the failed disjunct.
+                _tracer.discardSubTrace();
+                _tracer.newSubTrace();
+              }
               return result;
             });
   }
