@@ -364,7 +364,7 @@ public class CumulusConcatenatedGrammarTest {
             .setNextHopIp(origNextHopIp)
             .setNetwork(Prefix.parse("10.20.30.0/31"))
             .setTag(0L)
-            .setMetric(1L)
+            .setMetric(2L)
             .build();
     Configuration c = parseConfig("set_metric_test");
     RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_METRIC_TEST");
@@ -380,8 +380,8 @@ public class CumulusConcatenatedGrammarTest {
     Bgpv4Route outputRoute4 = processRouteIn(rp4, inRoute);
     Bgpv4Route outputRoute5 = processRouteIn(rp5, inRoute);
     assertThat(outputRoute1.getMetric(), equalTo(10L));
-    assertThat(outputRoute2.getMetric(), equalTo(2L));
-    assertThat(outputRoute3.getMetric(), equalTo(0L));
+    assertThat(outputRoute2.getMetric(), equalTo(3L));
+    assertThat(outputRoute3.getMetric(), equalTo(1L));
     assertThat(outputRoute4.getMetric(), equalTo(0xFFFFFFFFL));
     assertThat(outputRoute5.getMetric(), equalTo(0L));
   }
