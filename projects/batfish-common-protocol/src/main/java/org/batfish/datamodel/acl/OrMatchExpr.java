@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.TraceElement;
 
 public class OrMatchExpr extends AclLineMatchExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
@@ -14,14 +15,18 @@ public class OrMatchExpr extends AclLineMatchExpr {
   private final List<AclLineMatchExpr> _disjuncts;
 
   public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts) {
-    this(disjuncts, null);
+    this(disjuncts, (TraceElement)null);
+  }
+
+  public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts, @Nullable String traceElement) {
+    this(disjuncts, traceElement == null ? null : TraceElement.of(traceElement));
   }
 
   @JsonCreator
   public OrMatchExpr(
       @JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts,
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    super(description);
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
+    super(traceElement);
     _disjuncts = disjuncts != null ? ImmutableList.copyOf(disjuncts) : ImmutableList.of();
   }
 
@@ -49,7 +54,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
         .omitNullValues()
-        .add(PROP_DESCRIPTION, _description)
+        .add(PROP_TRACE_ELEMENT, _traceElement)
         .add(PROP_DISJUNCTS, _disjuncts)
         .toString();
   }

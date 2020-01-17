@@ -112,7 +112,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
     public AclLineMatchExpr visitPermittedByAcl(PermittedByAcl permittedByAcl) {
       PermittedByAcl newPermittedByAcl =
           new PermittedByAcl(
-              _aclRenamer.apply(permittedByAcl.getAclName()), permittedByAcl.getDescription());
+              _aclRenamer.apply(permittedByAcl.getAclName()), permittedByAcl.getTraceElement());
       _literalsMap.put(permittedByAcl, newPermittedByAcl);
       return newPermittedByAcl;
     }

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.TraceElement;
 
 public class AndMatchExpr extends AclLineMatchExpr {
   private static final String PROP_CONJUNCTS = "conjuncts";
@@ -14,15 +15,19 @@ public class AndMatchExpr extends AclLineMatchExpr {
   private final List<AclLineMatchExpr> _conjuncts;
 
   public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts) {
-    this(conjuncts, null);
+    this(conjuncts, (TraceElement)null);
   }
 
   @JsonCreator
   public AndMatchExpr(
       @JsonProperty(PROP_CONJUNCTS) Iterable<AclLineMatchExpr> conjuncts,
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    super(description);
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
+    super(traceElement);
     _conjuncts = conjuncts != null ? ImmutableList.copyOf(conjuncts) : ImmutableList.of();
+  }
+
+  public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts, @Nullable String traceElement) {
+    this(conjuncts, traceElement == null ? null : TraceElement.of(traceElement));
   }
 
   @Override
@@ -42,14 +47,14 @@ public class AndMatchExpr extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_conjuncts, _description);
+    return Objects.hash(_conjuncts, _traceElement);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
         .omitNullValues()
-        .add(PROP_DESCRIPTION, _description)
+        .add(PROP_TRACE_ELEMENT, _traceElement)
         .add(PROP_CONJUNCTS, _conjuncts)
         .toString();
   }
