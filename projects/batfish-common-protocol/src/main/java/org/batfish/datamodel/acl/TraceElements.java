@@ -36,17 +36,6 @@ public final class TraceElements {
     return TraceElement.of(description);
   }
 
-  public static TraceElement defaultDeniedByIpAccessList(IpAccessList ipAccessList) {
-    String name = ipAccessList.getName();
-    @Nullable String sourceName = ipAccessList.getSourceName();
-    @Nullable String sourceType = ipAccessList.getSourceType();
-    String description =
-        sourceName != null
-            ? String.format("Flow did not match '%s' named '%s'", sourceType, sourceName)
-            : String.format("Flow did not match ACL named '%s'", name);
-    return TraceElement.of(description);
-  }
-
   public static TraceElement permittedByNamedIpSpace(
       Ip ip,
       String ipDescription,
