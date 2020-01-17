@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.TraceElement;
 
 public class MatchSrcInterface extends AclLineMatchExpr {
   private static final String PROP_SRC_INTERFACES = "srcInterfaces";
@@ -16,15 +17,19 @@ public class MatchSrcInterface extends AclLineMatchExpr {
   private final Set<String> _srcInterfaces;
 
   public MatchSrcInterface(Iterable<String> interfaces) {
-    this(interfaces, null);
+    this(interfaces, (TraceElement) null);
   }
 
   @JsonCreator
   public MatchSrcInterface(
       @JsonProperty(PROP_SRC_INTERFACES) @Nullable Iterable<String> interfaces,
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    super(description);
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
+    super(traceElement);
     _srcInterfaces = ImmutableSet.copyOf(firstNonNull(interfaces, ImmutableSet.of()));
+  }
+
+  public MatchSrcInterface(@Nullable Iterable<String> interfaces, @Nullable String traceElement) {
+    this(interfaces, traceElement == null ? null : TraceElement.of(traceElement));
   }
 
   @Override
