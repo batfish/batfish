@@ -41,7 +41,8 @@ public class FibLookupOutgoingInterfaceIsOneOfTest {
   @Test
   public void testJsonSerialization() throws IOException {
     FibLookupOutgoingInterfaceIsOneOf expr =
-        new FibLookupOutgoingInterfaceIsOneOf(IngressInterfaceVrf.instance(), ImmutableSet.of());
+        new FibLookupOutgoingInterfaceIsOneOf(
+            IngressInterfaceVrf.instance(), ImmutableSet.of("iface"));
     assertThat(
         BatfishObjectMapper.clone(expr, FibLookupOutgoingInterfaceIsOneOf.class), equalTo(expr));
   }

@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.function.Function;
@@ -1006,19 +1007,27 @@ public final class CumulusConversions {
     Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
 
     if (evpnConfig.getAdvertiseAllVni()) {
-      for (Layer2Vni vxlan : c.getVrfs().get(bgpVrf.getVrfName()).getLayer2Vnis().values()) {
-        RouteDistinguisher rd =
-            RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-        ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
-        // Advertise L2 VNIs
-        l2Vnis.add(
-            Layer2VniConfig.builder()
-                .setVni(vxlan.getVni())
-                .setVrf(bgpVrf.getVrfName())
-                .setRouteDistinguisher(rd)
-                .setRouteTarget(rt)
-                .build());
-      }
+      c.getVrfs()
+          .values()
+          .forEach(
+              vrf ->
+                  vrf.getLayer2Vnis()
+                      .values()
+                      .forEach(
+                          vxlan -> {
+                            RouteDistinguisher rd =
+                                RouteDistinguisher.from(
+                                    newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+                            ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
+                            // Advertise L2 VNIs
+                            l2Vnis.add(
+                                Layer2VniConfig.builder()
+                                    .setVni(vxlan.getVni())
+                                    .setVrf(vrf.getName())
+                                    .setRouteDistinguisher(rd)
+                                    .setRouteTarget(rt)
+                                    .build());
+                          }));
     }
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
@@ -1096,7 +1105,8 @@ public final class CumulusConversions {
    * cumulus documentation</a> for detailed explanation.
    */
   @Nonnull
-  private static ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+  @VisibleForTesting
+  static ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
@@ -1398,7 +1408,9 @@ public final class CumulusConversions {
       Configuration c,
       CumulusNodeConfiguration vsConfig,
       Map<Integer, String> vniToVrf,
-      @Nullable Ip loopbackClagVxlanAnycastIp) {
+      @Nullable Ip loopbackClagVxlanAnycastIp,
+      @Nullable Ip loopbackVxlanLocalTunnelIp,
+      Warnings w) {
 
     // Put all valid VXLAN VNIs into appropriate VRF
     vsConfig
@@ -1406,10 +1418,32 @@ public final class CumulusConversions {
         .values()
         .forEach(
             vxlan -> {
-              if (vxlan.getId() == null
-                  || vxlan.getLocalTunnelip() == null
-                  || vxlan.getBridgeAccessVlan() == null) {
+              if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
                 // Not a valid VNI configuration
+                w.redFlag(
+                    String.format(
+                        "Vxlan %s is not configured properly: %s is not defined",
+                        vxlan.getName(),
+                        vxlan.getId() == null ? "vxlan id" : "bridge access vlan"));
+                return;
+              }
+              // Cumulus documents complex conditions for when clag-anycast address is a valid
+              // source:
+              // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
+              // In testing, we couldn't reproduce that behavior and the address was always active.
+              // We go with that assumption here until we can reproduce the exact behavior.
+              Ip localIp =
+                  Stream.of(
+                          loopbackClagVxlanAnycastIp,
+                          vxlan.getLocalTunnelip(),
+                          loopbackVxlanLocalTunnelIp)
+                      .filter(Objects::nonNull)
+                      .findFirst()
+                      .orElse(null);
+              if (localIp == null) {
+                w.redFlag(
+                    String.format(
+                        "Local tunnel IP for vxlan %s is not configured", vxlan.getName()));
                 return;
               }
               @Nullable String vrfName = vniToVrf.get(vxlan.getId());
@@ -1421,9 +1455,7 @@ public final class CumulusConversions {
                             vrf.addLayer3Vni(
                                 Layer3Vni.builder()
                                     .setVni(vxlan.getId())
-                                    .setSourceAddress(
-                                        firstNonNull(
-                                            loopbackClagVxlanAnycastIp, vxlan.getLocalTunnelip()))
+                                    .setSourceAddress(localIp)
                                     .setUdpPort(NamedPort.VXLAN.number())
                                     .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                                     .setSrcVrf(DEFAULT_VRF_NAME)
@@ -1442,9 +1474,7 @@ public final class CumulusConversions {
                                 Layer2Vni.builder()
                                     .setVni(vxlan.getId())
                                     .setVlan(vxlan.getBridgeAccessVlan())
-                                    .setSourceAddress(
-                                        firstNonNull(
-                                            loopbackClagVxlanAnycastIp, vxlan.getLocalTunnelip()))
+                                    .setSourceAddress(localIp)
                                     .setUdpPort(NamedPort.VXLAN.number())
                                     .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                                     .setSrcVrf(DEFAULT_VRF_NAME)

@@ -151,12 +151,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     InterfacesInterface vsLoopback =
         _interfacesConfiguration.getInterfaces().get(LOOPBACK_INTERFACE_NAME);
     @Nullable
-    Ip loopbackClagVxlanAnycastIp =
-        vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null
-            ? vsLoopback.getClagVxlanAnycastIp()
-            : null;
+    Ip loopbackClagVxlanAnycastIp = vsLoopback == null ? null : vsLoopback.getClagVxlanAnycastIp();
+    @Nullable
+    Ip loopbackVxlanLocalTunnelIp = vsLoopback == null ? null : vsLoopback.getVxlanLocalTunnelIp();
 
-    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp);
+    convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, loopbackVxlanLocalTunnelIp, _w);
 
     convertOspfProcess(c, this, _w);
     convertBgpProcess(c, this, _w);
@@ -414,11 +413,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       double speed = vsIface.getLinkSpeed() * SPEED_CONVERSION_FACTOR;
       viIface.setSpeed(speed);
       viIface.setBandwidth(speed);
-    } else {
-      viIface.setBandwidth(
-          viIface.getName().equals(LOOPBACK_INTERFACE_NAME)
-              ? DEFAULT_LOOPBACK_BANDWIDTH
-              : DEFAULT_PORT_BANDWIDTH);
     }
   }
 
@@ -460,22 +454,10 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   void initializeAllInterfaces(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
-        .forEach(
-            iface ->
-                org.batfish.datamodel.Interface.builder()
-                    .setName(iface.getName())
-                    .setOwner(c)
-                    .setVrf(getOrCreateVrf(c, iface.getVrf()))
-                    .build());
+        .forEach(iface -> initializeInterface(c, iface.getName(), iface.getVrf()));
     _frrConfiguration.getInterfaces().values().stream()
         .filter(iface -> !c.getAllInterfaces().containsKey(iface.getName()))
-        .forEach(
-            iface ->
-                org.batfish.datamodel.Interface.builder()
-                    .setName(iface.getName())
-                    .setOwner(c)
-                    .setVrf(getOrCreateVrf(c, iface.getVrfName()))
-                    .build());
+        .forEach(iface -> initializeInterface(c, iface.getName(), iface.getVrfName()));
 
     // initialize super interfaces of sub-interfaces if needed
     Set<String> ifaceNames = ImmutableSet.copyOf(c.getAllInterfaces().keySet());
@@ -483,21 +465,23 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .map(InterfaceConverter::getSuperInterfaceName)
         .filter(Objects::nonNull)
         .filter(superName -> !c.getAllInterfaces().containsKey(superName))
-        .forEach(
-            superName ->
-                org.batfish.datamodel.Interface.builder()
-                    .setName(superName)
-                    .setOwner(c)
-                    .setVrf(getOrCreateVrf(c, null))
-                    .build());
-
+        .forEach(superName -> initializeInterface(c, superName, null));
     if (!c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
-      org.batfish.datamodel.Interface.builder()
-          .setName(LOOPBACK_INTERFACE_NAME)
-          .setOwner(c)
-          .setVrf(getOrCreateVrf(c, null))
-          .build();
+      initializeInterface(c, LOOPBACK_INTERFACE_NAME, null);
     }
+  }
+
+  private static void initializeInterface(
+      Configuration c, String ifaceName, @Nullable String vrfName) {
+    org.batfish.datamodel.Interface.builder()
+        .setName(ifaceName)
+        .setOwner(c)
+        .setVrf(getOrCreateVrf(c, vrfName))
+        .setBandwidth(
+            ifaceName.equals(LOOPBACK_INTERFACE_NAME)
+                ? DEFAULT_LOOPBACK_BANDWIDTH
+                : DEFAULT_PORT_BANDWIDTH)
+        .build();
   }
 
   @Nonnull

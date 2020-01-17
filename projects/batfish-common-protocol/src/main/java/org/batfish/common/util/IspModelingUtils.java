@@ -2,8 +2,10 @@ package org.batfish.common.util;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -72,8 +74,16 @@ public final class IspModelingUtils {
   public static final String INTERNET_HOST_NAME = "internet";
   static final Ip INTERNET_OUT_ADDRESS = Ip.parse("240.254.254.1");
   static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
-  static final int INTERNET_OUT_SUBNET = 30;
+  // picking a value < 30 so that @enter(internet) is meaningful
+  static final int INTERNET_OUT_SUBNET = 29;
   private static final int ISP_INTERNET_SUBNET = 31;
+  // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
+  // that use this space internally
+  public static final Set<Prefix> INTERNET_NULL_ROUTED_PREFIXES =
+      ImmutableSet.of(
+          Prefix.parse("10.0.0.0/8"),
+          Prefix.parse("172.16.0.0/12"),
+          Prefix.parse("192.168.0.0/16"));
 
   public static String getDefaultIspNodeName(Long asn) {
     return String.format("%s_%s", "isp", asn);
@@ -304,12 +314,24 @@ public final class IspModelingUtils {
     internetConfiguration
         .getDefaultVrf()
         .setStaticRoutes(
-            ImmutableSortedSet.of(
-                StaticRoute.builder()
-                    .setNetwork(Prefix.ZERO)
-                    .setNextHopInterface(INTERNET_OUT_INTERFACE)
-                    .setAdministrativeCost(1)
-                    .build()));
+            new ImmutableSortedSet.Builder<StaticRoute>(naturalOrder())
+                .add(
+                    StaticRoute.builder()
+                        .setNetwork(Prefix.ZERO)
+                        .setNextHopInterface(INTERNET_OUT_INTERFACE)
+                        .setAdministrativeCost(1)
+                        .build())
+                .addAll(
+                    INTERNET_NULL_ROUTED_PREFIXES.stream()
+                        .map(
+                            prefix ->
+                                StaticRoute.builder()
+                                    .setNetwork(prefix)
+                                    .setNextHopInterface(NULL_INTERFACE_NAME)
+                                    .setAdministrativeCost(1)
+                                    .build())
+                        .collect(ImmutableSet.toImmutableSet()))
+                .build());
 
     BgpProcess bgpProcess =
         BgpProcess.builder()

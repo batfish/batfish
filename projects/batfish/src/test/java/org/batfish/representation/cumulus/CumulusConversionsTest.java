@@ -17,6 +17,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeLocal
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
+import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
@@ -32,6 +33,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.toCommunityL
 import static org.batfish.representation.cumulus.CumulusConversions.toOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
+import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -47,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,8 +64,10 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -83,6 +88,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.routing_policy.Common;
@@ -99,6 +106,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -790,6 +798,95 @@ public final class CumulusConversionsTest {
 
     BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(peerIp.toPrefix());
     assertTrue(peerConfig.getEbgpMultihop());
+  }
+
+  /** Test that L2 VNIs from all VRFs are injected into BGP neighbor */
+  @Test
+  public void testGenerateBgpCommonPeerConfig_allL2Vni() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+
+    Vrf vrf1 = Vrf.builder().setName("vrf1").build();
+    vrf1.setLayer2Vnis(
+        ImmutableList.of(
+            Layer2Vni.builder()
+                .setVni(1)
+                .setVlan(11)
+                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                .setSrcVrf(vrf1.getName())
+                .build()));
+
+    Vrf vrf2 = Vrf.builder().setName("vrf2").build();
+    vrf2.setLayer2Vnis(
+        ImmutableList.of(
+            Layer2Vni.builder()
+                .setVni(2)
+                .setVlan(22)
+                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                .setSrcVrf(vrf2.getName())
+                .build()));
+
+    c.setVrfs(ImmutableMap.of(vrf1.getName(), vrf1, vrf2.getName(), vrf2));
+
+    InterfacesInterface vxlan1 = new InterfacesInterface("vxlan1");
+    vxlan1.setVxlanId(1);
+    vxlan1.createOrGetBridgeSettings().setAccess(1);
+
+    InterfacesInterface vxlan2 = new InterfacesInterface("vxlan2");
+    vxlan2.setVxlanId(2);
+    vxlan2.createOrGetBridgeSettings().setAccess(2);
+
+    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+    frrConfiguration.setBgpProcess(new BgpProcess());
+
+    CumulusConcatenatedConfiguration vsConfig =
+        CumulusConcatenatedConfiguration.builder()
+            .addInterfaces(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
+            .setFrrConfiguration(frrConfiguration)
+            .build();
+
+    BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
+    bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
+    bgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
+
+    BgpNeighbor neighbor = new BgpInterfaceNeighbor("swp1");
+    BgpNeighborL2vpnEvpnAddressFamily bgpNeighborL2vpnEvpnAddressFamily =
+        new BgpNeighborL2vpnEvpnAddressFamily();
+    bgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
+    neighbor.setL2vpnEvpnAddressFamily(bgpNeighborL2vpnEvpnAddressFamily);
+    neighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+
+    Long localAs = 101L;
+    Ip routerId = Ip.parse("1.1.1.1");
+
+    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
+        BgpUnnumberedPeerConfig.builder().setPeerInterface("swp1");
+
+    generateBgpCommonPeerConfig(
+        c,
+        vsConfig,
+        neighbor,
+        localAs,
+        bgpVrf,
+        new org.batfish.datamodel.BgpProcess(routerId, ConfigurationFormat.CUMULUS_CONCATENATED),
+        peerConfigBuilder,
+        new Warnings());
+
+    assertThat(
+        peerConfigBuilder.build().getEvpnAddressFamily().getL2VNIs(),
+        equalTo(
+            ImmutableSortedSet.of(
+                Layer2VniConfig.builder()
+                    .setVni(1)
+                    .setVrf(vrf1.getName())
+                    .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
+                    .setRouteTarget(toRouteTarget(localAs, 1))
+                    .build(),
+                Layer2VniConfig.builder()
+                    .setVni(2)
+                    .setVrf(vrf2.getName())
+                    .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
+                    .setRouteTarget(toRouteTarget(localAs, 2))
+                    .build())));
   }
 
   @Test
@@ -1534,5 +1631,47 @@ public final class CumulusConversionsTest {
             .setName("iface")
             .build();
     assertEquals(inferPeerIp(viIface), Optional.empty());
+  }
+
+  @Test
+  public void testConvertVxlan_localIpPrecedence() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf vrf = new Vrf("vrf");
+    c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
+
+    Ip vxlanLocalTunnelIp = Ip.parse("1.1.1.1");
+    Ip loopbackTunnelIp = Ip.parse("2.2.2.2");
+    Ip loopbackAnycastIp = Ip.parse("3.3.3.3");
+
+    Vxlan vxlan = new Vxlan("vxlan1001");
+    vxlan.setId(1001);
+    vxlan.setBridgeAccessVlan(101);
+    vxlan.setLocalTunnelip(vxlanLocalTunnelIp);
+
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setVxlans(ImmutableMap.of(vxlan.getName(), vxlan));
+
+    // vxlan's local tunnel ip should win when anycast is null
+    convertVxlans(
+        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(vxlanLocalTunnelIp));
+
+    // anycast should win if non-null
+    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
+    convertVxlans(
+        c,
+        vsConfig,
+        ImmutableMap.of(1001, vrf.getName()),
+        loopbackAnycastIp,
+        loopbackTunnelIp,
+        new Warnings());
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackAnycastIp));
+
+    // loopback tunnel ip should win when nothing else is present
+    vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
+    vxlan.setLocalTunnelip(null);
+    convertVxlans(
+        c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
   }
 }

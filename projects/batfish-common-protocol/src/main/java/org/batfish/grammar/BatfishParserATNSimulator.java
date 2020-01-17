@@ -5,6 +5,8 @@ import static org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER;
 import org.antlr.v4.runtime.NoViableAltException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.atn.ATNState;
 import org.antlr.v4.runtime.atn.ParserATNSimulator;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishRecognitionException;
 
@@ -15,6 +17,7 @@ import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishRecognitionException
  */
 public class BatfishParserATNSimulator extends ParserATNSimulator {
 
+  private NoViableAltException _exception;
   private BatfishParser _parser;
 
   /**
@@ -31,8 +34,35 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
   @Override
   public int adaptivePredict(TokenStream input, int decision, ParserRuleContext outerContext) {
     while (true) {
+      _exception = null;
       try {
-        return super.adaptivePredict(input, decision, outerContext);
+        int alt = super.adaptivePredict(input, decision, outerContext);
+        if (_exception != null) {
+          // Sometimes we want to override the adaptive prediction decision when an error has
+          // occurred anyway.
+          // See https://www.antlr.org/api/Java/org/antlr/v4/runtime/atn/ATNState.html
+          switch (_parser.getInterpreter().atn.states.get(_parser.getState()).getStateType()) {
+            case ATNState.PLUS_LOOP_BACK:
+            case ATNState.STAR_LOOP_BACK:
+            case ATNState.STAR_LOOP_ENTRY:
+              if (alt == 2) {
+                // 2 means we want to leave the loop. But perhaps we won't have to if we throw out
+                // the current line.
+                // So throw to trigger recovery and another call to adaptive prediction.
+                NoViableAltException exception = _exception;
+                _exception = null;
+                throw exception;
+              }
+              // 1 means we can definitely parse at least one more element in the loop, and the
+              // error will just occur later. We can just deal with it later anyway, so don't
+              // intercede now.
+              assert alt == 1;
+              break;
+            default:
+              break;
+          }
+        }
+        return alt;
       } catch (NoViableAltException e) {
         int line = _parser.getCurrentToken().getLine();
         try {
@@ -51,5 +81,12 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
     }
 
     return INVALID_ALT_NUMBER;
+  }
+
+  @Override
+  protected NoViableAltException noViableAlt(
+      TokenStream input, ParserRuleContext outerContext, ATNConfigSet configs, int startIndex) {
+    _exception = super.noViableAlt(input, outerContext, configs, startIndex);
+    return _exception;
   }
 }

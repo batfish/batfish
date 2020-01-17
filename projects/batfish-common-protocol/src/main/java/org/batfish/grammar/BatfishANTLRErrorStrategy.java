@@ -264,7 +264,22 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     TokenStream tokens = recognizer.getInputStream();
     int la = tokens.LA(1);
     IntervalSet nextTokens = recognizer.getATN().nextTokens(s);
-    if (nextTokens.contains(Token.EPSILON) || nextTokens.contains(la)) {
+    /*
+     * If next token is unmatchable (i.e. from a lexer error), we need to hide the whole line before
+     * returning so we don't unnecessarily pop out of the star or plus loop (if in one) afterwards.
+     */
+    int atnStateType = s.getStateType();
+    boolean atLoopExitDecision =
+        (atnStateType == ATNState.STAR_LOOP_BACK
+            || atnStateType == ATNState.PLUS_LOOP_BACK
+            || atnStateType == ATNState.STAR_LOOP_ENTRY);
+    boolean lexerErrorAtLoopExitDecision =
+        la == BatfishLexer.UNMATCHABLE_TOKEN && atLoopExitDecision;
+    boolean lexerErrorAtStartOfLineAtLoopExitDecision =
+        lexerErrorAtLoopExitDecision
+            && ((BatfishParser) recognizer).getLastConsumedToken() == _separatorToken;
+    if (!lexerErrorAtStartOfLineAtLoopExitDecision
+        && (nextTokens.contains(Token.EPSILON) || nextTokens.contains(la))) {
       return;
     }
     /*
@@ -273,17 +288,20 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
     boolean topLevel = recognizer.getContext().parent == null;
 
-    switch (s.getStateType()) {
+    switch (atnStateType) {
       case ATNState.BLOCK_START:
       case ATNState.STAR_BLOCK_START:
       case ATNState.PLUS_BLOCK_START:
       case ATNState.STAR_LOOP_ENTRY:
       case ATNState.PLUS_LOOP_BACK:
       case ATNState.STAR_LOOP_BACK:
-        if (topLevel) {
+        if (topLevel || lexerErrorAtStartOfLineAtLoopExitDecision) {
           /*
            * When at top level, we cannot pop up. So consume every "line" until we have one that
            * starts with a token acceptable at the top level.
+           *
+           * We also don't want to pop out of star or plus loops whose elements start at the
+           * beginning of a line, or else we'd lose the whole loop.
            */
           reportUnwantedToken(recognizer);
           consumeBlocksUntilWanted(recognizer);
@@ -292,6 +310,10 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
           /*
            * If not at the top level, error out to pop up a level. This may repeat until the next
            * token is acceptable at the given level.
+           *
+           * Note that this branch is also taken for errors occurring in start or plus loops in the
+           * middle in the middle of a line; in that case we want to throw the whole loop (and its
+           * containing context) away.
            */
           beginErrorCondition(recognizer);
           throw new InputMismatchException(recognizer);
