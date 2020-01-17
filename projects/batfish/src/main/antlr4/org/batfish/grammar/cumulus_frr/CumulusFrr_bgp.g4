@@ -118,15 +118,21 @@ sbaf_ipv4_unicast
 sbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
-  sbafl_statement*
+  (
+       sbafl_advertise_all_vni
+     | sbafl_advertise_default_gw
+     | sbafl_advertise_ipv4_unicast
+     | sbafl_neighbor
+  )*
 ;
 
-sbafl_statement
+sbafl_neighbor
 :
-  sbafls_advertise_all_vni
-| sbafls_advertise_default_gw
-| sbafls_advertise_ipv4_unicast
-| sbafls_neighbor_activate
+   NEIGHBOR neighbor = (IP_ADDRESS | WORD)
+   (
+      sbafln_activate
+      | sbafln_route_reflector_client
+   )
 ;
 
 sbafi_aggregate_address
@@ -150,24 +156,29 @@ sbafi_redistribute
 ;
 
 
-sbafls_advertise_all_vni
+sbafl_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
 ;
 
-sbafls_advertise_default_gw
+sbafl_advertise_default_gw
 :
   ADVERTISE_DEFAULT_GW NEWLINE
 ;
 
-sbafls_advertise_ipv4_unicast
+sbafl_advertise_ipv4_unicast
 :
   ADVERTISE IPV4 UNICAST NEWLINE
 ;
 
-sbafls_neighbor_activate
+sbafln_activate
 :
-  NEIGHBOR neighbor = (IP_ADDRESS | WORD) ACTIVATE NEWLINE
+  ACTIVATE NEWLINE
+;
+
+sbafln_route_reflector_client
+:
+   ROUTE_REFLECTOR_CLIENT NEWLINE
 ;
 
 sb_always_compare_med
