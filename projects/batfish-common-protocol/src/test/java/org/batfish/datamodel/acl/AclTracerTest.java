@@ -498,8 +498,10 @@ public class AclTracerTest {
     assertThat(
         root,
         allOf(
-            hasTraceElement(permittedByAclLine(testAcl,0)),
-            hasChildren(contains(allOf(hasTraceElement(permittedByAclLine(acl,0)), hasChildren(empty()))))));
+            hasTraceElement(permittedByAclLine(testAcl, 0)),
+            hasChildren(
+                contains(
+                    allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))))));
   }
 
   @Test
