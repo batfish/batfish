@@ -37,6 +37,7 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.aws.Instance.Status;
 
@@ -658,13 +659,19 @@ final class Region implements Serializable {
           .forEach(
               securityGroup -> {
                 String sgName = String.format("Security Group %s", securityGroup.getGroupName());
+                TraceElement.Builder traceElemBuilder =
+                    TraceElement.builder()
+                        .add(
+                            String.format(
+                                "Matched security group %s", securityGroup.getGroupName()));
+
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName()))
+                    .map(acl -> new AclAclLine(sgName, acl.getName(), traceElemBuilder.build()))
                     .ifPresent(inAclAclLines::add);
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName()))
+                    .map(acl -> new AclAclLine(sgName, acl.getName(), traceElemBuilder.build()))
                     .ifPresent(outAclAclLines::add);
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);

@@ -32,6 +32,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.TraceElements;
@@ -204,24 +205,24 @@ public class RegionTest {
             ImmutableMap.of(),
             ImmutableMap.of());
 
-    IpAccessList referenceAcl = c.getIpAccessLists().get("~INGRESS~SECURITY-GROUP~sg-1~sg-001~");
     assertThat(
         root,
         contains(
             allOf(
-                hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)),
+                hasTraceElement(TraceElement.of("Matched security group sg-1")),
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(TraceElements.permittedByAclLine(referenceAcl, 0)),
+                            hasTraceElement(
+                                TraceElement.of("Matched rule 0 within security group")),
                             hasChildren(empty())))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
             contains(
-                TraceEvent.of(TraceElements.permittedByAclLine(ingressAcl, 1)),
-                TraceEvent.of(TraceElements.permittedByAclLine(referenceAcl, 0)))));
+                TraceEvent.of(TraceElement.of("Matched security group sg-1")),
+                TraceEvent.of(TraceElement.of("Matched rule 0 within security group")))));
 
     root =
         AclTracer.trace(
