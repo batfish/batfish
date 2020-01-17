@@ -491,7 +491,7 @@ public class AclTracerTest {
             .setLines(ImmutableList.of(new AclAclLine(TEST_ACL, ACL_NAME)))
             .build();
 
-    TraceTree root =
+    List<TraceTree> root =
         AclTracer.trace(
             testAcl,
             FLOW,
@@ -502,11 +502,13 @@ public class AclTracerTest {
 
     assertThat(
         root,
-        allOf(
-            hasTraceElement(permittedByAclLine(testAcl, 0)),
-            hasChildren(
-                contains(
-                    allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))))));
+        contains(
+            allOf(
+                hasTraceElement(permittedByAclLine(testAcl, 0)),
+                hasChildren(
+                    contains(
+                        allOf(
+                            hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty())))))));
   }
 
   @Test
@@ -530,7 +532,7 @@ public class AclTracerTest {
             .setLines(ImmutableList.of(new AclAclLine(TEST_ACL, ACL_NAME, testAclTraceElement)))
             .build();
 
-    TraceTree root =
+    List<TraceTree> root =
         AclTracer.trace(
             testAcl,
             FLOW,
@@ -541,8 +543,10 @@ public class AclTracerTest {
 
     assertThat(
         root,
-        allOf(
-            hasTraceElement(testAclTraceElement),
-            hasChildren(contains(allOf(hasTraceElement(aclTraceElement), hasChildren(empty()))))));
+        contains(
+            allOf(
+                hasTraceElement(testAclTraceElement),
+                hasChildren(
+                    contains(allOf(hasTraceElement(aclTraceElement), hasChildren(empty())))))));
   }
 }
