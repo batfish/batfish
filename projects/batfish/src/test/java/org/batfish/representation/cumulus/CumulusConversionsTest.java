@@ -889,6 +889,53 @@ public final class CumulusConversionsTest {
                     .build())));
   }
 
+  /** Test that L2 VPN EVPN address family route reflect is set correctly */
+  @Test
+  public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
+    CumulusConcatenatedConfiguration vsConfig =
+        CumulusConcatenatedConfiguration.builder().setBgpProcess(new BgpProcess()).build();
+
+    BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
+    bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
+
+    BgpNeighbor neighbor = new BgpInterfaceNeighbor("swp1");
+    BgpNeighborL2vpnEvpnAddressFamily bgpNeighborL2vpnEvpnAddressFamily =
+        new BgpNeighborL2vpnEvpnAddressFamily();
+    bgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
+    neighbor.setL2vpnEvpnAddressFamily(bgpNeighborL2vpnEvpnAddressFamily);
+    neighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+
+    BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
+        BgpUnnumberedPeerConfig.builder().setPeerInterface("swp1");
+
+    // we didn't set route reflector yet
+    generateBgpCommonPeerConfig(
+        new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
+        vsConfig,
+        neighbor,
+        101L,
+        bgpVrf,
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED),
+        peerConfigBuilder,
+        new Warnings());
+    assertFalse(peerConfigBuilder.build().getEvpnAddressFamily().getRouteReflectorClient());
+
+    // now set and test again
+    bgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
+    generateBgpCommonPeerConfig(
+        new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
+        vsConfig,
+        neighbor,
+        101L,
+        bgpVrf,
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED),
+        peerConfigBuilder,
+        new Warnings());
+    assertTrue(peerConfigBuilder.build().getEvpnAddressFamily().getRouteReflectorClient());
+  }
+
   @Test
   public void testConvertIpv4UnicastAddressFamily_deactivated() {
     // setup vi model
