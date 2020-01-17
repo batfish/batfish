@@ -90,10 +90,12 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_default_originate
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
@@ -174,6 +176,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
+  private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
 
   public CumulusFrrConfigurationBuilder(
@@ -375,6 +378,27 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       _w.addWarning(ctx, ctx.getText(), _parser, "either Ip or Interface is needed");
     }
+  }
+
+  @Override
+  public void enterSbafl_neighbor(Sbafl_neighborContext ctx) {
+    String neighborName = ctx.neighbor.getText();
+    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
+    if (neighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
+    } else {
+      _currentBgpNeighborL2vpnEvpnAddressFamily = neighbor.getL2vpnEvpnAddressFamily();
+      if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+        _currentBgpNeighborL2vpnEvpnAddressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
+        neighbor.setL2vpnEvpnAddressFamily(_currentBgpNeighborL2vpnEvpnAddressFamily);
+      }
+    }
+  }
+
+  @Override
+  public void exitSbafl_neighbor(Sbafl_neighborContext ctx) {
+    _currentBgpNeighborL2vpnEvpnAddressFamily = null;
   }
 
   @Override
@@ -584,20 +608,19 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafls_neighbor_activate(Sbafls_neighbor_activateContext ctx) {
-    String neighborName = ctx.neighbor.getText();
-    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
-    if (neighbor == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
-    } else {
-      BgpNeighborL2vpnEvpnAddressFamily addressFamily = neighbor.getL2vpnEvpnAddressFamily();
-      if (addressFamily == null) {
-        addressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
-        neighbor.setL2vpnEvpnAddressFamily(addressFamily);
-      }
-      addressFamily.setActivated(true);
+  public void exitSbafln_activate(Sbafln_activateContext ctx) {
+    if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+      return;
     }
+    _currentBgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
+  }
+
+  @Override
+  public void exitSbafln_route_reflector_client(Sbafln_route_reflector_clientContext ctx) {
+    if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
   }
 
   @Override
