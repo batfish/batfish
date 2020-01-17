@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.junit.Test;
 
 public class RouteMapEntryTest {
@@ -49,7 +50,7 @@ public class RouteMapEntryTest {
   @Test
   public void testGetSets_Metric() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
-    entry.setSetMetric(new RouteMapSetMetric(100));
+    entry.setSetMetric(new RouteMapSetMetric(new LiteralLong(100)));
 
     ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
 

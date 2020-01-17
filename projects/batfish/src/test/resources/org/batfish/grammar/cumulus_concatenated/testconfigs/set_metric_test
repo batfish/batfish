@@ -1,0 +1,45 @@
+set_metric_test
+# This file describes the network interfaces
+
+iface eth0
+ address 10.20.30.0/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+agentx
+!
+router bgp 12345
+ bgp router-id 1.2.3.4
+ address-family ipv4 unicast
+  network 10.20.0.0/16
+ exit-address-family
+!
+
+route-map RM_METRIC_TEST permit 1
+ match interface eth0
+ set metric 10
+
+route-map RM_METRIC_PLUS_TEST permit 1
+ match interface eth0
+ set metric +1
+
+route-map RM_METRIC_MINUS_TEST permit 1
+ match interface eth0
+ set metric -1
+
+route-map RM_METRIC_OVERFLOW_TEST permit 1
+ match interface eth0
+ set metric +4294967295
+
+route-map RM_METRIC_UNDERFLOW_TEST permit 1
+ match interface eth0
+ set metric -100
+
+!
+line vty
+!
+!### end frr.conf
