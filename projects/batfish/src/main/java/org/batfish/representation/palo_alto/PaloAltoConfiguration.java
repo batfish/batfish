@@ -86,6 +86,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -611,7 +612,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       lines =
           ImmutableList.<AclLine>builder()
               .addAll(lines)
-              .add(ExprAclLine.accepting("Accept intrazone by default", TrueExpr.INSTANCE))
+              .add(
+                  new ExprAclLine(
+                      LineAction.PERMIT,
+                      TrueExpr.INSTANCE,
+                      "Accept intrazone by default",
+                      TraceElement.of("Accept intrazone by default")))
               .build();
     }
 
@@ -784,9 +790,22 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             computeObjectName(vsysName, toZone.getName()));
     // If src interface in zone and filters permits, then permit.
     // Else if src interface in zone, filter must have denied.
+    String description =
+        fromZone.getName().equals(toZone.getName())
+            ? String.format("intra-zone rules for zone %s", fromZone.getName())
+            : String.format(
+                "cross-zone rules from zone %s to zone %s", fromZone.getName(), toZone.getName());
     return Stream.of(
-        accepting(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName))),
-        rejecting(matchFromZoneInterface));
+        ExprAclLine.builder()
+            .accepting()
+            .setMatchCondition(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName)))
+            .setTraceElement(TraceElement.of("Matched " + description))
+            .build(),
+        ExprAclLine.builder()
+            .rejecting()
+            .setMatchCondition(matchFromZoneInterface)
+            .setTraceElement(TraceElement.of("Did not match " + description))
+            .build());
   }
 
   /**
@@ -987,6 +1006,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
+        .setTraceElement(TraceElement.of(String.format("Match security rule %s", rule.getName())))
         .build();
   }
 
@@ -1255,7 +1275,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
-      aclLines.add(ExprAclLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+      aclLines.add(
+          ExprAclLine.builder()
+              .rejecting()
+              .setName("Not in a zone")
+              .setMatchCondition(TrueExpr.INSTANCE)
+              .setTraceElement(TraceElement.of("Not in a zone"))
+              .build());
     }
 
     if (!aclLines.isEmpty()) {
@@ -1264,7 +1290,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       // the interface
       // TODO this isn't tested and may not line up with actual device behavior, but is in place to
       // allow things like BGP sessions to come up
-      aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+      aclLines.add(
+          accepting()
+              .setMatchCondition(ORIGINATING_FROM_DEVICE)
+              .setTraceElement(TraceElement.of("match originated from the device"))
+              .build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
 
