@@ -119,7 +119,10 @@ sbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
   (
-     sbafl_neighbor
+       sbafl_advertise_all_vni
+     | sbafl_advertise_default_gw
+     | sbafl_advertise_ipv4_unicast
+     | sbafl_neighbor
      | sbafl_statement
   )*
 ;
@@ -131,13 +134,6 @@ sbafl_neighbor
       sbafln_activate
       | sbafln_route_reflector_client
    )
-;
-
-sbafl_statement
-:
-  sbafls_advertise_all_vni
-| sbafls_advertise_default_gw
-| sbafls_advertise_ipv4_unicast
 ;
 
 sbafi_aggregate_address
@@ -161,17 +157,17 @@ sbafi_redistribute
 ;
 
 
-sbafls_advertise_all_vni
+sbafl_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
 ;
 
-sbafls_advertise_default_gw
+sbafl_advertise_default_gw
 :
   ADVERTISE_DEFAULT_GW NEWLINE
 ;
 
-sbafls_advertise_ipv4_unicast
+sbafl_advertise_ipv4_unicast
 :
   ADVERTISE IPV4 UNICAST NEWLINE
 ;
