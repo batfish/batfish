@@ -15,7 +15,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
   private final List<AclLineMatchExpr> _disjuncts;
 
   public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts) {
-    this(disjuncts, (TraceElement)null);
+    this(disjuncts, (TraceElement) null);
   }
 
   public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts, @Nullable String traceElement) {

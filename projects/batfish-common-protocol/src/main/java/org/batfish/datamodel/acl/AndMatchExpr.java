@@ -15,7 +15,7 @@ public class AndMatchExpr extends AclLineMatchExpr {
   private final List<AclLineMatchExpr> _conjuncts;
 
   public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts) {
-    this(conjuncts, (TraceElement)null);
+    this(conjuncts, (TraceElement) null);
   }
 
   @JsonCreator
