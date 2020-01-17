@@ -23,9 +23,13 @@ public final class AclTrace implements Serializable {
     _events = events != null ? ImmutableList.copyOf(events) : ImmutableList.of();
   }
 
-  public AclTrace(TraceTree traceTree) {
+  public AclTrace(List<TraceTree> trace) {
     this(
-        Streams.stream(Traverser.forTree(TraceTree::getChildren).depthFirstPreOrder(traceTree))
+        trace.stream()
+            .flatMap(
+                traceTree ->
+                    Streams.stream(
+                        Traverser.forTree(TraceTree::getChildren).depthFirstPreOrder(traceTree)))
             .map(TraceTree::getTraceElement)
             .filter(Objects::nonNull)
             .map(TraceEvent::of)
