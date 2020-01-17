@@ -1007,19 +1007,27 @@ public final class CumulusConversions {
     Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
 
     if (evpnConfig.getAdvertiseAllVni()) {
-      for (Layer2Vni vxlan : c.getVrfs().get(bgpVrf.getVrfName()).getLayer2Vnis().values()) {
-        RouteDistinguisher rd =
-            RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-        ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
-        // Advertise L2 VNIs
-        l2Vnis.add(
-            Layer2VniConfig.builder()
-                .setVni(vxlan.getVni())
-                .setVrf(bgpVrf.getVrfName())
-                .setRouteDistinguisher(rd)
-                .setRouteTarget(rt)
-                .build());
-      }
+      c.getVrfs()
+          .values()
+          .forEach(
+              vrf ->
+                  vrf.getLayer2Vnis()
+                      .values()
+                      .forEach(
+                          vxlan -> {
+                            RouteDistinguisher rd =
+                                RouteDistinguisher.from(
+                                    newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+                            ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
+                            // Advertise L2 VNIs
+                            l2Vnis.add(
+                                Layer2VniConfig.builder()
+                                    .setVni(vxlan.getVni())
+                                    .setVrf(vrf.getName())
+                                    .setRouteDistinguisher(rd)
+                                    .setRouteTarget(rt)
+                                    .build());
+                          }));
     }
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
@@ -1097,7 +1105,8 @@ public final class CumulusConversions {
    * cumulus documentation</a> for detailed explanation.
    */
   @Nonnull
-  private static ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+  @VisibleForTesting
+  static ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 
