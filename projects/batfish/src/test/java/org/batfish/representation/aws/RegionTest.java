@@ -6,6 +6,7 @@ import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
@@ -201,17 +202,24 @@ public class RegionTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    // TODO: there should be children in the TraceTree
+
+    IpAccessList referenceAcl = c.getIpAccessLists().get("~INGRESS~SECURITY-GROUP~sg-1~sg-001~");
     assertThat(
         root,
         allOf(
             hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)),
-            hasChildren(equalTo(ImmutableList.of()))));
+            hasChildren(
+                contains(
+                    allOf(
+                        hasTraceElement(TraceElements.permittedByAclLine(referenceAcl, 0)),
+                        hasChildren(empty()))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
-            contains(TraceEvent.of(TraceElements.permittedByAclLine(ingressAcl, 1)))));
+            contains(
+                TraceEvent.of(TraceElements.permittedByAclLine(ingressAcl, 1)),
+                TraceEvent.of(TraceElements.permittedByAclLine(referenceAcl, 0)))));
 
     root =
         AclTracer.trace(
