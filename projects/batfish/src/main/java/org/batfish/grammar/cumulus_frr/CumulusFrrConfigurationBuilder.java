@@ -90,12 +90,12 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_default_originate
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_default_gwContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_default_gwContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
@@ -334,17 +334,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
+  public void exitSbafl_advertise_all_vni(Sbafl_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
   }
 
   @Override
-  public void exitSbafls_advertise_default_gw(Sbafls_advertise_default_gwContext ctx) {
+  public void exitSbafl_advertise_default_gw(Sbafl_advertise_default_gwContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
   }
 
   @Override
-  public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
+  public void enterSbafl_advertise_ipv4_unicast(Sbafl_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
   }

@@ -123,7 +123,6 @@ sbaf_l2vpn_evpn
      | sbafl_advertise_default_gw
      | sbafl_advertise_ipv4_unicast
      | sbafl_neighbor
-     | sbafl_statement
   )*
 ;
 
