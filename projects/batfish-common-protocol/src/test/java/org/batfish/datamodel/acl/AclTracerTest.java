@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
 import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
 import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
@@ -18,6 +19,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
@@ -29,6 +31,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.trace.TraceTree;
 import org.junit.Test;
@@ -467,5 +470,72 @@ public class AclTracerTest {
                 TraceEvent.of(permittedByAclLine(acl, 0)),
                 TraceEvent.of(permittedByAclLine(aclIndirect1, 0)),
                 TraceEvent.of(permittedByAclLine(aclIndirect2, 0)))));
+  }
+
+  @Test
+  public void testAclAclLine() {
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName(ACL_NAME)
+            .setLines(ImmutableList.of(ExprAclLine.accepting().setMatchCondition(TRUE).build()))
+            .build();
+
+    IpAccessList testAcl =
+        IpAccessList.builder()
+            .setName(TEST_ACL)
+            .setLines(ImmutableList.of(new AclAclLine(TEST_ACL, ACL_NAME)))
+            .build();
+
+    TraceTree root =
+        AclTracer.trace(
+            testAcl,
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(ACL_NAME, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    assertThat(
+        root,
+        allOf(
+            hasTraceElement(permittedByAclLine(testAcl,0)),
+            hasChildren(contains(allOf(hasTraceElement(permittedByAclLine(acl,0)), hasChildren(empty()))))));
+  }
+
+  @Test
+  public void testLinesWithTraceElement() {
+    TraceElement aclTraceElement = TraceElement.of("acl trace element");
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName(ACL_NAME)
+            .setLines(
+                ImmutableList.of(
+                    ExprAclLine.accepting()
+                        .setTraceElement(aclTraceElement)
+                        .setMatchCondition(TRUE)
+                        .build()))
+            .build();
+
+    TraceElement testAclTraceElement = TraceElement.of("test acl trace element");
+    IpAccessList testAcl =
+        IpAccessList.builder()
+            .setName(TEST_ACL)
+            .setLines(ImmutableList.of(new AclAclLine(TEST_ACL, ACL_NAME, testAclTraceElement)))
+            .build();
+
+    TraceTree root =
+        AclTracer.trace(
+            testAcl,
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(ACL_NAME, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    assertThat(
+        root,
+        allOf(
+            hasTraceElement(testAclTraceElement),
+            hasChildren(contains(allOf(hasTraceElement(aclTraceElement), hasChildren(empty()))))));
   }
 }
