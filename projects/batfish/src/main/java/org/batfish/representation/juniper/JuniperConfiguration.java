@@ -92,6 +92,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -2069,7 +2070,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Default policy allows traffic originating from the device to be accepted */
     zoneAclLines.add(
-        new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
+        new ExprAclLine(
+            LineAction.PERMIT,
+            OriginatingFromDevice.INSTANCE,
+            "HOST_OUTBOUND",
+            TraceElement.of("outbound")));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
@@ -2094,20 +2099,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   "Match cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
         }
 
-        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, filterName));
+        zoneAclLines.add(
+            new AclAclLine(zonePolicyLineDesc, filterName, TraceElement.of(zonePolicyLineDesc)));
       }
     }
 
     /* Global policy if applicable */
     if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
-      zoneAclLines.add(new AclAclLine("Match global security policy", ACL_NAME_GLOBAL_POLICY));
+      zoneAclLines.add(
+          new AclAclLine(
+              "Match global security policy", ACL_NAME_GLOBAL_POLICY, TraceElement.of("todo")));
     }
 
     /* Add catch-all line with default action */
     zoneAclLines.add(
         new ExprAclLine(
-            _masterLogicalSystem.getDefaultCrossZoneAction(), TrueExpr.INSTANCE, "DEFAULT_POLICY"));
+            _masterLogicalSystem.getDefaultCrossZoneAction(),
+            TrueExpr.INSTANCE,
+            "DEFAULT_POLICY",
+            TraceElement.of("todo")));
 
     IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
@@ -2154,13 +2165,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
               && term.getFromHostProtocols().isEmpty()
               && term.getFromHostServices().isEmpty();
       for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+        // TODO: update FwFromHostProtocol::applyTo for TraceElements
         from.applyTo(lines, _w);
       }
       for (FwFromHostService from : term.getFromHostServices()) {
+        // TODO: update FwFromHostService::applyTo for TraceElements
         from.applyTo(lines, _w);
       }
       for (FwFromApplicationSetMember fromApplicationSetMember :
           term.getFromApplicationSetMembers()) {
+        // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
         fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
       }
       if (term.getFromIpOptions() != null) {
@@ -2174,6 +2188,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 .setAction(action)
                 .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
                 .setName(term.getName())
+                .setTraceElement(TraceElement.of(String.format("matched %s", term.getName())))
                 .build();
         lines.add(line);
       }
