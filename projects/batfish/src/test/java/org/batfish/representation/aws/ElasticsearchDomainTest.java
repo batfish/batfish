@@ -25,7 +25,6 @@ import java.util.Set;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -165,52 +164,32 @@ public class ElasticsearchDomainTest {
     Map<String, Configuration> configurations = loadAwsConfigurations();
 
     assertThat(configurations, hasKey("es-domain"));
-    Configuration esDomain = configurations.get("es-domain");
-    assertThat(esDomain.getAllInterfaces().entrySet(), hasSize(2));
-    assertThat(
-        esDomain
-            .getIpAccessLists()
-            .get("~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
-        hasLines(
-            isExprAclLineThat(
-                hasMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
-                            .build())))));
-    assertThat(
-        esDomain
-            .getIpAccessLists()
-            .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
-        hasLines(
-            isExprAclLineThat(
-                hasMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                            .setSrcIps(
-                                Sets.newHashSet(
-                                    IpWildcard.parse("1.2.3.4/32"),
-                                    IpWildcard.parse("10.193.16.105/32")))
-                            .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                            .build())))));
-    assertThat(
-        esDomain.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine(
-                    "Security Group Test Security Group",
-                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"))));
-    assertThat(
-        esDomain.getIpAccessLists().get("~SECURITY_GROUP_EGRESS_ACL~").getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine(
-                    "Security Group Test Security Group",
-                    "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~"))));
-    for (Interface iface : esDomain.getAllInterfaces().values()) {
-      assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
-      assertThat(iface.getOutgoingFilter().getName(), equalTo("~SECURITY_GROUP_EGRESS_ACL~"));
+    assertThat(configurations.get("es-domain").getAllInterfaces().entrySet(), hasSize(2));
+
+    for (Interface iface : configurations.get("es-domain").getAllInterfaces().values()) {
+      assertThat(
+          iface.getOutgoingFilter(),
+          hasLines(
+              isExprAclLineThat(
+                  hasMatchCondition(
+                      new MatchHeaderSpace(
+                          HeaderSpace.builder()
+                              .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
+                              .build())))));
+      assertThat(
+          iface.getIncomingFilter(),
+          hasLines(
+              isExprAclLineThat(
+                  hasMatchCondition(
+                      new MatchHeaderSpace(
+                          HeaderSpace.builder()
+                              .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                              .setSrcIps(
+                                  Sets.newHashSet(
+                                      IpWildcard.parse("1.2.3.4/32"),
+                                      IpWildcard.parse("10.193.16.105/32")))
+                              .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                              .build())))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(

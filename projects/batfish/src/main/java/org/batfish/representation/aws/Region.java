@@ -5,16 +5,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +28,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
@@ -47,10 +45,6 @@ final class Region implements Serializable {
   private interface ThrowingConsumer<T, E extends Exception> {
     void accept(T t) throws E, IOException;
   }
-
-  static final String INGRESS = "INGRESS";
-
-  static final String EGRESS = "EGRESS";
 
   static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
 
@@ -646,78 +640,39 @@ final class Region implements Serializable {
     }
   }
 
-  /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
-  @VisibleForTesting
-  void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
+  private void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
-      List<AclLine> inAclAclLines = new ArrayList<>();
-      List<AclLine> outAclAclLines = new ArrayList<>();
+      List<AclLine> inboundRules = new LinkedList<>();
+      List<AclLine> outboundRules = new LinkedList<>();
       entry
           .getValue()
           .forEach(
-              securityGroup -> {
-                String sgName = String.format("Security Group %s", securityGroup.getGroupName());
-                Optional.ofNullable(
-                        securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName()))
-                    .ifPresent(inAclAclLines::add);
-                Optional.ofNullable(
-                        securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName()))
-                    .ifPresent(outAclAclLines::add);
+              securityGroup ->
+                  securityGroup.addInOutAccessLines(inboundRules, outboundRules, this, warnings));
+
+      // create ACLs from inboundRules and outboundRules
+      IpAccessList inAcl =
+          IpAccessList.builder().setName(SG_INGRESS_ACL_NAME).setLines(inboundRules).build();
+      IpAccessList outAcl =
+          IpAccessList.builder().setName(SG_EGRESS_ACL_NAME).setLines(outboundRules).build();
+
+      cfgNode.getIpAccessLists().put(SG_INGRESS_ACL_NAME, inAcl);
+      cfgNode.getIpAccessLists().put(SG_EGRESS_ACL_NAME, outAcl);
+
+      // applying the filters to all interfaces in the node
+      cfgNode
+          .getAllInterfaces()
+          .values()
+          .forEach(
+              iface -> {
+                iface.setIncomingFilter(inAcl);
+                iface.setOutgoingFilter(outAcl);
+                iface.setFirewallSessionInterfaceInfo(
+                    new FirewallSessionInterfaceInfo(
+                        false, ImmutableList.of(iface.getName()), null, null));
               });
-      applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
-  }
-
-  private static void applyAclLinesToInterfaces(
-      List<AclLine> inAclLines, List<AclLine> outAclLines, Configuration configuration) {
-    // create a combined in ACL and out ACL using the inputs
-    IpAccessList inAcl =
-        IpAccessList.builder()
-            .setName(SG_INGRESS_ACL_NAME)
-            .setLines(inAclLines)
-            .setOwner(configuration)
-            .build();
-    IpAccessList outAcl =
-        IpAccessList.builder()
-            .setName(SG_EGRESS_ACL_NAME)
-            .setLines(outAclLines)
-            .setOwner(configuration)
-            .build();
-
-    // applying the filters to all interfaces in the node
-    configuration
-        .getAllInterfaces()
-        .values()
-        .forEach(
-            iface -> {
-              iface.setIncomingFilter(inAcl);
-              iface.setOutgoingFilter(outAcl);
-              iface.setFirewallSessionInterfaceInfo(
-                  new FirewallSessionInterfaceInfo(
-                      false, ImmutableList.of(iface.getName()), null, null));
-            });
-  }
-
-  @Nullable
-  private IpAccessList securityGroupToIpAccessList(
-      SecurityGroup securityGroup, boolean ingress, Configuration owner, Warnings warnings) {
-    List<AclLine> aclLines = securityGroup.toAclLines(this, ingress, warnings);
-    if (aclLines.isEmpty()) {
-      return null;
-    }
-    return IpAccessList.builder()
-        .setName(
-            String.format(
-                "~%s~SECURITY-GROUP~%s~%s~",
-                ingress ? INGRESS : EGRESS,
-                securityGroup.getGroupName(),
-                securityGroup.getGroupId()))
-        .setLines(aclLines)
-        .setOwner(owner)
-        .build();
   }
 
   private void updateAllocatedIps() {
