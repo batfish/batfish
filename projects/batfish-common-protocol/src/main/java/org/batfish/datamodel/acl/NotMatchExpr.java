@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.TraceElement;
 
 public class NotMatchExpr extends AclLineMatchExpr {
   private static final String PROP_OPERAND = "operand";
@@ -18,8 +19,8 @@ public class NotMatchExpr extends AclLineMatchExpr {
   @JsonCreator
   public NotMatchExpr(
       @JsonProperty(PROP_OPERAND) AclLineMatchExpr operand,
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    super(description);
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
+    super(traceElement);
     _operand = operand;
   }
 

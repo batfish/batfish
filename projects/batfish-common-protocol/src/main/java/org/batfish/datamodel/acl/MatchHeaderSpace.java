@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.TraceElement;
 
 public class MatchHeaderSpace extends AclLineMatchExpr {
   private static final String PROP_HEADER_SPACE = "headerSpace";
@@ -13,15 +14,19 @@ public class MatchHeaderSpace extends AclLineMatchExpr {
   private final HeaderSpace _headerSpace;
 
   public MatchHeaderSpace(HeaderSpace headerSpace) {
-    this(headerSpace, null);
+    this(headerSpace, (TraceElement) null);
   }
 
   @JsonCreator
   public MatchHeaderSpace(
       @JsonProperty(PROP_HEADER_SPACE) HeaderSpace headerSpace,
-      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    super(description);
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
+    super(traceElement);
     _headerSpace = headerSpace;
+  }
+
+  public MatchHeaderSpace(HeaderSpace headerSpace, @Nullable String traceElement) {
+    this(headerSpace, traceElement == null ? null : TraceElement.of(traceElement));
   }
 
   @Override

@@ -6,16 +6,17 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.TraceElement;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class AclLineMatchExpr implements Serializable {
-  protected static final String PROP_DESCRIPTION = "description";
+  protected static final String PROP_TRACE_ELEMENT = "traceElement";
 
-  protected final @Nullable String _description;
+  protected final @Nullable TraceElement _traceElement;
 
   @JsonCreator
-  public AclLineMatchExpr(@JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    _description = description;
+  public AclLineMatchExpr(@JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
+    _traceElement = traceElement;
   }
 
   public abstract <R> R accept(GenericAclLineMatchExprVisitor<R> visitor);
@@ -28,14 +29,14 @@ public abstract class AclLineMatchExpr implements Serializable {
     if (!(getClass() == o.getClass())) {
       return false;
     }
-    return Objects.equals(_description, ((AclLineMatchExpr) o)._description) && exprEquals(o);
+    return Objects.equals(_traceElement, ((AclLineMatchExpr) o)._traceElement) && exprEquals(o);
   }
 
   protected abstract boolean exprEquals(Object o);
 
-  @JsonProperty(PROP_DESCRIPTION)
-  public @Nullable String getDescription() {
-    return _description;
+  @JsonProperty(PROP_TRACE_ELEMENT)
+  public @Nullable TraceElement getTraceElement() {
+    return _traceElement;
   }
 
   @Override
