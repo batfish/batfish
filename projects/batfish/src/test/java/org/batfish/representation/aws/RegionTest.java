@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -194,7 +195,7 @@ public class RegionTest {
             .setDstPort(23)
             .setIngressNode("c")
             .build();
-    TraceTree root =
+    List<TraceTree> root =
         AclTracer.trace(
             ingressAcl,
             permittedFlow,
@@ -206,13 +207,14 @@ public class RegionTest {
     IpAccessList referenceAcl = c.getIpAccessLists().get("~INGRESS~SECURITY-GROUP~sg-1~sg-001~");
     assertThat(
         root,
-        allOf(
-            hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)),
-            hasChildren(
-                contains(
-                    allOf(
-                        hasTraceElement(TraceElements.permittedByAclLine(referenceAcl, 0)),
-                        hasChildren(empty()))))));
+        contains(
+            allOf(
+                hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)),
+                hasChildren(
+                    contains(
+                        allOf(
+                            hasTraceElement(TraceElements.permittedByAclLine(referenceAcl, 0)),
+                            hasChildren(empty())))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
@@ -231,9 +233,10 @@ public class RegionTest {
             ImmutableMap.of());
     assertThat(
         root,
-        allOf(
-            hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)),
-            hasChildren(equalTo(ImmutableList.of()))));
+        contains(
+            allOf(
+                hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)),
+                hasChildren(equalTo(ImmutableList.of())))));
     trace = new AclTrace(root);
     assertThat(
         trace,
