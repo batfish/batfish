@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import java.util.Comparator;
 import java.util.List;
@@ -201,13 +202,14 @@ public class TestFiltersAnswerer extends Answerer {
    */
   public static Row getRow(IpAccessList filter, Flow flow, Configuration c) {
     TraceTree trace =
-        AclTracer.trace(
-            filter,
-            flow,
-            flow.getIngressInterface(),
-            c.getIpAccessLists(),
-            c.getIpSpaces(),
-            c.getIpSpaceMetadata());
+        Iterables.getOnlyElement(
+            AclTracer.trace(
+                filter,
+                flow,
+                flow.getIngressInterface(),
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata()));
     FilterResult result =
         filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
     Integer matchLine = result.getMatchLine();
