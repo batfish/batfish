@@ -21,7 +21,7 @@ public final class TraceElements {
     return matchedByAclLine(acl, index, "permitted");
   }
 
-  static TraceElement deniedByAclLine(IpAccessList acl, int index) {
+  public static TraceElement deniedByAclLine(IpAccessList acl, int index) {
     return matchedByAclLine(acl, index, "denied");
   }
 

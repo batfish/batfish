@@ -122,17 +122,17 @@ public final class TraceElement implements Serializable {
   public static final class Builder {
     private List<Fragment> _fragments = new ArrayList<>();
 
-    Builder add(String text) {
+    public Builder add(String text) {
       _fragments.add(new TextFragment(text));
       return this;
     }
 
-    Builder add(String text, VendorStructureId vendorStructureId) {
+    public Builder add(String text, VendorStructureId vendorStructureId) {
       _fragments.add(new LinkFragment(text, vendorStructureId));
       return this;
     }
 
-    TraceElement build() {
+    public TraceElement build() {
       return new TraceElement(_fragments);
     }
   }
