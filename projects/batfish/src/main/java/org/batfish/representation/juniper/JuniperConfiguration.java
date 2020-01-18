@@ -2065,7 +2065,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
-  IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
+  @VisibleForTesting
+  IpAccessList buildSecurityPolicyAcl(String name, @Nullable Zone zone) {
     List<AclLine> zoneAclLines = new LinkedList<>();
 
     /* Default policy allows traffic originating from the device to be accepted */
@@ -2074,7 +2075,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             LineAction.PERMIT,
             OriginatingFromDevice.INSTANCE,
             "HOST_OUTBOUND",
-            TraceElement.of("outbound")));
+            TraceElement.of("Matched policy on traffic originated from device")));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
@@ -2088,15 +2089,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         String fromZone = filter.getFromZone().orElse(null);
         if (fromZone == null) {
           // Zone egress policy for traffic originating from device
-          zonePolicyLineDesc = String.format("Match policy from junos-host to zone %s", filterName);
+          zonePolicyLineDesc =
+              String.format("Matched policy from junos-host to zone %s", filterName);
         } else if (fromZone.equals(zone.getName())) {
           // Intra-zone policy
-          zonePolicyLineDesc = String.format("Match intra-zone policy for zone %s", fromZone);
+          zonePolicyLineDesc = String.format("Matched intra-zone policy for zone %s", fromZone);
         } else {
           // Cross-zone policy
           zonePolicyLineDesc =
               String.format(
-                  "Match cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
+                  "Matched cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
         }
 
         zoneAclLines.add(
@@ -2109,7 +2111,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
       zoneAclLines.add(
           new AclAclLine(
-              "Match global security policy", ACL_NAME_GLOBAL_POLICY, TraceElement.of("todo")));
+              "Match global security policy",
+              ACL_NAME_GLOBAL_POLICY,
+              TraceElement.of("Matched global security policy")));
     }
 
     /* Add catch-all line with default action */
@@ -2118,7 +2122,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             _masterLogicalSystem.getDefaultCrossZoneAction(),
             TrueExpr.INSTANCE,
             "DEFAULT_POLICY",
-            TraceElement.of("todo")));
+            TraceElement.of("Matched default policy")));
 
     IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
@@ -2129,7 +2133,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * Convert firewallFilter terms (headerSpace matching) and optional conjunctMatchExpr into a
    * single ACL.
    */
-  private IpAccessList fwTermsToIpAccessList(
+  @VisibleForTesting
+  IpAccessList fwTermsToIpAccessList(
       String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
       throws VendorConversionException {
     List<ExprAclLine> lines = new ArrayList<>();
@@ -2188,7 +2193,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 .setAction(action)
                 .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
                 .setName(term.getName())
-                .setTraceElement(TraceElement.of(String.format("matched %s", term.getName())))
+                .setTraceElement(TraceElement.of(String.format("Matched %s", term.getName())))
                 .build();
         lines.add(line);
       }
@@ -2202,20 +2207,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
-  private static List<AclLine> mergeIpAccessListLines(
+  @VisibleForTesting
+  static List<AclLine> mergeIpAccessListLines(
       List<ExprAclLine> lines, @Nullable AclLineMatchExpr conjunctMatchExpr) {
     if (conjunctMatchExpr == null) {
       return ImmutableList.copyOf(lines);
-    } else {
-      return lines.stream()
-          .map(
-              l ->
-                  new ExprAclLine(
-                      l.getAction(),
-                      new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
-                      l.getName()))
-          .collect(ImmutableList.toImmutableList());
     }
+
+    return lines.stream()
+        .map(
+            l ->
+                new ExprAclLine(
+                    l.getAction(),
+                    new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
+                    l.getName(),
+                    l.getTraceElement()))
+        .collect(ImmutableList.toImmutableList());
   }
 
   /** Convert a firewallFilter into an equivalent ACL. */
