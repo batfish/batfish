@@ -21793,7 +21793,15 @@
                     ]
                   }
                 },
-                "name" : "bar"
+                "name" : "bar",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched bar"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "foo",
@@ -23183,7 +23191,15 @@
                     }
                   }
                 },
-                "name" : "blorp"
+                "name" : "blorp",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched blorp"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -23194,7 +23210,15 @@
                     "negate" : false
                   }
                 },
-                "name" : "t3"
+                "name" : "t3",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched t3"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "blah",
@@ -24427,7 +24451,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
-                "name" : "HOST_OUTBOUND"
+                "name" : "HOST_OUTBOUND",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched policy on traffic originated from device"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -24435,7 +24467,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "DEFAULT_POLICY"
+                "name" : "DEFAULT_POLICY",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched default policy"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~SECURITY_POLICIES_TO~ge-0/0/0.0"
@@ -26467,7 +26507,15 @@
                     }
                   ]
                 },
-                "name" : "123-4"
+                "name" : "123-4",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched 123-4"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "zone~A~to~zone~B",
@@ -26485,7 +26533,15 @@
                     "negate" : false
                   }
                 },
-                "name" : "p1"
+                "name" : "p1",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched p1"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~GLOBAL_SECURITY_POLICY~",
@@ -26509,6 +26565,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol BFD"
+                    }
+                  ]
                 }
               },
               {
@@ -26525,6 +26589,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol BGP"
+                    }
+                  ]
                 }
               },
               {
@@ -26538,6 +26610,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol DVMRP"
+                    }
+                  ]
                 }
               },
               {
@@ -26551,6 +26631,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol IGMP"
+                    }
+                  ]
                 }
               },
               {
@@ -26568,6 +26656,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol LDP"
+                    }
+                  ]
                 }
               },
               {
@@ -26584,6 +26680,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol MSDP"
+                    }
+                  ]
                 }
               },
               {
@@ -26597,6 +26701,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol NHRP"
+                    }
+                  ]
                 }
               },
               {
@@ -26610,6 +26722,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol OSPF"
+                    }
+                  ]
                 }
               },
               {
@@ -26623,6 +26743,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol PGM"
+                    }
+                  ]
                 }
               },
               {
@@ -26636,6 +26764,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol PIM"
+                    }
+                  ]
                 }
               },
               {
@@ -26652,6 +26788,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol RIP"
+                    }
+                  ]
                 }
               },
               {
@@ -26665,6 +26809,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol ROUTER_DISCOVERY"
+                    }
+                  ]
                 }
               },
               {
@@ -26679,6 +26831,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol RSVP"
+                    }
+                  ]
                 }
               },
               {
@@ -26701,6 +26861,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol SAP"
+                    }
+                  ]
                 }
               },
               {
@@ -26714,6 +26882,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host protocol VRRP"
+                    }
+                  ]
                 }
               }
             ],
