@@ -231,16 +231,6 @@ public class RegionTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(
-        root,
-        contains(
-            allOf(
-                hasTraceElement(TraceElements.defaultDeniedByIpAccessList(ingressAcl)),
-                hasChildren(equalTo(ImmutableList.of())))));
-    trace = new AclTrace(root);
-    assertThat(
-        trace,
-        DataModelMatchers.hasEvents(
-            contains(TraceEvent.of(TraceElements.defaultDeniedByIpAccessList(ingressAcl)))));
+    assertThat(root, empty());
   }
 }
