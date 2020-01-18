@@ -309,7 +309,7 @@ final class IpPermissions implements Serializable {
       updateAddresses("source", traceElementBuilder);
     } else {
       constraints.setDstIps(ips);
-      updateAddresses("target", traceElementBuilder);
+      updateAddresses("destination", traceElementBuilder);
     }
 
     return Optional.ofNullable(
