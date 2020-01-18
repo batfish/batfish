@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -33,6 +34,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -42,6 +44,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
@@ -90,10 +96,12 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_default_originate
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_all_vniContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_default_gwContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_advertise_ipv4_unicastContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafls_neighbor_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_default_gwContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
@@ -174,6 +182,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
+  private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
 
   public CumulusFrrConfigurationBuilder(
@@ -231,6 +240,29 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private void warn(ParserRuleContext ctx, String message) {
     _w.addWarning(ctx, ctx.getText(), _parser, message);
+  }
+
+  private LongExpr toMetricLongExpr(Int_exprContext ctx) {
+    if (ctx.uint32() != null) {
+      long val = toLong(ctx.uint32());
+      if (ctx.PLUS() != null) {
+        return new IncrementMetric(val);
+      } else if (ctx.DASH() != null) {
+        return new DecrementMetric(val);
+      } else {
+        return new LiteralLong(val);
+      }
+    } else {
+      /*
+       * Unsupported metric long expression - do not add cases unless you
+       * know what you are doing
+       */
+      throw new BatfishException(String.format("Invalid BGP MED metric : " + ctx.getText()));
+    }
+  }
+
+  private static long toLong(TerminalNode t) {
+    return Long.parseLong(t.getText());
   }
 
   private void clearOspfPassiveInterface() {
@@ -331,17 +363,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafls_advertise_all_vni(Sbafls_advertise_all_vniContext ctx) {
+  public void exitSbafl_advertise_all_vni(Sbafl_advertise_all_vniContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseAllVni(true);
   }
 
   @Override
-  public void exitSbafls_advertise_default_gw(Sbafls_advertise_default_gwContext ctx) {
+  public void exitSbafl_advertise_default_gw(Sbafl_advertise_default_gwContext ctx) {
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseDefaultGw(true);
   }
 
   @Override
-  public void enterSbafls_advertise_ipv4_unicast(Sbafls_advertise_ipv4_unicastContext ctx) {
+  public void enterSbafl_advertise_ipv4_unicast(Sbafl_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
   }
@@ -375,6 +407,27 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else {
       _w.addWarning(ctx, ctx.getText(), _parser, "either Ip or Interface is needed");
     }
+  }
+
+  @Override
+  public void enterSbafl_neighbor(Sbafl_neighborContext ctx) {
+    String neighborName = ctx.neighbor.getText();
+    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
+    if (neighbor == null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
+    } else {
+      _currentBgpNeighborL2vpnEvpnAddressFamily = neighbor.getL2vpnEvpnAddressFamily();
+      if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+        _currentBgpNeighborL2vpnEvpnAddressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
+        neighbor.setL2vpnEvpnAddressFamily(_currentBgpNeighborL2vpnEvpnAddressFamily);
+      }
+    }
+  }
+
+  @Override
+  public void exitSbafl_neighbor(Sbafl_neighborContext ctx) {
+    _currentBgpNeighborL2vpnEvpnAddressFamily = null;
   }
 
   @Override
@@ -584,20 +637,19 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafls_neighbor_activate(Sbafls_neighbor_activateContext ctx) {
-    String neighborName = ctx.neighbor.getText();
-    BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
-    if (neighbor == null) {
-      _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
-    } else {
-      BgpNeighborL2vpnEvpnAddressFamily addressFamily = neighbor.getL2vpnEvpnAddressFamily();
-      if (addressFamily == null) {
-        addressFamily = new BgpNeighborL2vpnEvpnAddressFamily();
-        neighbor.setL2vpnEvpnAddressFamily(addressFamily);
-      }
-      addressFamily.setActivated(true);
+  public void exitSbafln_activate(Sbafln_activateContext ctx) {
+    if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+      return;
     }
+    _currentBgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
+  }
+
+  @Override
+  public void exitSbafln_route_reflector_client(Sbafln_route_reflector_clientContext ctx) {
+    if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
   }
 
   @Override
@@ -930,7 +982,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_metric(Rms_metricContext ctx) {
-    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(parseLong(ctx.metric.getText())));
+    LongExpr val = toMetricLongExpr(ctx.metric);
+    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(val));
   }
 
   @Override

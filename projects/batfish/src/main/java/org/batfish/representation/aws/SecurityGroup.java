@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -63,23 +64,22 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     _usersIpSpace = new HashSet<>();
   }
 
-  /** Adds any access lines for this security group to the inbound and outbound rules. */
-  void addInOutAccessLines(
-      List<AclLine> inboundRules, List<AclLine> outboundRules, Region region, Warnings warnings) {
-    for (ListIterator<IpPermissions> it = _ipPermsIngress.listIterator(); it.hasNext(); ) {
+  /** Converts this security group's ingress or egress permission terms to List of AclLines */
+  List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
+    ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
+    List<IpPermissions> ipPerms = ingress ? _ipPermsIngress : _ipPermsEgress;
+    for (ListIterator<IpPermissions> it = ipPerms.listIterator(); it.hasNext(); ) {
       int seq = it.nextIndex();
       IpPermissions p = it.next();
       p.toIpAccessListLine(
-              true, region, _groupId + " - " + _groupName + " [ingress] " + seq, warnings)
-          .ifPresent(inboundRules::add);
+              ingress,
+              region,
+              String.format(
+                  "%s - %s [%s] %s", _groupId, _groupName, ingress ? "ingress" : "egress", seq),
+              warnings)
+          .ifPresent(aclLines::add);
     }
-    for (ListIterator<IpPermissions> it = _ipPermsEgress.listIterator(); it.hasNext(); ) {
-      int seq = it.nextIndex();
-      IpPermissions p = it.next();
-      p.toIpAccessListLine(
-              false, region, _groupId + " - " + _groupName + " [egress] " + seq, warnings)
-          .ifPresent(outboundRules::add);
-    }
+    return aclLines.build();
   }
 
   @Nonnull

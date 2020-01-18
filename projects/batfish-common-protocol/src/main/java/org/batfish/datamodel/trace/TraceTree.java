@@ -1,11 +1,11 @@
 package org.batfish.datamodel.trace;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -19,30 +19,10 @@ public final class TraceTree {
   private static final String PROP_TRACE_ELEMENT = "traceElement";
   private static final String PROP_CHILDREN = "children";
 
-  /** Builder for {@link TraceTree}. */
-  public static class Builder {
-    private @Nullable TraceElement _traceElement;
-    private final List<TraceTree> _children = new ArrayList<>();
-
-    public Builder setTraceElement(TraceElement traceElement) {
-      _traceElement = traceElement;
-      return this;
-    }
-
-    public Builder addChild(TraceTree child) {
-      _children.add(child);
-      return this;
-    }
-
-    public TraceTree build() {
-      return new TraceTree(_traceElement, _children);
-    }
-  }
-
   private final @Nullable TraceElement _traceElement;
   private final @Nonnull List<TraceTree> _children;
 
-  TraceTree(@Nullable TraceElement traceElement, List<TraceTree> children) {
+  TraceTree(TraceElement traceElement, List<TraceTree> children) {
     _traceElement = traceElement;
     _children = ImmutableList.copyOf(children);
   }
@@ -51,11 +31,8 @@ public final class TraceTree {
   private static TraceTree jsonCreator(
       @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
       @Nullable @JsonProperty(PROP_CHILDREN) List<TraceTree> children) {
+    checkNotNull(traceElement, "%s cannot be null", PROP_TRACE_ELEMENT);
     return new TraceTree(traceElement, firstNonNull(children, ImmutableList.of()));
-  }
-
-  public static Builder builder() {
-    return new Builder();
   }
 
   @JsonProperty(PROP_CHILDREN)

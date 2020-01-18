@@ -6,6 +6,14 @@ options {
   tokenVocab = CumulusFrrLexer;
 }
 
+int_expr
+:
+  (
+     PLUS
+     | DASH
+  )? uint32
+;
+
 s_routemap
 :
   ROUTE_MAP name = word action = line_action sequence =
@@ -78,7 +86,7 @@ rm_set
 
 rms_metric
 :
-  METRIC metric = uint32 NEWLINE
+  METRIC metric = int_expr NEWLINE
 ;
 
 rmm_ip

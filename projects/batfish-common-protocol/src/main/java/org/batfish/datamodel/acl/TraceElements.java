@@ -18,35 +18,21 @@ public final class TraceElements {
   private TraceElements() {}
 
   public static TraceElement permittedByAclLine(IpAccessList acl, int index) {
+    return matchedByAclLine(acl, index, "permitted");
+  }
+
+  public static TraceElement deniedByAclLine(IpAccessList acl, int index) {
+    return matchedByAclLine(acl, index, "denied");
+  }
+
+  private static TraceElement matchedByAclLine(IpAccessList acl, int index, String action) {
     String type = firstNonNull(acl.getSourceType(), "filter");
     String name = firstNonNull(acl.getSourceName(), acl.getName());
     AclLine line = acl.getLines().get(index);
-    String lineDescription = firstNonNull(line.getName(), line.toString());
+    String lineDescription = line.getName() == null ? "" : ": " + line.getName();
     String description =
         String.format(
-            "Flow permitted by %s named %s, index %d: %s", type, name, index, lineDescription);
-    return TraceElement.of(description);
-  }
-
-  static TraceElement deniedByAclLine(IpAccessList acl, int index) {
-    String type = firstNonNull(acl.getSourceType(), "filter");
-    String name = firstNonNull(acl.getSourceName(), acl.getName());
-    AclLine line = acl.getLines().get(index);
-    String lineDescription = firstNonNull(line.getName(), line.toString());
-    String description =
-        String.format(
-            "Flow denied by %s named %s, index %d: %s", type, name, index, lineDescription);
-    return TraceElement.of(description);
-  }
-
-  public static TraceElement defaultDeniedByIpAccessList(IpAccessList ipAccessList) {
-    String name = ipAccessList.getName();
-    @Nullable String sourceName = ipAccessList.getSourceName();
-    @Nullable String sourceType = ipAccessList.getSourceType();
-    String description =
-        sourceName != null
-            ? String.format("Flow did not match '%s' named '%s'", sourceType, sourceName)
-            : String.format("Flow did not match ACL named '%s'", name);
+            "Flow %s by %s named %s, index %d%s", action, type, name, index, lineDescription);
     return TraceElement.of(description);
   }
 

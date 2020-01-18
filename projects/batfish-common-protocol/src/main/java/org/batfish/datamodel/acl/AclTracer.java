@@ -1,6 +1,6 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -20,6 +21,7 @@ import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.trace.Tracer;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
@@ -34,7 +36,7 @@ public final class AclTracer extends AclLineEvaluator {
 
   @VisibleForTesting static String SRC_IP_DESCRIPTION = "source IP";
 
-  public static TraceTree trace(
+  public static List<TraceTree> trace(
       @Nonnull IpAccessList ipAccessList,
       @Nonnull Flow flow,
       @Nullable String srcInterface,
@@ -43,7 +45,9 @@ public final class AclTracer extends AclLineEvaluator {
       @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
     AclTracer tracer =
         new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
+    tracer._tracer.newSubTrace();
     tracer.trace(ipAccessList);
+    tracer._tracer.endSubTrace();
     return tracer.getTrace();
   }
 
@@ -66,8 +70,18 @@ public final class AclTracer extends AclLineEvaluator {
     return _flow;
   }
 
-  public @Nonnull TraceTree getTrace() {
+  public @Nonnull List<TraceTree> getTrace() {
     return _tracer.getTrace();
+  }
+
+  private void setTraceElement(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
+    AclLine line = ipAccessList.getLines().get(index);
+    TraceElement traceElement = line.getTraceElement();
+    if (traceElement == null) {
+      recordAction(ipAccessList, index, action);
+    } else {
+      _tracer.setTraceElement(traceElement);
+    }
   }
 
   public void recordAction(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
@@ -76,10 +90,6 @@ public final class AclTracer extends AclLineEvaluator {
     } else {
       _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
     }
-  }
-
-  public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _tracer.setTraceElement(defaultDeniedByIpAccessList(ipAccessList));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -265,25 +275,22 @@ public final class AclTracer extends AclLineEvaluator {
     return true;
   }
 
-  private boolean trace(@Nonnull IpAccessList ipAccessList) {
+  private LineAction trace(@Nonnull IpAccessList ipAccessList) {
     List<AclLine> lines = ipAccessList.getLines();
     for (int i = 0; i < lines.size(); i++) {
       _tracer.newSubTrace();
       AclLine line = lines.get(i);
       LineAction action = visit(line);
       if (action != null) {
-        recordAction(ipAccessList, i, action);
+        setTraceElement(ipAccessList, i, action);
         _tracer.endSubTrace();
-        return action == LineAction.PERMIT;
+        return action;
       }
       // All previous children are of no interest since they resulted in a no-match on previous line
       _tracer.discardSubTrace();
     }
 
-    _tracer.newSubTrace();
-    recordDefaultDeny(ipAccessList);
-    _tracer.endSubTrace();
-    return false;
+    return null;
   }
 
   public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip, @Nonnull String ipDescription) {
@@ -302,13 +309,23 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public LineAction visitAclAclLine(AclAclLine aclAclLine) {
+    IpAccessList referencedAcl =
+        checkNotNull(
+            _availableAcls.get(aclAclLine.getAclName()),
+            "Reference to undefined IpAccessList %s",
+            aclAclLine.getAclName());
+    return trace(referencedAcl);
+  }
+
+  @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     return trace(matchHeaderSpace.getHeaderspace());
   }
 
   @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    return trace(_availableAcls.get(permittedByAcl.getAclName()));
+    return trace(_availableAcls.get(permittedByAcl.getAclName())) == LineAction.PERMIT;
   }
 
   @Override

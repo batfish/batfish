@@ -697,6 +697,14 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
       return this;
     }
 
+    Builder setBgpProcess(BgpProcess bgpProcess) {
+      if (this._frrConfiguration == null) {
+        this.setFrrConfiguration(new CumulusFrrConfiguration());
+      }
+      this._frrConfiguration.setBgpProcess(bgpProcess);
+      return this;
+    }
+
     Builder setFrrConfiguration(CumulusFrrConfiguration frrConfiguration) {
       this._frrConfiguration = frrConfiguration;
       return this;

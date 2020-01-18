@@ -65,6 +65,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -303,7 +304,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpAdressFamilyL2vpnEvpnNeighbor() {
+  public void testBgpAdressFamilyL2vpnEvpnNeighborActivate() {
     parseLines(
         "router bgp 1",
         "neighbor n interface description a",
@@ -315,6 +316,18 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getActivated());
     assertTrue(neighbors.get("1.2.3.4").getL2vpnEvpnAddressFamily().getActivated());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnNeighborRouteReflectorClient() {
+    parseLines(
+        "router bgp 1",
+        "neighbor n interface description a",
+        "address-family l2vpn evpn",
+        "neighbor n route-reflector-client",
+        "exit-address-family");
+    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getRouteReflectorClient());
   }
 
   @Test
@@ -908,7 +921,7 @@ public class CumulusFrrGrammarTest {
     parse(String.format("route-map %s permit 10\nset metric 30\n", name));
 
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
-    assertThat(entry.getSetMetric().getMetric(), equalTo(30L));
+    assertThat(entry.getSetMetric().getMetric(), equalTo(new LiteralLong(30)));
   }
 
   @Test
