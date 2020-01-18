@@ -209,19 +209,19 @@ public class RegionTest {
         root,
         contains(
             allOf(
-                hasTraceElement(TraceElements.permittedByAclLine(ingressAcl, 1)),
+                hasTraceElement(TraceElements.matchedByAclLine(ingressAcl, 1)),
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(TraceElements.permittedByAclLine(referenceAcl, 0)),
+                            hasTraceElement(TraceElements.matchedByAclLine(referenceAcl, 0)),
                             hasChildren(empty())))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
             contains(
-                TraceEvent.of(TraceElements.permittedByAclLine(ingressAcl, 1)),
-                TraceEvent.of(TraceElements.permittedByAclLine(referenceAcl, 0)))));
+                TraceEvent.of(TraceElements.matchedByAclLine(ingressAcl, 1)),
+                TraceEvent.of(TraceElements.matchedByAclLine(referenceAcl, 0)))));
 
     root =
         AclTracer.trace(
