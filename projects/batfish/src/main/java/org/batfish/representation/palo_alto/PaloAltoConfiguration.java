@@ -799,12 +799,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         ExprAclLine.builder()
             .accepting()
             .setMatchCondition(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName)))
-            .setTraceElement(TraceElement.of("Matched " + description))
+            .setTraceElement(TraceElement.of("Match " + description))
             .build(),
         ExprAclLine.builder()
             .rejecting()
             .setMatchCondition(matchFromZoneInterface)
-            .setTraceElement(TraceElement.of("Did not match " + description))
+            .setTraceElement(TraceElement.of("Does not match " + description))
             .build());
   }
 
@@ -1264,12 +1264,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (zone.getType() == Type.LAYER3) {
         String zoneFilterName =
             computeOutgoingFilterName(computeObjectName(zone.getVsys().getName(), zone.getName()));
-        aclLines.add(
-            new AclAclLine(
-                String.format(
-                    "Match restrictions for exiting zone %s in vsys %s",
-                    zone.getName(), zone.getVsys().getName()),
-                zoneFilterName));
+        String lineDesc =
+            String.format(
+                "Match rules for exiting interface in zone %s vsys %s",
+                zone.getName(), zone.getVsys().getName());
+        aclLines.add(new AclAclLine(lineDesc, zoneFilterName, TraceElement.of(lineDesc)));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
@@ -1293,7 +1292,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       aclLines.add(
           accepting()
               .setMatchCondition(ORIGINATING_FROM_DEVICE)
-              .setTraceElement(TraceElement.of("match originated from the device"))
+              .setTraceElement(TraceElement.of("Match originated from the device"))
               .build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
