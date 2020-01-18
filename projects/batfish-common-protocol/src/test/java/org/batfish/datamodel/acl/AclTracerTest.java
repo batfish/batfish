@@ -2,7 +2,6 @@ package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
 import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
@@ -58,13 +57,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(allOf(hasTraceElement(defaultDeniedByIpAccessList(acl)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    /* The ACL has no lines, so the only event should be a default deny */
-    assertThat(trace, hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(acl)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -92,12 +85,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(allOf(hasTraceElement(defaultDeniedByIpAccessList(acl)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(acl)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -192,12 +180,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(allOf(hasTraceElement(defaultDeniedByIpAccessList(acl)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(acl)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -223,12 +206,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(allOf(hasTraceElement(defaultDeniedByIpAccessList(acl)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(acl)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -254,12 +232,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(allOf(hasTraceElement(defaultDeniedByIpAccessList(acl)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(acl)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -280,12 +253,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(allOf(hasTraceElement(defaultDeniedByIpAccessList(acl)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(acl)))));
+    assertThat(root, empty());
   }
 
   @Test
