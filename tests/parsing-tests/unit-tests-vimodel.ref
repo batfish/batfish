@@ -31511,13 +31511,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31531,13 +31547,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31551,13 +31583,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31571,13 +31619,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31591,13 +31655,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31611,13 +31691,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31631,13 +31727,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31651,13 +31763,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31671,13 +31799,29 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Not in a zone"
+                "name" : "Not in a zone",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Not in a zone"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31829,7 +31973,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Accept intrazone by default"
+                "name" : "Accept intrazone by default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Accept intrazone by default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "zone~zl3~vsys10~to~zone~zl3~vsys10"
@@ -31839,13 +31991,29 @@
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
                 "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
-                "name" : "Match restrictions for exiting zone zl3 in vsys vsys10"
+                "name" : "Match rules for exiting interface in zone zl3 vsys vsys10",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match rules for exiting interface in zone zl3 vsys vsys10"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match originated from the device"
+                    }
+                  ]
                 }
               }
             ],
@@ -31870,6 +32038,14 @@
                       "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10"
                     }
                   ]
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Match intra-zone rules for zone zl3"
+                    }
+                  ]
                 }
               },
               {
@@ -31879,6 +32055,14 @@
                   "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
                   "srcInterfaces" : [
                     "ethernet1/2"
+                  ]
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Does not match intra-zone rules for zone zl3"
+                    }
                   ]
                 }
               }
