@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto;
 
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginType.EGP;
 import static org.batfish.datamodel.OriginType.IGP;
 import static org.batfish.datamodel.OriginType.INCOMPLETE;
@@ -10,6 +11,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasM
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -124,6 +126,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
@@ -140,6 +143,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
@@ -1608,6 +1612,64 @@ public final class PaloAltoGrammarTest {
             acceptedByZoneSecurity, ifaceName, c.getIpAccessLists(), ImmutableMap.of());
     assertThat(acceptedByZoneSecurityResult.getAction(), equalTo(LineAction.PERMIT));
     assertThat(acceptedByZoneSecurityResult.getMatchLine(), lessThan(lastLineIndex));
+  }
+
+  @Test
+  public void testIntrazoneFilterTraceElements() {
+    /*
+    Setup: Device has an interface in a zone with intrazone security rules PERMIT and DENY.
+     */
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zoneName = "ZONE";
+    String ifaceInZoneName = "ethernet1/1.1";
+    String ifaceNotInZoneName = "ethernet1/1";
+
+    String intrazoneFilterName =
+        zoneToZoneFilter(
+            computeObjectName(vsysName, zoneName), computeObjectName(vsysName, zoneName));
+    String zoneOutgoingFilterName =
+        computeOutgoingFilterName(computeObjectName(vsysName, zoneName));
+    String ifaceInZoneOutgoingFilterName = computeOutgoingFilterName(ifaceInZoneName);
+    String ifaceNotInZoneOutgoingFilterName = computeOutgoingFilterName(ifaceNotInZoneName);
+    IpAccessList intrazoneFilter = c.getIpAccessLists().get(intrazoneFilterName);
+    IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
+    IpAccessList ifaceInZoneOutgoingFilter =
+        c.getIpAccessLists().get(ifaceInZoneOutgoingFilterName);
+    IpAccessList ifaceNotInZoneOutgoingFilter =
+        c.getIpAccessLists().get(ifaceNotInZoneOutgoingFilterName);
+
+    assertThat(
+        intrazoneFilter.getLines(),
+        contains(
+            hasTraceElement(TraceElement.of("Match security rule DENY")),
+            hasTraceElement(TraceElement.of("Match security rule PERMIT")),
+            hasTraceElement(TraceElement.of("Accept intrazone by default"))));
+    assertThat(
+        zoneOutgoingFilter.getLines(),
+        contains(
+            hasTraceElement(TraceElement.of("Match intra-zone rules for zone " + zoneName)),
+            hasTraceElement(
+                TraceElement.of("Does not match intra-zone rules for zone " + zoneName))));
+    assertThat(
+        ifaceInZoneOutgoingFilter.getLines(),
+        contains(
+            hasTraceElement(
+                TraceElement.of(
+                    String.format(
+                        "Match rules for exiting interface in zone %s vsys %s",
+                        zoneName, vsysName))),
+            hasTraceElement(TraceElement.of("Match originated from the device"))));
+    assertThat(
+        // this ACL has an unnecessary (unreachable) second line; no need to assert on that line
+        ifaceNotInZoneOutgoingFilter.getLines().get(0),
+        equalTo(
+            ExprAclLine.REJECT_ALL
+                .toBuilder()
+                .setName("Not in a zone")
+                .setTraceElement(TraceElement.of("Not in a zone"))
+                .build()));
   }
 
   @Test
