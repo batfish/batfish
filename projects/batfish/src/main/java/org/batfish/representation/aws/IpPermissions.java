@@ -37,7 +37,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** IP packet permissions within AWS security groups */
@@ -245,12 +244,11 @@ final class IpPermissions implements Serializable {
    * unsupported definition of the affected IP addresses.
    */
   Optional<ExprAclLine> toIpAccessListLine(
-      boolean ingress, Region region, String name, Warnings warnings, int ruleNum) {
+      boolean ingress, Region region, String name, Warnings warnings) {
     if (_ipProtocol.equals("icmpv6")) {
       // Not valid in IPv4 packets.
       return Optional.empty();
     }
-    TraceElement.Builder traceElementBuilder = TraceElement.builder();
     Collection<IpWildcard> ips = collectIpWildCards(region);
     if (ips.isEmpty()) {
       // IPs should have been populated using either SG or IP ranges,  if not then this IpPermission
@@ -262,7 +260,6 @@ final class IpPermissions implements Serializable {
     HeaderSpace.Builder constraints = HeaderSpace.builder();
     IpProtocol protocol = Utils.toIpProtocol(_ipProtocol);
     if (protocol != null) {
-      traceElementBuilder.add(String.format("Matched protocol %s", protocol));
       constraints.setIpProtocols(protocol);
     }
     if (protocol == IpProtocol.TCP || protocol == IpProtocol.UDP) {
@@ -272,15 +269,12 @@ final class IpPermissions implements Serializable {
       if (low != 0 || hi != 65535) {
         constraints.setDstPorts(ImmutableSet.of(new SubRange(low, hi)));
       }
-      traceElementBuilder.add(String.format("Matched port range [%s, %s]", low, hi));
     } else if (protocol == IpProtocol.ICMP) {
       int type = firstNonNull(_fromPort, -1);
       int code = firstNonNull(_toPort, -1);
       if (type != -1) {
         constraints.setIcmpTypes(type);
-        traceElementBuilder.add(String.format("Matched ICMP type %s", type));
         if (code != -1) {
-          traceElementBuilder.add(String.format("Matched ICMP code %s", code));
           constraints.setIcmpCodes(code);
         }
       } else {
@@ -306,40 +300,15 @@ final class IpPermissions implements Serializable {
 
     if (ingress) {
       constraints.setSrcIps(ips);
-      updateAddresses("source", traceElementBuilder);
     } else {
       constraints.setDstIps(ips);
-      updateAddresses("destination", traceElementBuilder);
     }
 
     return Optional.ofNullable(
         ExprAclLine.accepting()
-            .setMatchCondition(
-                new MatchHeaderSpace(constraints.build(), traceElementBuilder.build()))
+            .setMatchCondition(new MatchHeaderSpace(constraints.build()))
             .setName(name)
-            .setTraceElement(
-                TraceElement.builder()
-                    .add(String.format("Matched rule %s within security group", ruleNum))
-                    .build())
             .build());
-  }
-
-  private void updateAddresses(String direction, TraceElement.Builder traceElementBuilder) {
-    if (!_securityGroups.isEmpty()) {
-      traceElementBuilder.add(
-          String.format(
-              "Matched %s security group(s): %s", direction, String.join(",", _securityGroups)));
-    }
-    if (!_ipRanges.isEmpty()) {
-      traceElementBuilder.add(
-          String.format(
-              "Matched %s source address(s)",
-              String.join(
-                  ",",
-                  _ipRanges.stream()
-                      .map(Prefix::toString)
-                      .collect(ImmutableList.toImmutableList()))));
-    }
   }
 
   @Override

@@ -39,7 +39,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -450,13 +449,7 @@ public class SecurityGroupsTest {
                                 .setDstPorts(SubRange.singleton(22))
                                 .setIpProtocols(TCP)
                                 .setSrcIps(ImmutableSet.of(IpWildcard.parse("2.2.2.0/24")))
-                                .build(),
-                            TraceElement.builder()
-                                .add("Matched protocol TCP")
-                                .add("Matched port range [22, 22]")
-                                .add("Matched 2.2.2.0/24 source address(s)")
                                 .build()))
-                    .setTraceElement(TraceElement.of("Matched rule 0 within security group"))
                     .build())));
   }
 }
