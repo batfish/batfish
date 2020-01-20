@@ -572,19 +572,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private IpAccessList generateCrossZoneFilter(
       Zone fromZone, Zone toZone, List<Map.Entry<SecurityRule, Vsys>> rules) {
     assert fromZone.getVsys() == toZone.getVsys();
+    String vsysName = fromZone.getVsys().getName();
 
     String crossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(fromZone.getVsys().getName(), fromZone.getName()),
             computeObjectName(toZone.getVsys().getName(), toZone.getName()));
 
-    if (fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty()
-        || toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty()) {
-      // Non-external zones must have interfaces.
+    boolean fromZoneEmpty =
+        fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty();
+    boolean toZoneEmpty = toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty();
+    if (fromZoneEmpty || toZoneEmpty) {
       return IpAccessList.builder()
           .setName(crossZoneFilterName)
           .setLines(
-              ImmutableList.of(ExprAclLine.rejecting("No interfaces in zone", TrueExpr.INSTANCE)))
+              ImmutableList.of(
+                  ExprAclLine.REJECT_ALL
+                      .toBuilder()
+                      .setName("No interfaces in zone")
+                      .setTraceElement(
+                          TraceElement.of(
+                              String.format(
+                                  "No interfaces in vsys %s zone %s",
+                                  vsysName, (fromZoneEmpty ? fromZone : toZone).getName())))
+                      .build()))
           .build();
     }
 
@@ -617,7 +628,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                       LineAction.PERMIT,
                       TrueExpr.INSTANCE,
                       "Accept intrazone by default",
-                      TraceElement.of("Accept intrazone by default")))
+                      TraceElement.of(
+                          String.format(
+                              "Accepted intrazone traffic in vsys %s zone %s",
+                              vsysName, fromZone.getName()))))
               .build();
     }
 
@@ -792,19 +806,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Else if src interface in zone, filter must have denied.
     String description =
         fromZone.getName().equals(toZone.getName())
-            ? String.format("intra-zone rules for zone %s", fromZone.getName())
+            ? String.format("intrazone rules for vsys %s zone %s", vsysName, fromZone.getName())
             : String.format(
-                "cross-zone rules from zone %s to zone %s", fromZone.getName(), toZone.getName());
+                "cross-zone rules from zone %s to zone %s in vsys %s",
+                fromZone.getName(), toZone.getName(), vsysName);
     return Stream.of(
         ExprAclLine.builder()
             .accepting()
             .setMatchCondition(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName)))
-            .setTraceElement(TraceElement.of("Match " + description))
+            .setTraceElement(TraceElement.of("Matched " + description))
             .build(),
         ExprAclLine.builder()
             .rejecting()
             .setMatchCondition(matchFromZoneInterface)
-            .setTraceElement(TraceElement.of("Does not match " + description))
+            .setTraceElement(TraceElement.of("Did not match " + description))
             .build());
   }
 
@@ -1006,7 +1021,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
-        .setTraceElement(TraceElement.of(String.format("Match security rule %s", rule.getName())))
+        .setTraceElement(TraceElement.of(String.format("Matched security rule %s", rule.getName())))
         .build();
   }
 
@@ -1264,11 +1279,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (zone.getType() == Type.LAYER3) {
         String zoneFilterName =
             computeOutgoingFilterName(computeObjectName(zone.getVsys().getName(), zone.getName()));
-        String lineDesc =
+        String rulesStr =
             String.format(
-                "Match rules for exiting interface in zone %s vsys %s",
-                zone.getName(), zone.getVsys().getName());
-        aclLines.add(new AclAclLine(lineDesc, zoneFilterName, TraceElement.of(lineDesc)));
+                " rules for exiting interface %s in vsys %s zone %s",
+                iface.getName(), zone.getVsys().getName(), zone.getName());
+        aclLines.add(
+            new AclAclLine(
+                "Match" + rulesStr, zoneFilterName, TraceElement.of("Matched" + rulesStr)));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
@@ -1279,7 +1296,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               .rejecting()
               .setName("Not in a zone")
               .setMatchCondition(TrueExpr.INSTANCE)
-              .setTraceElement(TraceElement.of("Not in a zone"))
+              .setTraceElement(
+                  TraceElement.of(
+                      String.format(
+                          "Cannot exit interface %s because it is not in a zone", iface.getName())))
               .build());
     }
 
@@ -1292,7 +1312,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       aclLines.add(
           accepting()
               .setMatchCondition(ORIGINATING_FROM_DEVICE)
-              .setTraceElement(TraceElement.of("Match originated from the device"))
+              .setTraceElement(TraceElement.of("Originated from the device"))
               .build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }

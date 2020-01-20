@@ -31516,7 +31516,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface ethernet1/1.4 because it is not in a zone"
                     }
                   ]
                 }
@@ -31531,7 +31531,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31552,7 +31552,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface ethernet1/1.5 because it is not in a zone"
                     }
                   ]
                 }
@@ -31567,7 +31567,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31588,7 +31588,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface ethernet1/1 because it is not in a zone"
                     }
                   ]
                 }
@@ -31603,7 +31603,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31624,7 +31624,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface loopback.1 because it is not in a zone"
                     }
                   ]
                 }
@@ -31639,7 +31639,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31660,7 +31660,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface loopback because it is not in a zone"
                     }
                   ]
                 }
@@ -31675,7 +31675,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31696,7 +31696,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface tunnel.3 because it is not in a zone"
                     }
                   ]
                 }
@@ -31711,7 +31711,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31732,7 +31732,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface tunnel because it is not in a zone"
                     }
                   ]
                 }
@@ -31747,7 +31747,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31768,7 +31768,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface vlan.1 because it is not in a zone"
                     }
                   ]
                 }
@@ -31783,7 +31783,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31804,7 +31804,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Not in a zone"
+                      "text" : "Cannot exit interface vlan because it is not in a zone"
                     }
                   ]
                 }
@@ -31819,7 +31819,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -31978,7 +31978,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Accept intrazone by default"
+                      "text" : "Accepted intrazone traffic in vsys vsys10 zone zl3"
                     }
                   ]
                 }
@@ -31991,12 +31991,12 @@
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
                 "aclName" : "~zl3~vsys10~OUTGOING_FILTER~",
-                "name" : "Match rules for exiting interface in zone zl3 vsys vsys10",
+                "name" : "Match rules for exiting interface ethernet1/2 in vsys vsys10 zone zl3",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match rules for exiting interface in zone zl3 vsys vsys10"
+                      "text" : "Matched rules for exiting interface ethernet1/2 in vsys vsys10 zone zl3"
                     }
                   ]
                 }
@@ -32011,7 +32011,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match originated from the device"
+                      "text" : "Originated from the device"
                     }
                   ]
                 }
@@ -32043,7 +32043,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Match intra-zone rules for zone zl3"
+                      "text" : "Matched intrazone rules for vsys vsys10 zone zl3"
                     }
                   ]
                 }
@@ -32061,7 +32061,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Does not match intra-zone rules for zone zl3"
+                      "text" : "Did not match intrazone rules for vsys vsys10 zone zl3"
                     }
                   ]
                 }

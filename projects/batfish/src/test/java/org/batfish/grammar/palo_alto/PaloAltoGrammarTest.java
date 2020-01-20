@@ -1616,60 +1616,76 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testIntrazoneFilterTraceElements() {
-    /*
-    Setup: Device has an interface in a zone with intrazone security rules PERMIT and DENY.
-     */
     String hostname = "security-no-explicit-match";
     Configuration c = parseConfig(hostname);
     String vsysName = "vsys1";
     String zoneName = "ZONE";
-    String ifaceInZoneName = "ethernet1/1.1";
-    String ifaceNotInZoneName = "ethernet1/1";
 
-    String intrazoneFilterName =
-        zoneToZoneFilter(
-            computeObjectName(vsysName, zoneName), computeObjectName(vsysName, zoneName));
-    String zoneOutgoingFilterName =
-        computeOutgoingFilterName(computeObjectName(vsysName, zoneName));
-    String ifaceInZoneOutgoingFilterName = computeOutgoingFilterName(ifaceInZoneName);
-    String ifaceNotInZoneOutgoingFilterName = computeOutgoingFilterName(ifaceNotInZoneName);
+    // Device has a zone with intrazone security rules DENY and PERMIT
+    String zoneObjName = computeObjectName(vsysName, zoneName);
+    String intrazoneFilterName = zoneToZoneFilter(zoneObjName, zoneObjName);
+    String zoneOutgoingFilterName = computeOutgoingFilterName(zoneObjName);
     IpAccessList intrazoneFilter = c.getIpAccessLists().get(intrazoneFilterName);
     IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
-    IpAccessList ifaceInZoneOutgoingFilter =
-        c.getIpAccessLists().get(ifaceInZoneOutgoingFilterName);
-    IpAccessList ifaceNotInZoneOutgoingFilter =
-        c.getIpAccessLists().get(ifaceNotInZoneOutgoingFilterName);
-
+    String vsysZoneStr = String.format("vsys %s zone %s", vsysName, zoneName);
     assertThat(
         intrazoneFilter.getLines(),
         contains(
-            hasTraceElement(TraceElement.of("Match security rule DENY")),
-            hasTraceElement(TraceElement.of("Match security rule PERMIT")),
-            hasTraceElement(TraceElement.of("Accept intrazone by default"))));
+            hasTraceElement(TraceElement.of("Matched security rule DENY")),
+            hasTraceElement(TraceElement.of("Matched security rule PERMIT")),
+            hasTraceElement(TraceElement.of("Accepted intrazone traffic in " + vsysZoneStr))));
     assertThat(
         zoneOutgoingFilter.getLines(),
         contains(
-            hasTraceElement(TraceElement.of("Match intra-zone rules for zone " + zoneName)),
-            hasTraceElement(
-                TraceElement.of("Does not match intra-zone rules for zone " + zoneName))));
+            hasTraceElement(TraceElement.of("Matched intrazone rules for " + vsysZoneStr)),
+            hasTraceElement(TraceElement.of("Did not match intrazone rules for " + vsysZoneStr))));
+
+    // Device has an interface in the zone
+    String ifaceName = "ethernet1/1.1";
+    String ifaceOutgoingFilterName = computeOutgoingFilterName(ifaceName);
+    IpAccessList ifaceOutgoingFilter = c.getIpAccessLists().get(ifaceOutgoingFilterName);
     assertThat(
-        ifaceInZoneOutgoingFilter.getLines(),
+        ifaceOutgoingFilter.getLines(),
         contains(
             hasTraceElement(
                 TraceElement.of(
                     String.format(
-                        "Match rules for exiting interface in zone %s vsys %s",
-                        zoneName, vsysName))),
-            hasTraceElement(TraceElement.of("Match originated from the device"))));
+                        "Matched rules for exiting interface %s in %s", ifaceName, vsysZoneStr))),
+            hasTraceElement(TraceElement.of("Originated from the device"))));
+
+    // Device has an interface without a zone; its outgoing filter should reflect that
+    String unzonedIfaceName = "ethernet1/1";
+    String unzonedIfaceOutgoingFilterName = computeOutgoingFilterName(unzonedIfaceName);
+    IpAccessList unzonedIfaceOutgoingFilter =
+        c.getIpAccessLists().get(unzonedIfaceOutgoingFilterName);
     assertThat(
         // this ACL has an unnecessary (unreachable) second line; no need to assert on that line
-        ifaceNotInZoneOutgoingFilter.getLines().get(0),
+        unzonedIfaceOutgoingFilter.getLines().get(0),
         equalTo(
             ExprAclLine.REJECT_ALL
                 .toBuilder()
                 .setName("Not in a zone")
-                .setTraceElement(TraceElement.of("Not in a zone"))
+                .setTraceElement(
+                    TraceElement.of(
+                        String.format(
+                            "Cannot exit interface %s because it is not in a zone",
+                            unzonedIfaceName)))
                 .build()));
+
+    // Device has a zone without any interfaces; intra- and cross-zone filters should reflect that
+    String emptyZoneName = "EMPTY_ZONE";
+    TraceElement emptyZoneTraceElement =
+        TraceElement.of(String.format("No interfaces in vsys %s zone %s", vsysName, emptyZoneName));
+    String emptyZoneObjName = computeObjectName(vsysName, emptyZoneName);
+    String emptyIntrazoneFilterName = zoneToZoneFilter(emptyZoneObjName, emptyZoneObjName);
+    String emptyToNonEmptyFilterName = zoneToZoneFilter(emptyZoneObjName, zoneObjName);
+    String nonEmptyToEmptyFilterName = zoneToZoneFilter(zoneObjName, emptyZoneObjName);
+    ImmutableList.of(emptyIntrazoneFilterName, emptyToNonEmptyFilterName, nonEmptyToEmptyFilterName)
+        .forEach(
+            filterName -> {
+              IpAccessList filter = c.getIpAccessLists().get(filterName);
+              assertThat(filter.getLines(), contains(hasTraceElement(emptyZoneTraceElement)));
+            });
   }
 
   @Test

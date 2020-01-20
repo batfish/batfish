@@ -446,11 +446,12 @@ public final class PaloAltoConfigurationTest {
     // Should have trace elements about zone traversal
     String matchMsg =
         String.format(
-            "Match cross-zone rules from zone %s to zone %s", FROM_ZONE_NAME, TO_ZONE_NAME);
+            "Matched cross-zone rules from zone %s to zone %s in vsys %s",
+            FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName());
     String noMatchMsg =
         String.format(
-            "Does not match cross-zone rules from zone %s to zone %s",
-            FROM_ZONE_NAME, TO_ZONE_NAME);
+            "Did not match cross-zone rules from zone %s to zone %s in vsys %s",
+            FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName());
     assertThat(
         generatedFilter.getLines(),
         contains(
