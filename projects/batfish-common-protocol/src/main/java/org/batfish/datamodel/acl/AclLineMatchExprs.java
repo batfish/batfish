@@ -44,6 +44,10 @@ public final class AclLineMatchExprs {
   public static final AclLineMatchExpr NEW_FLOWS =
       implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
 
+  public static AclLineMatchExpr and(String traceElement, AclLineMatchExpr... exprs) {
+    return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+  }
+
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
     return and(ImmutableList.copyOf(exprs));
   }
@@ -264,6 +268,10 @@ public final class AclLineMatchExprs {
       return ((NotMatchExpr) expr).getOperand();
     }
     return new NotMatchExpr(expr);
+  }
+
+  public static AclLineMatchExpr or(String traceElement, AclLineMatchExpr... exprs) {
+    return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
   }
 
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
