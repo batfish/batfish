@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.representation.aws.Region.getTraceElement;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -156,8 +157,14 @@ public class RegionTest {
         c.getAllInterfaces().get("~Interface_0~").getIncomingFilter().getLines(),
         equalTo(
             ImmutableList.of(
-                new AclAclLine("Security Group sg-2", "~INGRESS~SECURITY-GROUP~sg-2~sg-002~"),
-                new AclAclLine("Security Group sg-1", "~INGRESS~SECURITY-GROUP~sg-1~sg-001~"))));
+                new AclAclLine(
+                    "Security Group sg-2",
+                    "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
+                    getTraceElement("sg-2")),
+                new AclAclLine(
+                    "Security Group sg-1",
+                    "~INGRESS~SECURITY-GROUP~sg-1~sg-001~",
+                    getTraceElement("sg-1")))));
 
     assertThat(
         c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));

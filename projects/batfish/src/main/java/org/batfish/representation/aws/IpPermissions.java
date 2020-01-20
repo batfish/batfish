@@ -37,6 +37,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** IP packet permissions within AWS security groups */
@@ -244,7 +245,7 @@ final class IpPermissions implements Serializable {
    * unsupported definition of the affected IP addresses.
    */
   Optional<ExprAclLine> toIpAccessListLine(
-      boolean ingress, Region region, String name, Warnings warnings) {
+      boolean ingress, Region region, String name, Warnings warnings, int ruleNum) {
     if (_ipProtocol.equals("icmpv6")) {
       // Not valid in IPv4 packets.
       return Optional.empty();
@@ -307,6 +308,8 @@ final class IpPermissions implements Serializable {
     return Optional.ofNullable(
         ExprAclLine.accepting()
             .setMatchCondition(new MatchHeaderSpace(constraints.build()))
+            .setTraceElement(
+                TraceElement.of(String.format("Matched rule %s within security group", ruleNum)))
             .setName(name)
             .build());
   }

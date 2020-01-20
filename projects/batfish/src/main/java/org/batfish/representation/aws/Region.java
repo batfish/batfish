@@ -659,23 +659,31 @@ final class Region implements Serializable {
           .forEach(
               securityGroup -> {
                 String sgName = String.format("Security Group %s", securityGroup.getGroupName());
-                TraceElement.Builder traceElemBuilder =
-                    TraceElement.builder()
-                        .add(
-                            String.format(
-                                "Matched security group %s", securityGroup.getGroupName()));
-
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName(), traceElemBuilder.build()))
+                    .map(
+                        acl ->
+                            new AclAclLine(
+                                sgName,
+                                acl.getName(),
+                                getTraceElement(securityGroup.getGroupName())))
                     .ifPresent(inAclAclLines::add);
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName(), traceElemBuilder.build()))
+                    .map(
+                        acl ->
+                            new AclAclLine(
+                                sgName,
+                                acl.getName(),
+                                getTraceElement(securityGroup.getGroupName())))
                     .ifPresent(outAclAclLines::add);
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
+  }
+
+  public static TraceElement getTraceElement(String securityGroupName) {
+    return TraceElement.of(String.format("Matched security group %s", securityGroupName));
   }
 
   private static void applyAclLinesToInterfaces(
