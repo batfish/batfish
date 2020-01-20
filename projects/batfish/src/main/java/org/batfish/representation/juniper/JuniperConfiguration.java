@@ -2140,7 +2140,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private List<ExprAclLine> convertFwTermToExprAclLines(String aclName, FwTerm term) {
-    // action
     LineAction action = getLineAction(aclName, term);
     List<ExprAclLine> lines = new ArrayList<>();
     if (action == null) {
