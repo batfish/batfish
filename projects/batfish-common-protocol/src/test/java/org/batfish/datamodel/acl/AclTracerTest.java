@@ -2,8 +2,7 @@ package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
-import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
@@ -117,11 +116,11 @@ public class AclTracerTest {
         root,
         contains(
             allOf(
-                hasTraceElement(deniedByAclLine(acl, 0)),
+                hasTraceElement(matchedByAclLine(acl, 0)),
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(permittedByAclLine(aclIndirect, 0)),
+                            hasTraceElement(matchedByAclLine(aclIndirect, 0)),
                             hasChildren(empty())))))));
 
     AclTrace trace = new AclTrace(root);
@@ -129,8 +128,8 @@ public class AclTracerTest {
         trace,
         hasEvents(
             contains(
-                TraceEvent.of(deniedByAclLine(acl, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect, 0)))));
+                TraceEvent.of(matchedByAclLine(acl, 0)),
+                TraceEvent.of(matchedByAclLine(aclIndirect, 0)))));
   }
 
   @Test
@@ -148,10 +147,10 @@ public class AclTracerTest {
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
     assertThat(
-        root, contains(allOf(hasTraceElement(deniedByAclLine(acl, 0)), hasChildren(empty()))));
+        root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasChildren(empty()))));
 
     AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(deniedByAclLine(acl, 0)))));
+    assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
   }
 
   @Test
@@ -271,10 +270,10 @@ public class AclTracerTest {
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
     assertThat(
-        root, contains(allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))));
+        root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasChildren(empty()))));
 
     AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 0)))));
+    assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
   }
 
   @Test
@@ -303,7 +302,7 @@ public class AclTracerTest {
         root,
         contains(
             allOf(
-                hasTraceElement(permittedByAclLine(acl, 0)),
+                hasTraceElement(matchedByAclLine(acl, 0)),
                 hasChildren(
                     contains(
                         allOf(
@@ -320,7 +319,7 @@ public class AclTracerTest {
         trace,
         hasEvents(
             contains(
-                TraceEvent.of(permittedByAclLine(acl, 0)),
+                TraceEvent.of(matchedByAclLine(acl, 0)),
                 TraceEvent.of(
                     permittedByNamedIpSpace(
                         FLOW.getDstIp(), DEST_IP_DESCRIPTION, ipSpaceMetadata, ipSpaceName)))));
@@ -350,10 +349,10 @@ public class AclTracerTest {
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
     assertThat(
-        root, contains(allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))));
+        root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasChildren(empty()))));
 
     AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 0)))));
+    assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
   }
 
   @Test
@@ -376,10 +375,10 @@ public class AclTracerTest {
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
     assertThat(
-        root, contains(allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))));
+        root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasChildren(empty()))));
 
     AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 0)))));
+    assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
   }
 
   @Test
@@ -425,14 +424,14 @@ public class AclTracerTest {
         root,
         contains(
             allOf(
-                hasTraceElement(permittedByAclLine(acl, 0)),
+                hasTraceElement(matchedByAclLine(acl, 0)),
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(permittedByAclLine(aclIndirect1, 0)),
+                            hasTraceElement(matchedByAclLine(aclIndirect1, 0)),
                             hasChildren(empty())),
                         allOf(
-                            hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
+                            hasTraceElement(matchedByAclLine(aclIndirect2, 0)),
                             hasChildren(empty())))))));
 
     AclTrace trace = new AclTrace(root);
@@ -440,9 +439,9 @@ public class AclTracerTest {
         trace,
         hasEvents(
             contains(
-                TraceEvent.of(permittedByAclLine(acl, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect1, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect2, 0)))));
+                TraceEvent.of(matchedByAclLine(acl, 0)),
+                TraceEvent.of(matchedByAclLine(aclIndirect1, 0)),
+                TraceEvent.of(matchedByAclLine(aclIndirect2, 0)))));
   }
 
   @Test
@@ -472,11 +471,10 @@ public class AclTracerTest {
         root,
         contains(
             allOf(
-                hasTraceElement(permittedByAclLine(testAcl, 0)),
+                hasTraceElement(matchedByAclLine(testAcl, 0)),
                 hasChildren(
                     contains(
-                        allOf(
-                            hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty())))))));
+                        allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasChildren(empty())))))));
   }
 
   @Test
