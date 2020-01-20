@@ -19,6 +19,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NB
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
+import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAccessListLines;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
@@ -28,9 +29,11 @@ import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -52,6 +55,8 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -601,5 +606,97 @@ public class JuniperConfigurationTest {
     assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_HELLO_INTERVAL));
     iface.setOspfInterfaceType(OspfInterfaceType.NBMA);
     assertThat(toOspfHelloInterval(iface), equalTo(DEFAULT_NBMA_HELLO_INTERVAL));
+  }
+
+  @Test
+  public void testBuildSecurityPolicyAcl_traceElement_fromHost() {
+    JuniperConfiguration config = createConfig();
+    Zone zone = new Zone("toZone", null);
+
+    ConcreteFirewallFilter crossZoneFilter =
+        new ConcreteFirewallFilter("crossZonePolicy", Family.INET);
+
+    zone.getFromZonePolicies().put("crossZonePolicy", crossZoneFilter);
+
+    config.buildSecurityPolicyAcl("acl", zone);
+    IpAccessList acl = config._c.getIpAccessLists().get("acl");
+    assertNotNull(acl);
+    assertThat(acl.getLines(), hasSize(3));
+
+    assertThat(
+        acl.getLines().get(0).getTraceElement(),
+        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+
+    assertThat(
+        acl.getLines().get(1).getTraceElement(),
+        equalTo(TraceElement.of("Matched security policy from junos-host to zone toZone")));
+
+    assertThat(
+        acl.getLines().get(2).getTraceElement(),
+        equalTo(TraceElement.of("Matched default policy")));
+  }
+
+  @Test
+  public void testBuildSecurityPolicyAcl_traceElement_fromZone() {
+    JuniperConfiguration config = createConfig();
+    Zone zone = new Zone("toZone", null);
+
+    ConcreteFirewallFilter crossZoneFilter =
+        new ConcreteFirewallFilter("crossZonePolicy", Family.INET);
+
+    crossZoneFilter.setFromZone("fromZone");
+
+    zone.getFromZonePolicies().put("crossZonePolicy", crossZoneFilter);
+
+    config.buildSecurityPolicyAcl("acl", zone);
+    IpAccessList acl = config._c.getIpAccessLists().get("acl");
+    assertNotNull(acl);
+    assertThat(acl.getLines(), hasSize(3));
+
+    assertThat(
+        acl.getLines().get(0).getTraceElement(),
+        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+
+    assertThat(
+        acl.getLines().get(1).getTraceElement(),
+        equalTo(TraceElement.of("Matched security policy from zone fromZone to zone toZone")));
+
+    assertThat(
+        acl.getLines().get(2).getTraceElement(),
+        equalTo(TraceElement.of("Matched default policy")));
+  }
+
+  @Test
+  public void testFwTermToIpAccessList_traceElement() {
+    JuniperConfiguration config = createConfig();
+    FwTerm term = new FwTerm("term");
+    term.getThens().add(FwThenAccept.INSTANCE);
+    List<FwTerm> terms = ImmutableList.of(term);
+    IpAccessList acl = config.fwTermsToIpAccessList("acl", terms, null);
+
+    assertThat(acl.getLines(), hasSize(1));
+
+    assertThat(acl.getLines().get(0).getTraceElement(), equalTo(TraceElement.of("Matched term")));
+  }
+
+  @Test
+  public void testMergeIpAccessListLines() {
+    List<ExprAclLine> lines =
+        ImmutableList.of(
+            new ExprAclLine(
+                LineAction.PERMIT,
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(Ip.parse("1.1.1.1").toIpSpace()).build()),
+                "match1",
+                TraceElement.of("trace of match1")));
+
+    MatchHeaderSpace conj =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setDstIps(Ip.parse("2.2.2.2").toIpSpace()).build());
+
+    List<AclLine> aclLines = mergeIpAccessListLines(lines, conj);
+
+    assertThat(aclLines, hasSize(1));
+    assertThat(aclLines.get(0).getTraceElement(), equalTo(TraceElement.of("trace of match1")));
   }
 }

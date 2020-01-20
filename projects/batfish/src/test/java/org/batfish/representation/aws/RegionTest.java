@@ -4,6 +4,8 @@ import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.representation.aws.Utils.getTraceElementForRule;
+import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -155,8 +157,14 @@ public class RegionTest {
         c.getAllInterfaces().get("~Interface_0~").getIncomingFilter().getLines(),
         equalTo(
             ImmutableList.of(
-                new AclAclLine("Security Group sg-2", "~INGRESS~SECURITY-GROUP~sg-2~sg-002~"),
-                new AclAclLine("Security Group sg-1", "~INGRESS~SECURITY-GROUP~sg-1~sg-001~"))));
+                new AclAclLine(
+                    "Security Group sg-2",
+                    "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
+                    getTraceElementForSecurityGroup("sg-2")),
+                new AclAclLine(
+                    "Security Group sg-1",
+                    "~INGRESS~SECURITY-GROUP~sg-1~sg-001~",
+                    getTraceElementForSecurityGroup("sg-1")))));
 
     assertThat(
         c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));
@@ -204,24 +212,22 @@ public class RegionTest {
             ImmutableMap.of(),
             ImmutableMap.of());
 
-    IpAccessList referenceAcl = c.getIpAccessLists().get("~INGRESS~SECURITY-GROUP~sg-1~sg-001~");
     assertThat(
         root,
         contains(
             allOf(
-                hasTraceElement(matchedByAclLine(ingressAcl, 1)),
+                hasTraceElement(getTraceElementForSecurityGroup("sg-1")),
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(matchedByAclLine(referenceAcl, 0)),
-                            hasChildren(empty())))))));
+                            hasTraceElement(getTraceElementForRule(0)), hasChildren(empty())))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
             contains(
-                TraceEvent.of(matchedByAclLine(ingressAcl, 1)),
-                TraceEvent.of(matchedByAclLine(referenceAcl, 0)))));
+                TraceEvent.of(getTraceElementForSecurityGroup("sg-1")),
+                TraceEvent.of(getTraceElementForRule(0)))));
 
     root =
         AclTracer.trace(

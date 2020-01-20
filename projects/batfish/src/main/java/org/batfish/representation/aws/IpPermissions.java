@@ -12,6 +12,7 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PREFIX_LIST_I
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TO_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_USER_GROUP_ID_PAIRS;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -244,7 +245,7 @@ final class IpPermissions implements Serializable {
    * unsupported definition of the affected IP addresses.
    */
   Optional<ExprAclLine> toIpAccessListLine(
-      boolean ingress, Region region, String name, Warnings warnings) {
+      boolean ingress, Region region, String name, Warnings warnings, int ruleNum) {
     if (_ipProtocol.equals("icmpv6")) {
       // Not valid in IPv4 packets.
       return Optional.empty();
@@ -307,6 +308,7 @@ final class IpPermissions implements Serializable {
     return Optional.ofNullable(
         ExprAclLine.accepting()
             .setMatchCondition(new MatchHeaderSpace(constraints.build()))
+            .setTraceElement(getTraceElementForRule(ruleNum))
             .setName(name)
             .build());
   }

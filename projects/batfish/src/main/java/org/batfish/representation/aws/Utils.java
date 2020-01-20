@@ -22,6 +22,7 @@ import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -295,6 +296,14 @@ final class Utils {
     NodeList outerNodes = element.getElementsByTagName(outerTag);
     checkArgument(outerNodes.getLength() > 0, "OuterTag '%s' not found", outerTag);
     return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
+  }
+
+  public static TraceElement getTraceElementForRule(int ruleNumber) {
+    return TraceElement.of(String.format("Matched rule %s within security group", ruleNumber));
+  }
+
+  public static TraceElement getTraceElementForSecurityGroup(String securityGroupName) {
+    return TraceElement.of(String.format("Matched security group %s", securityGroupName));
   }
 
   private Utils() {}

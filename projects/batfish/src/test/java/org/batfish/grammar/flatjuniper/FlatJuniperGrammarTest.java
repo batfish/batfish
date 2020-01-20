@@ -250,6 +250,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -2723,6 +2724,7 @@ public final class FlatJuniperGrammarTest {
                                                 IpWildcard.parse("2.3.4.5/24").toIpSpace()))
                                         .build()))
                             .setName("TERM")
+                            .setTraceElement(TraceElement.of("Matched TERM"))
                             .build())))));
   }
 
@@ -3016,6 +3018,7 @@ public final class FlatJuniperGrammarTest {
                                                 IpWildcard.parse("2.3.4.5/24").toIpSpace()))
                                         .build()))
                             .setName("TERM")
+                            .setTraceElement(TraceElement.of("Matched TERM"))
                             .build())))));
   }
 
@@ -4934,7 +4937,8 @@ public final class FlatJuniperGrammarTest {
                                 HeaderSpace.builder()
                                     .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
                                     .build()),
-                            "TERM")))
+                            "TERM",
+                            TraceElement.of("Matched TERM"))))
                 .build()));
 
     assertThat(
