@@ -1,7 +1,6 @@
 package org.batfish.datamodel.acl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
 import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 
@@ -46,7 +45,9 @@ public final class AclTracer extends AclLineEvaluator {
       @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
     AclTracer tracer =
         new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
-    tracer.traceWithDefaultDeny(ipAccessList);
+    tracer._tracer.newSubTrace();
+    tracer.trace(ipAccessList);
+    tracer._tracer.endSubTrace();
     return tracer.getTrace();
   }
 
@@ -89,10 +90,6 @@ public final class AclTracer extends AclLineEvaluator {
     } else {
       _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
     }
-  }
-
-  public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    _tracer.setTraceElement(defaultDeniedByIpAccessList(ipAccessList));
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -276,14 +273,6 @@ public final class AclTracer extends AclLineEvaluator {
       return false;
     }
     return true;
-  }
-
-  private void traceWithDefaultDeny(@Nonnull IpAccessList ipAccessList) {
-    if (trace(ipAccessList) == null) {
-      _tracer.newSubTrace();
-      recordDefaultDeny(ipAccessList);
-      _tracer.endSubTrace();
-    }
   }
 
   private LineAction trace(@Nonnull IpAccessList ipAccessList) {

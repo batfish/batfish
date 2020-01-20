@@ -1,7 +1,6 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
 import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
@@ -12,6 +11,7 @@ import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
@@ -159,10 +159,7 @@ public class TestFiltersAnswererTest {
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(
-                    TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(referencedAcl)))),
-                    Schema.ACL_TRACE))));
+                hasColumn(TestFiltersAnswerer.COL_TRACE, hasEvents(empty()), Schema.ACL_TRACE))));
   }
 
   @Test
