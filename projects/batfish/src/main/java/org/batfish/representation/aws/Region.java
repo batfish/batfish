@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -37,7 +38,6 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.aws.Instance.Status;
 
@@ -666,7 +666,7 @@ final class Region implements Serializable {
                             new AclAclLine(
                                 sgName,
                                 acl.getName(),
-                                getTraceElement(securityGroup.getGroupName())))
+                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
                     .ifPresent(inAclAclLines::add);
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
@@ -675,15 +675,11 @@ final class Region implements Serializable {
                             new AclAclLine(
                                 sgName,
                                 acl.getName(),
-                                getTraceElement(securityGroup.getGroupName())))
+                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
                     .ifPresent(outAclAclLines::add);
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
-  }
-
-  public static TraceElement getTraceElement(String securityGroupName) {
-    return TraceElement.of(String.format("Matched security group %s", securityGroupName));
   }
 
   private static void applyAclLinesToInterfaces(

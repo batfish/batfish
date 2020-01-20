@@ -12,6 +12,7 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PREFIX_LIST_I
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TO_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_USER_GROUP_ID_PAIRS;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,7 +38,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** IP packet permissions within AWS security groups */
@@ -308,8 +308,7 @@ final class IpPermissions implements Serializable {
     return Optional.ofNullable(
         ExprAclLine.accepting()
             .setMatchCondition(new MatchHeaderSpace(constraints.build()))
-            .setTraceElement(
-                TraceElement.of(String.format("Matched rule %s within security group", ruleNum)))
+            .setTraceElement(getTraceElementForRule(ruleNum))
             .setName(name)
             .build());
   }
