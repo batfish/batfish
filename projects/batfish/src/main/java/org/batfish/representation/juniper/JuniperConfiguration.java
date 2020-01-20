@@ -2188,10 +2188,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (FwFrom from : term.getFroms()) {
       from.applyTo(matchCondition, this, _w, _c);
     }
-    boolean addLine =
-        term.getFromApplicationSetMembers().isEmpty()
-            && term.getFromHostProtocols().isEmpty()
-            && term.getFromHostServices().isEmpty();
     for (FwFromHostProtocol from : term.getFromHostProtocols()) {
       // TODO: update FwFromHostProtocol::applyTo for TraceElements
       from.applyTo(lines, _w);
@@ -2210,15 +2206,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // For now, assume line is unmatchable.
       return lines;
     }
-    if (addLine) {
-      ExprAclLine line =
+    if (term.getFromApplicationSetMembers().isEmpty()
+        && term.getFromHostProtocols().isEmpty()
+        && term.getFromHostServices().isEmpty()) {
+      lines.add(
           ExprAclLine.builder()
               .setAction(action)
               .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
               .setName(term.getName())
               .setTraceElement(TraceElement.of(String.format("Matched %s", term.getName())))
-              .build();
-      lines.add(line);
+              .build());
     }
     return lines;
   }
