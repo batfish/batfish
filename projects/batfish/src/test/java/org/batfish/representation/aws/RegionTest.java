@@ -36,7 +36,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
-import org.batfish.datamodel.acl.TraceElements;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
