@@ -2128,8 +2128,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<ExprAclLine> lines = new ArrayList<>();
     for (FwTerm term : terms) {
       // action
-      LineAction action;
-      action = getLineAction(aclName, term);
+      LineAction action = getLineAction(aclName, term);
       if (action == null) {
         continue;
       }
@@ -2180,28 +2179,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Nullable
   private LineAction getLineAction(String aclName, FwTerm term) {
-    LineAction action;
     if (term.getThens().contains(FwThenAccept.INSTANCE)) {
-      action = LineAction.PERMIT;
-    } else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
-      action = LineAction.DENY;
-    } else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
+      return LineAction.PERMIT;
+    }
+
+    if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
+      return LineAction.DENY;
+    }
+
+    if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
       // TODO: throw error if any transformation is being done
       return null;
-    } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
+    }
+
+    if (term.getThens().contains(FwThenNop.INSTANCE)) {
       // we assume for now that any 'nop' operations imply acceptance
-      action = LineAction.PERMIT;
-    } else if (term.getThens().stream()
+      return LineAction.PERMIT;
+    }
+
+    if (term.getThens().stream()
         .map(Object::getClass)
         .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
       // Should be handled by packet policy, not applicable to ACLs
       return null;
-    } else {
-      _w.redFlag(
-          "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
-      action = LineAction.DENY;
     }
-    return action;
+
+    _w.redFlag(
+        "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
+    return LineAction.DENY;
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
