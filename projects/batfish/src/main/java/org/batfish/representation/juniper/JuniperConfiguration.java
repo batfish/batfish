@@ -2125,73 +2125,92 @@ public final class JuniperConfiguration extends VendorConfiguration {
   IpAccessList fwTermsToIpAccessList(
       String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
       throws VendorConversionException {
-    List<ExprAclLine> lines = new ArrayList<>();
-    for (FwTerm term : terms) {
-      // action
-      LineAction action;
-      if (term.getThens().contains(FwThenAccept.INSTANCE)) {
-        action = LineAction.PERMIT;
-      } else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
-        action = LineAction.DENY;
-      } else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
-        // TODO: throw error if any transformation is being done
-        continue;
-      } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
-        // we assume for now that any 'nop' operations imply acceptance
-        action = LineAction.PERMIT;
-      } else if (term.getThens().stream()
-          .map(Object::getClass)
-          .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
-        // Should be handled by packet policy, not applicable to ACLs
-        continue;
-      } else {
-        _w.redFlag(
-            "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
-        action = LineAction.DENY;
-      }
-      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
-      for (FwFrom from : term.getFroms()) {
-        from.applyTo(matchCondition, this, _w, _c);
-      }
-      boolean addLine =
-          term.getFromApplicationSetMembers().isEmpty()
-              && term.getFromHostProtocols().isEmpty()
-              && term.getFromHostServices().isEmpty();
-      for (FwFromHostProtocol from : term.getFromHostProtocols()) {
-        // TODO: update FwFromHostProtocol::applyTo for TraceElements
-        from.applyTo(lines, _w);
-      }
-      for (FwFromHostService from : term.getFromHostServices()) {
-        // TODO: update FwFromHostService::applyTo for TraceElements
-        from.applyTo(lines, _w);
-      }
-      for (FwFromApplicationSetMember fromApplicationSetMember :
-          term.getFromApplicationSetMembers()) {
-        // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
-        fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
-      }
-      if (term.getFromIpOptions() != null) {
-        // TODO: implement
-        // For now, assume line is unmatchable.
-        continue;
-      }
-      if (addLine) {
-        ExprAclLine line =
-            ExprAclLine.builder()
-                .setAction(action)
-                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
-                .setName(term.getName())
-                .setTraceElement(TraceElement.of(String.format("Matched %s", term.getName())))
-                .build();
-        lines.add(line);
-      }
-    }
+
+    List<ExprAclLine> lines =
+        terms.stream()
+            .flatMap(term -> convertFwTermToExprAclLines(aclName, term).stream())
+            .collect(ImmutableList.toImmutableList());
+
     return IpAccessList.builder()
         .setName(aclName)
         .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
         .setSourceName(aclName)
         .setSourceType(JuniperStructureType.FIREWALL_FILTER.getDescription())
         .build();
+  }
+
+  private List<ExprAclLine> convertFwTermToExprAclLines(String aclName, FwTerm term) {
+    LineAction action = getLineAction(aclName, term);
+    List<ExprAclLine> lines = new ArrayList<>();
+    if (action == null) {
+      return lines;
+    }
+    HeaderSpace.Builder matchCondition = HeaderSpace.builder();
+    for (FwFrom from : term.getFroms()) {
+      from.applyTo(matchCondition, this, _w, _c);
+    }
+    for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+      // TODO: update FwFromHostProtocol::applyTo for TraceElements
+      from.applyTo(lines, _w);
+    }
+    for (FwFromHostService from : term.getFromHostServices()) {
+      // TODO: update FwFromHostService::applyTo for TraceElements
+      from.applyTo(lines, _w);
+    }
+    for (FwFromApplicationSetMember fromApplicationSetMember :
+        term.getFromApplicationSetMembers()) {
+      // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
+      fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
+    }
+    if (term.getFromIpOptions() != null) {
+      // TODO: implement
+      // For now, assume line is unmatchable.
+      return lines;
+    }
+    if (term.getFromApplicationSetMembers().isEmpty()
+        && term.getFromHostProtocols().isEmpty()
+        && term.getFromHostServices().isEmpty()) {
+      lines.add(
+          ExprAclLine.builder()
+              .setAction(action)
+              .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
+              .setName(term.getName())
+              .setTraceElement(TraceElement.of(String.format("Matched %s", term.getName())))
+              .build());
+    }
+    return lines;
+  }
+
+  @Nullable
+  private LineAction getLineAction(String aclName, FwTerm term) {
+    if (term.getThens().contains(FwThenAccept.INSTANCE)) {
+      return LineAction.PERMIT;
+    }
+
+    if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
+      return LineAction.DENY;
+    }
+
+    if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
+      // TODO: throw error if any transformation is being done
+      return null;
+    }
+
+    if (term.getThens().contains(FwThenNop.INSTANCE)) {
+      // we assume for now that any 'nop' operations imply acceptance
+      return LineAction.PERMIT;
+    }
+
+    if (term.getThens().stream()
+        .map(Object::getClass)
+        .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
+      // Should be handled by packet policy, not applicable to ACLs
+      return null;
+    }
+
+    _w.redFlag(
+        "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
+    return LineAction.DENY;
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
