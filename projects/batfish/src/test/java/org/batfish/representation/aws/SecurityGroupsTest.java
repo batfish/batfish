@@ -4,6 +4,7 @@ import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROUPS;
+import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -450,6 +451,7 @@ public class SecurityGroupsTest {
                                 .setIpProtocols(TCP)
                                 .setSrcIps(ImmutableSet.of(IpWildcard.parse("2.2.2.0/24")))
                                 .build()))
+                    .setTraceElement(getTraceElementForRule(0))
                     .build())));
   }
 }

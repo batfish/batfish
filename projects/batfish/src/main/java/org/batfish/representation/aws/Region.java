@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -660,11 +661,21 @@ final class Region implements Serializable {
                 String sgName = String.format("Security Group %s", securityGroup.getGroupName());
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName()))
+                    .map(
+                        acl ->
+                            new AclAclLine(
+                                sgName,
+                                acl.getName(),
+                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
                     .ifPresent(inAclAclLines::add);
                 Optional.ofNullable(
                         securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(acl -> new AclAclLine(sgName, acl.getName()))
+                    .map(
+                        acl ->
+                            new AclAclLine(
+                                sgName,
+                                acl.getName(),
+                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
                     .ifPresent(outAclAclLines::add);
               });
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
