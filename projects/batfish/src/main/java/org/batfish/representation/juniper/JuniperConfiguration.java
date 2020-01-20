@@ -2129,25 +2129,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (FwTerm term : terms) {
       // action
       LineAction action;
-      if (term.getThens().contains(FwThenAccept.INSTANCE)) {
-        action = LineAction.PERMIT;
-      } else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
-        action = LineAction.DENY;
-      } else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
-        // TODO: throw error if any transformation is being done
+      action = getLineAction(aclName, term);
+      if (action == null) {
         continue;
-      } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
-        // we assume for now that any 'nop' operations imply acceptance
-        action = LineAction.PERMIT;
-      } else if (term.getThens().stream()
-          .map(Object::getClass)
-          .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
-        // Should be handled by packet policy, not applicable to ACLs
-        continue;
-      } else {
-        _w.redFlag(
-            "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
-        action = LineAction.DENY;
       }
       HeaderSpace.Builder matchCondition = HeaderSpace.builder();
       for (FwFrom from : term.getFroms()) {
@@ -2192,6 +2176,32 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setSourceName(aclName)
         .setSourceType(JuniperStructureType.FIREWALL_FILTER.getDescription())
         .build();
+  }
+
+  @Nullable
+  private LineAction getLineAction(String aclName, FwTerm term) {
+    LineAction action;
+    if (term.getThens().contains(FwThenAccept.INSTANCE)) {
+      action = LineAction.PERMIT;
+    } else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
+      action = LineAction.DENY;
+    } else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
+      // TODO: throw error if any transformation is being done
+      return null;
+    } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
+      // we assume for now that any 'nop' operations imply acceptance
+      action = LineAction.PERMIT;
+    } else if (term.getThens().stream()
+        .map(Object::getClass)
+        .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
+      // Should be handled by packet policy, not applicable to ACLs
+      return null;
+    } else {
+      _w.redFlag(
+          "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
+      action = LineAction.DENY;
+    }
+    return action;
   }
 
   /** Merge the list of lines with the specified conjunct match expression. */
