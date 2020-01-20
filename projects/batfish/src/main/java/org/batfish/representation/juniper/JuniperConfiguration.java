@@ -2125,50 +2125,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
   IpAccessList fwTermsToIpAccessList(
       String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
       throws VendorConversionException {
-    List<ExprAclLine> lines = new ArrayList<>();
-    for (FwTerm term : terms) {
-      // action
-      LineAction action = getLineAction(aclName, term);
-      if (action == null) {
-        continue;
-      }
-      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
-      for (FwFrom from : term.getFroms()) {
-        from.applyTo(matchCondition, this, _w, _c);
-      }
-      boolean addLine =
-          term.getFromApplicationSetMembers().isEmpty()
-              && term.getFromHostProtocols().isEmpty()
-              && term.getFromHostServices().isEmpty();
-      for (FwFromHostProtocol from : term.getFromHostProtocols()) {
-        // TODO: update FwFromHostProtocol::applyTo for TraceElements
-        from.applyTo(lines, _w);
-      }
-      for (FwFromHostService from : term.getFromHostServices()) {
-        // TODO: update FwFromHostService::applyTo for TraceElements
-        from.applyTo(lines, _w);
-      }
-      for (FwFromApplicationSetMember fromApplicationSetMember :
-          term.getFromApplicationSetMembers()) {
-        // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
-        fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
-      }
-      if (term.getFromIpOptions() != null) {
-        // TODO: implement
-        // For now, assume line is unmatchable.
-        continue;
-      }
-      if (addLine) {
-        ExprAclLine line =
-            ExprAclLine.builder()
-                .setAction(action)
-                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
-                .setName(term.getName())
-                .setTraceElement(TraceElement.of(String.format("Matched %s", term.getName())))
-                .build();
-        lines.add(line);
-      }
-    }
+
+    List<ExprAclLine> lines =
+        terms.stream()
+            .flatMap(term -> convertFwTermToExprAclLines(aclName, term).stream())
+            .collect(ImmutableList.toImmutableList());
+
     return IpAccessList.builder()
         .setName(aclName)
         .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
