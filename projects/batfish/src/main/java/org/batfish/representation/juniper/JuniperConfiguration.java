@@ -2075,7 +2075,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             LineAction.PERMIT,
             OriginatingFromDevice.INSTANCE,
             "HOST_OUTBOUND",
-            TraceElement.of("Matched policy on traffic originated from device")));
+            TraceElement.of("Matched Juniper semantics on traffic originated from device")));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
@@ -2083,23 +2083,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         String filterName = e.getKey();
         FirewallFilter filter = e.getValue();
 
-        // Name the ACL line that will apply zone policy.
-        String zonePolicyLineDesc;
-        // Not possible to configure a zone policy for multiple from zones.
-        String fromZone = filter.getFromZone().orElse(null);
-        if (fromZone == null) {
-          // Zone egress policy for traffic originating from device
-          zonePolicyLineDesc =
-              String.format("Matched policy from junos-host to zone %s", filterName);
-        } else if (fromZone.equals(zone.getName())) {
-          // Intra-zone policy
-          zonePolicyLineDesc = String.format("Matched intra-zone policy for zone %s", fromZone);
-        } else {
-          // Cross-zone policy
-          zonePolicyLineDesc =
-              String.format(
-                  "Matched cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
-        }
+        String fromDesc =
+            filter.getFromZone().map(s -> String.format("zone %s", s)).orElse("junos-host");
+
+        String zonePolicyLineDesc =
+            String.format("Matched security policy from %s to zone %s", fromDesc, zone.getName());
 
         zoneAclLines.add(
             new AclAclLine(zonePolicyLineDesc, filterName, TraceElement.of(zonePolicyLineDesc)));

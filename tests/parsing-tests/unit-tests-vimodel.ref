@@ -24456,7 +24456,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched policy on traffic originated from device"
+                      "text" : "Matched Juniper semantics on traffic originated from device"
                     }
                   ]
                 }

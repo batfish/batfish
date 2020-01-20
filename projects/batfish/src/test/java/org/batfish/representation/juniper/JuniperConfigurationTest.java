@@ -609,7 +609,35 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildSecurityPolicyAcl_traceElement() {
+  public void testBuildSecurityPolicyAcl_traceElement_fromHost() {
+    JuniperConfiguration config = createConfig();
+    Zone zone = new Zone("toZone", null);
+
+    ConcreteFirewallFilter crossZoneFilter =
+        new ConcreteFirewallFilter("crossZonePolicy", Family.INET);
+
+    zone.getFromZonePolicies().put("crossZonePolicy", crossZoneFilter);
+
+    config.buildSecurityPolicyAcl("acl", zone);
+    IpAccessList acl = config._c.getIpAccessLists().get("acl");
+    assertNotNull(acl);
+    assertThat(acl.getLines(), hasSize(3));
+
+    assertThat(
+        acl.getLines().get(0).getTraceElement(),
+        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+
+    assertThat(
+        acl.getLines().get(1).getTraceElement(),
+        equalTo(TraceElement.of("Matched security policy from junos-host to zone toZone")));
+
+    assertThat(
+        acl.getLines().get(2).getTraceElement(),
+        equalTo(TraceElement.of("Matched default policy")));
+  }
+
+  @Test
+  public void testBuildSecurityPolicyAcl_traceElement_fromZone() {
     JuniperConfiguration config = createConfig();
     Zone zone = new Zone("toZone", null);
 
@@ -627,11 +655,11 @@ public class JuniperConfigurationTest {
 
     assertThat(
         acl.getLines().get(0).getTraceElement(),
-        equalTo(TraceElement.of("Matched policy on traffic originated from device")));
+        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
 
     assertThat(
         acl.getLines().get(1).getTraceElement(),
-        equalTo(TraceElement.of("Matched cross-zone policy from zone fromZone to zone toZone")));
+        equalTo(TraceElement.of("Matched security policy from zone fromZone to zone toZone")));
 
     assertThat(
         acl.getLines().get(2).getTraceElement(),
