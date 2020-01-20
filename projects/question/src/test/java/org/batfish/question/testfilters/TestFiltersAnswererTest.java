@@ -1,7 +1,7 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
@@ -151,7 +151,7 @@ public class TestFiltersAnswererTest {
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
                     TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 1)))),
+                    hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 1)))),
                     Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(

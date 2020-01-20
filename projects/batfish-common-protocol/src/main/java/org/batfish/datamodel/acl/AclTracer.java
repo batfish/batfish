@@ -1,8 +1,7 @@
 package org.batfish.datamodel.acl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Collection;
@@ -74,21 +73,13 @@ public final class AclTracer extends AclLineEvaluator {
     return _tracer.getTrace();
   }
 
-  private void setTraceElement(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
+  private void setTraceElement(@Nonnull IpAccessList ipAccessList, int index) {
     AclLine line = ipAccessList.getLines().get(index);
     TraceElement traceElement = line.getTraceElement();
     if (traceElement == null) {
-      recordAction(ipAccessList, index, action);
+      _tracer.setTraceElement(matchedByAclLine(ipAccessList, index));
     } else {
       _tracer.setTraceElement(traceElement);
-    }
-  }
-
-  public void recordAction(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
-    if (action == LineAction.PERMIT) {
-      _tracer.setTraceElement(permittedByAclLine(ipAccessList, index));
-    } else {
-      _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
     }
   }
 
@@ -282,7 +273,7 @@ public final class AclTracer extends AclLineEvaluator {
       AclLine line = lines.get(i);
       LineAction action = visit(line);
       if (action != null) {
-        setTraceElement(ipAccessList, i, action);
+        setTraceElement(ipAccessList, i);
         _tracer.endSubTrace();
         return action;
       }
