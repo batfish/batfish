@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,7 +35,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
-import org.batfish.datamodel.acl.TraceElements;
 import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
@@ -209,19 +209,19 @@ public class RegionTest {
         root,
         contains(
             allOf(
-                hasTraceElement(TraceElements.matchedByAclLine(ingressAcl, 1)),
+                hasTraceElement(matchedByAclLine(ingressAcl, 1)),
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(TraceElements.matchedByAclLine(referenceAcl, 0)),
+                            hasTraceElement(matchedByAclLine(referenceAcl, 0)),
                             hasChildren(empty())))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
             contains(
-                TraceEvent.of(TraceElements.matchedByAclLine(ingressAcl, 1)),
-                TraceEvent.of(TraceElements.matchedByAclLine(referenceAcl, 0)))));
+                TraceEvent.of(matchedByAclLine(ingressAcl, 1)),
+                TraceEvent.of(matchedByAclLine(referenceAcl, 0)))));
 
     root =
         AclTracer.trace(
