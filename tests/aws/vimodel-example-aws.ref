@@ -332,7 +332,15 @@
                     "negate" : false
                   }
                 },
-                "name" : "sg-3dfb3140 - default [egress] 0"
+                "name" : "sg-3dfb3140 - default [egress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule 0 within security group"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
@@ -354,7 +362,15 @@
                     }
                   }
                 },
-                "name" : "sg-3dfb3140 - default [ingress] 0"
+                "name" : "sg-3dfb3140 - default [ingress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule 0 within security group"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
@@ -364,7 +380,15 @@
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
                 "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default"
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~SECURITY_GROUP_EGRESS_ACL~"
@@ -374,7 +398,15 @@
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
                 "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default"
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~SECURITY_GROUP_INGRESS_ACL~"
@@ -4663,7 +4695,15 @@
                     "negate" : false
                   }
                 },
-                "name" : "sg-55510831 - default [egress] 0"
+                "name" : "sg-55510831 - default [egress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule 0 within security group"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~EGRESS~SECURITY-GROUP~default~sg-55510831~"
@@ -4695,7 +4735,15 @@
                     }
                   }
                 },
-                "name" : "sg-55510831 - default [ingress] 0"
+                "name" : "sg-55510831 - default [ingress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule 0 within security group"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~"
@@ -4705,7 +4753,15 @@
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
                 "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-55510831~",
-                "name" : "Security Group default"
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~SECURITY_GROUP_EGRESS_ACL~"
@@ -4715,7 +4771,15 @@
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
                 "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~",
-                "name" : "Security Group default"
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~SECURITY_GROUP_INGRESS_ACL~"

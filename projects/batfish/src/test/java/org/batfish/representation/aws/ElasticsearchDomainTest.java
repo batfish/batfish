@@ -200,14 +200,16 @@ public class ElasticsearchDomainTest {
             ImmutableList.of(
                 new AclAclLine(
                     "Security Group Test Security Group",
-                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"))));
+                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
+                    Utils.getTraceElementForSecurityGroup("Test Security Group")))));
     assertThat(
         esDomain.getIpAccessLists().get("~SECURITY_GROUP_EGRESS_ACL~").getLines(),
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
                     "Security Group Test Security Group",
-                    "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~"))));
+                    "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
+                    Utils.getTraceElementForSecurityGroup("Test Security Group")))));
     for (Interface iface : esDomain.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
       assertThat(iface.getOutgoingFilter().getName(), equalTo("~SECURITY_GROUP_EGRESS_ACL~"));
