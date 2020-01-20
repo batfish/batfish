@@ -2177,6 +2177,52 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
+  private List<ExprAclLine> convertFwTermToExprAclLines(String aclName, FwTerm term) {
+    // action
+    LineAction action = getLineAction(aclName, term);
+    List<ExprAclLine> lines = new ArrayList<>();
+    if (action == null) {
+      return lines;
+    }
+    HeaderSpace.Builder matchCondition = HeaderSpace.builder();
+    for (FwFrom from : term.getFroms()) {
+      from.applyTo(matchCondition, this, _w, _c);
+    }
+    boolean addLine =
+        term.getFromApplicationSetMembers().isEmpty()
+            && term.getFromHostProtocols().isEmpty()
+            && term.getFromHostServices().isEmpty();
+    for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+      // TODO: update FwFromHostProtocol::applyTo for TraceElements
+      from.applyTo(lines, _w);
+    }
+    for (FwFromHostService from : term.getFromHostServices()) {
+      // TODO: update FwFromHostService::applyTo for TraceElements
+      from.applyTo(lines, _w);
+    }
+    for (FwFromApplicationSetMember fromApplicationSetMember :
+        term.getFromApplicationSetMembers()) {
+      // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
+      fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
+    }
+    if (term.getFromIpOptions() != null) {
+      // TODO: implement
+      // For now, assume line is unmatchable.
+      return lines;
+    }
+    if (addLine) {
+      ExprAclLine line =
+          ExprAclLine.builder()
+              .setAction(action)
+              .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
+              .setName(term.getName())
+              .setTraceElement(TraceElement.of(String.format("Matched %s", term.getName())))
+              .build();
+      lines.add(line);
+    }
+    return lines;
+  }
+
   @Nullable
   private LineAction getLineAction(String aclName, FwTerm term) {
     if (term.getThens().contains(FwThenAccept.INSTANCE)) {
