@@ -40,6 +40,7 @@ import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.junit.Test;
 
 /** Tests for {@link Region} */
@@ -107,7 +108,7 @@ public class RegionTest {
                     "tcp",
                     22,
                     22,
-                    ImmutableList.of(Prefix.parse("2.2.2.0/24")),
+                    ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of()))));
     region.updateConfigurationSecurityGroups(
@@ -121,7 +122,7 @@ public class RegionTest {
                     "tcp",
                     25,
                     25,
-                    ImmutableList.of(Prefix.parse("2.2.2.0/24")),
+                    ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of()))));
 
@@ -157,13 +158,13 @@ public class RegionTest {
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
-                    "Security Group sg-2",
-                    "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
-                    getTraceElementForSecurityGroup("sg-2")),
-                new AclAclLine(
                     "Security Group sg-1",
                     "~INGRESS~SECURITY-GROUP~sg-1~sg-001~",
-                    getTraceElementForSecurityGroup("sg-1")))));
+                    getTraceElementForSecurityGroup("sg-1")),
+                new AclAclLine(
+                    "Security Group sg-2",
+                    "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
+                    getTraceElementForSecurityGroup("sg-2")))));
 
     assertThat(
         c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));
