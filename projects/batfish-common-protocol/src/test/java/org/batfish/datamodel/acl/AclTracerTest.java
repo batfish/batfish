@@ -8,9 +8,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasNoChildren;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -142,13 +140,7 @@ public class AclTracerTest {
     assertThat(
         root,
         contains(
-            allOf(
-                hasTraceElement(matchedByAclLine(acl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(
-                            hasTraceElement(matchedByAclLine(aclIndirect, 0)),
-                            hasNoChildren()))))));
+            isTraceTree(matchedByAclLine(acl, 0), isTraceTree(matchedByAclLine(aclIndirect, 0)))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(
@@ -173,7 +165,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasNoChildren())));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(acl, 0))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
@@ -295,7 +287,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasNoChildren())));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(acl, 0))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
@@ -326,18 +318,11 @@ public class AclTracerTest {
     assertThat(
         root,
         contains(
-            allOf(
-                hasTraceElement(matchedByAclLine(acl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(
-                            hasTraceElement(
-                                permittedByNamedIpSpace(
-                                    FLOW.getDstIp(),
-                                    DEST_IP_DESCRIPTION,
-                                    ipSpaceMetadata,
-                                    ipSpaceName)),
-                            hasNoChildren()))))));
+            isTraceTree(
+                matchedByAclLine(acl, 0),
+                isTraceTree(
+                    permittedByNamedIpSpace(
+                        FLOW.getDstIp(), DEST_IP_DESCRIPTION, ipSpaceMetadata, ipSpaceName)))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(
@@ -373,7 +358,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasNoChildren())));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(acl, 0))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
@@ -398,7 +383,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(root, contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasNoChildren())));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(acl, 0))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(trace, hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 0)))));
@@ -446,14 +431,10 @@ public class AclTracerTest {
     assertThat(
         root,
         contains(
-            allOf(
-                hasTraceElement(matchedByAclLine(acl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(hasTraceElement(matchedByAclLine(aclIndirect1, 0)), hasNoChildren()),
-                        allOf(
-                            hasTraceElement(matchedByAclLine(aclIndirect2, 0)),
-                            hasNoChildren()))))));
+            isTraceTree(
+                matchedByAclLine(acl, 0),
+                isTraceTree(matchedByAclLine(aclIndirect1, 0)),
+                isTraceTree(matchedByAclLine(aclIndirect2, 0)))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(
@@ -490,11 +471,7 @@ public class AclTracerTest {
 
     assertThat(
         root,
-        contains(
-            allOf(
-                hasTraceElement(matchedByAclLine(testAcl, 0)),
-                hasChildren(
-                    contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasNoChildren()))))));
+        contains(isTraceTree(matchedByAclLine(testAcl, 0), isTraceTree(matchedByAclLine(acl, 0)))));
   }
 
   @Test
@@ -527,12 +504,7 @@ public class AclTracerTest {
             ImmutableMap.of(),
             ImmutableMap.of());
 
-    assertThat(
-        root,
-        contains(
-            allOf(
-                hasTraceElement(testAclTraceElement),
-                hasChildren(contains(allOf(hasTraceElement(aclTraceElement), hasNoChildren()))))));
+    assertThat(root, contains(isTraceTree(testAclTraceElement, isTraceTree(aclTraceElement))));
   }
 
   @Test
@@ -544,25 +516,13 @@ public class AclTracerTest {
   @Test
   public void testAnd_withoutTraceElement() {
     List<TraceTree> trace = trace(and(trueExpr("a"), trueExpr("b")));
-    assertThat(
-        trace,
-        contains(
-            allOf(hasTraceElement(TraceElement.of("a")), hasNoChildren()),
-            allOf(hasTraceElement(TraceElement.of("b")), hasNoChildren())));
+    assertThat(trace, contains(isTraceTree("a"), isTraceTree("b")));
   }
 
   @Test
   public void testAnd_withTraceElement() {
     List<TraceTree> trace = trace(and("and", trueExpr("a"), trueExpr("b")));
-    assertThat(
-        trace,
-        contains(
-            allOf(
-                hasTraceElement(TraceElement.of("and")),
-                hasChildren(
-                    contains(
-                        allOf(hasTraceElement(TraceElement.of("a")), hasNoChildren()),
-                        allOf(hasTraceElement(TraceElement.of("b")), hasNoChildren()))))));
+    assertThat(trace, contains(isTraceTree("and", isTraceTree("a"), isTraceTree("b"))));
   }
 
   @Test
@@ -574,31 +534,19 @@ public class AclTracerTest {
   @Test
   public void testOr_withoutTraceElement() {
     List<TraceTree> trace = trace(or(falseExpr("a"), trueExpr("b"), falseExpr("c")));
-    assertThat(trace, contains(allOf(hasTraceElement(TraceElement.of("b")), hasNoChildren())));
+    assertThat(trace, contains(isTraceTree("b")));
   }
 
   @Test
   public void testOr_withTraceElement() {
     List<TraceTree> trace = trace(or("or", falseExpr("a"), trueExpr("b"), falseExpr("c")));
-    assertThat(
-        trace,
-        contains(
-            allOf(
-                hasTraceElement(TraceElement.of("or")),
-                hasChildren(
-                    contains(allOf(hasTraceElement(TraceElement.of("b")), hasNoChildren()))))));
+    assertThat(trace, contains(isTraceTree("or", isTraceTree("b"))));
   }
 
   @Test
   public void testOr_allTrue() {
     List<TraceTree> trace = trace(or("or", trueExpr("a"), trueExpr("b"), trueExpr("c")));
-    assertThat(
-        trace,
-        contains(
-            allOf(
-                hasTraceElement(TraceElement.of("or")),
-                hasChildren(
-                    contains(allOf(hasTraceElement(TraceElement.of("a")), hasNoChildren()))))));
+    assertThat(trace, contains(isTraceTree("or", isTraceTree("a"))));
   }
 
   @Test
@@ -611,7 +559,7 @@ public class AclTracerTest {
   public void testMatchHeaderspace_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE, a));
-    assertThat(trace, contains(allOf(hasTraceElement(a), hasNoChildren())));
+    assertThat(trace, contains(allOf(isTraceTree(a))));
   }
 
   @Test
@@ -628,13 +576,7 @@ public class AclTracerTest {
             ImmutableMap.of(aclName, acl),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(
-        trace,
-        contains(
-            allOf(
-                hasTraceElement(a),
-                hasChildren(
-                    contains(allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasNoChildren()))))));
+    assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(acl, 0)))));
   }
 
   @Test
@@ -643,12 +585,7 @@ public class AclTracerTest {
     IpAccessList acl =
         IpAccessList.builder().setName("acl").setLines(ExprAclLine.accepting(expr)).build();
     List<TraceTree> trace = trace(acl);
-    assertThat(
-        trace,
-        contains(
-            allOf(
-                hasTraceElement(matchedByAclLine(acl, 0)),
-                hasChildren(contains(allOf(hasTraceElement("a"), hasNoChildren()))))));
+    assertThat(trace, contains(isTraceTree(matchedByAclLine(acl, 0), allOf(isTraceTree("a")))));
   }
 
   @Test
@@ -677,24 +614,19 @@ public class AclTracerTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(trace, contains(allOf(hasTraceElement(a), hasNoChildren())));
+    assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
   public void testNotMatchExpr_withoutTraceElement() {
     List<TraceTree> trace = trace(not(falseExpr("false")));
-    assertThat(trace, contains(allOf(hasTraceElement("false"), hasNoChildren())));
+    assertThat(trace, contains(isTraceTree("false")));
   }
 
   @Test
   public void testNotMatchExpr_withTraceElement() {
     List<TraceTree> trace = trace(not("not", falseExpr("false")));
-    assertThat(
-        trace,
-        contains(
-            allOf(
-                hasTraceElement("not"),
-                hasChildren(contains(allOf(hasTraceElement("false"), hasNoChildren()))))));
+    assertThat(trace, contains(isTraceTree("not", isTraceTree("false"))));
   }
 
   @Test
