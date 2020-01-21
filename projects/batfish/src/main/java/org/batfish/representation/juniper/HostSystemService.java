@@ -10,8 +10,11 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public enum HostSystemService {
   ALL,
@@ -301,6 +304,13 @@ public enum HostSystemService {
               "missing definition for host-inbound-traffic system-service: \"" + name() + "\"");
         }
     }
-    return ImmutableList.of(ExprAclLine.acceptingHeaderSpace(headerSpaceBuilder.build()));
+
+    return ImmutableList.of(
+        new ExprAclLine(
+            LineAction.PERMIT,
+            new MatchHeaderSpace(headerSpaceBuilder.build()),
+            null,
+            TraceElement.of(
+                String.format("Matched host-inbound-traffic system-service %s", this.toString()))));
   }
 }

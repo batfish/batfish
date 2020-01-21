@@ -2154,7 +2154,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       from.applyTo(lines, _w);
     }
     for (FwFromHostService from : term.getFromHostServices()) {
-      // TODO: update FwFromHostService::applyTo for TraceElements
       from.applyTo(lines, _w);
     }
     for (FwFromApplicationSetMember fromApplicationSetMember :
