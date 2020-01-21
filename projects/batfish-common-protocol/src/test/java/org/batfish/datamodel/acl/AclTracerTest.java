@@ -589,6 +589,18 @@ public class AclTracerTest {
   }
 
   @Test
+  public void testOr_allTrue() {
+    List<TraceTree> trace = trace(or("or", trueExpr("a"), trueExpr("b"), trueExpr("c")));
+    assertThat(
+        trace,
+        contains(
+            allOf(
+                hasTraceElement(TraceElement.of("or")),
+                hasChildren(
+                    contains(allOf(hasTraceElement(TraceElement.of("a")), hasNoChildren()))))));
+  }
+
+  @Test
   public void testMatchHeaderspace_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE));
     assertThat(trace, empty());
