@@ -10,7 +10,6 @@ import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
@@ -559,7 +558,7 @@ public class AclTracerTest {
   public void testMatchHeaderspace_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE, a));
-    assertThat(trace, contains(allOf(isTraceTree(a))));
+    assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
@@ -585,7 +584,7 @@ public class AclTracerTest {
     IpAccessList acl =
         IpAccessList.builder().setName("acl").setLines(ExprAclLine.accepting(expr)).build();
     List<TraceTree> trace = trace(acl);
-    assertThat(trace, contains(isTraceTree(matchedByAclLine(acl, 0), allOf(isTraceTree("a")))));
+    assertThat(trace, contains(isTraceTree(matchedByAclLine(acl, 0), isTraceTree("a"))));
   }
 
   @Test
