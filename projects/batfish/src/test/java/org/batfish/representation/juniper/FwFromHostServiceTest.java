@@ -41,7 +41,7 @@ public class FwFromHostServiceTest {
                                 ImmutableSet.of(SubRange.singleton(NamedPort.DOMAIN.number())))
                             .build()),
                     null,
-                    TraceElement.of("Matched host-inbound-traffic system-service DNS")))));
+                    HostSystemService.DNS.getTraceElement()))));
   }
 
   @Test
@@ -60,11 +60,7 @@ public class FwFromHostServiceTest {
     List<TraceElement> expectedTraceElements =
         Stream.of(HostSystemService.values())
             .filter(hs -> !unhandledServices.contains(hs))
-            .map(
-                hs ->
-                    TraceElement.of(
-                        String.format(
-                            "Matched host-inbound-traffic system-service %s", hs.toString())))
+            .map(HostSystemService::getTraceElement)
             .collect(ImmutableList.toImmutableList());
 
     assertThat(

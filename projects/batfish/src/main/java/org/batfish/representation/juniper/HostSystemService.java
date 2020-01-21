@@ -57,6 +57,11 @@ public enum HostSystemService {
     _lines = Suppliers.memoize(this::init);
   }
 
+  TraceElement getTraceElement() {
+    return TraceElement.of(
+        String.format("Matched host-inbound-traffic system-service %s", this.toString()));
+  }
+
   private List<ExprAclLine> init() {
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     switch (this) {
@@ -310,7 +315,6 @@ public enum HostSystemService {
             LineAction.PERMIT,
             new MatchHeaderSpace(headerSpaceBuilder.build()),
             null,
-            TraceElement.of(
-                String.format("Matched host-inbound-traffic system-service %s", this.toString()))));
+            getTraceElement()));
   }
 }
