@@ -69,6 +69,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.Any;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_ADDRESS;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_PREFIX;
@@ -1631,18 +1639,16 @@ public final class PaloAltoGrammarTest {
     String zoneOutgoingFilterName = computeOutgoingFilterName(zoneObjName);
     IpAccessList intrazoneFilter = c.getIpAccessLists().get(intrazoneFilterName);
     IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
-    String vsysZoneStr = String.format("vsys %s zone %s", vsysName, zoneName);
 
     // Expected trace elements in intrazone filter
-    TraceElement ruleDenyTe = TraceElement.of("Matched security rule DENY");
-    TraceElement rulePermitTe = TraceElement.of("Matched security rule PERMIT");
-    TraceElement intrazoneDefaultTe =
-        TraceElement.of("Accepted intrazone traffic in " + vsysZoneStr);
+    TraceElement ruleDenyTe = matchRuleTraceElement("DENY");
+    TraceElement rulePermitTe = matchRuleTraceElement("PERMIT");
+    TraceElement intrazoneDefaultTe = intrazoneDefaultAcceptTraceElement(vsysName, zoneName);
 
     // Expected trace elements in zone outgoing filter
-    TraceElement intrazoneRulesTe = TraceElement.of("Matched intrazone rules for " + vsysZoneStr);
+    TraceElement intrazoneRulesTe = zoneToZoneMatchTraceElement(zoneName, zoneName, vsysName);
     TraceElement mismatchIntrazoneRulesTe =
-        TraceElement.of("Did not match intrazone rules for " + vsysZoneStr);
+        zoneToZoneRejectTraceElement(zoneName, zoneName, vsysName);
 
     assertThat(
         intrazoneFilter.getLines(),
@@ -1660,10 +1666,8 @@ public final class PaloAltoGrammarTest {
     IpAccessList ifaceOutgoingFilter = c.getIpAccessLists().get(ifaceOutgoingFilterName);
 
     // Expected trace elements in interface outgoing filter
-    TraceElement exitIfaceTe =
-        TraceElement.of(
-            String.format("Matched rules for exiting interface %s in %s", ifaceName, vsysZoneStr));
-    TraceElement originatedTe = TraceElement.of("Originated from the device");
+    TraceElement exitIfaceTe = ifaceOutgoingTraceElement(ifaceName, zoneName, vsysName);
+    TraceElement originatedTe = originatedFromDeviceTraceElement();
 
     assertThat(
         ifaceOutgoingFilter.getLines(),
@@ -1715,17 +1719,12 @@ public final class PaloAltoGrammarTest {
             ExprAclLine.REJECT_ALL
                 .toBuilder()
                 .setName("Not in a zone")
-                .setTraceElement(
-                    TraceElement.of(
-                        String.format(
-                            "Cannot exit interface %s because it is not in a zone",
-                            unzonedIfaceName)))
+                .setTraceElement(unzonedIfaceRejectTraceElement(unzonedIfaceName))
                 .build()));
 
     // Device has a zone without any interfaces; intra- and cross-zone filters should reflect that
     String emptyZoneName = "EMPTY_ZONE";
-    TraceElement emptyZoneTraceElement =
-        TraceElement.of(String.format("No interfaces in vsys %s zone %s", vsysName, emptyZoneName));
+    TraceElement emptyZoneTraceElement = emptyZoneRejectTraceElement(vsysName, emptyZoneName);
     String emptyZoneObjName = computeObjectName(vsysName, emptyZoneName);
     String emptyIntrazoneFilterName = zoneToZoneFilter(emptyZoneObjName, emptyZoneObjName);
     String emptyToNonEmptyFilterName = zoneToZoneFilter(emptyZoneObjName, zoneObjName);

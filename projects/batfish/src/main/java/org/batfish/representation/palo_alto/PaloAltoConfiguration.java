@@ -17,6 +17,14 @@ import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExpor
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -86,7 +94,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -591,10 +598,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                       .toBuilder()
                       .setName("No interfaces in zone")
                       .setTraceElement(
-                          TraceElement.of(
-                              String.format(
-                                  "No interfaces in vsys %s zone %s",
-                                  vsysName, (fromZoneEmpty ? fromZone : toZone).getName())))
+                          emptyZoneRejectTraceElement(
+                              vsysName, (fromZoneEmpty ? fromZone : toZone).getName()))
                       .build()))
           .build();
     }
@@ -628,10 +633,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                       LineAction.PERMIT,
                       TrueExpr.INSTANCE,
                       "Accept intrazone by default",
-                      TraceElement.of(
-                          String.format(
-                              "Accepted intrazone traffic in vsys %s zone %s",
-                              vsysName, fromZone.getName()))))
+                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName())))
               .build();
     }
 
@@ -804,22 +806,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             computeObjectName(vsysName, toZone.getName()));
     // If src interface in zone and filters permits, then permit.
     // Else if src interface in zone, filter must have denied.
-    String description =
-        fromZone.getName().equals(toZone.getName())
-            ? String.format("intrazone rules for vsys %s zone %s", vsysName, fromZone.getName())
-            : String.format(
-                "cross-zone rules from zone %s to zone %s in vsys %s",
-                fromZone.getName(), toZone.getName(), vsysName);
     return Stream.of(
         ExprAclLine.builder()
             .accepting()
             .setMatchCondition(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName)))
-            .setTraceElement(TraceElement.of("Matched " + description))
+            .setTraceElement(
+                zoneToZoneMatchTraceElement(fromZone.getName(), toZone.getName(), vsysName))
             .build(),
         ExprAclLine.builder()
             .rejecting()
             .setMatchCondition(matchFromZoneInterface)
-            .setTraceElement(TraceElement.of("Did not match " + description))
+            .setTraceElement(
+                zoneToZoneRejectTraceElement(fromZone.getName(), toZone.getName(), vsysName))
             .build());
   }
 
@@ -1021,7 +1019,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
-        .setTraceElement(TraceElement.of(String.format("Matched security rule %s", rule.getName())))
+        .setTraceElement(matchRuleTraceElement(rule.getName()))
         .build();
   }
 
@@ -1279,13 +1277,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (zone.getType() == Type.LAYER3) {
         String zoneFilterName =
             computeOutgoingFilterName(computeObjectName(zone.getVsys().getName(), zone.getName()));
-        String rulesStr =
-            String.format(
-                " rules for exiting interface %s in vsys %s zone %s",
-                iface.getName(), zone.getVsys().getName(), zone.getName());
         aclLines.add(
             new AclAclLine(
-                "Match" + rulesStr, zoneFilterName, TraceElement.of("Matched" + rulesStr)));
+                String.format(
+                    "Match rules for exiting interface %s in vsys %s zone %s",
+                    iface.getName(), zone.getVsys().getName(), zone.getName()),
+                zoneFilterName,
+                ifaceOutgoingTraceElement(
+                    iface.getName(), zone.getName(), zone.getVsys().getName())));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
@@ -1296,10 +1295,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
               .rejecting()
               .setName("Not in a zone")
               .setMatchCondition(TrueExpr.INSTANCE)
-              .setTraceElement(
-                  TraceElement.of(
-                      String.format(
-                          "Cannot exit interface %s because it is not in a zone", iface.getName())))
+              .setTraceElement(unzonedIfaceRejectTraceElement(iface.getName()))
               .build());
     }
 
@@ -1312,7 +1308,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       aclLines.add(
           accepting()
               .setMatchCondition(ORIGINATING_FROM_DEVICE)
-              .setTraceElement(TraceElement.of("Originated from the device"))
+              .setTraceElement(originatedFromDeviceTraceElement())
               .build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }

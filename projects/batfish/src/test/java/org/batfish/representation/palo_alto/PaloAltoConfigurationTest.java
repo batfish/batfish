@@ -18,6 +18,8 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSgSgLines;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -33,7 +35,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.junit.Before;
 import org.junit.Test;
@@ -444,19 +445,13 @@ public final class PaloAltoConfigurationTest {
             ImmutableMap.of()));
 
     // Should have trace elements about zone traversal
-    String matchMsg =
-        String.format(
-            "Matched cross-zone rules from zone %s to zone %s in vsys %s",
-            FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName());
-    String noMatchMsg =
-        String.format(
-            "Did not match cross-zone rules from zone %s to zone %s in vsys %s",
-            FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName());
     assertThat(
         generatedFilter.getLines(),
         contains(
-            hasTraceElement(TraceElement.of(matchMsg)),
-            hasTraceElement(TraceElement.of(noMatchMsg))));
+            hasTraceElement(
+                zoneToZoneMatchTraceElement(FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName())),
+            hasTraceElement(
+                zoneToZoneRejectTraceElement(FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName()))));
   }
 
   @Test
