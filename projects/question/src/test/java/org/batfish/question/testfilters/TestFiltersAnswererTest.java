@@ -1,8 +1,7 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
@@ -12,6 +11,7 @@ import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
@@ -151,7 +151,7 @@ public class TestFiltersAnswererTest {
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
                     TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 1)))),
+                    hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 1)))),
                     Schema.ACL_TRACE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
@@ -159,10 +159,7 @@ public class TestFiltersAnswererTest {
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(
-                    TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(contains(TraceEvent.of(defaultDeniedByIpAccessList(referencedAcl)))),
-                    Schema.ACL_TRACE))));
+                hasColumn(TestFiltersAnswerer.COL_TRACE, hasEvents(empty()), Schema.ACL_TRACE))));
   }
 
   @Test

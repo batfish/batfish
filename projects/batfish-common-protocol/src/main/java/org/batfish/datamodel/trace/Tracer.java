@@ -2,6 +2,9 @@ package org.batfish.datamodel.trace;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,25 +18,48 @@ import org.batfish.datamodel.TraceElement;
 public final class Tracer {
 
   // the complete trace. once set, can't create new subtraces
-  private @Nullable TraceTree _trace;
+  private @Nullable List<TraceTree> _trace;
 
   // invariant: never empty
-  private final Stack<TraceTree.Builder> _nodeStack;
+  private final Stack<TraceContext> _stack;
 
-  public Tracer() {
-    _nodeStack = new Stack<>();
+  /** Builder for {@link TraceTree}. */
+  private static final class TraceContext {
+    private @Nullable TraceElement _traceElement;
+    private final List<TraceTree> _children = new ArrayList<>();
+
+    void setTraceElement(TraceElement traceElement) {
+      _traceElement = traceElement;
+    }
+
+    void addChild(TraceTree child) {
+      _children.add(child);
+    }
+
+    @Nullable
+    TraceElement getTraceElement() {
+      return _traceElement;
+    }
+
+    List<TraceTree> getChildren() {
+      return _children;
+    }
   }
 
-  public TraceTree getTrace() {
+  public Tracer() {
+    _stack = new Stack<>();
+  }
+
+  public List<TraceTree> getTrace() {
     checkState(_trace != null, "cannot get incomplete trace");
     return _trace;
   }
 
   /** Set the {@link TraceElement} for the current trace node. Must not already be set. */
   public void setTraceElement(@Nonnull TraceElement traceElement) {
-    checkState(!_nodeStack.isEmpty(), "no trace in progress");
-    TraceTree.Builder currentNode = _nodeStack.peek();
-    currentNode.setTraceElement(traceElement);
+    checkState(!_stack.isEmpty(), "no trace in progress");
+    TraceContext context = _stack.peek();
+    context.setTraceElement(traceElement);
   }
 
   /**
@@ -43,17 +69,25 @@ public final class Tracer {
   public void newSubTrace() {
     checkState(_trace == null, "trace already completed");
     // Add new child, set it as current node
-    _nodeStack.push(TraceTree.builder());
+    _stack.push(new TraceContext());
   }
 
   /** Complete the current (sub)trace. If it's a subtrace, add it as a child of the parent trace. */
   public void endSubTrace() {
-    checkState(!_nodeStack.isEmpty(), "no trace in progress");
-    TraceTree child = _nodeStack.pop().build();
-    if (!_nodeStack.isEmpty()) {
-      _nodeStack.peek().addChild(child);
+    checkState(!_stack.isEmpty(), "no trace in progress");
+    TraceContext context = _stack.pop();
+    if (!_stack.isEmpty()) {
+      if (context.getTraceElement() != null) {
+        _stack.peek().addChild(new TraceTree(context.getTraceElement(), context.getChildren()));
+      } else {
+        context.getChildren().forEach(_stack.peek()::addChild);
+      }
     } else {
-      _trace = child;
+      if (context.getTraceElement() == null) {
+        _trace = ImmutableList.copyOf(context.getChildren());
+      } else {
+        _trace = ImmutableList.of(new TraceTree(context.getTraceElement(), context.getChildren()));
+      }
     }
   }
 
@@ -62,7 +96,7 @@ public final class Tracer {
    * the current subtrace as a child.
    */
   public void discardSubTrace() {
-    checkState(!_nodeStack.isEmpty(), "no trace in progress");
-    _nodeStack.pop();
+    checkState(!_stack.isEmpty(), "no trace in progress");
+    _stack.pop();
   }
 }

@@ -1,9 +1,13 @@
 package org.batfish.datamodel.trace;
 
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
 
+import java.util.List;
 import org.batfish.datamodel.TraceElement;
 import org.junit.Test;
 
@@ -19,9 +23,8 @@ public class TracerTest {
     tracer.setTraceElement(E1);
     tracer.endSubTrace();
 
-    TraceTree trace = tracer.getTrace();
-    assertEquals(E1, trace.getTraceElement());
-    assertThat(trace.getChildren(), empty());
+    List<TraceTree> trace = tracer.getTrace();
+    assertThat(trace, contains(allOf(hasTraceElement(E1), hasChildren(empty()))));
   }
 
   @Test
@@ -36,13 +39,13 @@ public class TracerTest {
 
     tracer.endSubTrace();
 
-    TraceTree trace = tracer.getTrace();
-    assertEquals(E1, trace.getTraceElement());
-    assertEquals(1, trace.getChildren().size());
-
-    TraceTree subTrace = trace.getChildren().get(0);
-    assertEquals(E2, subTrace.getTraceElement());
-    assertThat(subTrace.getChildren(), empty());
+    List<TraceTree> trace = tracer.getTrace();
+    assertThat(
+        trace,
+        contains(
+            allOf(
+                hasTraceElement(E1),
+                hasChildren(contains(allOf(hasTraceElement(E2), hasChildren(empty())))))));
   }
 
   @Test
@@ -57,8 +60,69 @@ public class TracerTest {
 
     tracer.endSubTrace();
 
-    TraceTree trace = tracer.getTrace();
-    assertEquals(E1, trace.getTraceElement());
-    assertThat(trace.getChildren(), empty());
+    List<TraceTree> trace = tracer.getTrace();
+    assertThat(trace, contains(allOf(hasTraceElement(E1), hasChildren(empty()))));
+  }
+
+  @Test
+  public void testNoTraceElement_root() {
+    Tracer tracer = new Tracer();
+    tracer.newSubTrace();
+
+    tracer.newSubTrace();
+    tracer.setTraceElement(E1);
+    tracer.endSubTrace();
+
+    tracer.newSubTrace();
+    tracer.setTraceElement(E2);
+    tracer.endSubTrace();
+
+    tracer.endSubTrace();
+
+    List<TraceTree> trace = tracer.getTrace();
+    assertThat(
+        trace,
+        contains(
+            allOf(hasTraceElement(E1), hasChildren(empty())),
+            allOf(hasTraceElement(E2), hasChildren(empty()))));
+  }
+
+  @Test
+  public void testNoTraceElement_leaf() {
+    Tracer tracer = new Tracer();
+    tracer.newSubTrace();
+    tracer.setTraceElement(E1);
+
+    tracer.newSubTrace();
+    tracer.endSubTrace();
+
+    tracer.endSubTrace();
+
+    List<TraceTree> trace = tracer.getTrace();
+    assertThat(trace, contains(allOf(hasTraceElement(E1), hasChildren(empty()))));
+  }
+
+  @Test
+  public void testNoTraceElement_internal() {
+    Tracer tracer = new Tracer();
+    tracer.newSubTrace(); // root
+    tracer.setTraceElement(E1);
+
+    tracer.newSubTrace(); // internal
+
+    tracer.newSubTrace(); // leaf
+    tracer.setTraceElement(E2);
+    tracer.endSubTrace(); // leaf
+
+    tracer.endSubTrace(); // internal
+    tracer.endSubTrace(); // root
+
+    List<TraceTree> trace = tracer.getTrace();
+    assertThat(
+        trace,
+        contains(
+            allOf(
+                hasTraceElement(E1),
+                hasChildren(contains(allOf(hasTraceElement(E2), hasChildren(empty())))))));
   }
 }
