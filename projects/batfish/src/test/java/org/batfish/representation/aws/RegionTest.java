@@ -40,6 +40,7 @@ import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.junit.Test;
 
 /** Tests for {@link Region} */
@@ -107,7 +108,7 @@ public class RegionTest {
                     "tcp",
                     22,
                     22,
-                    ImmutableList.of(Prefix.parse("2.2.2.0/24")),
+                    ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of()))));
     region.updateConfigurationSecurityGroups(
@@ -121,7 +122,7 @@ public class RegionTest {
                     "tcp",
                     25,
                     25,
-                    ImmutableList.of(Prefix.parse("2.2.2.0/24")),
+                    ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of()))));
 

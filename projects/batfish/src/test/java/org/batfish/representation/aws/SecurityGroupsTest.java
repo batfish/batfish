@@ -41,6 +41,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +98,7 @@ public class SecurityGroupsTest {
                             "-1",
                             null,
                             null,
-                            ImmutableList.of(Prefix.parse("0.0.0.0/0")),
+                            ImmutableList.of(new IpRange(Prefix.parse("0.0.0.0/0"))),
                             ImmutableList.of(),
                             ImmutableList.of()),
                         new IpPermissions(
@@ -112,7 +113,8 @@ public class SecurityGroupsTest {
                             "tcp",
                             22,
                             22,
-                            ImmutableList.of(Prefix.parse("1.2.3.4/32")),
+                            ImmutableList.of(
+                                new IpRange("Allowing single port", Prefix.parse("1.2.3.4/32"))),
                             ImmutableList.of(),
                             ImmutableList.of()))))));
   }
@@ -434,7 +436,7 @@ public class SecurityGroupsTest {
                     "tcp",
                     22,
                     22,
-                    ImmutableList.of(Prefix.parse("2.2.2.0/24")),
+                    ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of())));
     List<AclLine> lines = sg.toAclLines(Region.builder("r").build(), true, new Warnings());

@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESCRIPTION;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_FROM_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_GROUP_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_IP_PROTOCOL;
@@ -47,23 +48,37 @@ final class IpPermissions implements Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  private static final class IpRange implements Serializable {
+  static final class IpRange implements Serializable {
 
+    @Nullable private final String _description;
     @Nonnull private final Prefix _prefix;
 
     @JsonCreator
-    private static IpRange create(@Nullable @JsonProperty(JSON_KEY_CIDR_IP) Prefix prefix) {
+    private static IpRange create(
+        @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
+        @Nullable @JsonProperty(JSON_KEY_CIDR_IP) Prefix prefix) {
       checkArgument(prefix != null, "Prefix cannot be null in IpRange");
-      return new IpRange(prefix);
+      return new IpRange(description, prefix);
     }
 
-    IpRange(Prefix prefix) {
+    public IpRange(String description, Prefix prefix) {
+      _description = description;
+      _prefix = prefix;
+    }
+
+    public IpRange(Prefix prefix) {
+      _description = null;
       _prefix = prefix;
     }
 
     @Nonnull
     public Prefix getPrefix() {
       return _prefix;
+    }
+
+    @Nullable
+    public String getDescription() {
+      return _description;
     }
 
     @Override
@@ -75,12 +90,13 @@ final class IpPermissions implements Serializable {
         return false;
       }
       IpRange that = (IpRange) o;
-      return Objects.equals(_prefix, that._prefix);
+      return Objects.equals(_prefix, that._prefix)
+          && Objects.equals(_description, that._description);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_prefix);
+      return Objects.hash(_prefix, _description);
     }
   }
 
@@ -167,7 +183,7 @@ final class IpPermissions implements Serializable {
 
   @Nonnull private final String _ipProtocol;
 
-  @Nonnull private final List<Prefix> _ipRanges;
+  @Nonnull private final List<IpRange> _ipRanges;
 
   @Nonnull private final List<String> _prefixList;
 
@@ -193,7 +209,7 @@ final class IpPermissions implements Serializable {
         ipProtocol,
         fromPort,
         toPort,
-        (ipRanges.stream().map(IpRange::getPrefix).collect(ImmutableList.toImmutableList())),
+        ipRanges,
         firstNonNull(prefixes, ImmutableList.<PrefixListId>of()).stream()
             .map(PrefixListId::getId)
             .collect(ImmutableList.toImmutableList()),
@@ -206,7 +222,7 @@ final class IpPermissions implements Serializable {
       String ipProtocol,
       @Nullable Integer fromPort,
       @Nullable Integer toPort,
-      List<Prefix> ipRanges,
+      List<IpRange> ipRanges,
       List<String> prefixList,
       List<String> securityGroups) {
     _ipProtocol = ipProtocol;
@@ -221,7 +237,10 @@ final class IpPermissions implements Serializable {
     ImmutableSortedSet.Builder<IpWildcard> ipWildcardBuilder =
         new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
 
-    _ipRanges.stream().map(IpWildcard::create).forEach(ipWildcardBuilder::add);
+    _ipRanges.stream()
+        .map(IpRange::getPrefix)
+        .map(IpWildcard::create)
+        .forEach(ipWildcardBuilder::add);
 
     _securityGroups.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))
