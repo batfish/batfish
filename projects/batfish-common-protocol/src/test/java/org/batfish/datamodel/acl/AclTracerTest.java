@@ -3,6 +3,7 @@ package org.batfish.datamodel.acl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
@@ -677,5 +678,28 @@ public class AclTracerTest {
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(trace, contains(allOf(hasTraceElement(a), hasNoChildren())));
+  }
+
+  @Test
+  public void testNotMatchExpr_withoutTraceElement() {
+    List<TraceTree> trace = trace(not(falseExpr("false")));
+    assertThat(trace, contains(allOf(hasTraceElement("false"), hasNoChildren())));
+  }
+
+  @Test
+  public void testNotMatchExpr_withTraceElement() {
+    List<TraceTree> trace = trace(not("not", falseExpr("false")));
+    assertThat(
+        trace,
+        contains(
+            allOf(
+                hasTraceElement("not"),
+                hasChildren(contains(allOf(hasTraceElement("false"), hasNoChildren()))))));
+  }
+
+  @Test
+  public void testNotMatchExpr_false() {
+    List<TraceTree> trace = trace(not("not", trueExpr("true")));
+    assertThat(trace, empty());
   }
 }

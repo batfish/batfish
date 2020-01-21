@@ -259,6 +259,10 @@ public final class AclLineMatchExprs {
         HeaderSpace.builder().setTcpFlags(ImmutableList.copyOf(tcpFlagsMatchConditions)).build());
   }
 
+  public static NotMatchExpr not(String traceElement, AclLineMatchExpr expr) {
+    return new NotMatchExpr(expr, TraceElement.of(traceElement));
+  }
+
   /**
    * Smart constructor for {@link NotMatchExpr} that does constant-time simplifications (i.e. when
    * expr is {@link #TRUE} or {@link #FALSE}).

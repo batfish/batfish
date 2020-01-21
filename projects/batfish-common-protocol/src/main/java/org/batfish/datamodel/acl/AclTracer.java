@@ -391,6 +391,19 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public Boolean visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+    setTraceElement(notMatchExpr.getTraceElement());
+    _tracer.newSubTrace();
+    boolean result = visit(notMatchExpr.getOperand());
+    if (result) {
+      _tracer.discardSubTrace();
+    } else {
+      _tracer.endSubTrace();
+    }
+    return !result;
+  }
+
+  @Override
   public Boolean visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
     setTraceElement(matchSrcInterface.getTraceElement());
     return super.visitMatchSrcInterface(matchSrcInterface);
