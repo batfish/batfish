@@ -7,10 +7,13 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public final class BaseApplication implements Application, Serializable {
@@ -47,9 +50,12 @@ public final class BaseApplication implements Application, Serializable {
 
   private final Map<String, Term> _terms;
 
-  public BaseApplication() {
+  private String _name;
+
+  public BaseApplication(String name) {
     _mainTerm = new Term();
     _terms = new LinkedHashMap<>();
+    _name = name;
   }
 
   @Override
@@ -76,6 +82,7 @@ public final class BaseApplication implements Application, Serializable {
           ExprAclLine.builder()
               .setAction(action)
               .setMatchCondition(new MatchHeaderSpace(newHeaderSpaceBuilder.build()))
+              .setTraceElement(getTraceElement())
               .build();
       lines.add(newLine);
     }
@@ -96,5 +103,9 @@ public final class BaseApplication implements Application, Serializable {
 
   public void setIpv6(boolean ipv6) {
     _ipv6 = true;
+  }
+
+  TraceElement getTraceElement() {
+    return TraceElement.of(String.format("Matched application %s", _name));
   }
 }

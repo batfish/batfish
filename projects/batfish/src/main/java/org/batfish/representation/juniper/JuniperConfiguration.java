@@ -2158,6 +2158,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     for (FwFromApplicationSetMember fromApplicationSetMember :
         term.getFromApplicationSetMembers()) {
+      // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
       fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
     }
     if (term.getFromIpOptions() != null) {
