@@ -1,8 +1,8 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 import static org.hamcrest.CoreMatchers.equalTo;

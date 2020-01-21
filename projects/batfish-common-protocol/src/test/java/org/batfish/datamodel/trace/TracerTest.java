@@ -1,7 +1,7 @@
 package org.batfish.datamodel.trace;
 
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;

@@ -1,4 +1,4 @@
-package org.batfish.datamodel.acl;
+package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -11,8 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.TraceTreeMatchersImpl.HasChildren;
-import org.batfish.datamodel.acl.TraceTreeMatchersImpl.HasTraceElement;
+import org.batfish.datamodel.matchers.TraceTreeMatchersImpl.HasChildren;
+import org.batfish.datamodel.matchers.TraceTreeMatchersImpl.HasTraceElement;
 import org.batfish.datamodel.trace.TraceTree;
 import org.hamcrest.Matcher;
 
