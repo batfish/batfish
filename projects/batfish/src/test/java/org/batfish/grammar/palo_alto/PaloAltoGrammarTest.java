@@ -1659,8 +1659,22 @@ public final class PaloAltoGrammarTest {
     assertThat(
         zoneOutgoingFilter.getLines(),
         contains(hasTraceElement(intrazoneRulesTe), hasTraceElement(mismatchIntrazoneRulesTe)));
+  }
 
-    // Device has an interface in the zone
+  @Test
+  public void testIfaceOutgoingFilterTraceElements() {
+    // Device has an interface in the zone. Ensure that outgoing filter lines have expected trace
+    // elements and flows leaving the interface generate the expected ACL traces.
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zoneName = "ZONE";
+
+    // Expected trace elements in zone outgoing filter
+    TraceElement intrazoneRulesTe = zoneToZoneMatchTraceElement(zoneName, zoneName, vsysName);
+    TraceElement intrazoneRejectRulesTe =
+        zoneToZoneRejectTraceElement(zoneName, zoneName, vsysName);
+
     String ifaceName = "ethernet1/1.1";
     String ifaceOutgoingFilterName = computeOutgoingFilterName(ifaceName);
     IpAccessList ifaceOutgoingFilter = c.getIpAccessLists().get(ifaceOutgoingFilterName);
@@ -1668,25 +1682,30 @@ public final class PaloAltoGrammarTest {
     // Expected trace elements in interface outgoing filter
     TraceElement exitIfaceTe = ifaceOutgoingTraceElement(ifaceName, zoneName, vsysName);
     TraceElement originatedTe = originatedFromDeviceTraceElement();
-
     assertThat(
         ifaceOutgoingFilter.getLines(),
         contains(hasTraceElement(exitIfaceTe), hasTraceElement(originatedTe)));
 
-    // Ensure flows leaving interface generate the expected ACL traces
+    // Flow that does not match either security rule should fall through to intrazone default
     Flow.Builder fb = Flow.builder().setDstIp(Ip.ZERO).setIngressNode("n");
     List<TraceTree> flowTrace =
         AclTracer.trace(
             ifaceOutgoingFilter,
-            fb.setSrcIp(Ip.parse("1.1.1.1")).build(), // should fall through to intrazone default
+            fb.setSrcIp(Ip.parse("1.1.1.1")).build(),
             ifaceName,
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(
         flowTrace,
-        contains(isChainOfSingleChildren(exitIfaceTe, intrazoneRulesTe, intrazoneDefaultTe)));
-    // TODO Ideally this trace should include ruleDenyTe.
+        contains(
+            isChainOfSingleChildren(
+                exitIfaceTe,
+                intrazoneRulesTe,
+                intrazoneDefaultAcceptTraceElement(vsysName, zoneName))));
+
+    // Flow matching DENY security rule should be rejected by intrazone reject line.
+    // TODO Ideally this trace should have matchRuleTraceElement("PERMIT") instead of mismatch
     flowTrace =
         AclTracer.trace(
             ifaceOutgoingFilter,
@@ -1695,7 +1714,9 @@ public final class PaloAltoGrammarTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(flowTrace, contains(isChainOfSingleChildren(exitIfaceTe, mismatchIntrazoneRulesTe)));
+    assertThat(flowTrace, contains(isChainOfSingleChildren(exitIfaceTe, intrazoneRejectRulesTe)));
+
+    // Flow matching PERMIT security rule should generate a trace pointing to that rule.
     flowTrace =
         AclTracer.trace(
             ifaceOutgoingFilter,
@@ -1705,27 +1726,43 @@ public final class PaloAltoGrammarTest {
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(
-        flowTrace, contains(isChainOfSingleChildren(exitIfaceTe, intrazoneRulesTe, rulePermitTe)));
+        flowTrace,
+        contains(
+            isChainOfSingleChildren(
+                exitIfaceTe, intrazoneRulesTe, matchRuleTraceElement("PERMIT"))));
+  }
 
+  @Test
+  public void testUnzonedIfaceOutgoingFilterTraceElements() {
     // Device has an interface without a zone; its outgoing filter should reflect that
-    String unzonedIfaceName = "ethernet1/1";
-    String unzonedIfaceOutgoingFilterName = computeOutgoingFilterName(unzonedIfaceName);
-    IpAccessList unzonedIfaceOutgoingFilter =
-        c.getIpAccessLists().get(unzonedIfaceOutgoingFilterName);
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String ifaceName = "ethernet1/1";
+
+    // This ACL has an unnecessary (unreachable) second line; no need to assert on that line
+    IpAccessList ifaceOutgoingFilter =
+        c.getIpAccessLists().get(computeOutgoingFilterName(ifaceName));
     assertThat(
-        // this ACL has an unnecessary (unreachable) second line; no need to assert on that line
-        unzonedIfaceOutgoingFilter.getLines().get(0),
+        ifaceOutgoingFilter.getLines().get(0),
         equalTo(
             ExprAclLine.REJECT_ALL
                 .toBuilder()
                 .setName("Not in a zone")
-                .setTraceElement(unzonedIfaceRejectTraceElement(unzonedIfaceName))
+                .setTraceElement(unzonedIfaceRejectTraceElement(ifaceName))
                 .build()));
+  }
 
+  @Test
+  public void testEmptyZoneOutgoingFilterTraceElements() {
     // Device has a zone without any interfaces; intra- and cross-zone filters should reflect that
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zoneName = "ZONE";
     String emptyZoneName = "EMPTY_ZONE";
-    TraceElement emptyZoneTraceElement = emptyZoneRejectTraceElement(vsysName, emptyZoneName);
+    String zoneObjName = computeObjectName(vsysName, zoneName);
     String emptyZoneObjName = computeObjectName(vsysName, emptyZoneName);
+
     String emptyIntrazoneFilterName = zoneToZoneFilter(emptyZoneObjName, emptyZoneObjName);
     String emptyToNonEmptyFilterName = zoneToZoneFilter(emptyZoneObjName, zoneObjName);
     String nonEmptyToEmptyFilterName = zoneToZoneFilter(zoneObjName, emptyZoneObjName);
@@ -1733,7 +1770,9 @@ public final class PaloAltoGrammarTest {
         .forEach(
             filterName -> {
               IpAccessList filter = c.getIpAccessLists().get(filterName);
-              assertThat(filter.getLines(), contains(hasTraceElement(emptyZoneTraceElement)));
+              assertThat(
+                  filter.getLines(),
+                  contains(hasTraceElement(emptyZoneRejectTraceElement(vsysName, emptyZoneName))));
             });
   }
 
