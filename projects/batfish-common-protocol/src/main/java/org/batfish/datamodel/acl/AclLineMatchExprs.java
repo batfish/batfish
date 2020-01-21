@@ -16,6 +16,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.TraceElement;
 
 public final class AclLineMatchExprs {
 
@@ -245,6 +246,11 @@ public final class AclLineMatchExprs {
 
   public static @Nonnull MatchSrcInterface matchSrcInterface(String... ifaces) {
     return matchSrcInterface(ImmutableList.copyOf(ifaces));
+  }
+
+  public static @Nonnull MatchSrcInterface matchSrcInterface(
+      TraceElement traceElement, String... ifaces) {
+    return new MatchSrcInterface(ImmutableList.copyOf(ifaces), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchTcpFlags(

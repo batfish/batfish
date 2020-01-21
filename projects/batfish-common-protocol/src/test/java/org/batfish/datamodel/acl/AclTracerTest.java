@@ -2,6 +2,7 @@ package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
@@ -645,5 +646,34 @@ public class AclTracerTest {
             allOf(
                 hasTraceElement(matchedByAclLine(acl, 0)),
                 hasChildren(contains(allOf(hasTraceElement("a"), hasNoChildren()))))));
+  }
+
+  @Test
+  public void testMatchSrcInterface_withoutTraceElement() {
+    String iface = "iface";
+    List<TraceTree> trace =
+        AclTracer.trace(
+            matchSrcInterface(iface),
+            FLOW,
+            iface,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchSrcInterface_withTraceElement() {
+    String iface = "iface";
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace =
+        AclTracer.trace(
+            matchSrcInterface(a, iface),
+            FLOW,
+            iface,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(allOf(hasTraceElement(a), hasNoChildren())));
   }
 }

@@ -389,4 +389,10 @@ public final class AclTracer extends AclLineEvaluator {
               return result;
             });
   }
+
+  @Override
+  public Boolean visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    setTraceElement(matchSrcInterface.getTraceElement());
+    return super.visitMatchSrcInterface(matchSrcInterface);
+  }
 }
