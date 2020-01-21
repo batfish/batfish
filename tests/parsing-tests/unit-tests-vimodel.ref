@@ -26565,6 +26565,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol BFD"
+                    }
+                  ]
                 }
               },
               {
@@ -26581,6 +26589,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol BGP"
+                    }
+                  ]
                 }
               },
               {
@@ -26594,6 +26610,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol DVMRP"
+                    }
+                  ]
                 }
               },
               {
@@ -26607,6 +26631,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol IGMP"
+                    }
+                  ]
                 }
               },
               {
@@ -26624,6 +26656,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol LDP"
+                    }
+                  ]
                 }
               },
               {
@@ -26640,6 +26680,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol MSDP"
+                    }
+                  ]
                 }
               },
               {
@@ -26653,6 +26701,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol NHRP"
+                    }
+                  ]
                 }
               },
               {
@@ -26666,6 +26722,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol OSPF"
+                    }
+                  ]
                 }
               },
               {
@@ -26679,6 +26743,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol PGM"
+                    }
+                  ]
                 }
               },
               {
@@ -26692,6 +26764,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol PIM"
+                    }
+                  ]
                 }
               },
               {
@@ -26708,6 +26788,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol RIP"
+                    }
+                  ]
                 }
               },
               {
@@ -26721,6 +26809,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol ROUTER_DISCOVERY"
+                    }
+                  ]
                 }
               },
               {
@@ -26735,6 +26831,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol RSVP"
+                    }
+                  ]
                 }
               },
               {
@@ -26757,6 +26861,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol SAP"
+                    }
+                  ]
                 }
               },
               {
@@ -26770,6 +26882,14 @@
                     ],
                     "negate" : false
                   }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched host-inbound-traffic protocol VRRP"
+                    }
+                  ]
                 }
               }
             ],
