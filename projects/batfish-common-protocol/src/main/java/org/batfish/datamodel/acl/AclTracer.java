@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -50,6 +51,25 @@ public final class AclTracer extends AclLineEvaluator {
     return tracer.getTrace();
   }
 
+  @VisibleForTesting
+  static List<TraceTree> trace(
+      @Nonnull AclLineMatchExpr expr,
+      @Nonnull Flow flow,
+      @Nullable String srcInterface,
+      @Nonnull Map<String, IpAccessList> availableAcls,
+      @Nonnull Map<String, IpSpace> namedIpSpaces,
+      @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
+    AclTracer tracer =
+        new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
+    tracer._tracer.newSubTrace();
+    if (!tracer.visit(expr)) {
+      tracer._tracer.discardSubTrace();
+      tracer._tracer.newSubTrace();
+    }
+    tracer._tracer.endSubTrace();
+    return tracer.getTrace();
+  }
+
   private final Map<String, IpSpaceMetadata> _ipSpaceMetadata;
 
   private final @Nonnull Tracer _tracer;
@@ -81,6 +101,13 @@ public final class AclTracer extends AclLineEvaluator {
     } else {
       _tracer.setTraceElement(traceElement);
     }
+  }
+
+  private void setTraceElement(@Nullable TraceElement traceElement) {
+    if (traceElement == null) {
+      return;
+    }
+    _tracer.setTraceElement(traceElement);
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -310,17 +337,32 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public LineAction visitExprAclLine(ExprAclLine exprAclLine) {
+    // current context is for the line; create a context for the top-level expression
+    _tracer.newSubTrace();
+    if (visit(exprAclLine.getMatchCondition())) {
+      _tracer.endSubTrace();
+      return exprAclLine.getAction();
+    }
+    _tracer.discardSubTrace();
+    return null;
+  }
+
+  @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    setTraceElement(matchHeaderSpace.getTraceElement());
     return trace(matchHeaderSpace.getHeaderspace());
   }
 
   @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+    setTraceElement(permittedByAcl.getTraceElement());
     return trace(_availableAcls.get(permittedByAcl.getAclName())) == LineAction.PERMIT;
   }
 
   @Override
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+    setTraceElement(andMatchExpr.getTraceElement());
     return andMatchExpr.getConjuncts().stream()
         .allMatch(
             c -> {
@@ -333,13 +375,37 @@ public final class AclTracer extends AclLineEvaluator {
 
   @Override
   public Boolean visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+    setTraceElement(orMatchExpr.getTraceElement());
     return orMatchExpr.getDisjuncts().stream()
         .anyMatch(
             d -> {
               _tracer.newSubTrace();
               Boolean result = d.accept(this);
-              _tracer.endSubTrace();
+              if (result) {
+                _tracer.endSubTrace();
+              } else {
+                _tracer.discardSubTrace();
+              }
               return result;
             });
+  }
+
+  @Override
+  public Boolean visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+    setTraceElement(notMatchExpr.getTraceElement());
+    _tracer.newSubTrace();
+    boolean result = visit(notMatchExpr.getOperand());
+    if (result) {
+      _tracer.discardSubTrace();
+    } else {
+      _tracer.endSubTrace();
+    }
+    return !result;
+  }
+
+  @Override
+  public Boolean visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    setTraceElement(matchSrcInterface.getTraceElement());
+    return super.visitMatchSrcInterface(matchSrcInterface);
   }
 }
