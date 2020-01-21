@@ -61,7 +61,7 @@ public final class PaloAltoTraceElementCreators {
   public static TraceElement ifaceOutgoingTraceElement(String iface, String zone, String vsys) {
     return TraceElement.of(
         String.format(
-            "Match rules for exiting interface %s in vsys %s zone %s", iface, vsys, zone));
+            "Matched rules for exiting interface %s in vsys %s zone %s", iface, vsys, zone));
   }
 
   /**
