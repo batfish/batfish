@@ -62,7 +62,7 @@ public final class TraceTreeMatchers {
   public static Matcher<TraceTree> isChainOfSingleChildren(
       List<Matcher<? super TraceTree>> nodeMatchers) {
     // Doesn't make sense with 0 traceElements
-    assert nodeMatchers.size() > 0;
+    assert !nodeMatchers.isEmpty();
 
     // Reverse nodeMatchers list to start from the leaf child's trace element matcher
     Iterator<Matcher<? super TraceTree>> iterator = Lists.reverse(nodeMatchers).iterator();
