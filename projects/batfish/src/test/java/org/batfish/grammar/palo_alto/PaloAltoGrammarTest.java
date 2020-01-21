@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginType.EGP;
 import static org.batfish.datamodel.OriginType.IGP;
 import static org.batfish.datamodel.OriginType.INCOMPLETE;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.isChainOfSingleChildren;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
@@ -102,6 +103,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -145,6 +147,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
@@ -157,6 +160,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
@@ -1628,30 +1632,76 @@ public final class PaloAltoGrammarTest {
     IpAccessList intrazoneFilter = c.getIpAccessLists().get(intrazoneFilterName);
     IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
     String vsysZoneStr = String.format("vsys %s zone %s", vsysName, zoneName);
+
+    // Expected trace elements in intrazone filter
+    TraceElement ruleDenyTe = TraceElement.of("Matched security rule DENY");
+    TraceElement rulePermitTe = TraceElement.of("Matched security rule PERMIT");
+    TraceElement intrazoneDefaultTe =
+        TraceElement.of("Accepted intrazone traffic in " + vsysZoneStr);
+
+    // Expected trace elements in zone outgoing filter
+    TraceElement intrazoneRulesTe = TraceElement.of("Matched intrazone rules for " + vsysZoneStr);
+    TraceElement mismatchIntrazoneRulesTe =
+        TraceElement.of("Did not match intrazone rules for " + vsysZoneStr);
+
     assertThat(
         intrazoneFilter.getLines(),
         contains(
-            hasTraceElement(TraceElement.of("Matched security rule DENY")),
-            hasTraceElement(TraceElement.of("Matched security rule PERMIT")),
-            hasTraceElement(TraceElement.of("Accepted intrazone traffic in " + vsysZoneStr))));
+            hasTraceElement(ruleDenyTe),
+            hasTraceElement(rulePermitTe),
+            hasTraceElement(intrazoneDefaultTe)));
     assertThat(
         zoneOutgoingFilter.getLines(),
-        contains(
-            hasTraceElement(TraceElement.of("Matched intrazone rules for " + vsysZoneStr)),
-            hasTraceElement(TraceElement.of("Did not match intrazone rules for " + vsysZoneStr))));
+        contains(hasTraceElement(intrazoneRulesTe), hasTraceElement(mismatchIntrazoneRulesTe)));
 
     // Device has an interface in the zone
     String ifaceName = "ethernet1/1.1";
     String ifaceOutgoingFilterName = computeOutgoingFilterName(ifaceName);
     IpAccessList ifaceOutgoingFilter = c.getIpAccessLists().get(ifaceOutgoingFilterName);
+
+    // Expected trace elements in interface outgoing filter
+    TraceElement exitIfaceTe =
+        TraceElement.of(
+            String.format("Matched rules for exiting interface %s in %s", ifaceName, vsysZoneStr));
+    TraceElement originatedTe = TraceElement.of("Originated from the device");
+
     assertThat(
         ifaceOutgoingFilter.getLines(),
-        contains(
-            hasTraceElement(
-                TraceElement.of(
-                    String.format(
-                        "Matched rules for exiting interface %s in %s", ifaceName, vsysZoneStr))),
-            hasTraceElement(TraceElement.of("Originated from the device"))));
+        contains(hasTraceElement(exitIfaceTe), hasTraceElement(originatedTe)));
+
+    // Ensure flows leaving interface generate the expected ACL traces
+    Flow.Builder fb = Flow.builder().setDstIp(Ip.ZERO).setIngressNode("n");
+    List<TraceTree> flowTrace =
+        AclTracer.trace(
+            ifaceOutgoingFilter,
+            fb.setSrcIp(Ip.parse("1.1.1.1")).build(), // should fall through to intrazone default
+            ifaceName,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        flowTrace,
+        contains(isChainOfSingleChildren(exitIfaceTe, intrazoneRulesTe, intrazoneDefaultTe)));
+    // TODO Ideally this trace should include ruleDenyTe.
+    flowTrace =
+        AclTracer.trace(
+            ifaceOutgoingFilter,
+            fb.setSrcIp(Ip.parse("2.2.2.2")).build(), // should match DENY rule
+            ifaceName,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(flowTrace, contains(isChainOfSingleChildren(exitIfaceTe, mismatchIntrazoneRulesTe)));
+    flowTrace =
+        AclTracer.trace(
+            ifaceOutgoingFilter,
+            fb.setSrcIp(Ip.parse("3.3.3.3")).build(), // should match PERMIT rule
+            ifaceName,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        flowTrace, contains(isChainOfSingleChildren(exitIfaceTe, intrazoneRulesTe, rulePermitTe)));
 
     // Device has an interface without a zone; its outgoing filter should reflect that
     String unzonedIfaceName = "ethernet1/1";
