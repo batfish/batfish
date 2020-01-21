@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -159,7 +160,7 @@ public class TestFiltersAnswererTest {
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(TestFiltersAnswerer.COL_TRACE, hasEvents(empty()), Schema.ACL_TRACE))));
+                hasColumn(TestFiltersAnswerer.COL_TRACE, nullValue(), Schema.TRACE_TREE))));
   }
 
   @Test

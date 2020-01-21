@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
@@ -201,6 +202,7 @@ public class TestFiltersAnswerer extends Answerer {
    * represented by {@code c}.
    */
   public static Row getRow(IpAccessList filter, Flow flow, Configuration c) {
+    @Nullable
     TraceTree trace =
         Iterables.getOnlyElement(
             AclTracer.trace(
@@ -209,7 +211,8 @@ public class TestFiltersAnswerer extends Answerer {
                 flow.getIngressInterface(),
                 c.getIpAccessLists(),
                 c.getIpSpaces(),
-                c.getIpSpaceMetadata()));
+                c.getIpSpaceMetadata()),
+            null);
     FilterResult result =
         filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
     Integer matchLine = result.getMatchLine();
