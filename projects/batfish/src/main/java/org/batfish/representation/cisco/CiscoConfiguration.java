@@ -1804,13 +1804,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
           OSPF_NSSA_EXTERNAL_TYPE_1,
           OSPF_NSSA_EXTERNAL_TYPE_2
         }) {
-      if (protocolConversions.get(type) == null) {
-        _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
-        continue;
-      }
       AristaBgpRedistributionPolicy ospfPolicy =
           ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(type);
       if (ospfPolicy != null) {
+        if (protocolConversions.get(type) == null) {
+          _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
+          continue;
+        }
         BooleanExpr filterByRouteMap =
             Optional.ofNullable(ospfPolicy.getRouteMap())
                 .filter(_routeMaps::containsKey)
