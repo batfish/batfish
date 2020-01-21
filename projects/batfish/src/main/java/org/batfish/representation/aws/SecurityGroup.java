@@ -76,7 +76,8 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
               region,
               String.format(
                   "%s - %s [%s] %s", _groupId, _groupName, ingress ? "ingress" : "egress", seq),
-              warnings)
+              warnings,
+              seq)
           .ifPresent(aclLines::add);
     }
     return aclLines.build();

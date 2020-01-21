@@ -350,15 +350,14 @@ public final class CumulusConversions {
             (vrfName, bgpVrf) ->
                 c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, vsConfig, vrfName, bgpVrf)));
 
-    // Create dud processes for other VRFs that use L3 VNIs, so we can have proper RIBs
+    // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
         .forEach(
             (vrfName, vrf) -> {
-              Vrf vsVrf = vsConfig.getVrf(vrfName);
-              if (vsVrf != null
-                  && vsVrf.getVni() != null // has L3 VNI
-                  && vrf.getBgpProcess() == null // process does not already exist
-                  && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
+              if (!vrf.getLayer2Vnis().isEmpty()
+                  || !vrf.getLayer3Vnis().isEmpty() // VRF has some VNI
+                      && vrf.getBgpProcess() == null // process does not already exist
+                      && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())

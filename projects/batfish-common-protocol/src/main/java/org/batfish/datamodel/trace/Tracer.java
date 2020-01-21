@@ -84,7 +84,7 @@ public final class Tracer {
       }
     } else {
       if (context.getTraceElement() == null) {
-        _trace = context.getChildren();
+        _trace = ImmutableList.copyOf(context.getChildren());
       } else {
         _trace = ImmutableList.of(new TraceTree(context.getTraceElement(), context.getChildren()));
       }

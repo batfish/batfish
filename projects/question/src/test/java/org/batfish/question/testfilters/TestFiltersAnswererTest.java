@@ -1,8 +1,7 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.acl.TraceElements.defaultDeniedByIpAccessList;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
@@ -12,6 +11,8 @@ import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -152,7 +153,7 @@ public class TestFiltersAnswererTest {
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
                     TestFiltersAnswerer.COL_TRACE,
-                    allOf(hasTraceElement(permittedByAclLine(acl, 1)), hasChildren(empty())),
+                    allOf(hasTraceElement(matchedByAclLine(acl, 1)), hasChildren(empty())),
                     Schema.TRACE_TREE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
@@ -160,12 +161,7 @@ public class TestFiltersAnswererTest {
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(
-                    TestFiltersAnswerer.COL_TRACE,
-                    allOf(
-                        hasTraceElement(defaultDeniedByIpAccessList(referencedAcl)),
-                        hasChildren(empty())),
-                    Schema.TRACE_TREE))));
+                hasColumn(TestFiltersAnswerer.COL_TRACE, hasEvents(empty()), Schema.ACL_TRACE))));
   }
 
   @Test
