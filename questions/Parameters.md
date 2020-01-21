@@ -177,7 +177,9 @@ The following fine-grained disposition values are also supported:
 
 A specification for filters (ACLs or firewall rules) in the network.
 
-* Filter name or a regex over the names indicate filters on all nodes in the network with that name or matching regex. For example, `filter1` includes all filters with that name and `/acl/` includes all filters whose names contain 'acl'.
+* `filter1` includes filters on all nodes with that name.
+
+* `/^acl/` includes all filters (on all nodes) whose names name regex '^acl', i.e., begin with 'acl'.
 
 * `nodeTerm[filterWithoutNode]` indicates filters that match the `filterWithoutNode` specification on nodes that match the `nodeTerm` specification. A simple example is `as1border1[filter1]` which refers to the filter `filter1` on `as1border1`.
 
@@ -226,7 +228,9 @@ An interface property specifier follows the [enum set grammar](#set-of-enums-or-
 
 A specification for interfaces in the network.
 
-* Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all interfaces with that name and `/Ethernet0/` includes all interfaces whose names contain 'Ethernet0'.
+* `Ethernet0/1` indicates interfaces on all nodes with that name.
+
+* `/^Eth/` indicates all interfaces (on all nodes) whose names match the regex '^Eth', i.e., start with 'Eth'.
 
 * `nodeTerm[interfaceWithoutNode]` indicates interfaces that match the `interfaceWithoutNode` specification on nodes that match the `nodeTerm` specification. A simple example is `as1border1[Ethernet0/1]` which refers to the interface `Ethernet0/1` on `as1border1`.
 
@@ -408,7 +412,9 @@ A node property specifier follows the [enum set grammar](#set-of-enums-or-names)
 
 A specification for nodes in the network.
 
-* Node names or a regex over the names indicate nodes in the network with that name or matching regex. For example, `as1border1` indicates that node and `/as1/` indicates all nodes whose names contain `as1`.
+* `as1border1` indicates a node with that name.
+
+* `/^as1/` indicates all nodes whose names match the regex `^as1`, i.e., start with 'as1'.
 
 * `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
 
@@ -498,7 +504,9 @@ The routing protocol specifier grammar follows the [enum set grammar](#set-of-en
 
 A specification for routing policies in the network.
 
-* Routing policy name or a regex over the names indicate routing policies on all nodes in the network with that name or matching regex. For example, `routingPolicy1` includes all routing policies with that name and `/rtpol/` includes all routing policies whose names contain 'rtpol'.
+* `routingPolicy1` includes routing policies on all nodes with that name.
+
+* `/^rtpol/` includes all routing policies (on all nodes) whose names match the regex '^rtpol', i.e., start wtih 'rtpol'.
 
 #### Routing Policy Grammar
 
