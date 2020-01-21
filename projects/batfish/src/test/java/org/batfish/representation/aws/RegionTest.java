@@ -158,13 +158,13 @@ public class RegionTest {
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
-                    "Security Group sg-2",
-                    "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
-                    getTraceElementForSecurityGroup("sg-2")),
-                new AclAclLine(
                     "Security Group sg-1",
                     "~INGRESS~SECURITY-GROUP~sg-1~sg-001~",
-                    getTraceElementForSecurityGroup("sg-1")))));
+                    getTraceElementForSecurityGroup("sg-1")),
+                new AclAclLine(
+                    "Security Group sg-2",
+                    "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
+                    getTraceElementForSecurityGroup("sg-2")))));
 
     assertThat(
         c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));
