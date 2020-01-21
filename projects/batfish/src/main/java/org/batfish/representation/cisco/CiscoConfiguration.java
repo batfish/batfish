@@ -2317,10 +2317,104 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void applyZoneFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    String zoneName = firstNonNull(getSecurityZoneName(iface), getSecurityLevelZoneName(iface));
-    if (zoneName == null) {
+    if (getSecurityZoneName(iface) != null) {
+      applySecurityZoneFilter(iface, newIface, c);
+    } else if (getSecurityLevelZoneName(iface) != null) {
+      applySecurityLevelFilter(iface, newIface, c);
+    }
+  }
+
+  private void applySecurityZoneFilter(
+      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
+    String zoneName =
+        checkNotNull(
+            getSecurityZoneName(iface),
+            "interface %s is not in a security zone name",
+            iface.getName());
+    String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
+    IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
+    if (zoneOutgoingAcl == null) {
       return;
     }
+    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
+    if (oldOutgoingFilterName == null && allowsIntraZoneTraffic(zoneName)) {
+      // No interface outbound filter and no interface-specific handling
+      newIface.setOutgoingFilter(zoneOutgoingAcl);
+      return;
+    }
+
+    // Construct a new ACL that combines filters, i.e. 1 AND (2 OR 3)
+    // 1) the interface outbound filter, if it exists
+    // 2) the zone filter
+    // 3) interface-specific zone filtering, if necessary
+
+    AclLineMatchExpr ifaceFilter = FalseExpr.INSTANCE;
+    if (_sameSecurityTrafficIntra && !_sameSecurityTrafficInter) {
+      ifaceFilter =
+          new MatchSrcInterface(
+              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface");
+    } else if (!_sameSecurityTrafficIntra && _sameSecurityTrafficInter) {
+      ifaceFilter =
+          new MatchSrcInterface(
+              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
+                  .filter(other -> !other.equals(iface))
+                  .map(this::getNewInterfaceName)
+                  .collect(ImmutableList.toImmutableList()),
+              String.format(
+                  "Allow traffic received on other interfaces with security level %d",
+                  iface.getSecurityLevel()));
+    }
+
+    String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
+    IpAccessList combinedOutgoingAcl;
+    ImmutableList<AclLineMatchExpr> securityFilters =
+        ImmutableList.of(new PermittedByAcl(zoneOutgoingAclName), ifaceFilter);
+
+    if (oldOutgoingFilterName != null) {
+      combinedOutgoingAcl =
+          IpAccessList.builder()
+              .setOwner(c)
+              .setName(combinedOutgoingAclName)
+              .setLines(
+                  ImmutableList.of(
+                      ExprAclLine.accepting()
+                          .setMatchCondition(
+                              new AndMatchExpr(
+                                  ImmutableList.of(
+                                      new OrMatchExpr(securityFilters),
+                                      new PermittedByAcl(oldOutgoingFilterName)),
+                                  String.format(
+                                      "Permit if permitted by policy for zone '%s' and permitted by"
+                                          + " outgoing filter '%s'",
+                                      zoneName, oldOutgoingFilterName)))
+                          .build()))
+              .build();
+    } else {
+      combinedOutgoingAcl =
+          IpAccessList.builder()
+              .setOwner(c)
+              .setName(combinedOutgoingAclName)
+              .setLines(
+                  ImmutableList.of(
+                      ExprAclLine.accepting()
+                          .setMatchCondition(
+                              new OrMatchExpr(
+                                  securityFilters,
+                                  String.format(
+                                      "Permit if permitted by policy for zone '%s'", zoneName)))
+                          .build()))
+              .build();
+    }
+    newIface.setOutgoingFilter(combinedOutgoingAcl);
+  }
+
+  private void applySecurityLevelFilter(
+      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
+    String zoneName =
+        checkNotNull(
+            getSecurityLevelZoneName(iface),
+            "interface %s is not in a security level",
+            iface.getName());
     String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
     IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
     if (zoneOutgoingAcl == null) {
