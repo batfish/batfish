@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
@@ -50,12 +48,12 @@ public final class BaseApplication implements Application, Serializable {
 
   private final Map<String, Term> _terms;
 
-  private String _name;
+  private TraceElement _traceElement;
 
   public BaseApplication(String name) {
     _mainTerm = new Term();
     _terms = new LinkedHashMap<>();
-    _name = name;
+    _traceElement = TraceElement.of(String.format("Matched application %s", name));
   }
 
   @Override
@@ -106,6 +104,6 @@ public final class BaseApplication implements Application, Serializable {
   }
 
   TraceElement getTraceElement() {
-    return TraceElement.of(String.format("Matched application %s", _name));
+    return _traceElement;
   }
 }
