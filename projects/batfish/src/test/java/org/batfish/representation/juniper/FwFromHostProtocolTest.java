@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -43,11 +44,25 @@ public class FwFromHostProtocolTest {
   }
 
   @Test
-  public void testApplyTo_all() {
+  public void testApplyTo_all_traceElement() {
     FwFromHostProtocol from = new FwFromHostProtocol(HostProtocol.ALL);
     List<ExprAclLine> lines = new ArrayList<>();
     from.applyTo(lines, null);
 
-    assertThat(lines, equalTo(HostProtocol.ALL.getLines()));
+    List<HostProtocol> unhandledProtocols =
+        ImmutableList.of(HostProtocol.ALL, HostProtocol.OSPF3, HostProtocol.RIPNG);
+
+    List<TraceElement> expectedTraceElements =
+        Stream.of(HostProtocol.values())
+            .filter(hp -> !unhandledProtocols.contains(hp))
+            .map(
+                hp ->
+                    TraceElement.of(
+                        String.format("Matched host-inbound-traffic protocol %s", hp.toString())))
+            .collect(ImmutableList.toImmutableList());
+
+    assertThat(
+        lines.stream().map(ExprAclLine::getTraceElement).collect(ImmutableList.toImmutableList()),
+        equalTo(expectedTraceElements));
   }
 }
