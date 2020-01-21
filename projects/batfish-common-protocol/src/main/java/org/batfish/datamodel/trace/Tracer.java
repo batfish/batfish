@@ -28,7 +28,7 @@ public final class Tracer {
     private @Nullable TraceElement _traceElement;
     private final List<TraceTree> _children = new ArrayList<>();
 
-    void setTraceElement(TraceElement traceElement) {
+    void setTraceElement(@Nonnull TraceElement traceElement) {
       _traceElement = traceElement;
     }
 
@@ -59,6 +59,7 @@ public final class Tracer {
   public void setTraceElement(@Nonnull TraceElement traceElement) {
     checkState(!_stack.isEmpty(), "no trace in progress");
     TraceContext context = _stack.peek();
+    checkState(context.getTraceElement() == null, "TraceElement already set");
     context.setTraceElement(traceElement);
   }
 

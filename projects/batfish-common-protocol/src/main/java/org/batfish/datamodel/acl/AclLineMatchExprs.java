@@ -16,6 +16,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.TraceElement;
 
 public final class AclLineMatchExprs {
 
@@ -43,6 +44,10 @@ public final class AclLineMatchExprs {
 
   public static final AclLineMatchExpr NEW_FLOWS =
       implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
+
+  public static AclLineMatchExpr and(String traceElement, AclLineMatchExpr... exprs) {
+    return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+  }
 
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
     return and(ImmutableList.copyOf(exprs));
@@ -243,10 +248,19 @@ public final class AclLineMatchExprs {
     return matchSrcInterface(ImmutableList.copyOf(ifaces));
   }
 
+  public static @Nonnull MatchSrcInterface matchSrcInterface(
+      TraceElement traceElement, String... ifaces) {
+    return new MatchSrcInterface(ImmutableList.copyOf(ifaces), traceElement);
+  }
+
   public static @Nonnull AclLineMatchExpr matchTcpFlags(
       TcpFlagsMatchConditions... tcpFlagsMatchConditions) {
     return new MatchHeaderSpace(
         HeaderSpace.builder().setTcpFlags(ImmutableList.copyOf(tcpFlagsMatchConditions)).build());
+  }
+
+  public static NotMatchExpr not(String traceElement, AclLineMatchExpr expr) {
+    return new NotMatchExpr(expr, TraceElement.of(traceElement));
   }
 
   /**
@@ -264,6 +278,10 @@ public final class AclLineMatchExprs {
       return ((NotMatchExpr) expr).getOperand();
     }
     return new NotMatchExpr(expr);
+  }
+
+  public static AclLineMatchExpr or(String traceElement, AclLineMatchExpr... exprs) {
+    return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
   }
 
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
