@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
@@ -18,6 +19,11 @@ public final class TraceTreeMatchers {
   }
 
   /** A {@link TraceTree} matcher on {@link TraceTree#getTraceElement()}. */
+  public static Matcher<TraceTree> hasTraceElement(String text) {
+    return new HasTraceElement(equalTo(TraceElement.of(text)));
+  }
+
+  /** A {@link TraceTree} matcher on {@link TraceTree#getTraceElement()}. */
   public static Matcher<TraceTree> hasTraceElement(TraceElement traceElement) {
     return new HasTraceElement(equalTo(traceElement));
   }
@@ -25,5 +31,10 @@ public final class TraceTreeMatchers {
   /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
   public static Matcher<TraceTree> hasChildren(Matcher<? super List<TraceTree>> subMatcher) {
     return new HasChildren(subMatcher);
+  }
+
+  /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
+  public static Matcher<TraceTree> hasNoChildren() {
+    return new HasChildren(empty());
   }
 }

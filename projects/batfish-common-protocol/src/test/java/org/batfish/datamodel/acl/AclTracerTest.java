@@ -7,6 +7,7 @@ import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.acl.TraceTreeMatchers.hasNoChildren;
 import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.hamcrest.Matchers.allOf;
@@ -51,6 +52,11 @@ public class AclTracerTest {
   private static final HeaderSpace TRUE_HEADERSPACE = HeaderSpace.builder().build();
   private static final HeaderSpace FALSE_HEADERSPACE =
       HeaderSpace.builder().setNotDstIps(UniverseIpSpace.INSTANCE).build();
+
+  private static List<TraceTree> trace(IpAccessList acl) {
+    return AclTracer.trace(
+        acl, FLOW, SRC_INTERFACE, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+  }
 
   private static List<TraceTree> trace(AclLineMatchExpr expr) {
     return AclTracer.trace(
@@ -624,8 +630,20 @@ public class AclTracerTest {
                 hasTraceElement(a),
                 hasChildren(
                     contains(
-                        allOf(
-                            hasTraceElement(TraceElements.matchedByAclLine(acl, 0)),
-                            hasChildren(empty())))))));
+                        allOf(hasTraceElement(matchedByAclLine(acl, 0)), hasChildren(empty())))))));
+  }
+
+  @Test
+  public void testLineWithExprAnnotations() {
+    AclLineMatchExpr expr = trueExpr("a");
+    IpAccessList acl =
+        IpAccessList.builder().setName("acl").setLines(ExprAclLine.accepting(expr)).build();
+    List<TraceTree> trace = trace(acl);
+    assertThat(
+        trace,
+        contains(
+            allOf(
+                hasTraceElement(matchedByAclLine(acl, 0)),
+                hasChildren(contains(allOf(hasTraceElement("a"), hasNoChildren()))))));
   }
 }

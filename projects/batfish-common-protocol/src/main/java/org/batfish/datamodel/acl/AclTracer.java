@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -333,6 +334,18 @@ public final class AclTracer extends AclLineEvaluator {
             "Reference to undefined IpAccessList %s",
             aclAclLine.getAclName());
     return trace(referencedAcl);
+  }
+
+  @Override
+  public LineAction visitExprAclLine(ExprAclLine exprAclLine) {
+    // current context is for the line; create a context for the top-level expression
+    _tracer.newSubTrace();
+    if (visit(exprAclLine.getMatchCondition())) {
+      _tracer.endSubTrace();
+      return exprAclLine.getAction();
+    }
+    _tracer.discardSubTrace();
+    return null;
   }
 
   @Override
