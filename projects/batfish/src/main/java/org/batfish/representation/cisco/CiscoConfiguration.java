@@ -1806,25 +1806,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }) {
       AristaBgpRedistributionPolicy ospfPolicy =
           ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(type);
-      if (ospfPolicy != null) {
-        if (protocolConversions.get(type) == null) {
-          _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
-          continue;
-        }
-        BooleanExpr filterByRouteMap =
-            Optional.ofNullable(ospfPolicy.getRouteMap())
-                .filter(_routeMaps::containsKey)
-                .<BooleanExpr>map(CallExpr::new)
-                .orElse(BooleanExprs.TRUE);
-        List<BooleanExpr> conditions =
-            ImmutableList.of(
-                protocolConversions.get(type),
-                // TODO redistributeDefaultRoute,
-                bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-        Conjunction ospf = new Conjunction(conditions);
-        ospf.setComment(String.format("Redistribute %s routes into BGP", type));
-        exportConditions.add(ospf);
+      if (ospfPolicy == null) {
+        continue;
       }
+      if (protocolConversions.get(type) == null) {
+        _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
+        continue;
+      }
+      BooleanExpr filterByRouteMap =
+          Optional.ofNullable(ospfPolicy.getRouteMap())
+              .filter(_routeMaps::containsKey)
+              .<BooleanExpr>map(CallExpr::new)
+              .orElse(BooleanExprs.TRUE);
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              protocolConversions.get(type),
+              // TODO redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
+      Conjunction ospf = new Conjunction(conditions);
+      ospf.setComment(String.format("Redistribute %s routes into BGP", type));
+      exportConditions.add(ospf);
     }
 
     // Now we add all the per-network export policies.

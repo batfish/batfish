@@ -94695,18 +94695,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Redistribution of OSPF_NSSA_EXTERNAL routes is not yet supported"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Redistribution of OSPF_NSSA_EXTERNAL_TYPE_1 routes is not yet supported"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Redistribution of OSPF_NSSA_EXTERNAL_TYPE_2 routes is not yet supported"
             }
           ]
         },
