@@ -4263,62 +4263,125 @@ public final class CiscoConfiguration extends VendorConfiguration {
             Entry::getKey,
             zoneByNameEntry -> new MatchSrcInterface(zoneByNameEntry.getValue().getInterfaces()));
 
-    c.getZones()
-        .forEach(
-            (zoneName, zone) -> {
+    c.getZones().values().stream()
+        .map(
+            zone -> {
               // Don't bother if zone is empty
               SortedSet<String> interfaces = zone.getInterfaces();
               if (interfaces.isEmpty()) {
-                return;
+                return null;
               }
-
-              ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
-
-              // Allow traffic originating from device (no source interface)
-              zonePolicies.add(
-                  ExprAclLine.accepting()
-                      .setMatchCondition(OriginatingFromDevice.INSTANCE)
-                      .setName("Allow traffic originating from this device")
-                      .build());
-
-              // Allow traffic staying within this zone (always true for IOS)
-              if (allowsIntraZoneTraffic(zoneName)) {
-                zonePolicies.add(
-                    ExprAclLine.accepting()
-                        .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
-                        .setName(
-                            String.format(
-                                "Allow traffic received on interface in same zone: '%s'", zoneName))
-                        .build());
+              String zoneName = zone.getName();
+              if (_securityLevels.containsKey(zoneName)) {
+                // ASA security level
+                return createAsaSecurityLevelZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
+              } else if (_securityZones.containsKey(zoneName)) {
+                // IOS security zone
+                return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
               }
+              // shouldn't reach here
+              return null;
+            })
+        .filter(Objects::nonNull)
+        .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
+  }
 
-              /*
-               * Add zone-pair policies
-               */
-              // zoneName refers to dstZone
-              Map<String, SecurityZonePair> zonePairsBySrcZoneName =
-                  _securityZonePairs.get(zoneName);
-              if (zonePairsBySrcZoneName != null) {
-                zonePairsBySrcZoneName.forEach(
-                    (srcZoneName, zonePair) ->
-                        createZonePairAcl(
-                                c,
-                                matchSrcInterfaceBySrcZone.get(srcZoneName),
-                                zoneName,
-                                srcZoneName,
-                                zonePair)
-                            .ifPresent(zonePolicies::add));
-              }
+  public IpAccessList createAsaSecurityLevelZoneAcl(
+      Zone zone, Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone, Configuration c) {
 
-              // Security level policies
-              zonePolicies.addAll(createSecurityLevelAcl(zoneName));
+    ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
 
-              IpAccessList.builder()
-                  .setName(computeZoneOutgoingAclName(zoneName))
-                  .setOwner(c)
-                  .setLines(zonePolicies.build())
-                  .build();
-            });
+    // Allow traffic originating from device (no source interface)
+    zonePolicies.add(
+        ExprAclLine.accepting()
+            .setMatchCondition(OriginatingFromDevice.INSTANCE)
+            .setName("Allow traffic originating from this device")
+            .build());
+
+    // Allow traffic staying within this zone (always true for IOS)
+    String zoneName = zone.getName();
+    if (allowsIntraZoneTraffic(zoneName)) {
+      zonePolicies.add(
+          ExprAclLine.accepting()
+              .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
+              .setName(
+                  String.format("Allow traffic received on interface in same zone: '%s'", zoneName))
+              .build());
+    }
+
+    /*
+     * Add zone-pair policies
+     */
+    // zoneName refers to dstZone
+    Map<String, SecurityZonePair> zonePairsBySrcZoneName = _securityZonePairs.get(zoneName);
+    if (zonePairsBySrcZoneName != null) {
+      zonePairsBySrcZoneName.forEach(
+          (srcZoneName, zonePair) ->
+              createZonePairAcl(
+                      c,
+                      matchSrcInterfaceBySrcZone.get(srcZoneName),
+                      zoneName,
+                      srcZoneName,
+                      zonePair)
+                  .ifPresent(zonePolicies::add));
+    }
+
+    // Security level policies
+    zonePolicies.addAll(createSecurityLevelAcl(zoneName));
+
+    return IpAccessList.builder()
+        .setName(computeZoneOutgoingAclName(zoneName))
+        .setLines(zonePolicies.build())
+        .build();
+  }
+
+  public IpAccessList createIosSecurityZoneAcl(
+      Zone zone, Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone, Configuration c) {
+
+    ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
+
+    // Allow traffic originating from device (no source interface)
+    zonePolicies.add(
+        ExprAclLine.accepting()
+            .setMatchCondition(OriginatingFromDevice.INSTANCE)
+            .setName("Allow traffic originating from this device")
+            .build());
+
+    // Allow traffic staying within this zone (always true for IOS)
+    String zoneName = zone.getName();
+    if (allowsIntraZoneTraffic(zoneName)) {
+      zonePolicies.add(
+          ExprAclLine.accepting()
+              .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
+              .setName(
+                  String.format("Allow traffic received on interface in same zone: '%s'", zoneName))
+              .build());
+    }
+
+    /*
+     * Add zone-pair policies
+     */
+    // zoneName refers to dstZone
+    Map<String, SecurityZonePair> zonePairsBySrcZoneName = _securityZonePairs.get(zoneName);
+    if (zonePairsBySrcZoneName != null) {
+      zonePairsBySrcZoneName.forEach(
+          (srcZoneName, zonePair) ->
+              createZonePairAcl(
+                      c,
+                      matchSrcInterfaceBySrcZone.get(srcZoneName),
+                      zoneName,
+                      srcZoneName,
+                      zonePair)
+                  .ifPresent(zonePolicies::add));
+    }
+
+    // Security level policies
+    zonePolicies.addAll(createSecurityLevelAcl(zoneName));
+
+    return IpAccessList.builder()
+        .setName(computeZoneOutgoingAclName(zoneName))
+        .setLines(zonePolicies.build())
+        .build();
   }
 
   public Optional<ExprAclLine> createZonePairAcl(
