@@ -452,21 +452,33 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
-                                .build()),
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .build()),
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .build()))))));
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
+                                    .build()),
+                            null,
+                            TraceElement.of("Matched application a1")),
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                    .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
+                                    .build()),
+                            null,
+                            TraceElement.of("Matched application a2")),
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                    .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
+                                    .build()),
+                            null,
+                            TraceElement.of("Matched application a3")))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
@@ -576,18 +588,26 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
-                                .build()),
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
-                                .build()))))));
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
+                                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
+                                    .build()),
+                            null,
+                            TraceElement.of("Matched application a1 term t1")),
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
+                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
+                                    .build()),
+                            null,
+                            TraceElement.of("Matched application a1 term t2")))))));
   }
 
   @Test
