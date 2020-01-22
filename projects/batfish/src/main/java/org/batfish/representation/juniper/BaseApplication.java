@@ -92,14 +92,16 @@ public final class BaseApplication implements Application, Serializable {
             .setDstIps(oldHeaderSpace.getDstIps())
             .setSrcIps(oldHeaderSpace.getSrcIps());
     term.applyTo(newHeaderSpaceBuilder);
-    String termName = term.getTracingName();
-    String termDesc = termName == null ? "" : String.format(" term %s", termName);
     return ExprAclLine.builder()
         .setAction(action)
         .setMatchCondition(new MatchHeaderSpace(newHeaderSpaceBuilder.build()))
-        .setTraceElement(
-            TraceElement.of(String.format("Matched application %s%s", _name, termDesc)))
+        .setTraceElement(getTermTracingName(term.getTracingName()))
         .build();
+  }
+
+  TraceElement getTermTracingName(@Nullable String termTracingName) {
+    String termDesc = termTracingName == null ? "" : String.format(" term %s", termTracingName);
+    return TraceElement.of(String.format("Matched application %s%s", _name, termDesc));
   }
 
   @Override
