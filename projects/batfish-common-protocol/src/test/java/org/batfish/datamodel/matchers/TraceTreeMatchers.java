@@ -1,14 +1,16 @@
-package org.batfish.datamodel.acl;
+package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.acl.TraceTreeMatchersImpl.HasChildren;
-import org.batfish.datamodel.acl.TraceTreeMatchersImpl.HasTraceElement;
+import org.batfish.datamodel.matchers.TraceTreeMatchersImpl.HasChildren;
+import org.batfish.datamodel.matchers.TraceTreeMatchersImpl.HasTraceElement;
 import org.batfish.datamodel.trace.TraceTree;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -77,5 +79,33 @@ public final class TraceTreeMatchers {
   /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
   public static Matcher<TraceTree> hasNoChildren() {
     return new HasChildren(empty());
+  }
+
+  /**
+   * A {@link TraceTree} matcher matching trees where:
+   * <li>the root and all descendants each have at most one child, such that the tree has no
+   *     branching
+   * <li>the tree is the same size as {@code traceElements}
+   * <li>each node's {@link TraceElement}, starting at the root, matches the same-index element in
+   *     {@code traceElements}
+   */
+  public static Matcher<TraceTree> isChainOfSingleChildren(TraceElement... traceElements) {
+    // Doesn't make sense with 0 traceElements
+    assert traceElements.length != 0;
+
+    // Iterate backwards through traceElements to start from the leaf child's trace element
+    ListIterator<TraceElement> iterator =
+        Arrays.asList(traceElements).listIterator(traceElements.length);
+
+    // Matcher for last child's trace element
+    Matcher<TraceTree> matcher = isTraceTree(iterator.previous());
+
+    // For each parent going up, apply the matcher to its child and assert on its trace element
+    while (iterator.hasPrevious()) {
+      matcher = isTraceTree(iterator.previous(), matcher);
+    }
+
+    // Finalized matcher should match on the root node
+    return matcher;
   }
 }
