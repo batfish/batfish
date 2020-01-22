@@ -904,7 +904,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private String getSecurityZoneName(Interface iface) {
+  private String getIOSSecurityZoneName(Interface iface) {
     String zoneName = iface.getSecurityZone();
     if (zoneName == null) {
       return null;
@@ -917,12 +917,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private String getSecurityLevelZoneName(Interface iface) {
+  private String getASASecurityLevelZoneName(Interface iface) {
     Integer level = iface.getSecurityLevel();
     if (level == null) {
       return null;
     }
-    return computeSecurityLevelZoneName(level);
+    return computeASASecurityLevelZoneName(level);
   }
 
   public SnmpServer getSnmpServer() {
@@ -2317,18 +2317,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void applyZoneFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    if (getSecurityZoneName(iface) != null) {
-      applySecurityZoneFilter(iface, newIface, c);
-    } else if (getSecurityLevelZoneName(iface) != null) {
-      applySecurityLevelFilter(iface, newIface, c);
+    if (getIOSSecurityZoneName(iface) != null) {
+      applyIOSSecurityZoneFilter(iface, newIface, c);
+    } else if (getASASecurityLevelZoneName(iface) != null) {
+      applyASASecurityLevelFilter(iface, newIface, c);
     }
   }
 
-  private void applySecurityZoneFilter(
+  private void applyIOSSecurityZoneFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
     String zoneName =
         checkNotNull(
-            getSecurityZoneName(iface),
+            getIOSSecurityZoneName(iface),
             "interface %s is not in a security zone name",
             iface.getName());
     String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
@@ -2368,11 +2368,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setOutgoingFilter(combinedOutgoingAcl);
   }
 
-  private void applySecurityLevelFilter(
+  private void applyASASecurityLevelFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
     String zoneName =
         checkNotNull(
-            getSecurityLevelZoneName(iface),
+            getASASecurityLevelZoneName(iface),
             "interface %s is not in a security level",
             iface.getName());
     String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
@@ -3381,7 +3381,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // create and populate zones based on ASA security levels
     _interfacesBySecurityLevel.forEach(
         (level, iface) -> {
-          String zoneName = computeSecurityLevelZoneName(level);
+          String zoneName = computeASASecurityLevelZoneName(level);
           Zone zone = c.getZones().computeIfAbsent(zoneName, Zone::new);
           zone.setInterfaces(
               ImmutableSet.<String>builder()
@@ -4430,7 +4430,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
   }
 
-  public static String computeSecurityLevelZoneName(int securityLevel) {
+  public static String computeASASecurityLevelZoneName(int securityLevel) {
     return String.format("SECURITY_LEVEL_%s", securityLevel);
   }
 
