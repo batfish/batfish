@@ -1696,10 +1696,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setIncomingTransformation(buildIncomingTransformation(iface));
 
     // Assume the config will need security policies only if it has zones
-    IpAccessList securityPolicyAcl;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
-      securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
+      IpAccessList securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
         newIface.setPreTransformationOutgoingFilter(securityPolicyAcl);

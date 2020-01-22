@@ -237,8 +237,12 @@ public enum JunosApplication implements Application {
     }
   }
 
+  private String convertToJuniperName() {
+    return this.name().toLowerCase().replace("_", "-");
+  }
+
   private BaseApplication init() {
-    BaseApplication baseApplication = new BaseApplication(this.name());
+    BaseApplication baseApplication = new BaseApplication(convertToJuniperName());
     Map<String, Term> terms = baseApplication.getTerms();
 
     Integer portRangeStart = null;
