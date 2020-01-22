@@ -2387,26 +2387,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // 2) the cross-security-level filter
     // 3) the intra-security-level filter
 
-    ImmutableList.Builder<AclLineMatchExpr> intraSecurityLevelMatchExprs = ImmutableList.builder();
-    if (_sameSecurityTrafficIntra) {
-      // allow traffic received on the outgoing interface (hairpinning)
-      intraSecurityLevelMatchExprs.add(
-          new MatchSrcInterface(
-              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface"));
-    }
-    if (_sameSecurityTrafficInter) {
-      // allow traffic received on another interface in the same security level
-      intraSecurityLevelMatchExprs.add(
-          new MatchSrcInterface(
-              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
-                  .filter(other -> !other.equals(iface))
-                  .map(this::getNewInterfaceName)
-                  .collect(ImmutableList.toImmutableList()),
-              String.format(
-                  "Allow traffic received on other interfaces with security level %d",
-                  iface.getSecurityLevel())));
-    }
-    AclLineMatchExpr intraSecurityLevelMatchExpr = or(intraSecurityLevelMatchExprs.build());
+    AclLineMatchExpr intraSecurityLevelMatchExpr =
+        getAsaIntraSecurityLevelMatchExpr(iface, newIface);
 
     String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
     IpAccessList combinedOutgoingAcl;
@@ -2449,6 +2431,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .build();
     }
     newIface.setOutgoingFilter(combinedOutgoingAcl);
+  }
+
+  /**
+   * Construct an {@link AclLineMatchExpr} that matches traffic allowed to exit the specified {@code
+   * iface} after entering the same interface or another interface in the same security level. Only
+   * for Cisco ASA devices.
+   */
+  private AclLineMatchExpr getAsaIntraSecurityLevelMatchExpr(
+      Interface iface, org.batfish.datamodel.Interface newIface) {
+    checkNotNull(iface.getSecurityLevel(), "interface %s not in a security level", iface.getName());
+    ImmutableList.Builder<AclLineMatchExpr> intraSecurityLevelMatchExprs = ImmutableList.builder();
+    if (_sameSecurityTrafficIntra) {
+      // allow traffic received on the outgoing interface (hairpinning)
+      intraSecurityLevelMatchExprs.add(
+          new MatchSrcInterface(
+              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface"));
+    }
+    if (_sameSecurityTrafficInter) {
+      // allow traffic received on another interface in the same security level
+      intraSecurityLevelMatchExprs.add(
+          new MatchSrcInterface(
+              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
+                  .filter(other -> !other.equals(iface))
+                  .map(this::getNewInterfaceName)
+                  .collect(ImmutableList.toImmutableList()),
+              String.format(
+                  "Allow traffic received on other interfaces with security level %d",
+                  iface.getSecurityLevel())));
+    }
+    return or(intraSecurityLevelMatchExprs.build());
   }
 
   public static String computeCombinedOutgoingAclName(String interfaceName) {
