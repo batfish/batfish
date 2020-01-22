@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
@@ -4138,11 +4137,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .setVni(vni)
         .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
         .build();
-  }
-
-  private boolean asaAllowsIntraZoneTraffic(String zoneName) {
-    checkArgument(_securityLevels.containsKey(zoneName), "not an ASA security level zone");
-    return _sameSecurityTrafficInter && _sameSecurityTrafficIntra;
   }
 
   private void createInspectClassMapAcls(Configuration c) {
