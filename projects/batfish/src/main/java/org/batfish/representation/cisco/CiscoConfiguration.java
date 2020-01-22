@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.AristaConversions.getVrfForVlan;
@@ -140,7 +141,6 @@ import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -2382,24 +2382,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return;
     }
     String oldOutgoingFilterName = newIface.getOutgoingFilterName();
-    if (oldOutgoingFilterName == null && asaAllowsIntraZoneTraffic(zoneName)) {
-      // No interface outbound filter and no interface-specific handling
-      newIface.setOutgoingFilter(zoneOutgoingAcl);
-      return;
-    }
 
     // Construct a new ACL that combines filters, i.e. 1 AND (2 OR 3)
     // 1) the interface outbound filter, if it exists
-    // 2) the zone filter
-    // 3) interface-specific zone filtering, if necessary
+    // 2) the cross-security-level filter
+    // 3) the intra-security-level filter
 
-    AclLineMatchExpr ifaceFilter = FalseExpr.INSTANCE;
-    if (_sameSecurityTrafficIntra && !_sameSecurityTrafficInter) {
-      ifaceFilter =
+    ImmutableList.Builder<AclLineMatchExpr> intraSecurityLevelMatchExprs = ImmutableList.builder();
+    if (_sameSecurityTrafficIntra) {
+      // allow traffic received on the outgoing interface (hairpinning)
+      intraSecurityLevelMatchExprs.add(
           new MatchSrcInterface(
-              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface");
-    } else if (!_sameSecurityTrafficIntra && _sameSecurityTrafficInter) {
-      ifaceFilter =
+              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface"));
+    }
+    if (_sameSecurityTrafficInter) {
+      // allow traffic received on another interface in the same security level
+      intraSecurityLevelMatchExprs.add(
           new MatchSrcInterface(
               _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
                   .filter(other -> !other.equals(iface))
@@ -2407,13 +2405,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   .collect(ImmutableList.toImmutableList()),
               String.format(
                   "Allow traffic received on other interfaces with security level %d",
-                  iface.getSecurityLevel()));
+                  iface.getSecurityLevel())));
     }
+    AclLineMatchExpr intraSecurityLevelMatchExpr = or(intraSecurityLevelMatchExprs.build());
 
     String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
     IpAccessList combinedOutgoingAcl;
     ImmutableList<AclLineMatchExpr> securityFilters =
-        ImmutableList.of(new PermittedByAcl(zoneOutgoingAclName), ifaceFilter);
+        ImmutableList.of(new PermittedByAcl(zoneOutgoingAclName), intraSecurityLevelMatchExpr);
 
     if (oldOutgoingFilterName != null) {
       combinedOutgoingAcl =
@@ -4297,16 +4296,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setName("Allow traffic originating from this device")
             .build());
 
-    // Allow traffic staying within this zone (always true for IOS)
     String zoneName = zone.getName();
-    if (asaAllowsIntraZoneTraffic(zoneName)) {
-      zonePolicies.add(
-          ExprAclLine.accepting()
-              .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
-              .setName(
-                  String.format("Allow traffic received on interface in same zone: '%s'", zoneName))
-              .build());
-    }
 
     // Security level policies
     zonePolicies.addAll(createSecurityLevelAcl(zoneName));
