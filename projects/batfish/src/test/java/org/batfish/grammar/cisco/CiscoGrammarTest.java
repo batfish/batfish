@@ -21,6 +21,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -148,6 +149,7 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
@@ -171,6 +173,10 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeASASecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
@@ -263,6 +269,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -341,6 +348,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -384,6 +392,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -5387,6 +5396,47 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaSecurityLevel_tracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level");
+    String explicit100Interface = "all-trust";
+    String insideInterface = "inside";
+
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
+
+    BiFunction<String, String, List<TraceTree>> trace =
+        (fromIface, toIface) ->
+            AclTracer.trace(
+                c.getAllInterfaces().get(toIface).getPreTransformationOutgoingFilter(),
+                newFlow,
+                fromIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // intra-security-level, but from/to different interfaces
+    {
+      List<TraceTree> traces = trace.apply(explicit100Interface, insideInterface);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT))));
+    }
+
+    // hairpinning
+    {
+      List<TraceTree> traces = trace.apply(explicit100Interface, explicit100Interface);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT))));
+    }
+  }
+
+  @Test
   public void testAsaSecurityLevelPermitBoth() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
@@ -5412,6 +5462,117 @@ public final class CiscoGrammarTest {
         c,
         hasInterface(
             ifaceAlias2, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+  }
+
+  @Test
+  public void testAsaSecurityLevelPermitBoth_tracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-both");
+    String ifaceAlias1 = "name1";
+    String ifaceAlias2 = "name2";
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
+
+    BiFunction<String, String, List<TraceTree>> trace =
+        (fromIface, toIface) ->
+            AclTracer.trace(
+                c.getAllInterfaces().get(toIface).getPreTransformationOutgoingFilter(),
+                newFlow,
+                fromIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // intra-security-level, but from/to different interfaces
+    {
+      List<TraceTree> traces = trace.apply(ifaceAlias1, ifaceAlias2);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT))));
+    }
+
+    // hairpinning
+    {
+      List<TraceTree> traces = trace.apply(ifaceAlias1, ifaceAlias1);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT))));
+    }
+  }
+
+  /**
+   * Testing the traces AclTracer produces for ASA security-levels, when the security-level policy
+   * permits, and there is an out filter on the out interface.
+   */
+  @Test
+  public void testAsaSecurityLevelPermitBothOutFilter_tracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-both-out-filter");
+    String iface1 = "name1"; // security-level 50
+    String iface2 = "name2"; // security-level 50, has out filter
+    String iface3 = "name3"; // security-level 10
+    String iface4 = "name4"; // security-level 100
+
+    Flow permitFlow = createFlow(IpProtocol.TCP, 0, 123);
+    Flow denyFlow = createFlow(IpProtocol.TCP, 0, 80);
+
+    // iface2 is always the egress interface
+    IpAccessList filter = c.getAllInterfaces().get(iface2).getPreTransformationOutgoingFilter();
+    BiFunction<String, Flow, List<TraceTree>> trace =
+        (inIface, flow) ->
+            AclTracer.trace(
+                filter,
+                flow,
+                inIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    IpAccessList filterOut = c.getIpAccessLists().get("FILTER_OUT");
+
+    // permitted, intra-interface
+    {
+      List<TraceTree> traces = trace.apply(iface2, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, intra-interface
+    {
+      List<TraceTree> traces = trace.apply(iface2, denyFlow);
+      // TODO should two trace nodes (security level permits, filterOut denies)
+      assertThat(traces, empty());
+    }
+
+    // permitted, inter-interface
+    {
+      List<TraceTree> traces = trace.apply(iface1, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, inter-interface
+    {
+      List<TraceTree> traces = trace.apply(iface1, denyFlow);
+      // TODO should two trace nodes (security level permits, filterOut denies)
+      assertThat(traces, empty());
+    }
+
+    // TODO: low-to-high security-level (in iface has in filter)
+    // TODO: high-to-low security-level
   }
 
   @Test
