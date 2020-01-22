@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -14,6 +14,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.junit.Test;
 
+/** Test for {@link FwFromApplicationOrApplicationSet} */
 public class FwFromApplicationOrApplicationSetTest {
 
   @Test
