@@ -63,7 +63,7 @@ public final class BaseApplication implements Application, Serializable {
 
   private final Map<String, Term> _terms;
 
-  private String _name;
+  private final String _name;
 
   public BaseApplication(String name) {
     _mainTerm = new Term();
