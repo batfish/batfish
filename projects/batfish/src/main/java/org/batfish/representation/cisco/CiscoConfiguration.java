@@ -4274,7 +4274,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               String zoneName = zone.getName();
               if (_securityLevels.containsKey(zoneName)) {
                 // ASA security level
-                return createAsaSecurityLevelZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
+                return createAsaSecurityLevelZoneAcl(zone, matchSrcInterfaceBySrcZone);
               } else if (_securityZones.containsKey(zoneName)) {
                 // IOS security zone
                 return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
@@ -4286,8 +4286,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
   }
 
-  public IpAccessList createAsaSecurityLevelZoneAcl(
-      Zone zone, Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone, Configuration c) {
+  IpAccessList createAsaSecurityLevelZoneAcl(
+      Zone zone, Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone) {
 
     ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
 
@@ -4307,23 +4307,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setName(
                   String.format("Allow traffic received on interface in same zone: '%s'", zoneName))
               .build());
-    }
-
-    /*
-     * Add zone-pair policies
-     */
-    // zoneName refers to dstZone
-    Map<String, SecurityZonePair> zonePairsBySrcZoneName = _securityZonePairs.get(zoneName);
-    if (zonePairsBySrcZoneName != null) {
-      zonePairsBySrcZoneName.forEach(
-          (srcZoneName, zonePair) ->
-              createZonePairAcl(
-                      c,
-                      matchSrcInterfaceBySrcZone.get(srcZoneName),
-                      zoneName,
-                      srcZoneName,
-                      zonePair)
-                  .ifPresent(zonePolicies::add));
     }
 
     // Security level policies
@@ -4335,7 +4318,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .build();
   }
 
-  public IpAccessList createIosSecurityZoneAcl(
+  IpAccessList createIosSecurityZoneAcl(
       Zone zone, Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone, Configuration c) {
 
     ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
@@ -4349,14 +4332,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Allow traffic staying within this zone (always true for IOS)
     String zoneName = zone.getName();
-    if (allowsIntraZoneTraffic(zoneName)) {
-      zonePolicies.add(
-          ExprAclLine.accepting()
-              .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
-              .setName(
-                  String.format("Allow traffic received on interface in same zone: '%s'", zoneName))
-              .build());
-    }
+    zonePolicies.add(
+        ExprAclLine.accepting()
+            .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
+            .setName(
+                String.format("Allow traffic received on interface in same zone: '%s'", zoneName))
+            .build());
 
     /*
      * Add zone-pair policies
