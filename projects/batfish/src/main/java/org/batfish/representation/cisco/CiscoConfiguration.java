@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
@@ -2381,7 +2382,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return;
     }
     String oldOutgoingFilterName = newIface.getOutgoingFilterName();
-    if (oldOutgoingFilterName == null && allowsIntraZoneTraffic(zoneName)) {
+    if (oldOutgoingFilterName == null && asaAllowsIntraZoneTraffic(zoneName)) {
       // No interface outbound filter and no interface-specific handling
       newIface.setOutgoingFilter(zoneOutgoingAcl);
       return;
@@ -4140,10 +4141,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private boolean allowsIntraZoneTraffic(String zoneName) {
-    if (!_securityLevels.containsKey(zoneName)) {
-      return true;
-    }
+  private boolean asaAllowsIntraZoneTraffic(String zoneName) {
+    checkArgument(_securityLevels.containsKey(zoneName), "not an ASA security level zone");
     return _sameSecurityTrafficInter && _sameSecurityTrafficIntra;
   }
 
@@ -4300,7 +4299,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Allow traffic staying within this zone (always true for IOS)
     String zoneName = zone.getName();
-    if (allowsIntraZoneTraffic(zoneName)) {
+    if (asaAllowsIntraZoneTraffic(zoneName)) {
       zonePolicies.add(
           ExprAclLine.accepting()
               .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
