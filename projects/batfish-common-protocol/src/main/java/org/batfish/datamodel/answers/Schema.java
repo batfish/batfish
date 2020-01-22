@@ -23,6 +23,7 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.trace.TraceTree;
 
 public class Schema {
 
@@ -61,6 +62,7 @@ public class Schema {
           .put("SelfDescribing", getClassString(SelfDescribingObject.class))
           .put("String", getClassString(String.class))
           .put("Trace", getClassString(Trace.class))
+          .put("TraceTree", getClassString(TraceTree.class))
           .build();
 
   public static final Schema ACL_TRACE = new Schema("AclTrace");
@@ -81,6 +83,7 @@ public class Schema {
   public static final Schema SELF_DESCRIBING = new Schema("SelfDescribing");
   public static final Schema STRING = new Schema("String");
   public static final Schema TRACE = new Schema("Trace");
+  public static final Schema TRACE_TREE = new Schema("TraceTree");
 
   /** Generates a list Schema with the give base schema */
   public static final Schema list(Schema baseSchema) {
