@@ -2111,7 +2111,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
-        _currentLogicalSystem.getApplications().computeIfAbsent(name, n -> new BaseApplication());
+        _currentLogicalSystem
+            .getApplications()
+            .computeIfAbsent(name, n -> new BaseApplication(name));
     _currentApplicationTerm = _currentApplication.getMainTerm();
     _configuration.defineFlattenedStructure(APPLICATION, name, ctx, _parser);
   }
@@ -2192,7 +2194,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterAa_term(Aa_termContext ctx) {
     String name = ctx.name.getText();
-    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, n -> new Term());
+    _currentApplicationTerm =
+        _currentApplication.getTerms().computeIfAbsent(name, n -> new Term(name));
   }
 
   @Override

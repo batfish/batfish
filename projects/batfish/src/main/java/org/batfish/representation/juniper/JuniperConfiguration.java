@@ -1696,10 +1696,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setIncomingTransformation(buildIncomingTransformation(iface));
 
     // Assume the config will need security policies only if it has zones
-    IpAccessList securityPolicyAcl;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
-      securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
+      IpAccessList securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
         newIface.setPreTransformationOutgoingFilter(securityPolicyAcl);
@@ -2150,16 +2149,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       from.applyTo(matchCondition, this, _w, _c);
     }
     for (FwFromHostProtocol from : term.getFromHostProtocols()) {
-      // TODO: update FwFromHostProtocol::applyTo for TraceElements
       from.applyTo(lines, _w);
     }
     for (FwFromHostService from : term.getFromHostServices()) {
-      // TODO: update FwFromHostService::applyTo for TraceElements
       from.applyTo(lines, _w);
     }
     for (FwFromApplicationSetMember fromApplicationSetMember :
         term.getFromApplicationSetMembers()) {
-      // TODO: update FwFromApplicationSetMember::applyTo for TraceElements
       fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
     }
     if (term.getFromIpOptions() != null) {

@@ -17,6 +17,14 @@ import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExpor
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -571,19 +579,28 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private IpAccessList generateCrossZoneFilter(
       Zone fromZone, Zone toZone, List<Map.Entry<SecurityRule, Vsys>> rules) {
     assert fromZone.getVsys() == toZone.getVsys();
+    String vsysName = fromZone.getVsys().getName();
 
     String crossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(fromZone.getVsys().getName(), fromZone.getName()),
             computeObjectName(toZone.getVsys().getName(), toZone.getName()));
 
-    if (fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty()
-        || toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty()) {
-      // Non-external zones must have interfaces.
+    boolean fromZoneEmpty =
+        fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty();
+    boolean toZoneEmpty = toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty();
+    if (fromZoneEmpty || toZoneEmpty) {
       return IpAccessList.builder()
           .setName(crossZoneFilterName)
           .setLines(
-              ImmutableList.of(ExprAclLine.rejecting("No interfaces in zone", TrueExpr.INSTANCE)))
+              ImmutableList.of(
+                  ExprAclLine.REJECT_ALL
+                      .toBuilder()
+                      .setName("No interfaces in zone")
+                      .setTraceElement(
+                          emptyZoneRejectTraceElement(
+                              vsysName, (fromZoneEmpty ? fromZone : toZone).getName()))
+                      .build()))
           .build();
     }
 
@@ -611,7 +628,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       lines =
           ImmutableList.<AclLine>builder()
               .addAll(lines)
-              .add(ExprAclLine.accepting("Accept intrazone by default", TrueExpr.INSTANCE))
+              .add(
+                  new ExprAclLine(
+                      LineAction.PERMIT,
+                      TrueExpr.INSTANCE,
+                      "Accept intrazone by default",
+                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName())))
               .build();
     }
 
@@ -785,8 +807,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // If src interface in zone and filters permits, then permit.
     // Else if src interface in zone, filter must have denied.
     return Stream.of(
-        accepting(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName))),
-        rejecting(matchFromZoneInterface));
+        ExprAclLine.builder()
+            .accepting()
+            .setMatchCondition(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName)))
+            .setTraceElement(
+                zoneToZoneMatchTraceElement(fromZone.getName(), toZone.getName(), vsysName))
+            .build(),
+        ExprAclLine.builder()
+            .rejecting()
+            .setMatchCondition(matchFromZoneInterface)
+            .setTraceElement(
+                zoneToZoneRejectTraceElement(fromZone.getName(), toZone.getName(), vsysName))
+            .build());
   }
 
   /**
@@ -987,6 +1019,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
+        .setTraceElement(matchRuleTraceElement(rule.getName()))
         .build();
   }
 
@@ -1247,15 +1280,23 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         aclLines.add(
             new AclAclLine(
                 String.format(
-                    "Match restrictions for exiting zone %s in vsys %s",
-                    zone.getName(), zone.getVsys().getName()),
-                zoneFilterName));
+                    "Match rules for exiting interface %s in vsys %s zone %s",
+                    iface.getName(), zone.getVsys().getName(), zone.getName()),
+                zoneFilterName,
+                ifaceOutgoingTraceElement(
+                    iface.getName(), zone.getName(), zone.getVsys().getName())));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
-      aclLines.add(ExprAclLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+      aclLines.add(
+          ExprAclLine.builder()
+              .rejecting()
+              .setName("Not in a zone")
+              .setMatchCondition(TrueExpr.INSTANCE)
+              .setTraceElement(unzonedIfaceRejectTraceElement(iface.getName()))
+              .build());
     }
 
     if (!aclLines.isEmpty()) {
@@ -1264,7 +1305,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       // the interface
       // TODO this isn't tested and may not line up with actual device behavior, but is in place to
       // allow things like BGP sessions to come up
-      aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+      aclLines.add(
+          accepting()
+              .setMatchCondition(ORIGINATING_FROM_DEVICE)
+              .setTraceElement(originatedFromDeviceTraceElement())
+              .build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
 
