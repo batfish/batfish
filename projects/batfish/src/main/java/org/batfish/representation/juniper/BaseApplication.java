@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
@@ -28,7 +29,7 @@ public final class BaseApplication implements Application, Serializable {
       _tracingName = null;
     }
 
-    public Term(String tracingName) {
+    public Term(@Nonnull String tracingName) {
       _headerSpace = HeaderSpace.builder().build();
       _tracingName = tracingName;
     }
