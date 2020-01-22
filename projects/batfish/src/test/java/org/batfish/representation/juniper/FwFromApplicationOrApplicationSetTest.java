@@ -10,7 +10,6 @@ import java.util.List;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.junit.Test;
@@ -45,12 +44,12 @@ public class FwFromApplicationOrApplicationSetTest {
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    TraceElement.of("Matched application app term t1")),
+                    app.getTermTracingName("t1")),
                 new ExprAclLine(
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    TraceElement.of("Matched application app term t2")))));
+                    app.getTermTracingName("t2")))));
   }
 
   @Test
@@ -61,12 +60,11 @@ public class FwFromApplicationOrApplicationSetTest {
     appSet.setMembers(
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
     jc.getMasterLogicalSystem().getApplicationSets().put("appSet", appSet);
-
+    BaseApplication app1 = new BaseApplication("app1");
+    BaseApplication app2 = new BaseApplication("app2");
     jc.getMasterLogicalSystem()
         .getApplications()
-        .putAll(
-            ImmutableMap.of(
-                "app1", new BaseApplication("app1"), "app2", new BaseApplication("app2")));
+        .putAll(ImmutableMap.of("app1", app1, "app2", app2));
 
     FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet("appSet");
 
@@ -83,11 +81,11 @@ public class FwFromApplicationOrApplicationSetTest {
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    TraceElement.of("Matched application app1")),
+                    app1.getTermTracingName(null)),
                 new ExprAclLine(
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    TraceElement.of("Matched application app2")))));
+                    app2.getTermTracingName(null)))));
   }
 }
