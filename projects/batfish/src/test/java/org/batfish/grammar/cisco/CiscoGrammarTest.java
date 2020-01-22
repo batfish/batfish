@@ -171,13 +171,13 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeASASecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeSecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
@@ -5311,9 +5311,9 @@ public final class CiscoGrammarTest {
     Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Confirm zones are created for each level
-    assertThat(c, hasZone(computeSecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
-    assertThat(c, hasZone(computeSecurityLevelZoneName(45), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeSecurityLevelZoneName(1), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeASASecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
+    assertThat(c, hasZone(computeASASecurityLevelZoneName(45), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeASASecurityLevelZoneName(1), hasMemberInterfaces(hasSize(1))));
 
     // No traffic in and out of the same interface
     assertThat(

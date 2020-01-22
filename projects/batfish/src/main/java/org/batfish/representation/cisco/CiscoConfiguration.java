@@ -904,7 +904,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private String getSecurityZoneName(Interface iface) {
+  private String getIOSSecurityZoneName(Interface iface) {
     String zoneName = iface.getSecurityZone();
     if (zoneName == null) {
       return null;
@@ -917,12 +917,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Nullable
-  private String getSecurityLevelZoneName(Interface iface) {
+  private String getASASecurityLevelZoneName(Interface iface) {
     Integer level = iface.getSecurityLevel();
     if (level == null) {
       return null;
     }
-    return computeSecurityLevelZoneName(level);
+    return computeASASecurityLevelZoneName(level);
   }
 
   public SnmpServer getSnmpServer() {
@@ -2317,10 +2317,64 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void applyZoneFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    String zoneName = firstNonNull(getSecurityZoneName(iface), getSecurityLevelZoneName(iface));
-    if (zoneName == null) {
+    if (getIOSSecurityZoneName(iface) != null) {
+      applyIOSSecurityZoneFilter(iface, newIface, c);
+    } else if (getASASecurityLevelZoneName(iface) != null) {
+      applyASASecurityLevelFilter(iface, newIface, c);
+    }
+  }
+
+  private void applyIOSSecurityZoneFilter(
+      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
+    String zoneName =
+        checkNotNull(
+            getIOSSecurityZoneName(iface),
+            "interface %s is not in a security zone name",
+            iface.getName());
+    String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
+    IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
+    if (zoneOutgoingAcl == null) {
       return;
     }
+    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
+    if (oldOutgoingFilterName == null) {
+      // No interface outbound filter
+      newIface.setOutgoingFilter(zoneOutgoingAcl);
+      return;
+    }
+
+    // Construct a new ACL that combines filters, i.e. 1 AND 2
+    // 1) the interface outbound filter, if it exists
+    // 2) the zone filter
+
+    IpAccessList combinedOutgoingAcl =
+        IpAccessList.builder()
+            .setOwner(c)
+            .setName(computeCombinedOutgoingAclName(newIface.getName()))
+            .setLines(
+                ImmutableList.of(
+                    ExprAclLine.accepting()
+                        .setMatchCondition(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new PermittedByAcl(zoneOutgoingAclName),
+                                    new PermittedByAcl(oldOutgoingFilterName)),
+                                String.format(
+                                    "Permit if permitted by policy for zone '%s' and permitted by"
+                                        + " outgoing filter '%s'",
+                                    zoneName, oldOutgoingFilterName)))
+                        .build()))
+            .build();
+    newIface.setOutgoingFilter(combinedOutgoingAcl);
+  }
+
+  private void applyASASecurityLevelFilter(
+      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
+    String zoneName =
+        checkNotNull(
+            getASASecurityLevelZoneName(iface),
+            "interface %s is not in a security level",
+            iface.getName());
     String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
     IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
     if (zoneOutgoingAcl == null) {
@@ -3327,7 +3381,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // create and populate zones based on ASA security levels
     _interfacesBySecurityLevel.forEach(
         (level, iface) -> {
-          String zoneName = computeSecurityLevelZoneName(level);
+          String zoneName = computeASASecurityLevelZoneName(level);
           Zone zone = c.getZones().computeIfAbsent(zoneName, Zone::new);
           zone.setInterfaces(
               ImmutableSet.<String>builder()
@@ -4376,7 +4430,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
   }
 
-  public static String computeSecurityLevelZoneName(int securityLevel) {
+  public static String computeASASecurityLevelZoneName(int securityLevel) {
     return String.format("SECURITY_LEVEL_%s", securityLevel);
   }
 
