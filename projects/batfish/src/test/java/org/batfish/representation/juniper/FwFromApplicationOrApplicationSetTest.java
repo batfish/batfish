@@ -44,12 +44,12 @@ public class FwFromApplicationOrApplicationSetTest {
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    app.getTermTracingName("t1")),
+                    app.getTermTraceElement("t1")),
                 new ExprAclLine(
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    app.getTermTracingName("t2")))));
+                    app.getTermTraceElement("t2")))));
   }
 
   @Test
@@ -81,11 +81,11 @@ public class FwFromApplicationOrApplicationSetTest {
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    app1.getTermTracingName(null)),
+                    app1.getTermTraceElement(null)),
                 new ExprAclLine(
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    app2.getTermTracingName(null)))));
+                    app2.getTermTraceElement(null)))));
   }
 }

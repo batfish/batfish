@@ -95,11 +95,11 @@ public final class BaseApplication implements Application, Serializable {
     return ExprAclLine.builder()
         .setAction(action)
         .setMatchCondition(new MatchHeaderSpace(newHeaderSpaceBuilder.build()))
-        .setTraceElement(getTermTracingName(term.getTracingName()))
+        .setTraceElement(getTermTraceElement(term.getTracingName()))
         .build();
   }
 
-  TraceElement getTermTracingName(@Nullable String termTracingName) {
+  TraceElement getTermTraceElement(@Nullable String termTracingName) {
     String termDesc = termTracingName == null ? "" : String.format(" term %s", termTracingName);
     return TraceElement.of(String.format("Matched application %s%s", _name, termDesc));
   }

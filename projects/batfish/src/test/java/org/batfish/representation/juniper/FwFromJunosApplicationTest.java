@@ -41,7 +41,7 @@ public class FwFromJunosApplicationTest {
                                 ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())))
                             .build()),
                     null,
-                    junosApp.getBaseApplication().getTermTracingName(null)))));
+                    junosApp.getBaseApplication().getTermTraceElement(null)))));
   }
 
   @Test
@@ -70,7 +70,7 @@ public class FwFromJunosApplicationTest {
                                     SubRange.singleton(NamedPort.MICROSOFT_DS.number())))
                             .build()),
                     null,
-                    junosApp.getBaseApplication().getTermTracingName(null)),
+                    junosApp.getBaseApplication().getTermTraceElement(null)),
                 new ExprAclLine(
                     LineAction.PERMIT,
                     new MatchHeaderSpace(
@@ -80,7 +80,7 @@ public class FwFromJunosApplicationTest {
                                 ImmutableSet.of(SubRange.singleton(NamedPort.NETBIOS_SSN.number())))
                             .build()),
                     null,
-                    junosApp.getBaseApplication().getTermTracingName(null)))));
+                    junosApp.getBaseApplication().getTermTraceElement(null)))));
   }
 
   @Test
@@ -101,6 +101,6 @@ public class FwFromJunosApplicationTest {
                     LineAction.PERMIT,
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
-                    junosApp.getBaseApplication().getTermTracingName(null)))));
+                    junosApp.getBaseApplication().getTermTraceElement(null)))));
   }
 }
