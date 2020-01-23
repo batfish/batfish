@@ -177,6 +177,9 @@ import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECU
 import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitHigherSecurityLevelTrafficTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitLowerSecurityLevelTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaRejectLowerSecurityLevelTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeASASecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
@@ -270,6 +273,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -5513,22 +5517,22 @@ public final class CiscoGrammarTest {
   }
 
   /**
-   * Testing the traces AclTracer produces for ASA security-levels, when the security-level policy
+   * Test the traces AclTracer produces for ASA security-levels, when the security-level policy
    * permits, and there is an out filter on the out interface.
    */
   @Test
-  public void testAsaSecurityLevelPermitBothOutFilter_tracing() throws IOException {
-    Configuration c = parseConfig("asa-security-level-permit-both-out-filter");
-    String iface1 = "name1"; // security-level 50
-    String iface2 = "name2"; // security-level 50, has out filter
-    String iface3 = "name3"; // security-level 10
-    String iface4 = "name4"; // security-level 100
+  public void testAsaSecurityLevelPermitTracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-tracing");
+    String out = "out"; // security-level 50, has out filter
+    String inSameLevel = "inSameLevel"; // security-level 50
+    String inLowFiltered = "inLowFiltered"; // security-level 10 with ingress filter
+    String inHigh = "inHigh"; // security-level 100
 
     Flow permitFlow = createFlow(IpProtocol.TCP, 0, 123);
     Flow denyFlow = createFlow(IpProtocol.TCP, 0, 80);
 
-    // iface2 is always the egress interface
-    IpAccessList filter = c.getAllInterfaces().get(iface2).getPreTransformationOutgoingFilter();
+    // out is always the egress interface
+    IpAccessList filter = c.getAllInterfaces().get(out).getPreTransformationOutgoingFilter();
     BiFunction<String, Flow, List<TraceTree>> trace =
         (inIface, flow) ->
             AclTracer.trace(
@@ -5543,7 +5547,7 @@ public final class CiscoGrammarTest {
 
     // permitted, intra-interface
     {
-      List<TraceTree> traces = trace.apply(iface2, permitFlow);
+      List<TraceTree> traces = trace.apply(out, permitFlow);
       assertThat(
           traces,
           contains(
@@ -5555,14 +5559,14 @@ public final class CiscoGrammarTest {
 
     // denied, intra-interface
     {
-      List<TraceTree> traces = trace.apply(iface2, denyFlow);
+      List<TraceTree> traces = trace.apply(out, denyFlow);
       // TODO should two trace nodes (security level permits, filterOut denies)
       assertThat(traces, empty());
     }
 
     // permitted, inter-interface
     {
-      List<TraceTree> traces = trace.apply(iface1, permitFlow);
+      List<TraceTree> traces = trace.apply(inSameLevel, permitFlow);
       assertThat(
           traces,
           contains(
@@ -5574,13 +5578,102 @@ public final class CiscoGrammarTest {
 
     // denied, inter-interface
     {
-      List<TraceTree> traces = trace.apply(iface1, denyFlow);
+      List<TraceTree> traces = trace.apply(inSameLevel, denyFlow);
       // TODO should two trace nodes (security level permits, filterOut denies)
       assertThat(traces, empty());
     }
 
-    // TODO: low-to-high security-level (in iface has in filter)
-    // TODO: high-to-low security-level
+    // permitted, low-to-high (low has ingress filter)
+    {
+      List<TraceTree> traces = trace.apply(inLowFiltered, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, low-to-high (low has ingress filter)
+    {
+      List<TraceTree> traces = trace.apply(inHigh, denyFlow);
+      // TODO should two trace nodes (security level permits, filterOut denies)
+      assertThat(traces, empty());
+    }
+
+    // permitted, high-to-low
+    {
+      List<TraceTree> traces = trace.apply(inHigh, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, high-to-low
+    {
+      List<TraceTree> traces = trace.apply(inHigh, denyFlow);
+      // TODO should two trace nodes (security level permits, filterOut denies)
+      assertThat(traces, empty());
+    }
+  }
+
+  /**
+   * Test the traces AclTracer produces for ASA security-levels, when the security-level policy
+   * denies
+   */
+  @Test
+  public void testAsaSecurityLevelDenyTracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-deny-tracing");
+    String out = "out";
+    String inSameLevel = "inSameLevel";
+    String inLowUnfiltered = "inLowUnfiltered";
+
+    Flow flow = createFlow(IpProtocol.TCP, 0, 123);
+
+    // out is always the egress interface
+    IpAccessList filter = c.getAllInterfaces().get(out).getPreTransformationOutgoingFilter();
+    Function<String, List<TraceTree>> trace =
+        (inIface) ->
+            AclTracer.trace(
+                filter,
+                flow,
+                inIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // same security level, intra-interface (hairpinning)
+    {
+      List<TraceTree> traces = trace.apply(out);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT))));
+    }
+
+    // same security level, inter-interface
+    {
+      List<TraceTree> traces = trace.apply(inSameLevel);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT))));
+    }
+
+    // lower security level, no ingress filter
+    {
+      List<TraceTree> traces = trace.apply(inLowUnfiltered);
+      assertThat(traces, contains(isTraceTree(asaRejectLowerSecurityLevelTraceElement(10))));
+    }
   }
 
   @Test
