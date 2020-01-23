@@ -367,6 +367,7 @@ import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
@@ -1030,6 +1031,13 @@ public final class CiscoGrammarTest {
         c,
         hasInterface(
             ifaceAlias, hasPreTransformationOutgoingFilter(not(accepts(flowFail, null, c)))));
+
+    // FILTER_IN is applied post-transformation
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias,
+            hasPostTransformationIncomingFilter(IpAccessListMatchers.hasName("FILTER_IN"))));
   }
 
   @Test
