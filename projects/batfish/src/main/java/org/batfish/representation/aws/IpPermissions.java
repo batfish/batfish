@@ -25,12 +25,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -257,8 +257,8 @@ final class IpPermissions implements Serializable {
    * Returns a Map containing all Security Groups used as source/dest in this IpPermissions, keyed
    * by the corresponding IpSpace
    */
-  private SortedMap<IpSpace, String> collectSecurityGroups(Region region) {
-    ImmutableSortedMap.Builder<IpSpace, String> ipSpaceToSg = ImmutableSortedMap.naturalOrder();
+  private Map<IpSpace, String> collectSecurityGroups(Region region) {
+    ImmutableMap.Builder<IpSpace, String> ipSpaceToSg = ImmutableMap.builder();
     _securityGroups.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))
         .filter(Objects::nonNull)
@@ -276,9 +276,8 @@ final class IpPermissions implements Serializable {
    * Returns a Map containing all Prefix Lists used as source/dest in this IpPermissions, keyed by
    * the corresponding IpSpace
    */
-  private SortedMap<IpSpace, String> collectPrefixLists(Region region) {
-    ImmutableSortedMap.Builder<IpSpace, String> ipSpaceToPrefixLists =
-        ImmutableSortedMap.naturalOrder();
+  private Map<IpSpace, String> collectPrefixLists(Region region) {
+    ImmutableMap.Builder<IpSpace, String> ipSpaceToPrefixLists = ImmutableMap.builder();
     _prefixList.stream()
         .map(plId -> region.getPrefixLists().get(plId))
         .filter(Objects::nonNull)

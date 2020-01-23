@@ -332,7 +332,7 @@
                     "fragments" : [
                       {
                         "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Matched destination address 0.0.0.0/0"
+                        "text" : "Matched destination address CIDR IP 0.0.0.0/0"
                       }
                     ]
                   }
@@ -368,7 +368,7 @@
                     "fragments" : [
                       {
                         "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Matched source address default"
+                        "text" : "Matched source address Security Group default"
                       }
                     ]
                   }
@@ -4706,7 +4706,7 @@
                     "fragments" : [
                       {
                         "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Matched destination address 0.0.0.0/0"
+                        "text" : "Matched destination address CIDR IP 0.0.0.0/0"
                       }
                     ]
                   }
@@ -4771,15 +4771,15 @@
                       "headerSpace" : {
                         "negate" : false,
                         "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpIpSpace",
-                          "ip" : "67.170.86.87"
+                          "class" : "org.batfish.datamodel.PrefixIpSpace",
+                          "prefix" : "10.193.0.0/16"
                         }
                       },
                       "traceElement" : {
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched source address 67.170.86.87/32"
+                            "text" : "Matched source address CIDR IP 10.193.0.0/16"
                           }
                         ]
                       }
@@ -4791,77 +4791,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched rule with description surf"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "ipProtocols" : [
-                          "TCP"
-                        ],
-                        "negate" : false
-                      },
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched protocol TCP"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "dstPorts" : [
-                          "3306-3306"
-                        ],
-                        "negate" : false
-                      },
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched destination port 3306"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "negate" : false,
-                        "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpIpSpace",
-                          "ip" : "104.236.156.171"
-                        }
-                      },
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched source address 104.236.156.171/32"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                },
-                "name" : "sg-55510831 - default [ingress] 0",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched rule with description intentionet-dev"
+                      "text" : "Matched rule with description Internal traffic"
                     }
                   ]
                 }
@@ -4919,7 +4849,7 @@
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched source address 107.170.243.58/32"
+                            "text" : "Matched source address CIDR IP 107.170.243.58/32"
                           }
                         ]
                       }
@@ -4982,6 +4912,76 @@
                         "negate" : false,
                         "srcIps" : {
                           "class" : "org.batfish.datamodel.IpIpSpace",
+                          "ip" : "104.236.156.171"
+                        }
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched source address CIDR IP 104.236.156.171/32"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "name" : "sg-55510831 - default [ingress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule with description intentionet-dev"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "ipProtocols" : [
+                          "TCP"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched protocol TCP"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstPorts" : [
+                          "3306-3306"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched destination port 3306"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "srcIps" : {
+                          "class" : "org.batfish.datamodel.IpIpSpace",
                           "ip" : "162.243.144.192"
                         }
                       },
@@ -4989,7 +4989,7 @@
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched source address 162.243.144.192/32"
+                            "text" : "Matched source address CIDR IP 162.243.144.192/32"
                           }
                         ]
                       }
@@ -5051,15 +5051,15 @@
                       "headerSpace" : {
                         "negate" : false,
                         "srcIps" : {
-                          "class" : "org.batfish.datamodel.PrefixIpSpace",
-                          "prefix" : "10.193.0.0/16"
+                          "class" : "org.batfish.datamodel.IpIpSpace",
+                          "ip" : "67.170.86.87"
                         }
                       },
                       "traceElement" : {
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched source address 10.193.0.0/16"
+                            "text" : "Matched source address CIDR IP 67.170.86.87/32"
                           }
                         ]
                       }
@@ -5071,7 +5071,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched rule with description Internal traffic"
+                      "text" : "Matched rule with description surf"
                     }
                   ]
                 }
