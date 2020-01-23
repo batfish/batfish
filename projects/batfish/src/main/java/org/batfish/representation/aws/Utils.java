@@ -298,8 +298,11 @@ final class Utils {
     return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
   }
 
-  public static TraceElement getTraceElementForRule(int ruleNumber) {
-    return TraceElement.of(String.format("Matched rule %s within security group", ruleNumber));
+  public static String getTraceTextForRule(@Nullable String ruleDescription) {
+    if (ruleDescription == null) {
+      return "Matched rule with no description";
+    }
+    return String.format("Matched rule with description %s", ruleDescription);
   }
 
   public static TraceElement getTraceElementForSecurityGroup(String securityGroupName) {

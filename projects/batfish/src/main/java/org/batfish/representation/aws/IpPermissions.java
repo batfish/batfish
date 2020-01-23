@@ -2,6 +2,8 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESCRIPTION;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_FROM_PORT;
@@ -13,22 +15,21 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_PREFIX_LIST_I
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TO_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_USER_GROUP_ID_PAIRS;
 import static org.batfish.representation.aws.Utils.checkNonNull;
-import static org.batfish.representation.aws.Utils.getTraceElementForRule;
+import static org.batfish.representation.aws.Utils.getTraceTextForRule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.SortedSet;
+import java.util.SortedMap;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -36,9 +37,10 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** IP packet permissions within AWS security groups */
@@ -233,28 +235,163 @@ final class IpPermissions implements Serializable {
     _securityGroups = securityGroups;
   }
 
-  private SortedSet<IpWildcard> collectIpWildCards(Region region) {
-    ImmutableSortedSet.Builder<IpWildcard> ipWildcardBuilder =
-        new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+  private SortedMap<IpSpace, IpRange> collectIpRanges() {
+    return _ipRanges.stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Ordering.natural(),
+                ipRange -> ipRange.getPrefix().toIpSpace(),
+                Function.identity()));
+  }
 
-    _ipRanges.stream()
-        .map(IpRange::getPrefix)
-        .map(IpWildcard::create)
-        .forEach(ipWildcardBuilder::add);
-
+  private SortedMap<IpSpace, String> collectSecurityGroups(Region region) {
+    ImmutableSortedMap.Builder<IpSpace, String> ipSpaceToSg = ImmutableSortedMap.naturalOrder();
     _securityGroups.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))
         .filter(Objects::nonNull)
-        .flatMap(sg -> sg.getUsersIpSpace().stream())
-        .forEach(ipWildcardBuilder::add);
+        .forEach(
+            securityGroup -> {
+              securityGroup
+                  .getUsersIpSpace()
+                  .forEach(
+                      prefix -> ipSpaceToSg.put(prefix.toIpSpace(), securityGroup.getGroupName()));
+            });
+    return ipSpaceToSg.build();
+  }
 
+  private SortedMap<IpSpace, String> collectPrefixLists(Region region) {
+    ImmutableSortedMap.Builder<IpSpace, String> ipSpaceToPrefixLists =
+        ImmutableSortedMap.naturalOrder();
     _prefixList.stream()
-        .map(id -> region.getPrefixLists().get(id))
+        .map(plId -> region.getPrefixLists().get(plId))
         .filter(Objects::nonNull)
-        .flatMap(prefixList -> prefixList.getCidrs().stream())
-        .forEach(pfx -> ipWildcardBuilder.add(IpWildcard.create(pfx)));
+        .forEach(
+            prefixList -> {
+              prefixList
+                  .getCidrs()
+                  .forEach(
+                      prefix -> ipSpaceToPrefixLists.put(prefix.toIpSpace(), prefixList.getId()));
+            });
+    return ipSpaceToPrefixLists.build();
+  }
 
-    return ipWildcardBuilder.build();
+  private AclLineMatchExpr ipRangeToMatchExpr(
+      boolean ingress, IpRange ipRange, IpSpace ipSpace, String aclLineName, Warnings warnings) {
+    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
+    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, ipRange.getPrefix().toString(), ingress));
+    matchesBuilder.addAll(getMatchExprsForProtocolAndPorts(aclLineName, warnings));
+    return and(
+        getTraceTextForRule(ipRange.getDescription()),
+        matchesBuilder.build().toArray(new AclLineMatchExpr[0]));
+  }
+
+  private AclLineMatchExpr securityGroupToMatchExpr(
+      boolean ingress, String sgName, IpSpace ipSpace, String aclLineName, Warnings warnings) {
+    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
+    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, sgName, ingress));
+    matchesBuilder.addAll(getMatchExprsForProtocolAndPorts(aclLineName, warnings));
+    return and(getTraceTextForRule(null), matchesBuilder.build().toArray(new AclLineMatchExpr[0]));
+  }
+
+  private AclLineMatchExpr prefixlistToMatchExpr(
+      boolean ingress,
+      String prefixListId,
+      IpSpace ipSpace,
+      String aclLineName,
+      Warnings warnings) {
+    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
+    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, prefixListId, ingress));
+    matchesBuilder.addAll(getMatchExprsForProtocolAndPorts(aclLineName, warnings));
+    return and(getTraceTextForRule(null), matchesBuilder.build().toArray(new AclLineMatchExpr[0]));
+  }
+
+  private List<AclLineMatchExpr> getMatchExprsForProtocolAndPorts(
+      String aclLineName, Warnings warnings) {
+    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
+    Optional.ofNullable(Utils.toIpProtocol(_ipProtocol))
+        .ifPresent(
+            ipProtocol -> {
+              matchesBuilder.add(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder().setIpProtocols(ipProtocol).build(),
+                      traceElementForProtocol(ipProtocol)));
+              if (ipProtocol == IpProtocol.TCP || ipProtocol == IpProtocol.UDP) {
+                Optional.ofNullable(exprForDstPorts()).ifPresent(matchesBuilder::add);
+              } else if (ipProtocol == IpProtocol.ICMP) {
+                Optional.ofNullable(exprForIcmpTypeAndCode(aclLineName, warnings))
+                    .ifPresent(matchesBuilder::add);
+              } else if (_fromPort != null || _toPort != null) {
+                // if protocols not from the above then fromPort and toPort should be null
+                warnings.redFlag(
+                    String.format(
+                        "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and ToPort=%s",
+                        aclLineName, _ipProtocol, _fromPort, _toPort));
+              }
+            });
+    return matchesBuilder.build();
+  }
+
+  private MatchHeaderSpace exprForSrcOrDstIps(
+      IpSpace ipSpace, String vsAddressStructure, boolean ingress) {
+    if (ingress) {
+      return new MatchHeaderSpace(
+          HeaderSpace.builder().setSrcIps(ipSpace).build(),
+          traceElementForAddress("source", vsAddressStructure));
+    }
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setDstIps(ipSpace).build(),
+        traceElementForAddress("destination", vsAddressStructure));
+  }
+
+  @Nullable
+  private MatchHeaderSpace exprForDstPorts() {
+    // if the range isn't all ports, set it in ACL
+    int low = (_fromPort == null || _fromPort == -1) ? 0 : _fromPort;
+    int hi = (_toPort == null || _toPort == -1) ? 65535 : _toPort;
+    if (low != 0 || hi != 65535) {
+      return new MatchHeaderSpace(
+          HeaderSpace.builder().setDstPorts(new SubRange(low, hi)).build(),
+          traceElementForDstPorts(low, hi));
+    }
+    return null;
+  }
+
+  @Nullable
+  private MatchHeaderSpace exprForIcmpTypeAndCode(String aclLineName, Warnings warnings) {
+    int type = firstNonNull(_fromPort, -1);
+    int code = firstNonNull(_toPort, -1);
+    if (type != -1 && code != -1) {
+      return new MatchHeaderSpace(
+          HeaderSpace.builder().setIcmpTypes(type).setIcmpCodes(code).build(),
+          traceElementForIcmp(type, code));
+    }
+    if (type == -1 && code != -1) {
+      // Code should not be configured if type isn't.
+      warnings.redFlag(
+          String.format(
+              "IpPermissions for term %s: unexpected for ICMP to have FromPort=%s and ToPort=%s",
+              aclLineName, _fromPort, _toPort));
+    }
+    return null;
+  }
+
+  private static String traceElementForAddress(String direction, String vsAddressStructure) {
+    return String.format("Matched %s address %s", direction, vsAddressStructure);
+  }
+
+  private static String traceElementForProtocol(IpProtocol protocol) {
+    return String.format("Matched protocol %s", protocol);
+  }
+
+  private static String traceElementForDstPorts(int low, int high) {
+    if (low == high) {
+      return String.format("Matched destination port %s", low);
+    }
+    return String.format("Matched destination ports [%s-%s]", low, high);
+  }
+
+  private static String traceElementForIcmp(int type, int code) {
+    return String.format("Matched ICMP type %s and ICMP code %s", type, code);
   }
 
   /**
@@ -269,65 +406,24 @@ final class IpPermissions implements Serializable {
       // Not valid in IPv4 packets.
       return Optional.empty();
     }
-    Collection<IpWildcard> ips = collectIpWildCards(region);
-    if (ips.isEmpty()) {
-      // IPs should have been populated using either SG or IP ranges,  if not then this IpPermission
-      // is incomplete.
-      // TODO: should we warn? It may be that rules can have only v6 addresses.
-      return Optional.empty();
-    }
+    ImmutableList.Builder<AclLineMatchExpr> exprsForThisIpPerms = ImmutableList.builder();
+    collectIpRanges().entrySet().stream()
+        .map(entry -> ipRangeToMatchExpr(ingress, entry.getValue(), entry.getKey(), name, warnings))
+        .forEach(exprsForThisIpPerms::add);
+    collectSecurityGroups(region).entrySet().stream()
+        .map(
+            entry ->
+                securityGroupToMatchExpr(ingress, entry.getValue(), entry.getKey(), name, warnings))
+        .forEach(exprsForThisIpPerms::add);
+    collectPrefixLists(region).entrySet().stream()
+        .map(
+            entry ->
+                prefixlistToMatchExpr(ingress, entry.getValue(), entry.getKey(), name, warnings))
+        .forEach(exprsForThisIpPerms::add);
 
-    HeaderSpace.Builder constraints = HeaderSpace.builder();
-    IpProtocol protocol = Utils.toIpProtocol(_ipProtocol);
-    if (protocol != null) {
-      constraints.setIpProtocols(protocol);
-    }
-    if (protocol == IpProtocol.TCP || protocol == IpProtocol.UDP) {
-      // if the range isn't all ports, set it in ACL
-      int low = (_fromPort == null || _fromPort == -1) ? 0 : _fromPort;
-      int hi = (_toPort == null || _toPort == -1) ? 65535 : _toPort;
-      if (low != 0 || hi != 65535) {
-        constraints.setDstPorts(ImmutableSet.of(new SubRange(low, hi)));
-      }
-    } else if (protocol == IpProtocol.ICMP) {
-      int type = firstNonNull(_fromPort, -1);
-      int code = firstNonNull(_toPort, -1);
-      if (type != -1) {
-        constraints.setIcmpTypes(type);
-        if (code != -1) {
-          constraints.setIcmpCodes(code);
-        }
-      } else {
-        // Code should not be configured if type isn't.
-        if (code != -1) {
-          warnings.redFlag(
-              String.format(
-                  "IpPermissions for term %s: unexpected for ICMP to have FromPort=%s and ToPort=%s",
-                  name, _fromPort, _toPort));
-          return Optional.empty();
-        }
-      }
-    } else {
-      // This should only be present for defined protocols.
-      if (_fromPort != null || _toPort != null) {
-        warnings.redFlag(
-            String.format(
-                "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and ToPort=%s",
-                name, _ipProtocol, _fromPort, _toPort));
-        return Optional.empty();
-      }
-    }
-
-    if (ingress) {
-      constraints.setSrcIps(ips);
-    } else {
-      constraints.setDstIps(ips);
-    }
-
-    return Optional.ofNullable(
+    return Optional.of(
         ExprAclLine.accepting()
-            .setMatchCondition(new MatchHeaderSpace(constraints.build()))
-            .setTraceElement(getTraceElementForRule(ruleNum))
+            .setMatchCondition(or(exprsForThisIpPerms.build()))
             .setName(name)
             .build());
   }
