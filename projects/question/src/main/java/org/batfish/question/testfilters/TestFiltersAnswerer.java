@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
@@ -33,7 +35,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -69,7 +71,7 @@ public class TestFiltersAnswerer extends Answerer {
           new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
           new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
           new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
-          new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
+          new ColumnMetadata(COL_TRACE, Schema.TRACE_TREE, "ACL trace", false, true));
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -200,15 +202,17 @@ public class TestFiltersAnswerer extends Answerer {
    * represented by {@code c}.
    */
   public static Row getRow(IpAccessList filter, Flow flow, Configuration c) {
-    AclTrace trace =
-        new AclTrace(
+    @Nullable
+    TraceTree trace =
+        Iterables.getOnlyElement(
             AclTracer.trace(
                 filter,
                 flow,
                 flow.getIngressInterface(),
                 c.getIpAccessLists(),
                 c.getIpSpaces(),
-                c.getIpSpaceMetadata()));
+                c.getIpSpaceMetadata()),
+            null);
     FilterResult result =
         filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
     Integer matchLine = result.getMatchLine();

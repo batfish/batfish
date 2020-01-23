@@ -4,16 +4,18 @@ import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -36,7 +38,6 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
@@ -151,15 +152,15 @@ public class TestFiltersAnswererTest {
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
                     TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(contains(TraceEvent.of(matchedByAclLine(acl, 1)))),
-                    Schema.ACL_TRACE))));
+                    allOf(hasTraceElement(matchedByAclLine(acl, 1)), hasChildren(empty())),
+                    Schema.TRACE_TREE))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
         answer,
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(TestFiltersAnswerer.COL_TRACE, hasEvents(empty()), Schema.ACL_TRACE))));
+                hasColumn(TestFiltersAnswerer.COL_TRACE, nullValue(), Schema.TRACE_TREE))));
   }
 
   @Test
