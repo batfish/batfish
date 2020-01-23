@@ -5,6 +5,7 @@ import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP2;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -298,15 +299,40 @@ final class Utils {
     return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
   }
 
-  public static String getTraceTextForRule(@Nullable String ruleDescription) {
+  public static TraceElement getTraceElementForRule(@Nullable String ruleDescription) {
     if (ruleDescription == null) {
-      return "Matched rule with no description";
+      return TraceElement.of("Matched rule with no description");
     }
-    return String.format("Matched rule with description %s", ruleDescription);
+    return TraceElement.of(String.format("Matched rule with description %s", ruleDescription));
   }
 
   public static TraceElement getTraceElementForSecurityGroup(String securityGroupName) {
     return TraceElement.of(String.format("Matched security group %s", securityGroupName));
+  }
+
+  static TraceElement traceElementForAddress(String direction, String vsAddressStructure) {
+    return TraceElement.of(String.format("Matched %s address %s", direction, vsAddressStructure));
+  }
+
+  static String traceElementForProtocol(IpProtocol protocol) {
+    return String.format("Matched protocol %s", protocol);
+  }
+
+  static TraceElement traceElementForDstPorts(int low, int high) {
+    if (low == high) {
+      return TraceElement.of(String.format("Matched destination port %s", low));
+    }
+    return TraceElement.of(String.format("Matched destination ports [%s-%s]", low, high));
+  }
+
+  static TraceElement traceElementForIcmp(int type, int code) {
+    assert type != -1;
+    List<String> traceElems = new ArrayList<>();
+    traceElems.add(String.format("Matched ICMP type %s", type));
+    if (code != -1) {
+      traceElems.add(String.format("Matched ICMP code %s", code));
+    }
+    return TraceElement.of(String.join(",", traceElems));
   }
 
   private Utils() {}

@@ -1,9 +1,15 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
+import static org.batfish.representation.aws.Utils.traceElementForAddress;
+import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
+import static org.batfish.representation.aws.Utils.traceElementForProtocol;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -15,7 +21,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -33,12 +38,12 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
@@ -54,6 +59,21 @@ public class ElasticsearchDomainTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   private StaticRoute.Builder _staticRouteBuilder;
+
+  public static final MatchHeaderSpace matchTcp =
+      new MatchHeaderSpace(
+          HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
+
+  public static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
+    if (fromPort == toPort) {
+      return new MatchHeaderSpace(
+          HeaderSpace.builder().setDstPorts(SubRange.singleton(fromPort)).build(),
+          traceElementForDstPorts(fromPort, toPort));
+    }
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
+        traceElementForDstPorts(fromPort, toPort));
+  }
 
   @Before
   public void setup() {
@@ -175,25 +195,34 @@ public class ElasticsearchDomainTest {
             isExprAclLineThat(
                 hasMatchCondition(
                     new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
-                            .build())))));
+                        HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
+                        traceElementForAddress("destination", "0.0.0.0/0"))))));
     assertThat(
         esDomain
             .getIpAccessLists()
             .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
-            isExprAclLineThat(
-                hasMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                            .setSrcIps(
-                                Sets.newHashSet(
-                                    IpWildcard.parse("1.2.3.4/32"),
-                                    IpWildcard.parse("10.193.16.105/32")))
-                            .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                            .build())))));
+            contains(
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        and(
+                            matchTcp,
+                            matchPorts(45, 50),
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(Ip.parse("1.2.3.4").toIpSpace())
+                                    .build(),
+                                traceElementForAddress("source", "1.2.3.4/32"))))),
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        and(
+                            matchTcp,
+                            matchPorts(45, 50),
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(IpWildcard.parse("10.193.16.105/32").toIpSpace())
+                                    .build(),
+                                traceElementForAddress("source", "Test-Instance-SG"))))))));
     assertThat(
         esDomain.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
         equalTo(

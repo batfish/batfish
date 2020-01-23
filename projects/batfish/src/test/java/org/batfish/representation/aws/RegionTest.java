@@ -5,6 +5,9 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
+import static org.batfish.representation.aws.Utils.traceElementForAddress;
+import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
+import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -34,6 +37,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.TraceEvent;
@@ -220,14 +224,23 @@ public class RegionTest {
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(getTraceElementForRule(0)), hasChildren(empty())))))));
+                            hasTraceElement(getTraceElementForRule(null)),
+                            hasChildren(
+                                contains(
+                                    hasTraceElement(TraceElement.of(traceElementForProtocol(TCP))),
+                                    hasTraceElement(traceElementForDstPorts(22, 22)),
+                                    hasTraceElement(
+                                        traceElementForAddress("source", "2.2.2.0/24"))))))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
             contains(
                 TraceEvent.of(getTraceElementForSecurityGroup("sg-1")),
-                TraceEvent.of(getTraceElementForRule(0)))));
+                TraceEvent.of(getTraceElementForRule(null)),
+                TraceEvent.of(TraceElement.of(traceElementForProtocol(TCP))),
+                TraceEvent.of(traceElementForDstPorts(22, 22)),
+                TraceEvent.of(traceElementForAddress("source", "2.2.2.0/24")))));
 
     root =
         AclTracer.trace(
