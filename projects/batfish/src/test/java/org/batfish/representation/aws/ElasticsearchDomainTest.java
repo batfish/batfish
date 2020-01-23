@@ -49,6 +49,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -196,7 +197,8 @@ public class ElasticsearchDomainTest {
                 hasMatchCondition(
                     new MatchHeaderSpace(
                         HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
-                        traceElementForAddress("destination", "0.0.0.0/0"))))));
+                        traceElementForAddress(
+                            "destination", "0.0.0.0/0", AddressType.CIDR_IP))))));
     assertThat(
         esDomain
             .getIpAccessLists()
@@ -212,7 +214,8 @@ public class ElasticsearchDomainTest {
                                 HeaderSpace.builder()
                                     .setSrcIps(Ip.parse("1.2.3.4").toIpSpace())
                                     .build(),
-                                traceElementForAddress("source", "1.2.3.4/32"))))),
+                                traceElementForAddress(
+                                    "source", "1.2.3.4/32", AddressType.CIDR_IP))))),
                 isExprAclLineThat(
                     hasMatchCondition(
                         and(
@@ -222,7 +225,10 @@ public class ElasticsearchDomainTest {
                                 HeaderSpace.builder()
                                     .setSrcIps(IpWildcard.parse("10.193.16.105/32").toIpSpace())
                                     .build(),
-                                traceElementForAddress("source", "Test-Instance-SG"))))))));
+                                traceElementForAddress(
+                                    "source",
+                                    "Test-Instance-SG",
+                                    AddressType.SECURITY_GROUP))))))));
     assertThat(
         esDomain.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
         equalTo(

@@ -26,13 +26,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -50,6 +48,23 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class IpPermissions implements Serializable {
+
+  public enum AddressType {
+    SECURITY_GROUP("Security Group"),
+    PREFIX_LIST("Prefix List"),
+    CIDR_IP("CIDR IP");
+
+    private final String _name;
+
+    AddressType(String name) {
+      _name = name;
+    }
+
+    @Override
+    public String toString() {
+      return _name;
+    }
+  }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -239,18 +254,6 @@ final class IpPermissions implements Serializable {
   }
 
   /**
-   * Returns a Map containing all IpRanges in this IpPermissions, keyed by the corresponding IpSpace
-   */
-  private SortedMap<IpSpace, IpRange> collectIpRanges() {
-    return _ipRanges.stream()
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Ordering.natural(),
-                ipRange -> ipRange.getPrefix().toIpSpace(),
-                Function.identity()));
-  }
-
-  /**
    * Returns a Map containing all Security Groups used as source/dest in this IpPermissions, keyed
    * by the corresponding IpSpace
    */
@@ -295,14 +298,19 @@ final class IpPermissions implements Serializable {
    */
   @Nullable
   private ExprAclLine ipRangeToMatchExpr(
-      boolean ingress, IpRange ipRange, IpSpace ipSpace, String aclLineName, Warnings warnings) {
+      boolean ingress, IpRange ipRange, String aclLineName, Warnings warnings) {
     ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
     List<AclLineMatchExpr> matchExprs = getMatchExprsForProtocolAndPorts(aclLineName, warnings);
     if (matchExprs == null) {
       return null;
     }
     matchesBuilder.addAll(matchExprs);
-    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, ipRange.getPrefix().toString(), ingress));
+    matchesBuilder.add(
+        exprForSrcOrDstIps(
+            ipRange.getPrefix().toIpSpace(),
+            ipRange.getPrefix().toString(),
+            ingress,
+            AddressType.CIDR_IP));
     return ExprAclLine.accepting()
         .setMatchCondition(and(matchesBuilder.build()))
         .setTraceElement(getTraceElementForRule(ipRange.getDescription()))
@@ -324,7 +332,7 @@ final class IpPermissions implements Serializable {
       return null;
     }
     matchesBuilder.addAll(matchExprs);
-    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, sgName, ingress));
+    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, sgName, ingress, AddressType.SECURITY_GROUP));
     return ExprAclLine.accepting()
         .setMatchCondition(and(matchesBuilder.build()))
         .setTraceElement(getTraceElementForRule(null))
@@ -350,7 +358,7 @@ final class IpPermissions implements Serializable {
       return null;
     }
     matchesBuilder.addAll(matchExprs);
-    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, prefixListId, ingress));
+    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, prefixListId, ingress, AddressType.PREFIX_LIST));
     return ExprAclLine.accepting()
         .setMatchCondition(and(matchesBuilder.build()))
         .setTraceElement(getTraceElementForRule(null))
@@ -402,15 +410,15 @@ final class IpPermissions implements Serializable {
 
   /** Returns a MatchHeaderSpace to match the provided IpSpace either in ingress or egress mode */
   private MatchHeaderSpace exprForSrcOrDstIps(
-      IpSpace ipSpace, String vsAddressStructure, boolean ingress) {
+      IpSpace ipSpace, String vsAddressStructure, boolean ingress, AddressType addressType) {
     if (ingress) {
       return new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(ipSpace).build(),
-          traceElementForAddress("source", vsAddressStructure));
+          traceElementForAddress("source", vsAddressStructure, addressType));
     }
     return new MatchHeaderSpace(
         HeaderSpace.builder().setDstIps(ipSpace).build(),
-        traceElementForAddress("destination", vsAddressStructure));
+        traceElementForAddress("destination", vsAddressStructure, addressType));
   }
 
   /** Returns a MatchHeaderSpace to match the destination ports in this IpPermission instance */
@@ -460,8 +468,8 @@ final class IpPermissions implements Serializable {
       return ImmutableList.of();
     }
     ImmutableList.Builder<ExprAclLine> exprsForThisIpPerms = ImmutableList.builder();
-    collectIpRanges().entrySet().stream()
-        .map(entry -> ipRangeToMatchExpr(ingress, entry.getValue(), entry.getKey(), name, warnings))
+    _ipRanges.stream()
+        .map(ipRange -> ipRangeToMatchExpr(ingress, ipRange, name, warnings))
         .filter(Objects::nonNull)
         .forEach(exprsForThisIpPerms::add);
     collectSecurityGroups(region).entrySet().stream()

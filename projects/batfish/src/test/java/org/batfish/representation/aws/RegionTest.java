@@ -44,6 +44,7 @@ import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.junit.Test;
 
@@ -230,7 +231,8 @@ public class RegionTest {
                                     hasTraceElement(TraceElement.of(traceElementForProtocol(TCP))),
                                     hasTraceElement(traceElementForDstPorts(22, 22)),
                                     hasTraceElement(
-                                        traceElementForAddress("source", "2.2.2.0/24"))))))))));
+                                        traceElementForAddress(
+                                            "source", "2.2.2.0/24", AddressType.CIDR_IP))))))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
@@ -240,7 +242,8 @@ public class RegionTest {
                 TraceEvent.of(getTraceElementForRule(null)),
                 TraceEvent.of(TraceElement.of(traceElementForProtocol(TCP))),
                 TraceEvent.of(traceElementForDstPorts(22, 22)),
-                TraceEvent.of(traceElementForAddress("source", "2.2.2.0/24")))));
+                TraceEvent.of(
+                    traceElementForAddress("source", "2.2.2.0/24", AddressType.CIDR_IP)))));
 
     root =
         AclTracer.trace(

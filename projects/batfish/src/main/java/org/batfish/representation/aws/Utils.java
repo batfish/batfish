@@ -31,6 +31,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -310,8 +311,10 @@ final class Utils {
     return TraceElement.of(String.format("Matched security group %s", securityGroupName));
   }
 
-  static TraceElement traceElementForAddress(String direction, String vsAddressStructure) {
-    return TraceElement.of(String.format("Matched %s address %s", direction, vsAddressStructure));
+  static TraceElement traceElementForAddress(
+      String direction, String vsAddressStructure, AddressType addressType) {
+    return TraceElement.of(
+        String.format("Matched %s address %s %s", direction, addressType, vsAddressStructure));
   }
 
   static String traceElementForProtocol(IpProtocol protocol) {

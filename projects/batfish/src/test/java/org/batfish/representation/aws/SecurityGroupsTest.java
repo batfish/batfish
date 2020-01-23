@@ -44,6 +44,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -61,12 +62,12 @@ public class SecurityGroupsTest {
   private static final MatchHeaderSpace matchIp =
       new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build(),
-          traceElementForAddress("source", "1.2.3.4/32"));
+          traceElementForAddress("source", "1.2.3.4/32", AddressType.CIDR_IP));
 
   private static final MatchHeaderSpace matchUniverse =
       new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(UniverseIpSpace.INSTANCE).build(),
-          traceElementForAddress("source", "0.0.0.0/0"));
+          traceElementForAddress("source", "0.0.0.0/0", AddressType.CIDR_IP));
 
   private static final MatchHeaderSpace matchTcp =
       new MatchHeaderSpace(
@@ -273,7 +274,8 @@ public class SecurityGroupsTest {
                     matchPorts(80, 80),
                     new MatchHeaderSpace(
                         HeaderSpace.builder().setDstIps(Ip.parse("5.6.7.8").toIpSpace()).build(),
-                        traceElementForAddress("destination", "5.6.7.8/32"))))));
+                        traceElementForAddress(
+                            "destination", "5.6.7.8/32", AddressType.CIDR_IP))))));
   }
 
   @Test
@@ -410,7 +412,8 @@ public class SecurityGroupsTest {
                                 HeaderSpace.builder()
                                     .setSrcIps(Prefix.parse("2.2.2.0/24").toIpSpace())
                                     .build(),
-                                traceElementForAddress("source", "2.2.2.0/24"))))
+                                traceElementForAddress(
+                                    "source", "2.2.2.0/24", AddressType.CIDR_IP))))
                     .setTraceElement(getTraceElementForRule(null))
                     .build())));
   }
