@@ -592,7 +592,7 @@ public class AclTracerTest {
             ImmutableMap.of(aclName, acl),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(acl,0)))));
+    assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(acl, 0)))));
   }
 
   @Test
