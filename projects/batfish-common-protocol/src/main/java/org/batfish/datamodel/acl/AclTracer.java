@@ -2,7 +2,6 @@ package org.batfish.datamodel.acl;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Collection;
@@ -97,9 +96,7 @@ public final class AclTracer extends AclLineEvaluator {
   private void setTraceElement(@Nonnull IpAccessList ipAccessList, int index) {
     AclLine line = ipAccessList.getLines().get(index);
     TraceElement traceElement = line.getTraceElement();
-    if (traceElement == null) {
-      _tracer.setTraceElement(matchedByAclLine(ipAccessList, index));
-    } else {
+    if (traceElement != null) {
       _tracer.setTraceElement(traceElement);
     }
   }
