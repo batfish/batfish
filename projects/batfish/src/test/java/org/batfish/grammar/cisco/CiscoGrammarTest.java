@@ -177,6 +177,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECU
 import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_TRAFFIC_FROM_DEVICE;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaDeniedByOutputFilterTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitHigherSecurityLevelTrafficTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitLowerSecurityLevelTraceElement;
@@ -5425,6 +5426,17 @@ public final class CiscoGrammarTest {
                 c.getIpAccessLists(),
                 c.getIpSpaces(),
                 c.getIpSpaceMetadata());
+
+    // from device
+    {
+      List<TraceTree> traces = trace.apply(null, insideInterface);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_TRAFFIC_FROM_DEVICE))));
+    }
 
     // intra-security-level, but from/to different interfaces
     {
