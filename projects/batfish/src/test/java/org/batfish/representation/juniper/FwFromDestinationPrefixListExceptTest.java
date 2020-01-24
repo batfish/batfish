@@ -76,4 +76,14 @@ public class FwFromDestinationPrefixListExceptTest {
                         AclIpSpaceLine.permit(additionalIpSpace),
                         AclIpSpaceLine.permit(baseIpSpace))))));
   }
+
+  @Test
+  public void testToHeaderSpace() {
+    IpSpace baseIpSpace = IpWildcard.parse(BASE_IP_PREFIX).toIpSpace();
+
+    FwFromDestinationPrefixListExcept fwFrom =
+        new FwFromDestinationPrefixListExcept(BASE_PREFIX_LIST_NAME);
+
+    assertThat(fwFrom.toHeaderspace(_jc, _c, _w), hasNotDstIps(equalTo(baseIpSpace)));
+  }
 }
