@@ -23,6 +23,7 @@ import org.batfish.datamodel.SubRange;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Test for {@link FwFromDestinationPrefixList} */
 public class FwFromDestinationPrefixListTest {
   private JuniperConfiguration _jc;
   private Warnings _w;
@@ -74,5 +75,16 @@ public class FwFromDestinationPrefixListTest {
                     containsInAnyOrder(
                         AclIpSpaceLine.permit(additionalIpSpace),
                         AclIpSpaceLine.permit(baseIpSpace))))));
+  }
+
+  @Test
+  public void testToHeaderSpace() {
+    IpSpace baseIpSpace = IpWildcard.parse(BASE_IP_PREFIX).toIpSpace();
+
+    FwFromDestinationPrefixList fwFrom = new FwFromDestinationPrefixList(BASE_PREFIX_LIST_NAME);
+
+    HeaderSpace headerSpace = fwFrom.toHeaderspace(_jc, _c, _w);
+
+    assertThat(headerSpace, hasDstIps(equalTo(baseIpSpace)));
   }
 }
