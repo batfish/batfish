@@ -43,7 +43,7 @@ cat <<EOF
       - ". .venv/bin/activate"
       - "bazel build -- //projects/allinone:allinone_main_deploy.jar"
       - "mkdir workspace"
-      - "cp $$(bazel info bazel-bin)/projects/allinone/allinone_main_deploy.jar workspace/allinone.jar"
+      - "cp \$(bazel info bazel-bin)/projects/allinone/allinone_main_deploy.jar workspace/allinone.jar"
     artifact_paths:
       - workspace/allinone.jar
     plugins:
