@@ -1,5 +1,7 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.util.Map;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
@@ -36,9 +38,21 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
     _namedIpSpaces = namedIpSpaces;
   }
 
+  private LineAction filter(String filterName) {
+    return _availableAcls
+        .get(filterName)
+        .filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces)
+        .getAction();
+  }
+
   @Override
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return andMatchExpr.getConjuncts().stream().allMatch(c -> c.accept(this));
+  }
+
+  @Override
+  public Boolean visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+    return firstNonNull(filter(deniedByAcl.getAclName()), LineAction.DENY) == LineAction.DENY;
   }
 
   @Override
@@ -73,11 +87,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    return _availableAcls
-            .get(permittedByAcl.getAclName())
-            .filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces)
-            .getAction()
-        == LineAction.PERMIT;
+    return filter(permittedByAcl.getAclName()) == LineAction.PERMIT;
   }
 
   @Override

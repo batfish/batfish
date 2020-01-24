@@ -25,6 +25,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
@@ -154,6 +155,16 @@ public abstract class IpAccessListToBdd {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  private PermitAndDenyBdds getPermitAndDenyBdds(String aclName) {
+    checkArgument(
+        _permitAndDenyBdds.containsKey(aclName), "Undefined PermittedByAcl reference: %s", aclName);
+    try {
+      return _permitAndDenyBdds.get(aclName).get();
+    } catch (NonRecursiveSupplierException e) {
+      throw new BatfishException("Circular PermittedByAcl reference: " + aclName);
+    }
+  }
+
   /**
    * Return the {@link PermitAndDenyBdds} matched by each line (and no earlier line). The last
    * element is a {@link PermitAndDenyBdds} representing default action: permits nothing, denies all
@@ -204,6 +215,13 @@ public abstract class IpAccessListToBdd {
     }
 
     @Override
+    public BDD visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      // denied = explicitly denied or unmatched
+      PermitAndDenyBdds permitAndDenyBdds = getPermitAndDenyBdds(deniedByAcl.getAclName());
+      return permitAndDenyBdds.getDenyBdd().or(permitAndDenyBdds.getMatchBdd().not());
+    }
+
+    @Override
     public final BDD visitFalseExpr(FalseExpr falseExpr) {
       return _factory.zero();
     }
@@ -241,14 +259,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      String name = permittedByAcl.getAclName();
-      checkArgument(
-          _permitAndDenyBdds.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
-      try {
-        return _permitAndDenyBdds.get(name).get().getPermitBdd();
-      } catch (NonRecursiveSupplierException e) {
-        throw new BatfishException("Circular PermittedByAcl reference: " + name);
-      }
+      return getPermitAndDenyBdds(permittedByAcl.getAclName()).getPermitBdd();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -576,6 +577,38 @@ public class AclTracerTest {
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(acl, 0)))));
+  }
+
+  @Test
+  public void testDeniedByAcl() {
+    TraceElement a = TraceElement.of("a");
+    String aclName = "acl";
+    IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(REJECT_ALL).build();
+    List<TraceTree> trace =
+        AclTracer.trace(
+            new DeniedByAcl(aclName, a),
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(aclName, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(acl,0)))));
+  }
+
+  @Test
+  public void testDeniedByAcl_noMatch() {
+    TraceElement a = TraceElement.of("a");
+    String aclName = "acl";
+    IpAccessList acl = IpAccessList.builder().setName(aclName).build();
+    List<TraceTree> trace =
+        AclTracer.trace(
+            new DeniedByAcl(aclName, a),
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(aclName, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test

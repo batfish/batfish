@@ -18,6 +18,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Rule;
@@ -73,6 +74,20 @@ public class IpAccessListToBddTest {
             ImmutableMap.of(),
             BDDSourceManager.empty(PKT));
     assertThat(bdd, equalTo(fooIpBDD));
+  }
+
+  @Test
+  public void testDeniedByAcl() {
+    Ip fooIp = Ip.parse("1.1.1.1");
+    BDD fooIpBDD = PKT.getDstIp().value(fooIp.asLong());
+    IpAccessList fooAcl =
+        aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    BDD bdd =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of())
+            .toBdd(acl);
+    assertThat(bdd, equalTo(fooIpBDD.not()));
   }
 
   @Test
