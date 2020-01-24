@@ -294,54 +294,6 @@ final class IpPermissions implements Serializable {
   }
 
   /**
-   * Converts a security group (used as source/dest) into an ExprAclLine using protocol and dst
-   * ports in this IpPermission instance. Returns null if the provided inputs cannot form a valid
-   * ExprAclLine
-   */
-  @Nullable
-  private ExprAclLine securityGroupToMatchExpr(
-      boolean ingress, String sgName, IpSpace ipSpace, String aclLineName, Warnings warnings) {
-    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
-    List<AclLineMatchExpr> matchExprs = getMatchExprsForProtocolAndPorts(aclLineName, warnings);
-    if (matchExprs == null) {
-      return null;
-    }
-    matchesBuilder.addAll(matchExprs);
-    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, sgName, ingress, AddressType.SECURITY_GROUP));
-    return ExprAclLine.accepting()
-        .setMatchCondition(and(matchesBuilder.build()))
-        .setTraceElement(getTraceElementForRule(null))
-        .setName(aclLineName)
-        .build();
-  }
-
-  /**
-   * Converts a prefix list (used as source/dest) into an ExprAclLine using protocol and dst ports
-   * in this IpPermission instance. Returns null if the provided inputs cannot form a valid
-   * ExprAclLine
-   */
-  @Nullable
-  private ExprAclLine prefixlistToMatchExpr(
-      boolean ingress,
-      String prefixListId,
-      IpSpace ipSpace,
-      String aclLineName,
-      Warnings warnings) {
-    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
-    List<AclLineMatchExpr> matchExprs = getMatchExprsForProtocolAndPorts(aclLineName, warnings);
-    if (matchExprs == null) {
-      return null;
-    }
-    matchesBuilder.addAll(matchExprs);
-    matchesBuilder.add(exprForSrcOrDstIps(ipSpace, prefixListId, ingress, AddressType.PREFIX_LIST));
-    return ExprAclLine.accepting()
-        .setMatchCondition(and(matchesBuilder.build()))
-        .setTraceElement(getTraceElementForRule(null))
-        .setName(aclLineName)
-        .build();
-  }
-
-  /**
    * Generates a list of AclLineMatchExprs (MatchHeaderSpaces) to match the IpProtocol and dst ports
    * in this IpPermission instance (or ICMP type and code, if protocol is ICMP). Returns null if IP
    * Protocol and ports are not consistent
@@ -384,7 +336,7 @@ final class IpPermissions implements Serializable {
   }
 
   /** Returns a MatchHeaderSpace to match the provided IpSpace either in ingress or egress mode */
-  private MatchHeaderSpace exprForSrcOrDstIps(
+  private static MatchHeaderSpace exprForSrcOrDstIps(
       IpSpace ipSpace, String vsAddressStructure, boolean ingress, AddressType addressType) {
     if (ingress) {
       return new MatchHeaderSpace(
@@ -415,7 +367,7 @@ final class IpPermissions implements Serializable {
    * after the protocol is determined to be ICMP
    */
   @Nullable
-  private MatchHeaderSpace exprForIcmpTypeAndCode(int type, int code) {
+  private static MatchHeaderSpace exprForIcmpTypeAndCode(int type, int code) {
     HeaderSpace.Builder hsBuilder = HeaderSpace.builder();
     if (type != -1) {
       hsBuilder.setIcmpTypes(type);
@@ -486,7 +438,7 @@ final class IpPermissions implements Serializable {
     return aclLines.build();
   }
 
-  private List<ExprAclLine> collectIntoAclLines(
+  private static List<ExprAclLine> collectIntoAclLines(
       Function<Region, Map<IpSpace, String>> collector,
       AddressType addressType,
       Region region,
