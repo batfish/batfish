@@ -177,9 +177,11 @@ import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECU
 import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_TRAFFIC_FROM_DEVICE;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaDeniedByOutputFilterTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitHigherSecurityLevelTrafficTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitLowerSecurityLevelTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermittedByOutputFilterTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaRejectLowerSecurityLevelTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeASASecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
@@ -5426,6 +5428,17 @@ public final class CiscoGrammarTest {
                 c.getIpSpaces(),
                 c.getIpSpaceMetadata());
 
+    // from device
+    {
+      List<TraceTree> traces = trace.apply(null, insideInterface);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_TRAFFIC_FROM_DEVICE))));
+    }
+
     // intra-security-level, but from/to different interfaces
     {
       List<TraceTree> traces = trace.apply(explicit100Interface, insideInterface);
@@ -5555,7 +5568,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, intra-interface
@@ -5579,7 +5594,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, inter-interface
@@ -5603,7 +5620,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, low-to-high (low has ingress filter)
@@ -5627,7 +5646,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, high-to-low

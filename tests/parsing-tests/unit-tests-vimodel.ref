@@ -2626,7 +2626,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
-                "name" : "Allow traffic originating from this device"
+                "name" : "Allow traffic originating from this device",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched traffic originating from this device"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~"
@@ -8756,7 +8764,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
-                "name" : "Allow traffic originating from this device"
+                "name" : "Allow traffic originating from this device",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched traffic originating from this device"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"

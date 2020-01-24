@@ -215,10 +215,13 @@ import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
+  @VisibleForTesting
+  public static final TraceElement PERMIT_TRAFFIC_FROM_DEVICE =
+      TraceElement.of("Matched traffic originating from this device");
 
   @VisibleForTesting
   public static final TraceElement PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT =
-      TraceElement.of("matched same-security-traffic permit intra-interface");
+      TraceElement.of("Matched same-security-traffic permit intra-interface");
 
   @VisibleForTesting
   public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT =
@@ -226,7 +229,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   public static final TraceElement PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
-      TraceElement.of("matched same-security-traffic permit inter-interface");
+      TraceElement.of("Matched same-security-traffic permit inter-interface");
 
   @VisibleForTesting
   public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
@@ -235,6 +238,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static TraceElement asaDeniedByOutputFilterTraceElement(String filterName) {
     return TraceElement.of("Denied by output filter " + filterName);
+  }
+
+  @VisibleForTesting
+  public static TraceElement asaPermittedByOutputFilterTraceElement(String filterName) {
+    return TraceElement.of("Permitted by output filter " + filterName);
   }
 
   /** Matches anything but the IPv4 default route. */
@@ -2458,7 +2466,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setMatchCondition(
                   new AndMatchExpr(
                       ImmutableList.of(
-                          securityLevelPolicies, new PermittedByAcl(oldOutgoingFilterName))))
+                          securityLevelPolicies,
+                          new PermittedByAcl(
+                              oldOutgoingFilterName,
+                              asaPermittedByOutputFilterTraceElement(oldOutgoingFilterName)))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
@@ -4378,7 +4389,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               String zoneName = zone.getName();
               if (_securityLevels.containsKey(zoneName)) {
                 // ASA security level
-                return createAsaSecurityLevelZoneAcl(zone, matchSrcInterfaceBySrcZone);
+                return createAsaSecurityLevelZoneAcl(zone);
               } else if (_securityZones.containsKey(zoneName)) {
                 // IOS security zone
                 return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
@@ -4390,8 +4401,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
   }
 
-  IpAccessList createAsaSecurityLevelZoneAcl(
-      Zone zone, Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone) {
+  IpAccessList createAsaSecurityLevelZoneAcl(Zone zone) {
 
     ImmutableList.Builder<AclLine> zonePolicies = ImmutableList.builder();
 
@@ -4400,6 +4410,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ExprAclLine.accepting()
             .setMatchCondition(OriginatingFromDevice.INSTANCE)
             .setName("Allow traffic originating from this device")
+            .setTraceElement(PERMIT_TRAFFIC_FROM_DEVICE)
             .build());
 
     String zoneName = zone.getName();
