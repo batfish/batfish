@@ -217,11 +217,11 @@ import org.batfish.vendor.VendorConfiguration;
 public final class CiscoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static final TraceElement PERMIT_TRAFFIC_FROM_DEVICE =
-      TraceElement.of("matched traffic originating from this device");
+      TraceElement.of("Matched traffic originating from this device");
 
   @VisibleForTesting
   public static final TraceElement PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT =
-      TraceElement.of("matched same-security-traffic permit intra-interface");
+      TraceElement.of("Matched same-security-traffic permit intra-interface");
 
   @VisibleForTesting
   public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT =
@@ -229,7 +229,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   public static final TraceElement PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
-      TraceElement.of("matched same-security-traffic permit inter-interface");
+      TraceElement.of("Matched same-security-traffic permit inter-interface");
 
   @VisibleForTesting
   public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
