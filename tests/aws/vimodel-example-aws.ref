@@ -1837,15 +1837,7 @@
                     }
                   }
                 },
-                "name" : "permit icmp 10.100.0.0 0.0.255.255 any",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp 10.100.0.0 0.0.255.255 any"
-                    }
-                  ]
-                }
+                "name" : "permit icmp 10.100.0.0 0.0.255.255 any"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1867,15 +1859,7 @@
                     }
                   }
                 },
-                "name" : "permit icmp any 10.100.0.0 0.0.255.255",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp any 10.100.0.0 0.0.255.255"
-                    }
-                  ]
-                }
+                "name" : "permit icmp any 10.100.0.0 0.0.255.255"
               }
             ],
             "name" : "2001",
@@ -1901,15 +1885,7 @@
                     }
                   }
                 },
-                "name" : "permit ip 10.1.30.0 0.0.0.255 any",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 10.1.30.0 0.0.0.255 any"
-                    }
-                  ]
-                }
+                "name" : "permit ip 10.1.30.0 0.0.0.255 any"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1928,15 +1904,7 @@
                     }
                   }
                 },
-                "name" : "permit ip host 10.10.30.2 host 10.10.30.1",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 10.10.30.2 host 10.10.30.1"
-                    }
-                  ]
-                }
+                "name" : "permit ip host 10.10.30.2 host 10.10.30.1"
               }
             ],
             "name" : "LIMIT_PEER",
@@ -1962,15 +1930,7 @@
                     }
                   }
                 },
-                "name" : "permit ip any any",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any any"
-                    }
-                  ]
-                }
+                "name" : "permit ip any any"
               }
             ],
             "name" : "MATCH_ALL_BGP",
@@ -3001,15 +2961,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3020,15 +2972,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_egress",
@@ -3046,15 +2990,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3065,15 +3001,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_ingress",
@@ -3206,15 +3134,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3225,15 +3145,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_egress",
@@ -3251,15 +3163,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3270,15 +3174,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_ingress",
@@ -3411,15 +3307,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3430,15 +3318,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-4db39c28_egress",
@@ -3468,15 +3348,7 @@
                     }
                   }
                 },
-                "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3487,15 +3359,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-4db39c28_ingress",
@@ -3628,15 +3492,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3647,15 +3503,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_egress",
@@ -3673,15 +3521,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3692,15 +3532,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_ingress",
@@ -3833,15 +3665,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3852,15 +3676,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-3d4f745b_egress",
@@ -3878,15 +3694,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -3897,15 +3705,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-3d4f745b_ingress",
@@ -4038,15 +3838,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4057,15 +3849,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_egress",
@@ -4083,15 +3867,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4102,15 +3878,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_ingress",
@@ -4243,15 +4011,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4262,15 +4022,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-3d4f745b_egress",
@@ -4288,15 +4040,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4307,15 +4051,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-3d4f745b_ingress",
@@ -4448,15 +4184,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4467,15 +4195,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-4db39c28_egress",
@@ -4505,15 +4225,7 @@
                     }
                   }
                 },
-                "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4524,15 +4236,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-4db39c28_ingress",
@@ -4665,15 +4369,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4684,15 +4380,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-4db39c28_egress",
@@ -4722,15 +4410,7 @@
                     }
                   }
                 },
-                "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4741,15 +4421,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-4db39c28_ingress",
@@ -4882,15 +4554,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4901,15 +4565,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_egress",
@@ -4927,15 +4583,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line 100 ALL ALL 0.0.0.0/0 ALLOW"
-                    }
-                  ]
-                }
+                "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4946,15 +4594,7 @@
                     "negate" : false
                   }
                 },
-                "name" : "* ALL ALL 0.0.0.0/0 DENY",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line * ALL ALL 0.0.0.0/0 DENY"
-                    }
-                  ]
-                }
+                "name" : "* ALL ALL 0.0.0.0/0 DENY"
               }
             ],
             "name" : "acl-7b78771d_ingress",
