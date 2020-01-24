@@ -2567,6 +2567,40 @@
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "blah"
+                      ],
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit intra-interface is not set"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit inter-interface is not set"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
@@ -2578,15 +2612,7 @@
                     {
                       "class" : "org.batfish.datamodel.acl.FalseExpr"
                     }
-                  ],
-                  "traceElement" : {
-                    "fragments" : [
-                      {
-                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_0'"
-                      }
-                    ]
-                  }
+                  ]
                 }
               }
             ],
@@ -8671,6 +8697,40 @@
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "inside"
+                      ],
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit intra-interface is not set"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit inter-interface is not set"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.OrMatchExpr",
@@ -8682,15 +8742,7 @@
                     {
                       "class" : "org.batfish.datamodel.acl.FalseExpr"
                     }
-                  ],
-                  "traceElement" : {
-                    "fragments" : [
-                      {
-                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_100'"
-                      }
-                    ]
-                  }
+                  ]
                 }
               }
             ],

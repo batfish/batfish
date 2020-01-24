@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -47,6 +48,7 @@ import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_N
 import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.batfish.representation.cisco.eos.AristaRedistributeType.STATIC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -136,11 +138,13 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -211,6 +215,27 @@ import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
+
+  @VisibleForTesting
+  public static final TraceElement PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT =
+      TraceElement.of("matched same-security-traffic permit intra-interface");
+
+  @VisibleForTesting
+  public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT =
+      TraceElement.of("same-security-traffic permit intra-interface is not set");
+
+  @VisibleForTesting
+  public static final TraceElement PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
+      TraceElement.of("matched same-security-traffic permit inter-interface");
+
+  @VisibleForTesting
+  public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
+      TraceElement.of("same-security-traffic permit inter-interface is not set");
+
+  @VisibleForTesting
+  public static TraceElement asaDeniedByOutputFilterTraceElement(String filterName) {
+    return TraceElement.of("Denied by output filter " + filterName);
+  }
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
@@ -2375,62 +2400,135 @@ public final class CiscoConfiguration extends VendorConfiguration {
             getASASecurityLevelZoneName(iface),
             "interface %s is not in a security level",
             iface.getName());
-    String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
-    IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
-    if (zoneOutgoingAcl == null) {
+    String interSecurityLevelAclName = computeZoneOutgoingAclName(zoneName);
+    IpAccessList interSecurityLevelAcl = c.getIpAccessLists().get(interSecurityLevelAclName);
+    if (interSecurityLevelAcl == null) {
       return;
     }
     String oldOutgoingFilterName = newIface.getOutgoingFilterName();
 
-    // Construct a new ACL that combines filters, i.e. 1 AND (2 OR 3)
-    // 1) the interface outbound filter, if it exists
-    // 2) the cross-security-level filter
-    // 3) the intra-security-level filter
+    // Construct a new ACL that:
+    // 1) rejects if the (inter- or intra-) security-level policy rejects
+    // 2) rejects if both of the following are true:
+    //    a) the (inter- or intra-) security-level policy permits
+    //    b) the interface outbound filter REJECTS
+    // 3) permits if both of the following are true:
+    //    a) the (inter- or intra-) security-level policy permits
+    //    b) the interface outbound filter permits
+    //
+    // NOTE: step 3 is mutually exclusive with each of steps 1 and 2. We do steps
+    // 1 and 2 to produce better traces than we would with step 3 alone (letting the flows
+    // that would be matched by steps 1 and 2 be denied by the default no-match semantics).
 
-    AclLineMatchExpr intraSecurityLevelMatchExpr =
-        getAsaIntraSecurityLevelMatchExpr(iface, newIface);
+    ImmutableList.Builder<AclLine> lineBuilder = ImmutableList.builder();
 
-    String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
-    IpAccessList combinedOutgoingAcl;
-    ImmutableList<AclLineMatchExpr> securityFilters =
-        ImmutableList.of(new PermittedByAcl(zoneOutgoingAclName), intraSecurityLevelMatchExpr);
+    // Step 1.
+    // 1a. intra-security-level
+    lineBuilder.add(ExprAclLine.rejecting(getAsaIntraSecurityLevelDenyExpr(iface, newIface)));
+    // 1b. inter-security-level
+    lineBuilder.addAll(getAsaInterSecurityLevelDenyAclLines(iface.getSecurityLevel()));
+
+    AclLineMatchExpr securityLevelPolicies =
+        or(
+            new PermittedByAcl(interSecurityLevelAclName),
+            getAsaIntraSecurityLevelPermitExpr(iface, newIface));
+
+    // Step 2.
+    if (oldOutgoingFilterName != null) {
+      lineBuilder.add(
+          ExprAclLine.rejecting()
+              .setMatchCondition(
+                  and(
+                      securityLevelPolicies,
+                      /* TODO better tracing for this case.
+                       * I.e. replace Not(Permitted(...)) with Denied(...). Currently the outgoing
+                       * filter's trace is discarded because Permitted evaluates to false.
+                       */
+                      new NotMatchExpr(
+                          new PermittedByAcl(oldOutgoingFilterName),
+                          asaDeniedByOutputFilterTraceElement(oldOutgoingFilterName))))
+              .build());
+    }
+
+    // Step 3.
 
     if (oldOutgoingFilterName != null) {
-      combinedOutgoingAcl =
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(combinedOutgoingAclName)
-              .setLines(
-                  ImmutableList.of(
-                      ExprAclLine.accepting()
-                          .setMatchCondition(
-                              new AndMatchExpr(
-                                  ImmutableList.of(
-                                      new OrMatchExpr(securityFilters),
-                                      new PermittedByAcl(oldOutgoingFilterName)),
-                                  String.format(
-                                      "Permit if permitted by policy for zone '%s' and permitted by"
-                                          + " outgoing filter '%s'",
-                                      zoneName, oldOutgoingFilterName)))
-                          .build()))
-              .build();
+      lineBuilder.add(
+          ExprAclLine.accepting()
+              .setMatchCondition(
+                  new AndMatchExpr(
+                      ImmutableList.of(
+                          securityLevelPolicies, new PermittedByAcl(oldOutgoingFilterName))))
+              .build());
     } else {
-      combinedOutgoingAcl =
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(combinedOutgoingAclName)
-              .setLines(
-                  ImmutableList.of(
-                      ExprAclLine.accepting()
-                          .setMatchCondition(
-                              new OrMatchExpr(
-                                  securityFilters,
-                                  String.format(
-                                      "Permit if permitted by policy for zone '%s'", zoneName)))
-                          .build()))
-              .build();
+      lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
     }
-    newIface.setOutgoingFilter(combinedOutgoingAcl);
+    newIface.setOutgoingFilter(
+        IpAccessList.builder()
+            .setOwner(c)
+            .setName(computeCombinedOutgoingAclName(newIface.getName()))
+            .setLines(lineBuilder.build())
+            .build());
+  }
+
+  /**
+   * Drop outbound traffic from interfaces with lower security levels if that interface does not
+   * have an inbound ACL. Note: this could be shared among out-interfaces in the same security
+   * level, but for now we're recomputing it for each one.
+   */
+  @Nonnull
+  private List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
+    return _interfacesBySecurityLevel.keySet().stream()
+        .filter(l -> l < level)
+        .map(
+            l -> {
+              List<String> denySrcInterfaces =
+                  _interfacesBySecurityLevel.get(l).stream()
+                      .filter(inIface -> inIface.getIncomingFilter() == null)
+                      .map(this::getNewInterfaceName)
+                      .collect(Collectors.toList());
+              if (denySrcInterfaces.isEmpty()) {
+                return null;
+              }
+              return ExprAclLine.rejecting()
+                  .setName("Traffic from security level " + l + " without inbound filter")
+                  .setTraceElement(asaRejectLowerSecurityLevelTraceElement(l))
+                  .setMatchCondition(new MatchSrcInterface(denySrcInterfaces))
+                  .build();
+            })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Construct an {@link AclLineMatchExpr} that matches traffic NOT allowed to exit the specified
+   * {@code iface} after entering the same interface or another interface in the same security
+   * level. Only for Cisco ASA devices.
+   */
+  private AclLineMatchExpr getAsaIntraSecurityLevelDenyExpr(
+      Interface iface, org.batfish.datamodel.Interface newIface) {
+    checkNotNull(iface.getSecurityLevel(), "interface %s not in a security level", iface.getName());
+    ImmutableList.Builder<AclLineMatchExpr> disjuncts = ImmutableList.builder();
+
+    if (!_sameSecurityTrafficIntra) {
+      // reject traffic received on the outgoing interface (hairpinning)
+      disjuncts.add(
+          new MatchSrcInterface(
+              ImmutableList.of(newIface.getName()),
+              DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT));
+    }
+
+    if (!_sameSecurityTrafficInter) {
+      // reject traffic received on another interface in the same security level
+      disjuncts.add(
+          new MatchSrcInterface(
+              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
+                  .filter(other -> !other.equals(iface))
+                  .map(this::getNewInterfaceName)
+                  .collect(ImmutableList.toImmutableList()),
+              DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT));
+    }
+    return or(disjuncts.build()); // no trace element for the or
   }
 
   /**
@@ -2438,29 +2536,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
    * iface} after entering the same interface or another interface in the same security level. Only
    * for Cisco ASA devices.
    */
-  private AclLineMatchExpr getAsaIntraSecurityLevelMatchExpr(
+  private AclLineMatchExpr getAsaIntraSecurityLevelPermitExpr(
       Interface iface, org.batfish.datamodel.Interface newIface) {
     checkNotNull(iface.getSecurityLevel(), "interface %s not in a security level", iface.getName());
-    ImmutableList.Builder<AclLineMatchExpr> intraSecurityLevelMatchExprs = ImmutableList.builder();
+    ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
+
+    // handle traffic received on the outgoing interface (hairpinning)
     if (_sameSecurityTrafficIntra) {
-      // allow traffic received on the outgoing interface (hairpinning)
-      intraSecurityLevelMatchExprs.add(
+      exprs.add(
           new MatchSrcInterface(
-              ImmutableList.of(newIface.getName()), "Allow traffic received on this interface"));
+              ImmutableList.of(newIface.getName()),
+              PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT));
     }
+
+    // handle traffic received on another interface in the same security level
     if (_sameSecurityTrafficInter) {
-      // allow traffic received on another interface in the same security level
-      intraSecurityLevelMatchExprs.add(
+      exprs.add(
           new MatchSrcInterface(
               _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
                   .filter(other -> !other.equals(iface))
                   .map(this::getNewInterfaceName)
                   .collect(ImmutableList.toImmutableList()),
-              String.format(
-                  "Allow traffic received on other interfaces with security level %d",
-                  iface.getSecurityLevel())));
+              PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT));
     }
-    return or(intraSecurityLevelMatchExprs.build());
+
+    return or(exprs.build()); // no trace element for the or
   }
 
   public static String computeCombinedOutgoingAclName(String interfaceName) {
@@ -4406,6 +4506,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .build());
   }
 
+  @VisibleForTesting
+  public static TraceElement asaPermitHigherSecurityLevelTrafficTraceElement(int level) {
+    return TraceElement.of(String.format("Matched traffic from a higher security level %d", level));
+  }
+
+  @VisibleForTesting
+  public static TraceElement asaRejectLowerSecurityLevelTraceElement(int level) {
+    return TraceElement.of(
+        String.format("Matched unfiltered traffic from a lower security level %d", level));
+  }
+
+  @VisibleForTesting
+  public static TraceElement asaPermitLowerSecurityLevelTraceElement(int level) {
+    return TraceElement.of(
+        String.format("Matched filtered traffic from a lower security level %d", level));
+  }
+
   private List<ExprAclLine> createSecurityLevelAcl(String zoneName) {
     Integer level = _securityLevels.get(zoneName);
     if (level == null) {
@@ -4420,6 +4537,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 l ->
                     ExprAclLine.accepting()
                         .setName("Traffic from security level " + l)
+                        .setTraceElement(asaPermitHigherSecurityLevelTrafficTraceElement(l))
                         .setMatchCondition(
                             new MatchSrcInterface(
                                 _interfacesBySecurityLevel.get(l).stream()
@@ -4437,6 +4555,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 l ->
                     ExprAclLine.accepting()
                         .setName("Traffic from security level " + l + " with inbound filter")
+                        .setTraceElement(asaPermitLowerSecurityLevelTraceElement(l))
                         .setMatchCondition(
                             new MatchSrcInterface(
                                 _interfacesBySecurityLevel.get(l).stream()

@@ -71,9 +71,28 @@ public final class TraceTreeMatchers {
     return allOf(hasTraceElement(traceElement), hasChildren(contains(childMatchers)));
   }
 
+  /**
+   * A {@link TraceTree} matcher combining {@link TraceTreeMatchers#hasTraceElement(Matcher)},
+   * {@link TraceTreeMatchers#hasChildren}, and {@link Matchers#contains}.
+   */
+  @SafeVarargs
+  @SuppressWarnings({"varargs"})
+  public static Matcher<TraceTree> isTraceTree(
+      Matcher<? super TraceElement> traceElementMatcher,
+      Matcher<? super TraceTree>... childMatchers) {
+    return allOf(hasTraceElement(traceElementMatcher), hasChildren(contains(childMatchers)));
+  }
+
   /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
   public static Matcher<TraceTree> hasChildren(Matcher<? super List<TraceTree>> subMatcher) {
     return new HasChildren(subMatcher);
+  }
+
+  /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
+  @SafeVarargs
+  @SuppressWarnings({"varargs"})
+  public static Matcher<TraceTree> hasChildren(Matcher<? super TraceTree>... subMatchers) {
+    return new HasChildren(contains(subMatchers));
   }
 
   /** A {@link TraceTree} matcher on {@link TraceTree#getChildren()}. */
