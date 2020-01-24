@@ -6,7 +6,10 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.representation.juniper.FwTerm.Field;
 
+/** Class for firewall filter from destination port */
 public final class FwFromDestinationPort extends FwFrom {
 
   private final SubRange _portRange;
@@ -31,5 +34,22 @@ public final class FwFromDestinationPort extends FwFrom {
 
   public SubRange getPortRange() {
     return _portRange;
+  }
+
+  @Override
+  Field getField() {
+    return Field.DESTINATION_PORT;
+  }
+
+  @Override
+  TraceElement getTraceElement() {
+    return TraceElement.of(
+        String.format(
+            "Matched destination-port %d-%d", _portRange.getStart(), _portRange.getEnd()));
+  }
+
+  @Override
+  HeaderSpace toHeaderspace(JuniperConfiguration jc, Configuration c, Warnings w) {
+    return HeaderSpace.builder().setDstPorts(_portRange).build();
   }
 }
