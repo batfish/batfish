@@ -12,6 +12,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.representation.juniper.FwTerm.Field;
 
+/** Class for security policy match destination-address */
 public final class FwFromDestinationAddressBookEntry extends FwFrom {
 
   private final String _addressBookEntryName;

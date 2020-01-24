@@ -9,6 +9,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.representation.juniper.FwTerm.Field;
 
+/** Class for firewall filter from destination-address */
 public final class FwFromDestinationAddress extends FwFrom {
 
   @Nullable private final IpWildcard _ipWildcard;
