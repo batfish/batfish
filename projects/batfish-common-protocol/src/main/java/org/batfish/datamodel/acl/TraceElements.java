@@ -15,11 +15,19 @@ import org.batfish.datamodel.TraceElement;
 public final class TraceElements {
   private TraceElements() {}
 
-  public static TraceElement matchedByAclLine(IpAccessList acl, int index) {
-    AclLine line = acl.getLines().get(index);
-    String lineDescription =
-        line.getName() == null ? String.format("at index %s", index) : line.getName();
-    return TraceElement.of("Matched line " + lineDescription);
+  public static @Nullable TraceElement matchedByAclLine(IpAccessList acl, int index) {
+    return matchedByAclLine(acl.getLines().get(index));
+  }
+
+  public static @Nullable TraceElement matchedByAclLine(AclLine line) {
+    if (line.getName() == null) {
+      return null;
+    }
+    return matchedByAclLine(line.getName());
+  }
+
+  public static TraceElement matchedByAclLine(String lineName) {
+    return TraceElement.of("Matched line " + lineName);
   }
 
   public static TraceElement permittedByNamedIpSpace(

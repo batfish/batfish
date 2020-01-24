@@ -1,21 +1,16 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
-import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -151,16 +146,15 @@ public class TestFiltersAnswererTest {
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
-                    TestFiltersAnswerer.COL_TRACE,
-                    allOf(hasTraceElement(matchedByAclLine(acl, 1)), hasChildren(empty())),
-                    Schema.TRACE_TREE))));
+                    TestFiltersAnswerer.COL_TRACE, empty(), Schema.list(Schema.TRACE_TREE)))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
         answer,
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(TestFiltersAnswerer.COL_TRACE, nullValue(), Schema.TRACE_TREE))));
+                hasColumn(
+                    TestFiltersAnswerer.COL_TRACE, empty(), Schema.list(Schema.TRACE_TREE)))));
   }
 
   @Test

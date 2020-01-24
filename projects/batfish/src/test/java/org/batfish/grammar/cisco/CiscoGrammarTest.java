@@ -5431,34 +5431,19 @@ public final class CiscoGrammarTest {
     // from device
     {
       List<TraceTree> traces = trace.apply(null, insideInterface);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_TRAFFIC_FROM_DEVICE))));
+      assertThat(traces, contains(isTraceTree(PERMIT_TRAFFIC_FROM_DEVICE)));
     }
 
     // intra-security-level, but from/to different interfaces
     {
       List<TraceTree> traces = trace.apply(explicit100Interface, insideInterface);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT))));
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT)));
     }
 
     // hairpinning
     {
       List<TraceTree> traces = trace.apply(explicit100Interface, explicit100Interface);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT))));
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT)));
     }
   }
 
@@ -5510,23 +5495,13 @@ public final class CiscoGrammarTest {
     // intra-security-level, but from/to different interfaces
     {
       List<TraceTree> traces = trace.apply(ifaceAlias1, ifaceAlias2);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT))));
+      assertThat(traces, contains(isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT)));
     }
 
     // hairpinning
     {
       List<TraceTree> traces = trace.apply(ifaceAlias1, ifaceAlias1);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT))));
+      assertThat(traces, contains(isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT)));
     }
   }
 
@@ -5565,12 +5540,10 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
               isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
-                  isTraceTree(
-                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
-                      isTraceTree(matchedByAclLine(filterOut, 0))))));
+                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
     // denied, intra-interface
@@ -5579,10 +5552,8 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
-                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
     }
 
     // permitted, inter-interface
@@ -5591,12 +5562,10 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
               isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
-                  isTraceTree(
-                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
-                      isTraceTree(matchedByAclLine(filterOut, 0))))));
+                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
     // denied, inter-interface
@@ -5605,10 +5574,8 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
-                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
+              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
     }
 
     // permitted, low-to-high (low has ingress filter)
@@ -5617,12 +5584,10 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
+              isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
               isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
-                  isTraceTree(
-                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
-                      isTraceTree(matchedByAclLine(filterOut, 0))))));
+                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
     // denied, low-to-high (low has ingress filter)
@@ -5631,10 +5596,8 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
-                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
+              isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
+              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
     }
 
     // permitted, high-to-low
@@ -5643,12 +5606,10 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
+              isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
               isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
-                  isTraceTree(
-                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
-                      isTraceTree(matchedByAclLine(filterOut, 0))))));
+                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
     // denied, high-to-low
@@ -5657,10 +5618,8 @@ public final class CiscoGrammarTest {
       assertThat(
           traces,
           contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
-                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
+              isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
+              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
     }
   }
 
@@ -5692,23 +5651,13 @@ public final class CiscoGrammarTest {
     // same security level, intra-interface (hairpinning)
     {
       List<TraceTree> traces = trace.apply(out);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT))));
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT)));
     }
 
     // same security level, inter-interface
     {
       List<TraceTree> traces = trace.apply(inSameLevel);
-      assertThat(
-          traces,
-          contains(
-              isTraceTree(
-                  anything(), // TODO: don't produce a trace element for the line
-                  isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT))));
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT)));
     }
 
     // lower security level, no ingress filter

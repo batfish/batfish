@@ -623,7 +623,15 @@
                     }
                   }
                 },
-                "name" : "5 permit vlan 123 0x000 udp any 224.0.0.0/4"
+                "name" : "5 permit vlan 123 0x000 udp any 224.0.0.0/4",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 5 permit vlan 123 0x000 udp any 224.0.0.0/4"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -672,7 +680,15 @@
                     ]
                   }
                 },
-                "name" : "10 deny tcp any 102.66.49.113/24 neq www https syn"
+                "name" : "10 deny tcp any 102.66.49.113/24 neq www https syn",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 deny tcp any 102.66.49.113/24 neq www https syn"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -691,7 +707,15 @@
                     }
                   }
                 },
-                "name" : "20 deny ip any any"
+                "name" : "20 deny ip any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 20 deny ip any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "abcd",
@@ -1000,7 +1024,15 @@
                     }
                   }
                 },
-                "name" : "10 permit 1.2.4.8/16"
+                "name" : "10 permit 1.2.4.8/16",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 permit 1.2.4.8/16"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "sshabc",
@@ -1100,7 +1132,15 @@
                     }
                   }
                 },
-                "name" : "permit ip any any"
+                "name" : "permit ip any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit ip any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "acl1",
@@ -1666,7 +1706,15 @@
                     }
                   }
                 },
-                "name" : "permit host 0.0.0.0"
+                "name" : "permit host 0.0.0.0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit host 0.0.0.0"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "Local_LAN_Access",
@@ -1698,7 +1746,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-alternate-address any any"
+                "name" : "permit object icmp-alternate-address any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-alternate-address any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1723,7 +1779,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-conversion-error any any"
+                "name" : "permit object icmp-conversion-error any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-conversion-error any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1748,7 +1812,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-echo any any"
+                "name" : "permit object icmp-echo any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-echo any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1773,7 +1845,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-echo-reply any any"
+                "name" : "permit object icmp-echo-reply any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-echo-reply any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1798,7 +1878,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-information-reply any any"
+                "name" : "permit object icmp-information-reply any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-information-reply any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1823,7 +1911,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-information-request any any"
+                "name" : "permit object icmp-information-request any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-information-request any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1848,7 +1944,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-mask-reply any any"
+                "name" : "permit object icmp-mask-reply any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-mask-reply any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1873,7 +1977,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-mask-request any any"
+                "name" : "permit object icmp-mask-request any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-mask-request any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1898,7 +2010,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-mobile-redirect any any"
+                "name" : "permit object icmp-mobile-redirect any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-mobile-redirect any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1923,7 +2043,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-parameter-problem any any"
+                "name" : "permit object icmp-parameter-problem any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-parameter-problem any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1948,7 +2076,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-redirect any any"
+                "name" : "permit object icmp-redirect any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-redirect any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1973,7 +2109,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-router-advertisement any any"
+                "name" : "permit object icmp-router-advertisement any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-router-advertisement any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -1998,7 +2142,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-router-solicitation any any"
+                "name" : "permit object icmp-router-solicitation any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-router-solicitation any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2023,7 +2175,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-source-quench any any"
+                "name" : "permit object icmp-source-quench any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-source-quench any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2048,7 +2208,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-time-exceeded any any"
+                "name" : "permit object icmp-time-exceeded any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-time-exceeded any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2073,7 +2241,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-timestamp-reply any any"
+                "name" : "permit object icmp-timestamp-reply any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-timestamp-reply any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2098,7 +2274,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-timestamp-request any any"
+                "name" : "permit object icmp-timestamp-request any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-timestamp-request any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2123,7 +2307,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-traceroute any any"
+                "name" : "permit object icmp-traceroute any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-traceroute any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2148,7 +2340,15 @@
                     }
                   }
                 },
-                "name" : "permit object icmp-unreachable any any"
+                "name" : "permit object icmp-unreachable any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object icmp-unreachable any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -2170,7 +2370,15 @@
                     }
                   }
                 },
-                "name" : "permit object ospf any any"
+                "name" : "permit object ospf any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit object ospf any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "inline_specifiers",
@@ -2203,7 +2411,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp object-group drawbridge_hosts interface outside eq https"
+                "name" : "permit tcp object-group drawbridge_hosts interface outside eq https",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp object-group drawbridge_hosts interface outside eq https"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "outside",
@@ -2235,7 +2451,15 @@
                     }
                   }
                 },
-                "name" : "permit udp any4 host 1.2.3.4 eq tftp"
+                "name" : "permit udp any4 host 1.2.3.4 eq tftp",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit udp any4 host 1.2.3.4 eq tftp"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "outside_in",
@@ -2403,7 +2627,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp any object server02"
+                "name" : "permit tcp any object server02",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp any object server02"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "ALLOW_SERVER02",
@@ -4143,7 +4375,15 @@
                     }
                   }
                 },
-                "name" : "permit 1.2.3.0 0.0.0.255"
+                "name" : "permit 1.2.3.0 0.0.0.255",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit 1.2.3.0 0.0.0.255"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "50",
@@ -4169,7 +4409,15 @@
                     }
                   }
                 },
-                "name" : "permit 2.3.4.0 0.0.0.255"
+                "name" : "permit 2.3.4.0 0.0.0.255",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit 2.3.4.0 0.0.0.255"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -4188,7 +4436,15 @@
                     }
                   }
                 },
-                "name" : "deny   any"
+                "name" : "deny   any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line deny   any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "51",
@@ -4214,7 +4470,15 @@
                     }
                   }
                 },
-                "name" : "permit 3.4.5.6"
+                "name" : "permit 3.4.5.6",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit 3.4.5.6"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "99",
@@ -5467,7 +5731,15 @@
                     }
                   }
                 },
-                "name" : "10 permit icmp any any packet-too-big"
+                "name" : "10 permit icmp any any packet-too-big",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 permit icmp any any packet-too-big"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5494,7 +5766,15 @@
                     }
                   ]
                 },
-                "name" : "20 permit ip any any tracked"
+                "name" : "20 permit ip any any tracked",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 20 permit ip any any tracked"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5516,7 +5796,15 @@
                     }
                   }
                 },
-                "name" : "30 permit ospf any any"
+                "name" : "30 permit ospf any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 30 permit ospf any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5541,7 +5829,15 @@
                     }
                   }
                 },
-                "name" : "40 permit tcp any any eq bgp"
+                "name" : "40 permit tcp any any eq bgp",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 40 permit tcp any any eq bgp"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5567,7 +5863,15 @@
                     }
                   }
                 },
-                "name" : "50 permit udp any any eq bootps bootpc ntp"
+                "name" : "50 permit udp any any eq bootps bootpc ntp",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 50 permit udp any any eq bootps bootpc ntp"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5594,7 +5898,15 @@
                     }
                   ]
                 },
-                "name" : "60 permit tcp any any eq mlag ttl eq 255"
+                "name" : "60 permit tcp any any eq mlag ttl eq 255",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 60 permit tcp any any eq mlag ttl eq 255"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5621,7 +5933,15 @@
                     }
                   ]
                 },
-                "name" : "70 permit udp any any eq mlag ttl eq 255"
+                "name" : "70 permit udp any any eq mlag ttl eq 255",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 70 permit udp any any eq mlag ttl eq 255"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5643,7 +5963,15 @@
                     }
                   }
                 },
-                "name" : "80 permit vrrp any any"
+                "name" : "80 permit vrrp any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 80 permit vrrp any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5665,7 +5993,15 @@
                     }
                   }
                 },
-                "name" : "90 permit ahp any any"
+                "name" : "90 permit ahp any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 90 permit ahp any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5687,7 +6023,15 @@
                     }
                   }
                 },
-                "name" : "100 permit pim any any"
+                "name" : "100 permit pim any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 100 permit pim any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5709,7 +6053,15 @@
                     }
                   }
                 },
-                "name" : "110 permit igmp any any"
+                "name" : "110 permit igmp any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 110 permit igmp any any"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5734,7 +6086,15 @@
                     }
                   }
                 },
-                "name" : "120 permit tcp any any range 1 10"
+                "name" : "120 permit tcp any any range 1 10",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 120 permit tcp any any range 1 10"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5759,7 +6119,15 @@
                     }
                   }
                 },
-                "name" : "140 permit udp 10.0.0.0/19 any eq snmp"
+                "name" : "140 permit udp 10.0.0.0/19 any eq snmp",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 140 permit udp 10.0.0.0/19 any eq snmp"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5784,7 +6152,15 @@
                     }
                   }
                 },
-                "name" : "180 permit udp host 10.0.0.0 any eq snmp"
+                "name" : "180 permit udp host 10.0.0.0 any eq snmp",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 180 permit udp host 10.0.0.0 any eq snmp"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5809,7 +6185,15 @@
                     }
                   }
                 },
-                "name" : "220 permit tcp 10.0.0.0/19 any eq ssh"
+                "name" : "220 permit tcp 10.0.0.0/19 any eq ssh",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 220 permit tcp 10.0.0.0/19 any eq ssh"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5834,7 +6218,15 @@
                     }
                   }
                 },
-                "name" : "260 permit tcp host 10.0.0.0 any eq ssh"
+                "name" : "260 permit tcp host 10.0.0.0 any eq ssh",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 260 permit tcp host 10.0.0.0 any eq ssh"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5860,7 +6252,15 @@
                     }
                   }
                 },
-                "name" : "270 permit tcp any any eq microsoft-ds 5432"
+                "name" : "270 permit tcp any any eq microsoft-ds 5432",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 270 permit tcp any any eq microsoft-ds 5432"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5888,7 +6288,15 @@
                     }
                   }
                 },
-                "name" : "280 permit icmp any any 5 2"
+                "name" : "280 permit icmp any any 5 2",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 280 permit icmp any any 5 2"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5913,7 +6321,15 @@
                     }
                   }
                 },
-                "name" : "290 permit icmp any any time-exceeded ! believe this is type 11, any code"
+                "name" : "290 permit icmp any any time-exceeded ! believe this is type 11, any code",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 290 permit icmp any any time-exceeded ! believe this is type 11, any code"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5941,7 +6357,15 @@
                     }
                   }
                 },
-                "name" : "300 permit icmp any any ttl-exceeded  ! type 11, code 0"
+                "name" : "300 permit icmp any any ttl-exceeded  ! type 11, code 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 300 permit icmp any any ttl-exceeded  ! type 11, code 0"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -5960,7 +6384,15 @@
                     }
                   }
                 },
-                "name" : "410 deny ip any any log"
+                "name" : "410 deny ip any any log",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 410 deny ip any any log"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "BLAH-BLAH",
@@ -5986,7 +6418,15 @@
                     }
                   }
                 },
-                "name" : "deny ip any any log 7 interval 600"
+                "name" : "deny ip any any log 7 interval 600",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line deny ip any any log 7 interval 600"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -6005,7 +6445,15 @@
                     }
                   }
                 },
-                "name" : "deny ip any any log default"
+                "name" : "deny ip any any log default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line deny ip any any log default"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -6024,7 +6472,15 @@
                     }
                   }
                 },
-                "name" : "deny ip any any log disable"
+                "name" : "deny ip any any log disable",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line deny ip any any log disable"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "TEST",
@@ -6050,7 +6506,15 @@
                     }
                   }
                 },
-                "name" : "10 permit ip any any"
+                "name" : "10 permit ip any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 permit ip any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "blah",
@@ -6092,7 +6556,15 @@
                     }
                   }
                 },
-                "name" : "10 permit udp any any eq bfd"
+                "name" : "10 permit udp any any eq bfd",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 permit udp any any eq bfd"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -6117,7 +6589,15 @@
                     }
                   }
                 },
-                "name" : "20 permit udp any any eq bfd-echo"
+                "name" : "20 permit udp any any eq bfd-echo",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 20 permit udp any any eq bfd-echo"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "test-codes",
@@ -6306,7 +6786,15 @@
                     }
                   }
                 },
-                "name" : "deny any"
+                "name" : "deny any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line deny any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "5",
@@ -7551,7 +8039,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060"
+                "name" : "permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -7576,7 +8072,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp host 1.1.1.1 any eq 27401"
+                "name" : "permit tcp host 1.1.1.1 any eq 27401",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp host 1.1.1.1 any eq 27401"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -7601,7 +8105,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp any host 1.1.1.1 eq 65001"
+                "name" : "permit tcp any host 1.1.1.1 eq 65001",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp any host 1.1.1.1 eq 65001"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -7626,7 +8138,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp host 1.1.1.1 any eq 20000"
+                "name" : "permit tcp host 1.1.1.1 any eq 20000",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp host 1.1.1.1 any eq 20000"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -7651,7 +8171,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp any host 1.1.1.1 eq 65111"
+                "name" : "permit tcp any host 1.1.1.1 eq 65111",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp any host 1.1.1.1 eq 65111"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "bippety",
@@ -7683,7 +8211,15 @@
                     }
                   }
                 },
-                "name" : "permit tcp addrgroup bleep_blorp any eq 13000"
+                "name" : "permit tcp addrgroup bleep_blorp any eq 13000",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp addrgroup bleep_blorp any eq 13000"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "bloop_blop",
@@ -8694,7 +9230,15 @@
                     }
                   }
                 },
-                "name" : "10 permit tcp any any"
+                "name" : "10 permit tcp any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 permit tcp any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "abc",
@@ -11273,7 +11817,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "class-default action: PERMIT"
+                "name" : "class-default action: PERMIT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line class-default action: PERMIT"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~INSPECT_POLICY_MAP_ACL~pminspect~",
@@ -11930,7 +12482,15 @@
                     }
                   }
                 },
-                "name" : "permit ip any any"
+                "name" : "permit ip any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit ip any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "blah",
@@ -11977,7 +12537,15 @@
                     }
                   }
                 },
-                "name" : "permit any"
+                "name" : "permit any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "1",
@@ -17549,7 +18117,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "ACCEPT_ALL"
+                "name" : "ACCEPT_ALL",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line ACCEPT_ALL"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "~incoming_filter:/Common/MYVLAN~"
@@ -17897,7 +18473,15 @@
                     }
                   }
                 },
-                "name" : "access-list acl1 permit any\n"
+                "name" : "access-list acl1 permit any\n",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line access-list acl1 permit any\n"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "acl1"
@@ -17917,7 +18501,15 @@
                     }
                   }
                 },
-                "name" : "access-list acl2 permit 192.0.2.0/24\n"
+                "name" : "access-list acl2 permit 192.0.2.0/24\n",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line access-list acl2 permit 192.0.2.0/24\n"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "acl2"
@@ -18565,7 +19157,15 @@
                     }
                   }
                 },
-                "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT"
+                "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18586,7 +19186,15 @@
                     }
                   }
                 },
-                "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT"
+                "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18607,7 +19215,15 @@
                     }
                   }
                 },
-                "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT"
+                "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18628,7 +19244,15 @@
                     }
                   }
                 },
-                "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT"
+                "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18649,7 +19273,15 @@
                     }
                   }
                 },
-                "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT"
+                "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18657,7 +19289,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "filter::INPUT"
@@ -18670,7 +19310,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "filter::OUTPUT"
@@ -18683,7 +19331,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "mangle::FORWARD"
@@ -18696,7 +19352,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "mangle::INPUT"
@@ -18709,7 +19373,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "mangle::OUTPUT"
@@ -18722,7 +19394,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "mangle::POSTROUTING"
@@ -18735,7 +19415,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "mangle::PREROUTING"
@@ -18748,7 +19436,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "nat::OUTPUT"
@@ -18761,7 +19457,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "nat::POSTROUTING"
@@ -18774,7 +19478,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "nat::PREROUTING"
@@ -18902,7 +19614,15 @@
                     }
                   }
                 },
-                "name" : "-s 2.128.0.101/32 -i eth0 -j ACCEPT"
+                "name" : "-s 2.128.0.101/32 -i eth0 -j ACCEPT",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -s 2.128.0.101/32 -i eth0 -j ACCEPT"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18913,7 +19633,15 @@
                     "negate" : false
                   }
                 },
-                "name" : "-j DROP"
+                "name" : "-j DROP",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -j DROP"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18921,7 +19649,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "iptables_Ethernet0_ingress"
@@ -18937,7 +19673,15 @@
                     "negate" : false
                   }
                 },
-                "name" : "-j DROP"
+                "name" : "-j DROP",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line -j DROP"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18945,7 +19689,15 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "default"
+                "name" : "default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line default"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "iptables_Ethernet1_ingress"
@@ -29031,7 +29783,15 @@
                     }
                   }
                 },
-                "name" : "10 permit ip any any"
+                "name" : "10 permit ip any any",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 10 permit ip any any"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "blah",
@@ -36618,7 +37378,15 @@
                     ]
                   }
                 },
-                "name" : "permit tcp 1.2.3.4/31 any ack"
+                "name" : "permit tcp 1.2.3.4/31 any ack",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp 1.2.3.4/31 any ack"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -36662,7 +37430,15 @@
                     ]
                   }
                 },
-                "name" : "permit tcp 1.2.3.4/31 any rst"
+                "name" : "permit tcp 1.2.3.4/31 any rst",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp 1.2.3.4/31 any rst"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -36846,7 +37622,15 @@
                     ]
                   }
                 },
-                "name" : "permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr"
+                "name" : "permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -36890,7 +37674,15 @@
                     ]
                   }
                 },
-                "name" : "permit tcp 1.2.3.4/31 any fin"
+                "name" : "permit tcp 1.2.3.4/31 any fin",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp 1.2.3.4/31 any fin"
+                    }
+                  ]
+                }
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -36954,7 +37746,15 @@
                     ]
                   }
                 },
-                "name" : "permit tcp 1.2.3.4/31 any fin ack"
+                "name" : "permit tcp 1.2.3.4/31 any fin ack",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line permit tcp 1.2.3.4/31 any fin ack"
+                    }
+                  ]
+                }
               }
             ],
             "name" : "100",
