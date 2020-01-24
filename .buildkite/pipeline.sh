@@ -38,6 +38,7 @@ cat <<EOF
   - label: ":bazel: Build allinone.jar"
     key: jar
     command:
+      - "set -x"
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
       - "bazel build -- //projects/allinone:allinone_main_deploy.jar"
