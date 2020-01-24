@@ -2631,7 +2631,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "matched traffic originating from this device"
+                      "text" : "Matched traffic originating from this device"
                     }
                   ]
                 }
@@ -8769,7 +8769,7 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "matched traffic originating from this device"
+                      "text" : "Matched traffic originating from this device"
                     }
                   ]
                 }
