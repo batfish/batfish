@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +29,8 @@ public final class ExprAclLine extends AclLine {
 
     private TraceElement _traceElement;
 
+    private boolean _setTraceElement;
+
     private Builder() {}
 
     public Builder accepting() {
@@ -36,7 +39,10 @@ public final class ExprAclLine extends AclLine {
     }
 
     public ExprAclLine build() {
-      return new ExprAclLine(_action, _matchCondition, _name, _traceElement);
+      // If traceElement has not been set, create a default one from the name
+      TraceElement traceElement =
+          (!_setTraceElement && _name != null) ? matchedByAclLine(_name) : _traceElement;
+      return new ExprAclLine(_action, _matchCondition, _name, traceElement);
     }
 
     public Builder rejecting() {
@@ -60,6 +66,7 @@ public final class ExprAclLine extends AclLine {
     }
 
     public Builder setTraceElement(@Nullable TraceElement traceElement) {
+      _setTraceElement = true;
       _traceElement = traceElement;
       return this;
     }
