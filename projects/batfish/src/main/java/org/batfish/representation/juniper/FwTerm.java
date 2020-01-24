@@ -8,6 +8,15 @@ import javax.annotation.Nullable;
 
 public final class FwTerm implements Serializable {
 
+  enum Field {
+    SOURCE,
+    DESTINATION,
+    //    DESTINATION_PORT,
+    //    SOURCE_PORT,
+    //    PACKET_LENGTH,
+    //    ICMP_CODE
+  }
+
   private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;
 
   private final List<FwFromHostProtocol> _fromHostProtocols;
