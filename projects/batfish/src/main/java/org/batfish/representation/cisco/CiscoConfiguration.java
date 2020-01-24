@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -143,6 +144,7 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -229,6 +231,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
       TraceElement.of("same-security-traffic permit inter-interface is not set");
+
+  @VisibleForTesting
+  public static TraceElement asaDeniedByOutputFilterTraceElement(String filterName) {
+    return TraceElement.of("Denied by output filter " + filterName);
+  }
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
@@ -2421,14 +2428,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // 1b. inter-security-level
     lineBuilder.addAll(getAsaInterSecurityLevelDenyAclLines(iface.getSecurityLevel()));
 
-    // Step 2. TODO
-
-    // Step 3.
-
     AclLineMatchExpr securityLevelPolicies =
         or(
             new PermittedByAcl(interSecurityLevelAclName),
             getAsaIntraSecurityLevelPermitExpr(iface, newIface));
+
+    // Step 2.
+    if (oldOutgoingFilterName != null) {
+      lineBuilder.add(
+          ExprAclLine.rejecting()
+              .setMatchCondition(
+                  and(
+                      securityLevelPolicies,
+                      /* TODO better tracing for this case.
+                       * I.e. replace Not(Permitted(...)) with Denied(...). Currently the outgoing
+                       * filter's trace is discarded because Permitted evaluates to false.
+                       */
+                      new NotMatchExpr(
+                          new PermittedByAcl(oldOutgoingFilterName),
+                          asaDeniedByOutputFilterTraceElement(oldOutgoingFilterName))))
+              .build());
+    }
+
+    // Step 3.
 
     if (oldOutgoingFilterName != null) {
       lineBuilder.add(

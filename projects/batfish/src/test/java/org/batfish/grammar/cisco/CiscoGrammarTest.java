@@ -177,6 +177,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECU
 import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
 import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaDeniedByOutputFilterTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitHigherSecurityLevelTrafficTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitLowerSecurityLevelTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaRejectLowerSecurityLevelTraceElement;
@@ -5560,8 +5561,13 @@ public final class CiscoGrammarTest {
     // denied, intra-interface
     {
       List<TraceTree> traces = trace.apply(out, denyFlow);
-      // TODO should two trace nodes (security level permits, filterOut denies)
-      assertThat(traces, empty());
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
     }
 
     // permitted, inter-interface
@@ -5579,8 +5585,13 @@ public final class CiscoGrammarTest {
     // denied, inter-interface
     {
       List<TraceTree> traces = trace.apply(inSameLevel, denyFlow);
-      // TODO should two trace nodes (security level permits, filterOut denies)
-      assertThat(traces, empty());
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
+                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
     }
 
     // permitted, low-to-high (low has ingress filter)
@@ -5597,9 +5608,14 @@ public final class CiscoGrammarTest {
 
     // denied, low-to-high (low has ingress filter)
     {
-      List<TraceTree> traces = trace.apply(inHigh, denyFlow);
-      // TODO should two trace nodes (security level permits, filterOut denies)
-      assertThat(traces, empty());
+      List<TraceTree> traces = trace.apply(inLowFiltered, denyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
+                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
     }
 
     // permitted, high-to-low
@@ -5617,8 +5633,13 @@ public final class CiscoGrammarTest {
     // denied, high-to-low
     {
       List<TraceTree> traces = trace.apply(inHigh, denyFlow);
-      // TODO should two trace nodes (security level permits, filterOut denies)
-      assertThat(traces, empty());
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  anything(), // TODO: don't produce a trace element for the line
+                  isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
+                  isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName())))));
     }
   }
 
