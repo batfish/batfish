@@ -181,6 +181,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_TRAFFIC
 import static org.batfish.representation.cisco.CiscoConfiguration.asaDeniedByOutputFilterTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitHigherSecurityLevelTrafficTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitLowerSecurityLevelTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermittedByOutputFilterTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.asaRejectLowerSecurityLevelTraceElement;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeASASecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
@@ -5567,7 +5568,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, intra-interface
@@ -5591,7 +5594,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, inter-interface
@@ -5615,7 +5620,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, low-to-high (low has ingress filter)
@@ -5639,7 +5646,9 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   anything(), // TODO: don't produce a trace element for the line
                   isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
-                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+                  isTraceTree(
+                      asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                      isTraceTree(matchedByAclLine(filterOut, 0))))));
     }
 
     // denied, high-to-low

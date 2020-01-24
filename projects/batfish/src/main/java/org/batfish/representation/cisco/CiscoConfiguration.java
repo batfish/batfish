@@ -240,6 +240,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return TraceElement.of("Denied by output filter " + filterName);
   }
 
+  @VisibleForTesting
+  public static TraceElement asaPermittedByOutputFilterTraceElement(String filterName) {
+    return TraceElement.of("Permitted by output filter " + filterName);
+  }
+
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
@@ -2461,7 +2466,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setMatchCondition(
                   new AndMatchExpr(
                       ImmutableList.of(
-                          securityLevelPolicies, new PermittedByAcl(oldOutgoingFilterName))))
+                          securityLevelPolicies,
+                          new PermittedByAcl(
+                              oldOutgoingFilterName,
+                              asaPermittedByOutputFilterTraceElement(oldOutgoingFilterName)))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
