@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 @ParametersAreNonnullByDefault
 final class IpPermissions implements Serializable {
 
+  /** Type of source/destination address */
   public enum AddressType {
     SECURITY_GROUP("Security Group"),
     PREFIX_LIST("Prefix List"),
@@ -292,32 +294,6 @@ final class IpPermissions implements Serializable {
   }
 
   /**
-   * Converts an IpRange into an ExprAclLine using protocol and dst ports set in this IpPermission
-   * instance. Returns null if the provided inputs cannot form a valid ExprAclLine
-   */
-  @Nullable
-  private ExprAclLine ipRangeToMatchExpr(
-      boolean ingress, IpRange ipRange, String aclLineName, Warnings warnings) {
-    ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
-    List<AclLineMatchExpr> matchExprs = getMatchExprsForProtocolAndPorts(aclLineName, warnings);
-    if (matchExprs == null) {
-      return null;
-    }
-    matchesBuilder.addAll(matchExprs);
-    matchesBuilder.add(
-        exprForSrcOrDstIps(
-            ipRange.getPrefix().toIpSpace(),
-            ipRange.getPrefix().toString(),
-            ingress,
-            AddressType.CIDR_IP));
-    return ExprAclLine.accepting()
-        .setMatchCondition(and(matchesBuilder.build()))
-        .setTraceElement(getTraceElementForRule(ipRange.getDescription()))
-        .setName(aclLineName)
-        .build();
-  }
-
-  /**
    * Converts a security group (used as source/dest) into an ExprAclLine using protocol and dst
    * ports in this IpPermission instance. Returns null if the provided inputs cannot form a valid
    * ExprAclLine
@@ -466,25 +442,74 @@ final class IpPermissions implements Serializable {
       // Not valid in IPv4 packets.
       return ImmutableList.of();
     }
-    ImmutableList.Builder<ExprAclLine> exprsForThisIpPerms = ImmutableList.builder();
+    List<AclLineMatchExpr> protocolAndPortExprs = getMatchExprsForProtocolAndPorts(name, warnings);
+    if (protocolAndPortExprs == null) {
+      return ImmutableList.of();
+    }
+    ImmutableList.Builder<ExprAclLine> aclLines = ImmutableList.builder();
     _ipRanges.stream()
-        .map(ipRange -> ipRangeToMatchExpr(ingress, ipRange, name, warnings))
-        .filter(Objects::nonNull)
-        .forEach(exprsForThisIpPerms::add);
-    collectSecurityGroups(region).entrySet().stream()
         .map(
-            entry ->
-                securityGroupToMatchExpr(ingress, entry.getValue(), entry.getKey(), name, warnings))
-        .filter(Objects::nonNull)
-        .forEach(exprsForThisIpPerms::add);
-    collectPrefixLists(region).entrySet().stream()
-        .map(
-            entry ->
-                prefixlistToMatchExpr(ingress, entry.getValue(), entry.getKey(), name, warnings))
-        .filter(Objects::nonNull)
-        .forEach(exprsForThisIpPerms::add);
+            ipRange ->
+                ExprAclLine.accepting()
+                    .setMatchCondition(
+                        and(
+                            ImmutableList.<AclLineMatchExpr>builder()
+                                .addAll(protocolAndPortExprs)
+                                .add(
+                                    exprForSrcOrDstIps(
+                                        ipRange.getPrefix().toIpSpace(),
+                                        ipRange.getPrefix().toString(),
+                                        ingress,
+                                        AddressType.CIDR_IP))
+                                .build()))
+                    .setTraceElement(getTraceElementForRule(ipRange.getDescription()))
+                    .setName(name)
+                    .build())
+        .forEach(aclLines::add);
 
-    return exprsForThisIpPerms.build();
+    aclLines.addAll(
+        collectIntoAclLines(
+            this::collectSecurityGroups,
+            AddressType.SECURITY_GROUP,
+            region,
+            protocolAndPortExprs,
+            ingress,
+            name));
+    aclLines.addAll(
+        collectIntoAclLines(
+            this::collectPrefixLists,
+            AddressType.PREFIX_LIST,
+            region,
+            protocolAndPortExprs,
+            ingress,
+            name));
+    return aclLines.build();
+  }
+
+  private List<ExprAclLine> collectIntoAclLines(
+      Function<Region, Map<IpSpace, String>> collector,
+      AddressType addressType,
+      Region region,
+      List<AclLineMatchExpr> protocolAndPortExprs,
+      boolean ingress,
+      String aclLineName) {
+    return collector.apply(region).entrySet().stream()
+        .map(
+            entry ->
+                ExprAclLine.accepting()
+                    .setMatchCondition(
+                        and(
+                            ImmutableList.<AclLineMatchExpr>builder()
+                                .addAll(protocolAndPortExprs)
+                                .add(
+                                    exprForSrcOrDstIps(
+                                        entry.getKey(), entry.getValue(), ingress, addressType))
+                                .build()))
+                    .setTraceElement(getTraceElementForRule(null))
+                    .setName(aclLineName)
+                    .build())
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override
