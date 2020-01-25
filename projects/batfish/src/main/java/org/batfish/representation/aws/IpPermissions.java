@@ -454,11 +454,11 @@ final class IpPermissions implements Serializable {
   }
 
   private static List<ExprAclLine> collectPrefixListsIntoAclLines(
-      Map<PrefixList, IpSpace> sgs,
+      Map<PrefixList, IpSpace> prefixLists,
       List<AclLineMatchExpr> protocolAndPortExprs,
       boolean ingress,
       String aclLineName) {
-    return sgs.entrySet().stream()
+    return prefixLists.entrySet().stream()
         .map(
             entry ->
                 ExprAclLine.accepting()
