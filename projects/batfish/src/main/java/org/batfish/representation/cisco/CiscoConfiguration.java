@@ -237,8 +237,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       TraceElement.of("same-security-traffic permit inter-interface is not set");
 
   @VisibleForTesting
-  public static TraceElement asaDeniedByOutputFilterTraceElement(String filterName) {
-    return TraceElement.of("Denied by output filter " + filterName);
+  public static TraceElement asaDeniedByOutputFilterTraceElement(
+      String filename, IpAccessList filter) {
+    return TraceElement.builder()
+        .add("Denied by output filter")
+        .add(
+            filter.getName(),
+            new VendorStructureId(filename, filter.getSourceType(), filter.getSourceName()))
+        .build();
   }
 
   @VisibleForTesting
@@ -2461,7 +2467,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                        */
                       new NotMatchExpr(
                           new PermittedByAcl(oldOutgoingFilterName),
-                          asaDeniedByOutputFilterTraceElement(oldOutgoingFilterName))))
+                          asaDeniedByOutputFilterTraceElement(
+                              c.getHostname(), c.getIpAccessLists().get(oldOutgoingFilterName)))))
               .build());
     }
 

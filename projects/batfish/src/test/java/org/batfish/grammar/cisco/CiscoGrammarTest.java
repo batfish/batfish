@@ -5554,7 +5554,9 @@ public final class CiscoGrammarTest {
           traces,
           contains(
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
-              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut))));
     }
 
     // permitted, inter-interface
@@ -5577,7 +5579,9 @@ public final class CiscoGrammarTest {
           traces,
           contains(
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
-              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut))));
     }
 
     // permitted, low-to-high (low has ingress filter)
@@ -5600,7 +5604,9 @@ public final class CiscoGrammarTest {
           traces,
           contains(
               isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
-              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut))));
     }
 
     // permitted, high-to-low
@@ -5623,7 +5629,9 @@ public final class CiscoGrammarTest {
           traces,
           contains(
               isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
-              isTraceTree(asaDeniedByOutputFilterTraceElement(filterOut.getName()))));
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut))));
     }
   }
 
