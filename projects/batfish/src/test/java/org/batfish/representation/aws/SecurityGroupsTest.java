@@ -78,11 +78,6 @@ public class SecurityGroupsTest {
           HeaderSpace.builder().setIpProtocols(ICMP).build(), traceElementForProtocol(ICMP));
 
   private static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
-    if (fromPort == toPort) {
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setDstPorts(SubRange.singleton(fromPort)).build(),
-          traceElementForDstPorts(fromPort, toPort));
-    }
     return new MatchHeaderSpace(
         HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
         traceElementForDstPorts(fromPort, toPort));

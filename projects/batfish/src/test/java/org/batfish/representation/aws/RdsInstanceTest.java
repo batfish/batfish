@@ -8,7 +8,6 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchPorts;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchTcp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -162,7 +161,7 @@ public class RdsInstanceTest {
             .getIpAccessLists()
             .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
-            contains(
+            containsInAnyOrder(
                 isExprAclLineThat(
                     hasMatchCondition(
                         and(

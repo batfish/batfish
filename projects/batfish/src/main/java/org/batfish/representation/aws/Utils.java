@@ -5,7 +5,6 @@ import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP2;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -317,8 +316,8 @@ final class Utils {
         String.format("Matched %s address %s %s", direction, addressType, vsAddressStructure));
   }
 
-  static String traceElementForProtocol(IpProtocol protocol) {
-    return String.format("Matched protocol %s", protocol);
+  static TraceElement traceElementForProtocol(IpProtocol protocol) {
+    return TraceElement.of(String.format("Matched protocol %s", protocol));
   }
 
   static TraceElement traceElementForDstPorts(int low, int high) {
@@ -330,12 +329,12 @@ final class Utils {
 
   static TraceElement traceElementForIcmp(int type, int code) {
     assert type != -1;
-    List<String> traceElems = new ArrayList<>();
-    traceElems.add(String.format("Matched ICMP type %s", type));
+    TraceElement.Builder treBuilder =
+        TraceElement.builder().add(String.format("Matched ICMP type %s", type));
     if (code != -1) {
-      traceElems.add(String.format("Matched ICMP code %s", code));
+      treBuilder.add(String.format("Matched ICMP code %s", code));
     }
-    return TraceElement.of(String.join(",", traceElems));
+    return treBuilder.build();
   }
 
   private Utils() {}

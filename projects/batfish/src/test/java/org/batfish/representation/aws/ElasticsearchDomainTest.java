@@ -9,7 +9,6 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -66,11 +65,6 @@ public class ElasticsearchDomainTest {
           HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
 
   public static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
-    if (fromPort == toPort) {
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setDstPorts(SubRange.singleton(fromPort)).build(),
-          traceElementForDstPorts(fromPort, toPort));
-    }
     return new MatchHeaderSpace(
         HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
         traceElementForDstPorts(fromPort, toPort));
@@ -204,7 +198,7 @@ public class ElasticsearchDomainTest {
             .getIpAccessLists()
             .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
-            contains(
+            containsInAnyOrder(
                 isExprAclLineThat(
                     hasMatchCondition(
                         and(

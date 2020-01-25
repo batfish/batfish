@@ -37,7 +37,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.TraceEvent;
@@ -228,7 +227,7 @@ public class RegionTest {
                             hasTraceElement(getTraceElementForRule(null)),
                             hasChildren(
                                 contains(
-                                    hasTraceElement(TraceElement.of(traceElementForProtocol(TCP))),
+                                    hasTraceElement(traceElementForProtocol(TCP)),
                                     hasTraceElement(traceElementForDstPorts(22, 22)),
                                     hasTraceElement(
                                         traceElementForAddress(
@@ -240,7 +239,7 @@ public class RegionTest {
             contains(
                 TraceEvent.of(getTraceElementForSecurityGroup("sg-1")),
                 TraceEvent.of(getTraceElementForRule(null)),
-                TraceEvent.of(TraceElement.of(traceElementForProtocol(TCP))),
+                TraceEvent.of(traceElementForProtocol(TCP)),
                 TraceEvent.of(traceElementForDstPorts(22, 22)),
                 TraceEvent.of(
                     traceElementForAddress("source", "2.2.2.0/24", AddressType.CIDR_IP)))));
