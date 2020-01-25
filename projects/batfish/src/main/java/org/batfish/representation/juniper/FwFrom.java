@@ -1,33 +1,28 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /**
  * Class for match conditions in firewall filters, security policies, and host-inbound traffic
- * filters. TODO: split this class into those three cases.
+ * filters.
  */
-public abstract class FwFrom implements Serializable {
+public interface FwFrom extends Serializable {
 
-  public abstract void applyTo(
+  void applyTo(
       HeaderSpace.Builder headerSpaceBuilder, JuniperConfiguration jc, Warnings w, Configuration c);
 
-  // TODO: make this abstract
-  Field getField() {
-    return Field.SOURCE;
+  default Field getField() {
+    throw new BatfishException("not implemented");
   }
 
-  // TODO: make this abstract
-  TraceElement getTraceElement() {
-    return TraceElement.of("Matched %s %s except");
-  }
-
-  // TODO: make this abstract
-  HeaderSpace toHeaderspace(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return HeaderSpace.builder().build();
+  default AclLineMatchExpr toAclLineMatchExpr(
+      JuniperConfiguration jc, Configuration c, Warnings w) {
+    throw new BatfishException("not implemented");
   }
 }

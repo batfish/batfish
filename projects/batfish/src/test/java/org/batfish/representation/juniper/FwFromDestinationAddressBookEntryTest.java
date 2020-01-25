@@ -29,7 +29,7 @@ public class FwFromDestinationAddressBookEntryTest {
     FwFromDestinationAddressBookEntry from =
         new FwFromDestinationAddressBookEntry(null, globalAddressBook, addressBookEntryName);
 
-    HeaderSpace headerSpace = from.toHeaderspace(null, null, w);
+    HeaderSpace headerSpace = from.toHeaderspace(w);
     assertThat(
         headerSpace,
         equalTo(
@@ -47,7 +47,7 @@ public class FwFromDestinationAddressBookEntryTest {
     FwFromDestinationAddressBookEntry from =
         new FwFromDestinationAddressBookEntry(null, globalAddressBook, addressBookEntryName);
 
-    HeaderSpace headerSpace = from.toHeaderspace(null, null, w);
+    HeaderSpace headerSpace = from.toHeaderspace(w);
     assertThat(
         headerSpace, equalTo(HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()));
   }

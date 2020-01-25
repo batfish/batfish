@@ -15,7 +15,6 @@ public class FwFromDestinationAddressExceptTest {
     IpWildcard ips = IpWildcard.parse("1.1.1.0/24");
     FwFromDestinationAddressExcept from = new FwFromDestinationAddressExcept(ips);
     assertThat(
-        from.toHeaderspace(null, null, null),
-        equalTo(HeaderSpace.builder().setNotDstIps(ips.toIpSpace()).build()));
+        from.toHeaderspace(), equalTo(HeaderSpace.builder().setNotDstIps(ips.toIpSpace()).build()));
   }
 }

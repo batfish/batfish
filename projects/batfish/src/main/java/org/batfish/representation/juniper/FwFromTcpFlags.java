@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 
-public final class FwFromTcpFlags extends FwFrom {
+public final class FwFromTcpFlags implements FwFrom {
 
   private List<TcpFlagsMatchConditions> _tcpFlags;
 

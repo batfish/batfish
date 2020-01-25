@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 
-public final class FwFromProtocol extends FwFrom {
+public final class FwFromProtocol implements FwFrom {
 
   private final IpProtocol _protocol;
 

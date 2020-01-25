@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
@@ -9,10 +10,12 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from destination-prefix-list except */
-public final class FwFromDestinationPrefixListExcept extends FwFrom {
+public final class FwFromDestinationPrefixListExcept implements FwFrom {
 
   private final String _name;
 
@@ -50,16 +53,16 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
   }
 
   @Override
-  Field getField() {
-    return Field.DESTINATION;
+  public Field getField() {
+    return Field.DESTINATION_EXCEPT;
   }
 
   @Override
-  TraceElement getTraceElement() {
-    return TraceElement.of(String.format("Matched destination-prefix-list %s except", _name));
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
+    return new MatchHeaderSpace(toHeaderspace(jc, c, w), getTraceElement());
   }
 
-  @Override
+  @VisibleForTesting
   HeaderSpace toHeaderspace(JuniperConfiguration jc, Configuration c, Warnings w) {
     PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
 
@@ -88,5 +91,9 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
                     .map(IpWildcard::toIpSpace)
                     .collect(ImmutableList.toImmutableList())))
         .build();
+  }
+
+  private TraceElement getTraceElement() {
+    return TraceElement.of(String.format("Matched destination-prefix-list %s except", _name));
   }
 }

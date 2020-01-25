@@ -13,7 +13,6 @@ public class FwFromDestinationPortTest {
   public void testToHeaderspace() {
     FwFromDestinationPort from = new FwFromDestinationPort(new SubRange(1, 2));
     assertEquals(
-        from.toHeaderspace(null, null, null),
-        HeaderSpace.builder().setDstPorts(new SubRange(1, 2)).build());
+        from.toHeaderspace(), HeaderSpace.builder().setDstPorts(new SubRange(1, 2)).build());
   }
 }

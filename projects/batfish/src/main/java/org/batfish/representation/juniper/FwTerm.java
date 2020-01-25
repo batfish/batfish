@@ -10,7 +10,10 @@ public final class FwTerm implements Serializable {
 
   enum Field {
     DESTINATION,
+    DESTINATION_EXCEPT,
     DESTINATION_PORT,
+    FRAGMENT_OFFSET,
+    FRAGMENT_OFFSET_EXCEPT,
     SOURCE,
     //    SOURCE_PORT,
     //    PACKET_LENGTH,

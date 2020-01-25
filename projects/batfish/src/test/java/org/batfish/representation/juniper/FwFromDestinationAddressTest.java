@@ -14,7 +14,7 @@ public class FwFromDestinationAddressTest {
   public void testToHeaderspace() {
     FwFromDestinationAddress from = new FwFromDestinationAddress(IpWildcard.parse("1.1.1.0/24"));
     assertThat(
-        from.toHeaderspace(null, null, null),
+        from.toHeaderspace(),
         equalTo(
             HeaderSpace.builder().setDstIps(IpWildcard.parse("1.1.1.0/24").toIpSpace()).build()));
   }

@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 
-public class FwFromIcmpCode extends FwFrom {
+public class FwFromIcmpCode implements FwFrom {
 
   private SubRange _icmpCodeRange;
 
