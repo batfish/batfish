@@ -213,6 +213,7 @@ import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public final class CiscoConfiguration extends VendorConfiguration {
   @VisibleForTesting
@@ -241,8 +242,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  public static TraceElement asaPermittedByOutputFilterTraceElement(String filterName) {
-    return TraceElement.of("Permitted by output filter " + filterName);
+  public static TraceElement asaPermittedByOutputFilterTraceElement(
+      String filename, IpAccessList filter) {
+    return TraceElement.builder()
+        .add("Permitted by output filter")
+        .add(
+            filter.getName(),
+            new VendorStructureId(filename, filter.getSourceType(), filter.getSourceName()))
+        .build();
   }
 
   /** Matches anything but the IPv4 default route. */
@@ -2469,7 +2476,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           securityLevelPolicies,
                           new PermittedByAcl(
                               oldOutgoingFilterName,
-                              asaPermittedByOutputFilterTraceElement(oldOutgoingFilterName)))))
+                              asaPermittedByOutputFilterTraceElement(
+                                  c.getHostname(),
+                                  c.getIpAccessLists().get(oldOutgoingFilterName))))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());

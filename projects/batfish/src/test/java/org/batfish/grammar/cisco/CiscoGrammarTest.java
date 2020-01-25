@@ -5542,7 +5542,8 @@ public final class CiscoGrammarTest {
           contains(
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
               isTraceTree(
-                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  asaPermittedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5564,7 +5565,8 @@ public final class CiscoGrammarTest {
           contains(
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
               isTraceTree(
-                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  asaPermittedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5586,7 +5588,8 @@ public final class CiscoGrammarTest {
           contains(
               isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
               isTraceTree(
-                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  asaPermittedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5608,7 +5611,8 @@ public final class CiscoGrammarTest {
           contains(
               isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
               isTraceTree(
-                  asaPermittedByOutputFilterTraceElement(filterOut.getName()),
+                  asaPermittedByOutputFilterTraceElement(
+                      "asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
