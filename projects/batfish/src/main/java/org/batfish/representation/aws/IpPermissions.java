@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -257,40 +256,39 @@ final class IpPermissions implements Serializable {
 
   /**
    * Returns a Map containing all Security Groups used as source/dest in this IpPermissions, keyed
-   * by the corresponding IpSpace
+   * by the corresponding Security Group
    */
-  private Map<IpSpace, String> collectSecurityGroups(Region region) {
-    ImmutableMap.Builder<IpSpace, String> ipSpaceToSg = ImmutableMap.builder();
+  private Map<SecurityGroup, IpSpace> collectSecurityGroups(Region region) {
+    ImmutableMap.Builder<SecurityGroup, IpSpace> sgToIpSpace = ImmutableMap.builder();
     _securityGroups.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))
         .filter(Objects::nonNull)
+        .distinct()
         .forEach(
-            securityGroup -> {
-              securityGroup
-                  .getUsersIpSpace()
-                  .forEach(
-                      prefix -> ipSpaceToSg.put(prefix.toIpSpace(), securityGroup.getGroupName()));
-            });
-    return ipSpaceToSg.build();
+            securityGroup ->
+                securityGroup
+                    .getUsersIpSpace()
+                    .forEach(prefix -> sgToIpSpace.put(securityGroup, prefix.toIpSpace())));
+    return sgToIpSpace.build();
   }
 
   /**
    * Returns a Map containing all Prefix Lists used as source/dest in this IpPermissions, keyed by
-   * the corresponding IpSpace
+   * the Prefix List
    */
-  private Map<IpSpace, String> collectPrefixLists(Region region) {
-    ImmutableMap.Builder<IpSpace, String> ipSpaceToPrefixLists = ImmutableMap.builder();
+  private Map<PrefixList, IpSpace> collectPrefixLists(Region region) {
+    ImmutableMap.Builder<PrefixList, IpSpace> plToIpSpace = ImmutableMap.builder();
     _prefixList.stream()
         .map(plId -> region.getPrefixLists().get(plId))
         .filter(Objects::nonNull)
+        .distinct()
         .forEach(
             prefixList -> {
               prefixList
                   .getCidrs()
-                  .forEach(
-                      prefix -> ipSpaceToPrefixLists.put(prefix.toIpSpace(), prefixList.getId()));
+                  .forEach(prefix -> plToIpSpace.put(prefixList, prefix.toIpSpace()));
             });
-    return ipSpaceToPrefixLists.build();
+    return plToIpSpace.build();
   }
 
   /**
@@ -420,32 +418,20 @@ final class IpPermissions implements Serializable {
         .forEach(aclLines::add);
 
     aclLines.addAll(
-        collectIntoAclLines(
-            this::collectSecurityGroups,
-            AddressType.SECURITY_GROUP,
-            region,
-            protocolAndPortExprs,
-            ingress,
-            name));
+        collectSecurityGroupIntoAclLines(
+            collectSecurityGroups(region), protocolAndPortExprs, ingress, name));
     aclLines.addAll(
-        collectIntoAclLines(
-            this::collectPrefixLists,
-            AddressType.PREFIX_LIST,
-            region,
-            protocolAndPortExprs,
-            ingress,
-            name));
+        collectPrefixListsIntoAclLines(
+            collectPrefixLists(region), protocolAndPortExprs, ingress, name));
     return aclLines.build();
   }
 
-  private static List<ExprAclLine> collectIntoAclLines(
-      Function<Region, Map<IpSpace, String>> collector,
-      AddressType addressType,
-      Region region,
+  private static List<ExprAclLine> collectSecurityGroupIntoAclLines(
+      Map<SecurityGroup, IpSpace> sgs,
       List<AclLineMatchExpr> protocolAndPortExprs,
       boolean ingress,
       String aclLineName) {
-    return collector.apply(region).entrySet().stream()
+    return sgs.entrySet().stream()
         .map(
             entry ->
                 ExprAclLine.accepting()
@@ -455,7 +441,37 @@ final class IpPermissions implements Serializable {
                                 .addAll(protocolAndPortExprs)
                                 .add(
                                     exprForSrcOrDstIps(
-                                        entry.getKey(), entry.getValue(), ingress, addressType))
+                                        entry.getValue(),
+                                        entry.getKey().getGroupName(),
+                                        ingress,
+                                        AddressType.SECURITY_GROUP))
+                                .build()))
+                    .setTraceElement(getTraceElementForRule(null))
+                    .setName(aclLineName)
+                    .build())
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static List<ExprAclLine> collectPrefixListsIntoAclLines(
+      Map<PrefixList, IpSpace> sgs,
+      List<AclLineMatchExpr> protocolAndPortExprs,
+      boolean ingress,
+      String aclLineName) {
+    return sgs.entrySet().stream()
+        .map(
+            entry ->
+                ExprAclLine.accepting()
+                    .setMatchCondition(
+                        and(
+                            ImmutableList.<AclLineMatchExpr>builder()
+                                .addAll(protocolAndPortExprs)
+                                .add(
+                                    exprForSrcOrDstIps(
+                                        entry.getValue(),
+                                        entry.getKey().getId(),
+                                        ingress,
+                                        AddressType.PREFIX_LIST))
                                 .build()))
                     .setTraceElement(getTraceElementForRule(null))
                     .setName(aclLineName)

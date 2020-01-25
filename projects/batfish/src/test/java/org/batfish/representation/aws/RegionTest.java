@@ -11,6 +11,7 @@ import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -226,7 +227,7 @@ public class RegionTest {
                         allOf(
                             hasTraceElement(getTraceElementForRule(null)),
                             hasChildren(
-                                contains(
+                                containsInAnyOrder(
                                     hasTraceElement(traceElementForProtocol(TCP)),
                                     hasTraceElement(traceElementForDstPorts(22, 22)),
                                     hasTraceElement(
