@@ -143,17 +143,26 @@ final class IpPermissions implements Serializable {
   @ParametersAreNonnullByDefault
   private static final class UserIdGroupPair implements Serializable {
 
+    @Nullable private final String _description;
+
     @Nonnull private final String _groupId;
 
     @JsonCreator
     private static UserIdGroupPair create(
+        @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String desription,
         @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId) {
       checkArgument(groupId != null, "Group id cannot be null in user id group pair");
-      return new UserIdGroupPair(groupId);
+      return new UserIdGroupPair(groupId, desription);
     }
 
-    UserIdGroupPair(String groupId) {
+    UserIdGroupPair(String groupId, @Nullable String description) {
       _groupId = groupId;
+      _description = description;
+    }
+
+    @Nullable
+    public String getDescription() {
+      return _description;
     }
 
     @Nonnull
@@ -170,12 +179,13 @@ final class IpPermissions implements Serializable {
         return false;
       }
       UserIdGroupPair that = (UserIdGroupPair) o;
-      return Objects.equals(_groupId, that._groupId);
+      return Objects.equals(_groupId, that._groupId)
+          && Objects.equals(_description, that._description);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_groupId);
+      return Objects.hash(_groupId, _description);
     }
   }
 
@@ -187,7 +197,7 @@ final class IpPermissions implements Serializable {
 
   @Nonnull private final List<String> _prefixList;
 
-  @Nonnull private final List<String> _securityGroups;
+  @Nonnull private final List<UserIdGroupPair> _userIdGroupPairs;
 
   @Nullable private final Integer _toPort;
 
@@ -213,9 +223,7 @@ final class IpPermissions implements Serializable {
         firstNonNull(prefixes, ImmutableList.<PrefixListId>of()).stream()
             .map(PrefixListId::getId)
             .collect(ImmutableList.toImmutableList()),
-        userIdGroupPairs.stream()
-            .map(UserIdGroupPair::getGroupId)
-            .collect(ImmutableList.toImmutableList()));
+        userIdGroupPairs);
   }
 
   IpPermissions(
@@ -224,13 +232,13 @@ final class IpPermissions implements Serializable {
       @Nullable Integer toPort,
       List<IpRange> ipRanges,
       List<String> prefixList,
-      List<String> securityGroups) {
+      List<UserIdGroupPair> userIdGroupPairs) {
     _ipProtocol = ipProtocol;
     _fromPort = fromPort;
     _toPort = toPort;
     _ipRanges = ipRanges;
     _prefixList = prefixList;
-    _securityGroups = securityGroups;
+    _userIdGroupPairs = userIdGroupPairs;
   }
 
   private SortedSet<IpWildcard> collectIpWildCards(Region region) {
@@ -242,7 +250,7 @@ final class IpPermissions implements Serializable {
         .map(IpWildcard::create)
         .forEach(ipWildcardBuilder::add);
 
-    _securityGroups.stream()
+    _userIdGroupPairs.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))
         .filter(Objects::nonNull)
         .flatMap(sg -> sg.getUsersIpSpace().stream())
@@ -347,13 +355,13 @@ final class IpPermissions implements Serializable {
         && Objects.equals(_ipRanges, that._ipRanges)
         && Objects.equals(_ipRanges, that._ipRanges)
         && Objects.equals(_prefixList, that._prefixList)
-        && Objects.equals(_securityGroups, that._securityGroups);
+        && Objects.equals(_userIdGroupPairs, that._userIdGroupPairs);
   }
 
   @Override
   public int hashCode() {
     return com.google.common.base.Objects.hashCode(
-        _fromPort, _ipProtocol, _ipRanges, _prefixList, _securityGroups, _toPort);
+        _fromPort, _ipProtocol, _ipRanges, _prefixList, _userIdGroupPairs, _toPort);
   }
 
   @Override
@@ -363,7 +371,7 @@ final class IpPermissions implements Serializable {
         .add("_ipProtocol", _ipProtocol)
         .add("_ipRanges", _ipRanges)
         .add("_prefixList", _prefixList)
-        .add("_securityGroups", _securityGroups)
+        .add("_userIdGroupPairs", _userIdGroupPairs)
         .add("_toPort", _toPort)
         .toString();
   }
