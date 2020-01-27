@@ -1524,6 +1524,7 @@ if_vrrp
       | ifvrrp_ipv6
       | ifvrrp_preempt
       | ifvrrp_priority
+      | ifvrrp_priority_level
    )
 ;
 
@@ -1749,6 +1750,11 @@ ifvrrp_preempt
 ifvrrp_priority
 :
    PRIORITY priority = DEC NEWLINE
+;
+
+ifvrrp_priority_level
+:
+   PRIORITY_LEVEL priority = DEC NEWLINE
 ;
 
 s_eos_vxlan_interface

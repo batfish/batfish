@@ -743,6 +743,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipv4Context;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priorityContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priority_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
@@ -7079,6 +7080,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setPriority(priority);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_priority_level(Ifvrrp_priority_levelContext ctx) {
     int priority = toInteger(ctx.priority);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
