@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 
-public final class FwFromPort extends FwFrom {
+public final class FwFromPort implements FwFrom {
 
   private final SubRange _portRange;
 

@@ -6,7 +6,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 
-public final class FwFromSourceAddressExcept extends FwFrom {
+public final class FwFromSourceAddressExcept implements FwFrom {
 
   private final IpWildcard _ipWildcard;
 

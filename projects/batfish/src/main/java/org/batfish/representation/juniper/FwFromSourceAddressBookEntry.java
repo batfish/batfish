@@ -10,7 +10,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 
-public final class FwFromSourceAddressBookEntry extends FwFrom {
+public final class FwFromSourceAddressBookEntry implements FwFrom {
 
   private final String _addressBookEntryName;
 
