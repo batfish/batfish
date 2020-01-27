@@ -1040,16 +1040,35 @@
             "sourceType" : "standard ipv4 access-list"
           }
         },
+        "ntpServers" : [
+          "192.168.1.246",
+          "time.google.com"
+        ],
         "vendorFamily" : {
           "cisco" : {
             "defaultSwitchportMode" : "NONE",
             "hostname" : "arista_misc",
             "logging" : {
               "on" : true
+            },
+            "ntp" : {
+              "servers" : {
+                "192.168.1.246" : {
+                  "name" : "192.168.1.246",
+                  "vrf" : "MGMT"
+                },
+                "time.google.com" : {
+                  "name" : "time.google.com",
+                  "vrf" : "MGMT"
+                }
+              }
             }
           }
         },
         "vrfs" : {
+          "MGMT" : {
+            "name" : "MGMT"
+          },
           "default" : {
             "name" : "default"
           }

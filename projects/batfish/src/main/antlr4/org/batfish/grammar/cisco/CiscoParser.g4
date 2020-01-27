@@ -1141,17 +1141,16 @@ ip_dhcp_relay_server
 ip_domain_lookup
 :
    LOOKUP
-   (
-      SOURCE_INTERFACE iname = interface_name
-   )? NEWLINE
+   (VRF vrf = variable)?
+   (SOURCE_INTERFACE iname = interface_name)?
+   NEWLINE
 ;
 
 ip_domain_name
 :
    NAME
-   (
-      VRF vrf = variable
-   )? hostname = variable_hostname NEWLINE
+   (VRF vrf = variable)?
+   hostname = variable_hostname NEWLINE
 ;
 
 ip_domain_null
@@ -2589,6 +2588,11 @@ s_event_handler
    )*
 ;
 
+s_event_monitor
+:
+   EVENT_MONITOR NEWLINE
+;
+
 s_failover
 :
    FAILOVER s_failover_tail
@@ -3764,6 +3768,7 @@ stanza
    | s_ethernet_services
    | s_event
    | s_event_handler
+   | s_event_monitor
    | s_failover
    | s_flow
    | s_flow_sampler_map
