@@ -20,6 +20,7 @@ public final class FwTerm implements Serializable {
     PACKET_LENGTH_EXCEPT,
     PORT,
     PREFIX_LIST,
+    PROTOCOL,
     SOURCE,
     //    SOURCE_PORT,
     //    PACKET_LENGTH,
