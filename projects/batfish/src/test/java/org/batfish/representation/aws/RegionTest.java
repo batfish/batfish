@@ -5,9 +5,13 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
+import static org.batfish.representation.aws.Utils.traceElementForAddress;
+import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
+import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -40,6 +44,7 @@ import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.junit.Test;
 
@@ -220,14 +225,25 @@ public class RegionTest {
                 hasChildren(
                     contains(
                         allOf(
-                            hasTraceElement(getTraceElementForRule(0)), hasChildren(empty())))))));
+                            hasTraceElement(getTraceElementForRule(null)),
+                            hasChildren(
+                                containsInAnyOrder(
+                                    hasTraceElement(traceElementForProtocol(TCP)),
+                                    hasTraceElement(traceElementForDstPorts(22, 22)),
+                                    hasTraceElement(
+                                        traceElementForAddress(
+                                            "source", "2.2.2.0/24", AddressType.CIDR_IP))))))))));
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         DataModelMatchers.hasEvents(
             contains(
                 TraceEvent.of(getTraceElementForSecurityGroup("sg-1")),
-                TraceEvent.of(getTraceElementForRule(0)))));
+                TraceEvent.of(getTraceElementForRule(null)),
+                TraceEvent.of(traceElementForProtocol(TCP)),
+                TraceEvent.of(traceElementForDstPorts(22, 22)),
+                TraceEvent.of(
+                    traceElementForAddress("source", "2.2.2.0/24", AddressType.CIDR_IP)))));
 
     root =
         AclTracer.trace(
