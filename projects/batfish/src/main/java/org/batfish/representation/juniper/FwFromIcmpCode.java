@@ -45,8 +45,10 @@ public class FwFromIcmpCode implements FwFrom {
   }
 
   private TraceElement getTraceElement() {
-    return TraceElement.of(
-        String.format(
-            "Matched icmp-code %d-%d", _icmpCodeRange.getStart(), _icmpCodeRange.getEnd()));
+    return _icmpCodeRange.getStart() == _icmpCodeRange.getEnd()
+        ? TraceElement.of(String.format("Matched icmp-code %d", _icmpCodeRange.getStart()))
+        : TraceElement.of(
+            String.format(
+                "Matched icmp-code %d-%d", _icmpCodeRange.getStart(), _icmpCodeRange.getEnd()));
   }
 }

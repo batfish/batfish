@@ -55,8 +55,10 @@ public final class FwFromDestinationPort implements FwFrom {
   }
 
   private TraceElement getTraceElement() {
-    return TraceElement.of(
-        String.format(
-            "Matched destination-port %d-%d", _portRange.getStart(), _portRange.getEnd()));
+    return _portRange.getStart() == _portRange.getEnd()
+        ? TraceElement.of(String.format("Matched destination-port %d", _portRange.getStart()))
+        : TraceElement.of(
+            String.format(
+                "Matched destination-port %d-%d", _portRange.getStart(), _portRange.getEnd()));
   }
 }
