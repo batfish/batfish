@@ -255,8 +255,8 @@ final class IpPermissions implements Serializable {
   }
 
   /**
-   * Returns a Map containing all Security Groups used as source/dest in this IpPermissions, keyed
-   * by the corresponding Security Group
+   * Returns a Map containing all the Security Groups referred by this IPPermission instance and the
+   * corresponding IpSpaces
    */
   private Map<SecurityGroup, IpSpace> collectSecurityGroups(Region region) {
     ImmutableMap.Builder<SecurityGroup, IpSpace> sgToIpSpace = ImmutableMap.builder();
@@ -273,8 +273,8 @@ final class IpPermissions implements Serializable {
   }
 
   /**
-   * Returns a Map containing all Prefix Lists used as source/dest in this IpPermissions, keyed by
-   * the Prefix List
+   * Returns a Map containing all the Prefix Lists referred by this IPPermission instance and the
+   * corresponding IpSpaces
    */
   private Map<PrefixList, IpSpace> collectPrefixLists(Region region) {
     ImmutableMap.Builder<PrefixList, IpSpace> plToIpSpace = ImmutableMap.builder();
@@ -449,7 +449,6 @@ final class IpPermissions implements Serializable {
                     .setTraceElement(getTraceElementForRule(null))
                     .setName(aclLineName)
                     .build())
-        .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -476,7 +475,6 @@ final class IpPermissions implements Serializable {
                     .setTraceElement(getTraceElementForRule(null))
                     .setName(aclLineName)
                     .build())
-        .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }
 
