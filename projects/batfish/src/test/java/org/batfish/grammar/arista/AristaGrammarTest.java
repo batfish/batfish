@@ -773,6 +773,7 @@ public class AristaGrammarTest {
     assertThat(i.getVrrpGroups(), hasKey(1));
     VrrpGroup group = i.getVrrpGroups().get(1);
     assertThat(group.getVirtualAddress(), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+    assertThat(group.getPriority(), equalTo(200));
   }
 
   @Test
@@ -784,6 +785,7 @@ public class AristaGrammarTest {
     assertThat(vrrpI.getVrrpGroups(), hasKey(1));
     org.batfish.representation.cisco.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
     assertThat(g.getVirtualAddress(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(g.getPriority(), equalTo(200));
   }
 
   @Test
