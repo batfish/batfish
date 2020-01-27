@@ -14,8 +14,11 @@ public final class FwTerm implements Serializable {
     DESTINATION_PORT,
     FRAGMENT_OFFSET,
     FRAGMENT_OFFSET_EXCEPT,
-    SOURCE,
     ICMP_CODE,
+    ICMP_TYPE,
+    PACKET_LENGTH,
+    PACKET_LENGTH_EXCEPT,
+    SOURCE,
     //    SOURCE_PORT,
     //    PACKET_LENGTH,
   }
