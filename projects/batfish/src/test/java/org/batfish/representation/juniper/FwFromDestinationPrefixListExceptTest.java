@@ -23,6 +23,7 @@ import org.batfish.datamodel.SubRange;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Test for {@link FwFromDestinationPrefixListExcept} */
 public class FwFromDestinationPrefixListExceptTest {
   private JuniperConfiguration _jc;
   private Warnings _w;
@@ -75,5 +76,15 @@ public class FwFromDestinationPrefixListExceptTest {
                     containsInAnyOrder(
                         AclIpSpaceLine.permit(additionalIpSpace),
                         AclIpSpaceLine.permit(baseIpSpace))))));
+  }
+
+  @Test
+  public void testToHeaderSpace() {
+    IpSpace baseIpSpace = IpWildcard.parse(BASE_IP_PREFIX).toIpSpace();
+
+    FwFromDestinationPrefixListExcept fwFrom =
+        new FwFromDestinationPrefixListExcept(BASE_PREFIX_LIST_NAME);
+
+    assertThat(fwFrom.toHeaderspace(_jc, _c, _w), hasNotDstIps(equalTo(baseIpSpace)));
   }
 }

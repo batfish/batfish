@@ -9980,6 +9980,11 @@ PRIORITY_FORCE
    'priority-force'
 ;
 
+PRIORITY_LEVEL
+:
+   'priority-level'
+;
+
 PRIORITY_MAPPING
 :
    'priority-mapping'

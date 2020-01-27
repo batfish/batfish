@@ -740,8 +740,10 @@ import org.batfish.grammar.cisco.CiscoParser.Iftunnel_protectionContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipv4Context;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priorityContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priority_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
@@ -922,6 +924,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_area_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
@@ -7030,6 +7033,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIfvrrp_ip(Ifvrrp_ipContext ctx) {
     Ip ip = toIp(ctx.ip);
+    if (ctx.SECONDARY() != null) {
+      todo(ctx); // Batfish VI model does not yet handle secondary VRRP addresses.
+      return;
+    }
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setVirtualAddress(ip);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_ipv4(Ifvrrp_ipv4Context ctx) {
+    Ip ip = toIp(ctx.ip);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
       VrrpGroup vrrpGroup =
@@ -7058,6 +7080,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setPriority(priority);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_priority_level(Ifvrrp_priority_levelContext ctx) {
     int priority = toInteger(ctx.priority);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
@@ -8849,7 +8886,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRo_area_range(CiscoParser.Ro_area_rangeContext ctx) {
+  public void exitRo_area_range(Ro_area_rangeContext ctx) {
     long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
     Prefix prefix;
     if (ctx.area_prefix != null) {

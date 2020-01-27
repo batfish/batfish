@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 
-public class FwFromPacketLength extends FwFrom {
+public class FwFromPacketLength implements FwFrom {
 
   private boolean _except;
 

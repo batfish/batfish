@@ -2144,6 +2144,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (action == null) {
       return lines;
     }
+
     HeaderSpace.Builder matchCondition = HeaderSpace.builder();
     for (FwFrom from : term.getFroms()) {
       from.applyTo(matchCondition, this, _w, _c);

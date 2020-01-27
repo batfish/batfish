@@ -30,6 +30,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -298,12 +299,42 @@ final class Utils {
     return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
   }
 
-  public static TraceElement getTraceElementForRule(int ruleNumber) {
-    return TraceElement.of(String.format("Matched rule %s within security group", ruleNumber));
+  public static TraceElement getTraceElementForRule(@Nullable String ruleDescription) {
+    if (ruleDescription == null) {
+      return TraceElement.of("Matched rule with no description");
+    }
+    return TraceElement.of(String.format("Matched rule with description %s", ruleDescription));
   }
 
   public static TraceElement getTraceElementForSecurityGroup(String securityGroupName) {
     return TraceElement.of(String.format("Matched security group %s", securityGroupName));
+  }
+
+  static TraceElement traceElementForAddress(
+      String direction, String vsAddressStructure, AddressType addressType) {
+    return TraceElement.of(
+        String.format("Matched %s address %s %s", direction, addressType, vsAddressStructure));
+  }
+
+  static TraceElement traceElementForProtocol(IpProtocol protocol) {
+    return TraceElement.of(String.format("Matched protocol %s", protocol));
+  }
+
+  static TraceElement traceElementForDstPorts(int low, int high) {
+    if (low == high) {
+      return TraceElement.of(String.format("Matched destination port %s", low));
+    }
+    return TraceElement.of(String.format("Matched destination ports [%s-%s]", low, high));
+  }
+
+  static TraceElement traceElementForIcmp(int type, int code) {
+    assert type != -1;
+    TraceElement.Builder treBuilder =
+        TraceElement.builder().add(String.format("Matched ICMP type %s", type));
+    if (code != -1) {
+      treBuilder.add(String.format("Matched ICMP code %s", code));
+    }
+    return treBuilder.build();
   }
 
   private Utils() {}
