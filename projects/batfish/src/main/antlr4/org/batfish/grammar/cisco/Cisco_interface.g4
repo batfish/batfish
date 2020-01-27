@@ -1517,7 +1517,8 @@ if_vrrp
 :
    VRRP groupnum = DEC
    (
-      ifvrrp_authentication
+      ifvrrp_advertisement
+      | ifvrrp_authentication
       | ifvrrp_description
       | ifvrrp_ip
       | ifvrrp_ipv4
@@ -1711,6 +1712,11 @@ iftunnel_source
      | IP_ADDRESS
      | iname = interface_name_unstructured
    ) NEWLINE
+;
+
+ifvrrp_advertisement
+:
+   ADVERTISEMENT INTERVAL secs = DEC NEWLINE
 ;
 
 ifvrrp_authentication

@@ -387,6 +387,11 @@ ADVERTISE
    'advertise'
 ;
 
+ADVERTISEMENT
+:
+   'advertisement'
+;
+
 ADVERTISEMENT_INTERVAL
 :
    'advertisement-interval'
@@ -4364,6 +4369,11 @@ EVENT_LOG_SIZE
    'event-log-size'
 ;
 
+EVENT_MONITOR
+:
+   'event-monitor'
+;
+
 EVENT_THRESHOLDS_PROFILE
 :
    'event-thresholds-profile'
@@ -5656,6 +5666,11 @@ HW_SWITCH
 IBGP
 :
    'ibgp'
+;
+
+IBURST
+:
+   'iburst'
 ;
 
 ICMP

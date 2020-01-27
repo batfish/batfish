@@ -1914,6 +1914,40 @@
             "        (null_rest_of_line",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
+            "    (s_event_monitor",
+            "      EVENT_MONITOR:'event-monitor'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'",
+            "      (ntp_common",
+            "        (ntp_server",
+            "          SERVER:'server'",
+            "          VRF:'vrf'",
+            "          vrf = (variable",
+            "            VARIABLE:'MGMT')",
+            "          hostname = (variable",
+            "            IP_ADDRESS:'192.168.1.246')",
+            "          IBURST:'iburst'",
+            "          MAXPOLL:'maxpoll'",
+            "          DEC:'3'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'",
+            "      (ntp_common",
+            "        (ntp_server",
+            "          SERVER:'server'",
+            "          VRF:'vrf'",
+            "          vrf = (variable",
+            "            VARIABLE:'MGMT')",
+            "          hostname = (variable",
+            "            VARIABLE:'time.google.com')",
+            "          IBURST:'iburst'",
+            "          MAXPOLL:'maxpoll'",
+            "          DEC:'3'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
             "    (s_ip_pim",
             "      IP:'ip'",
             "      PIM:'pim'",
@@ -78172,8 +78206,8 @@
           "standard ipv4 access-list" : {
             "sshabc" : {
               "definitionLines" : [
-                25,
-                26
+                30,
+                31
               ],
               "numReferrers" : 1
             }
@@ -86964,12 +86998,12 @@
           "ipv4 acl" : {
             "abc" : {
               "management telnet ip access-group" : [
-                36
+                41
               ]
             },
             "sshabc" : {
               "management ssh ip access-group" : [
-                30
+                35
               ]
             }
           }
@@ -92498,7 +92532,7 @@
           "ipv4 acl" : {
             "abc" : {
               "management telnet ip access-group" : [
-                36
+                41
               ]
             }
           }
