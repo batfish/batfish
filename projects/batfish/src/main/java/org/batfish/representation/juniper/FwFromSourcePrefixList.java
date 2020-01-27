@@ -9,7 +9,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
 
-public final class FwFromSourcePrefixList extends FwFrom {
+public final class FwFromSourcePrefixList implements FwFrom {
 
   private final String _name;
 
