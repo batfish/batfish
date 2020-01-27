@@ -18,6 +18,7 @@ public final class FwTerm implements Serializable {
     ICMP_TYPE,
     PACKET_LENGTH,
     PACKET_LENGTH_EXCEPT,
+    PORT,
     SOURCE,
     //    SOURCE_PORT,
     //    PACKET_LENGTH,
