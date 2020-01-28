@@ -6,7 +6,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
 
-public final class FwFromApplicationOrApplicationSet extends FwFromApplicationSetMember {
+public final class FwFromApplicationOrApplicationSet implements FwFromApplicationSetMember {
 
   private final String _applicationOrApplicationSetName;
 
