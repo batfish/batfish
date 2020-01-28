@@ -3,6 +3,8 @@ package org.batfish.grammar.flatjuniper;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -14,6 +16,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
@@ -28,6 +31,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -45,6 +49,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELA
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
@@ -79,6 +84,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_I
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
@@ -1960,7 +1966,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
 
+  // TODO: separate firewall filter and security-policy
   private ConcreteFirewallFilter _currentFilter;
+  private String _currentSecurityPolicyName; // Follows _currentFilter, but with correct name.
 
   private Family _currentFirewallFamily;
 
@@ -2287,8 +2295,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterFf_term(Ff_termContext ctx) {
     String name = ctx.name.getText();
+    String defName = computeFirewallFilterTermName(_currentFilter.getName(), name);
     Map<String, FwTerm> terms = _currentFilter.getTerms();
     _currentFwTerm = terms.computeIfAbsent(name, FwTerm::new);
+    _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.text));
   }
 
   @Override
@@ -3337,54 +3349,66 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSep_from_zone(Sep_from_zoneContext ctx) {
     if (ctx.from.JUNOS_HOST() != null && ctx.to.JUNOS_HOST() != null) {
       _w.redFlag("Cannot create security policy from junos-host to junos-host");
-    } else {
-      String fromName = ctx.from.getText();
-      String toName = ctx.to.getText();
-      String policyName = zoneToZoneFilter(fromName, toName);
-      if (ctx.from.JUNOS_HOST() == null) {
-        _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
-      }
-
-      if (ctx.to.JUNOS_HOST() == null) {
-        _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
-      }
-
-      if (ctx.from.JUNOS_HOST() != null) {
-        // Policy for traffic originating from this device
-        _currentFilter = _currentToZone.getFromHostFilter();
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentToZone.setFromHostFilter(_currentFilter);
-        }
-      } else if (ctx.to.JUNOS_HOST() != null) {
-        // Policy for traffic destined for this device
-        _currentFilter = _currentFromZone.getToHostFilter();
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentFromZone.setToHostFilter(_currentFilter);
-        }
-      } else {
-        // Policy for thru traffic
-        _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
-        }
-        // Add this filter to the to-zone for easy combination with egress ACL
-        _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
-      }
-
-      /*
-       * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
-       * firewallFilter
-       */
-      if (_currentFromZone != null) {
-        _currentFilter.setFromZone(_currentFromZone.getName());
-      }
+      _currentFilter =
+          new ConcreteFirewallFilter(
+              "invalid security-policy from junos-host to itself", Family.INET);
+      _currentSecurityPolicyName = "invalid security-policy from junos-host to itself";
+      return;
     }
+
+    String fromName = ctx.from.getText();
+    String toName = ctx.to.getText();
+    String policyName = zoneToZoneFilter(fromName, toName);
+    _currentSecurityPolicyName = policyName;
+    if (ctx.from.JUNOS_HOST() == null) {
+      _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
+    }
+
+    if (ctx.to.JUNOS_HOST() == null) {
+      _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
+    }
+
+    if (ctx.from.JUNOS_HOST() != null) {
+      // Policy for traffic originating from this device
+      _currentFilter = _currentToZone.getFromHostFilter();
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
+        _currentToZone.setFromHostFilter(_currentFilter);
+      }
+    } else if (ctx.to.JUNOS_HOST() != null) {
+      // Policy for traffic destined for this device
+      _currentFilter = _currentFromZone.getToHostFilter();
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
+        _currentFromZone.setToHostFilter(_currentFilter);
+      }
+    } else {
+      // Policy for thru traffic
+      _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
+        _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
+      }
+      // Add this filter to the to-zone for easy combination with egress ACL
+      _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
+    }
+
+    /*
+     * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
+     * firewallFilter
+     */
+    if (_currentFromZone != null) {
+      _currentFilter.setFromZone(_currentFromZone.getName());
+    }
+  }
+
+  @Override
+  public void exitSep_from_zone(Sep_from_zoneContext ctx) {
+    _currentFilter = null;
+    _currentSecurityPolicyName = null;
   }
 
   @Override
@@ -3395,17 +3419,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 .getFirewallFilters()
                 .computeIfAbsent(
                     ACL_NAME_GLOBAL_POLICY, n -> new ConcreteFirewallFilter(n, Family.INET));
+    _currentSecurityPolicyName = ACL_NAME_GLOBAL_POLICY;
   }
 
   @Override
   public void exitSep_global(Sep_globalContext ctx) {
     _currentFilter = null;
+    _currentSecurityPolicyName = null;
   }
 
   @Override
   public void enterSepctx_policy(Sepctx_policyContext ctx) {
     String termName = ctx.name.getText();
     _currentFwTerm = _currentFilter.getTerms().computeIfAbsent(termName, FwTerm::new);
+    String defName = computeSecurityPolicyTermName(_currentSecurityPolicyName, termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.name.text));
   }
 
   @Override
@@ -5676,11 +5706,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.DENY_ALL() != null) {
       _defaultCrossZoneAction = LineAction.DENY;
     }
-  }
-
-  @Override
-  public void exitSep_from_zone(Sep_from_zoneContext ctx) {
-    _currentFilter = null;
   }
 
   @Override
