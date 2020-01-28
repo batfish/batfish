@@ -23,8 +23,7 @@ public final class FwTerm implements Serializable {
     PROTOCOL,
     SOURCE,
     SOURCE_EXCEPT,
-    //    SOURCE_PORT,
-    //    PACKET_LENGTH,
+    SOURCE_PORT,
   }
 
   private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;
