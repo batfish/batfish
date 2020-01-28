@@ -417,8 +417,7 @@ final class IpPermissions implements Serializable {
     return aclLines.build();
   }
 
-  @VisibleForTesting
-  List<ExprAclLine> userIdGroupsToAclLines(
+  private List<ExprAclLine> userIdGroupsToAclLines(
       Region region,
       List<AclLineMatchExpr> protocolAndPortExprs,
       boolean ingress,
