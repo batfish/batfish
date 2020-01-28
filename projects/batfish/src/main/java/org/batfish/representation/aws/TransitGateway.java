@@ -1,7 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP_AND_STATIC;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
@@ -441,7 +441,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   static void createBgpProcess(
       Configuration tgwCfg, Vrf vrf, ConvertedConfiguration awsConfiguration) {
-    LinkLocalAddress loopbackBgpAddress = LinkLocalAddress.of(LINK_LOCAL_IP1);
+    LinkLocalAddress loopbackBgpAddress = LinkLocalAddress.of(LINK_LOCAL_IP);
     Utils.newInterface(
         "bgp-loopback-" + vrf.getName(),
         tgwCfg,
