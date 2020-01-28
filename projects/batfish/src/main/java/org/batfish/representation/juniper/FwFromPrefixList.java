@@ -66,13 +66,13 @@ public final class FwFromPrefixList implements FwFrom {
 
     if (pl == null) {
       w.redFlag("Reference to undefined destination-prefix-list: \"" + _name + "\"");
-      // match everything
-      return HeaderSpace.builder().build();
+      // match nothing
+      return HeaderSpace.builder().setSrcOrDstIps(EmptyIpSpace.INSTANCE).build();
     }
 
     if (pl.getIpv6()) {
-      // do not handle Ipv6 for now, assume matching everthing
-      return HeaderSpace.builder().build();
+      // do not handle Ipv6 for now, assume matching nothing
+      return HeaderSpace.builder().setSrcOrDstIps(EmptyIpSpace.INSTANCE).build();
     }
 
     RouteFilterList prefixList = c.getRouteFilterLists().get(_name);
