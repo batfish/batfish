@@ -177,6 +177,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
+  public static @Nonnull String computeFirewallFilterTermName(
+      @Nonnull String filterName, @Nonnull String termName) {
+    return String.format("%s %s", filterName, termName);
+  }
+
   // See
   // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
   static final int DEFAULT_NBMA_HELLO_INTERVAL = 30;
@@ -3239,6 +3244,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST,
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST);
+    markConcreteStructure(JuniperStructureType.FIREWALL_FILTER_TERM);
     markConcreteStructure(
         JuniperStructureType.INTERFACE,
         JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,

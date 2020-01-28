@@ -83355,6 +83355,14 @@
               ],
               "numReferrers" : 0
             }
+          },
+          "firewall filter term" : {
+            "foo bar" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_application" : {
@@ -83622,6 +83630,83 @@
                 50
               ],
               "numReferrers" : 0
+            }
+          },
+          "firewall filter term" : {
+            "ISP-INBOUND-L2 ALLOW-ARP" : {
+              "definitionLines" : [
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "blah blorp" : {
+              "definitionLines" : [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                30,
+                31
+              ],
+              "numReferrers" : 25
+            },
+            "blah t2" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            },
+            "blah t3" : {
+              "definitionLines" : [
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "blah6 blorp6" : {
+              "definitionLines" : [
+                37,
+                38,
+                39
+              ],
+              "numReferrers" : 3
+            },
+            "f1 t1" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "ip_options t1" : {
+              "definitionLines" : [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ],
+              "numReferrers" : 8
             }
           }
         },
@@ -90579,6 +90664,15 @@
             }
           }
         },
+        "configs/juniper-tcpflags" : {
+          "firewall filter term" : {
+            "foo bar" : {
+              "firewall filter term" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/juniper_as_path_group" : {
           "as-path-group as-path" : {
             "AS_PATH_REGEX_NAME1" : {
@@ -90683,6 +90777,76 @@
           }
         },
         "configs/juniper_firewall" : {
+          "firewall filter term" : {
+            "ISP-INBOUND-L2 ALLOW-ARP" : {
+              "firewall filter term" : [
+                42
+              ]
+            },
+            "blah blorp" : {
+              "firewall filter term" : [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                30,
+                31
+              ]
+            },
+            "blah t2" : {
+              "firewall filter term" : [
+                33
+              ]
+            },
+            "blah t3" : {
+              "firewall filter term" : [
+                35
+              ]
+            },
+            "blah6 blorp6" : {
+              "firewall filter term" : [
+                37,
+                38,
+                39
+              ]
+            },
+            "f1 t1" : {
+              "firewall filter term" : [
+                4
+              ]
+            },
+            "ip_options t1" : {
+              "firewall filter term" : [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          },
           "routing-instance" : {
             "OTHER_INSTANCE" : {
               "firewall filter then routing-instance" : [

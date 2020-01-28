@@ -3,6 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -14,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
@@ -45,6 +47,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELA
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
@@ -2287,8 +2290,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterFf_term(Ff_termContext ctx) {
     String name = ctx.name.getText();
+    String defName = computeFirewallFilterTermName(_currentFilter.getName(), name);
     Map<String, FwTerm> terms = _currentFilter.getTerms();
     _currentFwTerm = terms.computeIfAbsent(name, FwTerm::new);
+    _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.text));
   }
 
   @Override
