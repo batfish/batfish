@@ -3344,53 +3344,55 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSep_from_zone(Sep_from_zoneContext ctx) {
     if (ctx.from.JUNOS_HOST() != null && ctx.to.JUNOS_HOST() != null) {
       _w.redFlag("Cannot create security policy from junos-host to junos-host");
+      _currentFilter = new ConcreteFirewallFilter("dummy", Family.INET);
+      return;
+    }
+
+    String fromName = ctx.from.getText();
+    String toName = ctx.to.getText();
+    String policyName = zoneToZoneFilter(fromName, toName);
+    if (ctx.from.JUNOS_HOST() == null) {
+      _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
+    }
+
+    if (ctx.to.JUNOS_HOST() == null) {
+      _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
+    }
+
+    if (ctx.from.JUNOS_HOST() != null) {
+      // Policy for traffic originating from this device
+      _currentFilter = _currentToZone.getFromHostFilter();
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
+        _currentToZone.setFromHostFilter(_currentFilter);
+      }
+    } else if (ctx.to.JUNOS_HOST() != null) {
+      // Policy for traffic destined for this device
+      _currentFilter = _currentFromZone.getToHostFilter();
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
+        _currentFromZone.setToHostFilter(_currentFilter);
+      }
     } else {
-      String fromName = ctx.from.getText();
-      String toName = ctx.to.getText();
-      String policyName = zoneToZoneFilter(fromName, toName);
-      if (ctx.from.JUNOS_HOST() == null) {
-        _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
+      // Policy for thru traffic
+      _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
+        _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
       }
+      // Add this filter to the to-zone for easy combination with egress ACL
+      _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
+    }
 
-      if (ctx.to.JUNOS_HOST() == null) {
-        _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
-      }
-
-      if (ctx.from.JUNOS_HOST() != null) {
-        // Policy for traffic originating from this device
-        _currentFilter = _currentToZone.getFromHostFilter();
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentToZone.setFromHostFilter(_currentFilter);
-        }
-      } else if (ctx.to.JUNOS_HOST() != null) {
-        // Policy for traffic destined for this device
-        _currentFilter = _currentFromZone.getToHostFilter();
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentFromZone.setToHostFilter(_currentFilter);
-        }
-      } else {
-        // Policy for thru traffic
-        _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
-        }
-        // Add this filter to the to-zone for easy combination with egress ACL
-        _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
-      }
-
-      /*
-       * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
-       * firewallFilter
-       */
-      if (_currentFromZone != null) {
-        _currentFilter.setFromZone(_currentFromZone.getName());
-      }
+    /*
+     * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
+     * firewallFilter
+     */
+    if (_currentFromZone != null) {
+      _currentFilter.setFromZone(_currentFromZone.getName());
     }
   }
 
