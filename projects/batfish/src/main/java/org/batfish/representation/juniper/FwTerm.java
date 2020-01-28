@@ -24,6 +24,7 @@ public final class FwTerm implements Serializable {
     SOURCE,
     SOURCE_EXCEPT,
     SOURCE_PORT,
+    TCP_FLAG
   }
 
   private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;
