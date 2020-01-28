@@ -240,7 +240,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public static TraceElement asaDeniedByOutputFilterTraceElement(
       String filename, IpAccessList filter) {
     return TraceElement.builder()
-        .add("Denied by output filter")
+        .add("Denied by output filter ")
         .add(
             filter.getName(),
             new VendorStructureId(filename, filter.getSourceType(), filter.getSourceName()))
@@ -251,7 +251,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public static TraceElement asaPermittedByOutputFilterTraceElement(
       String filename, IpAccessList filter) {
     return TraceElement.builder()
-        .add("Permitted by output filter")
+        .add("Permitted by output filter ")
         .add(
             filter.getName(),
             new VendorStructureId(filename, filter.getSourceType(), filter.getSourceName()))
