@@ -38,6 +38,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -180,7 +181,10 @@ public class RdsInstanceTest {
                             matchPorts(45, 50),
                             new MatchHeaderSpace(
                                 HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse("10.193.16.105/32").toIpSpace())
+                                    .setSrcIps(
+                                        IpWildcardSetIpSpace.builder()
+                                            .including(IpWildcard.parse("10.193.16.105/32"))
+                                            .build())
                                     .build(),
                                 traceElementForAddress(
                                     "source",
