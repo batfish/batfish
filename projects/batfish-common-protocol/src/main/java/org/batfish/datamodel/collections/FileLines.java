@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,5 +41,21 @@ public class FileLines {
   @Override
   public String toString() {
     return _filename + ":" + _lines;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object other) {
+    if (this == other) {
+      return true;
+    } else if (!(other instanceof FileLines)) {
+      return false;
+    }
+    FileLines o = (FileLines) other;
+    return _filename.equals(o._filename) && _lines.equals(o._lines);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_filename, _lines);
   }
 }
