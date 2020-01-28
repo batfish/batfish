@@ -1,8 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
-import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP2;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -209,11 +208,11 @@ final class Utils {
       String ifaceNameSuffix) {
     String ifaceName1 = interfaceNameToRemote(cfgNode2, ifaceNameSuffix);
     Utils.newInterface(
-        ifaceName1, cfgNode1, vrfName1, LinkLocalAddress.of(LINK_LOCAL_IP1), "To " + ifaceName1);
+        ifaceName1, cfgNode1, vrfName1, LinkLocalAddress.of(LINK_LOCAL_IP), "To " + ifaceName1);
 
     String ifaceName2 = interfaceNameToRemote(cfgNode1, ifaceNameSuffix);
     Utils.newInterface(
-        ifaceName2, cfgNode2, vrfName2, LinkLocalAddress.of(LINK_LOCAL_IP2), "To " + ifaceName2);
+        ifaceName2, cfgNode2, vrfName2, LinkLocalAddress.of(LINK_LOCAL_IP), "To " + ifaceName2);
 
     addLayer1Edge(
         awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
