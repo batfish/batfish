@@ -4,6 +4,7 @@ import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
+import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.UserIdGroupPair;
 import org.junit.Test;
 
@@ -74,7 +76,7 @@ public class IpPermissionsTest {
                                 .including(IpWildcard.parse("2.2.2.0/24"))
                                 .build())
                         .build(),
-                    "Matched source address Security Group sg"))));
+                    traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP)))));
     // check if rule description is populated from UserIdGroup description
     assertThat(
         Iterables.getOnlyElement(lines).getTraceElement(),
