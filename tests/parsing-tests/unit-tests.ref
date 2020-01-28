@@ -84297,6 +84297,24 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "security policy term" : {
+            "zone~A~to~zone~B 123-4" : {
+              "definitionLines" : [
+                19,
+                20,
+                21,
+                22
+              ],
+              "numReferrers" : 4
+            },
+            "~GLOBAL_SECURITY_POLICY~ p1" : {
+              "definitionLines" : [
+                16,
+                17
+              ],
+              "numReferrers" : 2
+            }
           }
         },
         "configs/juniper_snmp" : { },
@@ -91292,6 +91310,22 @@
             "PROPOSAL" : {
               "ike policy ike proposal" : [
                 14
+              ]
+            }
+          },
+          "security policy term" : {
+            "zone~A~to~zone~B 123-4" : {
+              "security policy term" : [
+                19,
+                20,
+                21,
+                22
+              ]
+            },
+            "~GLOBAL_SECURITY_POLICY~ p1" : {
+              "security policy term" : [
+                16,
+                17
               ]
             }
           }

@@ -55,6 +55,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   ROUTING_INSTANCE_VRF_EXPORT("routing-instance vrf-export"),
   ROUTING_INSTANCE_VRF_IMPORT("routing-instance vrf-import"),
   ROUTING_OPTIONS_INSTANCE_IMPORT("routing-options instance-import"),
+  SECURITY_POLICY_TERM_DEFINITION("security policy term"),
   SECURITY_POLICY_MATCH_APPLICATION("security policy match application"),
   SECURITY_PROFILE_LOGICAL_SYSTEM("security-profile logical-system"),
   SECURITY_ZONES_SECURITY_ZONES_INTERFACE("security zones security-zone interfaces"),

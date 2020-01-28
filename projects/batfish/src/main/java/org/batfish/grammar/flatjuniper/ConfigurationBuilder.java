@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -30,6 +31,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -82,6 +84,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_I
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
@@ -1963,7 +1966,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
 
+  // TODO: separate firewall filter and security-policy
   private ConcreteFirewallFilter _currentFilter;
+  private String _currentSecurityPolicyName; // Follows _currentFilter, but with correct name.
 
   private Family _currentFirewallFamily;
 
@@ -3344,13 +3349,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSep_from_zone(Sep_from_zoneContext ctx) {
     if (ctx.from.JUNOS_HOST() != null && ctx.to.JUNOS_HOST() != null) {
       _w.redFlag("Cannot create security policy from junos-host to junos-host");
-      _currentFilter = new ConcreteFirewallFilter("dummy", Family.INET);
+      _currentFilter =
+          new ConcreteFirewallFilter(
+              "invalid security-policy from junos-host to itself", Family.INET);
+      _currentSecurityPolicyName = "invalid security-policy from junos-host to itself";
       return;
     }
 
     String fromName = ctx.from.getText();
     String toName = ctx.to.getText();
     String policyName = zoneToZoneFilter(fromName, toName);
+    _currentSecurityPolicyName = policyName;
     if (ctx.from.JUNOS_HOST() == null) {
       _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
     }
@@ -3397,6 +3406,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitSep_from_zone(Sep_from_zoneContext ctx) {
+    _currentFilter = null;
+    _currentSecurityPolicyName = null;
+  }
+
+  @Override
   public void enterSep_global(Sep_globalContext ctx) {
     _currentFilter =
         (ConcreteFirewallFilter)
@@ -3404,17 +3419,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 .getFirewallFilters()
                 .computeIfAbsent(
                     ACL_NAME_GLOBAL_POLICY, n -> new ConcreteFirewallFilter(n, Family.INET));
+    _currentSecurityPolicyName = ACL_NAME_GLOBAL_POLICY;
   }
 
   @Override
   public void exitSep_global(Sep_globalContext ctx) {
     _currentFilter = null;
+    _currentSecurityPolicyName = null;
   }
 
   @Override
   public void enterSepctx_policy(Sepctx_policyContext ctx) {
     String termName = ctx.name.getText();
     _currentFwTerm = _currentFilter.getTerms().computeIfAbsent(termName, FwTerm::new);
+    String defName = computeSecurityPolicyTermName(_currentSecurityPolicyName, termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.name.text));
   }
 
   @Override
@@ -5685,11 +5706,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.DENY_ALL() != null) {
       _defaultCrossZoneAction = LineAction.DENY;
     }
-  }
-
-  @Override
-  public void exitSep_from_zone(Sep_from_zoneContext ctx) {
-    _currentFilter = null;
   }
 
   @Override
