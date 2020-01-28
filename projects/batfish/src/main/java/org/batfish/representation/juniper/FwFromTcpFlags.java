@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.List;
