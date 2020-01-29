@@ -28,7 +28,7 @@ public final class TraceEvent implements Serializable {
   }
 
   public static TraceEvent of(TraceElement traceElement) {
-    return new TraceEvent(traceElement.toString());
+    return new TraceEvent(traceElement.getText());
   }
 
   @JsonProperty(PROP_DESCRIPTION)
