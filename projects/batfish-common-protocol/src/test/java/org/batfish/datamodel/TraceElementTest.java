@@ -70,10 +70,10 @@ public final class TraceElementTest {
   }
 
   @Test
-  public void testToString() {
+  public void testGetText() {
     VendorStructureId vendorStructureId = new VendorStructureId("f", "t", "n");
     String actual =
-        TraceElement.builder().add("text ").add("link", vendorStructureId).build().toString();
+        TraceElement.builder().add("text ").add("link", vendorStructureId).build().getText();
     assertEquals("text link", actual);
   }
 }
