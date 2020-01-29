@@ -20,4 +20,14 @@ public class FwFromSourcePortTest {
             HeaderSpace.builder().setSrcPorts(new SubRange(1, 2)).build(),
             TraceElement.of("Matched source-port 1-2")));
   }
+
+  @Test
+  public void testToAclLineMatchExpr_single() {
+    FwFromSourcePort from = new FwFromSourcePort(SubRange.singleton(1));
+    assertEquals(
+        from.toAclLineMatchExpr(null, null, null),
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setSrcPorts(SubRange.singleton(1)).build(),
+            TraceElement.of("Matched source-port 1")));
+  }
 }

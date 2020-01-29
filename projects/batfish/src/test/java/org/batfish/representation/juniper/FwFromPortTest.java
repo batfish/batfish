@@ -11,7 +11,6 @@ import org.junit.Test;
 
 /** Test for {@link FwFromPort} */
 public class FwFromPortTest {
-
   @Test
   public void testToAclLineMatchExpr() {
     FwFromPort from = new FwFromPort(new SubRange(1, 2));
@@ -20,5 +19,15 @@ public class FwFromPortTest {
         new MatchHeaderSpace(
             HeaderSpace.builder().setSrcOrDstPorts(ImmutableList.of(new SubRange(1, 2))).build(),
             TraceElement.of("Matched port 1-2")));
+  }
+
+  @Test
+  public void testToAclLineMatchExpr_single() {
+    FwFromPort from = new FwFromPort(SubRange.singleton(1));
+    assertEquals(
+        from.toAclLineMatchExpr(null, null, null),
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setSrcOrDstPorts(ImmutableList.of(SubRange.singleton(1))).build(),
+            TraceElement.of("Matched port 1")));
   }
 }

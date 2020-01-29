@@ -80,7 +80,7 @@ public final class FwFromTcpFlags implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderSpace(), getTraceElement());
+    return new MatchHeaderSpace(toHeaderSpace(), getTraceElement(w));
   }
 
   @Override
@@ -92,7 +92,7 @@ public final class FwFromTcpFlags implements FwFrom {
     return HeaderSpace.builder().setTcpFlags(_tcpFlags).build();
   }
 
-  private TraceElement getTraceElement() {
+  private TraceElement getTraceElement(Warnings w) {
     String tcpFlagString;
     switch (_commandType) {
       case ESTABLISHED:
@@ -103,13 +103,17 @@ public final class FwFromTcpFlags implements FwFrom {
         tcpFlagString = "tcp-initial";
         break;
 
-      default: // TODO: better description
+      case FLAGS: // TODO: better description
         tcpFlagString =
             String.join(
                 " ",
                 _tcpFlags.stream()
                     .map(TcpFlagsMatchConditions::toString)
                     .collect(ImmutableList.toImmutableList()));
+        break;
+      default:
+        tcpFlagString = "unknown";
+        w.redFlag(String.format("tcp-flag %s is not recognized", _commandType.name()));
     }
 
     return TraceElement.of(String.format("Matched tcp-flags %s", tcpFlagString));

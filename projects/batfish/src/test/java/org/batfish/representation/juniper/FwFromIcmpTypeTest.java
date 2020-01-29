@@ -10,7 +10,6 @@ import org.junit.Test;
 
 /** Test for {@link FwFromIcmpType} */
 public class FwFromIcmpTypeTest {
-
   @Test
   public void testToAclLineMatchExpr() {
     FwFromIcmpType from = new FwFromIcmpType(new SubRange(1, 2));
@@ -19,5 +18,15 @@ public class FwFromIcmpTypeTest {
         new MatchHeaderSpace(
             HeaderSpace.builder().setIcmpTypes(new SubRange(1, 2)).build(),
             TraceElement.of("Matched icmp-type 1-2")));
+  }
+
+  @Test
+  public void testToAclLineMatchExpr_single() {
+    FwFromIcmpType from = new FwFromIcmpType(SubRange.singleton(1));
+    assertEquals(
+        from.toAclLineMatchExpr(null, null, null),
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setIcmpTypes(SubRange.singleton(1)).build(),
+            TraceElement.of("Matched icmp-type 1")));
   }
 }
