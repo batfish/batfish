@@ -1,7 +1,5 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -18,16 +16,6 @@ public class FwFromIcmpCode implements FwFrom {
 
   public FwFromIcmpCode(SubRange icmpCodeRange) {
     _icmpCodeRange = icmpCodeRange;
-  }
-
-  @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    headerSpaceBuilder.setIcmpCodes(
-        Iterables.concat(headerSpaceBuilder.getIcmpCodes(), ImmutableSet.of(_icmpCodeRange)));
   }
 
   @Override

@@ -1,7 +1,10 @@
 package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.stream.Collectors.groupingBy;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
@@ -2157,10 +2160,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return lines;
     }
 
+    AclLineMatchExpr matchFwFroms = toAclLineMatchExpr(term.getFroms(), null);
+
     HeaderSpace.Builder matchCondition = HeaderSpace.builder();
-    for (FwFrom from : term.getFroms()) {
-      from.applyTo(matchCondition, this, _w, _c);
-    }
     for (FwFromHostProtocol from : term.getFromHostProtocols()) {
       from.applyTo(lines, _w);
     }
@@ -2182,7 +2184,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       lines.add(
           ExprAclLine.builder()
               .setAction(action)
-              .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
+              .setMatchCondition(and(matchFwFroms, new MatchHeaderSpace(matchCondition.build())))
               .setName(term.getName())
               .setTraceElement(
                   TraceElement.builder()
@@ -2519,29 +2521,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return new PacketPolicy(filter.getName(), concatenatedStatememnts, new Return(Drop.instance()));
   }
 
+  private AclLineMatchExpr toAclLineMatchExpr(
+      Collection<FwFrom> fwFroms, TraceElement traceElement) {
+    return new AndMatchExpr(
+        fwFroms.stream()
+            .collect(groupingBy(FwFrom::getField))
+            .values()
+            .stream()
+            .map(
+                fwFromDisjuncts ->
+                    or(
+                        fwFromDisjuncts.stream()
+                            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
+                            .collect(ImmutableList.toImmutableList())))
+            .collect(ImmutableList.toImmutableList()),
+        traceElement);
+  }
+
   private PacketPolicy toPacketPolicy(ConcreteFirewallFilter filter) {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> builder =
         ImmutableList.builder();
     for (Entry<String, FwTerm> e : filter.getTerms().entrySet()) {
       FwTerm term = e.getValue();
 
-      /*
-       * Convert "from" statements. Currently, the only supported "from"s are the ones matching on
-       * headerspace, and they are ANDed together, so we collapse them into one big
-       * AclMatch expression.
-       */
-      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
-      for (FwFrom from : term.getFroms()) {
-        from.applyTo(matchCondition, this, _w, _c);
-      }
+      AclLineMatchExpr matchFwFroms =
+          toAclLineMatchExpr(
+              term.getFroms(),
+              TraceElement.of(String.format("Firewall filter term %s", term.getName())));
 
       // A term will become an If statement. If (matchCondition) -> execute "then" statements
       builder.add(
           new org.batfish.datamodel.packet_policy.If(
-              new PacketMatchExpr(
-                  new MatchHeaderSpace(
-                      matchCondition.build(),
-                      String.format("Firewall filter term %s", term.getName()))),
+              new PacketMatchExpr(matchFwFroms),
               TermFwThenToPacketPolicyStatement.convert(term, Configuration.DEFAULT_VRF_NAME)));
     }
 

@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -22,20 +21,6 @@ public class FwFromFragmentOffset implements FwFrom {
   public FwFromFragmentOffset(SubRange offsetRange, boolean except) {
     _offsetRange = offsetRange;
     _except = except;
-  }
-
-  @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    Set<SubRange> offsets = ImmutableSet.of(_offsetRange);
-    if (_except) {
-      headerSpaceBuilder.setNotFragmentOffsets(offsets);
-    } else {
-      headerSpaceBuilder.setFragmentOffsets(offsets);
-    }
   }
 
   @Override

@@ -33,37 +33,6 @@ public final class FwFromDestinationAddressBookEntry implements FwFrom {
   }
 
   @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    AddressBook addressBook = _zone == null ? _globalAddressBook : _zone.getAddressBook();
-    String addressBookName = addressBook.getAddressBookName(_addressBookEntryName);
-    if (addressBookName == null) {
-      w.redFlag(
-          String.format("Missing destination address-book entry '%s'", _addressBookEntryName));
-      // Leave existing constraint, otherwise match nothing
-      if (headerSpaceBuilder.getDstIps() == null) {
-        headerSpaceBuilder.setDstIps(EmptyIpSpace.INSTANCE);
-      }
-      return;
-    }
-    String ipSpaceName = addressBookName + "~" + _addressBookEntryName;
-    IpSpaceReference ipSpaceReference = new IpSpaceReference(ipSpaceName);
-    if (headerSpaceBuilder.getDstIps() != null) {
-      headerSpaceBuilder.setDstIps(
-          AclIpSpace.union(
-              ImmutableList.<IpSpace>builder()
-                  .add(ipSpaceReference)
-                  .add(headerSpaceBuilder.getDstIps())
-                  .build()));
-    } else {
-      headerSpaceBuilder.setDstIps(AclIpSpace.union(ipSpaceReference));
-    }
-  }
-
-  @Override
   public Field getField() {
     return Field.DESTINATION;
   }
