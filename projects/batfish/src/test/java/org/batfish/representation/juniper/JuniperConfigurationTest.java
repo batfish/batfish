@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
@@ -134,6 +135,20 @@ public class JuniperConfigurationTest {
                                 HeaderSpace.builder()
                                     .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
                                     .build())))))));
+  }
+
+  @Test
+  public void testCompositeFirewallFilter() {
+    JuniperConfiguration config = createConfig();
+
+    ConcreteFirewallFilter concrete = new ConcreteFirewallFilter("F", Family.INET);
+    CompositeFirewallFilter composite =
+        new CompositeFirewallFilter("composite", ImmutableList.of(concrete));
+    IpAccessList compositeAcl = config.toIpAccessList(composite);
+
+    assertThat(
+        compositeAcl.getLines(),
+        contains(hasTraceElement(TraceElement.of("Matched firewall filter F"))));
   }
 
   /**
