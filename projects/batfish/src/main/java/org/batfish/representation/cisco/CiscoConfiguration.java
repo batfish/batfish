@@ -2484,8 +2484,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           new PermittedByAcl(
                               oldOutgoingFilterName,
                               asaPermittedByOutputFilterTraceElement(
-                                  _filename,
-                                  c.getIpAccessLists().get(oldOutgoingFilterName))))))
+                                  _filename, c.getIpAccessLists().get(oldOutgoingFilterName))))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
