@@ -1,43 +1,51 @@
 {
-    "class": "org.batfish.question.definedstructures.DefinedStructuresQuestion",
-    "differential": false,
-    "instance": {
-        "description": "Lists the structures defined in the network.",
-        "instanceName": "definedStructures",
-        "longDescription": "Lists the structures defined in the network, along with the files and line numbers in which they are defined.",
-        "orderedVariableNames": [
-            "nodes",
-            "names",
-            "types"
-        ],
-        "tags": [
-            "configuration"
-        ],
-        "variables": {
-            "names": {
-                "description": "Include structures whose name matches this string or regex",
-                "type": "structureName",
-                "value": ".*",
-                "optional": true,
-                "displayName": "Names"
-            },
-            "nodes": {
-                "description": "Include files used to generate nodes whose name matches this specifier",
-                "type": "nodeSpec",
-                "value": ".*",
-                "optional": true,
-                "displayName": "Nodes"
-            },
-            "types": {
-                "description": "Include structures whose vendor-specific type matches this string or regex",
-                "type": "javaRegex",
-                "value": ".*",
-                "optional": true,
-                "displayName": "Types"
-            }
-        }
-    },
-    "names": "${names}",
-    "nodes": "${nodes}",
-    "types": "${types}"
+  "class": "org.batfish.question.definedstructures.DefinedStructuresQuestion",
+  "differential": false,
+  "instance": {
+    "description": "Lists the structures defined in the network.",
+    "instanceName": "definedStructures",
+    "longDescription": "Lists the structures defined in the network, along with the files and line numbers in which they are defined.",
+    "orderedVariableNames": [
+      "filename",
+      "nodes",
+      "names",
+      "types"
+    ],
+    "tags": [
+      "configuration"
+    ],
+    "variables": {
+      "filename": {
+        "description": "Include structures defined in the given file",
+        "type": "string",
+        "optional": true,
+        "displayName": "Filename"
+      },
+      "names": {
+        "description": "Include structures whose name matches this string or regex",
+        "type": "structureName",
+        "value": ".*",
+        "optional": true,
+        "displayName": "Names"
+      },
+      "nodes": {
+        "description": "Include files used to generate nodes whose name matches this specifier",
+        "type": "nodeSpec",
+        "value": ".*",
+        "optional": true,
+        "displayName": "Nodes"
+      },
+      "types": {
+        "description": "Include structures whose vendor-specific type matches this string or regex",
+        "type": "javaRegex",
+        "value": ".*",
+        "optional": true,
+        "displayName": "Types"
+      }
+    }
+  },
+  "filename": "${filename}",
+  "names": "${names}",
+  "nodes": "${nodes}",
+  "types": "${types}"
 }
