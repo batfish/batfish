@@ -5543,7 +5543,7 @@ public final class CiscoGrammarTest {
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
               isTraceTree(
                   asaPermittedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut),
+                      "configs/asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5556,7 +5556,7 @@ public final class CiscoGrammarTest {
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
               isTraceTree(
                   asaDeniedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut))));
+                      "configs/asa-security-level-permit-tracing", filterOut))));
     }
 
     // permitted, inter-interface
@@ -5568,7 +5568,7 @@ public final class CiscoGrammarTest {
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
               isTraceTree(
                   asaPermittedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut),
+                      "configs/asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5581,7 +5581,7 @@ public final class CiscoGrammarTest {
               isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
               isTraceTree(
                   asaDeniedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut))));
+                      "configs/asa-security-level-permit-tracing", filterOut))));
     }
 
     // permitted, low-to-high (low has ingress filter)
@@ -5593,7 +5593,7 @@ public final class CiscoGrammarTest {
               isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
               isTraceTree(
                   asaPermittedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut),
+                      "configs/asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5606,7 +5606,7 @@ public final class CiscoGrammarTest {
               isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
               isTraceTree(
                   asaDeniedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut))));
+                      "configs/asa-security-level-permit-tracing", filterOut))));
     }
 
     // permitted, high-to-low
@@ -5618,7 +5618,7 @@ public final class CiscoGrammarTest {
               isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
               isTraceTree(
                   asaPermittedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut),
+                      "configs/asa-security-level-permit-tracing", filterOut),
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
@@ -5631,7 +5631,7 @@ public final class CiscoGrammarTest {
               isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
               isTraceTree(
                   asaDeniedByOutputFilterTraceElement(
-                      "asa-security-level-permit-tracing", filterOut))));
+                      "configs/asa-security-level-permit-tracing", filterOut))));
     }
   }
 
