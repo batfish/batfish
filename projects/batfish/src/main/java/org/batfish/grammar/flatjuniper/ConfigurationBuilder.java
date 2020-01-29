@@ -2130,7 +2130,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
     _currentApplicationSet =
-        _currentLogicalSystem.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet(name));
+        _currentLogicalSystem
+            .getApplicationSets()
+            .computeIfAbsent(name, n -> new ApplicationSet(name));
     _configuration.defineFlattenedStructure(APPLICATION_SET, name, ctx, _parser);
   }
 

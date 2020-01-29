@@ -15,7 +15,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 public enum JunosApplicationSet implements ApplicationSetMember {
   JUNOS_CIFS,
