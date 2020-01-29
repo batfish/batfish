@@ -4078,39 +4078,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_tcp_established(Fftf_tcp_establishedContext ctx) {
-    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
-    tcpFlags.add(
-        TcpFlagsMatchConditions.builder()
-            .setTcpFlags(TcpFlags.builder().setAck(true).build())
-            .setUseAck(true)
-            .build());
-    tcpFlags.add(
-        TcpFlagsMatchConditions.builder()
-            .setTcpFlags(TcpFlags.builder().setRst(true).build())
-            .setUseRst(true)
-            .build());
-    FwFrom from = new FwFromTcpFlags(tcpFlags);
-    _currentFwTerm.getFroms().add(from);
+    _currentFwTerm.getFroms().add(FwFromTcpFlags.TCP_ESTABLISHED);
   }
 
   @Override
   public void exitFftf_tcp_flags(Fftf_tcp_flagsContext ctx) {
     List<TcpFlagsMatchConditions> tcpFlags = toTcpFlags(ctx.tcp_flags());
-    FwFrom from = new FwFromTcpFlags(tcpFlags);
+    FwFrom from = FwFromTcpFlags.fromTcpFlags(tcpFlags);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_tcp_initial(Fftf_tcp_initialContext ctx) {
-    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
-    tcpFlags.add(
-        TcpFlagsMatchConditions.builder()
-            .setTcpFlags(TcpFlags.builder().setAck(true).setSyn(true).build())
-            .setUseAck(true)
-            .setUseSyn(true)
-            .build());
-    FwFrom from = new FwFromTcpFlags(tcpFlags);
-    _currentFwTerm.getFroms().add(from);
+    _currentFwTerm.getFroms().add(FwFromTcpFlags.TCP_INITIAL);
   }
 
   @Override
