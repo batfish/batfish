@@ -48,7 +48,7 @@ public class BaseApplicationTest {
   public void testToAclLineMatchExpr_noTerms() {
     BaseApplication app = new BaseApplication("APP");
     assertEquals(
-        app.toAclLineMatchExpr(),
+        app.toAclLineMatchExpr(null, null),
         new MatchHeaderSpace(
             app.getMainTerm().toHeaderSpace(), TraceElement.of("Matched application APP")));
   }
@@ -62,7 +62,7 @@ public class BaseApplicationTest {
     app.getTerms().put("TERM2", term2);
 
     assertEquals(
-        app.toAclLineMatchExpr(),
+        app.toAclLineMatchExpr(null, null),
         new OrMatchExpr(
             ImmutableList.of(term1.toAclLineMatchExpr(), term2.toAclLineMatchExpr()),
             TraceElement.of("Matched application APP")));

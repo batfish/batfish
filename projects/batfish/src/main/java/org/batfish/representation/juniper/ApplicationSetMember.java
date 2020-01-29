@@ -5,6 +5,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 public interface ApplicationSetMember {
   void applyTo(
@@ -13,4 +14,6 @@ public interface ApplicationSetMember {
       LineAction action,
       List<? super ExprAclLine> lines,
       Warnings w);
+
+  AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w);
 }

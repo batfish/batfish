@@ -8,12 +8,17 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class ApplicationSet implements ApplicationSetMember, Serializable {
 
   private List<ApplicationSetMemberReference> _members;
+  private String _name;
 
-  public ApplicationSet() {
+  public ApplicationSet(String name) {
+    _name = name;
     _members = ImmutableList.of();
   }
 
@@ -32,6 +37,17 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
 
   public List<ApplicationSetMemberReference> getMembers() {
     return _members;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
+    return new OrMatchExpr(
+        _members.stream()
+            .map(ref -> ref.resolve(jc))
+            .filter(Predicates.notNull())
+            .map(member -> member.toAclLineMatchExpr(jc, w))
+            .collect(ImmutableList.toImmutableList()),
+        TraceElement.of(String.format("Matched application-set %s", _name)));
   }
 
   public void setMembers(List<ApplicationSetMemberReference> members) {

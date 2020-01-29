@@ -141,7 +141,8 @@ public final class BaseApplication implements Application, Serializable {
     _ipv6 = true;
   }
 
-  AclLineMatchExpr toAclLineMatchExpr() {
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
     if (_terms.isEmpty()) {
       return new MatchHeaderSpace(
           _mainTerm.toHeaderSpace(),

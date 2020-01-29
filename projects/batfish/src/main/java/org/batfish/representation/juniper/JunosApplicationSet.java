@@ -5,8 +5,19 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.HeaderSpace.Builder;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
-public enum JunosApplicationSet {
+public enum JunosApplicationSet implements ApplicationSetMember {
   JUNOS_CIFS,
   JUNOS_MGCP,
   JUNOS_MS_RPC,
@@ -41,8 +52,12 @@ public enum JunosApplicationSet {
     return _applicationSet.get();
   }
 
+  private String convertToJuniperName() {
+    return this.name().toLowerCase().replace("_", "-");
+  }
+
   private ApplicationSet init() {
-    ApplicationSet applicationSet = new ApplicationSet();
+    ApplicationSet applicationSet = new ApplicationSet(this.convertToJuniperName());
 
     List<JunosApplication> applications;
 
@@ -330,5 +345,25 @@ public enum JunosApplicationSet {
 
   public boolean hasDefinition() {
     return _applicationSet.get() != null;
+  }
+
+  @Override
+  public void applyTo(
+      JuniperConfiguration jc,
+      Builder srcHeaderSpaceBuilder,
+      LineAction action,
+      List<? super ExprAclLine> lines,
+      Warnings w) {
+    throw new BatfishException("not implemented");
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
+    if (!hasDefinition()) {
+      return new MatchHeaderSpace(
+          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
+          TraceElement.of(String.format("Matched application-set %s", convertToJuniperName())));
+    }
+    return _applicationSet.get().toAclLineMatchExpr(jc, w);
   }
 }
