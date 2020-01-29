@@ -57,7 +57,7 @@ public class FwFromApplicationOrApplicationSetTest {
   public void testApplyTo_applicationSet() {
     JuniperConfiguration jc = new JuniperConfiguration();
 
-    ApplicationSet appSet = new ApplicationSet();
+    ApplicationSet appSet = new ApplicationSet("appSet");
     appSet.setMembers(
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
     jc.getMasterLogicalSystem().getApplicationSets().put("appSet", appSet);
