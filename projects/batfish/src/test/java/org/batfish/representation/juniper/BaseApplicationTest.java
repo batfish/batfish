@@ -14,6 +14,12 @@ import org.junit.Test;
 
 /** Test for {@link BaseApplication} */
 public class BaseApplicationTest {
+  private static JuniperConfiguration jc = new JuniperConfiguration();
+
+  static {
+    jc.setHostname("host");
+  }
+
   @Test
   public void testTermToAclLineMatchExpr() {
     Term term = new Term("T");
@@ -62,9 +68,10 @@ public class BaseApplicationTest {
     app.getTerms().put("TERM2", term2);
 
     assertEquals(
-        app.toAclLineMatchExpr(null, null),
+        app.toAclLineMatchExpr(jc, null),
         new OrMatchExpr(
             ImmutableList.of(term1.toAclLineMatchExpr(), term2.toAclLineMatchExpr()),
-            TraceElement.of("Matched application APP")));
+            ApplicationSetMember.getTraceElement(
+                jc.getHostname(), JuniperStructureType.APPLICATION, "APP")));
   }
 }

@@ -1068,7 +1068,8 @@ public enum JunosApplication implements Application {
       w.redFlag(String.format("%s is not defined", name));
       return new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(), // match nothing
-          TraceElement.of(String.format("Matched applicatoin %s", name)));
+          ApplicationSetMember.getTraceElement(
+              jc.getHostname(), JuniperStructureType.APPLICATION, name));
     }
     return _baseApplication.get().toAclLineMatchExpr(jc, w);
   }

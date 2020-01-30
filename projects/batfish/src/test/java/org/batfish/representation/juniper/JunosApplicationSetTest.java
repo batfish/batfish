@@ -12,12 +12,15 @@ public class JunosApplicationSetTest {
 
   @Test
   public void testToAclLineMatchExpr() {
+    JuniperConfiguration jc = new JuniperConfiguration();
+    jc.setHostname("host");
     assertEquals(
-        JunosApplicationSet.JUNOS_CIFS.toAclLineMatchExpr(null, null),
+        JunosApplicationSet.JUNOS_CIFS.toAclLineMatchExpr(jc, null),
         new OrMatchExpr(
             ImmutableList.of(
-                JunosApplication.JUNOS_NETBIOS_SESSION.toAclLineMatchExpr(null, null),
-                JunosApplication.JUNOS_SMB_SESSION.toAclLineMatchExpr(null, null)),
-            TraceElement.of("Matched application-set junos-cifs")));
+                JunosApplication.JUNOS_NETBIOS_SESSION.toAclLineMatchExpr(jc, null),
+                JunosApplication.JUNOS_SMB_SESSION.toAclLineMatchExpr(jc, null)),
+            ApplicationSetMember.getTraceElement(
+                "host", JuniperStructureType.APPLICATION_SET, "junos-cifs")));
   }
 }

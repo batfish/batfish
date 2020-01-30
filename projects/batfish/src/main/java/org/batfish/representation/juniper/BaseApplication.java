@@ -153,6 +153,7 @@ public final class BaseApplication implements Application, Serializable {
         _terms.values().stream()
             .map(Term::toAclLineMatchExpr)
             .collect(ImmutableList.toImmutableList()),
-        TraceElement.of(String.format("Matched application %s", _name)));
+        ApplicationSetMember.getTraceElement(
+            jc.getHostname(), JuniperStructureType.APPLICATION, _name));
   }
 }

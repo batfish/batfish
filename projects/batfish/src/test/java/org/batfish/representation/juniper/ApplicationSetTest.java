@@ -23,6 +23,7 @@ public class ApplicationSetTest {
      */
 
     JuniperConfiguration jc = new JuniperConfiguration();
+    jc.setHostname("host");
     jc.getMasterLogicalSystem().getApplications().put("app2", new BaseApplication("app2"));
 
     ApplicationSet appSet = new ApplicationSet("appSet");
@@ -47,7 +48,9 @@ public class ApplicationSetTest {
                         new MatchHeaderSpace(
                             HeaderSpace.builder().build(),
                             TraceElement.of("Matched application app2"))),
-                    TraceElement.of("Matched application-set appSet"))),
-            TraceElement.of("Matched application-set masterAppSet")));
+                    ApplicationSetMember.getTraceElement(
+                        "host", JuniperStructureType.APPLICATION_SET, "appSet"))),
+            ApplicationSetMember.getTraceElement(
+                "host", JuniperStructureType.APPLICATION_SET, "masterAppSet")));
   }
 }

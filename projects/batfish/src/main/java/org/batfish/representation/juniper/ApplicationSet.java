@@ -47,7 +47,8 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
             .filter(Predicates.notNull())
             .map(member -> member.toAclLineMatchExpr(jc, w))
             .collect(ImmutableList.toImmutableList()),
-        TraceElement.of(String.format("Matched application-set %s", _name)));
+        ApplicationSetMember.getTraceElement(
+            jc.getHostname(), JuniperStructureType.APPLICATION_SET, _name));
   }
 
   public void setMembers(List<ApplicationSetMemberReference> members) {
