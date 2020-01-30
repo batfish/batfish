@@ -2468,7 +2468,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                       new NotMatchExpr(
                           new PermittedByAcl(oldOutgoingFilterName),
                           asaDeniedByOutputFilterTraceElement(
-                              c.getHostname(), c.getIpAccessLists().get(oldOutgoingFilterName)))))
+                              _filename, c.getIpAccessLists().get(oldOutgoingFilterName)))))
               .build());
     }
 
@@ -2484,8 +2484,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           new PermittedByAcl(
                               oldOutgoingFilterName,
                               asaPermittedByOutputFilterTraceElement(
-                                  c.getHostname(),
-                                  c.getIpAccessLists().get(oldOutgoingFilterName))))))
+                                  _filename, c.getIpAccessLists().get(oldOutgoingFilterName))))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());

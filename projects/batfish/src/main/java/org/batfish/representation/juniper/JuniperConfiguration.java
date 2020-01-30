@@ -2297,8 +2297,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
       for (FirewallFilter inner : filter.getInner()) {
         String filterName = inner.getName();
-        lines.add(
-            new AclAclLine(String.format("Match firewall filter %s", filterName), filterName));
+        String lineName = String.format("Match firewall filter %s", filterName);
+        String matchedDescription = String.format("Matched firewall filter %s", filterName);
+        lines.add(new AclAclLine(lineName, filterName, TraceElement.of(matchedDescription)));
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }

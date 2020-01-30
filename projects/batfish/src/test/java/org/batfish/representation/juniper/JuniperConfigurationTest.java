@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_DEAD_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_HELLO_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
@@ -154,6 +155,20 @@ public class JuniperConfigurationTest {
                                         TraceElement.of("Matched source-address 1.2.3.0/24")))),
                             new MatchSrcInterface(zone.getInterfaces()))))
                 .build()));
+  }
+
+  @Test
+  public void testCompositeFirewallFilter() {
+    JuniperConfiguration config = createConfig();
+
+    ConcreteFirewallFilter concrete = new ConcreteFirewallFilter("F", Family.INET);
+    CompositeFirewallFilter composite =
+        new CompositeFirewallFilter("composite", ImmutableList.of(concrete));
+    IpAccessList compositeAcl = config.toIpAccessList(composite);
+
+    assertThat(
+        compositeAcl.getLines(),
+        contains(hasTraceElement(TraceElement.of("Matched firewall filter F"))));
   }
 
   /**
