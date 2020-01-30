@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESCRIPTION;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_FROM_PORT;
@@ -18,7 +19,9 @@ import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForIcmp;
+import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
+import static org.batfish.representation.aws.Utils.traceTextForAddress;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -38,11 +41,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
@@ -430,12 +434,9 @@ final class IpPermissions implements Serializable {
                 return Optional.<ExprAclLine>empty();
               }
               return Optional.of(
-                  createExprAclLine(
+                  createAclLineForSg(
                       protocolAndPortExprs,
-                      toIpSpace(sg),
-                      sg.getGroupName(),
-                      ingress,
-                      AddressType.SECURITY_GROUP,
+                      toMatchExpr(sg, ingress),
                       uIdGr.getDescription(),
                       aclLineName));
             })
@@ -444,16 +445,28 @@ final class IpPermissions implements Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static IpSpace toIpSpace(SecurityGroup sg) {
-    return IpWildcardSetIpSpace.builder().including(sg.getUsersIpSpace()).build();
+  private static AclLineMatchExpr toMatchExpr(SecurityGroup sg, boolean ingress) {
+    ImmutableList.Builder<AclLineMatchExpr> matchExprBuilder = ImmutableList.builder();
+    for (IpInstanceNamePair pair : sg.getUsersIpSpace()) {
+      TraceElement traceElement = traceElementForInstance(pair.getInstanceName());
+      IpIpSpace ipSpace = pair.getIp().toIpSpace();
+      if (ingress) {
+        matchExprBuilder.add(
+            new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build(), traceElement));
+      } else {
+        matchExprBuilder.add(
+            new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement));
+      }
+    }
+    return or(
+        traceTextForAddress(
+            ingress ? "source" : "destination", sg.getGroupName(), AddressType.SECURITY_GROUP),
+        matchExprBuilder.build().toArray(new AclLineMatchExpr[0]));
   }
 
-  private ExprAclLine createExprAclLine(
+  private ExprAclLine createAclLineForSg(
       List<AclLineMatchExpr> protocolAndPortExprs,
-      IpSpace ipSpace,
-      String vendorStructureName,
-      boolean ingress,
-      AddressType addressType,
+      AclLineMatchExpr matchAddressForSg,
       @Nullable String ruleDescription,
       String aclLineName) {
     return ExprAclLine.accepting()
@@ -461,7 +474,7 @@ final class IpPermissions implements Serializable {
             and(
                 ImmutableList.<AclLineMatchExpr>builder()
                     .addAll(protocolAndPortExprs)
-                    .add(exprForSrcOrDstIps(ipSpace, vendorStructureName, ingress, addressType))
+                    .add(matchAddressForSg)
                     .build()))
         .setTraceElement(getTraceElementForRule(ruleDescription))
         .setName(aclLineName)

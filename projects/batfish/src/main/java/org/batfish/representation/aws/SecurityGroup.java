@@ -20,7 +20,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IpWildcard;
 
 /** Represents an AWS security group */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -35,7 +34,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<IpPermissions> _ipPermsIngress;
 
-  @Nonnull private final Set<IpWildcard> _usersIpSpace;
+  @Nonnull private final Set<IpInstanceNamePair> _referrerIps;
 
   @JsonCreator
   private static SecurityGroup create(
@@ -61,7 +60,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     _groupName = groupName;
     _ipPermsEgress = ipPermsEgress;
     _ipPermsIngress = ipPermsIngress;
-    _usersIpSpace = new HashSet<>();
+    _referrerIps = new HashSet<>();
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
@@ -107,16 +106,16 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _ipPermsIngress;
   }
 
-  Set<IpWildcard> getUsersIpSpace() {
-    return _usersIpSpace;
+  Set<IpInstanceNamePair> getUsersIpSpace() {
+    return _referrerIps;
   }
 
   void updateConfigIps(Configuration configuration) {
     configuration.getAllInterfaces().values().stream()
         .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .map(ConcreteInterfaceAddress::getIp)
-        .map(IpWildcard::create)
-        .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
+        .map(ip -> new IpInstanceNamePair(ip, configuration.getHostname()))
+        .forEach(_referrerIps::add);
   }
 
   @Override
@@ -132,12 +131,12 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
         && Objects.equals(_groupName, that._groupName)
         && Objects.equals(_ipPermsEgress, that._ipPermsEgress)
         && Objects.equals(_ipPermsIngress, that._ipPermsIngress)
-        && Objects.equals(_usersIpSpace, that._usersIpSpace);
+        && Objects.equals(_referrerIps, that._referrerIps);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _usersIpSpace);
+    return Objects.hash(_groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _referrerIps);
   }
 
   @Override
@@ -147,7 +146,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
         .add("_groupName", _groupName)
         .add("_ipPermsEgress", _ipPermsEgress)
         .add("_ipPermsIngress", _ipPermsIngress)
-        .add("_usersIpSpace", _usersIpSpace)
+        .add("_referrerIps", _referrerIps)
         .toString();
   }
 }
