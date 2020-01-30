@@ -61,8 +61,8 @@ public class IpPermissionsTest {
   private static Region testRegion() {
     Region region = new Region("test");
     SecurityGroup sg = new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of());
-    sg.getReferrerIps().put(Ip.parse("1.1.1.1"), "i1");
-    sg.getReferrerIps().put(Ip.parse("2.2.2.2"), "i2");
+    sg.getReferrerIps().put(Ip.parse("1.1.1.1"), INSTANCE_1);
+    sg.getReferrerIps().put(Ip.parse("2.2.2.2"), INSTANCE_2);
     region.getSecurityGroups().put(sg.getGroupId(), sg);
     return region;
   }
