@@ -31,12 +31,11 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.UserIdGroupPair;
@@ -47,6 +46,8 @@ public class IpPermissionsTest {
   private static final String SG_NAME = "sg";
   private static final String SG_ID = "sg-id";
   private static final String SG_DESC = "sg desc";
+  private static final String INSTANCE_1 = "i1";
+  private static final String INSTANCE_2 = "i2";
 
   private static final MatchHeaderSpace matchTcp =
       new MatchHeaderSpace(
@@ -86,14 +87,18 @@ public class IpPermissionsTest {
             and(
                 matchTcp,
                 matchSSH,
-                new MatchHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(
-                            IpWildcardSetIpSpace.builder()
-                                .including(IpWildcard.parse("1.1.1.0/24"))
-                                .including(IpWildcard.parse("2.2.2.0/24"))
-                                .build())
-                        .build(),
+                new OrMatchExpr(
+                    ImmutableList.of(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setSrcIps(Ip.parse("1.1.1.1").toIpSpace())
+                                .build(),
+                            traceElementForInstance(INSTANCE_1)),
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setSrcIps(Ip.parse("2.2.2.2").toIpSpace())
+                                .build(),
+                            traceElementForInstance(INSTANCE_2))),
                     traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP)))));
     // check if rule description is populated from UserIdGroup description
     assertThat(
