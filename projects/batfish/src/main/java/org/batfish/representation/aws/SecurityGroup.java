@@ -8,11 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,6 +20,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 
 /** Represents an AWS security group */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -34,7 +35,8 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<IpPermissions> _ipPermsIngress;
 
-  @Nonnull private final Set<IpInstanceNamePair> _referrerIps;
+  /** IPs and instance names of the instances which refer to this security group */
+  @Nonnull private final Map<Ip, String> _referrerIps;
 
   @JsonCreator
   private static SecurityGroup create(
@@ -60,7 +62,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     _groupName = groupName;
     _ipPermsEgress = ipPermsEgress;
     _ipPermsIngress = ipPermsIngress;
-    _referrerIps = new HashSet<>();
+    _referrerIps = new HashMap<>();
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
@@ -106,7 +108,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _ipPermsIngress;
   }
 
-  Set<IpInstanceNamePair> getUsersIpSpace() {
+  Map<Ip, String> getReferrerIps() {
     return _referrerIps;
   }
 
@@ -114,8 +116,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     configuration.getAllInterfaces().values().stream()
         .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .map(ConcreteInterfaceAddress::getIp)
-        .map(ip -> new IpInstanceNamePair(ip, configuration.getHostname()))
-        .forEach(_referrerIps::add);
+        .forEach(ip -> _referrerIps.put(ip, configuration.getHostname()));
   }
 
   @Override

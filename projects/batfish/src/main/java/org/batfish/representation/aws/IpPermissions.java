@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESCRIPTION;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_FROM_PORT;
@@ -33,6 +32,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -41,6 +41,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** IP packet permissions within AWS security groups */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -447,9 +449,9 @@ final class IpPermissions implements Serializable {
 
   private static AclLineMatchExpr toMatchExpr(SecurityGroup sg, boolean ingress) {
     ImmutableList.Builder<AclLineMatchExpr> matchExprBuilder = ImmutableList.builder();
-    for (IpInstanceNamePair pair : sg.getUsersIpSpace()) {
-      TraceElement traceElement = traceElementForInstance(pair.getInstanceName());
-      IpIpSpace ipSpace = pair.getIp().toIpSpace();
+    for (Entry<Ip, String> ipAndInstance : sg.getReferrerIps().entrySet()) {
+      TraceElement traceElement = traceElementForInstance(ipAndInstance.getValue());
+      IpIpSpace ipSpace = ipAndInstance.getKey().toIpSpace();
       if (ingress) {
         matchExprBuilder.add(
             new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build(), traceElement));
@@ -458,10 +460,10 @@ final class IpPermissions implements Serializable {
             new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement));
       }
     }
-    return or(
+    return new OrMatchExpr(
+        matchExprBuilder.build(),
         traceTextForAddress(
-            ingress ? "source" : "destination", sg.getGroupName(), AddressType.SECURITY_GROUP),
-        matchExprBuilder.build().toArray(new AclLineMatchExpr[0]));
+            ingress ? "source" : "destination", sg.getGroupName(), AddressType.SECURITY_GROUP));
   }
 
   private ExprAclLine createAclLineForSg(

@@ -40,7 +40,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.UserIdGroupPair;
-import org.junit.Assert;
 import org.junit.Test;
 
 /** Test for {@link IpPermissions} */
@@ -61,8 +60,8 @@ public class IpPermissionsTest {
   private static Region testRegion() {
     Region region = new Region("test");
     SecurityGroup sg = new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of());
-    sg.getUsersIpSpace().add(new IpInstanceNamePair(Ip.parse("1.1.1.1"), "i1"));
-    sg.getUsersIpSpace().add(new IpInstanceNamePair(Ip.parse("2.2.2.2"), "i2"));
+    sg.getReferrerIps().put(Ip.parse("1.1.1.1"), "i1");
+    sg.getReferrerIps().put(Ip.parse("2.2.2.2"), "i2");
     region.getSecurityGroups().put(sg.getGroupId(), sg);
     return region;
   }
@@ -151,7 +150,7 @@ public class IpPermissionsTest {
         AclTracer.trace(
             aclList, flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
 
-    Assert.assertThat(
+    assertThat(
         root,
         contains(
             allOf(
@@ -179,6 +178,6 @@ public class IpPermissionsTest {
     root =
         AclTracer.trace(
             aclList, deniedFlow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
-    Assert.assertThat(root, empty());
+    assertThat(root, empty());
   }
 }
