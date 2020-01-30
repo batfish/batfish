@@ -1,10 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.representation.juniper.FwTerm.Field;
 
@@ -14,15 +12,7 @@ import org.batfish.representation.juniper.FwTerm.Field;
  */
 public interface FwFrom extends Serializable {
 
-  void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder, JuniperConfiguration jc, Warnings w, Configuration c);
+  Field getField();
 
-  default Field getField() {
-    throw new BatfishException("not implemented");
-  }
-
-  default AclLineMatchExpr toAclLineMatchExpr(
-      JuniperConfiguration jc, Configuration c, Warnings w) {
-    throw new BatfishException("not implemented");
-  }
+  AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w);
 }
