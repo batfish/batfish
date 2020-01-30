@@ -2554,21 +2554,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private AclLineMatchExpr toAclLineMatchExpr(
       Collection<FwFrom> fwFroms, TraceElement traceElement) {
-    List<AclLineMatchExpr> conjuncts = fwFroms.stream()
-        // EnumMap is sorted, which gives us deterministic ordering of the And conjuncts
-        .collect(groupingBy(
-            FwFrom::getField,
-            () -> new EnumMap<>(Field.class),
-            Collectors.toList()))
-        .values()
-        .stream()
-        .map(fwFromDisjuncts -> or(fwFromDisjuncts.stream()
-            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
-            .collect(ImmutableList.toImmutableList())))
-        .collect(ImmutableList.toImmutableList());
-    return new AndMatchExpr(
-        conjuncts,
-        traceElement);
+    List<AclLineMatchExpr> conjuncts =
+        fwFroms.stream()
+            // EnumMap is sorted, which gives us deterministic ordering of the And conjuncts
+            .collect(
+                groupingBy(FwFrom::getField, () -> new EnumMap<>(Field.class), Collectors.toList()))
+            .values()
+            .stream()
+            .map(
+                fwFromDisjuncts ->
+                    or(
+                        fwFromDisjuncts.stream()
+                            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
+                            .collect(ImmutableList.toImmutableList())))
+            .collect(ImmutableList.toImmutableList());
+    return new AndMatchExpr(conjuncts, traceElement);
   }
 
   private PacketPolicy toPacketPolicy(ConcreteFirewallFilter filter) {
