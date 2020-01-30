@@ -614,16 +614,7 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
                             "p1",
-                            TraceElement.builder()
-                                .add("Matched ")
-                                .add(
-                                    "p1",
-                                    new VendorStructureId(
-                                        "configs/application-with-terms",
-                                        FIREWALL_FILTER_TERM.getDescription(),
-                                        computeFirewallFilterTermName(
-                                            ACL_NAME_GLOBAL_POLICY, "p1")))
-                                .build()),
+                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -633,16 +624,7 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
                                     .build()),
                             "p1",
-                            TraceElement.builder()
-                                .add("Matched ")
-                                .add(
-                                    "p1",
-                                    new VendorStructureId(
-                                        "configs/application-with-terms",
-                                        FIREWALL_FILTER_TERM.getDescription(),
-                                        computeFirewallFilterTermName(
-                                            ACL_NAME_GLOBAL_POLICY, "p1")))
-                                .build()))))));
+                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
   }
 
   @Test
