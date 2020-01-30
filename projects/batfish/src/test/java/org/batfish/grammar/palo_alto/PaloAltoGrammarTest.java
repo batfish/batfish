@@ -1705,7 +1705,7 @@ public final class PaloAltoGrammarTest {
                 intrazoneDefaultAcceptTraceElement(vsysName, zoneName))));
 
     // Flow matching DENY security rule should be rejected by intrazone reject line.
-    // TODO Ideally this trace should have matchRuleTraceElement("PERMIT") instead of mismatch
+    // TODO Ideally this trace should have matchRuleTraceElement("DENY") instead of mismatch
     flowTrace =
         AclTracer.trace(
             ifaceOutgoingFilter,
