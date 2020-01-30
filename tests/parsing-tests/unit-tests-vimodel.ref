@@ -23985,6 +23985,82 @@
                         {
                           "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                           "headerSpace" : {
+                            "dstIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.4"
+                            },
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched destination-address 1.2.3.4"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "dstIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.5"
+                            },
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched destination-address 1.2.3.5"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "dstIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.8/30"
+                            },
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched destination-address 1.2.3.8/30"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "icmpCodes" : [
+                          "2-2"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched icmp-code 2"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
                             "icmpTypes" : [
                               "3-3"
                             ],
@@ -24257,69 +24333,10 @@
                       }
                     },
                     {
-                      "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                      "disjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "1.2.3.4"
-                            },
-                            "negate" : false
-                          },
-                          "traceElement" : {
-                            "fragments" : [
-                              {
-                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched destination-address 1.2.3.4"
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "1.2.3.5"
-                            },
-                            "negate" : false
-                          },
-                          "traceElement" : {
-                            "fragments" : [
-                              {
-                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched destination-address 1.2.3.5"
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "1.2.3.8/30"
-                            },
-                            "negate" : false
-                          },
-                          "traceElement" : {
-                            "fragments" : [
-                              {
-                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched destination-address 1.2.3.8/30"
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    {
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
-                        "icmpCodes" : [
-                          "2-2"
+                        "ipProtocols" : [
+                          "PIM"
                         ],
                         "negate" : false
                       },
@@ -24327,7 +24344,7 @@
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched icmp-code 2"
+                            "text" : "Matched protocol pim"
                           }
                         ]
                       }
@@ -24372,23 +24389,6 @@
                           }
                         }
                       ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "ipProtocols" : [
-                          "PIM"
-                        ],
-                        "negate" : false
-                      },
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched protocol pim"
-                          }
-                        ]
-                      }
                     }
                   ]
                 },
@@ -24464,6 +24464,82 @@
                   "expression" : {
                     "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                     "conjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                        "disjuncts" : [
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "1.2.3.4"
+                              },
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched destination-address 1.2.3.4"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "1.2.3.5"
+                              },
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched destination-address 1.2.3.5"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "1.2.3.8/30"
+                              },
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched destination-address 1.2.3.8/30"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "icmpCodes" : [
+                            "2-2"
+                          ],
+                          "negate" : false
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched icmp-code 2"
+                            }
+                          ]
+                        }
+                      },
                       {
                         "class" : "org.batfish.datamodel.acl.OrMatchExpr",
                         "disjuncts" : [
@@ -24742,69 +24818,10 @@
                         }
                       },
                       {
-                        "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                        "disjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                            "headerSpace" : {
-                              "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                "ipWildcard" : "1.2.3.4"
-                              },
-                              "negate" : false
-                            },
-                            "traceElement" : {
-                              "fragments" : [
-                                {
-                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched destination-address 1.2.3.4"
-                                }
-                              ]
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                            "headerSpace" : {
-                              "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                "ipWildcard" : "1.2.3.5"
-                              },
-                              "negate" : false
-                            },
-                            "traceElement" : {
-                              "fragments" : [
-                                {
-                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched destination-address 1.2.3.5"
-                                }
-                              ]
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                            "headerSpace" : {
-                              "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                "ipWildcard" : "1.2.3.8/30"
-                              },
-                              "negate" : false
-                            },
-                            "traceElement" : {
-                              "fragments" : [
-                                {
-                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched destination-address 1.2.3.8/30"
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      },
-                      {
                         "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                         "headerSpace" : {
-                          "icmpCodes" : [
-                            "2-2"
+                          "ipProtocols" : [
+                            "PIM"
                           ],
                           "negate" : false
                         },
@@ -24812,7 +24829,7 @@
                           "fragments" : [
                             {
                               "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                              "text" : "Matched icmp-code 2"
+                              "text" : "Matched protocol pim"
                             }
                           ]
                         }
@@ -24857,23 +24874,6 @@
                             }
                           }
                         ]
-                      },
-                      {
-                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                        "headerSpace" : {
-                          "ipProtocols" : [
-                            "PIM"
-                          ],
-                          "negate" : false
-                        },
-                        "traceElement" : {
-                          "fragments" : [
-                            {
-                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                              "text" : "Matched protocol pim"
-                            }
-                          ]
-                        }
                       }
                     ],
                     "traceElement" : {
