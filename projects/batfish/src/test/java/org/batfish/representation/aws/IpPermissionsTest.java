@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -31,7 +32,11 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -48,6 +53,8 @@ public class IpPermissionsTest {
   private static final String SG_DESC = "sg desc";
   private static final String INSTANCE_1 = "i1";
   private static final String INSTANCE_2 = "i2";
+  private static final String PL_ID = "pl-id";
+  private static final String PL_NAME = "pl name";
 
   private static final MatchHeaderSpace matchTcp =
       new MatchHeaderSpace(
@@ -64,6 +71,13 @@ public class IpPermissionsTest {
     sg.getReferrerIps().put(Ip.parse("1.1.1.1"), INSTANCE_1);
     sg.getReferrerIps().put(Ip.parse("2.2.2.2"), INSTANCE_2);
     region.getSecurityGroups().put(sg.getGroupId(), sg);
+    PrefixList pl =
+        new PrefixList(
+            PL_ID,
+            ImmutableList.of(
+                Prefix.parse("1.1.1.0/24"), Prefix.parse("2.2.2.0/24"), Prefix.parse("2.2.2.0/24")),
+            PL_NAME);
+    region.getPrefixLists().put(pl.getId(), pl);
     return region;
   }
 
@@ -184,5 +198,20 @@ public class IpPermissionsTest {
         AclTracer.trace(
             aclList, deniedFlow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
     assertThat(root, empty());
+  }
+
+  @Test
+  public void testCollectPrefixLists() {
+    Region region = testRegion();
+    Map<PrefixList, IpSpace> prefixListIpSpaceMap =
+        IpPermissions.collectPrefixLists(region, ImmutableList.of(PL_ID, PL_ID));
+    assertThat(
+        prefixListIpSpaceMap,
+        equalTo(
+            ImmutableMap.of(
+                region.getPrefixLists().get(PL_ID),
+                IpWildcardSetIpSpace.builder()
+                    .including(IpWildcard.parse("1.1.1.0/24"), IpWildcard.parse("2.2.2.0/24"))
+                    .build())));
   }
 }

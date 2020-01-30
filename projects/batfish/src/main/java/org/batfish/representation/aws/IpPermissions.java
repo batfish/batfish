@@ -29,12 +29,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -45,6 +47,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
@@ -275,19 +279,21 @@ final class IpPermissions implements Serializable {
    * Returns a Map containing all the Prefix Lists referred by this IPPermission instance and the
    * corresponding IpSpaces
    */
-  private Map<PrefixList, IpSpace> collectPrefixLists(Region region) {
-    ImmutableMap.Builder<PrefixList, IpSpace> plToIpSpace = ImmutableMap.builder();
-    _prefixList.stream()
+  @VisibleForTesting
+  static Map<PrefixList, IpSpace> collectPrefixLists(Region region, List<String> prefixLists) {
+    return prefixLists.stream()
+        .distinct()
         .map(plId -> region.getPrefixLists().get(plId))
         .filter(Objects::nonNull)
-        .distinct()
-        .forEach(
-            prefixList -> {
-              prefixList
-                  .getCidrs()
-                  .forEach(prefix -> plToIpSpace.put(prefixList, prefix.toIpSpace()));
-            });
-    return plToIpSpace.build();
+        .collect(
+            ImmutableMap.toImmutableMap(Function.identity(), IpPermissions::prefixListToIpSpace));
+  }
+
+  private static IpSpace prefixListToIpSpace(PrefixList pl) {
+    return IpWildcardSetIpSpace.builder()
+        .including(
+            pl.getCidrs().stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet()))
+        .build();
   }
 
   /**
@@ -419,7 +425,7 @@ final class IpPermissions implements Serializable {
     aclLines.addAll(userIdGroupsToAclLines(region, protocolAndPortExprs, ingress, name));
     aclLines.addAll(
         collectPrefixListsIntoAclLines(
-            collectPrefixLists(region), protocolAndPortExprs, ingress, name));
+            collectPrefixLists(region, _prefixList), protocolAndPortExprs, ingress, name));
     return aclLines.build();
   }
 
