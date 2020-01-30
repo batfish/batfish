@@ -1,9 +1,11 @@
 package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -2090,18 +2092,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
+      String toZone = zone.getName();
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
         String filterName = e.getKey();
         FirewallFilter filter = e.getValue();
 
+        // The config is "from-zone junos-host", but we choose to only print "zone" when it's not
+        // the host.
         String fromDesc =
             filter.getFromZone().map(s -> String.format("zone %s", s)).orElse("junos-host");
+        String policyDesc = String.format("security policy from %s to zone %s", fromDesc, toZone);
 
-        String zonePolicyLineDesc =
-            String.format("Matched security policy from %s to zone %s", fromDesc, zone.getName());
+        String policyName = zoneToZoneFilter(filter.getFromZone().orElse("junos-host"), toZone);
+        TraceElement traceElement =
+            TraceElement.builder()
+                .add("Matched ")
+                .add(
+                    policyDesc,
+                    new VendorStructureId(_filename, SECURITY_POLICY.getDescription(), policyName))
+                .build();
 
-        zoneAclLines.add(
-            new AclAclLine(zonePolicyLineDesc, filterName, TraceElement.of(zonePolicyLineDesc)));
+        zoneAclLines.add(new AclAclLine("Match " + policyDesc, filterName, traceElement));
       }
     }
 
@@ -2112,7 +2123,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
           new AclAclLine(
               "Match global security policy",
               ACL_NAME_GLOBAL_POLICY,
-              TraceElement.of("Matched global security policy")));
+              TraceElement.builder()
+                  .add("Matched ")
+                  .add(
+                      "global security policy",
+                      new VendorStructureId(
+                          _filename, SECURITY_POLICY.getDescription(), ACL_NAME_GLOBAL_POLICY))
+                  .build()));
     }
 
     /* Add catch-all line with default action */
