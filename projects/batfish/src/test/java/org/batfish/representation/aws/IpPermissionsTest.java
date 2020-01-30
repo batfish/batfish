@@ -74,7 +74,8 @@ public class IpPermissionsTest {
     PrefixList pl =
         new PrefixList(
             PL_ID,
-            ImmutableList.of(Prefix.parse("1.1.1.0/24"), Prefix.parse("2.2.2.0/24")),
+            ImmutableList.of(
+                Prefix.parse("1.1.1.0/24"), Prefix.parse("2.2.2.0/24"), Prefix.parse("2.2.2.0/24")),
             PL_NAME);
     region.getPrefixLists().put(pl.getId(), pl);
     return region;
@@ -203,7 +204,7 @@ public class IpPermissionsTest {
   public void testCollectPrefixLists() {
     Region region = testRegion();
     Map<PrefixList, IpSpace> prefixListIpSpaceMap =
-        IpPermissions.collectPrefixLists(region, ImmutableList.of(PL_ID));
+        IpPermissions.collectPrefixLists(region, ImmutableList.of(PL_ID, PL_ID));
     assertThat(
         prefixListIpSpaceMap,
         equalTo(
