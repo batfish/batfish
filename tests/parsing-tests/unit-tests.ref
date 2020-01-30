@@ -84298,6 +84298,24 @@
               "numReferrers" : 1
             }
           },
+          "security policy" : {
+            "zone~A~to~zone~B" : {
+              "definitionLines" : [
+                19,
+                20,
+                21,
+                22
+              ],
+              "numReferrers" : 4
+            },
+            "~GLOBAL_SECURITY_POLICY~" : {
+              "definitionLines" : [
+                16,
+                17
+              ],
+              "numReferrers" : 2
+            }
+          },
           "security policy term" : {
             "zone~A~to~zone~B 123-4" : {
               "definitionLines" : [
@@ -91310,6 +91328,22 @@
             "PROPOSAL" : {
               "ike policy ike proposal" : [
                 14
+              ]
+            }
+          },
+          "security policy" : {
+            "zone~A~to~zone~B" : {
+              "security policy" : [
+                19,
+                20,
+                21,
+                22
+              ]
+            },
+            "~GLOBAL_SECURITY_POLICY~" : {
+              "security policy" : [
+                16,
+                17
               ]
             }
           },
