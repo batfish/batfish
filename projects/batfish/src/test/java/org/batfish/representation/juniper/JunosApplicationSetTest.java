@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.junit.Test;
 

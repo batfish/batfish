@@ -8,7 +8,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
