@@ -2178,26 +2178,46 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // For now, assume line is unmatchable.
       return lines;
     }
-    if (term.getFromApplicationSetMembers().isEmpty()
+    if (!(term.getFromApplicationSetMembers().isEmpty()
         && term.getFromHostProtocols().isEmpty()
-        && term.getFromHostServices().isEmpty()) {
-      lines.add(
-          ExprAclLine.builder()
-              .setAction(action)
-              .setMatchCondition(and(matchFwFroms, new MatchHeaderSpace(matchCondition.build())))
-              .setName(term.getName())
-              .setTraceElement(
-                  TraceElement.builder()
-                      .add("Matched ")
-                      .add(
-                          term.getName(),
-                          new VendorStructureId(
-                              _filename,
-                              FIREWALL_FILTER_TERM.getDescription(),
-                              computeFirewallFilterTermName(aclName, term.getName())))
-                      .build())
-              .build());
+        && term.getFromHostServices().isEmpty())) {
+      return lines.stream()
+          .map(
+              l ->
+                  new ExprAclLine(
+                      action,
+                      term.getFroms().isEmpty()
+                          ? l.getMatchCondition()
+                          : and(l.getMatchCondition(), matchFwFroms),
+                      term.getName(),
+                      TraceElement.builder()
+                          .add("Matched ")
+                          .add(
+                              term.getName(),
+                              new VendorStructureId(
+                                  _filename,
+                                  FIREWALL_FILTER_TERM.getDescription(),
+                                  computeFirewallFilterTermName(aclName, term.getName())))
+                          .build()))
+          .collect(ImmutableList.toImmutableList());
     }
+
+    lines.add(
+        ExprAclLine.builder()
+            .setAction(action)
+            .setMatchCondition(matchFwFroms)
+            .setName(term.getName())
+            .setTraceElement(
+                TraceElement.builder()
+                    .add("Matched ")
+                    .add(
+                        term.getName(),
+                        new VendorStructureId(
+                            _filename,
+                            FIREWALL_FILTER_TERM.getDescription(),
+                            computeFirewallFilterTermName(aclName, term.getName())))
+                    .build())
+            .build());
     return lines;
   }
 

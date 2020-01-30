@@ -12,6 +12,7 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
@@ -196,7 +197,6 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -476,8 +476,8 @@ public final class FlatJuniperGrammarTest {
                                     .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
                                     .build()),
-                            null,
-                            TraceElement.of("Matched application a1")),
+                            "p1",
+                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -485,8 +485,8 @@ public final class FlatJuniperGrammarTest {
                                     .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                     .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
-                            null,
-                            TraceElement.of("Matched application a2")),
+                            "p1",
+                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -494,8 +494,8 @@ public final class FlatJuniperGrammarTest {
                                     .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                     .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                     .build()),
-                            null,
-                            TraceElement.of("Matched application a3")))))));
+                            "p1",
+                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
@@ -613,8 +613,17 @@ public final class FlatJuniperGrammarTest {
                                     .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
-                            null,
-                            TraceElement.of("Matched application a1 term t1")),
+                            "p1",
+                            TraceElement.builder()
+                                .add("Matched ")
+                                .add(
+                                    "p1",
+                                    new VendorStructureId(
+                                        "configs/application-with-terms",
+                                        FIREWALL_FILTER_TERM.getDescription(),
+                                        computeFirewallFilterTermName(
+                                            ACL_NAME_GLOBAL_POLICY, "p1")))
+                                .build()),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -623,8 +632,17 @@ public final class FlatJuniperGrammarTest {
                                     .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
                                     .build()),
-                            null,
-                            TraceElement.of("Matched application a1 term t2")))))));
+                            "p1",
+                            TraceElement.builder()
+                                .add("Matched ")
+                                .add(
+                                    "p1",
+                                    new VendorStructureId(
+                                        "configs/application-with-terms",
+                                        FIREWALL_FILTER_TERM.getDescription(),
+                                        computeFirewallFilterTermName(
+                                            ACL_NAME_GLOBAL_POLICY, "p1")))
+                                .build()))))));
   }
 
   @Test
@@ -2750,16 +2768,26 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(
-                                            AclIpSpace.union(
-                                                IpWildcard.ipWithWildcardMask(
-                                                        Ip.parse("1.0.3.0"),
-                                                        Ip.parse("0.255.0.255"))
-                                                    .toIpSpace(),
-                                                IpWildcard.parse("2.3.4.5/24").toIpSpace()))
-                                        .build()))
+                                new AndMatchExpr(
+                                    ImmutableList.of(
+                                        or(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        IpWildcard.ipWithWildcardMask(
+                                                                Ip.parse("1.0.3.0"),
+                                                                Ip.parse("0.255.0.255"))
+                                                            .toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched source-address 1.0.3.0:0.255.0.255")),
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched source-address 2.3.4.0/24"))))))
                             .setName("TERM")
                             .setTraceElement(matchingFirewallFilterTerm(c, filterNameV4, "TERM"))
                             .build())))));
@@ -3044,16 +3072,26 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setDstIps(
-                                            AclIpSpace.union(
-                                                IpWildcard.ipWithWildcardMask(
-                                                        Ip.parse("1.0.3.0"),
-                                                        Ip.parse("0.255.0.255"))
-                                                    .toIpSpace(),
-                                                IpWildcard.parse("2.3.4.5/24").toIpSpace()))
-                                        .build()))
+                                new AndMatchExpr(
+                                    ImmutableList.of(
+                                        or(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setDstIps(
+                                                        IpWildcard.ipWithWildcardMask(
+                                                                Ip.parse("1.0.3.0"),
+                                                                Ip.parse("0.255.0.255"))
+                                                            .toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched destination-address 1.0.3.0:0.255.0.255")),
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setDstIps(
+                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched destination-address 2.3.4.0/24"))))))
                             .setName("TERM")
                             .setTraceElement(matchingFirewallFilterTerm(c, filterNameV4, "TERM"))
                             .build())))));
@@ -4970,10 +5008,13 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         new ExprAclLine(
                             LineAction.PERMIT,
-                            AclLineMatchExprs.match(
-                                HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
-                                    .build()),
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
+                                            .build(),
+                                        TraceElement.of("Matched source-address 1.2.3.6")))),
                             "TERM",
                             matchingFirewallFilterTerm(config, "FILTER1", "TERM"))))
                 .build()));
