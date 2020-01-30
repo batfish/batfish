@@ -31,6 +31,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
@@ -83,6 +84,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_I
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
@@ -3359,6 +3361,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String fromName = ctx.from.getText();
     String toName = ctx.to.getText();
     String policyName = zoneToZoneFilter(fromName, toName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY, policyName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY, policyName, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
     _currentSecurityPolicyName = policyName;
     if (ctx.from.JUNOS_HOST() == null) {
       _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
@@ -3420,6 +3425,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 .computeIfAbsent(
                     ACL_NAME_GLOBAL_POLICY, n -> new ConcreteFirewallFilter(n, Family.INET));
     _currentSecurityPolicyName = ACL_NAME_GLOBAL_POLICY;
+    _configuration.defineFlattenedStructure(SECURITY_POLICY, ACL_NAME_GLOBAL_POLICY, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY, ACL_NAME_GLOBAL_POLICY, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
   }
 
   @Override
