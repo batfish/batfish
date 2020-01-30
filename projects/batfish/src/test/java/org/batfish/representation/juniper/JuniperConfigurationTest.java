@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_DEAD_INTERVAL;
@@ -17,6 +18,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDead
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -667,7 +669,16 @@ public class JuniperConfigurationTest {
 
     assertThat(
         acl.getLines().get(1).getTraceElement(),
-        equalTo(TraceElement.of("Matched security policy from junos-host to zone toZone")));
+        equalTo(
+            TraceElement.builder()
+                .add("Matched ")
+                .add(
+                    "security policy from junos-host to zone toZone",
+                    new VendorStructureId(
+                        config.getFilename(),
+                        SECURITY_POLICY.getDescription(),
+                        zoneToZoneFilter("junos-host", "toZone")))
+                .build()));
 
     assertThat(
         acl.getLines().get(2).getTraceElement(),
@@ -697,7 +708,16 @@ public class JuniperConfigurationTest {
 
     assertThat(
         acl.getLines().get(1).getTraceElement(),
-        equalTo(TraceElement.of("Matched security policy from zone fromZone to zone toZone")));
+        equalTo(
+            TraceElement.builder()
+                .add("Matched ")
+                .add(
+                    "security policy from zone fromZone to zone toZone",
+                    new VendorStructureId(
+                        config.getFilename(),
+                        SECURITY_POLICY.getDescription(),
+                        zoneToZoneFilter("fromZone", "toZone")))
+                .build()));
 
     assertThat(
         acl.getLines().get(2).getTraceElement(),
