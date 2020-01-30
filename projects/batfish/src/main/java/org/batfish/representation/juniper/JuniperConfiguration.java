@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -162,6 +163,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.FwTerm.Field;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
@@ -2552,18 +2554,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private AclLineMatchExpr toAclLineMatchExpr(
       Collection<FwFrom> fwFroms, TraceElement traceElement) {
+    List<AclLineMatchExpr> conjuncts = fwFroms.stream()
+        // EnumMap is sorted, which gives us deterministic ordering of the And conjuncts
+        .collect(groupingBy(
+            FwFrom::getField,
+            () -> new EnumMap<>(Field.class),
+            Collectors.toList()))
+        .values()
+        .stream()
+        .map(fwFromDisjuncts -> or(fwFromDisjuncts.stream()
+            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
+            .collect(ImmutableList.toImmutableList())))
+        .collect(ImmutableList.toImmutableList());
     return new AndMatchExpr(
-        fwFroms.stream()
-            .collect(groupingBy(FwFrom::getField))
-            .values()
-            .stream()
-            .map(
-                fwFromDisjuncts ->
-                    or(
-                        fwFromDisjuncts.stream()
-                            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
-                            .collect(ImmutableList.toImmutableList())))
-            .collect(ImmutableList.toImmutableList()),
+        conjuncts,
         traceElement);
   }
 
