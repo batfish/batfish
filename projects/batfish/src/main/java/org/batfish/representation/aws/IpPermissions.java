@@ -282,9 +282,9 @@ final class IpPermissions implements Serializable {
   @VisibleForTesting
   static Map<PrefixList, IpSpace> collectPrefixLists(Region region, List<String> prefixLists) {
     return prefixLists.stream()
+        .distinct()
         .map(plId -> region.getPrefixLists().get(plId))
         .filter(Objects::nonNull)
-        .distinct()
         .collect(
             ImmutableMap.toImmutableMap(Function.identity(), IpPermissions::prefixListToIpSpace));
   }
