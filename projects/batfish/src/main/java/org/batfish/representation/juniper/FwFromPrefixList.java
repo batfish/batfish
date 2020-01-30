@@ -23,35 +23,6 @@ public final class FwFromPrefixList implements FwFrom {
   }
 
   @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
-    if (pl != null) {
-      if (pl.getIpv6()) {
-        return;
-      }
-      RouteFilterList prefixList = c.getRouteFilterLists().get(_name);
-
-      // if referenced prefix list is empty, it should not match anything
-      if (prefixList.getLines().isEmpty()) {
-        headerSpaceBuilder.addSrcOrDstIp(EmptyIpSpace.INSTANCE);
-        return;
-      }
-
-      headerSpaceBuilder.addSrcOrDstIp(
-          AclIpSpace.union(
-              prefixList.getMatchingIps().stream()
-                  .map(IpWildcard::toIpSpace)
-                  .collect(ImmutableList.toImmutableList())));
-    } else {
-      w.redFlag("Reference to undefined prefix-list: \"" + _name + "\"");
-    }
-  }
-
-  @Override
   public Field getField() {
     return Field.PREFIX_LIST;
   }
