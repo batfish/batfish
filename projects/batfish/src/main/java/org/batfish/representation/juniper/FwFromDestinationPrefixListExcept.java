@@ -24,35 +24,6 @@ public final class FwFromDestinationPrefixListExcept implements FwFrom {
   }
 
   @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
-    if (pl != null) {
-      if (pl.getIpv6()) {
-        return;
-      }
-      RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(_name);
-
-      // if referenced prefix list is empty, it should not match anything
-      if (destinationPrefixList.getLines().isEmpty()) {
-        headerSpaceBuilder.addNotDstIp(EmptyIpSpace.INSTANCE);
-        return;
-      }
-
-      headerSpaceBuilder.addNotDstIp(
-          AclIpSpace.union(
-              destinationPrefixList.getMatchingIps().stream()
-                  .map(IpWildcard::toIpSpace)
-                  .collect(ImmutableList.toImmutableList())));
-    } else {
-      w.redFlag("Reference to undefined destination prefix-list: \"" + _name + "\"");
-    }
-  }
-
-  @Override
   public Field getField() {
     return Field.DESTINATION_EXCEPT;
   }
