@@ -2162,12 +2162,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     AclLineMatchExpr matchFwFroms = toAclLineMatchExpr(term.getFroms(), null);
 
     HeaderSpace.Builder matchCondition = HeaderSpace.builder();
+    // TODO: FwFromHostProtocol should be converted into AclLineMatchExpr
     for (FwFromHostProtocol from : term.getFromHostProtocols()) {
       from.applyTo(lines, _w);
     }
+    // TODO: FwFromHostService should be converted into AclLineMatchExpr
     for (FwFromHostService from : term.getFromHostServices()) {
       from.applyTo(lines, _w);
     }
+    // TODO: FwFromApplicationSetMember should be converted into AclLineMatchExpr
     for (FwFromApplicationSetMember fromApplicationSetMember :
         term.getFromApplicationSetMembers()) {
       fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
