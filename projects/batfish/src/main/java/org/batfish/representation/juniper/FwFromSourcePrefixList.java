@@ -24,35 +24,6 @@ public final class FwFromSourcePrefixList implements FwFrom {
   }
 
   @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    PrefixList pl = jc.getMasterLogicalSystem().getPrefixLists().get(_name);
-    if (pl != null) {
-      if (pl.getIpv6()) {
-        return;
-      }
-      RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
-
-      // if referenced prefix list is empty, it should not match anything
-      if (sourcePrefixList.getLines().isEmpty()) {
-        headerSpaceBuilder.addSrcIp(EmptyIpSpace.INSTANCE);
-        return;
-      }
-
-      headerSpaceBuilder.addSrcIp(
-          AclIpSpace.union(
-              sourcePrefixList.getMatchingIps().stream()
-                  .map(IpWildcard::toIpSpace)
-                  .collect(ImmutableList.toImmutableList())));
-    } else {
-      w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
-    }
-  }
-
-  @Override
   public Field getField() {
     return Field.SOURCE;
   }

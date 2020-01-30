@@ -1,7 +1,6 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -67,15 +66,6 @@ public final class FwFromTcpFlags implements FwFrom {
   private FwFromTcpFlags(List<TcpFlagsMatchConditions> tcpFlags, CommandType commandType) {
     _tcpFlags = tcpFlags;
     _commandType = commandType;
-  }
-
-  @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    headerSpaceBuilder.setTcpFlags(Iterables.concat(headerSpaceBuilder.getTcpFlags(), _tcpFlags));
   }
 
   @Override
