@@ -59,8 +59,8 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
 
     @Override
     public AclLineMatchExpr visitDeniedByAcl(DeniedByAcl deniedByAcl) {
-      PermittedByAcl newDeniedByAcl =
-          new PermittedByAcl(
+      DeniedByAcl newDeniedByAcl =
+          new DeniedByAcl(
               _aclRenamer.apply(deniedByAcl.getAclName()), deniedByAcl.getTraceElement());
       _literalsMap.put(deniedByAcl, newDeniedByAcl);
       return newDeniedByAcl;

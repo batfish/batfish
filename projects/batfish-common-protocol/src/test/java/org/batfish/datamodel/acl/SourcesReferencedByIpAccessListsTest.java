@@ -73,9 +73,9 @@ public class SourcesReferencedByIpAccessListsTest {
 
   @Test
   public void testDeniedByAcl() {
-    IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
     IpAccessList acl =
-        aclBuilder
+        IpAccessList.builder()
+            .setName("foo")
             .setLines(
                 ImmutableList.of(
                     ExprAclLine.accepting().setMatchCondition(matchSrcInterface("a")).build()))

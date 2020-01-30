@@ -1,7 +1,5 @@
 package org.batfish.datamodel.acl;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.util.Map;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
@@ -52,7 +50,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   @Override
   public Boolean visitDeniedByAcl(DeniedByAcl deniedByAcl) {
-    return firstNonNull(filter(deniedByAcl.getAclName()), LineAction.DENY) == LineAction.DENY;
+    return filter(deniedByAcl.getAclName()) == LineAction.DENY;
   }
 
   @Override

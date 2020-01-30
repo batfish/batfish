@@ -1,6 +1,8 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -88,6 +90,22 @@ public class IpAccessListToBddTest {
         new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of())
             .toBdd(acl);
     assertThat(bdd, equalTo(fooIpBDD.not()));
+  }
+
+  @Test
+  public void testDeniedByAcl2() {
+    Ip fooIp = Ip.parse("1.1.1.1");
+    BDD fooIpBDD = PKT.getDstIp().value(fooIp.asLong());
+    IpAccessList fooAcl =
+        aclWithLines(
+            rejectingHeaderSpace(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()),
+            ACCEPT_ALL);
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    BDD bdd =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of())
+            .toBdd(acl);
+    assertThat(bdd, equalTo(fooIpBDD));
   }
 
   @Test

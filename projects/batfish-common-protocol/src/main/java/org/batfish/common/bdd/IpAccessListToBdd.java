@@ -157,11 +157,11 @@ public abstract class IpAccessListToBdd {
 
   private PermitAndDenyBdds getPermitAndDenyBdds(String aclName) {
     checkArgument(
-        _permitAndDenyBdds.containsKey(aclName), "Undefined PermittedByAcl reference: %s", aclName);
+        _permitAndDenyBdds.containsKey(aclName), "Undefined filter reference: %s", aclName);
     try {
       return _permitAndDenyBdds.get(aclName).get();
     } catch (NonRecursiveSupplierException e) {
-      throw new BatfishException("Circular PermittedByAcl reference: " + aclName);
+      throw new BatfishException("Circular filter reference: " + aclName);
     }
   }
 
@@ -216,9 +216,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public BDD visitDeniedByAcl(DeniedByAcl deniedByAcl) {
-      // denied = explicitly denied or unmatched
-      PermitAndDenyBdds permitAndDenyBdds = getPermitAndDenyBdds(deniedByAcl.getAclName());
-      return permitAndDenyBdds.getDenyBdd().or(permitAndDenyBdds.getMatchBdd().not());
+      return getPermitAndDenyBdds(deniedByAcl.getAclName()).getPermitBdd().not();
     }
 
     @Override
