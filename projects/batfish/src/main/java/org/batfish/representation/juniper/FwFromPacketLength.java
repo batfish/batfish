@@ -1,12 +1,17 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.representation.juniper.FwTerm.Field;
 
+/** Class for firewall filter from packet-length */
 public class FwFromPacketLength implements FwFrom {
 
   private boolean _except;
@@ -19,17 +24,35 @@ public class FwFromPacketLength implements FwFrom {
   }
 
   @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    if (_except) {
-      headerSpaceBuilder.setNotPacketLengths(
-          Iterables.concat(headerSpaceBuilder.getNotPacketLengths(), _range));
-    } else {
-      headerSpaceBuilder.setPacketLengths(
-          Iterables.concat(headerSpaceBuilder.getPacketLengths(), _range));
-    }
+  public Field getField() {
+    return _except ? Field.FRAGMENT_OFFSET_EXCEPT : Field.PACKET_LENGTH;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
+    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+  }
+
+  private HeaderSpace toHeaderspace() {
+    return _except
+        ? HeaderSpace.builder().setNotPacketLengths(_range).build()
+        : HeaderSpace.builder().setPacketLengths(_range).build();
+  }
+
+  private TraceElement getTraceElement() {
+    String rangeString =
+        String.join(
+            " ",
+            _range.stream()
+                .map(
+                    r ->
+                        r.getStart() == r.getEnd()
+                            ? String.valueOf(r.getStart())
+                            : String.format("%d-%d", r.getStart(), r.getEnd()))
+                .collect(ImmutableList.toImmutableList()));
+
+    return _except
+        ? TraceElement.of(String.format("Matched packet-length %s except", rangeString))
+        : TraceElement.of(String.format("Matched packet-length %s", rangeString));
   }
 }

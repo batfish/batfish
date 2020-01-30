@@ -3,14 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
-import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
-import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
-import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
+import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_DEAD_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_HELLO_INTERVAL;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
@@ -23,11 +16,11 @@ import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAcc
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.iterableWithSize;
@@ -67,12 +60,15 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
+/** Test for {@link JuniperConfiguration} */
 public class JuniperConfigurationTest {
 
   private static JuniperConfiguration createConfig() {
     JuniperConfiguration config = new JuniperConfiguration();
+    config.setFilename("file");
     config._c = new Configuration("host", ConfigurationFormat.JUNIPER);
     return config;
   }
@@ -105,15 +101,29 @@ public class JuniperConfigurationTest {
     // ACL from headerSpace filter should have one line
     AclLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
-    ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
-        .map(Ip::parse)
-        .forEach(
-            ip ->
-                assertThat(
-                    headerSpaceAclLine,
-                    isExprAclLineThat(
-                        hasMatchCondition(
-                            isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip))))))));
+    assertThat(
+        headerSpaceAclLine,
+        equalTo(
+            ExprAclLine.builder()
+                .setName("term")
+                .setAction(LineAction.PERMIT)
+                .setTraceElement(
+                    TraceElement.builder()
+                        .add("Matched ")
+                        .add(
+                            "term",
+                            new VendorStructureId(
+                                "file", FIREWALL_FILTER_TERM.getDescription(), "filter term"))
+                        .build())
+                .setMatchCondition(
+                    new AndMatchExpr(
+                        ImmutableList.of(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
+                                    .build(),
+                                TraceElement.of("Matched source-address 1.2.3.0/24")))))
+                .build()));
 
     // ACL from headerSpace and zone filter should have one line
     AclLine comboAclLine = Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
@@ -121,16 +131,44 @@ public class JuniperConfigurationTest {
     // condition and a MatchHeaderSpace condition
     assertThat(
         comboAclLine,
-        isExprAclLineThat(
-            hasMatchCondition(
-                isAndMatchExprThat(
-                    hasConjuncts(
-                        containsInAnyOrder(
-                            new MatchSrcInterface(ImmutableList.of(interface1Name, interface2Name)),
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                    .build())))))));
+        equalTo(
+            ExprAclLine.builder()
+                .setName("term")
+                .setAction(LineAction.PERMIT)
+                .setTraceElement(
+                    TraceElement.builder()
+                        .add("Matched ")
+                        .add(
+                            "term",
+                            new VendorStructureId(
+                                "file", FIREWALL_FILTER_TERM.getDescription(), "filter term"))
+                        .build())
+                .setMatchCondition(
+                    new AndMatchExpr(
+                        ImmutableList.of(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
+                                            .build(),
+                                        TraceElement.of("Matched source-address 1.2.3.0/24")))),
+                            new MatchSrcInterface(zone.getInterfaces()))))
+                .build()));
+  }
+
+  @Test
+  public void testCompositeFirewallFilter() {
+    JuniperConfiguration config = createConfig();
+
+    ConcreteFirewallFilter concrete = new ConcreteFirewallFilter("F", Family.INET);
+    CompositeFirewallFilter composite =
+        new CompositeFirewallFilter("composite", ImmutableList.of(concrete));
+    IpAccessList compositeAcl = config.toIpAccessList(composite);
+
+    assertThat(
+        compositeAcl.getLines(),
+        contains(hasTraceElement(TraceElement.of("Matched firewall filter F"))));
   }
 
   /**
@@ -676,7 +714,16 @@ public class JuniperConfigurationTest {
 
     assertThat(acl.getLines(), hasSize(1));
 
-    assertThat(acl.getLines().get(0).getTraceElement(), equalTo(TraceElement.of("Matched term")));
+    TraceElement expected =
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                "term",
+                new VendorStructureId("file", FIREWALL_FILTER_TERM.getDescription(), "acl term"))
+            .build();
+    TraceElement actual = acl.getLines().get(0).getTraceElement();
+    assertThat(actual, equalTo(expected));
+    assertThat(actual.getText(), equalTo("Matched term"));
   }
 
   @Test

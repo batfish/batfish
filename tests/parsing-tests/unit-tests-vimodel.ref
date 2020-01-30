@@ -22605,39 +22605,61 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "tcpFlagsMatchConditions" : [
-                      {
-                        "tcpFlags" : {
-                          "ack" : true,
-                          "cwr" : false,
-                          "ece" : false,
-                          "fin" : false,
-                          "psh" : false,
-                          "rst" : false,
-                          "syn" : false,
-                          "urg" : false
-                        },
-                        "useAck" : true,
-                        "useCwr" : false,
-                        "useEce" : false,
-                        "useFin" : false,
-                        "usePsh" : false,
-                        "useRst" : false,
-                        "useSyn" : false,
-                        "useUrg" : false
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "tcpFlagsMatchConditions" : [
+                          {
+                            "tcpFlags" : {
+                              "ack" : true,
+                              "cwr" : false,
+                              "ece" : false,
+                              "fin" : false,
+                              "psh" : false,
+                              "rst" : false,
+                              "syn" : false,
+                              "urg" : false
+                            },
+                            "useAck" : true,
+                            "useCwr" : false,
+                            "useEce" : false,
+                            "useFin" : false,
+                            "usePsh" : false,
+                            "useRst" : false,
+                            "useSyn" : false,
+                            "useUrg" : false
+                          }
+                        ]
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched tcp-flags TcpFlagsMatchConditions{_tcpFlags=TcpFlags{_ack=true, _cwr=false, _ece=false, _fin=false, _psh=false, _rst=false, _syn=false, _urg=false}, _useAck=true, _useCwr=false, _useEce=false, _useFin=false, _usePsh=false, _useRst=false, _useSyn=false, _useUrg=false}"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 "name" : "bar",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched bar"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "bar",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper-tcpflags",
+                        "structureName" : "foo bar",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -23955,87 +23977,436 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.AclIpSpace",
-                      "lines" : [
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                      "disjuncts" : [
                         {
-                          "action" : "PERMIT",
-                          "ipSpace" : {
-                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.4"
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "dstIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.4"
+                            },
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched destination-address 1.2.3.4"
+                              }
+                            ]
                           }
                         },
                         {
-                          "action" : "PERMIT",
-                          "ipSpace" : {
-                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.5"
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "dstIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.5"
+                            },
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched destination-address 1.2.3.5"
+                              }
+                            ]
                           }
                         },
                         {
-                          "action" : "PERMIT",
-                          "ipSpace" : {
-                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.8/30"
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "dstIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.8/30"
+                            },
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched destination-address 1.2.3.8/30"
+                              }
+                            ]
                           }
                         }
                       ]
                     },
-                    "icmpCodes" : [
-                      "2-2"
-                    ],
-                    "icmpTypes" : [
-                      "0-0",
-                      "1-1",
-                      "3-3",
-                      "4-4",
-                      "5-5",
-                      "8-8",
-                      "9-9",
-                      "10-10",
-                      "11-11",
-                      "12-12",
-                      "13-13",
-                      "14-14",
-                      "15-15",
-                      "16-16"
-                    ],
-                    "ipProtocols" : [
-                      "PIM"
-                    ],
-                    "negate" : false,
-                    "packetLengths" : [
-                      "70-12000"
-                    ],
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.AclIpSpace",
-                      "lines" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "icmpCodes" : [
+                          "2-2"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched icmp-code 2"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                      "disjuncts" : [
                         {
-                          "action" : "PERMIT",
-                          "ipSpace" : {
-                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "2.4.6.8/30"
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "3-3"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 3"
+                              }
+                            ]
                           }
                         },
                         {
-                          "action" : "PERMIT",
-                          "ipSpace" : {
-                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "2.4.6.9"
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "0-0"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 0"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "8-8"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 8"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "16-16"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 16"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "15-15"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 15"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "12-12"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 12"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "5-5"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 5"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "9-9"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 9"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "10-10"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 10"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "4-4"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 4"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "11-11"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 11"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "13-13"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 13"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "14-14"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 14"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "3-3"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 3"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "icmpTypes" : [
+                              "1-1"
+                            ],
+                            "negate" : false
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched icmp-type 1"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "packetLengths" : [
+                          "70-12000"
+                        ]
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched packet-length 70-12000"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "ipProtocols" : [
+                          "PIM"
+                        ],
+                        "negate" : false
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched protocol pim"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "negate" : false,
+                            "srcIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.8/30"
+                            }
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched source-address 2.4.6.8/30"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                          "headerSpace" : {
+                            "negate" : false,
+                            "srcIps" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.9"
+                            }
+                          },
+                          "traceElement" : {
+                            "fragments" : [
+                              {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched source-address 2.4.6.9"
+                              }
+                            ]
                           }
                         }
                       ]
                     }
-                  }
+                  ]
                 },
                 "name" : "blorp",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched blorp"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "blorp",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_firewall",
+                        "structureName" : "blah blorp",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -24044,17 +24415,23 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false
-                  }
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr"
                 },
                 "name" : "t3",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched t3"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "t3",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_firewall",
+                        "structureName" : "blah t3",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -24085,80 +24462,420 @@
                 "trueStatements" : {
                   "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
                   "expression" : {
-                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                    "headerSpace" : {
-                      "dstIps" : {
-                        "class" : "org.batfish.datamodel.AclIpSpace",
-                        "lines" : [
+                    "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                    "conjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                        "disjuncts" : [
                           {
-                            "action" : "PERMIT",
-                            "ipSpace" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "1.2.3.4"
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "1.2.3.4"
+                              },
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched destination-address 1.2.3.4"
+                                }
+                              ]
                             }
                           },
                           {
-                            "action" : "PERMIT",
-                            "ipSpace" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "1.2.3.5"
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "1.2.3.5"
+                              },
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched destination-address 1.2.3.5"
+                                }
+                              ]
                             }
                           },
                           {
-                            "action" : "PERMIT",
-                            "ipSpace" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "1.2.3.8/30"
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "dstIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "1.2.3.8/30"
+                              },
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched destination-address 1.2.3.8/30"
+                                }
+                              ]
                             }
                           }
                         ]
                       },
-                      "icmpCodes" : [
-                        "2-2"
-                      ],
-                      "icmpTypes" : [
-                        "0-0",
-                        "1-1",
-                        "3-3",
-                        "4-4",
-                        "5-5",
-                        "8-8",
-                        "9-9",
-                        "10-10",
-                        "11-11",
-                        "12-12",
-                        "13-13",
-                        "14-14",
-                        "15-15",
-                        "16-16"
-                      ],
-                      "ipProtocols" : [
-                        "PIM"
-                      ],
-                      "negate" : false,
-                      "packetLengths" : [
-                        "70-12000"
-                      ],
-                      "srcIps" : {
-                        "class" : "org.batfish.datamodel.AclIpSpace",
-                        "lines" : [
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "icmpCodes" : [
+                            "2-2"
+                          ],
+                          "negate" : false
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched icmp-code 2"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                        "disjuncts" : [
                           {
-                            "action" : "PERMIT",
-                            "ipSpace" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "2.4.6.8/30"
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "3-3"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 3"
+                                }
+                              ]
                             }
                           },
                           {
-                            "action" : "PERMIT",
-                            "ipSpace" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                              "ipWildcard" : "2.4.6.9"
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "0-0"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 0"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "8-8"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 8"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "16-16"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 16"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "15-15"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 15"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "12-12"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 12"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "5-5"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 5"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "9-9"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 9"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "10-10"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 10"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "4-4"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 4"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "11-11"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 11"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "13-13"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 13"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "14-14"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 14"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "3-3"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 3"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "icmpTypes" : [
+                                "1-1"
+                              ],
+                              "negate" : false
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched icmp-type 1"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "negate" : false,
+                          "packetLengths" : [
+                            "70-12000"
+                          ]
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched packet-length 70-12000"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "ipProtocols" : [
+                            "PIM"
+                          ],
+                          "negate" : false
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched protocol pim"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                        "disjuncts" : [
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "negate" : false,
+                              "srcIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "2.4.6.8/30"
+                              }
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched source-address 2.4.6.8/30"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                            "headerSpace" : {
+                              "negate" : false,
+                              "srcIps" : {
+                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "ipWildcard" : "2.4.6.9"
+                              }
+                            },
+                            "traceElement" : {
+                              "fragments" : [
+                                {
+                                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                  "text" : "Matched source-address 2.4.6.9"
+                                }
+                              ]
                             }
                           }
                         ]
                       }
-                    },
+                    ],
                     "traceElement" : {
                       "fragments" : [
                         {
@@ -24187,10 +24904,7 @@
                 "trueStatements" : {
                   "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
                   "expression" : {
-                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                    "headerSpace" : {
-                      "negate" : false
-                    },
+                    "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                     "traceElement" : {
                       "fragments" : [
                         {
@@ -24219,10 +24933,7 @@
                 "trueStatements" : {
                   "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
                   "expression" : {
-                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                    "headerSpace" : {
-                      "negate" : false
-                    },
+                    "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                     "traceElement" : {
                       "fragments" : [
                         {
@@ -27336,10 +28047,7 @@
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
                     {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "negate" : false
-                      }
+                      "class" : "org.batfish.datamodel.acl.AndMatchExpr"
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
@@ -27351,7 +28059,16 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched 123-4"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "123-4",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "zone~A~to~zone~B 123-4",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27367,17 +28084,23 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false
-                  }
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr"
                 },
                 "name" : "p1",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched p1"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "p1",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~GLOBAL_SECURITY_POLICY~ p1",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27405,11 +28128,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol BFD"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27429,11 +28162,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol BGP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27450,11 +28193,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol DVMRP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27471,11 +28224,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol IGMP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27496,11 +28259,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol LDP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27520,11 +28293,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol MSDP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27541,11 +28324,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol NHRP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27562,11 +28355,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol OSPF"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27583,11 +28386,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol PGM"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27604,11 +28417,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol PIM"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27628,11 +28451,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol RIP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27649,11 +28482,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol ROUTER_DISCOVERY"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27671,11 +28514,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol RSVP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27701,11 +28554,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol SAP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27722,11 +28585,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic protocol VRRP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27753,11 +28626,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service DHCP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27778,11 +28661,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service DNS"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27802,11 +28695,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service FINGER"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27826,11 +28729,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service FTP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27850,11 +28763,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service HTTP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27874,11 +28797,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service HTTPS"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27899,11 +28832,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service IKE"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27923,11 +28866,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service NETCONF"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27947,11 +28900,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service NTP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27968,11 +28931,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service PING"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -27992,11 +28965,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service R2CP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28016,11 +28999,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service REVERSE_SSH"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28040,11 +29033,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service REVERSE_TELNET"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28064,11 +29067,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service RLOGIN"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28082,11 +29095,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service RPM"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28106,11 +29129,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service RSH"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28131,11 +29164,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service SIP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28155,11 +29198,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service SNMP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28179,11 +29232,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service SNMP_TRAP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28203,11 +29266,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service SSH"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28227,11 +29300,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service TELNET"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28251,11 +29334,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service TFTP"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28275,11 +29368,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service TRACEROUTE"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28299,11 +29402,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service XNM_CLEAR_TEXT"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }
@@ -28323,11 +29436,21 @@
                     "negate" : false
                   }
                 },
+                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched host-inbound-traffic system-service XNM_SSL"
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "ALL",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
+                        "structureType" : "firewall filter term"
+                      }
                     }
                   ]
                 }

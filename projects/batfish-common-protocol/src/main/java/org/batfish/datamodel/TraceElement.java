@@ -5,8 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -67,6 +69,11 @@ public final class TraceElement implements Serializable {
     public int hashCode() {
       return _text.hashCode();
     }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(TextFragment.class).add("text", _text).toString();
+    }
   }
 
   /** A {@link Fragment} that is linked to a vendor structure. */
@@ -115,6 +122,14 @@ public final class TraceElement implements Serializable {
     @Override
     public int hashCode() {
       return Objects.hash(_text, _vendorStructureId);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(LinkFragment.class)
+          .add("text", _text)
+          .add("structureId", _vendorStructureId)
+          .toString();
     }
   }
 
@@ -174,7 +189,7 @@ public final class TraceElement implements Serializable {
       return false;
     }
     TraceElement other = (TraceElement) o;
-    return this._fragments.equals(other._fragments);
+    return _fragments.equals(other._fragments);
   }
 
   @Override
@@ -182,8 +197,18 @@ public final class TraceElement implements Serializable {
     return _fragments.hashCode();
   }
 
+  /**
+   * Returns a human-readable {@link String} containing the joined text of all inner fragments.
+   *
+   * @see #toString() for developer-facing rendering.
+   */
+  @JsonIgnore
+  public String getText() {
+    return _fragments.stream().map(Fragment::getText).collect(Collectors.joining());
+  }
+
   @Override
   public String toString() {
-    return _fragments.stream().map(Fragment::getText).collect(Collectors.joining());
+    return _fragments.toString();
   }
 }

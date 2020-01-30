@@ -1,8 +1,6 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -23,16 +21,6 @@ public final class FwFromDestinationPort implements FwFrom {
 
   public FwFromDestinationPort(SubRange subrange) {
     _portRange = subrange;
-  }
-
-  @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    headerSpaceBuilder.setDstPorts(
-        Iterables.concat(headerSpaceBuilder.getDstPorts(), ImmutableSet.of(_portRange)));
   }
 
   public SubRange getPortRange() {

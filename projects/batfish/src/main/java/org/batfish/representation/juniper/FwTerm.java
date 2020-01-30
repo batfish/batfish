@@ -14,10 +14,17 @@ public final class FwTerm implements Serializable {
     DESTINATION_PORT,
     FRAGMENT_OFFSET,
     FRAGMENT_OFFSET_EXCEPT,
-    SOURCE,
     ICMP_CODE,
-    //    SOURCE_PORT,
-    //    PACKET_LENGTH,
+    ICMP_TYPE,
+    PACKET_LENGTH,
+    PACKET_LENGTH_EXCEPT,
+    PORT,
+    PREFIX_LIST,
+    PROTOCOL,
+    SOURCE,
+    SOURCE_EXCEPT,
+    SOURCE_PORT,
+    TCP_FLAG
   }
 
   private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;

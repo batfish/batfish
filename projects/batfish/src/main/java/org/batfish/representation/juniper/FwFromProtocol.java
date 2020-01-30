@@ -1,12 +1,15 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.representation.juniper.FwTerm.Field;
 
+/** Class for firewall filter from protocol */
 public final class FwFromProtocol implements FwFrom {
 
   private final IpProtocol _protocol;
@@ -15,17 +18,25 @@ public final class FwFromProtocol implements FwFrom {
     _protocol = protocol;
   }
 
-  @Override
-  public void applyTo(
-      HeaderSpace.Builder headerSpaceBuilder,
-      JuniperConfiguration jc,
-      Warnings w,
-      Configuration c) {
-    headerSpaceBuilder.setIpProtocols(
-        Iterables.concat(headerSpaceBuilder.getIpProtocols(), ImmutableSet.of(_protocol)));
-  }
-
   public IpProtocol getProtocol() {
     return _protocol;
+  }
+
+  @Override
+  public Field getField() {
+    return Field.PROTOCOL;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
+    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+  }
+
+  private TraceElement getTraceElement() {
+    return TraceElement.of(String.format("Matched protocol %s", _protocol.name().toLowerCase()));
+  }
+
+  private HeaderSpace toHeaderspace() {
+    return HeaderSpace.builder().setIpProtocols(_protocol).build();
   }
 }

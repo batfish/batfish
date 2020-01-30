@@ -23,6 +23,7 @@ import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -160,21 +162,31 @@ final class IpPermissions implements Serializable {
     }
   }
 
+  @VisibleForTesting
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  private static final class UserIdGroupPair implements Serializable {
+  static final class UserIdGroupPair implements Serializable {
+
+    @Nullable private final String _description;
 
     @Nonnull private final String _groupId;
 
     @JsonCreator
     private static UserIdGroupPair create(
+        @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String desription,
         @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId) {
       checkArgument(groupId != null, "Group id cannot be null in user id group pair");
-      return new UserIdGroupPair(groupId);
+      return new UserIdGroupPair(groupId, desription);
     }
 
-    UserIdGroupPair(String groupId) {
+    UserIdGroupPair(String groupId, @Nullable String description) {
       _groupId = groupId;
+      _description = description;
+    }
+
+    @Nullable
+    public String getDescription() {
+      return _description;
     }
 
     @Nonnull
@@ -191,12 +203,13 @@ final class IpPermissions implements Serializable {
         return false;
       }
       UserIdGroupPair that = (UserIdGroupPair) o;
-      return Objects.equals(_groupId, that._groupId);
+      return Objects.equals(_groupId, that._groupId)
+          && Objects.equals(_description, that._description);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_groupId);
+      return Objects.hash(_groupId, _description);
     }
   }
 
@@ -208,7 +221,7 @@ final class IpPermissions implements Serializable {
 
   @Nonnull private final List<String> _prefixList;
 
-  @Nonnull private final List<String> _securityGroups;
+  @Nonnull private final List<UserIdGroupPair> _userIdGroupPairs;
 
   @Nullable private final Integer _toPort;
 
@@ -234,9 +247,7 @@ final class IpPermissions implements Serializable {
         firstNonNull(prefixes, ImmutableList.<PrefixListId>of()).stream()
             .map(PrefixListId::getId)
             .collect(ImmutableList.toImmutableList()),
-        userIdGroupPairs.stream()
-            .map(UserIdGroupPair::getGroupId)
-            .collect(ImmutableList.toImmutableList()));
+        userIdGroupPairs);
   }
 
   IpPermissions(
@@ -245,31 +256,13 @@ final class IpPermissions implements Serializable {
       @Nullable Integer toPort,
       List<IpRange> ipRanges,
       List<String> prefixList,
-      List<String> securityGroups) {
+      List<UserIdGroupPair> userIdGroupPairs) {
     _ipProtocol = ipProtocol;
     _fromPort = fromPort;
     _toPort = toPort;
     _ipRanges = ipRanges;
     _prefixList = prefixList;
-    _securityGroups = securityGroups;
-  }
-
-  /**
-   * Returns a Map containing all the Security Groups referred by this IPPermission instance and the
-   * corresponding IpSpaces
-   */
-  private Map<SecurityGroup, IpSpace> collectSecurityGroups(Region region) {
-    ImmutableMap.Builder<SecurityGroup, IpSpace> sgToIpSpace = ImmutableMap.builder();
-    _securityGroups.stream()
-        .map(sgID -> region.getSecurityGroups().get(sgID))
-        .filter(Objects::nonNull)
-        .distinct()
-        .forEach(
-            securityGroup ->
-                securityGroup
-                    .getUsersIpSpace()
-                    .forEach(prefix -> sgToIpSpace.put(securityGroup, prefix.toIpSpace())));
-    return sgToIpSpace.build();
+    _userIdGroupPairs = userIdGroupPairs;
   }
 
   /**
@@ -380,7 +373,7 @@ final class IpPermissions implements Serializable {
 
   /**
    * Converts this {@link IpPermissions} to a {@link List} of {@link ExprAclLine}s. Each element
-   * present in {@link #_ipRanges}, {@link #_securityGroups} or {@link #_prefixList} will generate
+   * present in {@link #_ipRanges}, {@link #_userIdGroupPairs} or {@link #_prefixList} will generate
    * one {@link ExprAclLine}
    *
    * <p>Returns empty {@link List} if the security group cannot be processed, e.g., uses an
@@ -417,39 +410,62 @@ final class IpPermissions implements Serializable {
                     .build())
         .forEach(aclLines::add);
 
-    aclLines.addAll(
-        collectSecurityGroupIntoAclLines(
-            collectSecurityGroups(region), protocolAndPortExprs, ingress, name));
+    aclLines.addAll(userIdGroupsToAclLines(region, protocolAndPortExprs, ingress, name));
     aclLines.addAll(
         collectPrefixListsIntoAclLines(
             collectPrefixLists(region), protocolAndPortExprs, ingress, name));
     return aclLines.build();
   }
 
-  private static List<ExprAclLine> collectSecurityGroupIntoAclLines(
-      Map<SecurityGroup, IpSpace> sgs,
+  private List<ExprAclLine> userIdGroupsToAclLines(
+      Region region,
       List<AclLineMatchExpr> protocolAndPortExprs,
       boolean ingress,
       String aclLineName) {
-    return sgs.entrySet().stream()
+    return _userIdGroupPairs.stream()
         .map(
-            entry ->
-                ExprAclLine.accepting()
-                    .setMatchCondition(
-                        and(
-                            ImmutableList.<AclLineMatchExpr>builder()
-                                .addAll(protocolAndPortExprs)
-                                .add(
-                                    exprForSrcOrDstIps(
-                                        entry.getValue(),
-                                        entry.getKey().getGroupName(),
-                                        ingress,
-                                        AddressType.SECURITY_GROUP))
-                                .build()))
-                    .setTraceElement(getTraceElementForRule(null))
-                    .setName(aclLineName)
-                    .build())
+            uIdGr -> {
+              SecurityGroup sg = region.getSecurityGroups().get(uIdGr.getGroupId());
+              if (sg == null) {
+                return Optional.<ExprAclLine>empty();
+              }
+              return Optional.of(
+                  createExprAclLine(
+                      protocolAndPortExprs,
+                      toIpSpace(sg),
+                      sg.getGroupName(),
+                      ingress,
+                      AddressType.SECURITY_GROUP,
+                      uIdGr.getDescription(),
+                      aclLineName));
+            })
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  private static IpSpace toIpSpace(SecurityGroup sg) {
+    return IpWildcardSetIpSpace.builder().including(sg.getUsersIpSpace()).build();
+  }
+
+  private ExprAclLine createExprAclLine(
+      List<AclLineMatchExpr> protocolAndPortExprs,
+      IpSpace ipSpace,
+      String vendorStructureName,
+      boolean ingress,
+      AddressType addressType,
+      @Nullable String ruleDescription,
+      String aclLineName) {
+    return ExprAclLine.accepting()
+        .setMatchCondition(
+            and(
+                ImmutableList.<AclLineMatchExpr>builder()
+                    .addAll(protocolAndPortExprs)
+                    .add(exprForSrcOrDstIps(ipSpace, vendorStructureName, ingress, addressType))
+                    .build()))
+        .setTraceElement(getTraceElementForRule(ruleDescription))
+        .setName(aclLineName)
+        .build();
   }
 
   private static List<ExprAclLine> collectPrefixListsIntoAclLines(
@@ -493,13 +509,13 @@ final class IpPermissions implements Serializable {
         && Objects.equals(_ipRanges, that._ipRanges)
         && Objects.equals(_ipRanges, that._ipRanges)
         && Objects.equals(_prefixList, that._prefixList)
-        && Objects.equals(_securityGroups, that._securityGroups);
+        && Objects.equals(_userIdGroupPairs, that._userIdGroupPairs);
   }
 
   @Override
   public int hashCode() {
     return com.google.common.base.Objects.hashCode(
-        _fromPort, _ipProtocol, _ipRanges, _prefixList, _securityGroups, _toPort);
+        _fromPort, _ipProtocol, _ipRanges, _prefixList, _userIdGroupPairs, _toPort);
   }
 
   @Override
@@ -509,7 +525,7 @@ final class IpPermissions implements Serializable {
         .add("_ipProtocol", _ipProtocol)
         .add("_ipRanges", _ipRanges)
         .add("_prefixList", _prefixList)
-        .add("_securityGroups", _securityGroups)
+        .add("_userIdGroupPairs", _userIdGroupPairs)
         .add("_toPort", _toPort)
         .toString();
   }
