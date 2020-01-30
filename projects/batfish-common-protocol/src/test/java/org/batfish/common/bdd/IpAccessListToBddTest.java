@@ -123,13 +123,35 @@ public class IpAccessListToBddTest {
   }
 
   @Test
+  public void testDeniedByAcl_undefined() {
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
+            PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of());
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("Undefined filter reference: foo");
+    ipAccessListToBdd.toBdd(acl);
+  }
+
+  @Test
+  public void testDeniedByAcl_circular() {
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", acl);
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of());
+    exception.expect(BatfishException.class);
+    exception.expectMessage("Circular filter reference: foo");
+    ipAccessListToBdd.toBdd(acl);
+  }
+
+  @Test
   public void testPermittedByAcl_undefined() {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(
             PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("Undefined PermittedByAcl reference: foo");
+    exception.expectMessage("Undefined filter reference: foo");
     ipAccessListToBdd.toBdd(acl);
   }
 
@@ -141,7 +163,7 @@ public class IpAccessListToBddTest {
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of());
     exception.expect(BatfishException.class);
-    exception.expectMessage("Circular PermittedByAcl reference: foo");
+    exception.expectMessage("Circular filter reference: foo");
     ipAccessListToBdd.toBdd(fooAcl);
   }
 
