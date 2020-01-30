@@ -311,8 +311,12 @@ final class Utils {
 
   static TraceElement traceElementForAddress(
       String direction, String vsAddressStructure, AddressType addressType) {
-    return TraceElement.of(
-        String.format("Matched %s address %s %s", direction, addressType, vsAddressStructure));
+    return TraceElement.of(traceTextForAddress(direction, vsAddressStructure, addressType));
+  }
+
+  static String traceTextForAddress(
+      String direction, String vsAddressStructure, AddressType addressType) {
+    return String.format("Matched %s address %s %s", direction, addressType, vsAddressStructure);
   }
 
   static TraceElement traceElementForProtocol(IpProtocol protocol) {
@@ -324,6 +328,10 @@ final class Utils {
       return TraceElement.of(String.format("Matched destination port %s", low));
     }
     return TraceElement.of(String.format("Matched destination ports [%s-%s]", low, high));
+  }
+
+  static TraceElement traceElementForInstance(String instanceName) {
+    return TraceElement.of(String.format("Matched instance %s", instanceName));
   }
 
   static TraceElement traceElementForIcmp(int type, int code) {
