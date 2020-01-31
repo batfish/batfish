@@ -1704,8 +1704,7 @@ public final class PaloAltoGrammarTest {
                 intrazoneRulesTe,
                 intrazoneDefaultAcceptTraceElement(vsysName, zoneName))));
 
-    // Flow matching DENY security rule should be rejected by intrazone reject line.
-    // TODO Ideally this trace should have matchRuleTraceElement("DENY") instead of mismatch
+    // Flow matching DENY security rule should generate a trace pointing to that rule.
     flowTrace =
         AclTracer.trace(
             ifaceOutgoingFilter,
@@ -1714,7 +1713,11 @@ public final class PaloAltoGrammarTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
-    assertThat(flowTrace, contains(isChainOfSingleChildren(exitIfaceTe, intrazoneRejectRulesTe)));
+    assertThat(
+        flowTrace,
+        contains(
+            isChainOfSingleChildren(
+                exitIfaceTe, intrazoneRejectRulesTe, matchRuleTraceElement("DENY"))));
 
     // Flow matching PERMIT security rule should generate a trace pointing to that rule.
     flowTrace =

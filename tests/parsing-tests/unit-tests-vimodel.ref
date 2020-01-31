@@ -34433,16 +34433,25 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "ethernet1/2"
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "ethernet1/2"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.DeniedByAcl",
+                      "aclName" : "zone~zl3~vsys10~to~zone~zl3~vsys10"
+                    }
                   ]
                 },
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Did not match intrazone rules for vsys vsys10 zone zl3"
+                      "text" : "Denied by intrazone rules for vsys vsys10 zone zl3"
                     }
                   ]
                 }
