@@ -13,6 +13,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_NB
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
+import static org.batfish.representation.juniper.JuniperConfiguration.getRouterId;
 import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAccessListLines;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
@@ -42,6 +43,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -51,6 +53,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -765,5 +768,43 @@ public class JuniperConfigurationTest {
 
     assertThat(aclLines, hasSize(1));
     assertThat(aclLines.get(0).getTraceElement(), equalTo(TraceElement.of("trace of match1")));
+  }
+
+  @Test
+  public void testRouterIdInference() {
+    RoutingInstance ri = new RoutingInstance("RI");
+    Ip routerId = Ip.parse("9.9.9.9");
+    Ip loopBackIp1 = Ip.parse("1.1.1.2");
+    Ip loopBackIp2 = Ip.parse("1.1.1.3");
+    Ip ifaceIp1 = Ip.parse("1.1.1.4");
+    Ip ifaceIp2 = Ip.parse("1.1.1.5");
+
+    ri.setRouterId(routerId);
+    Interface lo0 = new Interface("lo0.0");
+    lo0.setPrimaryAddress(ConcreteInterfaceAddress.create(loopBackIp1, Prefix.MAX_PREFIX_LENGTH));
+    Interface lo1 = new Interface("lo0.1");
+    lo1.setPrimaryAddress(ConcreteInterfaceAddress.create(loopBackIp2, Prefix.MAX_PREFIX_LENGTH));
+    Interface i1 = new Interface("ge-0/0/0.0");
+    i1.setPrimaryAddress(ConcreteInterfaceAddress.create(ifaceIp1, Prefix.MAX_PREFIX_LENGTH - 1));
+    Interface i2 = new Interface("ge-0/0/0.1");
+    i2.setPrimaryAddress(ConcreteInterfaceAddress.create(ifaceIp2, Prefix.MAX_PREFIX_LENGTH - 1));
+    ri.getInterfaces().put(lo0.getName(), lo0);
+    ri.getInterfaces().put(lo1.getName(), lo1);
+    ri.getInterfaces().put(i1.getName(), i1);
+    ri.getInterfaces().put(i2.getName(), i2);
+    // Return configured router id
+    assertThat(getRouterId(ri), equalTo(routerId));
+    ri.setRouterId(null); // clear router id
+    // Lowest loopback address is returned
+    assertThat(getRouterId(ri), equalTo(loopBackIp1));
+    // Remove loopbacks
+    ri.getInterfaces().remove(lo0.getName());
+    ri.getInterfaces().remove(lo1.getName());
+    // Lowest IP is returned
+    assertThat(getRouterId(ri), equalTo(ifaceIp1));
+    // Remove interfaces
+    ri.getInterfaces().clear();
+    // Zero is returned
+    assertThat(getRouterId(ri), equalTo(Ip.ZERO));
   }
 }

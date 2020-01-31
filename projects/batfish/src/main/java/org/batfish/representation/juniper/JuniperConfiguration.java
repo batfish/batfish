@@ -317,16 +317,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
-    Ip routerId = routingInstance.getRouterId();
-    if (routerId == null) {
-      routerId = _masterLogicalSystem.getDefaultRoutingInstance().getRouterId();
-      if (routerId == null) {
-        routerId = Ip.ZERO;
-      }
-    }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    BgpProcess proc = new BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
+    BgpProcess proc = new BgpProcess(getRouterId(routingInstance), ebgpAdmin, ibgpAdmin);
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
@@ -395,7 +388,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ipv4AfBuilder.setRouteReflectorClient(true);
         neighbor.setClusterId(declaredClusterId.asLong());
       } else {
-        neighbor.setClusterId(routerId.asLong());
+        neighbor.setClusterId(getRouterId(routingInstance).asLong());
       }
 
       neighbor.setConfederation(routingInstance.getConfederation());
@@ -1003,10 +996,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (firstNonNull(routingInstance.getOspfDisable(), Boolean.FALSE)) {
       return null;
     }
-    Ip ospfRouterId = getOspfRouterId(routingInstance);
-    if (ospfRouterId == null) {
-      return null;
-    }
+    Ip ospfRouterId = getRouterId(routingInstance);
     OspfProcess newProc =
         OspfProcess.builder()
             // Use routing instance name since OSPF processes are not named
@@ -3783,41 +3773,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  @Nullable
-  private Ip getOspfRouterId(RoutingInstance routingInstance) {
+  /**
+   * Figure out the router ID for a given {@link RoutingInstance}.
+   *
+   * <p>Returns either the explicitly set router id, an inferred one, or a {@link Ip#ZERO}
+   *
+   * <p>For logic, see <a
+   * href="https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/router-id-edit-routing-options.html">Juniper
+   * router id page</a>
+   */
+  @Nonnull
+  @VisibleForTesting
+  static Ip getRouterId(RoutingInstance routingInstance) {
     Ip routerId = routingInstance.getRouterId();
-    if (routerId == null) {
-      Map<String, Interface> interfacesToCheck;
-      Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
-      Map<String, Interface> loopbackInterfaces =
-          allInterfaces.entrySet().stream()
-              .filter(
-                  e ->
-                      e.getKey().toLowerCase().startsWith("lo")
-                          && e.getValue().getActive()
-                          && e.getValue().getPrimaryAddress() != null)
-              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-      interfacesToCheck = loopbackInterfaces.isEmpty() ? allInterfaces : loopbackInterfaces;
-
-      Ip lowesetIp = Ip.MAX;
-      for (Interface iface : interfacesToCheck.values()) {
-        if (!iface.getActive()) {
-          continue;
-        }
-        for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
-          Ip ip = address.getIp();
-          if (lowesetIp.asLong() > ip.asLong()) {
-            lowesetIp = ip;
-          }
-        }
-      }
-      if (lowesetIp == Ip.MAX) {
-        _w.redFlag("No candidates for OSPF router-id");
-        return null;
-      }
-      routerId = lowesetIp;
+    if (routerId != null) {
+      return routerId;
     }
-    return routerId;
+
+    Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
+    Map<String, Interface> loopbackInterfaces =
+        allInterfaces.entrySet().stream()
+            .filter(e -> e.getKey().toLowerCase().startsWith("lo"))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    Map<String, Interface> routerIdCandidates =
+        loopbackInterfaces.isEmpty() ? allInterfaces : loopbackInterfaces;
+
+    return routerIdCandidates.values().stream()
+        .filter(Interface::getActive)
+        .map(Interface::getPrimaryAddress)
+        .filter(Objects::nonNull)
+        .map(ConcreteInterfaceAddress::getIp)
+        .min(Comparator.naturalOrder())
+        .orElse(Ip.ZERO);
   }
 
   public @Nonnull Map<String, LogicalSystem> getLogicalSystems() {
