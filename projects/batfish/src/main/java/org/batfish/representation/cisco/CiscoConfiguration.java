@@ -143,8 +143,8 @@ import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -2461,12 +2461,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setMatchCondition(
                   and(
                       securityLevelPolicies,
-                      /* TODO better tracing for this case.
-                       * I.e. replace Not(Permitted(...)) with Denied(...). Currently the outgoing
-                       * filter's trace is discarded because Permitted evaluates to false.
-                       */
-                      new NotMatchExpr(
-                          new PermittedByAcl(oldOutgoingFilterName),
+                      new DeniedByAcl(
+                          oldOutgoingFilterName,
                           asaDeniedByOutputFilterTraceElement(
                               _filename, c.getIpAccessLists().get(oldOutgoingFilterName)))))
               .build());
