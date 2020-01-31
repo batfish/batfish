@@ -129,6 +129,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_IS
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
@@ -137,6 +138,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_F
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
@@ -382,6 +384,20 @@ public final class FlatJuniperGrammarTest {
         .build();
   }
 
+  /** Returns a trace element for a security policy term for the given test config. */
+  private static TraceElement matchingSecurityPolicyTerm(
+      Configuration c, String aclName, String termName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            termName,
+            new VendorStructureId(
+                "configs/" + c.getHostname(),
+                SECURITY_POLICY_TERM.getDescription(),
+                computeSecurityPolicyTermName(aclName, termName)))
+        .build();
+  }
+
   private static Flow createFlow(IpProtocol protocol, int port) {
     Flow.Builder fb =
         builder().setIngressNode("node").setIpProtocol(protocol).setDstPort(port).setSrcPort(port);
@@ -477,7 +493,7 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
                                     .build()),
                             "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
+                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -486,7 +502,7 @@ public final class FlatJuniperGrammarTest {
                                     .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
                             "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
+                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -495,7 +511,7 @@ public final class FlatJuniperGrammarTest {
                                     .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                     .build()),
                             "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
+                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
@@ -614,7 +630,7 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
                             "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
+                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -624,7 +640,7 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
                                     .build()),
                             "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
+                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
   }
 
   @Test

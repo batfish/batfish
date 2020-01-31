@@ -17,6 +17,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAcc
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
@@ -79,14 +80,14 @@ public class JuniperConfigurationTest {
   public void testToIpAccessList() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
-    IpAccessList emptyAcl = config.toIpAccessList(filter);
+    IpAccessList emptyAcl = config.filterToIpAccessList(filter);
 
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
     term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix)));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
-    IpAccessList headerSpaceAcl = config.toIpAccessList(filter);
+    IpAccessList headerSpaceAcl = config.filterToIpAccessList(filter);
 
     Zone zone = new Zone("zone", new AddressBook("global", null));
     String interface1Name = "interface1";
@@ -95,7 +96,7 @@ public class JuniperConfigurationTest {
     zone.getInterfaces().add(interface2Name);
     config.getMasterLogicalSystem().getZones().put("zone", zone);
     filter.setFromZone("zone");
-    IpAccessList headerSpaceAndSrcInterfaceAcl = config.toIpAccessList(filter);
+    IpAccessList headerSpaceAndSrcInterfaceAcl = config.securityPolicyToIpAccessList(filter);
 
     // ACL from empty filter should have no lines
     assertThat(emptyAcl.getLines(), iterableWithSize(0));
@@ -166,7 +167,7 @@ public class JuniperConfigurationTest {
     ConcreteFirewallFilter concrete = new ConcreteFirewallFilter("F", Family.INET);
     CompositeFirewallFilter composite =
         new CompositeFirewallFilter("composite", ImmutableList.of(concrete));
-    IpAccessList compositeAcl = config.toIpAccessList(composite);
+    IpAccessList compositeAcl = config.filterToIpAccessList(composite);
 
     assertThat(
         compositeAcl.getLines(),
@@ -730,7 +731,8 @@ public class JuniperConfigurationTest {
     FwTerm term = new FwTerm("term");
     term.getThens().add(FwThenAccept.INSTANCE);
     List<FwTerm> terms = ImmutableList.of(term);
-    IpAccessList acl = config.fwTermsToIpAccessList("acl", terms, null);
+    IpAccessList acl =
+        config.fwTermsToIpAccessList("acl", terms, null, FIREWALL_FILTER, FIREWALL_FILTER_TERM);
 
     assertThat(acl.getLines(), hasSize(1));
 
