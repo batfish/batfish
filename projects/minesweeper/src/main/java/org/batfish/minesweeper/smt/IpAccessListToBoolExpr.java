@@ -21,6 +21,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -150,6 +151,11 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
   public BoolExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return _context.mkAnd(
         andMatchExpr.getConjuncts().stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
+  }
+
+  @Override
+  public BoolExpr visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+    throw new BatfishException("TODO: support DeniedByAcl");
   }
 
   @Override

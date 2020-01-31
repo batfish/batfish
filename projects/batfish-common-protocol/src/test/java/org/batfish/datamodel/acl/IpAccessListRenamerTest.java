@@ -98,6 +98,11 @@ public class IpAccessListRenamerTest {
   }
 
   @Test
+  public void testDeniedByAcl() {
+    assertThat(VISITOR.visit(new DeniedByAcl("a")), equalTo(new DeniedByAcl("b")));
+  }
+
+  @Test
   public void testApply() {
     assertThat(
         RENAMER.apply(

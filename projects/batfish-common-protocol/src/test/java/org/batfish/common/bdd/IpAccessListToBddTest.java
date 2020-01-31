@@ -1,6 +1,8 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
+import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -18,6 +20,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Rule;
@@ -76,6 +79,36 @@ public class IpAccessListToBddTest {
   }
 
   @Test
+  public void testDeniedByAcl() {
+    Ip fooIp = Ip.parse("1.1.1.1");
+    BDD fooIpBDD = PKT.getDstIp().value(fooIp.asLong());
+    IpAccessList fooAcl =
+        aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    BDD bdd =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of())
+            .toBdd(acl);
+    assertThat(bdd, equalTo(fooIpBDD.not()));
+  }
+
+  @Test
+  public void testDeniedByAcl2() {
+    Ip fooIp = Ip.parse("1.1.1.1");
+    BDD fooIpBDD = PKT.getDstIp().value(fooIp.asLong());
+    IpAccessList fooAcl =
+        aclWithLines(
+            rejectingHeaderSpace(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()),
+            ACCEPT_ALL);
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    BDD bdd =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of())
+            .toBdd(acl);
+    assertThat(bdd, equalTo(fooIpBDD));
+  }
+
+  @Test
   public void testPermittedByAcl() {
     Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = PKT.getDstIp().value(fooIp.asLong());
@@ -90,13 +123,35 @@ public class IpAccessListToBddTest {
   }
 
   @Test
+  public void testDeniedByAcl_undefined() {
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
+            PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of());
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("Undefined filter reference: foo");
+    ipAccessListToBdd.toBdd(acl);
+  }
+
+  @Test
+  public void testDeniedByAcl_circular() {
+    IpAccessList acl = aclWithLines(accepting(new DeniedByAcl("foo")));
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", acl);
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of());
+    exception.expect(BatfishException.class);
+    exception.expectMessage("Circular filter reference: foo");
+    ipAccessListToBdd.toBdd(acl);
+  }
+
+  @Test
   public void testPermittedByAcl_undefined() {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(
             PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("Undefined PermittedByAcl reference: foo");
+    exception.expectMessage("Undefined filter reference: foo");
     ipAccessListToBdd.toBdd(acl);
   }
 
@@ -108,7 +163,7 @@ public class IpAccessListToBddTest {
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(PKT, BDDSourceManager.empty(PKT), namedAcls, ImmutableMap.of());
     exception.expect(BatfishException.class);
-    exception.expectMessage("Circular PermittedByAcl reference: foo");
+    exception.expectMessage("Circular filter reference: foo");
     ipAccessListToBdd.toBdd(fooAcl);
   }
 

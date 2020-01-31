@@ -9,6 +9,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CircularReferenceException;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
@@ -59,6 +60,11 @@ public class HeaderSpaceSanitizer
       throws CircularReferenceException, UndefinedReferenceException {
     return new AndMatchExpr(
         andMatchExpr.getConjuncts().stream().map(this::visit).collect(Collectors.toList()));
+  }
+
+  @Override
+  public AclLineMatchExpr visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+    return deniedByAcl;
   }
 
   @Override

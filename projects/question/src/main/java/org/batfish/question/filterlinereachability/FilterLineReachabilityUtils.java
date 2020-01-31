@@ -8,6 +8,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
@@ -60,6 +61,11 @@ public class FilterLineReachabilityUtils {
     @Override
     public Stream<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
       return andMatchExpr.getConjuncts().stream().flatMap(this::visit);
+    }
+
+    @Override
+    public Stream<String> visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      return Stream.of(deniedByAcl.getAclName());
     }
 
     @Override
@@ -128,6 +134,11 @@ public class FilterLineReachabilityUtils {
     @Override
     public Stream<String> visitAndMatchExpr(AndMatchExpr andMatchExpr) {
       return andMatchExpr.getConjuncts().stream().flatMap(this::visit);
+    }
+
+    @Override
+    public Stream<String> visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      return Stream.of();
     }
 
     @Override

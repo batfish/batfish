@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -355,6 +356,13 @@ public final class AclTracer extends AclLineEvaluator {
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     setTraceElement(permittedByAcl.getTraceElement());
     return trace(_availableAcls.get(permittedByAcl.getAclName())) == LineAction.PERMIT;
+  }
+
+  @Override
+  public Boolean visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+    setTraceElement(deniedByAcl.getTraceElement());
+    return firstNonNull(trace(_availableAcls.get(deniedByAcl.getAclName())), LineAction.DENY)
+        == LineAction.DENY;
   }
 
   @Override

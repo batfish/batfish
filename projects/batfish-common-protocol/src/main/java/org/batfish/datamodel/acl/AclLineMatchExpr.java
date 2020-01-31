@@ -26,6 +26,9 @@ public abstract class AclLineMatchExpr implements Serializable {
     if (this == o) {
       return true;
     }
+    if (o == null) {
+      return false;
+    }
     if (!(getClass() == o.getClass())) {
       return false;
     }
