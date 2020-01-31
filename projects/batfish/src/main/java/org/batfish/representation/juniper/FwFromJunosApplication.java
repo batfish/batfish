@@ -6,7 +6,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
 
-public final class FwFromJunosApplication extends FwFromApplicationSetMember {
+public final class FwFromJunosApplication implements FwFromApplicationSetMember {
 
   private final JunosApplication _junosApplication;
 
