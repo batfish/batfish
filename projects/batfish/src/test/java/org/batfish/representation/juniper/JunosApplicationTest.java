@@ -19,7 +19,7 @@ public class JunosApplicationTest {
   private static JuniperConfiguration jc = new JuniperConfiguration();
 
   static {
-    jc.setHostname("host");
+    jc.setFilename("host");
   }
 
   @Test
@@ -33,7 +33,7 @@ public class JunosApplicationTest {
                         .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
                         .setDstPorts(ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())))
                         .build())),
-            getTraceElement(jc.getHostname(), JuniperStructureType.APPLICATION, "junos-bgp")));
+            getTraceElement("host", JuniperStructureType.APPLICATION, "junos-bgp")));
   }
 
   @Test
@@ -56,7 +56,7 @@ public class JunosApplicationTest {
                         .setDstPorts(
                             ImmutableSet.of(SubRange.singleton(NamedPort.NETBIOS_SSN.number())))
                         .build())),
-            getTraceElement(jc.getHostname(), JuniperStructureType.APPLICATION, "junos-smb")));
+            getTraceElement("host", JuniperStructureType.APPLICATION, "junos-smb")));
   }
 
   @Test
@@ -65,6 +65,6 @@ public class JunosApplicationTest {
         JunosApplication.ANY.toAclLineMatchExpr(jc, null),
         new OrMatchExpr(
             ImmutableList.of(new MatchHeaderSpace(HeaderSpace.builder().build())),
-            getTraceElement(jc.getHostname(), JuniperStructureType.APPLICATION, "any")));
+            getTraceElement("host", JuniperStructureType.APPLICATION, "any")));
   }
 }

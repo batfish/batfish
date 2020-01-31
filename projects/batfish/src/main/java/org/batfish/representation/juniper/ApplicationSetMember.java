@@ -20,13 +20,12 @@ public interface ApplicationSetMember {
   AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w);
 
   static TraceElement getTraceElement(
-      String hostName, JuniperStructureType structureType, String structureName) {
+      String filename, JuniperStructureType structureType, String structureName) {
     return TraceElement.builder()
         .add("Matched ")
         .add(
             structureName,
-            new VendorStructureId(
-                "config/" + hostName, structureType.getDescription(), structureName))
+            new VendorStructureId(filename, structureType.getDescription(), structureName))
         .build();
   }
 }

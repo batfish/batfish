@@ -12,7 +12,7 @@ public class JunosApplicationSetTest {
   @Test
   public void testToAclLineMatchExpr() {
     JuniperConfiguration jc = new JuniperConfiguration();
-    jc.setHostname("host");
+    jc.setFilename("host");
     assertEquals(
         JunosApplicationSet.JUNOS_CIFS.toAclLineMatchExpr(jc, null),
         new OrMatchExpr(

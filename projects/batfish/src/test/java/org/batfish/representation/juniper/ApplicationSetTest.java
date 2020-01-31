@@ -23,7 +23,7 @@ public class ApplicationSetTest {
      */
 
     JuniperConfiguration jc = new JuniperConfiguration();
-    jc.setHostname("host");
+    jc.setFilename("host");
     jc.getMasterLogicalSystem().getApplications().put("app2", new BaseApplication("app2"));
 
     ApplicationSet appSet = new ApplicationSet("appSet");

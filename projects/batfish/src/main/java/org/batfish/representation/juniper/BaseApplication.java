@@ -154,6 +154,6 @@ public final class BaseApplication implements Application, Serializable {
             .map(Term::toAclLineMatchExpr)
             .collect(ImmutableList.toImmutableList()),
         ApplicationSetMember.getTraceElement(
-            jc.getHostname(), JuniperStructureType.APPLICATION, _name));
+            jc.getFilename(), JuniperStructureType.APPLICATION, _name));
   }
 }

@@ -17,7 +17,7 @@ public class BaseApplicationTest {
   private static JuniperConfiguration jc = new JuniperConfiguration();
 
   static {
-    jc.setHostname("host");
+    jc.setFilename("host");
   }
 
   @Test
@@ -72,6 +72,6 @@ public class BaseApplicationTest {
         new OrMatchExpr(
             ImmutableList.of(term1.toAclLineMatchExpr(), term2.toAclLineMatchExpr()),
             ApplicationSetMember.getTraceElement(
-                jc.getHostname(), JuniperStructureType.APPLICATION, "APP")));
+                jc.getFilename(), JuniperStructureType.APPLICATION, "APP")));
   }
 }

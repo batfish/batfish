@@ -1068,7 +1068,7 @@ public enum JunosApplication implements Application {
       return new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(), // match nothing
           ApplicationSetMember.getTraceElement(
-              jc.getHostname(), JuniperStructureType.APPLICATION, name));
+              jc.getFilename(), JuniperStructureType.APPLICATION, name));
     }
     return _baseApplication.get().toAclLineMatchExpr(jc, w);
   }
