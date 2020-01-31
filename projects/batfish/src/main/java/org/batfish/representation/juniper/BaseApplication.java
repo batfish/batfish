@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -12,7 +13,9 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 public final class BaseApplication implements Application, Serializable {
 
@@ -54,6 +57,23 @@ public final class BaseApplication implements Application, Serializable {
 
     public void setHeaderSpace(HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
+    }
+
+    HeaderSpace toHeaderSpace() {
+      return HeaderSpace.builder()
+          .setIpProtocols(_headerSpace.getIpProtocols())
+          .setDstPorts(_headerSpace.getDstPorts())
+          .setSrcPorts(_headerSpace.getSrcPorts())
+          .build();
+    }
+
+    public AclLineMatchExpr toAclLineMatchExpr() {
+      HeaderSpace destinationHeaderSpace = toHeaderSpace();
+      return _tracingName != null
+          ? new MatchHeaderSpace(
+              destinationHeaderSpace,
+              TraceElement.of(String.format("Matched term %s", _tracingName)))
+          : new MatchHeaderSpace(destinationHeaderSpace);
     }
   }
 
@@ -119,5 +139,21 @@ public final class BaseApplication implements Application, Serializable {
 
   public void setIpv6(boolean ipv6) {
     _ipv6 = true;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
+    if (_terms.isEmpty()) {
+      return new MatchHeaderSpace(
+          _mainTerm.toHeaderSpace(),
+          TraceElement.of(String.format("Matched application %s", _name)));
+    }
+
+    return new OrMatchExpr(
+        _terms.values().stream()
+            .map(Term::toAclLineMatchExpr)
+            .collect(ImmutableList.toImmutableList()),
+        ApplicationSetMember.getTraceElement(
+            jc.getFilename(), JuniperStructureType.APPLICATION, _name));
   }
 }

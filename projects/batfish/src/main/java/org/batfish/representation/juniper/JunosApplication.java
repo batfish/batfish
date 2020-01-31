@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
@@ -14,6 +15,8 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.BaseApplication.Term;
 
 public enum JunosApplication implements Application {
@@ -1055,5 +1058,18 @@ public enum JunosApplication implements Application {
 
   public boolean hasDefinition() {
     return _baseApplication.get() != null;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
+    String name = convertToJuniperName();
+    if (!hasDefinition()) {
+      w.redFlag(String.format("%s is not defined", name));
+      return new MatchHeaderSpace(
+          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(), // match nothing
+          ApplicationSetMember.getTraceElement(
+              jc.getFilename(), JuniperStructureType.APPLICATION, name));
+    }
+    return _baseApplication.get().toAclLineMatchExpr(jc, w);
   }
 }
