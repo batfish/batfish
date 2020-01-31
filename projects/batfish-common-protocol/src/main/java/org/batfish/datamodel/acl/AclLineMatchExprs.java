@@ -309,4 +309,8 @@ public final class AclLineMatchExprs {
   public static PermittedByAcl permittedByAcl(String aclName) {
     return new PermittedByAcl(aclName);
   }
+
+  public static DeniedByAcl deniedByAcl(String aclName) {
+    return new DeniedByAcl(aclName);
+  }
 }

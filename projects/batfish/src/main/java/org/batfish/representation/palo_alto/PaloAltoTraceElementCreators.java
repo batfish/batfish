@@ -31,17 +31,19 @@ public final class PaloAltoTraceElementCreators {
   }
 
   /**
-   * Creates {@link TraceElement} for ACL line that rejects flows after they failed to match intra-
-   * or cross-zone security rules
+   * Creates {@link TraceElement} for ACL line that rejects flows after they were not permitted by
+   * an intra- or cross-zone filter
    */
   @VisibleForTesting
   public static TraceElement zoneToZoneRejectTraceElement(
       String fromZone, String toZone, String vsys) {
     String desc =
         fromZone.equals(toZone)
-            ? String.format("Did not match intrazone rules for vsys %s zone %s", vsys, fromZone)
+            // Intrazone flows are default accepted, so this trace indicates an explicit deny
+            ? String.format("Denied by intrazone rules for vsys %s zone %s", vsys, fromZone)
+            // Intrazone flows are default denied; this trace covers explicit and default denies
             : String.format(
-                "Did not match cross-zone rules from zone %s to zone %s in vsys %s",
+                "Not permitted by cross-zone rules from zone %s to zone %s in vsys %s",
                 fromZone, toZone, vsys);
     return TraceElement.of(desc);
   }
