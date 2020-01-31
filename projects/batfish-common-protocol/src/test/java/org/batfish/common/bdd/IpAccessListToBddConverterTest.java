@@ -71,7 +71,7 @@ public class IpAccessListToBddConverterTest {
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("Undefined PermittedByAcl reference: foo");
+    exception.expectMessage("Undefined filter reference: foo");
     toBDD.toBdd(permittedByAcl);
   }
 
@@ -89,7 +89,7 @@ public class IpAccessListToBddConverterTest {
         new IpAccessListToBddImpl(
             _pkt, BDDSourceManager.empty(_pkt), namedAclBDDs, ImmutableMap.of());
     exception.expect(BatfishException.class);
-    exception.expectMessage("Circular PermittedByAcl reference: foo");
+    exception.expectMessage("Circular filter reference: foo");
     toBDD.toBdd(permittedByAcl);
   }
 

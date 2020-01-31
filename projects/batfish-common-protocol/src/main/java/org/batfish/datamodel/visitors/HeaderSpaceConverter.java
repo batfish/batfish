@@ -3,6 +3,7 @@ package org.batfish.datamodel.visitors;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -26,6 +27,11 @@ public class HeaderSpaceConverter implements GenericAclLineMatchExprVisitor<Head
 
   @Override
   public HeaderSpace visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
+  @Override
+  public HeaderSpace visitDeniedByAcl(DeniedByAcl deniedByAcl) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 

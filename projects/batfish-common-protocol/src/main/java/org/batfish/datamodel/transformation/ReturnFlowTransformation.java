@@ -14,6 +14,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -91,6 +92,14 @@ public final class ReturnFlowTransformation {
               .filter(Objects::nonNull)
               .collect(ImmutableList.toImmutableList());
       return conjuncts.isEmpty() ? null : and(conjuncts);
+    }
+
+    @Override
+    public AclLineMatchExpr visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      /* We can't handle this currently, since we'd need to create the return flow ACL for the
+       * referenced ACL.
+       */
+      throw new IllegalArgumentException("DeniedByAcl is not allowed in a Transformation guard");
     }
 
     @Override
