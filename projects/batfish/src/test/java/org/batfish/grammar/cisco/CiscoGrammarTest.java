@@ -5518,7 +5518,8 @@ public final class CiscoGrammarTest {
     String inHigh = "inHigh"; // security-level 100
 
     Flow permitFlow = createFlow(IpProtocol.TCP, 0, 123);
-    Flow denyFlow = createFlow(IpProtocol.TCP, 0, 80);
+    Flow defaultDenyFlow = createFlow(IpProtocol.TCP, 0, 80);
+    Flow explicitDenyFlow = createFlow(IpProtocol.TCP, 0, 22);
 
     // out is always the egress interface
     IpAccessList filter = c.getAllInterfaces().get(out).getPreTransformationOutgoingFilter();
@@ -5547,9 +5548,9 @@ public final class CiscoGrammarTest {
                   isTraceTree(matchedByAclLine(filterOut, 0)))));
     }
 
-    // denied, intra-interface
+    // default-denied, intra-interface
     {
-      List<TraceTree> traces = trace.apply(out, denyFlow);
+      List<TraceTree> traces = trace.apply(out, defaultDenyFlow);
       assertThat(
           traces,
           contains(
@@ -5557,6 +5558,19 @@ public final class CiscoGrammarTest {
               isTraceTree(
                   asaDeniedByOutputFilterTraceElement(
                       "configs/asa-security-level-permit-tracing", filterOut))));
+    }
+
+    // explicitly denied, intra-interface
+    {
+      List<TraceTree> traces = trace.apply(out, explicitDenyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut),
+                  isTraceTree(matchedByAclLine("deny tcp any any eq 22")))));
     }
 
     // permitted, inter-interface
@@ -5574,7 +5588,7 @@ public final class CiscoGrammarTest {
 
     // denied, inter-interface
     {
-      List<TraceTree> traces = trace.apply(inSameLevel, denyFlow);
+      List<TraceTree> traces = trace.apply(inSameLevel, defaultDenyFlow);
       assertThat(
           traces,
           contains(
@@ -5599,7 +5613,7 @@ public final class CiscoGrammarTest {
 
     // denied, low-to-high (low has ingress filter)
     {
-      List<TraceTree> traces = trace.apply(inLowFiltered, denyFlow);
+      List<TraceTree> traces = trace.apply(inLowFiltered, defaultDenyFlow);
       assertThat(
           traces,
           contains(
@@ -5624,7 +5638,7 @@ public final class CiscoGrammarTest {
 
     // denied, high-to-low
     {
-      List<TraceTree> traces = trace.apply(inHigh, denyFlow);
+      List<TraceTree> traces = trace.apply(inHigh, defaultDenyFlow);
       assertThat(
           traces,
           contains(

@@ -30,4 +30,5 @@ access-group FILTER_OUT out interface out
 access-group FILTER_IN in interface inLowFiltered
 !
 access-list FILTER_OUT extended permit tcp any any eq 123
+access-list FILTER_OUT extended deny tcp any any eq 22
 access-list FILTER_IN extended permit ip any any
