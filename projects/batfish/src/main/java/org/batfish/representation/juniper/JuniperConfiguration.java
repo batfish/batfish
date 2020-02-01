@@ -7,8 +7,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
-import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
-import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -193,6 +191,45 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static @Nonnull String computeSecurityPolicyTermName(
       @Nonnull String policyName, @Nonnull String termName) {
     return String.format("%s %s", policyName, termName);
+  }
+
+  /** Returns a trace element for a firewall filter term for the given test config. */
+  @VisibleForTesting
+  public static TraceElement matchingFirewallFilterTerm(
+      String filename, String filterName, String termName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            termName,
+            new VendorStructureId(
+                filename,
+                JuniperStructureType.FIREWALL_FILTER_TERM.getDescription(),
+                computeFirewallFilterTermName(filterName, termName)))
+        .build();
+  }
+
+  /** Returns a trace element for a security policy term for the given test config. */
+  @VisibleForTesting
+  public static TraceElement matchingSecurityPolicyTerm(
+      String filename, String policyName, String termName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            termName,
+            new VendorStructureId(
+                filename,
+                JuniperStructureType.SECURITY_POLICY_TERM.getDescription(),
+                computeSecurityPolicyTermName(policyName, termName)))
+        .build();
+  }
+
+  private static TraceElement matchingAbstractTerm(
+      JuniperStructureType aclType, String filename, String filterName, String termName) {
+    if (aclType == JuniperStructureType.FIREWALL_FILTER) {
+      return matchingFirewallFilterTerm(filename, filterName, termName);
+    }
+    assert aclType == JuniperStructureType.SECURITY_POLICY;
+    return matchingSecurityPolicyTerm(filename, filterName, termName);
   }
 
   // See
@@ -2103,7 +2140,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 .add("Matched ")
                 .add(
                     policyDesc,
-                    new VendorStructureId(_filename, SECURITY_POLICY.getDescription(), policyName))
+                    new VendorStructureId(
+                        _filename,
+                        JuniperStructureType.SECURITY_POLICY.getDescription(),
+                        policyName))
                 .build();
 
         zoneAclLines.add(new AclAclLine("Match " + policyDesc, filterName, traceElement));
@@ -2111,7 +2151,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     /* Global policy if applicable */
-    if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
+    if (_masterLogicalSystem.getSecurityPolicies().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
       zoneAclLines.add(
           new AclAclLine(
@@ -2122,7 +2162,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   .add(
                       "global security policy",
                       new VendorStructureId(
-                          _filename, SECURITY_POLICY.getDescription(), ACL_NAME_GLOBAL_POLICY))
+                          _filename,
+                          JuniperStructureType.SECURITY_POLICY.getDescription(),
+                          ACL_NAME_GLOBAL_POLICY))
                   .build()));
     }
 
@@ -2144,24 +2186,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * single ACL.
    */
   @VisibleForTesting
+  @Nonnull
   IpAccessList fwTermsToIpAccessList(
-      String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
+      String aclName,
+      Collection<FwTerm> terms,
+      @Nullable AclLineMatchExpr conjunctMatchExpr,
+      JuniperStructureType aclType)
       throws VendorConversionException {
 
     List<ExprAclLine> lines =
         terms.stream()
-            .flatMap(term -> convertFwTermToExprAclLines(aclName, term).stream())
+            .flatMap(term -> convertFwTermToExprAclLines(aclName, term, aclType).stream())
             .collect(ImmutableList.toImmutableList());
 
     return IpAccessList.builder()
         .setName(aclName)
         .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
         .setSourceName(aclName)
-        .setSourceType(JuniperStructureType.FIREWALL_FILTER.getDescription())
+        .setSourceType(aclType.getDescription())
         .build();
   }
 
-  private List<ExprAclLine> convertFwTermToExprAclLines(String aclName, FwTerm term) {
+  private List<ExprAclLine> convertFwTermToExprAclLines(
+      String aclName, FwTerm term, JuniperStructureType aclType) {
     LineAction action = getLineAction(aclName, term);
     List<ExprAclLine> lines = new ArrayList<>();
     if (action == null) {
@@ -2206,15 +2253,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         ? l.getMatchCondition()
                         : and(l.getMatchCondition(), matchFwFroms),
                     term.getName(),
-                    TraceElement.builder()
-                        .add("Matched ")
-                        .add(
-                            term.getName(),
-                            new VendorStructureId(
-                                _filename,
-                                FIREWALL_FILTER_TERM.getDescription(),
-                                computeFirewallFilterTermName(aclName, term.getName())))
-                        .build());
+                    matchingAbstractTerm(aclType, _filename, aclName, term.getName()));
               })
           .collect(ImmutableList.toImmutableList());
     }
@@ -2227,16 +2266,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setAction(action)
             .setMatchCondition(matchFwFroms)
             .setName(term.getName())
-            .setTraceElement(
-                TraceElement.builder()
-                    .add("Matched ")
-                    .add(
-                        term.getName(),
-                        new VendorStructureId(
-                            _filename,
-                            FIREWALL_FILTER_TERM.getDescription(),
-                            computeFirewallFilterTermName(aclName, term.getName())))
-                    .build())
+            .setTraceElement(matchingFirewallFilterTerm(_filename, aclName, term.getName()))
             .build());
     return lines;
   }
@@ -2293,24 +2323,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Convert a firewallFilter into an equivalent ACL. */
-  IpAccessList toIpAccessList(FirewallFilter f) throws VendorConversionException {
+  @VisibleForTesting
+  IpAccessList filterToIpAccessList(FirewallFilter f) throws VendorConversionException {
     String name = f.getName();
-    AclLineMatchExpr matchSrcInterface = null;
 
     if (f instanceof ConcreteFirewallFilter) {
       ConcreteFirewallFilter filter = (ConcreteFirewallFilter) f;
-      /*
-       * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
-       * need to make a match condition for that
-       */
-      String zoneName = filter.getFromZone().orElse(null);
-      if (zoneName != null) {
-        matchSrcInterface =
-            new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
-      }
+      assert !filter.getFromZone().isPresent(); // not a security policy
 
       /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
-      return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
+      return fwTermsToIpAccessList(
+          name, filter.getTerms().values(), null, JuniperStructureType.FIREWALL_FILTER);
     } else {
       assert f instanceof CompositeFirewallFilter;
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
@@ -2323,6 +2346,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }
+  }
+
+  /** Convert a security policy into an equivalent ACL. */
+  @VisibleForTesting
+  IpAccessList securityPolicyToIpAccessList(ConcreteFirewallFilter filter)
+      throws VendorConversionException {
+    /*
+     * From zone is present if this is not a global security policy and if the from-zone is not junos-host.
+     */
+    AclLineMatchExpr matchSrcInterface =
+        filter
+            .getFromZone()
+            .map(
+                zoneName ->
+                    new MatchSrcInterface(
+                        _masterLogicalSystem.getZones().get(zoneName).getInterfaces()))
+            .orElse(null);
+
+    /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
+    return fwTermsToIpAccessList(
+        filter.getName(),
+        filter.getTerms().values(),
+        matchSrcInterface,
+        JuniperStructureType.SECURITY_POLICY);
   }
 
   @Nullable
@@ -2851,6 +2898,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
     _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
+    _masterLogicalSystem.getSecurityPolicies().putAll(ls.getSecurityPolicies());
     _masterLogicalSystem.getAddressBooks().putAll(ls.getAddressBooks());
     _masterLogicalSystem.getIkeGateways().clear();
     _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
@@ -2980,8 +3028,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
     preprocessFilters();
-
     convertFirewallFiltersToIpAccessLists();
+
+    // Convert security policies.
+    convertSecurityPoliciesToIpAccessLists();
 
     // convert firewall filters implementing packet policy to PacketPolicy objects
     for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
@@ -3397,8 +3447,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (filter.getFamily() != Family.INET) {
         continue;
       }
-      IpAccessList list = toIpAccessList(filter);
+      IpAccessList list = filterToIpAccessList(filter);
       _c.getIpAccessLists().put(name, list);
+    }
+  }
+
+  private void convertSecurityPoliciesToIpAccessLists() {
+    for (ConcreteFirewallFilter filter : _masterLogicalSystem.getSecurityPolicies().values()) {
+      // TODO: support other filter families
+      if (filter.getFamily() != Family.INET) {
+        continue;
+      }
+      IpAccessList acl = securityPolicyToIpAccessList(filter);
+      _c.getIpAccessLists().put(acl.getName(), acl);
     }
   }
 
