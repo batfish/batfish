@@ -193,6 +193,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("%s %s", policyName, termName);
   }
 
+  @VisibleForTesting
+  public static TraceElement matchingFirewallFilter(String filename, String filterName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            String.format(
+                "%s %s", JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName),
+            new VendorStructureId(
+                filename, JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName))
+        .build();
+  }
+
   /** Returns a trace element for a firewall filter term for the given test config. */
   @VisibleForTesting
   public static TraceElement matchingFirewallFilterTerm(
@@ -2340,9 +2352,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
       for (FirewallFilter inner : filter.getInner()) {
         String filterName = inner.getName();
-        String lineName = String.format("Match firewall filter %s", filterName);
-        String matchedDescription = String.format("Matched firewall filter %s", filterName);
-        lines.add(new AclAclLine(lineName, filterName, TraceElement.of(matchedDescription)));
+        lines.add(
+            new AclAclLine(filterName, filterName, matchingFirewallFilter(_filename, filterName)));
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }
