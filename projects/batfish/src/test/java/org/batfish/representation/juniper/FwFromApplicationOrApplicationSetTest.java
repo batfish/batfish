@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -10,17 +11,22 @@ import java.util.List;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.junit.Test;
 
 /** Test for {@link FwFromApplicationOrApplicationSet} */
 public class FwFromApplicationOrApplicationSetTest {
+  private static JuniperConfiguration jc = new JuniperConfiguration();
+
+  static {
+    jc.setFilename("host");
+  }
 
   @Test
   public void testApplyTo_application() {
-    JuniperConfiguration jc = new JuniperConfiguration();
-
     BaseApplication app = new BaseApplication("app");
     app.getTerms()
         .putAll(
@@ -55,8 +61,6 @@ public class FwFromApplicationOrApplicationSetTest {
 
   @Test
   public void testApplyTo_applicationSet() {
-    JuniperConfiguration jc = new JuniperConfiguration();
-
     ApplicationSet appSet = new ApplicationSet("appSet");
     appSet.setMembers(
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
@@ -88,5 +92,56 @@ public class FwFromApplicationOrApplicationSetTest {
                     new MatchHeaderSpace(HeaderSpace.builder().build()),
                     null,
                     app2.getTermTraceElement(null)))));
+  }
+
+  @Test
+  public void testToAclLineMatchExpr_application() {
+    BaseApplication app = new BaseApplication("app");
+    app.getTerms()
+        .putAll(
+            ImmutableMap.of(
+                "t1", new Term("t1"),
+                "t2", new Term("t2")));
+
+    jc.getMasterLogicalSystem().getApplications().put("app", app);
+
+    FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet("app");
+
+    assertEquals(
+        from.toAclLineMatchExpr(jc, null),
+        new OrMatchExpr(
+            ImmutableList.of(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().build(), TraceElement.of("Matched term t1")),
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().build(), TraceElement.of("Matched term t2"))),
+            ApplicationSetMember.getTraceElement("host", JuniperStructureType.APPLICATION, "app")));
+  }
+
+  @Test
+  public void testToAclLineMatchExpr_applicationSet() {
+
+    ApplicationSet appSet = new ApplicationSet("appSet");
+    appSet.setMembers(
+        ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
+    jc.getMasterLogicalSystem().getApplicationSets().put("appSet", appSet);
+    BaseApplication app1 = new BaseApplication("app1");
+    BaseApplication app2 = new BaseApplication("app2");
+    jc.getMasterLogicalSystem()
+        .getApplications()
+        .putAll(ImmutableMap.of("app1", app1, "app2", app2));
+
+    FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet("appSet");
+
+    assertEquals(
+        from.toAclLineMatchExpr(jc, null),
+        new OrMatchExpr(
+            ImmutableList.of(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().build(), TraceElement.of("Matched application app1")),
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().build(), TraceElement.of("Matched application app2"))),
+            ApplicationSetMember.getTraceElement(
+                "host", JuniperStructureType.APPLICATION_SET, "appSet")));
   }
 }
