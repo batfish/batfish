@@ -54,6 +54,22 @@ public class ParserAppTest {
         new ReferenceLibrary(null));
   }
 
+  private static Set<ParboiledAutoCompleteSuggestion> getAllStartingSuggestions(
+      int insertionIndex) {
+    return ImmutableSet.<ParboiledAutoCompleteSuggestion>builder()
+        .addAll(
+            Arrays.stream(Protocol.values())
+                .map(
+                    protocol ->
+                        new ParboiledAutoCompleteSuggestion(
+                            protocol.getName().toUpperCase(), insertionIndex, APP_NAME))
+                .collect(ImmutableSet.toImmutableSet()))
+        .add(new ParboiledAutoCompleteSuggestion("icmp", insertionIndex, APP_ICMP))
+        .add(new ParboiledAutoCompleteSuggestion("tcp", insertionIndex, APP_TCP))
+        .add(new ParboiledAutoCompleteSuggestion("udp", insertionIndex, APP_UDP))
+        .build();
+  }
+
   /** This testParses if we have proper completion annotations on the rules */
   @Test
   public void testAnchorAnnotations() {
@@ -67,24 +83,7 @@ public class ParserAppTest {
   @Test
   public void testCompletionEmpty() {
     String query = "";
-
-    Set<ParboiledAutoCompleteSuggestion> namedApps =
-        Arrays.stream(Protocol.values())
-            .map(
-                protocol ->
-                    new ParboiledAutoCompleteSuggestion(
-                        protocol.getName().toUpperCase(), query.length(), APP_NAME))
-            .collect(ImmutableSet.toImmutableSet());
-
-    assertThat(
-        getPAC(query).run(),
-        equalTo(
-            ImmutableSet.builder()
-                .addAll(namedApps)
-                .add(new ParboiledAutoCompleteSuggestion("icmp", query.length(), APP_ICMP))
-                .add(new ParboiledAutoCompleteSuggestion("tcp", query.length(), APP_TCP))
-                .add(new ParboiledAutoCompleteSuggestion("udp", query.length(), APP_UDP))
-                .build()));
+    assertThat(getPAC(query).run(), equalTo(getAllStartingSuggestions(query.length())));
   }
 
   @Test
@@ -168,6 +167,12 @@ public class ParserAppTest {
   }
 
   @Test
+  public void testCompletionProtocolPortComma() {
+    String query = "udp / 2, ";
+    assertThat(getPAC(query).run(), equalTo(getAllStartingSuggestions(query.length())));
+  }
+
+  @Test
   public void testCompletionIcmp() {
     String query = "icmp";
     assertThat(
@@ -193,6 +198,34 @@ public class ParserAppTest {
             ImmutableSet.of(
                 new ParboiledAutoCompleteSuggestion("/", query.length(), APP_ICMP_TYPE_CODE),
                 new ParboiledAutoCompleteSuggestion(",", query.length(), APP_SET_OP))));
+  }
+
+  @Test
+  public void testCompletionIcmpSlashTypeSlash() {
+    String query = "icmp/2/";
+    assertThat(getPAC(query).run(), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testCompletionIcmpSlashTypeCode() {
+    String query = "icmp / 0 / 0 ";
+    assertThat(
+        getPAC(query).run(),
+        equalTo(
+            ImmutableSet.of(new ParboiledAutoCompleteSuggestion(",", query.length(), APP_SET_OP))));
+  }
+
+  /** Test that we present all initial suggestions after all valid complete ICMP inputs */
+  @Test
+  public void testCompletionIcmpFullSpecificationComma() {
+    String query1 = "icmp,";
+    assertThat(getPAC(query1).run(), equalTo(getAllStartingSuggestions(query1.length())));
+
+    String query2 = "icmp / 0, ";
+    assertThat(getPAC(query2).run(), equalTo(getAllStartingSuggestions(query2.length())));
+
+    String query3 = "icmp / 0 / 0, ";
+    assertThat(getPAC(query3).run(), equalTo(getAllStartingSuggestions(query3.length())));
   }
 
   @Test

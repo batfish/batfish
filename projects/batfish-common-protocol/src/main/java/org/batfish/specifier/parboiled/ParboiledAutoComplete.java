@@ -191,6 +191,7 @@ public final class ParboiledAutoComplete {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
       case APP_ICMP_TYPE:
+      case APP_ICMP_TYPE_CODE:
         // don't help with numbers
         return ImmutableSet.of();
       case APP_NAME:
