@@ -126,19 +126,17 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
-import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
+import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
+import static org.batfish.representation.juniper.JuniperConfiguration.matchingSecurityPolicyTerm;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
-import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
-import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
@@ -344,7 +342,6 @@ import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Zone;
-import org.batfish.vendor.VendorStructureId;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -368,34 +365,6 @@ public final class FlatJuniperGrammarTest {
     fb.setSrcIp(Ip.parse(sourceAddress));
     fb.setDstIp(Ip.parse(destinationAddress));
     return fb.build();
-  }
-
-  /** Returns a trace element for a firewall filter term for the given test config. */
-  private static TraceElement matchingFirewallFilterTerm(
-      Configuration c, String aclName, String termName) {
-    return TraceElement.builder()
-        .add("Matched ")
-        .add(
-            termName,
-            new VendorStructureId(
-                "configs/" + c.getHostname(),
-                FIREWALL_FILTER_TERM.getDescription(),
-                computeFirewallFilterTermName(aclName, termName)))
-        .build();
-  }
-
-  /** Returns a trace element for a security policy term for the given test config. */
-  private static TraceElement matchingSecurityPolicyTerm(
-      Configuration c, String aclName, String termName) {
-    return TraceElement.builder()
-        .add("Matched ")
-        .add(
-            termName,
-            new VendorStructureId(
-                "configs/" + c.getHostname(),
-                SECURITY_POLICY_TERM.getDescription(),
-                computeSecurityPolicyTermName(aclName, termName)))
-        .build();
   }
 
   private static Flow createFlow(IpProtocol protocol, int port) {
@@ -493,7 +462,8 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
                                     .build()),
                             "p1",
-                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -502,7 +472,8 @@ public final class FlatJuniperGrammarTest {
                                     .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
                             "p1",
-                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -511,7 +482,8 @@ public final class FlatJuniperGrammarTest {
                                     .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                     .build()),
                             "p1",
-                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
@@ -630,7 +602,8 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
                                     .build()),
                             "p1",
-                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")),
                         new ExprAclLine(
                             LineAction.PERMIT,
                             new MatchHeaderSpace(
@@ -640,7 +613,8 @@ public final class FlatJuniperGrammarTest {
                                     .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
                                     .build()),
                             "p1",
-                            matchingSecurityPolicyTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
   }
 
   @Test
@@ -2787,7 +2761,9 @@ public final class FlatJuniperGrammarTest {
                                                 TraceElement.of(
                                                     "Matched source-address 2.3.4.0/24"))))))
                             .setName("TERM")
-                            .setTraceElement(matchingFirewallFilterTerm(c, filterNameV4, "TERM"))
+                            .setTraceElement(
+                                matchingFirewallFilterTerm(
+                                    "configs/" + c.getHostname(), filterNameV4, "TERM"))
                             .build())))));
   }
 
@@ -3091,7 +3067,9 @@ public final class FlatJuniperGrammarTest {
                                                 TraceElement.of(
                                                     "Matched destination-address 2.3.4.0/24"))))))
                             .setName("TERM")
-                            .setTraceElement(matchingFirewallFilterTerm(c, filterNameV4, "TERM"))
+                            .setTraceElement(
+                                matchingFirewallFilterTerm(
+                                    "configs/" + c.getHostname(), filterNameV4, "TERM"))
                             .build())))));
   }
 
@@ -5014,7 +4992,8 @@ public final class FlatJuniperGrammarTest {
                                             .build(),
                                         TraceElement.of("Matched source-address 1.2.3.6")))),
                             "TERM",
-                            matchingFirewallFilterTerm(config, "FILTER1", "TERM"))))
+                            matchingFirewallFilterTerm(
+                                "configs/" + config.getHostname(), "FILTER1", "TERM"))))
                 .build()));
 
     assertThat(
