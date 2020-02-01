@@ -190,6 +190,15 @@ public final class ParboiledAutoComplete {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
+      case APP_ICMP_TYPE:
+        // don't help with numbers
+        return ImmutableSet.of();
+      case APP_NAME:
+        return autoCompleteAppName(pm);
+      case APP_PORT:
+      case APP_PORT_RANGE:
+        // don't help with numbers
+        return ImmutableSet.of();
       case CHAR_LITERAL:
         return autoCompleteLiteral(pm);
       case EOI:
@@ -299,6 +308,15 @@ public final class ParboiledAutoComplete {
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
+  }
+
+  /** Auto completes app name. */
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteAppName(PotentialMatch pm) {
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(pm.getMatchPrefix(), CommonParser.namedApplications),
+        false,
+        Anchor.Type.APP_NAME,
+        pm.getMatchStartIndex());
   }
 
   /** Auto completes enum set values. */

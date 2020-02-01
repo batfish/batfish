@@ -120,4 +120,14 @@ interface AstNodeVisitor<T> {
   T visitRegexNameSetAstNode(RegexNameSetAstNode regexNameSetAstNode);
 
   T visitNameNameSetAstNode(SingletonNameSetAstNode singletonNameSetAstNode);
+
+  T visitUnionAppAstNode(UnionAppAstNode unionAppAstNode);
+
+  T visitIcmpAppAstNode(IcmpAppAstNode icmpAppAstNode);
+
+  T visitNameAppAstNode(NameAppAstNode nameAppAstNode);
+
+  T visitTcpAppAstNode(PortAppAstNode tcpAppAstNode);
+
+  T visitUdpAppAstNode(UdpAppAstNode udpAppAstNode);
 }
