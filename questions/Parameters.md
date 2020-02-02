@@ -78,9 +78,9 @@ Many types such as `applicationSpec` or `mlagIdSpec` are simply sets of values. 
 
 * `val1, val2` specifies a set with exactly those two values.
 
-* `! val1` specifies all values other than that value.
+* `! val1` specifies all values other than `val1`.
 
-* `/val.*/, ! val1` specifies all values that match regex `val.*` other `val1`.
+* `/val.*/, ! val1` specifies all values that match regex `val.*` other than `val1`.
 
 The full specification of this grammar is:
 
