@@ -4,10 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.applications.Application;
 import org.batfish.datamodel.applications.IcmpTypeCodesApplication;
 import org.batfish.datamodel.applications.IcmpTypesApplication;
@@ -43,6 +45,14 @@ public final class ParboiledAppSpecifier implements ApplicationSpecifier {
       return ImmutableSet.of(
           new IcmpTypeCodesApplication(
               icmpTypeCodeAppAstNode.getType(), icmpTypeCodeAppAstNode.getCode()));
+    }
+
+    @Override
+    public Set<Application> visitRegexAppAstNode(RegexAppAstNode regexAppAstNode) {
+      return Arrays.stream(Protocol.values())
+          .filter(protocol -> regexAppAstNode.getPattern().matcher(protocol.toString()).find())
+          .map(Protocol::toApplication)
+          .collect(ImmutableSet.toImmutableSet());
     }
 
     @Override

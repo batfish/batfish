@@ -5,10 +5,14 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.applications.IcmpTypeCodesApplication;
 import org.batfish.datamodel.applications.IcmpTypesApplication;
+import org.batfish.datamodel.applications.NamedApplication;
 import org.batfish.datamodel.applications.TcpApplication;
 import org.batfish.datamodel.applications.UdpApplication;
 import org.junit.Rule;
@@ -36,6 +40,38 @@ public class ParboiledAppSpecifierTest {
     assertThat(
         new ParboiledAppSpecifier(new IcmpTypeCodeAppAstNode(8, 0)).resolve(),
         equalTo(ImmutableSet.of(new IcmpTypeCodesApplication(8, 0))));
+  }
+
+  @Test
+  public void testResolveRegex() {
+    assertThat(
+        new ParboiledAppSpecifier(new RegexAppAstNode("htt")).resolve(),
+        equalTo(
+            Arrays.stream(Protocol.values())
+                .filter(
+                    protocol ->
+                        Pattern.compile("htt", Pattern.CASE_INSENSITIVE)
+                            .matcher(protocol.toString())
+                            .find())
+                .map(Protocol::toApplication)
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Test
+  public void testResolveRegex_all() {
+    assertThat(
+        new ParboiledAppSpecifier(new RegexAppAstNode(".*")).resolve(),
+        equalTo(
+            Arrays.stream(Protocol.values())
+                .map(Protocol::toApplication)
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Test
+  public void testResolveName() {
+    assertThat(
+        new ParboiledAppSpecifier(new NameAppAstNode("http")).resolve(),
+        equalTo(ImmutableSet.of(NamedApplication.HTTP.getApplication())));
   }
 
   @Test

@@ -225,6 +225,15 @@ public class ParserAppTest {
   }
 
   @Test
+  public void testParseAppRegex() {
+    String regex = "/ht.*/";
+    RegexAppAstNode expectedAst = new RegexAppAstNode("ht.*");
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseAppName() {
     String name = "http";
     NameAppAstNode expectedAst = new NameAppAstNode("http");

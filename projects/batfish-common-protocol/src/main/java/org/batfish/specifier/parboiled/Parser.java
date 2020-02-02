@@ -197,7 +197,7 @@ public class Parser extends CommonParser {
   }
 
   public Rule AppTerm() {
-    return FirstOf(AppName(), AppIcmpTerm(), AppTcpTerm(), AppUdpTerm());
+    return FirstOf(AppName(), AppNameRegex(), AppIcmpTerm(), AppTcpTerm(), AppUdpTerm());
   }
 
   @Anchor(APP_NAME)
@@ -206,6 +206,15 @@ public class Parser extends CommonParser {
         EnumValue(),
         ACTION(namedApplications.contains(match().toUpperCase())),
         push(new NameAppAstNode(match())));
+  }
+
+  /**
+   * For backward compatibility with the old specifier that allowed regex over the six named
+   * applications in {@link org.batfish.datamodel.Protocol}s it supported.
+   */
+  @Anchor(DEPRECATED)
+  public Rule AppNameRegex() {
+    return Sequence(Regex(), push(new RegexAppAstNode(pop())));
   }
 
   @Anchor(APP_ICMP)

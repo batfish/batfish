@@ -134,4 +134,6 @@ interface AstNodeVisitor<T> {
   T visitIcmpTypeAppAstNode(IcmpTypeAppAstNode icmpTypeAppAstNode);
 
   T visitIcmpTypeCodeAppAstNode(IcmpTypeCodeAppAstNode icmpTypeCodeAppAstNode);
+
+  T visitRegexAppAstNode(RegexAppAstNode regexAppAstNode);
 }
