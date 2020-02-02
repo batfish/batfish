@@ -123,11 +123,15 @@ interface AstNodeVisitor<T> {
 
   T visitUnionAppAstNode(UnionAppAstNode unionAppAstNode);
 
-  T visitIcmpAppAstNode(IcmpAppAstNode icmpAppAstNode);
+  T visitIcmpAllAppAstNode(IcmpAllAppAstNode icmpAllAppAstNode);
 
   T visitNameAppAstNode(NameAppAstNode nameAppAstNode);
 
   T visitTcpAppAstNode(PortAppAstNode tcpAppAstNode);
 
   T visitUdpAppAstNode(UdpAppAstNode udpAppAstNode);
+
+  T visitIcmpTypeAppAstNode(IcmpTypeAppAstNode icmpTypeAppAstNode);
+
+  T visitIcmpTypeCodeAppAstNode(IcmpTypeCodeAppAstNode icmpTypeCodeAppAstNode);
 }

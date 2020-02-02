@@ -47,16 +47,6 @@ abstract class PortAppAstNode implements AppAstNode {
   }
 
   @Override
-  public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitTcpAppAstNode(this);
-  }
-
-  @Override
-  public <T> T accept(AppAstNodeVisitor<T> visitor) {
-    return visitor.visitTcpAppAstNode(this);
-  }
-
-  @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).omitNullValues().add("ports", _ports).toString();
   }

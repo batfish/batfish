@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.applications.NamedApplication;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -89,7 +89,7 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   public static Set<String> namedApplications =
-      Arrays.stream(Protocol.values())
+      Arrays.stream(NamedApplication.values())
           .map(Object::toString)
           .map(String::toUpperCase)
           .collect(ImmutableSet.toImmutableSet());

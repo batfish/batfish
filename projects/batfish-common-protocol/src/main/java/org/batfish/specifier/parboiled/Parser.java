@@ -211,7 +211,7 @@ public class Parser extends CommonParser {
   @Anchor(APP_ICMP)
   public Rule AppIcmpTerm() {
     return Sequence(
-        IgnoreCase("icmp"), WhiteSpace(), push(new IcmpAppAstNode()), Optional(AppIcmpType()));
+        IgnoreCase("icmp"), WhiteSpace(), push(new IcmpAllAppAstNode()), Optional(AppIcmpType()));
   }
 
   @Anchor(APP_ICMP_TYPE)
@@ -220,14 +220,15 @@ public class Parser extends CommonParser {
         "/ ",
         Number(),
         ACTION(pop() != null),
-        push(new IcmpAppAstNode(Integer.parseInt(match()))),
+        push(new IcmpTypeAppAstNode(Integer.parseInt(match()))),
         WhiteSpace(),
         Optional(AppIcmpTypeCode()));
   }
 
   @Anchor(APP_ICMP_TYPE_CODE)
   public Rule AppIcmpTypeCode() {
-    return Sequence("/ ", Number(), push(IcmpAppAstNode.create(pop(), Integer.parseInt(match()))));
+    return Sequence(
+        "/ ", Number(), push(IcmpTypeCodeAppAstNode.create(pop(), Integer.parseInt(match()))));
   }
 
   @Anchor(APP_TCP)

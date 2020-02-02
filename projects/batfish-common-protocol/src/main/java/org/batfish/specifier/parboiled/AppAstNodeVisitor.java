@@ -3,11 +3,15 @@ package org.batfish.specifier.parboiled;
 interface AppAstNodeVisitor<T> {
   T visitUnionAppAstNode(UnionAppAstNode unionAppAstNode);
 
-  T visitIcmpAppAstNode(IcmpAppAstNode icmpAppAstNode);
+  T visitIcmpAllAppAstNode(IcmpAllAppAstNode icmpAllAppAstNode);
 
   T visitNameAppAstNode(NameAppAstNode nameAppAstNode);
 
-  T visitTcpAppAstNode(PortAppAstNode tcpAppAstNode);
+  T visitTcpAppAstNode(TcpAppAstNode tcpAppAstNode);
 
   T visitUdpAppAstNode(UdpAppAstNode udpAppAstNode);
+
+  T visitIcmpTypeAppAstNode(IcmpTypeAppAstNode icmpTypeAppAstNode);
+
+  T visitIcmpTypeCodeAppAstNode(IcmpTypeCodeAppAstNode icmpTypeCodeAppAstNode);
 }

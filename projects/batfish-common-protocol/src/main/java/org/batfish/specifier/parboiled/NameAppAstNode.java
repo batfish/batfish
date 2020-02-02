@@ -2,12 +2,13 @@ package org.batfish.specifier.parboiled;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import org.batfish.datamodel.applications.NamedApplication;
 
 final class NameAppAstNode implements AppAstNode {
-  private final String _name;
+  private final NamedApplication _namedApplication;
 
   NameAppAstNode(String name) {
-    _name = name;
+    _namedApplication = NamedApplication.fromString(name);
   }
 
   @Override
@@ -29,20 +30,20 @@ final class NameAppAstNode implements AppAstNode {
       return false;
     }
     NameAppAstNode that = (NameAppAstNode) o;
-    return Objects.equals(_name, that._name);
+    return Objects.equals(_namedApplication, that._namedApplication);
   }
 
-  public String getName() {
-    return _name;
+  public NamedApplication getNamedApplication() {
+    return _namedApplication;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_name);
+    return Objects.hashCode(_namedApplication);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add("name", _name).toString();
+    return MoreObjects.toStringHelper(getClass()).add("name", _namedApplication).toString();
   }
 }

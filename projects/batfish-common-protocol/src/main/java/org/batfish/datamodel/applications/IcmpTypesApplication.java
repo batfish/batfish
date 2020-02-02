@@ -1,0 +1,51 @@
+package org.batfish.datamodel.applications;
+
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.SubRange;
+
+/**
+ * An {@link IcmpApplication} that has only types specified (i.e., all codes within the specified
+ * types)
+ */
+@ParametersAreNonnullByDefault
+public final class IcmpTypesApplication extends IcmpApplication {
+
+  public static final IcmpTypesApplication ALL =
+      new IcmpTypesApplication(ImmutableList.of(new SubRange(0, 255)));
+
+  @Nonnull private final List<SubRange> _types;
+
+  public IcmpTypesApplication(int type) {
+    this(ImmutableList.of(SubRange.singleton(type)));
+  }
+
+  public IcmpTypesApplication(List<SubRange> types) {
+    _types = ImmutableList.copyOf(types);
+  }
+
+  @Nonnull
+  public List<SubRange> getTypes() {
+    return _types;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IcmpTypesApplication)) {
+      return false;
+    }
+    IcmpTypesApplication that = (IcmpTypesApplication) o;
+    return _types.equals(that._types);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(_types);
+  }
+}

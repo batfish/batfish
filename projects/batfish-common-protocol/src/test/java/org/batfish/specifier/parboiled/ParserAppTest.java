@@ -15,7 +15,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.Arrays;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
@@ -58,11 +57,8 @@ public class ParserAppTest {
       int insertionIndex) {
     return ImmutableSet.<ParboiledAutoCompleteSuggestion>builder()
         .addAll(
-            Arrays.stream(Protocol.values())
-                .map(
-                    protocol ->
-                        new ParboiledAutoCompleteSuggestion(
-                            protocol.getName().toUpperCase(), insertionIndex, APP_NAME))
+            CommonParser.namedApplications.stream()
+                .map(app -> new ParboiledAutoCompleteSuggestion(app, insertionIndex, APP_NAME))
                 .collect(ImmutableSet.toImmutableSet()))
         .add(new ParboiledAutoCompleteSuggestion("icmp", insertionIndex, APP_ICMP))
         .add(new ParboiledAutoCompleteSuggestion("tcp", insertionIndex, APP_TCP))
@@ -117,7 +113,7 @@ public class ParserAppTest {
   @Test
   public void testCompletionPartialProtocolName() {
     assertThat(
-        getPAC("u").run(),
+        getPAC("ud").run(),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("udp", 0, APP_UDP)));
   }
 
@@ -239,7 +235,7 @@ public class ParserAppTest {
 
   @Test
   public void testParseIcmp() {
-    IcmpAppAstNode expectedAst = new IcmpAppAstNode();
+    IcmpAllAppAstNode expectedAst = new IcmpAllAppAstNode();
 
     assertThat(ParserUtils.getAst(getRunner().run("icmp")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" icmp ")), equalTo(expectedAst));
@@ -248,7 +244,7 @@ public class ParserAppTest {
 
   @Test
   public void testParseIcmpType() {
-    IcmpAppAstNode expectedAst = new IcmpAppAstNode(8);
+    IcmpTypeAppAstNode expectedAst = new IcmpTypeAppAstNode(8);
 
     assertThat(ParserUtils.getAst(getRunner().run("icmp/8")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" icmp / 8 ")), equalTo(expectedAst));
@@ -263,16 +259,16 @@ public class ParserAppTest {
 
   @Test
   public void testParseIcmpTypeCode() {
-    IcmpAppAstNode expectedAst = new IcmpAppAstNode(8, 0);
+    IcmpTypeCodeAppAstNode expectedAst = new IcmpTypeCodeAppAstNode(8, 0);
 
     assertThat(ParserUtils.getAst(getRunner().run("icmp/8/0")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" icmp / 8 / 0 ")), equalTo(expectedAst));
   }
 
   @Test
-  public void testParseIcmpTypeCode_invalidTypeCode() {
+  public void testParseIcmpTypeCode_invalidCode() {
     _thrown.expect(ParserRuntimeException.class);
-    _thrown.expectMessage("Invalid ICMP code");
+    _thrown.expectMessage("Invalid ICMP type/code");
     ParserUtils.getAst(getRunner().run("icmp/8/1"));
   }
 
