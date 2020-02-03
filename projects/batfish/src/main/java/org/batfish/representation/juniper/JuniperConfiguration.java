@@ -63,7 +63,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
