@@ -14,6 +14,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_C
 import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.batfish.representation.juniper.JuniperConfiguration.getRouterId;
+import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAccessListLines;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
@@ -174,7 +175,7 @@ public class JuniperConfigurationTest {
 
     assertThat(
         compositeAcl.getLines(),
-        contains(hasTraceElement(TraceElement.of("Matched firewall filter F"))));
+        contains(hasTraceElement(matchingFirewallFilter(config.getFilename(), "F"))));
   }
 
   /**
