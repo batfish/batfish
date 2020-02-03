@@ -22,7 +22,6 @@ public final class VendorConfigurationFormatDetector {
 
   private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
-  private static final Pattern ARISTA_PATTERN = Pattern.compile("(?m)^.*boot system flash.*\\.swi");
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
@@ -100,11 +99,19 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  private static final Pattern ARISTA_EOS_PATTERN =
+      Pattern.compile("(?m)^! device: .*\\(.*EOS-\\d.*");
+  private static final Pattern ARISTA_FLASH_PATTERN =
+      Pattern.compile("(?m)^.*boot system flash.*\\.swi");
+
   @Nullable
   private ConfigurationFormat checkArista() {
-    if (fileTextMatches(ARISTA_PATTERN)) {
+    if (fileTextMatches(ARISTA_FLASH_PATTERN)) {
+      return ConfigurationFormat.ARISTA;
+    } else if (fileTextMatches(ARISTA_EOS_PATTERN)) {
       return ConfigurationFormat.ARISTA;
     }
+
     return null;
   }
 
@@ -305,7 +312,9 @@ public final class VendorConfigurationFormatDetector {
       case "bigip":
         return ConfigurationFormat.F5_BIGIP_STRUCTURED;
       case "cisco":
-        return checkCisco(); // unfortunately, old RANCID cannot distinguish subtypes
+        // unfortunately, old RANCID cannot distinguish subtypes and also often does other vendors
+        // like Arista
+        return null;
       case "cisco-nx":
         return ConfigurationFormat.CISCO_NX;
       case "cisco-xr":
