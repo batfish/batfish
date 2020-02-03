@@ -70662,6 +70662,11 @@
             "                  NEWLINE:'\\n')))",
             "            (rb_n_inner",
             "              (rb_n_common",
+            "                (rb_n_log_neighbor_changes",
+            "                  LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
+            "                  NEWLINE:'\\n')))",
+            "            (rb_n_inner",
+            "              (rb_n_common",
             "                (rb_n_timers",
             "                  TIMERS:'timers'",
             "                  keepalive_secs = (keepalive_interval",
@@ -70675,6 +70680,12 @@
             "                first = IPV4:'ipv4'",
             "                second = UNICAST:'unicast'",
             "                NEWLINE:'\\n'",
+            "                (rb_n_af_inner",
+            "                  (rb_n_advertisement_interval",
+            "                    ADVERTISEMENT_INTERVAL:'advertisement-interval'",
+            "                    advertise_interval_secs = (advertisement_interval",
+            "                      UINT16:'300')",
+            "                    NEWLINE:'\\n'))",
             "                (rb_n_af_inner",
             "                  (rb_n_af_next_hop_third_party",
             "                    NEXT_HOP_THIRD_PARTY:'next-hop-third-party'",
@@ -84505,7 +84516,9 @@
                 31,
                 32,
                 33,
-                34
+                34,
+                35,
+                36
               ],
               "numReferrers" : 1
             }
@@ -91498,7 +91511,7 @@
           "bgp template peer" : {
             "PEER_BLLF" : {
               "bgp neighbor inherit peer" : [
-                37
+                39
               ]
             }
           },
@@ -91560,12 +91573,12 @@
             },
             "EG_CCC" : {
               "bgp neighbor address-family route-map out" : [
-                32
+                34
               ]
             },
             "IN_BBB" : {
               "bgp neighbor address-family route-map in" : [
-                31
+                33
               ]
             }
           },
@@ -94753,12 +94766,12 @@
             },
             "EG_CCC" : {
               "bgp neighbor address-family route-map out" : [
-                32
+                34
               ]
             },
             "IN_BBB" : {
               "bgp neighbor address-family route-map in" : [
-                31
+                33
               ]
             }
           }
