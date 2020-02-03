@@ -30,8 +30,9 @@ public class VendorConfigurationFormatDetectorTest {
   public void testArista() {
     String eosFlash = "! boot system flash:/vEOS-lab.swi\n";
     String aristaRancid = "!RANCID-CONTENT-TYPE: arista\n";
+    String aristaEos = "! device: some-host (DCS-7250QX-64, EOS-4.14.9M)\n";
 
-    for (String fileText : ImmutableList.of(eosFlash, aristaRancid)) {
+    for (String fileText : ImmutableList.of(eosFlash, aristaRancid, aristaEos)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(ARISTA));
     }
   }
