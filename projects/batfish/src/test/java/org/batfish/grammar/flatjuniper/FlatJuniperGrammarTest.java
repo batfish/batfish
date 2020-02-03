@@ -308,6 +308,9 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.ApplicationSetMember;
+import org.batfish.representation.juniper.FwFrom;
+import org.batfish.representation.juniper.FwFromApplicationSetMember;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -593,11 +596,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
 
-    /*
-     * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
-     * should inline the matched application, with the action applied to each generated line
-     * from the application. One line should be generated per application term.
-     */
+    // An IpAccessList should be generated for the cross-zone policy from z1 to z2. Each policy
+    // should correspond to one line.
     assertThat(
         c,
         hasIpAccessList(
@@ -605,26 +605,24 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        new ExprAclLine(
-                            LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
-                                    .build()),
-                            "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")),
-                        new ExprAclLine(
-                            LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
-                                    .build()),
-                            "p1",
-                            matchingFirewallFilterTerm(c, ACL_NAME_GLOBAL_POLICY, "p1")))))));
+                        ExprAclLine.builder()
+                            .setAction(LineAction.PERMIT)
+                            .setName("p1")
+                            .setMatchCondition(
+                                new OrMatchExpr(
+                                    ImmutableList.of(
+                                        new AndMatchExpr(
+                                            ImmutableList.of(
+                                                new MatchHeaderSpace(
+                                                    HeaderSpace.builder()
+                                                        .setIpProtocols(
+                                                            ImmutableList.of(IpProtocol.TCP))
+                                                        .build(),
+                                                    TraceElement.of("Match protocol tcp")))))))
+                            .setTraceElement(
+                                ApplicationSetMember.getTraceElement(
+                                    "configs/" + c.getHostname(), APPLICATION, "p1"))
+                            .build())))));
   }
 
   @Test
