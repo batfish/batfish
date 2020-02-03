@@ -1,6 +1,16 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_ICMP;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_ICMP_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_ICMP_TYPE_CODE;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORT;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORTS;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORT_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_TCP;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_UDP;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
 import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_NOT;
 import static org.batfish.specifier.parboiled.Anchor.Type.ENUM_SET_REGEX;
@@ -104,6 +114,8 @@ public class Parser extends CommonParser {
   @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
+      case APP_SPECIFIER:
+        return input(AppSpec());
       case APPLICATION_SPECIFIER:
       case BGP_PEER_PROPERTY_SPECIFIER:
       case BGP_PROCESS_PROPERTY_SPECIFIER:
@@ -152,6 +164,118 @@ public class Parser extends CommonParser {
   @Anchor(REFERENCE_BOOK_NAME)
   public Rule ReferenceBook() {
     return Sequence(NameLiteral(), WhiteSpace());
+  }
+
+  /**
+   * Application specifier grammar
+   *
+   * <pre>
+   * appSpec := appTerm
+   *           | appTerm, appSpec
+   *
+   * appTerm := namedApp | ICMP (/ icmpTypeSpec)? | TCP (/ ports-spec)? | UDP (/ ports-spec)?
+   *
+   * namedApp := HTTP | HTTPS | …
+   *
+   * icmpTypeSpec := namedIcmpType | type (/ code)?
+   *
+   * namedIcmpType := echo-request | echo-response, ...
+   *
+   * portsSpec := portsTerm | portsTerm, portsSpec
+   *
+   * portsTerm := number (- number)?
+   * </pre>
+   */
+
+  /** A Filter expression is one or more intersection terms separated by , or \ */
+  @Anchor(APP_SET_OP)
+  public Rule AppSpec() {
+    return Sequence(
+        AppTerm(),
+        WhiteSpace(),
+        ZeroOrMore(", ", AppTerm(), push(new UnionAppAstNode(pop(1), pop())), WhiteSpace()));
+  }
+
+  public Rule AppTerm() {
+    return FirstOf(AppName(), AppNameRegex(), AppIcmpTerm(), AppTcpTerm(), AppUdpTerm());
+  }
+
+  @Anchor(APP_NAME)
+  public Rule AppName() {
+    return Sequence(
+        EnumValue(),
+        ACTION(namedApplications.contains(match().toUpperCase())),
+        push(new NameAppAstNode(match())));
+  }
+
+  /**
+   * For backward compatibility with the old specifier that allowed regex over the six named
+   * applications in {@link org.batfish.datamodel.Protocol}s it supported.
+   */
+  @Anchor(DEPRECATED)
+  public Rule AppNameRegex() {
+    return Sequence(Regex(), push(new RegexAppAstNode(pop())));
+  }
+
+  @Anchor(APP_ICMP)
+  public Rule AppIcmpTerm() {
+    return Sequence(
+        IgnoreCase("icmp"), WhiteSpace(), push(new IcmpAllAppAstNode()), Optional(AppIcmpType()));
+  }
+
+  @Anchor(APP_ICMP_TYPE)
+  public Rule AppIcmpType() {
+    return Sequence(
+        "/ ",
+        Number(),
+        ACTION(pop() != null),
+        push(new IcmpTypeAppAstNode(Integer.parseInt(match()))),
+        WhiteSpace(),
+        Optional(AppIcmpTypeCode()));
+  }
+
+  @Anchor(APP_ICMP_TYPE_CODE)
+  public Rule AppIcmpTypeCode() {
+    return Sequence(
+        "/ ", Number(), push(IcmpTypeCodeAppAstNode.create(pop(), Integer.parseInt(match()))));
+  }
+
+  @Anchor(APP_TCP)
+  public Rule AppTcpTerm() {
+    return Sequence(
+        IgnoreCase("tcp"), WhiteSpace(), push(new TcpAppAstNode()), Optional(AppPortSpec()));
+  }
+
+  @Anchor(APP_UDP)
+  public Rule AppUdpTerm() {
+    return Sequence(
+        IgnoreCase("udp"), WhiteSpace(), push(new UdpAppAstNode()), Optional(AppPortSpec()));
+  }
+
+  @Anchor(APP_PORTS)
+  public Rule AppPortSpec() {
+    return Sequence(
+        "/ ", AppPortTerm(), WhiteSpace(), ZeroOrMore(", ", AppPortTerm(), WhiteSpace()));
+  }
+
+  public Rule AppPortTerm() {
+    return FirstOf(AppPortRange(), AppPort());
+  }
+
+  @Anchor(APP_PORT)
+  public Rule AppPort() {
+    return Sequence(Number(), push(PortAppAstNode.createFrom(pop(), match())));
+  }
+
+  @Anchor(APP_PORT_RANGE)
+  public Rule AppPortRange() {
+    return Sequence(
+        Number(),
+        push(new StringAstNode(match())),
+        WhiteSpace(),
+        "- ",
+        Number(),
+        push(PortAppAstNode.createFrom(pop(1), ((StringAstNode) pop(0)).getStr(), match())));
   }
 
   /**
