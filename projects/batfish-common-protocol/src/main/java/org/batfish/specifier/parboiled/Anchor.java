@@ -23,6 +23,30 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     /** Names of address groups in a reference book */
     ADDRESS_GROUP_NAME(
         "ADDRESS_GROUP_NAME", "Address group name", null, SuggestionType.NAME_LITERAL),
+    /** ICMP-based application definition in appSpec */
+    APP_ICMP("APP_ICMP", "ICMP application", null, SuggestionType.UNKNOWN),
+    /** ICMP type in appSpec */
+    APP_ICMP_TYPE("APP_ICMP_TYPE", "ICMP type", "type", SuggestionType.UNKNOWN),
+    /** ICMP type and code in appSpec */
+    APP_ICMP_TYPE_CODE("APP_ICMP_TYPE", "ICMP type/code", "code", SuggestionType.UNKNOWN),
+    /** Application name (e.g., HTTP, ECHO-REQUEST) */
+    APP_NAME("APP_NAME", null, null, SuggestionType.CONSTANT),
+    /** Port number such as 80 */
+    APP_PORT("APP_PORT", "Application port", null, SuggestionType.CONSTANT),
+    /** Port number such as 80 */
+    APP_PORT_RANGE(
+        "APP_PORT_RANGE", "Application port range", "high-port", SuggestionType.CONSTANT),
+    /** One or more application port terms */
+    APP_PORTS("APP_SET_OP", "Application ports", "port(s)", SuggestionType.UNKNOWN),
+    /**
+     * Denotes a set operation for appSpec. The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
+     */
+    APP_SET_OP("APP_SET_OP", " of applications", "appSpec", SuggestionType.SET_OPERATOR),
+    /** TCP-based application definition in appSpec */
+    APP_TCP("APP_TCP", "TCP application", null, SuggestionType.UNKNOWN),
+    /** UDP-based application definition in appSpec */
+    APP_UDP("APP_UDP", "UDP application", null, SuggestionType.UNKNOWN),
     /**
      * A character literal, e.g., set operators and parenthesis. It is an implicit anchor assigned
      * based on Parboiled path element labels.
