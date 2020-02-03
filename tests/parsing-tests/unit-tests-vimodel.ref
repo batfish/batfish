@@ -28076,7 +28076,7 @@
             ],
             "name" : "zone~A~to~zone~B",
             "sourceName" : "zone~A~to~zone~B",
-            "sourceType" : "firewall filter"
+            "sourceType" : "security policy"
           },
           "~GLOBAL_SECURITY_POLICY~" : {
             "lines" : [
@@ -28108,7 +28108,7 @@
             ],
             "name" : "~GLOBAL_SECURITY_POLICY~",
             "sourceName" : "~GLOBAL_SECURITY_POLICY~",
-            "sourceType" : "firewall filter"
+            "sourceType" : "security policy"
           },
           "~INBOUND_ZONE_FILTER~ZONE-protocols" : {
             "lines" : [

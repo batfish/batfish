@@ -3842,7 +3842,7 @@
         "Lines" : {
           "filename" : "configs/nxos/nxos_bgp",
           "lines" : [
-            32
+            34
           ]
         }
       },
@@ -3854,7 +3854,7 @@
         "Lines" : {
           "filename" : "configs/nxos/nxos_bgp",
           "lines" : [
-            31
+            33
           ]
         }
       },

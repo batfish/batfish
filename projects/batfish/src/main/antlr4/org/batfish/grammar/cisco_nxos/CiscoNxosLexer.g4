@@ -183,6 +183,11 @@ ADVERTISE_MAP
   'advertise-map'
 ;
 
+ADVERTISEMENT_INTERVAL
+:
+  'advertisement-interval'
+;
+
 AES_128
 :
   'aes-128'
