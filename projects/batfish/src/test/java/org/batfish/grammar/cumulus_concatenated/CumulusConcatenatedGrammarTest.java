@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -384,5 +385,44 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(outputRoute3.getMetric(), equalTo(1L));
     assertThat(outputRoute4.getMetric(), equalTo(0xFFFFFFFFL));
     assertThat(outputRoute5.getMetric(), equalTo(0L));
+  }
+
+  @Test
+  public void testSetCommListDelete() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+            Bgpv4Route.builder()
+                    .setAsPath(AsPath.ofSingletonAsSets(2L))
+                    .setOriginatorIp(Ip.ZERO)
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setNextHopIp(origNextHopIp)
+                    .setNetwork(Prefix.parse("10.20.30.0/31"))
+                    .setTag(0L)
+                    .build();
+    Configuration c = parseConfig("set_comm_list_delete_test");
+    Bgpv4Route inRoute =
+            base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1),
+                    StandardCommunity.of(1, 2),
+                    StandardCommunity.of(2, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 1),
+                    StandardCommunity.of(3, 2))).build();
+
+    RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES");
+    RoutingPolicy rp2 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1");
+    RoutingPolicy rp3 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2");
+    RoutingPolicy rp4 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3");
+    Bgpv4Route outputRoute1 = processRouteIn(rp1, inRoute);
+    Bgpv4Route outputRoute2 = processRouteIn(rp2, inRoute);
+    Bgpv4Route outputRoute3 = processRouteIn(rp3, inRoute);
+    Bgpv4Route outputRoute4 = processRouteIn(rp4, inRoute);
+    assertThat(outputRoute1.getCommunities(),hasSize(0));
+    assertThat(outputRoute2.getCommunities(), contains(StandardCommunity.of(2, 1), StandardCommunity.of(2, 2),
+            StandardCommunity.of(3, 1), StandardCommunity.of(3, 2)));
+    assertThat(outputRoute3.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2),
+            StandardCommunity.of(3, 1), StandardCommunity.of(3, 2)));
+    assertThat(outputRoute4.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2),
+            StandardCommunity.of(2, 1), StandardCommunity.of(2, 2)));
   }
 }

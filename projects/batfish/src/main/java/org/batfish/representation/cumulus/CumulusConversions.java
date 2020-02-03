@@ -28,12 +28,14 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -73,16 +75,25 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1287,22 +1298,94 @@ public final class CumulusConversions {
 
   static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
+
     ipCommunityLists.forEach(
-        (name, list) -> c.getCommunityLists().put(name, toCommunityList(list)));
+        (name, list) -> {
+          if (list instanceof IpCommunityListStandard) {
+            c.getCommunityLists().put(name, toCommunityMatchExpr((IpCommunityListStandard)list));
+          } else if (list instanceof IpCommunityListExpanded) {
+            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((IpCommunityListExpanded)list));
+          }
+        });
+    }
+
+  @VisibleForTesting
+  static CommunityList toCommunityMatchExpr(IpCommunityListStandard ipCommunityListStandard) {
+    Set<Community> whitelist = new HashSet<>();
+    Set<Community> blacklist = new HashSet<>();
+    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
+      if (line.getCommunities().size() != 1) {
+        continue;
+      }
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
+    }
+    return new CommunityList(ipCommunityListStandard.getName(),
+            whitelist.stream().map(k -> new CommunityListLine(LineAction.PERMIT, new LiteralCommunity(k)))
+                    .collect(ImmutableList.toImmutableList())  ,
+            false);
   }
 
   @VisibleForTesting
-  static CommunityList toCommunityList(IpCommunityList list) {
-    return list.accept(
-        ipCommunityList ->
-            new CommunityList(
-                ipCommunityList.getName(),
-                ipCommunityList.getCommunities().stream()
-                    .map(LiteralCommunity::new)
-                    .map(k -> new CommunityListLine(ipCommunityList.getAction(), k))
-                    .collect(ImmutableList.toImmutableList()),
-                false));
+  static CommunityMatchExpr toCommunityMatchExpr(
+          IpCommunityListExpanded ipCommunityListExpanded) {
+    return new CommunityAcl(
+            ipCommunityListExpanded.getLines().values().stream()
+                    .map(CumulusConversions::toCommunityAclLine)
+                    .collect(ImmutableList.toImmutableList()));
   }
+
+  private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
+    return new CommunityAclLine(
+            line.getAction(),
+            new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+  }
+
+  private static @Nonnull String toJavaRegex(String cumulusRegex) {
+    String withoutQuotes;
+    if (cumulusRegex.charAt(0) == '"' && cumulusRegex.charAt(cumulusRegex.length() - 1) == '"') {
+      withoutQuotes = cumulusRegex.substring(1, cumulusRegex.length() - 1);
+    } else {
+      withoutQuotes = cumulusRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
+  }
+
+  /* TODO: Enable when IpCommunityListStandard is supported for Cumulus in Batfish.
+  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+          IpCommunityListStandard ipCommunityListStandard) {
+    Set<Community> whitelist = new HashSet<>();
+    Set<Community> blacklist = new HashSet<>();
+    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
+      if (line.getCommunities().size() != 1) {
+        continue;
+      }
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
+    }
+    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+  */
 
   static void convertIpAsPathAccessLists(
       Configuration c, Map<String, IpAsPathAccessList> ipAsPathAccessLists) {

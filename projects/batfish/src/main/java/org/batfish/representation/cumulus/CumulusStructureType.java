@@ -9,6 +9,8 @@ public enum CumulusStructureType implements StructureType {
   IP_AS_PATH_ACCESS_LIST("ip as-path access-list"),
   IP_COMMUNITY_LIST("ip community-list"),
   INTERFACE("interface"),
+  IP_COMMUNITY_LIST_EXPANDED("ip community-list expanded"),
+  IP_COMMUNITY_LIST_STANDARD("ip community-list standard"),
   IP_PREFIX_LIST("ip_prefix_list"),
   LOOPBACK("loopback"),
   ROUTE_MAP("route-map"),

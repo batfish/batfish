@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  QUOTED_TEXT,
   REMARK_TEXT,
   WORD
 }
@@ -150,6 +151,11 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
+COMM_LIST
+:
+  'comm-list' -> pushMode ( M_Word )
+;
+
 COMMUNITY
 :
   'community'
@@ -210,6 +216,11 @@ DEFAULTS
   'defaults'
 ;
 
+DELETE
+:
+  'delete'
+;
+
 DENY
 :
   'deny'
@@ -218,6 +229,11 @@ DENY
 DESCRIPTION
 :
   'description' -> pushMode ( M_Remark )
+;
+
+DOUBLE_QUOTE
+:
+  '"' -> pushMode ( M_DoubleQuote )
 ;
 
 EMERGENCIES
@@ -899,6 +915,24 @@ M_Default_Or_Word_WORD
 M_Default_Or_Word_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_DoubleQuote;
+
+M_DoubleQuote_DOUBLE_QUOTE
+:
+  '"' -> type ( DOUBLE_QUOTE ) , popMode
+;
+
+M_DoubleQuote_NEWLINE
+:
+// Break out if termination does not occur on same line
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_DoubleQuote_QUOTED_TEXT
+:
+  ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
 
 mode M_Neighbor;
