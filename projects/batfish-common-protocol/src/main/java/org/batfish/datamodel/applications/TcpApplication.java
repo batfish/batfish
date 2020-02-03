@@ -7,7 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
-/** An abstract class that represents an application that has ports (TCP, Udp) */
+/** Represents a TCP application */
 @ParametersAreNonnullByDefault
 public final class TcpApplication extends PortsApplication {
 
