@@ -26,13 +26,13 @@ public abstract class Application {
     return _ipProtocol;
   }
 
-  protected String stringifySubRanges(List<SubRange> subranges) {
+  protected static String stringifySubRanges(List<SubRange> subranges) {
     return subranges.stream()
         .map(
             subrange ->
                 subrange.isSingleValue()
                     ? Objects.toString(subrange.getStart())
-                    : subrange.serializedForm())
+                    : String.format("%d-%d", subrange.getStart(), subrange.getEnd()))
         .collect(Collectors.joining(","));
   }
 }
