@@ -101,6 +101,9 @@ router ospf dio_route_map
 router ospf dio_always_route_map
   default-information originate always route-map rm_e2
 
+router ospf distance
+  distance 243
+
 !!! log-adjacency-changes
 router ospf lac
   log-adjacency-changes
