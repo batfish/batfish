@@ -15,7 +15,7 @@ import org.batfish.datamodel.SubRange;
 public final class IcmpTypesApplication extends IcmpApplication {
 
   public static final IcmpTypesApplication ALL =
-      new IcmpTypesApplication(ImmutableList.of(new SubRange(0, 255)));
+      new IcmpTypesApplication(ImmutableList.of(new SubRange(0, MAX_TYPE)));
 
   @Nonnull private final List<SubRange> _types;
 
@@ -47,5 +47,13 @@ public final class IcmpTypesApplication extends IcmpApplication {
   @Override
   public int hashCode() {
     return Objects.hashCode(_types);
+  }
+
+  @Override
+  public String toString() {
+    if (ALL.equals(this)) {
+      return "icmp";
+    }
+    return "icmp/" + stringifySubRanges(_types);
   }
 }

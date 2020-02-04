@@ -39,4 +39,12 @@ public final class TcpApplication extends PortsApplication {
   public int hashCode() {
     return Objects.hashCode(_ports);
   }
+
+  @Override
+  public String toString() {
+    if (ALL.equals(this)) {
+      return "tcp";
+    }
+    return "tcp/" + stringifySubRanges(_ports);
+  }
 }
