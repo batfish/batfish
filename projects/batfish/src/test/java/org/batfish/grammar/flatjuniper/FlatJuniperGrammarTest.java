@@ -778,7 +778,7 @@ public final class FlatJuniperGrammarTest {
   public void testClassOfServiceParsing() {
     parseJuniperConfig("juniper-class-of-service");
   }
-  
+
   @Test
   public void testParentChildTopology() throws IOException {
     String resourcePrefix = "org/batfish/grammar/juniper/testrigs/topology";
