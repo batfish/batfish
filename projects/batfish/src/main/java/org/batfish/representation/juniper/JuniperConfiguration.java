@@ -2232,17 +2232,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     if (!term.getFromApplicationSetMembers().isEmpty()) {
-      AclLineMatchExpr applicationMatchExpr =
-          // if there is only 1 application in the term, simply get that application; otherwise need
-          // to or all applications
-          term.getFromApplicationSetMembers().size() == 1
-              ? term.getFromApplicationSetMembers().get(0).toAclLineMatchExpr(this, _w)
-              : new OrMatchExpr(
-                  term.getFromApplicationSetMembers().stream()
-                      .map(from -> from.toAclLineMatchExpr(this, _w))
-                      .collect(ImmutableList.toImmutableList()));
-
-      fwFromAndApplicationConjuncts.add(applicationMatchExpr);
+      fwFromAndApplicationConjuncts.add(
+          or(
+              term.getFromApplicationSetMembers().stream()
+                  .map(from -> from.toAclLineMatchExpr(this, _w))
+                  .collect(ImmutableList.toImmutableList())));
     }
 
     // TODO: FwFromHostProtocol should be converted into AclLineMatchExpr
@@ -2274,10 +2268,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     lines.add(
         ExprAclLine.builder()
             .setAction(action)
-            .setMatchCondition(
-                fwFromAndApplicationConjuncts.size() == 1
-                    ? fwFromAndApplicationConjuncts.get(0)
-                    : and(fwFromAndApplicationConjuncts))
+            .setMatchCondition(and(fwFromAndApplicationConjuncts))
             .setName(term.getName())
             .setTraceElement(matchingAbstractTerm(aclType, _filename, aclName, term.getName()))
             .build());
