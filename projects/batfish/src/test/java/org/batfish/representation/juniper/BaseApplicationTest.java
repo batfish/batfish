@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.representation.juniper.ApplicationSetMember.getTraceElement;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -54,9 +55,10 @@ public class BaseApplicationTest {
   public void testToAclLineMatchExpr_noTerms() {
     BaseApplication app = new BaseApplication("APP");
     assertEquals(
-        app.toAclLineMatchExpr(null, null),
+        app.toAclLineMatchExpr(jc, null),
         new MatchHeaderSpace(
-            app.getMainTerm().toHeaderSpace(), TraceElement.of("Matched application APP")));
+            app.getMainTerm().toHeaderSpace(),
+            getTraceElement("host", JuniperStructureType.APPLICATION, "APP")));
   }
 
   @Test
@@ -71,7 +73,6 @@ public class BaseApplicationTest {
         app.toAclLineMatchExpr(jc, null),
         new OrMatchExpr(
             ImmutableList.of(term1.toAclLineMatchExpr(), term2.toAclLineMatchExpr()),
-            ApplicationSetMember.getTraceElement(
-                jc.getFilename(), JuniperStructureType.APPLICATION, "APP")));
+            getTraceElement(jc.getFilename(), JuniperStructureType.APPLICATION, "APP")));
   }
 }
