@@ -22,6 +22,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -148,7 +149,7 @@ public class JuniperConfigurationTest {
                         .add(
                             "term",
                             new VendorStructureId(
-                                "file", FIREWALL_FILTER_TERM.getDescription(), "filter term"))
+                                "file", SECURITY_POLICY_TERM.getDescription(), "filter term"))
                         .build())
                 .setMatchCondition(
                     new AndMatchExpr(
