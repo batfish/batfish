@@ -1,0 +1,14 @@
+#
+set system host-name juniper-class-of-service
+#
+set groups QOS_INTERFACES class-of-service interfaces et-* forwarding-class-set FC_SET_FOO output-traffic-control-profile TCP_FOO
+set groups QOS_INTERFACES class-of-service interfaces et-* unit * classifiers dscp CL_FOO_DSCP
+set groups QOS_INTERFACES class-of-service interfaces et-* classifiers dscp CL_FOO_DSCP
+set groups QOS_INTERFACES class-of-service interfaces xe-* forwarding-class-set FC_SET_FOO output-traffic-control-profile TCP_FOO
+set groups QOS_INTERFACES class-of-service interfaces xe-* unit * classifiers dscp CL_FOO_DSCP
+set groups QOS_INTERFACES class-of-service interfaces xe-* classifiers dscp CL_FOO_DSCP
+set groups QOS_INTERFACES class-of-service interfaces ae* forwarding-class-set FC_SET_FOO output-traffic-control-profile TCP_FOO
+set groups QOS_INTERFACES class-of-service interfaces ae* unit * classifiers dscp CL_FOO_DSCP
+set groups QOS_INTERFACES class-of-service interfaces ae* classifiers dscp CL_FOO_DSCP
+set apply-groups FOOBAR
+#
