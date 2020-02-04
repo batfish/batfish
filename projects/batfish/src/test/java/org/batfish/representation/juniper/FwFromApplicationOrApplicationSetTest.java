@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.representation.juniper.ApplicationSetMember.getTraceElement;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -115,7 +116,7 @@ public class FwFromApplicationOrApplicationSetTest {
                     HeaderSpace.builder().build(), TraceElement.of("Matched term t1")),
                 new MatchHeaderSpace(
                     HeaderSpace.builder().build(), TraceElement.of("Matched term t2"))),
-            ApplicationSetMember.getTraceElement("host", JuniperStructureType.APPLICATION, "app")));
+            getTraceElement("host", JuniperStructureType.APPLICATION, "app")));
   }
 
   @Test
@@ -138,10 +139,11 @@ public class FwFromApplicationOrApplicationSetTest {
         new OrMatchExpr(
             ImmutableList.of(
                 new MatchHeaderSpace(
-                    HeaderSpace.builder().build(), TraceElement.of("Matched application app1")),
+                    HeaderSpace.builder().build(),
+                    getTraceElement("host", JuniperStructureType.APPLICATION, "app1")),
                 new MatchHeaderSpace(
-                    HeaderSpace.builder().build(), TraceElement.of("Matched application app2"))),
-            ApplicationSetMember.getTraceElement(
-                "host", JuniperStructureType.APPLICATION_SET, "appSet")));
+                    HeaderSpace.builder().build(),
+                    getTraceElement("host", JuniperStructureType.APPLICATION, "app2"))),
+            getTraceElement("host", JuniperStructureType.APPLICATION_SET, "appSet")));
   }
 }

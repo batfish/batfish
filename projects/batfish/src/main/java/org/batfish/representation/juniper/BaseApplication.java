@@ -146,7 +146,8 @@ public final class BaseApplication implements Application, Serializable {
     if (_terms.isEmpty()) {
       return new MatchHeaderSpace(
           _mainTerm.toHeaderSpace(),
-          TraceElement.of(String.format("Matched application %s", _name)));
+          ApplicationSetMember.getTraceElement(
+              jc.getFilename(), JuniperStructureType.APPLICATION, _name));
     }
 
     return new OrMatchExpr(

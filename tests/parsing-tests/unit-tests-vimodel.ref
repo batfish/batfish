@@ -24415,7 +24415,7 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.AndMatchExpr"
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "t3",
                 "traceElement" : {
@@ -28047,7 +28047,7 @@
                   "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                   "conjuncts" : [
                     {
-                      "class" : "org.batfish.datamodel.acl.AndMatchExpr"
+                      "class" : "org.batfish.datamodel.acl.TrueExpr"
                     },
                     {
                       "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
@@ -28067,7 +28067,7 @@
                       "vendorStructureId" : {
                         "filename" : "configs/juniper_security",
                         "structureName" : "zone~A~to~zone~B 123-4",
-                        "structureType" : "firewall filter term"
+                        "structureType" : "security policy term"
                       }
                     }
                   ]
@@ -28084,7 +28084,7 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.AndMatchExpr"
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "p1",
                 "traceElement" : {
@@ -28099,7 +28099,7 @@
                       "vendorStructureId" : {
                         "filename" : "configs/juniper_security",
                         "structureName" : "~GLOBAL_SECURITY_POLICY~ p1",
-                        "structureType" : "firewall filter term"
+                        "structureType" : "security policy term"
                       }
                     }
                   ]
@@ -28128,21 +28128,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol BFD"
                     }
                   ]
                 }
@@ -28162,21 +28152,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol BGP"
                     }
                   ]
                 }
@@ -28193,21 +28173,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol DVMRP"
                     }
                   ]
                 }
@@ -28224,21 +28194,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol IGMP"
                     }
                   ]
                 }
@@ -28259,21 +28219,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol LDP"
                     }
                   ]
                 }
@@ -28293,21 +28243,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol MSDP"
                     }
                   ]
                 }
@@ -28324,21 +28264,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol NHRP"
                     }
                   ]
                 }
@@ -28355,21 +28285,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol OSPF"
                     }
                   ]
                 }
@@ -28386,21 +28306,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol PGM"
                     }
                   ]
                 }
@@ -28417,21 +28327,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol PIM"
                     }
                   ]
                 }
@@ -28451,21 +28351,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol RIP"
                     }
                   ]
                 }
@@ -28482,21 +28372,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol ROUTER_DISCOVERY"
                     }
                   ]
                 }
@@ -28514,21 +28394,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol RSVP"
                     }
                   ]
                 }
@@ -28554,21 +28424,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol SAP"
                     }
                   ]
                 }
@@ -28585,21 +28445,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-protocols ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic protocol VRRP"
                     }
                   ]
                 }
@@ -28626,21 +28476,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service DHCP"
                     }
                   ]
                 }
@@ -28661,21 +28501,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service DNS"
                     }
                   ]
                 }
@@ -28695,21 +28525,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service FINGER"
                     }
                   ]
                 }
@@ -28729,21 +28549,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service FTP"
                     }
                   ]
                 }
@@ -28763,21 +28573,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service HTTP"
                     }
                   ]
                 }
@@ -28797,21 +28597,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service HTTPS"
                     }
                   ]
                 }
@@ -28832,21 +28622,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service IKE"
                     }
                   ]
                 }
@@ -28866,21 +28646,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service NETCONF"
                     }
                   ]
                 }
@@ -28900,21 +28670,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service NTP"
                     }
                   ]
                 }
@@ -28931,21 +28691,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service PING"
                     }
                   ]
                 }
@@ -28965,21 +28715,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service R2CP"
                     }
                   ]
                 }
@@ -28999,21 +28739,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service REVERSE_SSH"
                     }
                   ]
                 }
@@ -29033,21 +28763,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service REVERSE_TELNET"
                     }
                   ]
                 }
@@ -29067,21 +28787,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service RLOGIN"
                     }
                   ]
                 }
@@ -29095,21 +28805,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service RPM"
                     }
                   ]
                 }
@@ -29129,21 +28829,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service RSH"
                     }
                   ]
                 }
@@ -29164,21 +28854,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service SIP"
                     }
                   ]
                 }
@@ -29198,21 +28878,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service SNMP"
                     }
                   ]
                 }
@@ -29232,21 +28902,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service SNMP_TRAP"
                     }
                   ]
                 }
@@ -29266,21 +28926,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service SSH"
                     }
                   ]
                 }
@@ -29300,21 +28950,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service TELNET"
                     }
                   ]
                 }
@@ -29334,21 +28974,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service TFTP"
                     }
                   ]
                 }
@@ -29368,21 +28998,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service TRACEROUTE"
                     }
                   ]
                 }
@@ -29402,21 +29022,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service XNM_CLEAR_TEXT"
                     }
                   ]
                 }
@@ -29436,21 +29046,11 @@
                     "negate" : false
                   }
                 },
-                "name" : "ALL",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "ALL",
-                      "vendorStructureId" : {
-                        "filename" : "configs/juniper_security",
-                        "structureName" : "~INBOUND_ZONE_FILTER~ZONE-system-services ALL",
-                        "structureType" : "firewall filter term"
-                      }
+                      "text" : "Matched host-inbound-traffic system-service XNM_SSL"
                     }
                   ]
                 }

@@ -308,6 +308,7 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -456,31 +457,49 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         new ExprAclLine(
                             LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
-                                    .build()),
-                            "p1",
-                            matchingSecurityPolicyTerm(
-                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")),
-                        new ExprAclLine(
-                            LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                    .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
-                                    .build()),
-                            "p1",
-                            matchingSecurityPolicyTerm(
-                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")),
-                        new ExprAclLine(
-                            LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                    .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                    .build()),
+                            new OrMatchExpr(
+                                ImmutableList.of(
+                                    // appset1
+                                    new OrMatchExpr(
+                                        ImmutableList.of(
+                                            // a1
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setIpProtocols(
+                                                        ImmutableList.of(IpProtocol.TCP))
+                                                    .setSrcPorts(
+                                                        ImmutableList.of(SubRange.singleton(1)))
+                                                    .build(),
+                                                ApplicationSetMember.getTraceElement(
+                                                    "configs/" + c.getHostname(),
+                                                    APPLICATION,
+                                                    "a1")),
+                                            // a2
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setIpProtocols(
+                                                        ImmutableList.of(IpProtocol.UDP))
+                                                    .setDstPorts(
+                                                        ImmutableList.of(SubRange.singleton(2)))
+                                                    .build(),
+                                                ApplicationSetMember.getTraceElement(
+                                                    "configs/" + c.getHostname(),
+                                                    APPLICATION,
+                                                    "a2"))),
+                                        ApplicationSetMember.getTraceElement(
+                                            "configs/" + c.getHostname(),
+                                            APPLICATION_SET,
+                                            "appset1")),
+                                    // a3
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                            .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
+                                            .build(),
+                                        ApplicationSetMember.getTraceElement(
+                                            "configs/" + c.getHostname(), APPLICATION, "a3"))),
+                                ApplicationSetMember.getTraceElement(
+                                    "configs/" + c.getHostname(), APPLICATION_SET, "appset2")),
                             "p1",
                             matchingSecurityPolicyTerm(
                                 "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
@@ -581,11 +600,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
 
-    /*
-     * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
-     * should inline the matched application, with the action applied to each generated line
-     * from the application. One line should be generated per application term.
-     */
+    // An IpAccessList should be generated for the cross-zone policy from z1 to z2. Each policy
+    // should correspond to one line.
     assertThat(
         c,
         hasIpAccessList(
@@ -595,23 +611,26 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         new ExprAclLine(
                             LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
-                                    .build()),
-                            "p1",
-                            matchingSecurityPolicyTerm(
-                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")),
-                        new ExprAclLine(
-                            LineAction.PERMIT,
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                    .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                    .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
-                                    .build()),
+                            new OrMatchExpr(
+                                ImmutableList.of(
+                                    // term 1
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
+                                            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                            .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
+                                            .build(),
+                                        TraceElement.of("Matched term t1")),
+                                    // term 2
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
+                                            .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                            .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
+                                            .build(),
+                                        TraceElement.of("Matched term t2"))),
+                                ApplicationSetMember.getTraceElement(
+                                    "configs/" + c.getHostname(), APPLICATION, "a1")),
                             "p1",
                             matchingSecurityPolicyTerm(
                                 "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
