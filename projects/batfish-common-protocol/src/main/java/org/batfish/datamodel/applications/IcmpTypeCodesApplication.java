@@ -12,6 +12,8 @@ import org.batfish.specifier.parboiled.CommonParser;
 @ParametersAreNonnullByDefault
 public final class IcmpTypeCodesApplication extends IcmpApplication {
 
+  public static final SubRange ALL_CODES = new SubRange(0, IcmpApplication.MAX_TYPE_CODE);
+
   private final int _type;
 
   @Nonnull private final List<SubRange> _codes;
@@ -97,5 +99,13 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
   @Override
   public int hashCode() {
     return Objects.hash(_type, _codes);
+  }
+
+  @Override
+  public String toString() {
+    if (_codes.equals(ImmutableList.of(ALL_CODES))) {
+      return "icmp/" + _type;
+    }
+    return String.format("icmp/%d/%s", _type, stringifySubRanges(_codes));
   }
 }

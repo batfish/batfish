@@ -39,4 +39,12 @@ public final class UdpApplication extends PortsApplication {
   public int hashCode() {
     return Objects.hashCode(_ports);
   }
+
+  @Override
+  public String toString() {
+    if (ALL.equals(this)) {
+      return "udp";
+    }
+    return "udp/" + stringifySubRanges(_ports);
+  }
 }
