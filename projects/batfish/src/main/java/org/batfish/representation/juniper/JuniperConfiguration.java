@@ -2226,7 +2226,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return lines;
     }
 
+    // We do not support ip options for now. Simply return an empty list assuming this term is
+    // unmatchable
     if (term.getFromIpOptions() != null) {
+      assert term.getFromHostProtocols().isEmpty()
+          && term.getFromHostServices().isEmpty()
+          && term.getFromApplicationSetMembers().isEmpty();
       // TODO: implement
       // For now, assume line is unmatchable.
       return lines;
