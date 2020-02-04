@@ -292,6 +292,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   /** Routing-related constants. */
   private static final int AGGREGATE_ROUTE_ADMIN_COST = 200;
 
+  private static final int OSPF_ADMIN_COST = 110;
+
   private static final double SPEED_CONVERSION_FACTOR = 1E6D;
   private static final Statement ROUTE_MAP_PERMIT_STATEMENT =
       new If(
@@ -2168,7 +2170,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.ospf.OspfProcess.Builder toOspfProcessBuilder(
       OspfProcess proc, String processName, String vrfName) {
     org.batfish.datamodel.ospf.OspfProcess.Builder builder =
-        org.batfish.datamodel.ospf.OspfProcess.builder();
+        org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setAllAdminCosts(firstNonNull(proc.getDistance(), OSPF_ADMIN_COST));
 
     // compute summaries to be used by all VI areas
     Map<Prefix, OspfAreaSummary> summaries =

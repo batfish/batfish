@@ -4655,6 +4655,7 @@ public final class CiscoNxosGrammarTest {
             "dio_always",
             "dio_route_map",
             "dio_always_route_map",
+            "distance",
             "lac",
             "lac_detail",
             "mm",
@@ -4803,6 +4804,10 @@ public final class CiscoNxosGrammarTest {
                 .process(generatedInputRoute, outputRoute, Direction.OUT));
         // assign E2 metric-type from route-map
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("distance");
+        assertTrue(proc.getAdminCosts().values().stream().allMatch(i -> i.equals(243)));
       }
     }
     // TODO: convert and test "lac" - OSPF log-adjacency-changes
@@ -4984,6 +4989,7 @@ public final class CiscoNxosGrammarTest {
             "dio_always",
             "dio_route_map",
             "dio_always_route_map",
+            "distance",
             "lac",
             "lac_detail",
             "mm",
@@ -5166,6 +5172,10 @@ public final class CiscoNxosGrammarTest {
       assertTrue(defaultOriginate.getAlways());
       assertThat(defaultOriginate.getRouteMap(), equalTo("rm_e2"));
       assertThat(proc.getMaxMetricRouterLsa(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("distance");
+      assertThat(proc.getDistance(), equalTo(243));
     }
     // TODO: extract and test log-adjacency-changes
     {

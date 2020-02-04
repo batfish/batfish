@@ -54,6 +54,14 @@ public abstract class OspfProcess implements Serializable {
     _defaultOriginate = defaultOriginate;
   }
 
+  public @Nullable Integer getDistance() {
+    return _distance;
+  }
+
+  public void setDistance(@Nullable Integer distance) {
+    _distance = distance;
+  }
+
   public @Nullable OspfMaxMetricRouterLsa getMaxMetricRouterLsa() {
     return _maxMetricRouterLsa;
   }
@@ -158,6 +166,7 @@ public abstract class OspfProcess implements Serializable {
   private int _autoCostReferenceBandwidthMbps;
   private boolean _bfd;
   private @Nullable OspfDefaultOriginate _defaultOriginate;
+  private @Nullable Integer _distance;
   private @Nullable OspfMaxMetricRouterLsa _maxMetricRouterLsa;
   private final @Nonnull Map<IpWildcard, Long> _networks;
   private boolean _passiveInterfaceDefault;

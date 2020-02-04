@@ -21,6 +21,7 @@ ro_common
   | ro_auto_cost
   | ro_bfd
   | ro_default_information
+  | ro_distance
   | ro_graceful_restart
   | ro_log_adjacency_changes
   | ro_max_metric
@@ -120,6 +121,11 @@ ro_default_information
   (
     ROUTE_MAP rm = route_map_name
   )? NEWLINE
+;
+
+ro_distance
+:
+  DISTANCE protocol_distance NEWLINE
 ;
 
 ro_graceful_restart

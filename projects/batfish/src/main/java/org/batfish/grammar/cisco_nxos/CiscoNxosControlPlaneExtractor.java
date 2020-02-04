@@ -570,6 +570,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_areaContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_default_informationContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ro_passive_interfaceContext;
@@ -2545,6 +2546,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (routeMap != null) {
       defaultOriginate.setRouteMap(routeMap);
     }
+  }
+
+  @Override
+  public void exitRo_distance(Ro_distanceContext ctx) {
+    toInteger(ctx, ctx.protocol_distance()).ifPresent(_currentOspfProcess::setDistance);
   }
 
   @Override
