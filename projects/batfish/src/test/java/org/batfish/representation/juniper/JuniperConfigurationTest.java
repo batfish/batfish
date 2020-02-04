@@ -82,29 +82,25 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToIpAccessList() {
+  public void testFilterToIpAccessList_noTerm() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     IpAccessList emptyAcl = config.filterToIpAccessList(filter);
 
+    // ACL from empty filter should have no lines
+    assertThat(emptyAcl.getLines(), iterableWithSize(0));
+  }
+
+  @Test
+  public void testFilterToIpAccessList_hasTerm() {
+    JuniperConfiguration config = createConfig();
+    ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
     term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix)));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.filterToIpAccessList(filter);
-
-    Zone zone = new Zone("zone", new AddressBook("global", null));
-    String interface1Name = "interface1";
-    zone.getInterfaces().add(interface1Name);
-    String interface2Name = "interface2";
-    zone.getInterfaces().add(interface2Name);
-    config.getMasterLogicalSystem().getZones().put("zone", zone);
-    filter.setFromZone("zone");
-    IpAccessList headerSpaceAndSrcInterfaceAcl = config.securityPolicyToIpAccessList(filter);
-
-    // ACL from empty filter should have no lines
-    assertThat(emptyAcl.getLines(), iterableWithSize(0));
 
     // ACL from headerSpace filter should have one line
     AclLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
@@ -132,6 +128,27 @@ public class JuniperConfigurationTest {
                                     .build(),
                                 TraceElement.of("Matched source-address 1.2.3.0/24")))))
                 .build()));
+  }
+
+  @Test
+  public void testSecurityPolicyToIpAccessList() {
+    JuniperConfiguration config = createConfig();
+    ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
+
+    FwTerm term = new FwTerm("term");
+    String ipAddrPrefix = "1.2.3.0/24";
+    term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix)));
+    term.getThens().add(FwThenAccept.INSTANCE);
+    filter.getTerms().put("term", term);
+
+    Zone zone = new Zone("zone", new AddressBook("global", null));
+    String interface1Name = "interface1";
+    zone.getInterfaces().add(interface1Name);
+    String interface2Name = "interface2";
+    zone.getInterfaces().add(interface2Name);
+    config.getMasterLogicalSystem().getZones().put("zone", zone);
+    filter.setFromZone("zone");
+    IpAccessList headerSpaceAndSrcInterfaceAcl = config.securityPolicyToIpAccessList(filter);
 
     // ACL from headerSpace and zone filter should have one line
     AclLine comboAclLine = Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
