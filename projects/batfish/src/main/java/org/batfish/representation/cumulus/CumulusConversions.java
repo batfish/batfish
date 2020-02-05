@@ -1299,7 +1299,7 @@ public final class CumulusConversions {
     ipCommunityLists.forEach(
         (name, list) -> {
           if (list instanceof IpCommunityListStandard) {
-            c.getCommunityLists().put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
+            c.getCommunityLists().put(name, toCommunityList((IpCommunityListStandard) list));
           } else if (list instanceof IpCommunityListExpanded) {
             c.getCommunityMatchExprs()
                 .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
@@ -1308,7 +1308,7 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  static CommunityList toCommunityMatchExpr(IpCommunityListStandard ipCommunityListStandard) {
+  static CommunityList toCommunityList(IpCommunityListStandard ipCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
     for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
@@ -1360,31 +1360,6 @@ public final class CumulusConversions {
     String output = withoutQuotes.replaceAll("_", underscoreReplacement);
     return output;
   }
-
-  /* TODO: Enable when IpCommunityListStandard is supported for Cumulus in Batfish.
-  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
-          IpCommunityListStandard ipCommunityListStandard) {
-    Set<Community> whitelist = new HashSet<>();
-    Set<Community> blacklist = new HashSet<>();
-    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
-      if (line.getCommunities().size() != 1) {
-        continue;
-      }
-      Community community = Iterables.getOnlyElement(line.getCommunities());
-      if (line.getAction() == LineAction.PERMIT) {
-        if (!blacklist.contains(community)) {
-          whitelist.add(community);
-        }
-      } else {
-        // DENY
-        if (!whitelist.contains(community)) {
-          blacklist.add(community);
-        }
-      }
-    }
-    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
-  }
-  */
 
   static void convertIpAsPathAccessLists(
       Configuration c, Map<String, IpAsPathAccessList> ipAsPathAccessLists) {

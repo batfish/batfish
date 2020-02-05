@@ -14,19 +14,11 @@ ip_community_list
 icl_expanded
 :
   EXPANDED name = ip_community_list_name
-  (
-    SEQ seq = ip_community_list_seq
-  )? action = line_action
+  action = line_action
   (
     quoted = double_quoted_string
     | regex = REMARK_TEXT
   ) NEWLINE
-;
-
-ip_community_list_seq
-:
-// 1-4294967294
-  uint32
 ;
 
 double_quoted_string
