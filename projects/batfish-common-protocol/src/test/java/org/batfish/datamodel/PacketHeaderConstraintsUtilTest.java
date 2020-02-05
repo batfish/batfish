@@ -55,6 +55,7 @@ public class PacketHeaderConstraintsUtilTest {
     BDDPacket packet = new BDDPacket();
     assertThat(
         PacketHeaderConstraintsUtil.toBDD(
+            packet,
             PacketHeaderConstraints.unconstrained(),
             UniverseIpSpace.INSTANCE,
             UniverseIpSpace.INSTANCE),
