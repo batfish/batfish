@@ -75,14 +75,13 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
@@ -92,8 +91,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1302,12 +1299,13 @@ public final class CumulusConversions {
     ipCommunityLists.forEach(
         (name, list) -> {
           if (list instanceof IpCommunityListStandard) {
-            c.getCommunityLists().put(name, toCommunityMatchExpr((IpCommunityListStandard)list));
+            c.getCommunityLists().put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
           } else if (list instanceof IpCommunityListExpanded) {
-            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((IpCommunityListExpanded)list));
+            c.getCommunityMatchExprs()
+                .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
           }
         });
-    }
+  }
 
   @VisibleForTesting
   static CommunityList toCommunityMatchExpr(IpCommunityListStandard ipCommunityListStandard) {
@@ -1329,25 +1327,26 @@ public final class CumulusConversions {
         }
       }
     }
-    return new CommunityList(ipCommunityListStandard.getName(),
-            whitelist.stream().map(k -> new CommunityListLine(LineAction.PERMIT, new LiteralCommunity(k)))
-                    .collect(ImmutableList.toImmutableList())  ,
-            false);
+    return new CommunityList(
+        ipCommunityListStandard.getName(),
+        whitelist.stream()
+            .map(k -> new CommunityListLine(LineAction.PERMIT, new LiteralCommunity(k)))
+            .collect(ImmutableList.toImmutableList()),
+        false);
   }
 
   @VisibleForTesting
-  static CommunityMatchExpr toCommunityMatchExpr(
-          IpCommunityListExpanded ipCommunityListExpanded) {
+  static CommunityMatchExpr toCommunityMatchExpr(IpCommunityListExpanded ipCommunityListExpanded) {
     return new CommunityAcl(
-            ipCommunityListExpanded.getLines().values().stream()
-                    .map(CumulusConversions::toCommunityAclLine)
-                    .collect(ImmutableList.toImmutableList()));
+        ipCommunityListExpanded.getLines().values().stream()
+            .map(CumulusConversions::toCommunityAclLine)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
     return new CommunityAclLine(
-            line.getAction(),
-            new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+        line.getAction(),
+        new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
   }
 
   private static @Nonnull String toJavaRegex(String cumulusRegex) {

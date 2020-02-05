@@ -43,8 +43,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -172,8 +172,8 @@ import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
 import org.batfish.representation.cumulus.RouteMapSetAsPath;
-import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
+import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
@@ -188,7 +188,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private final Warnings _w;
 
   private static final LongSpace IP_COMMUNITY_LIST_LINE_NUMBER_RANGE =
-          LongSpace.of(Range.closed(1L, 4294967294L));
+      LongSpace.of(Range.closed(1L, 4294967294L));
 
   private @Nullable Vrf _currentVrf;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
@@ -226,7 +226,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
    * {@link Optional#empty}.
    */
   private @Nonnull Optional<Long> toLongInSpace(
-          ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
     long num = Long.parseLong(ctx.getText());
     if (!space.contains(num)) {
       warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
@@ -236,9 +236,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   private @Nonnull Optional<Long> toLong(
-          ParserRuleContext messageCtx, Ip_community_list_seqContext ctx) {
+      ParserRuleContext messageCtx, Ip_community_list_seqContext ctx) {
     return toLongInSpace(
-            messageCtx, ctx, IP_COMMUNITY_LIST_LINE_NUMBER_RANGE, "ip community-list line number");
+        messageCtx, ctx, IP_COMMUNITY_LIST_LINE_NUMBER_RANGE, "ip community-list line number");
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -304,22 +304,22 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
    * IntegerSpace lengthSpace}, or else {@link Optional#empty}.
    */
   private @Nonnull Optional<String> toStringWithLengthInSpace(
-          ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
     String text = ctx.getText();
     if (!lengthSpace.contains(text.length())) {
       warn(
-              messageCtx,
-              String.format(
-                      "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
+          messageCtx,
+          String.format(
+              "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
       return Optional.empty();
     }
     return Optional.of(text);
   }
 
   private @Nonnull Optional<String> toString(
-          ParserRuleContext messageCtx, Ip_community_list_nameContext ctx) {
+      ParserRuleContext messageCtx, Ip_community_list_nameContext ctx) {
     return toStringWithLengthInSpace(
-            messageCtx, ctx, IP_COMMUNITY_LIST_NAME_LENGTH_RANGE, "ip community-list name");
+        messageCtx, ctx, IP_COMMUNITY_LIST_NAME_LENGTH_RANGE, "ip community-list name");
   }
 
   private void clearOspfPassiveInterface() {
@@ -334,7 +334,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   private static final IntegerSpace IP_COMMUNITY_LIST_NAME_LENGTH_RANGE =
-          IntegerSpace.of(Range.closed(1, 63));
+      IntegerSpace.of(Range.closed(1, 63));
 
   @Override
   public void enterS_bgp(S_bgpContext ctx) {
@@ -1062,7 +1062,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     String name = nameOrError.get();
     _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
     _c.referenceStructure(
-            IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
+        IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
   }
 
   @Override
@@ -1087,6 +1087,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return LineAction.PERMIT;
     }
   }
+
   public void enterIcl_expanded(Icl_expandedContext ctx) {
     Long explicitSeq;
     if (ctx.seq != null) {
@@ -1104,17 +1105,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
     String name = nameOpt.get();
     String regex =
-            ctx.quoted != null
-                    ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
-                    : ctx.regex.getText();
+        ctx.quoted != null
+            ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
+            : ctx.regex.getText();
     IpCommunityList communityList =
-            _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
+        _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
     if (!(communityList instanceof IpCommunityListExpanded)) {
       warn(
-              ctx,
-              String.format(
-                      "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
-                      name));
+          ctx,
+          String.format(
+              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
       return;
     }
     IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
@@ -1128,8 +1129,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       seq = 1L;
     }
     communityListExpanded
-            .getLines()
-            .put(seq, new IpCommunityListExpandedLine(toLineAction(ctx.action), seq, regex));
+        .getLines()
+        .put(seq, new IpCommunityListExpandedLine(toLineAction(ctx.action), seq, regex));
     _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 

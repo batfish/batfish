@@ -92,7 +92,13 @@ public final class RouteMapEntry implements Serializable {
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
     return Stream.of(
-            _setAsPath, _setCommListDelete, _setMetric, _setIpNextHop, _setCommunity, _setLocalPreference, _setTag)
+            _setAsPath,
+            _setCommListDelete,
+            _setMetric,
+            _setIpNextHop,
+            _setCommunity,
+            _setLocalPreference,
+            _setTag)
         .filter(Objects::nonNull);
   }
 

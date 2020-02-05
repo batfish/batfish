@@ -11,7 +11,6 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 /** A expanded Ip community list */
 public class IpCommunityListExpanded extends IpCommunityList {
 
-
   private final LineAction _action;
   private final @Nonnull List<StandardCommunity> _communities;
   private final @Nonnull SortedMap<Long, IpCommunityListExpandedLine> _lines;
@@ -35,7 +34,6 @@ public class IpCommunityListExpanded extends IpCommunityList {
   public <T> T accept(IpCommunityListVisitor<T> visitor) {
     return visitor.visitIpCommunityListExpanded(this);
   }
-
 
   public @Nonnull List<StandardCommunity> getCommunities() {
     return _communities;
