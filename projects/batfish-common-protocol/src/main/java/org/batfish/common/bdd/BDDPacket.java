@@ -64,6 +64,7 @@ public class BDDPacket {
   private static final int IP_PROTOCOL_LENGTH = 8;
   private static final int PORT_LENGTH = 16;
   private static final int TCP_FLAG_LENGTH = 1;
+  private static final int PACKET_LENGTH_LENGTH = 16;
 
   private final Map<Integer, String> _bitNames;
   private final BDDFactory _factory;
@@ -78,6 +79,7 @@ public class BDDPacket {
   private final @Nonnull BDDIcmpCode _icmpCode;
   private final @Nonnull BDDIcmpType _icmpType;
   private final @Nonnull BDDIpProtocol _ipProtocol;
+  private final @Nonnull BDDPacketLength _packetLength;
   private final @Nonnull BDDInteger _srcIp;
   private final @Nonnull BDDInteger _srcPort;
   private final @Nonnull BDD _tcpAck;
@@ -129,7 +131,8 @@ public class BDDPacket {
             + TCP_FLAG_LENGTH * 8
             + DSCP_LENGTH
             + ECN_LENGTH
-            + FRAGMENT_OFFSET_LENGTH;
+            + FRAGMENT_OFFSET_LENGTH
+            + PACKET_LENGTH_LENGTH;
     if (_factory.varNum() < numNeeded) {
       _factory.setVarNum(numNeeded);
     }
@@ -154,6 +157,8 @@ public class BDDPacket {
     _dscp = allocateBDDInteger("dscp", DSCP_LENGTH, false);
     _ecn = allocateBDDInteger("ecn", ECN_LENGTH, false);
     _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH, false);
+    _packetLength =
+        new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH, false));
 
     _pairing = _factory.makePair();
     _swapSourceAndDestinationPairing =
@@ -319,6 +324,11 @@ public class BDDPacket {
   @Nonnull
   public BDDIpProtocol getIpProtocol() {
     return _ipProtocol;
+  }
+
+  @Nonnull
+  public BDDPacketLength getPacketLength() {
+    return _packetLength;
   }
 
   @Nonnull

@@ -66,6 +66,9 @@ public class BDDInteger {
 
   /** @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc) */
   public Long satAssignmentToLong(BDD satAssignment) {
+    // TODO this check could be better (should be exactly 1 path from root to the one node).
+    checkArgument(!satAssignment.isZero(), "not a satisfying assignment");
+
     if (_bitvec.length > Long.SIZE) {
       throw new IllegalArgumentException(
           "Can't get a representative of a BDDInteger with more than Long.SIZE bits");
