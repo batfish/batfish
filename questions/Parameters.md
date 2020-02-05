@@ -100,7 +100,11 @@ enumSetTerm :=
 
 A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
 
-An application specifier follows the [enum set grammar](#set-of-enums-or-names) with the following values (with the corresponding IP protocol and destination port in parenthesis): `DNS` (UDP, 53), `HTTP` (TCP, 80), `HTTPS` (TCP, 443), `SNMP` (UDP, 161), `SSH` (TCP, 22), `TELNET` (TCP, 23).
+* `HTTP` specifies TCP to port 80. 
+
+* `HTTP, HTTPS` specifies TCP to port 80 or 443.
+
+An application specifier is the name of one or more of the following applications separated by commas: `DNS` (means udp/53), `HTTP` (tcp/80), `HTTPS` (tcp/443), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
 
 ### BGP Peer Property Specifier
 
