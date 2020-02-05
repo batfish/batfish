@@ -1133,30 +1133,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
-/*
-  @Override
-  public void exitIcl_expanded(Icl_expandedContext ctx) {
-    String name = ctx.name.getText();
-
-    LineAction action;
-    if (ctx.action.permit != null) {
-      action = LineAction.PERMIT;
-    } else if (ctx.action.deny != null) {
-      action = LineAction.DENY;
-    } else {
-      throw new IllegalStateException("only support permit and deny in route map");
-    }
-
-    List<StandardCommunity> communityList =
-        ctx.communities.stream()
-            .map(RuleContext::getText)
-            .map(StandardCommunity::parse)
-            .collect(ImmutableList.toImmutableList());
-
-    _c.defineStructure(IP_COMMUNITY_LIST, name, ctx);
-    _frr.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
-  }
-*/
   @Override
   public void enterIp_prefix_list(Ip_prefix_listContext ctx) {
     String name = ctx.name.getText();

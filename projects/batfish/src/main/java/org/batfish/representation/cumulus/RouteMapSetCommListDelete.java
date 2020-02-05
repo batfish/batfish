@@ -5,8 +5,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
-//import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-//import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
@@ -26,7 +24,6 @@ public class RouteMapSetCommListDelete implements RouteMapSet {
   @Nonnull
   @Override
   public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
-    //return Stream.of(new DeleteCommunity(new NamedCommunitySet(_name)));
     return Stream.of(
             new SetCommunities(
                     new CommunitySetDifference(
