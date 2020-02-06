@@ -29,7 +29,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.resolveLocal
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
 import static org.batfish.representation.cumulus.CumulusConversions.toBgpProcess;
-import static org.batfish.representation.cumulus.CumulusConversions.toCommunityList;
 import static org.batfish.representation.cumulus.CumulusConversions.toOspfProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
@@ -68,8 +67,6 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;

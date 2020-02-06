@@ -24,6 +24,7 @@ import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -59,7 +60,6 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_seqContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
@@ -220,27 +220,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     return Long.parseUnsignedLong(ctx.getText());
   }
 
-  /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
-   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
-   * {@link Optional#empty}.
-   */
-  private @Nonnull Optional<Long> toLongInSpace(
-      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
-    long num = Long.parseLong(ctx.getText());
-    if (!space.contains(num)) {
-      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
-      return Optional.empty();
-    }
-    return Optional.of(num);
-  }
-
-  private @Nonnull Optional<Long> toLong(
-      ParserRuleContext messageCtx, Ip_community_list_seqContext ctx) {
-    return toLongInSpace(
-        messageCtx, ctx, IP_COMMUNITY_LIST_LINE_NUMBER_RANGE, "ip community-list line number");
-  }
-
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
   }
@@ -316,10 +295,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     return Optional.of(text);
   }
 
-  private @Nonnull Optional<String> toString(
+  private @Nonnull String toString(
       ParserRuleContext messageCtx, Ip_community_list_nameContext ctx) {
-    return toStringWithLengthInSpace(
-        messageCtx, ctx, IP_COMMUNITY_LIST_NAME_LENGTH_RANGE, "ip community-list name");
+    return ctx.getText();
   }
 
   private void clearOspfPassiveInterface() {
@@ -332,9 +310,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
               }
             });
   }
-
-  private static final IntegerSpace IP_COMMUNITY_LIST_NAME_LENGTH_RANGE =
-      IntegerSpace.of(Range.closed(1, 63));
 
   @Override
   public void enterS_bgp(S_bgpContext ctx) {
@@ -1055,11 +1030,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_comm_list(Rms_comm_listContext ctx) {
-    Optional<String> nameOrError = toString(ctx, ctx.name);
-    if (!nameOrError.isPresent()) {
+    String name = toString(ctx, ctx.name);
+    if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    String name = nameOrError.get();
     _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
     _c.referenceStructure(
         IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
@@ -1089,21 +1063,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   public void enterIcl_expanded(Icl_expandedContext ctx) {
-    Long explicitSeq;
-    if (ctx.seq != null) {
-      Optional<Long> seqOpt = toLong(ctx, ctx.seq);
-      if (!seqOpt.isPresent()) {
-        return;
-      }
-      explicitSeq = seqOpt.get();
-    } else {
-      explicitSeq = null;
-    }
-    Optional<String> nameOpt = toString(ctx, ctx.name);
-    if (!nameOpt.isPresent()) {
+    String name = toString(ctx, ctx.name);
+    if (Strings.isNullOrEmpty(name)) {
       return;
     }
-    String name = nameOpt.get();
     String regex =
         ctx.quoted != null
             ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
@@ -1119,18 +1082,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
-    SortedMap<Long, IpCommunityListExpandedLine> lines = communityListExpanded.getLines();
-    long seq;
-    if (explicitSeq != null) {
-      seq = explicitSeq;
-    } else if (!lines.isEmpty()) {
-      seq = lines.lastKey() + 1L;
-    } else {
-      seq = 1L;
-    }
+    SortedMap<String, IpCommunityListExpandedLine> lines = communityListExpanded.getLines();
     communityListExpanded
         .getLines()
-        .put(seq, new IpCommunityListExpandedLine(toLineAction(ctx.action), seq, regex));
+        .put(name, new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
     _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 

@@ -13,11 +13,9 @@ import org.batfish.datamodel.LineAction;
 public final class IpCommunityListExpandedLine implements Serializable {
   private final @Nonnull LineAction _action;
   private final @Nonnull String _regex;
-  private final long _line;
 
-  public IpCommunityListExpandedLine(LineAction action, long line, String regex) {
+  public IpCommunityListExpandedLine(LineAction action, String regex) {
     _action = action;
-    _line = line;
     _regex = regex;
   }
 
@@ -27,9 +25,5 @@ public final class IpCommunityListExpandedLine implements Serializable {
 
   public @Nonnull String getRegex() {
     return _regex;
-  }
-
-  public long getLine() {
-    return _line;
   }
 }

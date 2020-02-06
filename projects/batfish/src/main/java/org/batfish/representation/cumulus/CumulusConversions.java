@@ -1296,6 +1296,7 @@ public final class CumulusConversions {
   static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
 
+    // The following code-block is only for "set comm-list delete" statements.
     ipCommunityLists.forEach(
         (name, list) -> {
           if (list instanceof IpCommunityListStandard) {

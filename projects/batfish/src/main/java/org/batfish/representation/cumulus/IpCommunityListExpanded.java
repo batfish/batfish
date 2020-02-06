@@ -13,7 +13,7 @@ public class IpCommunityListExpanded extends IpCommunityList {
 
   private final LineAction _action;
   private final @Nonnull List<StandardCommunity> _communities;
-  private final @Nonnull SortedMap<Long, IpCommunityListExpandedLine> _lines;
+  private final @Nonnull SortedMap<String, IpCommunityListExpandedLine> _lines;
 
   public IpCommunityListExpanded(
       String name, LineAction action, List<StandardCommunity> communities) {
@@ -43,7 +43,7 @@ public class IpCommunityListExpanded extends IpCommunityList {
     return _action;
   }
 
-  public @Nonnull SortedMap<Long, IpCommunityListExpandedLine> getLines() {
+  public @Nonnull SortedMap<String, IpCommunityListExpandedLine> getLines() {
     return _lines;
   }
 }
