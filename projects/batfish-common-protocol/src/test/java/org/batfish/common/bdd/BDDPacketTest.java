@@ -1,5 +1,6 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpCode;
@@ -17,6 +18,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsUrg;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -141,6 +143,18 @@ public class BDDPacketTest {
     assertThat(flow, hasTcpFlagsPsh(tcpPsh));
     assertThat(flow, hasTcpFlagsRst(tcpRst));
     assertThat(flow, hasTcpFlagsUrg(tcpUrg));
+  }
+
+  @Test
+  public void testGetFlow_packetLength() {
+    BDDPacket pkt = new BDDPacket();
+
+    // getFlow prefers DEFAULT_PACKET_LENGTH
+    assertEquals(
+        DEFAULT_PACKET_LENGTH, pkt.getFlow(pkt.getFactory().one()).get().getPacketLength());
+
+    BDD bdd = pkt.getPacketLength().value(50);
+    assertEquals(50, pkt.getFlow(bdd).get().getPacketLength());
   }
 
   @Test

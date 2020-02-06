@@ -1,5 +1,7 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import io.opentracing.ActiveSpan;
@@ -26,17 +28,21 @@ public final class BDDFlowConstraintGenerator {
     TESTFILTER
   }
 
-  private BDDPacket _bddPacket;
-  private BDD _icmpFlow;
-  private BDD _udpFlow;
-  private BDD _tcpFlow;
-  private List<BDD> _testFilterPrefBdds;
+  private final BDDPacket _bddPacket;
+  private final BDDOps _bddOps;
+  private final BDD _icmpFlow;
+  private final BDD _udpFlow;
+  private final BDD _tcpFlow;
+  private final BDD _defaultPacketLength;
+  private final List<BDD> _testFilterPrefBdds;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").startActive()) {
       assert span != null; // avoid unused warning
       _bddPacket = pkt;
+      _bddOps = new BDDOps(pkt.getFactory());
+      _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);
       _icmpFlow = computeICMPConstraint();
       _udpFlow = computeUDPConstraint();
       _tcpFlow = computeTCPConstraint();
@@ -58,14 +64,13 @@ public final class BDDFlowConstraintGenerator {
 
   // Get ICMP echo request packets
   BDD computeICMPConstraint() {
-    return _bddPacket
-        .getIpProtocol()
-        .value(IpProtocol.ICMP)
-        .and(
-            _bddPacket
-                .getIcmpType()
-                .value(IcmpType.ECHO_REQUEST)
-                .and(_bddPacket.getIcmpCode().value(0)));
+    return _bddOps.and(
+        _defaultPacketLength,
+        _bddPacket.getIpProtocol().value(IpProtocol.ICMP),
+        _bddPacket
+            .getIcmpType()
+            .value(IcmpType.ECHO_REQUEST)
+            .and(_bddPacket.getIcmpCode().value(0)));
   }
 
   // Get TCP packets with names ports:
@@ -85,7 +90,7 @@ public final class BDDFlowConstraintGenerator {
     bdd1 = bdd1.and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
     BDD bdd2 = _bddPacket.swapSourceAndDestinationFields(bdd1);
     BDD tcp = _bddPacket.getIpProtocol().value(IpProtocol.TCP);
-    return tcp.and(bdd1.or(bdd2));
+    return _bddOps.and(_defaultPacketLength, tcp, bdd1.or(bdd2));
   }
 
   // Get UDP packets for traceroute:
@@ -97,7 +102,8 @@ public final class BDDFlowConstraintGenerator {
     BDDInteger srcPort = _bddPacket.getSrcPort();
     BDD bdd1 = dstPort.range(33434, 33534).and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
     BDD bdd2 = _bddPacket.swapSourceAndDestinationFields(bdd1);
-    return _bddPacket.getIpProtocol().value(IpProtocol.UDP).and(bdd1.or(bdd2));
+    BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
+    return _bddOps.and(_defaultPacketLength, udp, bdd1.or(bdd2));
   }
 
   private List<BDD> computeTestFilterPreference() {
@@ -112,7 +118,6 @@ public final class BDDFlowConstraintGenerator {
     BDD defaultSrcPortBdd = srcPort.value(NamedPort.EPHEMERAL_LOWEST.number());
     BDD defaultDstPortBdd = dstPort.value(NamedPort.HTTP.number());
 
-    BDDOps bddOps = new BDDOps(_bddPacket.getFactory());
     BDD one = _bddPacket.getFactory().one();
     // generate all combinations in order to enforce the following logic: when a field in the input
     // bdd contains the default value for that field, then use that value; otherwise use a value
@@ -122,21 +127,23 @@ public final class BDDFlowConstraintGenerator {
       for (BDD ipProtocolBdd : ImmutableList.of(tcpBdd, udpBdd)) {
         for (BDD srcPortBdd : ImmutableList.of(defaultSrcPortBdd, one)) {
           for (BDD dstPortBdd : ImmutableList.of(defaultDstPortBdd, one)) {
-            builder.add(bddOps.and(dstIpBdd, ipProtocolBdd, srcPortBdd, dstPortBdd));
+            builder.add(
+                _bddOps.and(_defaultPacketLength, dstIpBdd, ipProtocolBdd, srcPortBdd, dstPortBdd));
           }
         }
       }
     }
     builder.add(defaultDstIpBdd);
+    builder.add(_defaultPacketLength);
     return builder.build();
   }
 
   public List<BDD> generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
-        return ImmutableList.of(_icmpFlow, _udpFlow, _tcpFlow);
+        return ImmutableList.of(_icmpFlow, _udpFlow, _tcpFlow, _defaultPacketLength);
       case APPLICATION:
-        return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow);
+        return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow, _defaultPacketLength);
       case TESTFILTER:
         return _testFilterPrefBdds;
       default:
