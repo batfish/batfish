@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
  * An abstract class that represents an application, which is an IP protocol and
@@ -35,4 +36,6 @@ public abstract class Application {
                     : String.format("%d-%d", subrange.getStart(), subrange.getEnd()))
         .collect(Collectors.joining(","));
   }
+
+  public abstract AclLineMatchExpr toAclLineMatchExpr();
 }
