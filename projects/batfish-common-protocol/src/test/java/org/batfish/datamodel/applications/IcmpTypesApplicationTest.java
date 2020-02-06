@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Test;
@@ -50,6 +51,7 @@ public class IcmpTypesApplicationTest {
         IcmpTypesApplication.ALL.toAclLineMatchExpr(),
         new MatchHeaderSpace(
             HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.ICMP)
                 .setIcmpTypes(ImmutableList.of(new SubRange(0, IcmpApplication.MAX_TYPE)))
                 .build()));
   }
@@ -61,6 +63,7 @@ public class IcmpTypesApplicationTest {
             .toAclLineMatchExpr(),
         new MatchHeaderSpace(
             HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.ICMP)
                 .setIcmpTypes(ImmutableList.of(new SubRange(0, 10), new SubRange(20, 30)))
                 .build()));
   }

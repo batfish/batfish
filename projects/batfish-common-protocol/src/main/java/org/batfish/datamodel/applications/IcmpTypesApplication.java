@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -37,7 +38,8 @@ public final class IcmpTypesApplication extends IcmpApplication {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
-    return new MatchHeaderSpace(HeaderSpace.builder().setIcmpTypes(_types).build());
+    return new MatchHeaderSpace(
+        HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).setIcmpTypes(_types).build());
   }
 
   @Override
