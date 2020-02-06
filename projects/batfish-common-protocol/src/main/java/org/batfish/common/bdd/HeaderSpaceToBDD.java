@@ -97,6 +97,17 @@ public final class HeaderSpaceToBDD {
         ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
   }
 
+  private BDD toBDD(@Nullable Set<SubRange> packetLengths, BDDPacketLength packetLength) {
+    if (packetLengths == null || packetLengths.isEmpty()) {
+      return null;
+    }
+
+    return _bddOps.or(
+        packetLengths.stream()
+            .map(range -> toBDD(range, packetLength))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   private static BDD toBDD(SubRange range, BDDIcmpCode var) {
     int start = range.getStart();
     int end = range.getEnd();
@@ -107,6 +118,12 @@ public final class HeaderSpaceToBDD {
     int start = range.getStart();
     int end = range.getEnd();
     return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
+  }
+
+  private static BDD toBDD(SubRange range, BDDPacketLength packetLength) {
+    int start = range.getStart();
+    int end = range.getEnd();
+    return start == end ? packetLength.value(start) : packetLength.range(start, end);
   }
 
   private static BDD toBDD(SubRange range, BDDInteger var) {
@@ -145,6 +162,9 @@ public final class HeaderSpaceToBDD {
     // allocation in BDDPacket.
     BDD positiveSpace =
         _bddOps.and(
+            toBDD(headerSpace.getPacketLengths(), _bddPacket.getPacketLength()),
+            BDDOps.negateIfNonNull(
+                toBDD(headerSpace.getNotPacketLengths(), _bddPacket.getPacketLength())),
             toBDD(headerSpace.getFragmentOffsets(), _bddPacket.getFragmentOffset()),
             BDDOps.negateIfNonNull(
                 toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset())),
