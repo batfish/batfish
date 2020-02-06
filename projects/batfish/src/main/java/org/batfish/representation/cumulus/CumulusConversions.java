@@ -52,8 +52,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -93,7 +91,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunityIn;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -102,7 +99,6 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -1303,7 +1299,8 @@ public final class CumulusConversions {
     ipCommunityLists.forEach(
         (name, list) -> {
           if (list instanceof IpCommunityListStandard) {
-            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
+            c.getCommunityMatchExprs()
+                .put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
           } else if (list instanceof IpCommunityListExpanded) {
             c.getCommunityMatchExprs()
                 .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
@@ -1313,7 +1310,7 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
-          IpCommunityListStandard ipCommunityListStandard) {
+      IpCommunityListStandard ipCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
     for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
@@ -1335,9 +1332,9 @@ public final class CumulusConversions {
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
 
-
   @VisibleForTesting
-  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(IpCommunityListExpanded ipCommunityListExpanded) {
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      IpCommunityListExpanded ipCommunityListExpanded) {
     return new CommunityAcl(
         ipCommunityListExpanded.getLines().stream()
             .map(CumulusConversions::toCommunityAclLine)

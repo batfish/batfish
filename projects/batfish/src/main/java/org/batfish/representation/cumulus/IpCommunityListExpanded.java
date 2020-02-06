@@ -3,8 +3,6 @@ package org.batfish.representation.cumulus;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
