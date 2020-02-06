@@ -2570,10 +2570,10 @@ public final class CiscoNxosGrammarTest {
               .collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchPacketLength(100)),
-              toBDD(matchPacketLength(IntegerSpace.of(Range.closed(0, 199)))),
+              toBDD(matchPacketLength(IntegerSpace.of(Range.closed(20, 199)))),
               toBDD(
                   matchPacketLength(
-                      IntegerSpace.of(Range.closed(300, Integer.MAX_VALUE))
+                      IntegerSpace.of(Range.closed(301, Integer.MAX_VALUE))
                           .intersection(PACKET_LENGTH_RANGE))),
               toBDD(matchPacketLength(PACKET_LENGTH_RANGE.difference(IntegerSpace.of(400)))),
               toBDD(matchPacketLength(IntegerSpace.of(Range.closed(500, 600))))));

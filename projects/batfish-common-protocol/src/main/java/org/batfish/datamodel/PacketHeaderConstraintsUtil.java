@@ -41,30 +41,34 @@ public class PacketHeaderConstraintsUtil {
   /**
    * Convert given {@link PacketHeaderConstraints} to a BDD
    *
+   * @param pkt the {@link BDDPacket} to use
    * @param phc the packet header constraints
    * @param srcIpSpace Resolved source IP space
    * @param dstIpSpace Resolved destination IP space
    */
-  public static BDD toBDD(PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
-    return toBDD(phc, ImmutableMap.of(), srcIpSpace, dstIpSpace);
+  public static BDD toBDD(
+      BDDPacket pkt, PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
+    return toBDD(pkt, phc, ImmutableMap.of(), srcIpSpace, dstIpSpace);
   }
 
   /**
    * Convert given {@link PacketHeaderConstraints} to a BDD, also taking into account named IP
    * spaces
    *
+   * @param pkt the {@link BDDPacket} to use
    * @param phc the packet header constraints
    * @param namedIpSpaces map of named IP spaces
    * @param srcIpSpace Resolved source IP space
    * @param dstIpSpace Resolved destination IP space
    */
   public static BDD toBDD(
+      BDDPacket pkt,
       PacketHeaderConstraints phc,
       Map<String, IpSpace> namedIpSpaces,
       IpSpace srcIpSpace,
       IpSpace dstIpSpace) {
     HeaderSpace.Builder b = toHeaderSpaceBuilder(phc).setSrcIps(srcIpSpace).setDstIps(dstIpSpace);
-    return new HeaderSpaceToBDD(new BDDPacket(), namedIpSpaces).toBDD(b.build());
+    return new HeaderSpaceToBDD(pkt, namedIpSpaces).toBDD(b.build());
   }
 
   private static SortedSet<SubRange> extractSubranges(@Nullable IntegerSpace space) {

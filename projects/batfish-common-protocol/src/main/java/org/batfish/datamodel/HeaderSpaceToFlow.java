@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
-
 import java.util.Map;
 import java.util.Optional;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
@@ -18,16 +16,7 @@ public final class HeaderSpaceToFlow {
 
   /** Get a representative flow from a header space according to a flow preference. */
   public Optional<Flow.Builder> getRepresentativeFlow(HeaderSpace hs) {
-    int packetLength =
-        hs.getPacketLengths().stream()
-            .filter(l -> !l.isEmpty())
-            .findFirst()
-            .map(SubRange::getStart)
-            .orElse(DEFAULT_PACKET_LENGTH);
-
-    return BDD_PACKET
-        .getFlow(_headerSpaceToBDD.toBDD(hs), _preference)
-        .map(flowBuilder -> flowBuilder.setPacketLength(packetLength));
+    return BDD_PACKET.getFlow(_headerSpaceToBDD.toBDD(hs), _preference);
   }
 
   private static final BDDPacket BDD_PACKET = new BDDPacket();
