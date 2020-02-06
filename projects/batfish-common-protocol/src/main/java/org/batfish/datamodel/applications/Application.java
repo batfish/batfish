@@ -5,8 +5,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
  * An abstract class that represents an application, which is an IP protocol and
@@ -34,5 +36,9 @@ public abstract class Application {
                     ? Objects.toString(subrange.getStart())
                     : String.format("%d-%d", subrange.getStart(), subrange.getEnd()))
         .collect(Collectors.joining(","));
+  }
+
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    throw new BatfishException("not implemented");
   }
 }

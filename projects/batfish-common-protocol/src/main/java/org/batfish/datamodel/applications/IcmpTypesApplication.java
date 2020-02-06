@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /**
  * An {@link IcmpApplication} that has only types specified (i.e., all codes within the specified
@@ -30,6 +33,11 @@ public final class IcmpTypesApplication extends IcmpApplication {
   @Nonnull
   public List<SubRange> getTypes() {
     return _types;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    return new MatchHeaderSpace(HeaderSpace.builder().setIcmpTypes(_types).build());
   }
 
   @Override
