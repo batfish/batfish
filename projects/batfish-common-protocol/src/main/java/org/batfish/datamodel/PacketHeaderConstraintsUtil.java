@@ -46,7 +46,8 @@ public class PacketHeaderConstraintsUtil {
    * @param srcIpSpace Resolved source IP space
    * @param dstIpSpace Resolved destination IP space
    */
-  public static BDD toBDD(BDDPacket pkt, PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
+  public static BDD toBDD(
+      BDDPacket pkt, PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     return toBDD(pkt, phc, ImmutableMap.of(), srcIpSpace, dstIpSpace);
   }
 
