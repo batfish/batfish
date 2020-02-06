@@ -74,9 +74,6 @@ public class PacketHeaderConstraintsUtilTest {
         PacketHeaderConstraints.builder()
             .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
             .build();
-    System.out.println(
-        PacketHeaderConstraintsUtil.toAclLineMatchExpr(
-            phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE));
     assertThat(
         PacketHeaderConstraintsUtil.toBDD(
             packet, phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
