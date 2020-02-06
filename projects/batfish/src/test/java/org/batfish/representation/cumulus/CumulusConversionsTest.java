@@ -336,32 +336,6 @@ public final class CumulusConversionsTest {
     assertFalse(viList.permits(AsPath.ofSingletonAsSets(other)));
   }
 
-  // TODO: Fix up this test once standard community list is implemented.
-  // Coverage for expanded community-lists is available in CumulusConcatenatedGrammarTest.java.
-  /*
-  @Test
-  public void testToIpCommunityList() {
-    String name = "name";
-    IpCommunityListExpanded ipCommunityList =
-        new IpCommunityListExpanded(
-            name,
-            LineAction.PERMIT,
-            ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2)));
-    CommunityList result = toCommunityList(ipCommunityList);
-    assertThat(
-        result,
-        equalTo(
-            new CommunityList(
-                name,
-                ImmutableList.of(
-                    new CommunityListLine(
-                        LineAction.PERMIT, new LiteralCommunity(StandardCommunity.of(10000, 1))),
-                    new CommunityListLine(
-                        LineAction.PERMIT, new LiteralCommunity(StandardCommunity.of(20000, 2)))),
-                false)));
-  }
-   */
-
   @Test
   public void testGetAcceptStatements() {
     BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");

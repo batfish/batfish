@@ -89,8 +89,12 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityIn;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1295,12 +1299,11 @@ public final class CumulusConversions {
 
   static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
-
     // The following code-block is only for "set comm-list delete" statements.
     ipCommunityLists.forEach(
         (name, list) -> {
           if (list instanceof IpCommunityListStandard) {
-            c.getCommunityLists().put(name, toCommunityList((IpCommunityListStandard) list));
+            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
           } else if (list instanceof IpCommunityListExpanded) {
             c.getCommunityMatchExprs()
                 .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
@@ -1309,7 +1312,8 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  static CommunityList toCommunityList(IpCommunityListStandard ipCommunityListStandard) {
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+          IpCommunityListStandard ipCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
     for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
@@ -1328,13 +1332,9 @@ public final class CumulusConversions {
         }
       }
     }
-    return new CommunityList(
-        ipCommunityListStandard.getName(),
-        whitelist.stream()
-            .map(k -> new CommunityListLine(LineAction.PERMIT, new LiteralCommunity(k)))
-            .collect(ImmutableList.toImmutableList()),
-        false);
+    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
+
 
   @VisibleForTesting
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(IpCommunityListExpanded ipCommunityListExpanded) {
