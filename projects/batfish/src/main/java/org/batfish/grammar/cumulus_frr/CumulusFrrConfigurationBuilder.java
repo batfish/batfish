@@ -295,8 +295,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     return Optional.of(text);
   }
 
-  private @Nonnull String toString(
-      ParserRuleContext messageCtx, Ip_community_list_nameContext ctx) {
+  private @Nonnull String toString(Ip_community_list_nameContext ctx) {
     return ctx.getText();
   }
 
@@ -1030,7 +1029,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRms_comm_list(Rms_comm_listContext ctx) {
-    String name = toString(ctx, ctx.name);
+    String name = toString(ctx.name);
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
@@ -1063,7 +1062,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   public void enterIcl_expanded(Icl_expandedContext ctx) {
-    String name = toString(ctx, ctx.name);
+    String name = toString(ctx.name);
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
@@ -1082,10 +1081,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
-    SortedMap<String, IpCommunityListExpandedLine> lines = communityListExpanded.getLines();
+    List<IpCommunityListExpandedLine> lines = communityListExpanded.getLines();
     communityListExpanded
         .getLines()
-        .put(name, new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
+        .add(new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
     _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 

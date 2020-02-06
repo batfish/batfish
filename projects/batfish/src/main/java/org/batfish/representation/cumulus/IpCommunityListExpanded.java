@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,7 +14,7 @@ public class IpCommunityListExpanded extends IpCommunityList {
 
   private final LineAction _action;
   private final @Nonnull List<StandardCommunity> _communities;
-  private final @Nonnull SortedMap<String, IpCommunityListExpandedLine> _lines;
+  private final @Nonnull List<IpCommunityListExpandedLine> _lines;
 
   public IpCommunityListExpanded(
       String name, LineAction action, List<StandardCommunity> communities) {
@@ -27,7 +28,7 @@ public class IpCommunityListExpanded extends IpCommunityList {
     super(name);
     _action = null;
     _communities = null;
-    _lines = new TreeMap<>();
+    _lines = new ArrayList<>();
   }
 
   @Override
@@ -43,7 +44,7 @@ public class IpCommunityListExpanded extends IpCommunityList {
     return _action;
   }
 
-  public @Nonnull SortedMap<String, IpCommunityListExpandedLine> getLines() {
+  public @Nonnull List<IpCommunityListExpandedLine> getLines() {
     return _lines;
   }
 }

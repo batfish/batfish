@@ -20,13 +20,3 @@ icl_expanded
     | regex = REMARK_TEXT
   ) NEWLINE
 ;
-
-double_quoted_string
-:
-  DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
-;
-
-quoted_text
-:
-  QUOTED_TEXT
-;

@@ -1337,9 +1337,9 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  static CommunityMatchExpr toCommunityMatchExpr(IpCommunityListExpanded ipCommunityListExpanded) {
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(IpCommunityListExpanded ipCommunityListExpanded) {
     return new CommunityAcl(
-        ipCommunityListExpanded.getLines().values().stream()
+        ipCommunityListExpanded.getLines().stream()
             .map(CumulusConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
   }

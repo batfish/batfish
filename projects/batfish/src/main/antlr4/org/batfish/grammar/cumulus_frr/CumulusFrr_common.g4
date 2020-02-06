@@ -9,6 +9,11 @@ autonomous_system
   uint32
 ;
 
+double_quoted_string
+:
+  DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
+;
+
 ip_address
 :
   IP_ADDRESS
@@ -60,6 +65,11 @@ loglevel
 prefix
 :
   IP_PREFIX
+;
+
+quoted_text
+:
+  QUOTED_TEXT
 ;
 
 route_map_name
