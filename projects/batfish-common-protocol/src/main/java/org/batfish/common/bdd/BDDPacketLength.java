@@ -15,21 +15,18 @@ public final class BDDPacketLength {
 
   /** @return a constraint that the packet length have the specified value. */
   public BDD value(int v) {
-    checkArgument(v >= 20, "Minimum packet length is 20");
     checkArgument(v <= 65535, "Maximum packet length is 65535");
     return _var.value(v);
   }
 
   /** @return a constraint that the packet length have the specified value. */
   public BDD geq(int v) {
-    checkArgument(v >= 20, "Minimum packet length is 20");
     checkArgument(v <= 65535, "Maximum packet length is 65535");
     return _var.geq(v);
   }
 
   /** @return a constraint that the packet length have the specified value. */
   public BDD leq(int v) {
-    checkArgument(v >= 20, "Minimum packet length is 20");
     checkArgument(v <= 65535, "Maximum packet length is 65535");
     return _var.leq(v);
   }
