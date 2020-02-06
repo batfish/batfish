@@ -1,11 +1,15 @@
 package org.batfish.datamodel.applications;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Test;
 
 public class UdpApplicationTest {
@@ -38,5 +42,17 @@ public class UdpApplicationTest {
         new UdpApplication(ImmutableList.of(SubRange.singleton(443), new SubRange(0, 80)))
             .toString(),
         equalTo("udp/443,0-80"));
+  }
+
+  @Test
+  public void toAclLineMatchExpr() {
+    assertEquals(
+        new UdpApplication(ImmutableList.of(new SubRange(10, 20), new SubRange(20, 30)))
+            .toAclLineMatchExpr(),
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.UDP)
+                .setDstPorts(ImmutableList.of(new SubRange(10, 20), new SubRange(20, 30)))
+                .build()));
   }
 }

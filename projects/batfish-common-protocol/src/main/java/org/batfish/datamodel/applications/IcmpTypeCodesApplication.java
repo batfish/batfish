@@ -1,11 +1,16 @@
 package org.batfish.datamodel.applications;
 
+import static org.batfish.datamodel.IpProtocol.ICMP;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.parboiled.CommonParser;
 
 /** An {@link IcmpApplication} of a specific type and one or more codes */
@@ -82,6 +87,16 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
       default:
         throw new IllegalArgumentException("Invalid ICMP type " + type);
     }
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setIpProtocols(ICMP)
+            .setIcmpTypes(_type)
+            .setIcmpCodes(_codes)
+            .build());
   }
 
   @Override
