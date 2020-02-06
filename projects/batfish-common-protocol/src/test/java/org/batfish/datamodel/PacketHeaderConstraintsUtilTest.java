@@ -66,6 +66,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   /** Known bug with current conversion from PacketHeaderConstraints to HeaderSpace. */
   @Ignore
+  @Test
   public void testApplications() {
     BDDPacket packet = new BDDPacket();
     BDD ssh = packet.getIpProtocol().value(IpProtocol.TCP).and(packet.getDstPort().value(22));
