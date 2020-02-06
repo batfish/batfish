@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -38,7 +37,5 @@ public abstract class Application {
         .collect(Collectors.joining(","));
   }
 
-  public AclLineMatchExpr toAclLineMatchExpr() {
-    throw new BatfishException("not implemented");
-  }
+  public abstract AclLineMatchExpr toAclLineMatchExpr();
 }
