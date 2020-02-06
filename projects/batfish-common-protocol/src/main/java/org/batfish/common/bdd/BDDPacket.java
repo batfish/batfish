@@ -283,6 +283,7 @@ public class BDDPacket {
     fb.setDscp(_dscp.satAssignmentToLong(satAssignment).intValue());
     fb.setEcn(_ecn.satAssignmentToLong(satAssignment).intValue());
     fb.setFragmentOffset(_fragmentOffset.satAssignmentToLong(satAssignment).intValue());
+    fb.setPacketLength(_packetLength.satAssignmentToValue(satAssignment).intValue());
     return fb;
   }
 
