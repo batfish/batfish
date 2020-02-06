@@ -1,5 +1,7 @@
 package org.batfish.datamodel.applications;
 
+import static org.batfish.datamodel.IpProtocol.ICMP;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
@@ -90,7 +92,11 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
     return new MatchHeaderSpace(
-        HeaderSpace.builder().setIcmpTypes(_type).setIcmpCodes(_codes).build());
+        HeaderSpace.builder()
+            .setIpProtocols(ICMP)
+            .setIcmpTypes(_type)
+            .setIcmpCodes(_codes)
+            .build());
   }
 
   @Override
