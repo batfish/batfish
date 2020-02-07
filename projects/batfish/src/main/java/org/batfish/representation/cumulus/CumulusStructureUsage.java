@@ -29,6 +29,7 @@ public enum CumulusStructureUsage implements StructureUsage {
   ROUTE_MAP_MATCH_INTERFACE("route-map match interface"),
   ROUTE_MAP_MATCH_AS_PATH("route-map match as-path"),
   ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST("route-map match ip prefix-list"),
+  ROUTE_MAP_SET_COMM_LIST_DELETE("route-map set comm-list delete"),
   VLAN_SELF_REFERENCE("vlan self-reference"),
   VLAN_VRF("vlan vrf"),
   VRF_SELF_REFERENCE("vrf self-reference"),

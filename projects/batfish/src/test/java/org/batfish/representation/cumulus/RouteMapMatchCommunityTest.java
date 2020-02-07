@@ -29,8 +29,8 @@ public class RouteMapMatchCommunityTest {
         .getIpCommunityLists()
         .putAll(
             ImmutableMap.of(
-                "M1", new IpCommunityListExpanded("M1", LineAction.PERMIT, ImmutableList.of()),
-                "M2", new IpCommunityListExpanded("M2", LineAction.PERMIT, ImmutableList.of())));
+                "M1", new IpCommunityListExpanded("M1", LineAction.PERMIT),
+                "M2", new IpCommunityListExpanded("M2", LineAction.PERMIT)));
     BooleanExpr result = match.toBooleanExpr(null, cumulusNcluConfiguration, null);
 
     assertThat(
