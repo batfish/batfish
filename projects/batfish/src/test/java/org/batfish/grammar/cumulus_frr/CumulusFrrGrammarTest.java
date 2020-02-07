@@ -35,7 +35,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -85,12 +84,12 @@ import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
-import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.FrrInterface;
 import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
+import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
@@ -924,7 +923,8 @@ public class CumulusFrrGrammarTest {
     IpCommunityListExpanded communityList =
         (IpCommunityListExpanded) _frr.getIpCommunityLists().get(name);
 
-    List<IpCommunityListExpandedLine> expected = Lists.newArrayList(new IpCommunityListExpandedLine(LineAction.PERMIT, "10000:10 20000:20"));
+    List<IpCommunityListExpandedLine> expected =
+        Lists.newArrayList(new IpCommunityListExpandedLine(LineAction.PERMIT, "10000:10 20000:20"));
     List<IpCommunityListExpandedLine> actual = communityList.getLines();
     assertThat(expected.size(), equalTo(actual.size()));
     assertThat(expected.get(0).getAction(), equalTo(actual.get(0).getAction()));
