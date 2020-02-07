@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -24,6 +25,7 @@ import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.getInternetAndIspNodes;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
+import static org.batfish.specifier.LocationInfoUtils.connectedSubnetIps;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,6 +39,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
@@ -76,6 +79,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -113,6 +117,7 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyContainer;
@@ -120,12 +125,14 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IntegerSpace;
@@ -133,6 +140,8 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -215,8 +224,11 @@ import org.batfish.role.RoleMapping;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -829,6 +841,68 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public boolean debugFlagEnabled(String flag) {
     return _settings.debugFlagEnabled(flag);
+  }
+
+  @Override
+  public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
+    /* TODO this should be deserialized from disk. Ultimate source will be a combination of vendor
+     * configs and user input. For now, consolidating the default logic here. This logic will become
+     * the default implementation of the vendor config method.
+     */
+
+    IpOwners ipOwners = getTopologyProvider().getIpOwners(snapshot);
+
+    /* Include inactive interfaces here so their IPs are considered part of the network (even though
+     * they are unreachable). This means when ARP fails for those IPs we'll use NEIGHBOR_UNREACHABLE
+     * or INSUFFICIENT_INFO dispositions rather than DELIVERED_TO_SUBNET or EXITS_NETWORK.
+     */
+    IpSpace snapshotDeviceOwnedIps =
+        firstNonNull(
+            AclIpSpace.union(
+                ipOwners.getAllDeviceOwnedIps().keySet().stream()
+                    .map(Ip::toIpSpace)
+                    .collect(Collectors.toList())),
+            EmptyIpSpace.INSTANCE);
+
+    Map<String, Map<String, IpSpace>> interfaceOwnedIps = ipOwners.getInterfaceOwnedIpSpaces();
+    Map<String, Map<String, IpSpace>> activeInterfaceHostIps = ipOwners.getActiveInterfaceHostIps();
+
+    return loadConfigurations(snapshot).values().stream()
+        .flatMap(config -> config.getActiveInterfaces().values().stream())
+        .flatMap(
+            iface -> {
+              String hostname = iface.getOwner().getHostname();
+              String ifaceName = iface.getName();
+
+              Location ifaceLocation = new InterfaceLocation(hostname, ifaceName);
+              IpSpace ifaceOwnedIps =
+                  interfaceOwnedIps
+                      .getOrDefault(hostname, ImmutableMap.of())
+                      .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE);
+              LocationInfo ifaceLocationInfo =
+                  new LocationInfo(true, ifaceOwnedIps, EmptyIpSpace.INSTANCE);
+
+              Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
+
+              /* TODO this is very similar to but slightly different than activeInterfaceHostIps.
+               * double-check whether that subtle difference is important, or if we can consolidate.
+               */
+              IpSpace linkSubnetIps = connectedSubnetIps(iface);
+
+              IpSpace linkSourceIps =
+                  linkSubnetIps == EmptyIpSpace.INSTANCE
+                      ? EmptyIpSpace.INSTANCE
+                      : checkNotNull(AclIpSpace.difference(linkSubnetIps, snapshotDeviceOwnedIps));
+
+              IpSpace linkArpIps = activeInterfaceHostIps.get(hostname).get(ifaceName);
+
+              LocationInfo linkLocationInfo = new LocationInfo(true, linkSourceIps, linkArpIps);
+
+              return Stream.of(
+                  Maps.immutableEntry(ifaceLocation, ifaceLocationInfo),
+                  Maps.immutableEntry(linkLocation, linkLocationInfo));
+            })
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(

@@ -15,14 +15,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
@@ -91,13 +91,8 @@ public final class ParboiledInputValidator {
     }
 
     @Override
-    public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
-      return ImmutableMap.of();
-    }
-
-    @Override
-    public IpSpace getSnapshotDeviceOwnedIps() {
-      return EmptyIpSpace.INSTANCE;
+    public LocationInfo getLocationInfo(Location location) {
+      throw new UnsupportedOperationException();
     }
   }
 

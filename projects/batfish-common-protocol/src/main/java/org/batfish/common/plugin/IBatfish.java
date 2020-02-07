@@ -40,6 +40,8 @@ import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
@@ -66,6 +68,11 @@ public interface IBatfish extends IPluginConsumer {
   DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot);
 
   boolean debugFlagEnabled(String flag);
+
+  /**
+   * Return the {@link LocationInfo} of each {@link Location} in the {@link NetworkSnapshot}.
+   */
+  Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot);
 
   ReferenceLibrary getReferenceLibraryData();
 
