@@ -9,9 +9,14 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setIcmpValues;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setPacketLength;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setSrcPort;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setTcpFlags;
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toFlow;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -20,7 +25,6 @@ import java.util.Collections;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow.Builder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -65,7 +69,6 @@ public class PacketHeaderConstraintsUtilTest {
   }
 
   /** Known bug with current conversion from PacketHeaderConstraints to HeaderSpace. */
-  @Ignore
   @Test
   public void testApplications() {
     BDDPacket packet = new BDDPacket();
@@ -227,5 +230,37 @@ public class PacketHeaderConstraintsUtilTest {
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setTcpFlags(phc, builder);
+  }
+
+  @Test
+  public void testToAclLineMatchExpr() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
+            .build();
+    assertEquals(
+        toAclLineMatchExpr(phc, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),
+        and(
+            // src ip
+            match(HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build()),
+            // dst ip
+            match(HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()),
+            // ip protocols
+            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).build()),
+            // application
+            or(
+                // ssh
+                match(
+                    HeaderSpace.builder()
+                        .setIpProtocols(IpProtocol.TCP)
+                        .setDstPorts(SubRange.singleton(22))
+                        .build()),
+                // dns
+                match(
+                    HeaderSpace.builder()
+                        .setIpProtocols(IpProtocol.UDP)
+                        .setDstPorts(SubRange.singleton(53))
+                        .build()))));
   }
 }
