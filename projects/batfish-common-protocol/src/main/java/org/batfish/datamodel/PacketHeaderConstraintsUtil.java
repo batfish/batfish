@@ -32,7 +32,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
