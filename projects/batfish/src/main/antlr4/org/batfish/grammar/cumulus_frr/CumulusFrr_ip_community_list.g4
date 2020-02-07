@@ -14,5 +14,9 @@ ip_community_list
 icl_expanded
 :
   EXPANDED name = ip_community_list_name
-  action = line_action communities += literal_standard_community+ NEWLINE
+  action = line_action
+  (
+    quoted = double_quoted_string
+    | regex = REMARK_TEXT
+  ) NEWLINE
 ;
