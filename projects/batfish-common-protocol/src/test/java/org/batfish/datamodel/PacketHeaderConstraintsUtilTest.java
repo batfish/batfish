@@ -1,5 +1,16 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dscpsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dstPortsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.ecnsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.fragmentOffsetsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.icmpCodeToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.icmpTypeToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.ipProtocolsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.packetLengthToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.srcPortsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.tcpFlagsToAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setDscpValue;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setDstPort;
@@ -9,17 +20,27 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setIcmpValues;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setPacketLength;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setSrcPort;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setTcpFlags;
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toFlow;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,7 +86,6 @@ public class PacketHeaderConstraintsUtilTest {
   }
 
   /** Known bug with current conversion from PacketHeaderConstraints to HeaderSpace. */
-  @Ignore
   @Test
   public void testApplications() {
     BDDPacket packet = new BDDPacket();
@@ -227,5 +247,37 @@ public class PacketHeaderConstraintsUtilTest {
     Builder builder = Flow.builder();
     thrown.expect(IllegalArgumentException.class);
     setTcpFlags(phc, builder);
+  }
+
+  @Test
+  public void testToAclLineMatchExpr() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
+            .build();
+    assertEquals(
+        toAclLineMatchExpr(phc, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),
+        and(
+            // src ip
+            match(HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build()),
+            // dst ip
+            match(HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()),
+            // ip protocols
+            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).build()),
+            // application
+            or(
+                // ssh
+                match(
+                    HeaderSpace.builder()
+                        .setIpProtocols(IpProtocol.TCP)
+                        .setDstPorts(SubRange.singleton(22))
+                        .build()),
+                // dns
+                match(
+                    HeaderSpace.builder()
+                        .setIpProtocols(IpProtocol.UDP)
+                        .setDstPorts(SubRange.singleton(53))
+                        .build()))));
   }
 }
