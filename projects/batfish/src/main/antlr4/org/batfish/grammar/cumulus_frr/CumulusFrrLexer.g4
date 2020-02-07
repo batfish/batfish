@@ -273,7 +273,7 @@ EXIT_VRF
 
 EXPANDED
 :
-  'expanded' -> pushMode(M_Word)
+  'expanded' -> pushMode(M_Expanded)
 ;
 
 EXTENDED
@@ -934,6 +934,56 @@ M_DoubleQuote_QUOTED_TEXT
 :
   ~["\r\n]+ -> type ( QUOTED_TEXT )
 ;
+
+mode M_Expanded;
+
+M_Expanded_WORD
+:
+  F_Word -> type ( WORD ) , mode(M_Expanded2)
+;
+
+M_Expanded_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded2;
+
+M_Expanded2_DENY
+:
+  'deny' -> type ( DENY ), mode(M_Expanded3)
+;
+
+M_Expanded2_PERMIT
+:
+  'permit' -> type ( PERMIT ), mode(M_Expanded3)
+;
+
+M_Expanded2_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Expanded3;
+
+M_Expanded3_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN ), mode(M_Expanded4)
+;
+
+mode M_Expanded4;
+
+M_Expanded4_DOUBLE_QUOTE
+:
+  '"' -> type(DOUBLE_QUOTE), mode(M_DoubleQuote)
+;
+
+M_Expanded4_REMARK_TEXT
+:
+  ~["\r\n] F_NonWhitespace* (F_Whitespace+ F_NonWhitespace+)* -> type(REMARK_TEXT), popMode
+;
+
+
 
 mode M_Neighbor;
 
