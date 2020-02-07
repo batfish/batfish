@@ -32,8 +32,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -83,6 +85,7 @@ import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.FrrInterface;
 import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
@@ -921,15 +924,11 @@ public class CumulusFrrGrammarTest {
     IpCommunityListExpanded communityList =
         (IpCommunityListExpanded) _frr.getIpCommunityLists().get(name);
 
-    assertThat(
-        communityList.getCommunities(),
-        equalTo(
-            ImmutableList.of(
-                StandardCommunity.parse("10000:10"), StandardCommunity.parse("20000:20"))));
-
-    assertThat(
-        getDefinedStructureInfo(IP_COMMUNITY_LIST, name).getDefinitionLines(),
-        equalTo(ImmutableSet.of(1)));
+    List<IpCommunityListExpandedLine> expected = Lists.newArrayList(new IpCommunityListExpandedLine(LineAction.PERMIT, "10000:10 20000:20"));
+    List<IpCommunityListExpandedLine> actual = communityList.getLines();
+    assertThat(expected.size(), equalTo(actual.size()));
+    assertThat(expected.get(0).getAction(), equalTo(actual.get(0).getAction()));
+    assertThat(expected.get(0).getRegex(), equalTo(actual.get(0).getRegex()));
   }
 
   @Test

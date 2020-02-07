@@ -34,10 +34,6 @@ public class IpCommunityListExpanded extends IpCommunityList {
     return visitor.visitIpCommunityListExpanded(this);
   }
 
-  public @Nonnull List<StandardCommunity> getCommunities() {
-    return _communities;
-  }
-
   public @Nonnull LineAction getAction() {
     return _action;
   }
