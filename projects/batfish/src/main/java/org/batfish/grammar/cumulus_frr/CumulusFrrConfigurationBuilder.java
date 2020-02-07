@@ -42,7 +42,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -270,23 +269,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private static long toLong(TerminalNode t) {
     return Long.parseLong(t.getText());
-  }
-
-  /**
-   * Return the text of the provided {@code ctx} if its length is within the provided {@link
-   * IntegerSpace lengthSpace}, or else {@link Optional#empty}.
-   */
-  private @Nonnull Optional<String> toStringWithLengthInSpace(
-      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace lengthSpace, String name) {
-    String text = ctx.getText();
-    if (!lengthSpace.contains(text.length())) {
-      warn(
-          messageCtx,
-          String.format(
-              "Expected %s with length in range %s, but got '%s'", text, lengthSpace, name));
-      return Optional.empty();
-    }
-    return Optional.of(text);
   }
 
   private @Nonnull String toString(Ip_community_list_nameContext ctx) {
