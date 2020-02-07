@@ -1,8 +1,8 @@
 package org.batfish.specifier;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.batfish.datamodel.Interface;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Interface;
 
 /**
  * Identifies a single location in the network -- an VRF, an interface, the link of an interface,

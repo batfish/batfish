@@ -69,9 +69,7 @@ public interface IBatfish extends IPluginConsumer {
 
   boolean debugFlagEnabled(String flag);
 
-  /**
-   * Return the {@link LocationInfo} of each {@link Location} in the {@link NetworkSnapshot}.
-   */
+  /** Return the {@link LocationInfo} of each {@link Location} in the {@link NetworkSnapshot}. */
   Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot);
 
   ReferenceLibrary getReferenceLibraryData();

@@ -27,8 +27,6 @@ public interface SpecifierContext {
   @Nonnull
   Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
 
-  /**
-   *
-   */
+  /** */
   LocationInfo getLocationInfo(Location location);
 }
