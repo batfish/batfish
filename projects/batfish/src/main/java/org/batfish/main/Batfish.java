@@ -2,7 +2,6 @@ package org.batfish.main;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -868,35 +867,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Map<String, IpSpace>> activeInterfaceHostIps = ipOwners.getActiveInterfaceHostIps();
 
     return loadConfigurations(snapshot).values().stream()
-        .flatMap(config -> config.getActiveInterfaces().values().stream())
+        .flatMap(config -> config.getAllInterfaces().values().stream())
         .flatMap(
             iface -> {
               String hostname = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
 
               Location ifaceLocation = new InterfaceLocation(hostname, ifaceName);
-              IpSpace ifaceOwnedIps =
-                  interfaceOwnedIps
-                      .getOrDefault(hostname, ImmutableMap.of())
-                      .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE);
-              LocationInfo ifaceLocationInfo =
-                  new LocationInfo(true, ifaceOwnedIps, EmptyIpSpace.INSTANCE);
-
               Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
+
+              if (!iface.getActive()) {
+                LocationInfo info =
+                    new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
+                return Stream.of(
+                    Maps.immutableEntry(ifaceLocation, info),
+                    Maps.immutableEntry(linkLocation, info));
+              }
+
+              LocationInfo ifaceLocationInfo =
+                  new LocationInfo(
+                      true,
+                      interfaceOwnedIps
+                          .getOrDefault(hostname, ImmutableMap.of())
+                          .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE),
+                      EmptyIpSpace.INSTANCE);
 
               /* TODO this is very similar to but slightly different than activeInterfaceHostIps.
                * double-check whether that subtle difference is important, or if we can consolidate.
                */
-              IpSpace linkSubnetIps = connectedSubnetIps(iface);
-
-              IpSpace linkSourceIps =
-                  linkSubnetIps == EmptyIpSpace.INSTANCE
-                      ? EmptyIpSpace.INSTANCE
-                      : checkNotNull(AclIpSpace.difference(linkSubnetIps, snapshotDeviceOwnedIps));
-
-              IpSpace linkArpIps = activeInterfaceHostIps.get(hostname).get(ifaceName);
-
-              LocationInfo linkLocationInfo = new LocationInfo(true, linkSourceIps, linkArpIps);
+              LocationInfo linkLocationInfo =
+                  new LocationInfo(
+                      true,
+                      firstNonNull(
+                          AclIpSpace.difference(connectedSubnetIps(iface), snapshotDeviceOwnedIps),
+                          EmptyIpSpace.INSTANCE),
+                      activeInterfaceHostIps.get(hostname).get(ifaceName));
 
               return Stream.of(
                   Maps.immutableEntry(ifaceLocation, ifaceLocationInfo),
