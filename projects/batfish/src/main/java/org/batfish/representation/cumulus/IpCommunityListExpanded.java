@@ -1,31 +1,25 @@
 package org.batfish.representation.cumulus;
 
-import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A expanded Ip community list */
 public class IpCommunityListExpanded extends IpCommunityList {
 
   private final LineAction _action;
-  private final @Nonnull List<StandardCommunity> _communities;
   private final @Nonnull List<IpCommunityListExpandedLine> _lines;
 
-  public IpCommunityListExpanded(
-      String name, LineAction action, List<StandardCommunity> communities) {
+  public IpCommunityListExpanded(String name, LineAction action) {
     super(name);
     _action = action;
-    _communities = ImmutableList.copyOf(communities);
     _lines = null;
   }
 
   public IpCommunityListExpanded(String name) {
     super(name);
     _action = null;
-    _communities = null;
     _lines = new ArrayList<>();
   }
 

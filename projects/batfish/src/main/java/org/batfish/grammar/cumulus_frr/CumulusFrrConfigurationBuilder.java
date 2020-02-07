@@ -27,7 +27,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -185,9 +183,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private final CumulusFrrConfiguration _frr;
   private final CumulusFrrCombinedParser _parser;
   private final Warnings _w;
-
-  private static final LongSpace IP_COMMUNITY_LIST_LINE_NUMBER_RANGE =
-      LongSpace.of(Range.closed(1L, 4294967294L));
 
   private @Nullable Vrf _currentVrf;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
@@ -1060,6 +1055,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
   }
 
+  @Override
   public void enterIcl_expanded(Icl_expandedContext ctx) {
     String name = toString(ctx.name);
     if (Strings.isNullOrEmpty(name)) {
@@ -1080,7 +1076,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
-    List<IpCommunityListExpandedLine> lines = communityListExpanded.getLines();
     communityListExpanded
         .getLines()
         .add(new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
