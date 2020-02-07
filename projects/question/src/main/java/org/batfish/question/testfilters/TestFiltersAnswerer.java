@@ -50,7 +50,6 @@ import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -111,7 +110,7 @@ public class TestFiltersAnswerer extends Answerer {
     String node = c.getHostname();
     Set<Location> srcLocations =
         question.getStartLocationSpecifier().resolve(context).stream()
-            .filter(LocationVisitor.onNode(node)::visit)
+            .filter(loc -> loc.getNodeName().equals(node))
             .collect(Collectors.toSet());
 
     ImmutableSortedSet.Builder<Flow> setBuilder = ImmutableSortedSet.naturalOrder();
