@@ -2,22 +2,39 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dscpsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dstPortsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.ecnsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.fragmentOffsetsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.icmpCodeToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.icmpTypeToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.ipProtocolsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.packetLengthToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.srcPortsToAclLineMatchExpr;
+import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.tcpFlagsToAclLineMatchExpr;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** Utility class to convert {@link PacketHeaderConstraints} to other internal representations. */
 @ParametersAreNonnullByDefault
@@ -34,8 +51,25 @@ public class PacketHeaderConstraintsUtil {
    */
   public static AclLineMatchExpr toAclLineMatchExpr(
       PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
-    return new MatchHeaderSpace(
-        toHeaderSpaceBuilder(phc).setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build());
+    List<AclLineMatchExpr> conjuncts =
+        Stream.of(
+                match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
+                match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
+                dscpsToAclLineMatchExpr(phc.getDscps()),
+                ecnsToAclLineMatchExpr(phc.getEcns()),
+                packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
+                fragmentOffsetsToAclLineMatchExpr(phc.getFragmentOffsets()),
+                ipProtocolsToAclLineMatchExpr(phc.getIpProtocols()),
+                icmpCodeToAclLineMatchExpr(phc.getIcmpCodes()),
+                icmpTypeToAclLineMatchExpr(phc.getIcmpTypes()),
+                srcPortsToAclLineMatchExpr(phc.getSrcPorts()),
+                dstPortsToAclLineMatchExpr(phc.getDstPorts()),
+                applicationsToAclLineMatchExpr(phc.getApplications()),
+                tcpFlagsToAclLineMatchExpr(phc.getTcpFlags()))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+
+    return and(conjuncts);
   }
 
   /**
@@ -67,8 +101,12 @@ public class PacketHeaderConstraintsUtil {
       Map<String, IpSpace> namedIpSpaces,
       IpSpace srcIpSpace,
       IpSpace dstIpSpace) {
-    HeaderSpace.Builder b = toHeaderSpaceBuilder(phc).setSrcIps(srcIpSpace).setDstIps(dstIpSpace);
-    return new HeaderSpaceToBDD(pkt, namedIpSpaces).toBDD(b.build());
+
+    IpAccessListToBddImpl converter =
+        new IpAccessListToBddImpl(
+            pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), namedIpSpaces);
+
+    return converter.toBdd(toAclLineMatchExpr(phc, srcIpSpace, dstIpSpace));
   }
 
   private static SortedSet<SubRange> extractSubranges(@Nullable IntegerSpace space) {
