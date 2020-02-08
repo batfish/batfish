@@ -50,11 +50,35 @@ public class PacketHeaderConstraintsUtil {
    * @param dstIpSpace Resolved destination IP space
    */
   public static AclLineMatchExpr toAclLineMatchExpr(
-      PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
+      PacketHeaderConstraints phc, @Nullable IpSpace srcIpSpace, @Nullable IpSpace dstIpSpace) {
     List<AclLineMatchExpr> conjuncts =
         Stream.of(
                 match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
                 match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
+                dscpsToAclLineMatchExpr(phc.getDscps()),
+                ecnsToAclLineMatchExpr(phc.getEcns()),
+                packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
+                fragmentOffsetsToAclLineMatchExpr(phc.getFragmentOffsets()),
+                ipProtocolsToAclLineMatchExpr(phc.getIpProtocols()),
+                icmpCodeToAclLineMatchExpr(phc.getIcmpCodes()),
+                icmpTypeToAclLineMatchExpr(phc.getIcmpTypes()),
+                srcPortsToAclLineMatchExpr(phc.getSrcPorts()),
+                dstPortsToAclLineMatchExpr(phc.getDstPorts()),
+                applicationsToAclLineMatchExpr(phc.getApplications()),
+                tcpFlagsToAclLineMatchExpr(phc.getTcpFlags()))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+
+    return and(conjuncts);
+  }
+  /**
+   * Convert {@link PacketHeaderConstraints} to an {@link AclLineMatchExpr}.
+   *
+   * @param phc the packet header constraints
+   */
+  public static AclLineMatchExpr toAclLineMatchExpr(PacketHeaderConstraints phc) {
+    List<AclLineMatchExpr> conjuncts =
+        Stream.of(
                 dscpsToAclLineMatchExpr(phc.getDscps()),
                 ecnsToAclLineMatchExpr(phc.getEcns()),
                 packetLengthToAclLineMatchExpr(phc.getPacketLengths()),

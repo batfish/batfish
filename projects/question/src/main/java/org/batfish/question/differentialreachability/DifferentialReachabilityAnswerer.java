@@ -105,11 +105,9 @@ public class DifferentialReachabilityAnswerer extends Answerer {
                     .map(Entry::getIpSpace)
                     .collect(ImmutableList.toImmutableList())),
             UniverseIpSpace.INSTANCE);
+
     AclLineMatchExpr headerSpace =
-        match(
-            PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(headerConstraints)
-                .setDstIps(dstIps)
-                .build());
+        PacketHeaderConstraintsUtil.toAclLineMatchExpr(headerConstraints, null, dstIps);
 
     return new DifferentialReachabilityParameters(
         ReachabilityParameters.filterDispositions(question.getActions().getDispositions()),

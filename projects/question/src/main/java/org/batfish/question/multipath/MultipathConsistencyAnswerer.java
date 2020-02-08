@@ -74,10 +74,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
                     .collect(ImmutableList.toImmutableList())),
             UniverseIpSpace.INSTANCE);
     AclLineMatchExpr headerSpace =
-        match(
-            PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(headerConstraints)
-                .setDstIps(dstIps)
-                .build());
+        PacketHeaderConstraintsUtil.toAclLineMatchExpr(headerConstraints, null, dstIps);
 
     return new MultipathConsistencyParameters(
         headerSpace,
