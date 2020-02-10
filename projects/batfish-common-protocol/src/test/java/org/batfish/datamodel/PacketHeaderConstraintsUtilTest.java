@@ -238,7 +238,8 @@ public class PacketHeaderConstraintsUtilTest {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
-            .setApplications(ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication()))
+            .setApplications(
+                ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication()))
             .build();
     assertEquals(
         toAclLineMatchExpr(phc, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),
