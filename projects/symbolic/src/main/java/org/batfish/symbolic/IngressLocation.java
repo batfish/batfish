@@ -82,14 +82,14 @@ public final class IngressLocation implements Comparable<IngressLocation> {
       return false;
     }
     IngressLocation other = (IngressLocation) o;
-    return this._pointType == other._pointType
-        && this._node.equals(other._node)
-        && this._pointWithinNode.equals(other._pointWithinNode);
+    return _pointType == other._pointType
+        && _node.equals(other._node)
+        && _pointWithinNode.equals(other._pointWithinNode);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this._pointType, this._node, this._pointWithinNode);
+    return Objects.hash(_pointType, _node, _pointWithinNode);
   }
 
   @Override

@@ -55,7 +55,7 @@ public abstract class BDDPairing {
     }
 
     for (int n = 0; n < oldvar.length; n++) {
-      this.set(oldvar[n], newvar[n]);
+      set(oldvar[n], newvar[n]);
     }
   }
 
@@ -80,7 +80,7 @@ public abstract class BDDPairing {
     }
 
     for (int n = 0; n < newvar.length; n++) {
-      this.set(oldvar[n], newvar[n]);
+      set(oldvar[n], newvar[n]);
     }
   }
 
@@ -93,7 +93,7 @@ public abstract class BDDPairing {
   public void set(BDDDomain p1, BDDDomain p2) {
     int[] ivar1 = p1.vars();
     int[] ivar2 = p2.vars();
-    this.set(ivar1, ivar2);
+    set(ivar1, ivar2);
   }
 
   /**
@@ -113,7 +113,7 @@ public abstract class BDDPairing {
     }
 
     for (int n = 0; n < p1.length; n++) {
-      this.set(p1[n], p2[n]);
+      set(p1[n], p2[n]);
     }
   }
 

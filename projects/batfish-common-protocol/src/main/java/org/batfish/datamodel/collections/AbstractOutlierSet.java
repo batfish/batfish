@@ -39,12 +39,12 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
   // sort in reverse order of zScore, which is a measure of how likely it is that
   // our hypothesis is correct
   public int compareTo(AbstractOutlierSet other) {
-    int oScore = Double.compare(other.outlierScore(), this.outlierScore());
+    int oScore = Double.compare(other.outlierScore(), outlierScore());
     if (oScore != 0) {
       return oScore;
     }
 
-    Optional<String> thisRole = this.getRole();
+    Optional<String> thisRole = getRole();
     Optional<String> otherRole = other.getRole();
     if (thisRole.isPresent()) {
       if (otherRole.isPresent()) {
@@ -69,7 +69,7 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
     AbstractOutlierSet rhs = (AbstractOutlierSet) other;
     return _conformers.equals(rhs.getConformers())
         && _outliers.equals(rhs.getOutliers())
-        && Objects.equals(this.getRole(), rhs.getRole());
+        && Objects.equals(getRole(), rhs.getRole());
   }
 
   @JsonProperty(PROP_CONFORMERS)

@@ -45,8 +45,7 @@ public enum CumulusStructureType implements StructureType {
         return CumulusStructureUsage.VXLAN_SELF_REFERENCE;
       default:
         throw new IllegalArgumentException(
-            String.format(
-                "CumulusStructureType %s has no self-reference usage", this._description));
+            String.format("CumulusStructureType %s has no self-reference usage", _description));
     }
   }
 }

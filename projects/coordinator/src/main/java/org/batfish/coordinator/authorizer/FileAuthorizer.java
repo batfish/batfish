@@ -116,12 +116,12 @@ public class FileAuthorizer implements Authorizer {
     if (!Files.exists(usersFile)) {
       throw new FileNotFoundException("Users file not found: '" + usersFile.toAbsolutePath() + "'");
     }
-    this._usersFile = usersFile;
+    _usersFile = usersFile;
 
     if (!Files.exists(permsFile)) {
       throw new FileNotFoundException("Perms file not found: '" + permsFile.toAbsolutePath() + "'");
     }
-    this._permsFile = permsFile;
+    _permsFile = permsFile;
   }
 
   private static boolean accessAllowed(String apiKey, String container, Permissions permissions) {

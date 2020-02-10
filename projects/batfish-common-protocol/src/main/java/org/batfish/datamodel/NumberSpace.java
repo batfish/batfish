@@ -188,7 +188,7 @@ public abstract class NumberSpace<
 
   /** Compute the difference between two {@link NumberSpace}s */
   public final S difference(S other) {
-    return this.intersection(other.not(getThis()));
+    return intersection(other.not(getThis()));
   }
 
   protected abstract DiscreteDomain<T> discreteDomain();
@@ -319,7 +319,7 @@ public abstract class NumberSpace<
 
   /** Compute the symmetric difference between two {@link NumberSpace}s */
   public final S symmetricDifference(S other) {
-    return this.union(other).difference(intersection(other));
+    return union(other).difference(intersection(other));
   }
 
   /** Return a builder initialized with existing {@link NumberSpace} */

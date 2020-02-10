@@ -52,7 +52,7 @@ public class AclSpecs {
 
   public AclSpecs(CanonicalAcl acl, String hostname, Map<String, Set<String>> sources) {
     this.acl = acl;
-    this.reprHostname = hostname;
+    reprHostname = hostname;
     this.sources = ImmutableMap.copyOf(sources);
   }
 

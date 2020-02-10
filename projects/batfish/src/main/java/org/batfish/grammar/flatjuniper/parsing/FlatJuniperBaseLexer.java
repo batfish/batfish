@@ -51,7 +51,7 @@ public abstract class FlatJuniperBaseLexer extends BatfishLexer {
   }
 
   public boolean isPrefix() {
-    char nextChar = (char) this.getInputStream().LA(1);
+    char nextChar = (char) getInputStream().LA(1);
     if (Character.isDigit(nextChar) || nextChar == '.') {
       return false;
     }

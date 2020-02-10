@@ -120,7 +120,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
   }
 
   public void setShutdown(@Nullable Boolean shutdown) {
-    this._shutdown = shutdown;
+    _shutdown = shutdown;
   }
 
   @Nullable

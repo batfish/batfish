@@ -10,7 +10,7 @@ public class TraceWrapperAsAnswerElement extends AnswerElement {
   private final SortedMap<Flow, List<Trace>> _flowTraces;
 
   public TraceWrapperAsAnswerElement(SortedMap<Flow, List<Trace>> flowTraces) {
-    this._flowTraces = flowTraces;
+    _flowTraces = flowTraces;
   }
 
   public SortedMap<Flow, List<Trace>> getFlowTraces() {

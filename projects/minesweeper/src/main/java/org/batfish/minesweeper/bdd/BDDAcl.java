@@ -101,14 +101,14 @@ public final class BDDAcl {
   /** Create a new version of the BDD restricted to a prefix */
   public BDDAcl restrict(Prefix pfx) {
     BDDAcl other = new BDDAcl(this);
-    other._bdd = this._pkt.restrict(this._bdd, pfx);
+    other._bdd = _pkt.restrict(_bdd, pfx);
     return other;
   }
 
   /** Create a new version of the BDD restricted to a list of prefixes */
   public BDDAcl restrict(List<Prefix> prefixes) {
     BDDAcl other = new BDDAcl(this);
-    other._bdd = this._pkt.restrict(this._bdd, prefixes);
+    other._bdd = _pkt.restrict(_bdd, prefixes);
     return other;
   }
 }
