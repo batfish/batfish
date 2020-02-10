@@ -299,12 +299,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     return Long.parseLong(t.getText());
   }
 
-  /*
-  private @Nonnull String toString(Ip_community_list_nameContext ctx) {
-    return ctx.getText();
-  }
-  */
-
   private @Nonnull String toString(ParserRuleContext ctx) {
     return ctx.getText();
   }
