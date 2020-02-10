@@ -228,9 +228,9 @@ public abstract class BDDBitVector {
 
       /* c = (l[n] & r[n] & c) | (!l[n] & (r[n] | c)); */
       BDD tmp1 = that.bitvec[n].or(c);
-      BDD tmp2 = this.bitvec[n].apply(tmp1, BDDFactory.less);
+      BDD tmp2 = bitvec[n].apply(tmp1, BDDFactory.less);
       tmp1.free();
-      tmp1 = this.bitvec[n].and(that.bitvec[n]);
+      tmp1 = bitvec[n].and(that.bitvec[n]);
       tmp1.andWith(c);
       tmp1.orWith(tmp2);
 
@@ -242,7 +242,7 @@ public abstract class BDDBitVector {
   }
 
   BDD lte(BDDBitVector r) {
-    if (this.bitvec.length != r.bitvec.length) {
+    if (bitvec.length != r.bitvec.length) {
       throw new BDDException();
     }
 
@@ -293,7 +293,7 @@ public abstract class BDDBitVector {
       throw new BDDException();
     }
     free();
-    this.bitvec = that.bitvec;
+    bitvec = that.bitvec;
     that.bitvec = null;
   }
 
@@ -347,7 +347,7 @@ public abstract class BDDBitVector {
     BDDBitVector divisor = bdd.constantVector(bitvec.length, c);
     BDDBitVector tmp = bdd.buildVector(bitvec.length, false);
     BDDBitVector tmpremainder = tmp.shl(1, bitvec[bitvec.length - 1]);
-    BDDBitVector result = this.shl(1, bdd.zero());
+    BDDBitVector result = shl(1, bdd.zero());
 
     BDDBitVector remainder;
 

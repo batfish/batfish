@@ -107,7 +107,7 @@ public final class JFactory extends BDDFactory {
     int _index;
 
     BDDImpl(int index) {
-      this._index = index;
+      _index = index;
       bdd_addref(_index);
     }
 
@@ -225,7 +225,7 @@ public final class JFactory extends BDDFactory {
         that.free();
       }
       bdd_addref(a);
-      this._index = a;
+      _index = a;
       return this;
     }
 
@@ -277,7 +277,7 @@ public final class JFactory extends BDDFactory {
         that.free();
       }
       bdd_addref(a);
-      this._index = a;
+      _index = a;
       return this;
     }
 
@@ -367,7 +367,7 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public boolean equals(BDD that) {
-      boolean b = this._index == ((BDDImpl) that)._index;
+      boolean b = _index == ((BDDImpl) that)._index;
       return b;
     }
 
@@ -396,7 +396,7 @@ public final class JFactory extends BDDFactory {
         if (DEBUG_FINALIZER && _index >= 0) {
           System.out.println("BDD not freed! " + System.identityHashCode(this));
         }
-        this.free();
+        free();
       }
     }
   }
@@ -540,10 +540,10 @@ public final class JFactory extends BDDFactory {
     @Override
     BddCacheData copy() {
       BddCacheDataI that = new BddCacheDataI();
-      that.a = this.a;
-      that.b = this.b;
-      that.c = this.c;
-      that.res = this.res;
+      that.a = a;
+      that.b = b;
+      that.c = c;
+      that.res = res;
       return that;
     }
   }
@@ -584,18 +584,18 @@ public final class JFactory extends BDDFactory {
 
     BddCache copy() {
       BddCache that = new BddCache();
-      if (this.table instanceof BddCacheDataI[]) {
-        that.table = new BddCacheDataI[this.table.length];
-      } else if (this.table instanceof BigIntegerBddCacheData[]) {
-        that.table = new BigIntegerBddCacheData[this.table.length];
-      } else if (this.table instanceof MultiOpBddCacheData[]) {
-        that.table = new MultiOpBddCacheData[this.table.length];
+      if (table instanceof BddCacheDataI[]) {
+        that.table = new BddCacheDataI[table.length];
+      } else if (table instanceof BigIntegerBddCacheData[]) {
+        that.table = new BigIntegerBddCacheData[table.length];
+      } else if (table instanceof MultiOpBddCacheData[]) {
+        that.table = new MultiOpBddCacheData[table.length];
       } else {
         throw new IllegalStateException("Unexpected BddCache type");
       }
-      that.tablesize = this.tablesize;
+      that.tablesize = tablesize;
       for (int i = 0; i < table.length; ++i) {
-        that.table[i] = this.table[i].copy();
+        that.table[i] = table[i].copy();
       }
       return that;
     }
@@ -4084,7 +4084,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public boolean isInitialized() {
-    return this.bddrunning;
+    return bddrunning;
   }
 
   @Override

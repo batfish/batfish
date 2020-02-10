@@ -30,17 +30,17 @@ public class InterfacePolicy {
       @Nullable BDDRoute bgpPolicy,
       @Nullable Integer ospfCost,
       @Nullable SortedSet<MsPair<Prefix, Integer>> staticRoutes) {
-    this._acl = acl;
-    this._bgpPolicy = bgpPolicy;
-    this._ospfCost = ospfCost;
-    this._staticRoutes = staticRoutes;
+    _acl = acl;
+    _bgpPolicy = bgpPolicy;
+    _ospfCost = ospfCost;
+    _staticRoutes = staticRoutes;
   }
 
   public InterfacePolicy(InterfacePolicy other) {
-    this._acl = other._acl;
-    this._bgpPolicy = other._bgpPolicy;
-    this._ospfCost = other._ospfCost;
-    this._staticRoutes = other._staticRoutes;
+    _acl = other._acl;
+    _bgpPolicy = other._bgpPolicy;
+    _ospfCost = other._ospfCost;
+    _staticRoutes = other._staticRoutes;
   }
 
   public BDDAcl getAcl() {

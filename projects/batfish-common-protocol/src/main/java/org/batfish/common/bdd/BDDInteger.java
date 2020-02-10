@@ -140,8 +140,8 @@ public class BDDInteger {
     checkArgument(val < (1L << _bitvec.length), "value %s is out of range", val);
     long currentVal = val;
     BDD bdd = _factory.one();
-    for (int i = this._bitvec.length - 1; i >= 0; i--) {
-      BDD b = this._bitvec[i];
+    for (int i = _bitvec.length - 1; i >= 0; i--) {
+      BDD b = _bitvec[i];
       if ((currentVal & 1) != 0) {
         bdd = bdd.and(b);
       } else {
@@ -247,11 +247,11 @@ public class BDDInteger {
    */
   public void setValue(long val) {
     long currentVal = val;
-    for (int i = this._bitvec.length - 1; i >= 0; i--) {
+    for (int i = _bitvec.length - 1; i >= 0; i--) {
       if ((currentVal & 1) != 0) {
-        this._bitvec[i] = _factory.one();
+        _bitvec[i] = _factory.one();
       } else {
-        this._bitvec[i] = _factory.zero();
+        _bitvec[i] = _factory.zero();
       }
       currentVal >>= 1;
     }
@@ -261,8 +261,8 @@ public class BDDInteger {
    * Set this BDD to be equal to another BDD
    */
   public void setValue(BDDInteger other) {
-    for (int i = 0; i < this._bitvec.length; ++i) {
-      this._bitvec[i] = other._bitvec[i].id();
+    for (int i = 0; i < _bitvec.length; ++i) {
+      _bitvec[i] = other._bitvec[i].id();
     }
   }
 
@@ -270,7 +270,7 @@ public class BDDInteger {
    * Add two BDDs bitwise to create a new BDD
    */
   public BDDInteger add(BDDInteger other) {
-    BDD[] as = this._bitvec;
+    BDD[] as = _bitvec;
     BDD[] bs = other._bitvec;
 
     checkArgument(as.length > 0, "Cannot add BDDIntegers of length 0");
@@ -291,18 +291,18 @@ public class BDDInteger {
    * Subtract one BDD from another bitwise to create a new BDD
    */
   public BDDInteger sub(BDDInteger var1) {
-    if (this._bitvec.length != var1._bitvec.length) {
+    if (_bitvec.length != var1._bitvec.length) {
       throw new BDDException();
     } else {
       BDD var3 = _factory.zero();
-      BDDInteger var4 = new BDDInteger(_factory, this._bitvec.length);
+      BDDInteger var4 = new BDDInteger(_factory, _bitvec.length);
       for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
-        var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
+        var4._bitvec[var5] = _bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
         BDD var6 = var1._bitvec[var5].or(var3);
-        BDD var7 = this._bitvec[var5].apply(var6, BDDFactory.less);
+        BDD var7 = _bitvec[var5].apply(var6, BDDFactory.less);
         var6.free();
-        var6 = this._bitvec[var5].and(var1._bitvec[var5]);
+        var6 = _bitvec[var5].and(var1._bitvec[var5]);
         var6 = var6.and(var3);
         var6 = var6.or(var7);
         var3 = var6;

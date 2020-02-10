@@ -52,11 +52,11 @@ public enum JunosApplicationSet implements ApplicationSetMember {
   }
 
   private String convertToJuniperName() {
-    return this.name().toLowerCase().replace("_", "-");
+    return name().toLowerCase().replace("_", "-");
   }
 
   private ApplicationSet init() {
-    ApplicationSet applicationSet = new ApplicationSet(this.convertToJuniperName());
+    ApplicationSet applicationSet = new ApplicationSet(convertToJuniperName());
 
     List<JunosApplication> applications;
 

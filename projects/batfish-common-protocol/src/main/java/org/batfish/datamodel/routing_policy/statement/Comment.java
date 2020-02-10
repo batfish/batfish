@@ -23,7 +23,7 @@ public class Comment extends Statement {
     if (obj == null) {
       return false;
     }
-    return obj.getClass() == this.getClass();
+    return obj.getClass() == getClass();
   }
 
   @Override

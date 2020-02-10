@@ -69,8 +69,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
         toImmutableMap(
             namedIpSpaces,
             Entry::getKey,
-            entry ->
-                Suppliers.memoize(new NonRecursiveSupplier<>(() -> this.visit(entry.getValue()))));
+            entry -> Suppliers.memoize(new NonRecursiveSupplier<>(() -> visit(entry.getValue()))));
   }
 
   @Override
@@ -178,13 +177,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     BDD whitelist =
         _bddOps.orAll(
             ipWildcardSetIpSpace.getWhitelist().stream()
-                .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
+                .map((IpWildcard wc) -> visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     BDD blacklist =
         _bddOps.orAll(
             ipWildcardSetIpSpace.getBlacklist().stream()
-                .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
+                .map((IpWildcard wc) -> visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     return whitelist.diff(blacklist);

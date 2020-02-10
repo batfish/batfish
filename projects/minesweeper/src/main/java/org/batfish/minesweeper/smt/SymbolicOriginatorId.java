@@ -28,7 +28,7 @@ public class SymbolicOriginatorId extends SymbolicEnum<Integer> {
   }
 
   BoolExpr isNotFromClient() {
-    if (this._bitvec == null) {
+    if (_bitvec == null) {
       return _enc.mkTrue();
     }
     return _enc.getCtx().mkEq(_bitvec, _enc.getCtx().mkBV(0, _numBits));

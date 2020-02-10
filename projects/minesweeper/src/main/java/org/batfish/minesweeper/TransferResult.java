@@ -18,17 +18,17 @@ public class TransferResult<U, T> {
   private T _returnAssignedValue;
 
   public TransferResult() {
-    this._changedVariables = PList.empty();
-    this._returnValue = null;
-    this._fallthroughValue = null;
-    this._returnAssignedValue = null;
+    _changedVariables = PList.empty();
+    _returnValue = null;
+    _fallthroughValue = null;
+    _returnAssignedValue = null;
   }
 
   private TransferResult(TransferResult<U, T> other) {
-    this._changedVariables = other._changedVariables;
-    this._returnValue = other._returnValue;
-    this._fallthroughValue = other._fallthroughValue;
-    this._returnAssignedValue = other._returnAssignedValue;
+    _changedVariables = other._changedVariables;
+    _returnValue = other._returnValue;
+    _fallthroughValue = other._fallthroughValue;
+    _returnAssignedValue = other._returnAssignedValue;
   }
 
   @Nullable
@@ -47,7 +47,7 @@ public class TransferResult<U, T> {
     Set<String> seen = new HashSet<>();
     PList<MsPair<String, MsPair<Expr, Expr>>> vars = PList.empty();
 
-    for (MsPair<String, Expr> cv1 : this._changedVariables) {
+    for (MsPair<String, Expr> cv1 : _changedVariables) {
       String s = cv1.getFirst();
       Expr x = cv1.getSecond();
       if (!seen.contains(s)) {
@@ -63,7 +63,7 @@ public class TransferResult<U, T> {
       Expr x = cv1.getSecond();
       if (!seen.contains(s)) {
         seen.add(s);
-        Expr e = find(this._changedVariables, s);
+        Expr e = find(_changedVariables, s);
         MsPair<Expr, Expr> pair = new MsPair<>(e, x); // preserve order
         vars = vars.plus(new MsPair<>(s, pair));
       }
@@ -101,7 +101,7 @@ public class TransferResult<U, T> {
   }
 
   public boolean isChanged(String s) {
-    for (MsPair<String, Expr> pair : this._changedVariables) {
+    for (MsPair<String, Expr> pair : _changedVariables) {
       if (pair.getFirst().equals(s)) {
         return true;
       }
