@@ -92,18 +92,18 @@ public class SpecifiersReachabilityQuestionTest {
                 .build()));
   }
 
-  @Test
-  public void testApplicationsSpecification() {
-    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
-    SpecifiersReachabilityQuestion question =
-        SpecifiersReachabilityQuestion.builder()
-            .setHeaderConstraints(
-                PacketHeaderConstraints.builder().setApplications(applications).build())
-            .build();
-
-    HeaderSpace headerSpace = question.getHeaderSpace();
-    //    assertThat(headerSpace.getDstProtocols(), equalTo(applications));
-  }
+  //  @Test
+  //  public void testApplicationsSpecification() {
+  //    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
+  //    SpecifiersReachabilityQuestion question =
+  //        SpecifiersReachabilityQuestion.builder()
+  //            .setHeaderConstraints(
+  //                PacketHeaderConstraints.builder().setApplications(applications).build())
+  //            .build();
+  //
+  //    HeaderSpace headerSpace = question.getHeaderSpace();
+  //    assertThat(headerSpace.getDstProtocols(), equalTo(applications));
+  //  }
 
   @Test
   public void testInvalidApplicationsSpecification() {
