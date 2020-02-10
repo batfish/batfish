@@ -155,8 +155,6 @@ public class PacketHeaderConstraintsUtil {
             .setDstPorts(extractSubranges(phc.resolveDstPorts()))
             .setIcmpCodes(extractSubranges(phc.getIcmpCodes()))
             .setIcmpTypes(extractSubranges(phc.getIcmpTypes()))
-            //            .setDstProtocols(firstNonNull(phc.getApplications(),
-            // ImmutableSortedSet.of()))
             .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
             .setPacketLengths(extractSubranges(phc.getPacketLengths()))
             .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));

@@ -106,8 +106,14 @@ public class SpecifiersReachabilityQuestionTest {
                 PacketHeaderConstraints.builder().setApplications(applications).build())
             .build();
 
-    HeaderSpace headerSpace = question.getHeaderSpace();
-    assertThat(headerSpace.getDstProtocols(), equalTo(applications));
+    AclLineMatchExpr headerSpace = question.getHeaderSpace();
+    assertEquals(
+        headerSpace,
+        match(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.UDP)
+                .setDstPorts(SubRange.singleton(53))
+                .build()));
   }
 
   @Test
