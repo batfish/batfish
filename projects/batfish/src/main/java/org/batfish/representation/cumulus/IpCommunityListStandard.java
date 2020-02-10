@@ -1,7 +1,7 @@
 package org.batfish.representation.cumulus;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
@@ -10,11 +10,11 @@ import javax.annotation.Nonnull;
  */
 public final class IpCommunityListStandard extends IpCommunityList {
 
-  private final @Nonnull SortedMap<Long, IpCommunityListStandardLine> _lines;
+  private final @Nonnull List<IpCommunityListStandardLine> _lines;
 
   public IpCommunityListStandard(String name) {
     super(name);
-    _lines = new TreeMap<>();
+    _lines = new ArrayList<IpCommunityListStandardLine>();
   }
 
   @Override
@@ -22,7 +22,7 @@ public final class IpCommunityListStandard extends IpCommunityList {
     return visitor.visitIpCommunityListStandard(this);
   }
 
-  public @Nonnull SortedMap<Long, IpCommunityListStandardLine> getLines() {
+  public @Nonnull List<IpCommunityListStandardLine> getLines() {
     return _lines;
   }
 }

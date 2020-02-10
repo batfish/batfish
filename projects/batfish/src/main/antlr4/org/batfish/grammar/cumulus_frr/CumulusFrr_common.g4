@@ -77,6 +77,15 @@ route_map_name
   WORD
 ;
 
+standard_community
+:
+  literal = literal_standard_community
+  | INTERNET
+  | LOCAL_AS
+  | NO_ADVERTISE
+  | NO_EXPORT
+;
+
 vni_number
 :
   v = uint32

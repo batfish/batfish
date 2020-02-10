@@ -369,6 +369,11 @@ INTERNAL
   'internal'
 ;
 
+INTERNET
+:
+  'internet'
+;
+
 IP
 :
   'ip'
@@ -407,6 +412,11 @@ L2VPN
 LE
 :
   'le'
+;
+
+LOCAL_AS
+:
+  [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
 ;
 
 LOCAL_PREFERENCE
@@ -487,6 +497,16 @@ NEXT_HOP_SELF
 NO
 :
   'no'
+;
+
+NO_ADVERTISE
+:
+  'no-advertise'
+;
+
+NO_EXPORT
+:
+  'no-export'
 ;
 
 NOTIFICATIONS
@@ -607,6 +627,11 @@ SERVICE
 SOFT_RECONFIGURATION
 :
   'soft-reconfiguration'
+;
+
+STANDARD
+:
+  'standard' -> pushMode ( M_Word )
 ;
 
 STATIC
@@ -1021,6 +1046,11 @@ M_PeerGroup_WS
 
 
 mode M_Word;
+
+M_Word_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
 
 M_Word_WORD
 :

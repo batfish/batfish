@@ -11,6 +11,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_I
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -41,6 +43,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -53,6 +56,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
@@ -126,6 +130,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
@@ -156,6 +161,8 @@ import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityList;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
+import org.batfish.representation.cumulus.IpCommunityListStandard;
+import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
@@ -209,6 +216,24 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
     return StandardCommunity.of(
         Integer.parseInt(ctx.high.getText()), Integer.parseInt(ctx.low.getText()));
+  }
+
+  private @Nonnull Optional<StandardCommunity> toStandardCommunity(Standard_communityContext ctx) {
+    if (ctx.literal != null) {
+      return Optional.of(toStandardCommunity(ctx.literal));
+    } else if (ctx.INTERNET() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.INTERNET));
+    } else if (ctx.LOCAL_AS() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    } else if (ctx.NO_ADVERTISE() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+    } else if (ctx.NO_EXPORT() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+    } else {
+      // assume valid but unsupported
+      todo(ctx);
+      return Optional.empty();
+    }
   }
 
   @Nonnull
@@ -274,7 +299,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     return Long.parseLong(t.getText());
   }
 
+  /*
   private @Nonnull String toString(Ip_community_list_nameContext ctx) {
+    return ctx.getText();
+  }
+  */
+
+  private @Nonnull String toString(ParserRuleContext ctx) {
     return ctx.getText();
   }
 
@@ -1085,6 +1116,45 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         .getLines()
         .add(new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
     _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
+  }
+
+  public void enterIcl_standard(Icl_standardContext ctx) {
+    Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx.communities);
+    if (!communities.isPresent()) {
+      return;
+    }
+    String name = toString(ctx);
+    if (Strings.isNullOrEmpty(name)) {
+      return;
+    }
+    IpCommunityList communityList =
+            _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
+    if (!(communityList instanceof IpCommunityListStandard)) {
+      warn(
+              ctx,
+              String.format(
+                      "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+                      name));
+      return;
+    }
+    IpCommunityListStandard communityListStandard = (IpCommunityListStandard) communityList;
+    communityListStandard
+            .getLines()
+            .add(new IpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
+    _c.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
+  }
+
+  private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
+          Iterable<Standard_communityContext> communities) {
+    ImmutableSet.Builder<StandardCommunity> builder = ImmutableSet.builder();
+    for (Standard_communityContext communityCtx : communities) {
+      Optional<StandardCommunity> community = toStandardCommunity(communityCtx);
+      if (!community.isPresent()) {
+        return Optional.empty();
+      }
+      builder.add(community.get());
+    }
+    return Optional.of(builder.build());
   }
 
   @Override

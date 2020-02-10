@@ -14,12 +14,10 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 public final class IpCommunityListStandardLine implements Serializable {
   private final @Nonnull LineAction _action;
   private final @Nonnull Set<StandardCommunity> _communities;
-  private final long _line;
 
   public IpCommunityListStandardLine(
-      LineAction action, long line, Set<StandardCommunity> communities) {
+      LineAction action, Set<StandardCommunity> communities) {
     _action = action;
-    _line = line;
     _communities = communities;
   }
 
@@ -29,9 +27,5 @@ public final class IpCommunityListStandardLine implements Serializable {
 
   public @Nonnull Set<StandardCommunity> getCommunities() {
     return _communities;
-  }
-
-  public long getLine() {
-    return _line;
   }
 }
