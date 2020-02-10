@@ -76,7 +76,8 @@ public class PacketHeaderConstraintsUtilTest {
     BDD dns = packet.getIpProtocol().value(IpProtocol.UDP).and(packet.getDstPort().value(53));
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
-            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
+            .setApplications(
+                ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication()))
             .build();
     assertThat(
         PacketHeaderConstraintsUtil.toBDD(
@@ -237,7 +238,7 @@ public class PacketHeaderConstraintsUtilTest {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
-            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
+            .setApplications(ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication()))
             .build();
     assertEquals(
         toAclLineMatchExpr(phc, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),

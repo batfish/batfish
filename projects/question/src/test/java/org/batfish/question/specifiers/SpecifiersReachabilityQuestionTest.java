@@ -3,7 +3,9 @@ package org.batfish.question.specifiers;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -13,6 +15,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -21,6 +24,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.applications.Application;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -94,7 +99,7 @@ public class SpecifiersReachabilityQuestionTest {
 
   @Test
   public void testApplicationsSpecification() {
-    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
+    Set<Application> applications = ImmutableSet.of(Protocol.DNS.toApplication());
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setHeaderConstraints(
@@ -107,7 +112,7 @@ public class SpecifiersReachabilityQuestionTest {
 
   @Test
   public void testInvalidApplicationsSpecification() {
-    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
+    Set<Application> applications = ImmutableSet.of(Protocol.DNS.toApplication());
     IntegerSpace dstPorts = IntegerSpace.of(new SubRange(1, 2));
 
     exception.expect(IllegalArgumentException.class);

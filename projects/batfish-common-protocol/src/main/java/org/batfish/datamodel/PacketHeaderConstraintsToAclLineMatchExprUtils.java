@@ -86,12 +86,11 @@ final class PacketHeaderConstraintsToAclLineMatchExprUtils {
   }
 
   @Nullable
-  static AclLineMatchExpr applicationsToAclLineMatchExpr(@Nullable Set<Protocol> applications) {
+  static AclLineMatchExpr applicationsToAclLineMatchExpr(@Nullable Set<Application> applications) {
     return applications == null
         ? null
         : or(
             applications.stream()
-                .map(Protocol::toApplication)
                 .map(Application::toAclLineMatchExpr)
                 .collect(ImmutableList.toImmutableList()));
   }
