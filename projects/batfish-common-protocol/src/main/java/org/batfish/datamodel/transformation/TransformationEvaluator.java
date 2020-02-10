@@ -148,7 +148,7 @@ public class TransformationEvaluator {
       /* getFlowDiffs makes sure the type is in the key set, which signals that we went through
        * the transformation
        */
-      this.noop(noop.getType());
+      noop(noop.getType());
       return false;
     }
 

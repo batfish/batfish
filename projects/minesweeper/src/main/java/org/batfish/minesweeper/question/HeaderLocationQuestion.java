@@ -92,19 +92,19 @@ public class HeaderLocationQuestion extends HeaderQuestion {
 
   public HeaderLocationQuestion(HeaderLocationQuestion other) {
     super(other);
-    this._negate = other._negate;
-    this._finalNodeRegex = other._finalNodeRegex;
-    this._finalIfaceRegex = other._finalIfaceRegex;
-    this._ingressNodeRegex = other._ingressNodeRegex;
-    this._failNode1Regex = other._failNode1Regex;
-    this._failNode2Regex = other._failNode2Regex;
-    this._failNodeRegex = other._failNodeRegex;
-    this._notFinalNodeRegex = other._notFinalNodeRegex;
-    this._notFinalIfaceRegex = other._notFinalIfaceRegex;
-    this._notIngressNodeRegex = other._notIngressNodeRegex;
-    this._notFailNode1Regex = other._notFailNode1Regex;
-    this._notFailNode2Regex = other._notFailNode2Regex;
-    this._notFailNodeRegex = other._notFailNodeRegex;
+    _negate = other._negate;
+    _finalNodeRegex = other._finalNodeRegex;
+    _finalIfaceRegex = other._finalIfaceRegex;
+    _ingressNodeRegex = other._ingressNodeRegex;
+    _failNode1Regex = other._failNode1Regex;
+    _failNode2Regex = other._failNode2Regex;
+    _failNodeRegex = other._failNodeRegex;
+    _notFinalNodeRegex = other._notFinalNodeRegex;
+    _notFinalIfaceRegex = other._notFinalIfaceRegex;
+    _notIngressNodeRegex = other._notIngressNodeRegex;
+    _notFailNode1Regex = other._notFailNode1Regex;
+    _notFailNode2Regex = other._notFailNode2Regex;
+    _notFailNodeRegex = other._notFailNodeRegex;
   }
 
   @JsonProperty(PROP_NEGATE)

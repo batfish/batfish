@@ -142,7 +142,7 @@ public class TransferParam<T extends IDeepCopy<T>> {
 
   public TransferParam<T> indent() {
     TransferParam<T> ret = new TransferParam<>(this);
-    ret._indent = this._indent + 1;
+    ret._indent = _indent + 1;
     return ret;
   }
 

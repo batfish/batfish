@@ -582,7 +582,7 @@ class FlowTracer {
 
         if (lookupIp == null) {
           // Nothing matched, execute default action
-          return this.visit(fibLookupAction.getDefaultAction());
+          return visit(fibLookupAction.getDefaultAction());
         }
 
         // Just a sanity check, can't be Ip.AUTO

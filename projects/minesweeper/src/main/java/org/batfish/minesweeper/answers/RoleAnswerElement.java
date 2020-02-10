@@ -32,7 +32,7 @@ public class RoleAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_IMPORT_BGP_ECS)
   public void setImportBgpEcs(List<SortedSet<String>> x) {
-    this._importBgpEcs = x;
+    _importBgpEcs = x;
   }
 
   @JsonProperty(PROP_EXPORT_BGP_ECS)
@@ -42,7 +42,7 @@ public class RoleAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_EXPORT_BGP_ECS)
   public void setExportBgpEcs(List<SortedSet<String>> x) {
-    this._exportBgpEcs = x;
+    _exportBgpEcs = x;
   }
 
   @JsonProperty(PROP_INCOMING_ACL_ECS)
@@ -52,7 +52,7 @@ public class RoleAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_INCOMING_ACL_ECS)
   public void setIncomingAclEcs(List<SortedSet<String>> x) {
-    this._incomingAclEcs = x;
+    _incomingAclEcs = x;
   }
 
   @JsonProperty(PROP_OUTGOING_BGP_ECS)
@@ -62,7 +62,7 @@ public class RoleAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_OUTGOING_BGP_ECS)
   public void setOutgoingAclEcs(List<SortedSet<String>> x) {
-    this._outgoingAclEcs = x;
+    _outgoingAclEcs = x;
   }
 
   @JsonProperty(PROP_INTERFACE_ECS)
@@ -72,7 +72,7 @@ public class RoleAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_INTERFACE_ECS)
   public void setInterfaceEcs(List<SortedSet<String>> x) {
-    this._interfaceEcs = x;
+    _interfaceEcs = x;
   }
 
   @JsonProperty(PROP_NODE_ECS)
@@ -82,6 +82,6 @@ public class RoleAnswerElement extends AnswerElement {
 
   @JsonProperty(PROP_NODE_ECS)
   public void setNodeEcs(List<SortedSet<String>> x) {
-    this._nodeEcs = x;
+    _nodeEcs = x;
   }
 }

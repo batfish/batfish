@@ -45,7 +45,7 @@ public abstract class Question implements IQuestion {
 
   public Question configureTemplate(String exceptions, String assertion) {
     throw new UnsupportedOperationException(
-        "configureTemplate is not supported for question type: " + this.getClass().getName());
+        "configureTemplate is not supported for question type: " + getClass().getName());
   }
 
   /** Returns {@code true} iff this question requires a computed data plane as input. */

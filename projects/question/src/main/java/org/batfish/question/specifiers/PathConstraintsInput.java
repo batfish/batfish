@@ -70,31 +70,31 @@ public class PathConstraintsInput {
     private Builder() {}
 
     public Builder setStartLocation(String startLocation) {
-      this._startLocation = startLocation;
+      _startLocation = startLocation;
       return this;
     }
 
     public Builder setEndLocation(String endLocation) {
-      this._endLocation = endLocation;
+      _endLocation = endLocation;
       return this;
     }
 
     public Builder setTransitLocations(String transitLocations) {
-      this._transitLocations = transitLocations;
+      _transitLocations = transitLocations;
       return this;
     }
 
     public Builder setForbiddenLocations(String forbiddenLocations) {
-      this._forbiddenLocations = forbiddenLocations;
+      _forbiddenLocations = forbiddenLocations;
       return this;
     }
 
     public PathConstraintsInput build() {
       PathConstraintsInput pathConstraintsInput = new PathConstraintsInput(null, null, null, null);
-      pathConstraintsInput._startLocation = this._startLocation;
-      pathConstraintsInput._forbiddenLocations = this._forbiddenLocations;
-      pathConstraintsInput._transitLocations = this._transitLocations;
-      pathConstraintsInput._endLocation = this._endLocation;
+      pathConstraintsInput._startLocation = _startLocation;
+      pathConstraintsInput._forbiddenLocations = _forbiddenLocations;
+      pathConstraintsInput._transitLocations = _transitLocations;
+      pathConstraintsInput._endLocation = _endLocation;
       return pathConstraintsInput;
     }
   }

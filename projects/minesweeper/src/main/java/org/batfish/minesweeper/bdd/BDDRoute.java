@@ -234,7 +234,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public void setAdminDist(BDDInteger adminDist) {
-    this._adminDist = adminDist;
+    _adminDist = adminDist;
   }
 
   public Map<CommunityVar, BDD> getCommunities() {
@@ -242,7 +242,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
-    this._communities = communities;
+    _communities = communities;
   }
 
   public BDDInteger getLocalPref() {
@@ -250,7 +250,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public void setLocalPref(BDDInteger localPref) {
-    this._localPref = localPref;
+    _localPref = localPref;
   }
 
   public BDDInteger getMed() {
@@ -258,7 +258,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public void setMed(BDDInteger med) {
-    this._med = med;
+    _med = med;
   }
 
   public BDDInteger getMetric() {
@@ -266,7 +266,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public void setMetric(BDDInteger metric) {
-    this._metric = metric;
+    _metric = metric;
   }
 
   public BDDDomain<OspfType> getOspfMetric() {
@@ -274,7 +274,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public void setOspfMetric(BDDDomain<OspfType> ospfMetric) {
-    this._ospfMetric = ospfMetric;
+    _ospfMetric = ospfMetric;
   }
 
   public BDDInteger getPrefix() {

@@ -54,7 +54,7 @@ public enum Statements {
 
     @Override
     public Result execute(Environment environment) {
-      switch (this._type) {
+      switch (_type) {
         case DefaultAction:
           return Result.builder()
               .setExit(true)

@@ -643,7 +643,7 @@ public class WorkMgr extends AbstractCoordinator {
       List<String> questionsToDelete,
       @Nullable Boolean suggested) {
     NetworkId networkId = _idManager.getNetworkId(network);
-    this.configureAnalysisValidityCheck(
+    configureAnalysisValidityCheck(
         network, newAnalysis, analysis, questionsToAdd, questionsToDelete);
     AnalysisId analysisId =
         newAnalysis

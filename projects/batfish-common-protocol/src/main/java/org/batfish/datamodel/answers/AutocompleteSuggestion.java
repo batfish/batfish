@@ -74,37 +74,37 @@ public final class AutocompleteSuggestion {
     }
 
     public Builder setDescription(String description) {
-      this._description = description;
+      _description = description;
       return this;
     }
 
     public Builder setHint(String hint) {
-      this._hint = hint;
+      _hint = hint;
       return this;
     }
 
     public Builder setInsertionIndex(int insertionIndex) {
-      this._insertionIndex = insertionIndex;
+      _insertionIndex = insertionIndex;
       return this;
     }
 
     public Builder setIsPartial(boolean isPartial) {
-      this._isPartial = isPartial;
+      _isPartial = isPartial;
       return this;
     }
 
     public Builder setRank(int rank) {
-      this._rank = rank;
+      _rank = rank;
       return this;
     }
 
     public Builder setSuggestionType(SuggestionType suggestionType) {
-      this._suggestionType = suggestionType;
+      _suggestionType = suggestionType;
       return this;
     }
 
     public Builder setText(String text) {
-      this._text = text;
+      _text = text;
       return this;
     }
 

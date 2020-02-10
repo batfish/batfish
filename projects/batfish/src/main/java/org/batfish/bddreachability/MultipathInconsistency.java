@@ -11,8 +11,8 @@ class MultipathInconsistency {
   private final IngressLocation _ingressLocation;
 
   MultipathInconsistency(IngressLocation ingressLocation, BDD bdd) {
-    this._ingressLocation = ingressLocation;
-    this._bdd = bdd;
+    _ingressLocation = ingressLocation;
+    _bdd = bdd;
   }
 
   public BDD getBDD() {

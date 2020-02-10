@@ -17,9 +17,9 @@ public class EquivalenceEdge {
       Integer abstractId,
       @Nullable InterfacePolicy importPol,
       @Nullable InterfacePolicy exportPol) {
-    this._abstractId = abstractId;
-    this._importPol = importPol;
-    this._exportPol = exportPol;
+    _abstractId = abstractId;
+    _importPol = importPol;
+    _exportPol = exportPol;
   }
 
   @Override
