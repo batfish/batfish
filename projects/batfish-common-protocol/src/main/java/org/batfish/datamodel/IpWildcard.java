@@ -120,7 +120,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
       return false;
     }
     IpWildcard other = (IpWildcard) o;
-    return this._ip.equals(other._ip) && this._wildcardMask == other._wildcardMask;
+    return _ip.equals(other._ip) && _wildcardMask == other._wildcardMask;
   }
 
   @Override

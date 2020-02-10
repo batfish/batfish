@@ -29,7 +29,7 @@ public final class BgpGlobalConfiguration implements Serializable {
   }
 
   public void setEnforceFirstAs(boolean enforceFirstAs) {
-    this._enforceFirstAs = enforceFirstAs;
+    _enforceFirstAs = enforceFirstAs;
   }
 
   public long getLocalAs() {
@@ -37,7 +37,7 @@ public final class BgpGlobalConfiguration implements Serializable {
   }
 
   public void setLocalAs(long localAs) {
-    this._localAs = localAs;
+    _localAs = localAs;
   }
 
   /** A read-only map containing the per-VRF BGP configuration. */

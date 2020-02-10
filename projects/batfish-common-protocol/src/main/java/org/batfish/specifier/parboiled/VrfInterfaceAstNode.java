@@ -47,6 +47,6 @@ final class VrfInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass()).add("vrfName", _vrfName).toString();
+    return MoreObjects.toStringHelper(getClass()).add("vrfName", _vrfName).toString();
   }
 }

@@ -186,7 +186,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     /** Returns the node with the longest prefix match for a given prefix. */
     @Nonnull
     Node<T> findLongestPrefixMatchNode(Prefix prefix) {
-      assert this._prefix.containsPrefix(prefix);
+      assert _prefix.containsPrefix(prefix);
 
       Node<T> node = this;
       while (true) {
@@ -201,7 +201,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
     @Nullable
     Node<T> findLongestPrefixMatchNonEmptyNode(Prefix prefix) {
-      assert this._prefix.containsPrefix(prefix);
+      assert _prefix.containsPrefix(prefix);
 
       Node<T> longestNonEmpty = null;
       Node<T> node = this;

@@ -46,7 +46,7 @@ public class SmtLoadBalanceQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(THRESHOLD_VAR)
     public void setThreshold(int i) {
-      this._threshold = i;
+      _threshold = i;
     }
 
     @Override

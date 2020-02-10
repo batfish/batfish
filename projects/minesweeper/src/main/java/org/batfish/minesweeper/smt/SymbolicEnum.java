@@ -102,7 +102,7 @@ class SymbolicEnum<T> {
   }
 
   void setBitVec(BitVecExpr bv) {
-    this._bitvec = bv;
+    _bitvec = bv;
   }
 
   BoolExpr mkEq(SymbolicEnum<T> other) {

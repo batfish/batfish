@@ -114,8 +114,8 @@ public class OspfProcess implements Serializable {
   }
 
   public long getDefaultMetric(ConfigurationFormat format, RoutingProtocol protocol) {
-    if (this._defaultMetric != null) {
-      return this._defaultMetric;
+    if (_defaultMetric != null) {
+      return _defaultMetric;
     }
 
     switch (format) {

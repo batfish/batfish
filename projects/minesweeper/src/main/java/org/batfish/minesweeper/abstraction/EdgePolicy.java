@@ -12,8 +12,8 @@ class EdgePolicy {
   private int _hcode = 0;
 
   EdgePolicy(@Nullable InterfacePolicy importPol, @Nullable InterfacePolicy exportPol) {
-    this._importPol = importPol;
-    this._exportPol = exportPol;
+    _importPol = importPol;
+    _exportPol = exportPol;
   }
 
   @Override

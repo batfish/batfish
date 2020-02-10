@@ -43,7 +43,7 @@ public class RoleQuestion extends Question {
 
   @JsonProperty(PROP_EQUIVALENCE_TYPE)
   public void setType(EquivalenceType x) {
-    this._type = x;
+    _type = x;
   }
 
   @Override

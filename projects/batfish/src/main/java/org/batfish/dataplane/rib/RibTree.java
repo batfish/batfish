@@ -172,6 +172,6 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
+    return (obj == this) || (obj instanceof RibTree && _root.equals(((RibTree<?>) obj)._root));
   }
 }

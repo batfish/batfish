@@ -115,7 +115,7 @@ public class TableMetadata {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass())
+    return MoreObjects.toStringHelper(getClass())
         .add(PROP_COLUMN_METADATA, _columnMetadata)
         .add(PROP_TEXT_DESC, _textDesc)
         .toString();

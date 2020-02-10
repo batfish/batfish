@@ -2591,7 +2591,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .map(
                   j -> {
                     ParseVendorConfigurationResult result =
-                        this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
+                        getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
                     batch.incrementAndGet();
                     return result;
                   })

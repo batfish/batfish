@@ -918,13 +918,13 @@ public final class Interface extends ComparableStructure<String> {
     }
     // we check ACLs for name match only -- full ACL diff can be done
     // elsewhere.
-    if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
+    if (!IpAccessList.bothNullOrSameName(getInboundFilter(), other.getInboundFilter())) {
       return false;
     }
-    if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(), other.getIncomingFilter())) {
+    if (!IpAccessList.bothNullOrSameName(getIncomingFilter(), other.getIncomingFilter())) {
       return false;
     }
-    if (this._interfaceType != other._interfaceType) {
+    if (_interfaceType != other._interfaceType) {
       return false;
     }
     if (!Objects.equals(_key, other._key)) {
@@ -950,7 +950,7 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     // TODO: check OSPF settings for equality.
-    if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
+    if (!IpAccessList.bothNullOrSameName(_outgoingFilter, other._outgoingFilter)) {
       return false;
     }
     if (!_proxyArp == other._proxyArp) {
@@ -962,18 +962,18 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_speed, other._speed)) {
       return false;
     }
-    if (!Objects.equals(this._switchportMode, other._switchportMode)) {
+    if (!Objects.equals(_switchportMode, other._switchportMode)) {
       return false;
     }
-    if (!Objects.equals(this._zoneName, other._zoneName)) {
-      return false;
-    }
-    if (!IpAccessList.bothNullOrSameName(
-        this._postTransformationIncomingFilter, other._postTransformationIncomingFilter)) {
+    if (!Objects.equals(_zoneName, other._zoneName)) {
       return false;
     }
     if (!IpAccessList.bothNullOrSameName(
-        this._preTransformationOutgoingFilter, other._preTransformationOutgoingFilter)) {
+        _postTransformationIncomingFilter, other._postTransformationIncomingFilter)) {
+      return false;
+    }
+    if (!IpAccessList.bothNullOrSameName(
+        _preTransformationOutgoingFilter, other._preTransformationOutgoingFilter)) {
       return false;
     }
     return true;

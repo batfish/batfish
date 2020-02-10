@@ -59,7 +59,7 @@ public enum HostSystemService {
 
   TraceElement getTraceElement() {
     return TraceElement.of(
-        String.format("Matched host-inbound-traffic system-service %s", this.toString()));
+        String.format("Matched host-inbound-traffic system-service %s", toString()));
   }
 
   private List<ExprAclLine> init() {

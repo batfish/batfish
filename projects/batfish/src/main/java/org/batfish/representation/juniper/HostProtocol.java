@@ -197,6 +197,6 @@ public enum HostProtocol {
             new MatchHeaderSpace(headerSpaceBuilder.build()),
             null,
             TraceElement.of(
-                String.format("Matched host-inbound-traffic protocol %s", this.toString()))));
+                String.format("Matched host-inbound-traffic protocol %s", toString()))));
   }
 }

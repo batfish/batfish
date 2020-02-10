@@ -872,134 +872,134 @@ final class Region implements Serializable {
     }
 
     public RegionBuilder setAddresses(Map<String, Address> addresses) {
-      this._addresses = addresses;
+      _addresses = addresses;
       return this;
     }
 
     public RegionBuilder setConfigurationSecurityGroups(
         Map<String, Set<SecurityGroup>> configurationSecurityGroups) {
-      this._configurationSecurityGroups = configurationSecurityGroups;
+      _configurationSecurityGroups = configurationSecurityGroups;
       return this;
     }
 
     public RegionBuilder setCustomerGateways(Map<String, CustomerGateway> customerGateways) {
-      this._customerGateways = customerGateways;
+      _customerGateways = customerGateways;
       return this;
     }
 
     public RegionBuilder setElasticsearchDomains(
         Map<String, ElasticsearchDomain> elasticsearchDomains) {
-      this._elasticsearchDomains = elasticsearchDomains;
+      _elasticsearchDomains = elasticsearchDomains;
       return this;
     }
 
     public RegionBuilder setInstances(Map<String, Instance> instances) {
-      this._instances = instances;
+      _instances = instances;
       return this;
     }
 
     public RegionBuilder setInternetGateways(Map<String, InternetGateway> internetGateways) {
-      this._internetGateways = internetGateways;
+      _internetGateways = internetGateways;
       return this;
     }
 
     public RegionBuilder setName(String name) {
-      this._name = name;
+      _name = name;
       return this;
     }
 
     public RegionBuilder setNatGateways(Map<String, NatGateway> natGateways) {
-      this._natGateways = natGateways;
+      _natGateways = natGateways;
       return this;
     }
 
     public RegionBuilder setNetworkAcls(Map<String, NetworkAcl> networkAcls) {
-      this._networkAcls = networkAcls;
+      _networkAcls = networkAcls;
       return this;
     }
 
     public RegionBuilder setNetworkInterfaces(Map<String, NetworkInterface> networkInterfaces) {
-      this._networkInterfaces = networkInterfaces;
+      _networkInterfaces = networkInterfaces;
       return this;
     }
 
     public RegionBuilder setPrefixLists(Map<String, PrefixList> prefixLists) {
-      this._prefixLists = prefixLists;
+      _prefixLists = prefixLists;
       return this;
     }
 
     public RegionBuilder setRdsInstances(Map<String, RdsInstance> rdsInstances) {
-      this._rdsInstances = rdsInstances;
+      _rdsInstances = rdsInstances;
       return this;
     }
 
     public RegionBuilder setRouteTables(Map<String, RouteTable> routeTables) {
-      this._routeTables = routeTables;
+      _routeTables = routeTables;
       return this;
     }
 
     public RegionBuilder setSecurityGroups(Map<String, SecurityGroup> securityGroups) {
-      this._securityGroups = securityGroups;
+      _securityGroups = securityGroups;
       return this;
     }
 
     public RegionBuilder setSubnets(Map<String, Subnet> subnets) {
-      this._subnets = subnets;
+      _subnets = subnets;
       return this;
     }
 
     public RegionBuilder setTransitGatewayAttachments(
         Map<String, TransitGatewayAttachment> transitGatewayAttachments) {
-      this._transitGatewayAttachments = transitGatewayAttachments;
+      _transitGatewayAttachments = transitGatewayAttachments;
       return this;
     }
 
     public RegionBuilder setTransitGatewayPropagations(
         Map<String, TransitGatewayPropagations> transitGatewayPropagations) {
-      this._transitGatewayPropagations = transitGatewayPropagations;
+      _transitGatewayPropagations = transitGatewayPropagations;
       return this;
     }
 
     public RegionBuilder setTransitGatewayRouteTables(
         Map<String, TransitGatewayRouteTable> transitGatewayRouteTables) {
-      this._transitGatewayRouteTables = transitGatewayRouteTables;
+      _transitGatewayRouteTables = transitGatewayRouteTables;
       return this;
     }
 
     public RegionBuilder setTransitGatewayStaticRoutes(
         Map<String, TransitGatewayStaticRoutes> transitGatewayStaticRoutes) {
-      this._transitGatewayStaticRoutes = transitGatewayStaticRoutes;
+      _transitGatewayStaticRoutes = transitGatewayStaticRoutes;
       return this;
     }
 
     public RegionBuilder setTransitGatewayVpcAttachments(
         Map<String, TransitGatewayVpcAttachment> transitGatewayVpcAttachments) {
-      this._transitGatewayVpcAttachments = transitGatewayVpcAttachments;
+      _transitGatewayVpcAttachments = transitGatewayVpcAttachments;
       return this;
     }
 
     public RegionBuilder setTransitGateways(Map<String, TransitGateway> transitGateways) {
-      this._transitGateways = transitGateways;
+      _transitGateways = transitGateways;
       return this;
     }
 
     public RegionBuilder setVpcPeerings(Map<String, VpcPeeringConnection> vpcPeerings) {
-      this._vpcPeerings = vpcPeerings;
+      _vpcPeerings = vpcPeerings;
       return this;
     }
 
     public RegionBuilder setVpcs(Map<String, Vpc> vpcs) {
-      this._vpcs = vpcs;
+      _vpcs = vpcs;
       return this;
     }
 
     public RegionBuilder setVpnConnections(Map<String, VpnConnection> vpnConnections) {
-      this._vpnConnections = vpnConnections;
+      _vpnConnections = vpnConnections;
       return this;
     }
 
     public RegionBuilder setVpnGateways(Map<String, VpnGateway> vpnGateways) {
-      this._vpnGateways = vpnGateways;
+      _vpnGateways = vpnGateways;
       return this;
     }
 

@@ -241,7 +241,7 @@ public enum JunosApplication implements Application {
   }
 
   private String convertToJuniperName() {
-    return this.name().toLowerCase().replace("_", "-");
+    return name().toLowerCase().replace("_", "-");
   }
 
   private BaseApplication init() {

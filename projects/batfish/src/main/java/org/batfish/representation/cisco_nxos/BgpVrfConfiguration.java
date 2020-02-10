@@ -20,15 +20,15 @@ import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration.Ty
 public final class BgpVrfConfiguration implements Serializable {
 
   public BgpVrfConfiguration() {
-    this._addressFamilies = new HashMap<>(); // all address families disabled by default
-    this._clusterId = null; // route reflection is disabled by default.
-    this._logNeighborChanges = false; // disabled by default
-    this._maxAsLimit = null; // default no limit
-    this._neighbors = new HashMap<>(); // no neighbors by default.
-    this._neighbors6 = new HashMap<>(); // no neighbors by default.
-    this._passiveNeighbors = new HashMap<>(); // no neighbors by default.
-    this._passiveNeighbors6 = new HashMap<>(); // no neighbors by default.
-    this._routerId = null; // use device's default router id unless overridden.
+    _addressFamilies = new HashMap<>(); // all address families disabled by default
+    _clusterId = null; // route reflection is disabled by default.
+    _logNeighborChanges = false; // disabled by default
+    _maxAsLimit = null; // default no limit
+    _neighbors = new HashMap<>(); // no neighbors by default.
+    _neighbors6 = new HashMap<>(); // no neighbors by default.
+    _passiveNeighbors = new HashMap<>(); // no neighbors by default.
+    _passiveNeighbors6 = new HashMap<>(); // no neighbors by default.
+    _routerId = null; // use device's default router id unless overridden.
   }
 
   @Nullable
@@ -95,7 +95,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathAlwaysCompareMed(boolean bestpathAlwaysCompareMed) {
-    this._bestpathAlwaysCompareMed = bestpathAlwaysCompareMed;
+    _bestpathAlwaysCompareMed = bestpathAlwaysCompareMed;
   }
 
   public boolean getBestpathAsPathMultipathRelax() {
@@ -103,7 +103,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathAsPathMultipathRelax(boolean bestpathAsPathMultipathRelax) {
-    this._bestpathAsPathMultipathRelax = bestpathAsPathMultipathRelax;
+    _bestpathAsPathMultipathRelax = bestpathAsPathMultipathRelax;
   }
 
   public boolean getBestpathCompareRouterId() {
@@ -111,7 +111,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathCompareRouterId(boolean bestpathCompareRouterId) {
-    this._bestpathCompareRouterId = bestpathCompareRouterId;
+    _bestpathCompareRouterId = bestpathCompareRouterId;
   }
 
   public boolean getBestpathCostCommunityIgnore() {
@@ -119,7 +119,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathCostCommunityIgnore(boolean bestpathCostCommunityIgnore) {
-    this._bestpathCostCommunityIgnore = bestpathCostCommunityIgnore;
+    _bestpathCostCommunityIgnore = bestpathCostCommunityIgnore;
   }
 
   public boolean getBestpathMedConfed() {
@@ -127,7 +127,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathMedConfed(boolean bestpathMedConfed) {
-    this._bestpathMedConfed = bestpathMedConfed;
+    _bestpathMedConfed = bestpathMedConfed;
   }
 
   public boolean getBestpathMedMissingAsWorst() {
@@ -135,7 +135,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathMedMissingAsWorst(boolean bestpathMedMissingAsWorst) {
-    this._bestpathMedMissingAsWorst = bestpathMedMissingAsWorst;
+    _bestpathMedMissingAsWorst = bestpathMedMissingAsWorst;
   }
 
   public boolean getBestpathMedNonDeterministic() {
@@ -143,7 +143,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setBestpathMedNonDeterministic(boolean bestpathMedNonDeterministic) {
-    this._bestpathMedNonDeterministic = bestpathMedNonDeterministic;
+    _bestpathMedNonDeterministic = bestpathMedNonDeterministic;
   }
 
   @Nullable
@@ -178,7 +178,7 @@ public final class BgpVrfConfiguration implements Serializable {
   }
 
   public void setMaxasLimit(@Nullable Integer maxAsLimit) {
-    this._maxAsLimit = maxAsLimit;
+    _maxAsLimit = maxAsLimit;
   }
 
   @Nullable

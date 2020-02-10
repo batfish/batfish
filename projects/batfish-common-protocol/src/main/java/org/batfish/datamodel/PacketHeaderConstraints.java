@@ -648,67 +648,67 @@ public class PacketHeaderConstraints {
     private Builder() {}
 
     public Builder setDscps(@Nullable IntegerSpace dscps) {
-      this._dscps = dscps;
+      _dscps = dscps;
       return this;
     }
 
     public Builder setEcns(@Nullable IntegerSpace ecns) {
-      this._ecns = ecns;
+      _ecns = ecns;
       return this;
     }
 
     public Builder setPacketLengths(@Nullable IntegerSpace packetLengths) {
-      this._packetLengths = packetLengths;
+      _packetLengths = packetLengths;
       return this;
     }
 
     public Builder setFragmentOffsets(@Nullable IntegerSpace fragmentOffsets) {
-      this._fragmentOffsets = fragmentOffsets;
+      _fragmentOffsets = fragmentOffsets;
       return this;
     }
 
     public Builder setIpProtocols(@Nullable Set<IpProtocol> ipProtocols) {
-      this._ipProtocols = ipProtocols;
+      _ipProtocols = ipProtocols;
       return this;
     }
 
     public Builder setSrcIp(@Nullable String srcIps) {
-      this._srcIps = srcIps;
+      _srcIps = srcIps;
       return this;
     }
 
     public Builder setDstIp(@Nullable String dstIps) {
-      this._dstIps = dstIps;
+      _dstIps = dstIps;
       return this;
     }
 
     public Builder setIcmpCodes(@Nullable IntegerSpace icmpCodes) {
-      this._icmpCodes = icmpCodes;
+      _icmpCodes = icmpCodes;
       return this;
     }
 
     public Builder setIcmpTypes(@Nullable IntegerSpace icmpTypes) {
-      this._icmpTypes = icmpTypes;
+      _icmpTypes = icmpTypes;
       return this;
     }
 
     public Builder setSrcPorts(@Nullable IntegerSpace srcPorts) {
-      this._srcPorts = srcPorts;
+      _srcPorts = srcPorts;
       return this;
     }
 
     public Builder setDstPorts(@Nullable IntegerSpace dstPorts) {
-      this._dstPorts = dstPorts;
+      _dstPorts = dstPorts;
       return this;
     }
 
     public Builder setApplications(@Nullable Set<Application> applications) {
-      this._applications = applications;
+      _applications = applications;
       return this;
     }
 
     public Builder setTcpFlags(@Nullable Set<TcpFlagsMatchConditions> tcpFlags) {
-      this._tcpFlags = tcpFlags;
+      _tcpFlags = tcpFlags;
       return this;
     }
 

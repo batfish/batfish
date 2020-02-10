@@ -27,7 +27,7 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
    */
   public BatfishParserATNSimulator(ParserATNSimulator parent) {
     super(parent.getParser(), parent.atn, parent.decisionToDFA, parent.getSharedContextCache());
-    this.setPredictionMode(parent.getPredictionMode());
+    setPredictionMode(parent.getPredictionMode());
     _parser = (BatfishParser) parser;
   }
 

@@ -416,37 +416,37 @@ final class Instance implements AwsVpcEntity, Serializable {
     private InstanceBuilder() {}
 
     public InstanceBuilder setInstanceId(String instanceId) {
-      this._instanceId = instanceId;
+      _instanceId = instanceId;
       return this;
     }
 
     public InstanceBuilder setNetworkInterfaces(List<String> networkInterfaces) {
-      this._networkInterfaces = networkInterfaces;
+      _networkInterfaces = networkInterfaces;
       return this;
     }
 
     public InstanceBuilder setSecurityGroups(List<String> securityGroups) {
-      this._securityGroups = securityGroups;
+      _securityGroups = securityGroups;
       return this;
     }
 
     public InstanceBuilder setStatus(Status status) {
-      this._status = status;
+      _status = status;
       return this;
     }
 
     public InstanceBuilder setSubnetId(String subnetId) {
-      this._subnetId = subnetId;
+      _subnetId = subnetId;
       return this;
     }
 
     public InstanceBuilder setTags(Map<String, String> tags) {
-      this._tags = tags;
+      _tags = tags;
       return this;
     }
 
     public InstanceBuilder setVpcId(String vpcId) {
-      this._vpcId = vpcId;
+      _vpcId = vpcId;
       return this;
     }
 

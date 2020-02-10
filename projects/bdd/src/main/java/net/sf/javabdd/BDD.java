@@ -150,7 +150,7 @@ public abstract class BDD {
    * @return the logical 'and' of two BDDs
    */
   public BDD and(BDD that) {
-    return this.apply(that, BDDFactory.and);
+    return apply(that, BDDFactory.and);
   }
 
   /**
@@ -162,7 +162,7 @@ public abstract class BDD {
    * @param that the BDD to 'and' with
    */
   public BDD andWith(BDD that) {
-    return this.applyWith(that, BDDFactory.and);
+    return applyWith(that, BDDFactory.and);
   }
 
   /**
@@ -184,7 +184,7 @@ public abstract class BDD {
    * @return the logical 'nand' of two BDDs
    */
   public BDD nand(BDD that) {
-    return this.apply(that, BDDFactory.nand);
+    return apply(that, BDDFactory.nand);
   }
 
   /**
@@ -196,7 +196,7 @@ public abstract class BDD {
    * @param that the BDD to 'nand' with
    */
   public BDD nandWith(BDD that) {
-    return this.applyWith(that, BDDFactory.nand);
+    return applyWith(that, BDDFactory.nand);
   }
 
   /**
@@ -209,7 +209,7 @@ public abstract class BDD {
    * @return the logical 'or' of two BDDs
    */
   public BDD or(BDD that) {
-    return this.apply(that, BDDFactory.or);
+    return apply(that, BDDFactory.or);
   }
 
   /**
@@ -221,7 +221,7 @@ public abstract class BDD {
    * @param that the BDD to 'or' with
    */
   public BDD orWith(BDD that) {
-    return this.applyWith(that, BDDFactory.or);
+    return applyWith(that, BDDFactory.or);
   }
 
   /**
@@ -234,7 +234,7 @@ public abstract class BDD {
    * @return the logical 'nor' of two BDDs
    */
   public BDD nor(BDD that) {
-    return this.apply(that, BDDFactory.nor);
+    return apply(that, BDDFactory.nor);
   }
 
   /**
@@ -246,7 +246,7 @@ public abstract class BDD {
    * @param that the BDD to 'nor' with
    */
   public BDD norWith(BDD that) {
-    return this.applyWith(that, BDDFactory.nor);
+    return applyWith(that, BDDFactory.nor);
   }
 
   /**
@@ -259,7 +259,7 @@ public abstract class BDD {
    * @return the logical 'xor' of two BDDs
    */
   public BDD xor(BDD that) {
-    return this.apply(that, BDDFactory.xor);
+    return apply(that, BDDFactory.xor);
   }
 
   /**
@@ -271,7 +271,7 @@ public abstract class BDD {
    * @param that the BDD to 'xor' with
    */
   public BDD xorWith(BDD that) {
-    return this.applyWith(that, BDDFactory.xor);
+    return applyWith(that, BDDFactory.xor);
   }
 
   /**
@@ -284,7 +284,7 @@ public abstract class BDD {
    * @return the logical 'implication' of two BDDs
    */
   public BDD imp(BDD that) {
-    return this.apply(that, BDDFactory.imp);
+    return apply(that, BDDFactory.imp);
   }
 
   /**
@@ -296,7 +296,7 @@ public abstract class BDD {
    * @param that the BDD to 'implication' with
    */
   public BDD impWith(BDD that) {
-    return this.applyWith(that, BDDFactory.imp);
+    return applyWith(that, BDDFactory.imp);
   }
 
   /**
@@ -309,7 +309,7 @@ public abstract class BDD {
    * @return the logical 'inverse implication' of two BDDs
    */
   public BDD invimp(BDD that) {
-    return this.apply(that, BDDFactory.invimp);
+    return apply(that, BDDFactory.invimp);
   }
 
   /**
@@ -322,7 +322,7 @@ public abstract class BDD {
    * @param that the BDD to 'inverse implication' with
    */
   public BDD invimpWith(BDD that) {
-    return this.applyWith(that, BDDFactory.invimp);
+    return applyWith(that, BDDFactory.invimp);
   }
 
   /**
@@ -335,7 +335,7 @@ public abstract class BDD {
    * @return the logical 'bi-implication' of two BDDs
    */
   public BDD biimp(BDD that) {
-    return this.apply(that, BDDFactory.biimp);
+    return apply(that, BDDFactory.biimp);
   }
 
   /**
@@ -347,7 +347,7 @@ public abstract class BDD {
    * @param that the BDD to 'bi-implication' with
    */
   public BDD biimpWith(BDD that) {
-    return this.applyWith(that, BDDFactory.biimp);
+    return applyWith(that, BDDFactory.biimp);
   }
 
   /**
@@ -358,7 +358,7 @@ public abstract class BDD {
    * @return the logical 'difference' of two BDDs
    */
   public BDD diff(BDD that) {
-    return this.apply(that, BDDFactory.diff);
+    return apply(that, BDDFactory.diff);
   }
 
   /**
@@ -370,7 +370,7 @@ public abstract class BDD {
    * @return the logical 'difference' of two BDDs
    */
   public BDD diffWith(BDD that) {
-    return this.applyWith(that, BDDFactory.diff);
+    return applyWith(that, BDDFactory.diff);
   }
 
   /**
@@ -401,7 +401,7 @@ public abstract class BDD {
    * @return the logical 'less-than' of two BDDs
    */
   public BDD less(BDD that) {
-    return this.apply(that, BDDFactory.less);
+    return apply(that, BDDFactory.less);
   }
 
   /**
@@ -413,7 +413,7 @@ public abstract class BDD {
    * @return the logical 'less-than' of two BDDs
    */
   public BDD lessWith(BDD that) {
-    return this.applyWith(that, BDDFactory.less);
+    return applyWith(that, BDDFactory.less);
   }
 
   /**
@@ -798,7 +798,7 @@ public abstract class BDD {
     }
 
     int num = 0;
-    BDD n = this.id();
+    BDD n = id();
     do {
       num++;
       BDD n2 = n.high();
@@ -809,7 +809,7 @@ public abstract class BDD {
     int[] varset = new int[num];
 
     num = 0;
-    n = this.id();
+    n = id();
     do {
       varset[num++] = n.var();
       BDD n2 = n.high();
@@ -834,7 +834,7 @@ public abstract class BDD {
     int fn;
     int num, n, m, i;
 
-    fv = this.scanSet();
+    fv = scanSet();
     if (fv == null) {
       return null;
     }
@@ -884,10 +884,10 @@ public abstract class BDD {
    * @return one satisfying assignment for that domain
    */
   public BigInteger scanVar(BDDDomain d) {
-    if (this.isZero()) {
+    if (isZero()) {
       return BigInteger.valueOf(-1);
     }
-    BigInteger[] allvar = this.scanAllVar();
+    BigInteger[] allvar = scanAllVar();
     BigInteger res = allvar[d.getIndex()];
     return res;
   }
@@ -906,7 +906,7 @@ public abstract class BDD {
     boolean[] store;
     BigInteger[] res;
 
-    if (this.isZero()) {
+    if (isZero()) {
       return null;
     }
 
@@ -915,7 +915,7 @@ public abstract class BDD {
     int bddvarnum = factory.varNum();
     store = new boolean[bddvarnum];
 
-    BDD p = this.id();
+    BDD p = id();
     while (!p.isOne() && !p.isZero()) {
       BDD lo = p.low();
       if (!lo.isZero()) {
@@ -1329,7 +1329,7 @@ public abstract class BDD {
    * <p>Compare to bdd_printset.
    */
   public void printSet() {
-    System.out.println(this.toString());
+    System.out.println(toString());
   }
 
   /**
@@ -1372,7 +1372,7 @@ public abstract class BDD {
       PrintStream out, int current, boolean[] visited, HashMap<BDD, Integer> map) {
     Integer ri = map.get(this);
     if (ri == null) {
-      map.put(this.id(), ri = ++current);
+      map.put(id(), ri = ++current);
     }
     int r = ri;
     if (visited[r]) {
@@ -1381,9 +1381,9 @@ public abstract class BDD {
     visited[r] = true;
 
     // TODO: support labelling of vars.
-    out.println(r + " [label=\"" + this.var() + "\"];");
+    out.println(r + " [label=\"" + var() + "\"];");
 
-    BDD l = this.low(), h = this.high();
+    BDD l = low(), h = high();
     Integer li = map.get(l);
     if (li == null) {
       map.put(l.id(), li = ++current);
@@ -1508,7 +1508,7 @@ public abstract class BDD {
     if (!(o instanceof BDD)) {
       return false;
     }
-    return this.equals((BDD) o);
+    return equals((BDD) o);
   }
 
   @Override
@@ -1516,7 +1516,7 @@ public abstract class BDD {
 
   @Override
   public String toString() {
-    BDDFactory f = this.getFactory();
+    BDDFactory f = getFactory();
     int[] set = new int[f.varNum()];
     StringBuffer sb = new StringBuffer();
     bdd_printset_rec(f, sb, this, set);
@@ -1577,10 +1577,10 @@ public abstract class BDD {
    * @return string representation of this BDD using the given BDDToString converter
    */
   public String toStringWithDomains(BDDToString ts) {
-    if (this.isZero()) {
+    if (isZero()) {
       return "F";
     }
-    if (this.isOne()) {
+    if (isOne()) {
       return "T";
     }
 
@@ -1604,7 +1604,7 @@ public abstract class BDD {
     OutputBuffer(BDDToString ts, StringBuffer sb, int domain) {
       this.ts = ts;
       this.sb = sb;
-      this.lastHigh = MINUS2;
+      lastHigh = MINUS2;
       this.domain = domain;
     }
 
