@@ -177,7 +177,6 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     forbidHeaderSpaceField("notIpProtocols", headerSpace.getNotIpProtocols());
     forbidHeaderSpaceField("srcOrDstIps", headerSpace.getSrcOrDstIps());
     forbidHeaderSpaceField("srcOrDstPorts", headerSpace.getSrcOrDstPorts());
-    forbidHeaderSpaceField("srcOrDstProtocols", headerSpace.getSrcOrDstProtocols());
 
     BoolExpr expr =
         _boolExprOps.and(

@@ -117,8 +117,6 @@ public final class ReturnFlowTransformation {
               .setDstIps(forwardHeaderSpace.getSrcIps())
               .setSrcPorts(forwardHeaderSpace.getDstPorts())
               .setDstPorts(forwardHeaderSpace.getSrcPorts())
-              .setSrcProtocols(forwardHeaderSpace.getDstProtocols())
-              .setDstProtocols(forwardHeaderSpace.getSrcProtocols())
               .setNotSrcIps(forwardHeaderSpace.getNotDstIps())
               .setNotDstIps(forwardHeaderSpace.getNotSrcIps())
               .setNotSrcPorts(forwardHeaderSpace.getNotDstPorts())
