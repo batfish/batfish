@@ -8,6 +8,7 @@ import static org.batfish.datamodel.PacketHeaderConstraints.areProtocolsAndPorts
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidDscp;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidEcn;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidIcmpTypeOrCode;
+import static org.batfish.datamodel.PacketHeaderConstraints.parseApplicationJsonToString;
 import static org.batfish.datamodel.PacketHeaderConstraints.parseApplications;
 import static org.batfish.datamodel.PacketHeaderConstraints.parseIpProtocols;
 import static org.batfish.datamodel.PacketHeaderConstraints.resolveIpProtocols;
@@ -251,18 +252,12 @@ public class PacketHeaderConstraintsTest {
   public void testValidation() {
     PacketHeaderConstraints constraints;
     // concrete resolution
-    constraints =
-        PacketHeaderConstraints.builder()
-            .setApplications(ImmutableSet.of(SSH.toApplication()))
-            .build();
+    constraints = PacketHeaderConstraints.builder().setApplications("ssh").build();
     assertThat(constraints.resolveIpProtocols(), equalTo(ImmutableSet.of(TCP)));
     assertThat(constraints.resolveDstPorts(), equalTo(IntegerSpace.of(SubRange.singleton(22))));
 
     // Headerspace-like resolution
-    constraints =
-        PacketHeaderConstraints.builder()
-            .setApplications(ImmutableSet.of(SSH.toApplication(), HTTP.toApplication()))
-            .build();
+    constraints = PacketHeaderConstraints.builder().setApplications("ssh, http").build();
     assertThat(constraints.resolveIpProtocols(), equalTo(ImmutableSet.of(TCP)));
     assertThat(
         constraints.resolveDstPorts(),
@@ -306,7 +301,7 @@ public class PacketHeaderConstraintsTest {
     PacketHeaderConstraints.builder()
         .setIpProtocols(ImmutableSet.of(TCP))
         .setDstPorts(IntegerSpace.of(new SubRange(30, 40)))
-        .setApplications(ImmutableSet.of(SSH.toApplication()))
+        .setApplications("ssh")
         .build();
   }
 
@@ -365,7 +360,7 @@ public class PacketHeaderConstraintsTest {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP, TCP))
-        .setApplications(ImmutableSet.of(DNS.toApplication()))
+        .setApplications("dns")
         .build();
   }
 
@@ -374,7 +369,7 @@ public class PacketHeaderConstraintsTest {
     // Reject empty port intersections
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
-        .setApplications(ImmutableSet.of(DNS.toApplication()))
+        .setApplications("dns")
         .setDstPorts(IntegerSpace.of(new SubRange(1, 2)))
         .build();
   }
@@ -400,12 +395,14 @@ public class PacketHeaderConstraintsTest {
     // this is what we expect via pybatfish
     assertThat(
         parseApplications(
-            BatfishObjectMapper.mapper().readValue("[\"SSH\", \"TELNET\"]", JsonNode.class)),
+            parseApplicationJsonToString(
+                BatfishObjectMapper.mapper().readValue("[\"SSH\", \"TELNET\"]", JsonNode.class))),
         equalTo(expected));
     // some lazy clients may send a string like this
     assertThat(
         parseApplications(
-            BatfishObjectMapper.mapper().readValue("\"SSH, TELNET\"", JsonNode.class)),
+            parseApplicationJsonToString(
+                BatfishObjectMapper.mapper().readValue("\"SSH, TELNET\"", JsonNode.class))),
         equalTo(expected));
   }
 
@@ -413,7 +410,9 @@ public class PacketHeaderConstraintsTest {
   public void testParseApplicationsQuotesInString() throws IOException {
     thrown.expect(IllegalArgumentException.class);
     // quoted values in a non-json list
-    parseApplications(BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class));
+    parseApplications(
+        parseApplicationJsonToString(
+            BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class)));
   }
 
   @Test

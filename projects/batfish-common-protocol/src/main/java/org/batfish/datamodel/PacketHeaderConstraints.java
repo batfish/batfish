@@ -75,7 +75,7 @@ public class PacketHeaderConstraints {
   @Nullable private final IntegerSpace _dstPorts;
 
   // Shorthands for UDP/TCP fields
-  @Nullable private final Set<Application> _applications;
+  @Nullable private final String _applications;
   @Nullable private final Set<TcpFlagsMatchConditions> _tcpFlags;
 
   @VisibleForTesting
@@ -121,7 +121,7 @@ public class PacketHeaderConstraints {
         processBuilder(icmpTypes, VALID_ICMP_CODE_TYPE),
         processBuilder(srcPorts, IntegerSpace.PORTS),
         processBuilder(dstPorts, IntegerSpace.PORTS),
-        parseApplications(applications),
+        parseApplicationJsonToString(applications),
         tcpFlags);
   }
 
@@ -137,7 +137,7 @@ public class PacketHeaderConstraints {
       @Nullable IntegerSpace icmpType,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts,
-      @Nullable Set<Application> applications,
+      @Nullable String applications,
       @Nullable Set<TcpFlagsMatchConditions> tcpFlags) {
     _dscps = dscps;
     _ecns = ecns;
@@ -156,30 +156,42 @@ public class PacketHeaderConstraints {
   }
 
   /**
-   * Applications can be specified either as 1) a string like "ssh, telnet"; or 2) a (Json) list of
-   * strings like ["ssh", "telnet"]
+   * Applications can be specified as one or a list of terms. Each term can be either a named
+   * application such as "ssh", or a protocol name followed optionally by a list of
+   * protocol-specific parameters. For TCP/UDP, those parameters are a list of ports or port ranges,
+   * so one can specify "ssh" as "tcp/22". For ICMP, those parameters are ICMP types and codes,
+   * e.g., both "icmp/echo-request" specifies ICMP echo request, "icmp/1" defines ICMP wity type 1,
+   * and "icmp/1/1" defines ICMP type 1 and code 1.
    */
   @VisibleForTesting
-  static Set<Application> parseApplications(JsonNode applications) {
-    String input = "";
-    if (applications == null || applications.isNull()) {
+  static Set<Application> parseApplications(@Nullable String input) {
+    if (input == null) {
       return null;
-    } else if (applications.isTextual()) {
-      input = applications.asText();
-    } else if (applications.isArray()) {
-      input =
-          Streams.stream(applications.elements())
-              .map(JsonNode::textValue)
-              .collect(Collectors.joining(","));
-    } else {
-      throw new IllegalArgumentException(
-          String.format(
-              "Application specifier should be a string or a list of strings. Got: %s",
-              applications));
     }
 
     return SpecifierFactories.getApplicationSpecifier(input, SpecifierFactories.ACTIVE_VERSION)
         .resolve();
+  }
+
+  @Nullable
+  static String parseApplicationJsonToString(JsonNode applications) {
+    if (applications == null || applications.isNull()) {
+      return null;
+    }
+
+    if (applications.isTextual()) {
+      return applications.asText();
+    }
+    if (applications.isArray()) {
+      return Streams.stream(applications.elements())
+          .map(JsonNode::textValue)
+          .collect(Collectors.joining(","));
+    }
+
+    throw new IllegalArgumentException(
+        String.format(
+            "Application specifier should be a string or a list of strings. Got: %s",
+            applications));
   }
 
   /**
@@ -268,17 +280,6 @@ public class PacketHeaderConstraints {
         _ipProtocols.stream().map(IpProtocol::toString).collect(ImmutableSet.toImmutableSet()));
   }
 
-  @JsonProperty(PROP_APPLICATIONS)
-  @Nullable
-  private String getApplicationsString() {
-    if (_applications == null) {
-      return null;
-    }
-    return String.join(
-        ",",
-        _applications.stream().map(Application::toString).collect(ImmutableSet.toImmutableSet()));
-  }
-
   @Nullable
   @JsonProperty(PROP_SRC_IPS)
   public String getSrcIps() {
@@ -315,9 +316,14 @@ public class PacketHeaderConstraints {
     return _dstPorts;
   }
 
+  @JsonProperty(PROP_APPLICATIONS)
   @Nullable
-  public Set<Application> getApplications() {
+  public String getApplicationsString() {
     return _applications;
+  }
+
+  public Set<Application> getApplications() {
+    return parseApplications(_applications);
   }
 
   @Nullable
@@ -652,7 +658,7 @@ public class PacketHeaderConstraints {
     private @Nullable IntegerSpace _srcPorts;
     private @Nullable IntegerSpace _dstPorts;
     // Shorthands for UDP/TCP fields
-    private @Nullable Set<Application> _applications;
+    private @Nullable String _applications;
     private @Nullable Set<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {}
@@ -712,7 +718,7 @@ public class PacketHeaderConstraints {
       return this;
     }
 
-    public Builder setApplications(@Nullable Set<Application> applications) {
+    public Builder setApplications(@Nullable String applications) {
       _applications = applications;
       return this;
     }
