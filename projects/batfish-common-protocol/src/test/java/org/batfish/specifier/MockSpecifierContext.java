@@ -86,6 +86,11 @@ public class MockSpecifierContext implements SpecifierContext {
   }
 
   @Override
+  public Map<Location, LocationInfo> getLocationInfo() {
+    return _locationInfo;
+  }
+
+  @Override
   public Optional<ReferenceBook> getReferenceBook(String bookName) {
     return _referenceBooks.stream().filter(book -> book.getName().equals(bookName)).findAny();
   }
