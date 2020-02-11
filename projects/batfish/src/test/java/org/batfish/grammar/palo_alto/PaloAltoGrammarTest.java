@@ -272,7 +272,6 @@ public final class PaloAltoGrammarTest {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    settings.setDisableUnrecognized(false);
     Warnings w = new Warnings();
     BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false);
     Flattener flattener =
