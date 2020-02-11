@@ -1,8 +1,11 @@
 package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.AclIpSpace.difference;
 import static org.batfish.datamodel.Prefix.HOST_SUBNET_MAX_PREFIX_LENGTH;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
@@ -10,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
@@ -58,48 +62,87 @@ public final class LocationInfoUtils {
 
     Map<String, Map<String, IpSpace>> interfaceOwnedIps = ipOwners.getInterfaceOwnedIpSpaces();
     Map<String, Map<String, IpSpace>> activeInterfaceHostIps = ipOwners.getActiveInterfaceHostIps();
+    return computeLocationInfo(
+        snapshotDeviceOwnedIps, interfaceOwnedIps, activeInterfaceHostIps, configs);
+  }
+
+  @VisibleForTesting
+  static Map<Location, LocationInfo> computeLocationInfo(
+      IpSpace snapshotDeviceOwnedIps,
+      Map<String, Map<String, IpSpace>> interfaceOwnedIps,
+      Map<String, Map<String, IpSpace>> activeInterfaceHostIps,
+      Map<String, Configuration> configs) {
 
     return configs.values().stream()
-        .flatMap(config -> config.getAllInterfaces().values().stream())
         .flatMap(
-            iface -> {
-              String hostname = iface.getOwner().getHostname();
-              String ifaceName = iface.getName();
+            config -> {
+              Map<Location, LocationInfo> locationInfo =
+                  firstNonNull(config.getLocationInfo(), ImmutableMap.of());
+              return config.getAllInterfaces().values().stream()
+                  .flatMap(
+                      iface -> {
+                        String hostname = iface.getOwner().getHostname();
+                        String ifaceName = iface.getName();
 
-              Location ifaceLocation = new InterfaceLocation(hostname, ifaceName);
-              Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
+                        Location ifaceLocation = new InterfaceLocation(hostname, ifaceName);
+                        Location linkLocation = new InterfaceLinkLocation(hostname, ifaceName);
 
-              if (!iface.getActive()) {
-                LocationInfo info =
-                    new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
-                return Stream.of(
-                    Maps.immutableEntry(ifaceLocation, info),
-                    Maps.immutableEntry(linkLocation, info));
-              }
+                        if (!iface.getActive()) {
+                          LocationInfo info =
+                              new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
+                          return Stream.of(
+                              Maps.immutableEntry(ifaceLocation, info),
+                              Maps.immutableEntry(linkLocation, info));
+                        }
 
-              LocationInfo ifaceLocationInfo =
-                  new LocationInfo(
-                      true,
-                      interfaceOwnedIps
-                          .getOrDefault(hostname, ImmutableMap.of())
-                          .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE),
-                      EmptyIpSpace.INSTANCE);
-
-              /* TODO this is very similar to but slightly different than activeInterfaceHostIps.
-               * double-check whether that subtle difference is important, or if we can consolidate.
-               */
-              LocationInfo linkLocationInfo =
-                  new LocationInfo(
-                      true,
-                      firstNonNull(
-                          AclIpSpace.difference(connectedSubnetIps(iface), snapshotDeviceOwnedIps),
-                          EmptyIpSpace.INSTANCE),
-                      activeInterfaceHostIps.get(hostname).get(ifaceName));
-
-              return Stream.of(
-                  Maps.immutableEntry(ifaceLocation, ifaceLocationInfo),
-                  Maps.immutableEntry(linkLocation, linkLocationInfo));
+                        return Stream.of(
+                            Maps.immutableEntry(
+                                ifaceLocation,
+                                getInterfaceLocationInfo(
+                                    locationInfo.get(ifaceLocation),
+                                    interfaceOwnedIps
+                                        .getOrDefault(hostname, ImmutableMap.of())
+                                        .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE))),
+                            Maps.immutableEntry(
+                                linkLocation,
+                                getInterfaceLinkLocationInfo(
+                                    locationInfo.get(linkLocation),
+                                    iface,
+                                    activeInterfaceHostIps
+                                        .getOrDefault(hostname, ImmutableMap.of())
+                                        .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE),
+                                    snapshotDeviceOwnedIps)));
+                      });
             })
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
+  private static LocationInfo getInterfaceLocationInfo(
+      @Nullable LocationInfo vendorLocationInfo, IpSpace interfaceOwnedIps) {
+    return firstNonNull(
+        vendorLocationInfo, new LocationInfo(true, interfaceOwnedIps, EmptyIpSpace.INSTANCE));
+  }
+
+  private static LocationInfo getInterfaceLinkLocationInfo(
+      @Nullable LocationInfo vendorLocationInfo,
+      Interface iface,
+      IpSpace activeInterfaceHostIps,
+      IpSpace snapshotOwnedIps) {
+    if (vendorLocationInfo != null) {
+      return subtractSnapshotOwnedIpsFromSourceIps(vendorLocationInfo, snapshotOwnedIps);
+    }
+    return new LocationInfo(
+        true,
+        firstNonNull(
+            difference(connectedSubnetIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
+        activeInterfaceHostIps);
+  }
+
+  private static LocationInfo subtractSnapshotOwnedIpsFromSourceIps(
+      LocationInfo locationInfo, IpSpace snapshotOwnedIps) {
+    return new LocationInfo(
+        locationInfo.isSource(),
+        checkNotNull(difference(locationInfo.getSourceIps(), snapshotOwnedIps)),
+        locationInfo.getArpIps());
   }
 }

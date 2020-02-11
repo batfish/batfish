@@ -1,9 +1,12 @@
 package org.batfish.specifier;
 
+import java.io.Serializable;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IpSpace;
 
 /** Information about whether/how to treat a location as a source or sink of traffic. */
-public final class LocationInfo {
+public final class LocationInfo implements Serializable {
   private final boolean _isSource;
   private final IpSpace _sourceIps;
   private final IpSpace _arpIps;
@@ -12,6 +15,25 @@ public final class LocationInfo {
     _isSource = isSource;
     _sourceIps = sourceIps;
     _arpIps = arpIps;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof LocationInfo)) {
+      return false;
+    }
+    LocationInfo other = (LocationInfo) o;
+    return _isSource == other._isSource
+        && _sourceIps.equals(other._sourceIps)
+        && _arpIps.equals(other._arpIps);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_isSource, _sourceIps, _arpIps);
   }
 
   /**
