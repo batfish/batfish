@@ -268,6 +268,17 @@ public class PacketHeaderConstraints {
         _ipProtocols.stream().map(IpProtocol::toString).collect(ImmutableSet.toImmutableSet()));
   }
 
+  @JsonProperty(PROP_APPLICATIONS)
+  @Nullable
+  private String getApplicationsString() {
+    if (_applications == null) {
+      return null;
+    }
+    return String.join(
+        ",",
+        _applications.stream().map(Application::toString).collect(ImmutableSet.toImmutableSet()));
+  }
+
   @Nullable
   @JsonProperty(PROP_SRC_IPS)
   public String getSrcIps() {
@@ -305,7 +316,6 @@ public class PacketHeaderConstraints {
   }
 
   @Nullable
-  @JsonProperty(PROP_APPLICATIONS)
   public Set<Application> getApplications() {
     return _applications;
   }
