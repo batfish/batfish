@@ -62,12 +62,11 @@ final class Utils {
   }
 
   static Configuration newAwsConfiguration(String name, String domainName) {
-    return newAwsConfiguration(name, domainName, Collections.emptyMap());
+    return newAwsConfiguration(name, domainName, Collections.emptyMap(), null);
   }
 
-  static Configuration newAwsConfiguration(
-      String name, String domainName, Map<String, String> tags) {
-    return newAwsConfiguration(name, domainName, tags, null);
+  static Configuration newAwsConfiguration(String name, String domainName, DeviceModel model) {
+    return newAwsConfiguration(name, domainName, Collections.emptyMap(), model);
   }
 
   static Configuration newAwsConfiguration(

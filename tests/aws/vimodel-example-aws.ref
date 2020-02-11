@@ -5937,6 +5937,7 @@
         "name" : "vpc-815775e7",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "vendorFamily" : {
@@ -5967,6 +5968,7 @@
         "name" : "vpc-925131f4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -6061,6 +6063,7 @@
         "name" : "vpc-b390fad5",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -6248,6 +6251,7 @@
         "name" : "vpc-f8fad69d",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
