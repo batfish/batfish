@@ -272,6 +272,7 @@ public final class PaloAltoGrammarTest {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
+    settings.setDisableUnrecognized(false);
     Warnings w = new Warnings();
     BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false);
     Flattener flattener =
@@ -1624,6 +1625,12 @@ public final class PaloAltoGrammarTest {
             acceptedByZoneSecurity, ifaceName, c.getIpAccessLists(), ImmutableMap.of());
     assertThat(acceptedByZoneSecurityResult.getAction(), equalTo(LineAction.PERMIT));
     assertThat(acceptedByZoneSecurityResult.getMatchLine(), lessThan(lastLineIndex));
+  }
+
+  @Test
+  public void testShowConfig() {
+    PaloAltoConfiguration vc = parseNestedConfig("show-config");
+    assertThat(vc.getHostname(), equalTo("show-config-custom-hostname"));
   }
 
   @Test
