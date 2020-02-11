@@ -24,6 +24,11 @@ public class TestSpecifierContext implements SpecifierContext {
   }
 
   @Override
+  public Map<Location, LocationInfo> getLocationInfo() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Optional<ReferenceBook> getReferenceBook(String bookName) {
     throw new UnsupportedOperationException();
   }

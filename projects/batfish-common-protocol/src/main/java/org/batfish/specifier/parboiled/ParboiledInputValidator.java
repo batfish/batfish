@@ -94,6 +94,11 @@ public final class ParboiledInputValidator {
     public LocationInfo getLocationInfo(Location location) {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Map<Location, LocationInfo> getLocationInfo() {
+      throw new UnsupportedOperationException();
+    }
   }
 
   ParboiledInputValidator(
