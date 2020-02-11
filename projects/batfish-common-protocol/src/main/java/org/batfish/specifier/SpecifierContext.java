@@ -32,5 +32,4 @@ public interface SpecifierContext {
 
   /** @return the {@link LocationInfo} for all {@link Location locations}. */
   Map<Location, LocationInfo> getLocationInfo();
-
 }
