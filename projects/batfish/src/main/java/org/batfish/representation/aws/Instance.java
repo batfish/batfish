@@ -287,8 +287,7 @@ final class Instance implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    String name = _tags.getOrDefault("Name", _instanceId);
-    Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
+    Configuration cfgNode = Utils.newAwsConfiguration(_instanceId, "aws", _tags);
 
     for (String interfaceId : _networkInterfaces) {
 

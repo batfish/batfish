@@ -3,23 +3,27 @@ package org.batfish.question.specifiers;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -91,31 +95,31 @@ public class SpecifiersReachabilityQuestionTest {
                 .build()));
   }
 
-  //  @Test
-  //  public void testApplicationsSpecification() {
-  //    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
-  //    SpecifiersReachabilityQuestion question =
-  //        SpecifiersReachabilityQuestion.builder()
-  //            .setHeaderConstraints(
-  //                PacketHeaderConstraints.builder().setApplications(applications).build())
-  //            .build();
-  //
-  //    HeaderSpace headerSpace = question.getHeaderSpace();
-  //    assertThat(headerSpace.getDstProtocols(), equalTo(applications));
-  //  }
+  @Test
+  public void testApplicationsSpecification() {
+    SpecifiersReachabilityQuestion question =
+        SpecifiersReachabilityQuestion.builder()
+            .setHeaderConstraints(PacketHeaderConstraints.builder().setApplications("dns").build())
+            .build();
+
+    AclLineMatchExpr headerSpace = question.getHeaderSpace();
+    assertEquals(
+        headerSpace,
+        match(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.UDP)
+                .setDstPorts(SubRange.singleton(53))
+                .build()));
+  }
 
   @Test
   public void testInvalidApplicationsSpecification() {
-    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
     IntegerSpace dstPorts = IntegerSpace.of(new SubRange(1, 2));
 
     exception.expect(IllegalArgumentException.class);
     SpecifiersReachabilityQuestion.builder()
         .setHeaderConstraints(
-            PacketHeaderConstraints.builder()
-                .setDstPorts(dstPorts)
-                .setApplications(applications)
-                .build())
+            PacketHeaderConstraints.builder().setDstPorts(dstPorts).setApplications("dns").build())
         .build();
   }
 
