@@ -21,7 +21,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -98,11 +97,9 @@ public class SpecifiersReachabilityQuestionTest {
 
   @Test
   public void testApplicationsSpecification() {
-    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
-            .setHeaderConstraints(
-                PacketHeaderConstraints.builder().setApplications(applications).build())
+            .setHeaderConstraints(PacketHeaderConstraints.builder().setApplications("dns").build())
             .build();
 
     AclLineMatchExpr headerSpace = question.getHeaderSpace();
@@ -117,16 +114,12 @@ public class SpecifiersReachabilityQuestionTest {
 
   @Test
   public void testInvalidApplicationsSpecification() {
-    ImmutableSortedSet<Protocol> applications = ImmutableSortedSet.of(Protocol.DNS);
     IntegerSpace dstPorts = IntegerSpace.of(new SubRange(1, 2));
 
     exception.expect(IllegalArgumentException.class);
     SpecifiersReachabilityQuestion.builder()
         .setHeaderConstraints(
-            PacketHeaderConstraints.builder()
-                .setDstPorts(dstPorts)
-                .setApplications(applications)
-                .build())
+            PacketHeaderConstraints.builder().setDstPorts(dstPorts).setApplications("dns").build())
         .build();
   }
 

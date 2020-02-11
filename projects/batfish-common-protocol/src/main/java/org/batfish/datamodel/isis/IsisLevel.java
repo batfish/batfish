@@ -8,7 +8,7 @@ public enum IsisLevel {
   LEVEL_2;
 
   public boolean includes(@Nullable IsisLevel other) {
-    return this.equals(union(this, other));
+    return equals(union(this, other));
   }
 
   @Nullable

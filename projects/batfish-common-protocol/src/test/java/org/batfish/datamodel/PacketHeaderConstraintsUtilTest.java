@@ -75,9 +75,7 @@ public class PacketHeaderConstraintsUtilTest {
     BDD ssh = packet.getIpProtocol().value(IpProtocol.TCP).and(packet.getDstPort().value(22));
     BDD dns = packet.getIpProtocol().value(IpProtocol.UDP).and(packet.getDstPort().value(53));
     PacketHeaderConstraints phc =
-        PacketHeaderConstraints.builder()
-            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
-            .build();
+        PacketHeaderConstraints.builder().setApplications("ssh, dns").build();
     assertThat(
         PacketHeaderConstraintsUtil.toBDD(
             packet, phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
@@ -237,7 +235,7 @@ public class PacketHeaderConstraintsUtilTest {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
-            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
+            .setApplications("ssh, dns")
             .build();
     assertEquals(
         toAclLineMatchExpr(phc, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),

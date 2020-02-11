@@ -1627,6 +1627,12 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testShowConfig() {
+    PaloAltoConfiguration vc = parseNestedConfig("show-config");
+    assertThat(vc.getHostname(), equalTo("show-config-custom-hostname"));
+  }
+
+  @Test
   public void testIntrazoneFilterTraceElements() {
     String hostname = "security-no-explicit-match";
     Configuration c = parseConfig(hostname);

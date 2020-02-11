@@ -161,7 +161,7 @@ public class Encoder {
       _solver = solver;
     }
 
-    _symbolicFailures = new SymbolicFailures(this._ctx);
+    _symbolicFailures = new SymbolicFailures(_ctx);
 
     if (vars == null) {
       _allVariables = new HashMap<>();
@@ -895,7 +895,7 @@ public class Encoder {
   }
 
   public void setQuestion(HeaderQuestion question) {
-    this._question = question;
+    _question = question;
   }
 
   public BitVecExpr mkBV(long val, int size) {

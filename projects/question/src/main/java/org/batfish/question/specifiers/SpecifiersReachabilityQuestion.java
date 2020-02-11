@@ -10,8 +10,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.TracePruner;
-import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.PathConstraints;

@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Interface;
 
 /**
  * Identifies a single location in the network -- an VRF, an interface, the link of an interface,
@@ -14,4 +15,12 @@ public interface Location {
 
   @Nonnull
   String getNodeName();
+
+  static InterfaceLocation interfaceLocation(Interface iface) {
+    return new InterfaceLocation(iface.getOwner().getHostname(), iface.getName());
+  }
+
+  static InterfaceLinkLocation interfaceLinkLocation(Interface iface) {
+    return new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName());
+  }
 }

@@ -39,6 +39,6 @@ final class OperatorAstNode implements AstNode {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass()).add("operator", _operator).toString();
+    return MoreObjects.toStringHelper(getClass()).add("operator", _operator).toString();
   }
 }

@@ -118,7 +118,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   @Override
   public String toString() {
-    return this.getClass().getSimpleName()
+    return getClass().getSimpleName()
         + "<"
         + _network
         + ",nhip:"

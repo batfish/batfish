@@ -266,7 +266,7 @@ public class BgpGroup implements Serializable {
   }
 
   public void setDynamic(boolean dynamic) {
-    this._dynamic = dynamic;
+    _dynamic = dynamic;
   }
 
   public void setEbgpMultihop(boolean ebgpMultihop) {

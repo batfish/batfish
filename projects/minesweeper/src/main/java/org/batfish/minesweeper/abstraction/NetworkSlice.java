@@ -29,9 +29,9 @@ public class NetworkSlice {
 
   public NetworkSlice(
       HeaderSpace headerSpace, @Nullable Abstraction abstraction, boolean isDefaultCase) {
-    this._headerSpace = headerSpace;
-    this._abstraction = abstraction;
-    this._isDefaultCase = isDefaultCase;
+    _headerSpace = headerSpace;
+    _abstraction = abstraction;
+    _isDefaultCase = isDefaultCase;
   }
 
   public static List<Supplier<NetworkSlice>> allSlices(

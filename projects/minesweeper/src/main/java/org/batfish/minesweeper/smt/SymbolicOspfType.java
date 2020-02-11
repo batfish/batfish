@@ -23,7 +23,7 @@ class SymbolicOspfType extends SymbolicEnum<OspfType> {
   }
 
   BoolExpr isInternal() {
-    if (this._bitvec == null) {
+    if (_bitvec == null) {
       return _enc.mkTrue();
     }
     return _enc.getCtx().mkBVULE(_bitvec, _enc.getCtx().mkBV(1, 2));

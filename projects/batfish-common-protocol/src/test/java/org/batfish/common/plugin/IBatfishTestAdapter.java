@@ -51,6 +51,8 @@ import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 
@@ -189,6 +191,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public boolean debugFlagEnabled(String flag) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

@@ -106,12 +106,12 @@ public final class OspfNeighborConfig implements Serializable {
     private Builder() {}
 
     public Builder setArea(Long area) {
-      this._area = area;
+      _area = area;
       return this;
     }
 
     public Builder setInterfaceName(@Nonnull String interfaceName) {
-      this._interfaceName = interfaceName;
+      _interfaceName = interfaceName;
       return this;
     }
 
@@ -121,17 +121,17 @@ public final class OspfNeighborConfig implements Serializable {
     }
 
     public Builder setHostname(@Nonnull String hostname) {
-      this._hostname = hostname;
+      _hostname = hostname;
       return this;
     }
 
     public Builder setVrfName(@Nonnull String vrfName) {
-      this._vrfName = vrfName;
+      _vrfName = vrfName;
       return this;
     }
 
     public Builder setPassive(Boolean passive) {
-      this._isPassive = passive;
+      _isPassive = passive;
       return this;
     }
 

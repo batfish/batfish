@@ -1,7 +1,6 @@
 package org.batfish.question.multipath;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 
 import com.google.common.collect.ImmutableList;

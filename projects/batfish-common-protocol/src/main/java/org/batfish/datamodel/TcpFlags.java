@@ -143,42 +143,42 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
     private Builder() {}
 
     public Builder setAck(boolean ack) {
-      this._ack = ack;
+      _ack = ack;
       return this;
     }
 
     public Builder setCwr(boolean cwr) {
-      this._cwr = cwr;
+      _cwr = cwr;
       return this;
     }
 
     public Builder setEce(boolean ece) {
-      this._ece = ece;
+      _ece = ece;
       return this;
     }
 
     public Builder setFin(boolean fin) {
-      this._fin = fin;
+      _fin = fin;
       return this;
     }
 
     public Builder setPsh(boolean psh) {
-      this._psh = psh;
+      _psh = psh;
       return this;
     }
 
     public Builder setRst(boolean rst) {
-      this._rst = rst;
+      _rst = rst;
       return this;
     }
 
     public Builder setSyn(boolean syn) {
-      this._syn = syn;
+      _syn = syn;
       return this;
     }
 
     public Builder setUrg(boolean urg) {
-      this._urg = urg;
+      _urg = urg;
       return this;
     }
 

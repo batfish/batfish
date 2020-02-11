@@ -53,8 +53,12 @@ public class PacketHeaderConstraintsUtil {
       PacketHeaderConstraints phc, @Nullable IpSpace srcIpSpace, @Nullable IpSpace dstIpSpace) {
     List<AclLineMatchExpr> conjuncts =
         Stream.of(
-                match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
-                match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
+                srcIpSpace == null
+                    ? null
+                    : match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
+                dstIpSpace == null
+                    ? null
+                    : match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
                 dscpsToAclLineMatchExpr(phc.getDscps()),
                 ecnsToAclLineMatchExpr(phc.getEcns()),
                 packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
@@ -71,29 +75,14 @@ public class PacketHeaderConstraintsUtil {
 
     return and(conjuncts);
   }
+
   /**
    * Convert {@link PacketHeaderConstraints} to an {@link AclLineMatchExpr}.
    *
    * @param phc the packet header constraints
    */
   public static AclLineMatchExpr toAclLineMatchExpr(PacketHeaderConstraints phc) {
-    List<AclLineMatchExpr> conjuncts =
-        Stream.of(
-                dscpsToAclLineMatchExpr(phc.getDscps()),
-                ecnsToAclLineMatchExpr(phc.getEcns()),
-                packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
-                fragmentOffsetsToAclLineMatchExpr(phc.getFragmentOffsets()),
-                ipProtocolsToAclLineMatchExpr(phc.getIpProtocols()),
-                icmpCodeToAclLineMatchExpr(phc.getIcmpCodes()),
-                icmpTypeToAclLineMatchExpr(phc.getIcmpTypes()),
-                srcPortsToAclLineMatchExpr(phc.getSrcPorts()),
-                dstPortsToAclLineMatchExpr(phc.getDstPorts()),
-                applicationsToAclLineMatchExpr(phc.getApplications()),
-                tcpFlagsToAclLineMatchExpr(phc.getTcpFlags()))
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList());
-
-    return and(conjuncts);
+    return toAclLineMatchExpr(phc, null, null);
   }
 
   /**
@@ -154,7 +143,6 @@ public class PacketHeaderConstraintsUtil {
             .setDstPorts(extractSubranges(phc.resolveDstPorts()))
             .setIcmpCodes(extractSubranges(phc.getIcmpCodes()))
             .setIcmpTypes(extractSubranges(phc.getIcmpTypes()))
-            .setDstProtocols(firstNonNull(phc.getApplications(), ImmutableSortedSet.of()))
             .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
             .setPacketLengths(extractSubranges(phc.getPacketLengths()))
             .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));

@@ -217,6 +217,8 @@ import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
+import org.batfish.specifier.LocationInfoUtils;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -829,6 +831,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public boolean debugFlagEnabled(String flag) {
     return _settings.debugFlagEnabled(flag);
+  }
+
+  @Override
+  public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
+    /* TODO this should be deserialized from disk. Ultimate source will be a combination of vendor
+     * configs and user input. For now, consolidating the default logic here. This logic will become
+     * the default implementation of the vendor config method.
+     */
+    return LocationInfoUtils.computeLocationInfo(
+        getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
@@ -2591,7 +2603,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .map(
                   j -> {
                     ParseVendorConfigurationResult result =
-                        this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
+                        getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
                     batch.incrementAndGet();
                     return result;
                   })

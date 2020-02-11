@@ -1,7 +1,6 @@
 package org.batfish.question.differentialreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
