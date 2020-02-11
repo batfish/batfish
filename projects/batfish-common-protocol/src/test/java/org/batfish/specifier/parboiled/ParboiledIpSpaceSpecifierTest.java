@@ -8,16 +8,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Rule;
@@ -84,15 +87,17 @@ public class ParboiledIpSpaceSpecifierTest {
 
     Configuration n1 = cb.setHostname(node1).build();
     nf.interfaceBuilder().setOwner(n1).setName(iface1).build();
-    nf.interfaceBuilder()
-        .setOwner(n1)
-        .setName(iface1)
-        .setActive(true)
-        .setAddress(ConcreteInterfaceAddress.parse("3.3.3.0/24"))
-        .build();
+
+    IpIpSpace sourceIps = Ip.parse("3.3.3.3").toIpSpace();
 
     SpecifierContext ctxt =
-        MockSpecifierContext.builder().setConfigs(ImmutableMap.of(node1, n1)).build();
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(node1, n1))
+            .setLocationInfo(
+                ImmutableMap.of(
+                    new InterfaceLocation(node1, iface1),
+                    new LocationInfo(true, sourceIps, EmptyIpSpace.INSTANCE)))
+            .build();
 
     assertThat(
         computeIpSpace(
@@ -100,7 +105,7 @@ public class ParboiledIpSpaceSpecifierTest {
                 InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode(node1), new NameInterfaceAstNode(iface1))),
             ctxt),
-        equalTo(Ip.parse("3.3.3.0").toIpSpace()));
+        equalTo(sourceIps));
   }
 
   @Test

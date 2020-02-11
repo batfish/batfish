@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
+import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -24,6 +25,7 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -38,6 +40,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
@@ -213,14 +216,18 @@ public class TestFiltersAnswererTest {
             configs,
             MockSpecifierContext.builder()
                 .setConfigs(configs)
-                .setInterfaceOwnedIps(
+                .setLocationInfo(
                     ImmutableMap.of(
-                        "c1",
-                        ImmutableMap.of(
-                            "iface1",
+                        interfaceLocation(iface1),
+                        new LocationInfo(
+                            true,
                             iface1.getConcreteAddress().getIp().toIpSpace(),
-                            "iface2",
-                            iface2.getConcreteAddress().getIp().toIpSpace())))
+                            EmptyIpSpace.INSTANCE),
+                        interfaceLocation(iface2),
+                        new LocationInfo(
+                            true,
+                            iface2.getConcreteAddress().getIp().toIpSpace(),
+                            EmptyIpSpace.INSTANCE)))
                 .build());
 
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);

@@ -132,6 +132,8 @@ public class AclIpSpace extends IpSpace {
       return null;
     } else if (ipSpace2 == null) {
       return ipSpace1;
+    } else if (EmptyIpSpace.INSTANCE.equals(ipSpace1)) {
+      return EmptyIpSpace.INSTANCE;
     }
     return builder()
         .thenRejecting(ipSpace2)

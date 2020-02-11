@@ -19,11 +19,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.batfish.common.NetworkSnapshot;
@@ -50,6 +52,8 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -486,6 +490,11 @@ public class FilterLineReachabilityTest {
           @Override
           public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
             return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
+          }
+
+          @Override
+          public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot networkSnapshot) {
+            return ImmutableMap.of();
           }
         };
     FilterLineReachabilityAnswerer answerer = new FilterLineReachabilityAnswerer(q, batfish);

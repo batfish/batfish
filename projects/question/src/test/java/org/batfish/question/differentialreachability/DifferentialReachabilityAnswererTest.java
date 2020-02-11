@@ -1,13 +1,12 @@
 package org.batfish.question.differentialreachability;
 
-import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.specifier.LocationInfoUtils.connectedSubnetIps;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -19,6 +18,7 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -31,6 +31,8 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
+import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Rule;
 import org.junit.Test;
@@ -109,6 +111,7 @@ public final class DifferentialReachabilityAnswererTest {
   private static SpecifierContext getMockSpecifierContext(
       SortedMap<String, Configuration> snapshotConfigs) {
     return new SpecifierContext() {
+
       @Nonnull
       @Override
       public Map<String, Configuration> getConfigs() {
@@ -127,21 +130,34 @@ public final class DifferentialReachabilityAnswererTest {
       }
 
       @Override
-      public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
-        // mock up a simplified version of owned IPs
-        return toImmutableMap(
-            snapshotConfigs,
-            Entry::getKey,
-            config ->
-                toImmutableMap(
-                    config.getValue().getActiveInterfaces().values(),
-                    Interface::getName,
-                    iface -> iface.getConcreteAddress().getIp().toIpSpace()));
-      }
+      public LocationInfo getLocationInfo(Location location) {
+        IpSpace srcIps =
+            location.accept(
+                new LocationVisitor<IpSpace>() {
+                  @Override
+                  public IpSpace visitInterfaceLinkLocation(
+                      InterfaceLinkLocation interfaceLinkLocation) {
+                    Interface iface =
+                        snapshotConfigs
+                            .get(interfaceLinkLocation.getNodeName())
+                            .getAllInterfaces()
+                            .get(interfaceLinkLocation.getInterfaceName());
+                    return connectedSubnetIps(iface);
+                  }
 
-      @Override
-      public IpSpace getSnapshotDeviceOwnedIps() {
-        return null;
+                  @Override
+                  public IpSpace visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+                    // assuming just one IP on the interface
+                    return snapshotConfigs
+                        .get(interfaceLocation.getNodeName())
+                        .getAllInterfaces()
+                        .get(interfaceLocation.getInterfaceName())
+                        .getConcreteAddress()
+                        .getIp()
+                        .toIpSpace();
+                  }
+                });
+        return new LocationInfo(true, srcIps, EmptyIpSpace.INSTANCE);
       }
     };
   }
