@@ -12,7 +12,6 @@ public class InterfaceLocationTest {
   @Test
   public void testClone() throws IOException {
     InterfaceLocation orig = new InterfaceLocation("foo", "bar");
-    System.out.println(BatfishObjectMapper.writePrettyString(orig));
     assertThat(orig, equalTo(BatfishObjectMapper.clone(orig, new TypeReference<Location>() {})));
   }
 }
