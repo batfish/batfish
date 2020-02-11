@@ -7,7 +7,9 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
@@ -25,6 +27,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.SpecifierFactories;
 import org.junit.Test;
@@ -47,6 +50,11 @@ public class TracerouteAnswererHelperTest {
           @Override
           public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
             return configs;
+          }
+
+          @Override
+          public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot networkSnapshot) {
+            return ImmutableMap.of();
           }
         };
 
