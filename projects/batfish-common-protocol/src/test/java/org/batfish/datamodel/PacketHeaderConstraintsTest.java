@@ -8,6 +8,7 @@ import static org.batfish.datamodel.PacketHeaderConstraints.areProtocolsAndPorts
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidDscp;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidEcn;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidIcmpTypeOrCode;
+import static org.batfish.datamodel.PacketHeaderConstraints.parseApplicationJsonToString;
 import static org.batfish.datamodel.PacketHeaderConstraints.parseApplications;
 import static org.batfish.datamodel.PacketHeaderConstraints.parseIpProtocols;
 import static org.batfish.datamodel.PacketHeaderConstraints.resolveIpProtocols;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.applications.Application;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -78,16 +80,22 @@ public class PacketHeaderConstraintsTest {
     assertThat(
         areProtocolsAndPortsCompatible(null, IntegerSpace.of(new SubRange(1, 1024)), null),
         equalTo(true));
-    assertThat(areProtocolsAndPortsCompatible(null, null, ImmutableSet.of(SSH)), equalTo(true));
+    assertThat(
+        areProtocolsAndPortsCompatible(null, null, ImmutableSet.of(SSH.toApplication())),
+        equalTo(true));
 
     // Compatible protocols or missing constraints
     assertThat(
         areProtocolsAndPortsCompatible(
-            ImmutableSet.of(TCP), IntegerSpace.of(new SubRange(22)), ImmutableSet.of(SSH)),
+            ImmutableSet.of(TCP),
+            IntegerSpace.of(new SubRange(22)),
+            ImmutableSet.of(SSH.toApplication())),
         equalTo(true));
     assertThat(
         areProtocolsAndPortsCompatible(
-            null, IntegerSpace.of(new SubRange(0, 1000)), ImmutableSet.of(SSH, HTTP)),
+            null,
+            IntegerSpace.of(new SubRange(0, 1000)),
+            ImmutableSet.of(SSH.toApplication(), HTTP.toApplication())),
         equalTo(true));
   }
 
@@ -95,21 +103,27 @@ public class PacketHeaderConstraintsTest {
   public void testAreProtocolsAndPortsIncompatibleNoTCP() {
     thrown.expect(IllegalArgumentException.class); // Not TCP and SSH
     areProtocolsAndPortsCompatible(
-        ImmutableSet.of(UDP), IntegerSpace.of(new SubRange(22)), ImmutableSet.of(SSH));
+        ImmutableSet.of(UDP),
+        IntegerSpace.of(new SubRange(22)),
+        ImmutableSet.of(SSH.toApplication()));
   }
 
   @Test
   public void testAreProtocolsAndPortsIncompatibleEmptyPortRange() {
     thrown.expect(IllegalArgumentException.class); // empty port subrange
     areProtocolsAndPortsCompatible(
-        ImmutableSet.of(TCP), IntegerSpace.of(new SubRange(20, 1)), ImmutableSet.of(SSH));
+        ImmutableSet.of(TCP),
+        IntegerSpace.of(new SubRange(20, 1)),
+        ImmutableSet.of(SSH.toApplication()));
   }
 
   @Test
   public void testAreProtocolsAndPortsIncompatibleWrongPorts() {
     thrown.expect(IllegalArgumentException.class); // wrong port subrange and application protocols
     areProtocolsAndPortsCompatible(
-        ImmutableSet.of(TCP), IntegerSpace.of(new SubRange(30, 40)), ImmutableSet.of(SSH, HTTP));
+        ImmutableSet.of(TCP),
+        IntegerSpace.of(new SubRange(30, 40)),
+        ImmutableSet.of(SSH.toApplication(), HTTP.toApplication()));
   }
 
   @Test
@@ -125,7 +139,7 @@ public class PacketHeaderConstraintsTest {
         resolveIpProtocols(null, null, IntegerSpace.of(new SubRange(22, 80)), null, null),
         equalTo(IP_PROTOCOLS_WITH_PORTS));
     assertThat(
-        resolveIpProtocols(null, null, null, ImmutableSet.of(Protocol.SSH), null),
+        resolveIpProtocols(null, null, null, ImmutableSet.of(SSH.toApplication()), null),
         equalTo(ImmutableSet.of(TCP)));
     assertThat(
         resolveIpProtocols(
@@ -137,7 +151,8 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsTcpAndUdp() {
     thrown.expect(IllegalArgumentException.class);
     // both tcp and udp at the same time in src/dst
-    resolveIpProtocols(ImmutableSet.of(TCP), null, null, ImmutableSet.of(DNS), null);
+    resolveIpProtocols(
+        ImmutableSet.of(TCP), null, null, ImmutableSet.of(DNS.toApplication()), null);
   }
 
   @Test
@@ -154,7 +169,8 @@ public class PacketHeaderConstraintsTest {
   @Test
   public void testResolveIpProtocolsIcmpAndTcp() {
     thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(ImmutableSet.of(IpProtocol.ICMP), null, null, ImmutableSet.of(SSH), null);
+    resolveIpProtocols(
+        ImmutableSet.of(IpProtocol.ICMP), null, null, ImmutableSet.of(SSH.toApplication()), null);
   }
 
   @Test
@@ -174,8 +190,8 @@ public class PacketHeaderConstraintsTest {
 
     assertThat(resolvePorts(null, null), nullValue());
 
-    assertThat(resolvePorts(sshSet, ImmutableSet.of(SSH)), equalTo(sshSet));
-    assertThat(resolvePorts(null, ImmutableSet.of(SSH)), equalTo(sshSet));
+    assertThat(resolvePorts(sshSet, ImmutableSet.of(SSH.toApplication())), equalTo(sshSet));
+    assertThat(resolvePorts(null, ImmutableSet.of(SSH.toApplication())), equalTo(sshSet));
 
     assertThat(
         resolvePorts(IntegerSpace.of(new SubRange(22, 25)), null),
@@ -188,7 +204,7 @@ public class PacketHeaderConstraintsTest {
                 .including(new SubRange(20, 30))
                 .including(new SubRange(40, 50))
                 .build(),
-            ImmutableSet.of(SSH, HTTP)),
+            ImmutableSet.of(SSH.toApplication(), HTTP.toApplication())),
         equalTo(sshSet));
   }
 
@@ -236,16 +252,12 @@ public class PacketHeaderConstraintsTest {
   public void testValidation() {
     PacketHeaderConstraints constraints;
     // concrete resolution
-    constraints =
-        PacketHeaderConstraints.builder().setApplications(ImmutableSet.of(Protocol.SSH)).build();
+    constraints = PacketHeaderConstraints.builder().setApplications("ssh").build();
     assertThat(constraints.resolveIpProtocols(), equalTo(ImmutableSet.of(TCP)));
     assertThat(constraints.resolveDstPorts(), equalTo(IntegerSpace.of(SubRange.singleton(22))));
 
     // Headerspace-like resolution
-    constraints =
-        PacketHeaderConstraints.builder()
-            .setApplications(ImmutableSet.of(Protocol.SSH, Protocol.HTTP))
-            .build();
+    constraints = PacketHeaderConstraints.builder().setApplications("ssh, http").build();
     assertThat(constraints.resolveIpProtocols(), equalTo(ImmutableSet.of(TCP)));
     assertThat(
         constraints.resolveDstPorts(),
@@ -289,7 +301,7 @@ public class PacketHeaderConstraintsTest {
     PacketHeaderConstraints.builder()
         .setIpProtocols(ImmutableSet.of(TCP))
         .setDstPorts(IntegerSpace.of(new SubRange(30, 40)))
-        .setApplications(ImmutableSet.of(SSH))
+        .setApplications("ssh")
         .build();
   }
 
@@ -348,7 +360,7 @@ public class PacketHeaderConstraintsTest {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP, TCP))
-        .setApplications(ImmutableSet.of(Protocol.DNS))
+        .setApplications("dns")
         .build();
   }
 
@@ -357,7 +369,7 @@ public class PacketHeaderConstraintsTest {
     // Reject empty port intersections
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
-        .setApplications(ImmutableSet.of(Protocol.DNS))
+        .setApplications("dns")
         .setDstPorts(IntegerSpace.of(new SubRange(1, 2)))
         .build();
   }
@@ -379,16 +391,18 @@ public class PacketHeaderConstraintsTest {
 
   @Test
   public void testParseApplications() throws IOException {
-    Set<Protocol> expected = ImmutableSet.of(SSH, TELNET);
+    Set<Application> expected = ImmutableSet.of(SSH.toApplication(), TELNET.toApplication());
     // this is what we expect via pybatfish
     assertThat(
         parseApplications(
-            BatfishObjectMapper.mapper().readValue("[\"SSH\", \"TELNET\"]", JsonNode.class)),
+            parseApplicationJsonToString(
+                BatfishObjectMapper.mapper().readValue("[\"SSH\", \"TELNET\"]", JsonNode.class))),
         equalTo(expected));
     // some lazy clients may send a string like this
     assertThat(
         parseApplications(
-            BatfishObjectMapper.mapper().readValue("\"SSH, TELNET\"", JsonNode.class)),
+            parseApplicationJsonToString(
+                BatfishObjectMapper.mapper().readValue("\"SSH, TELNET\"", JsonNode.class))),
         equalTo(expected));
   }
 
@@ -396,7 +410,9 @@ public class PacketHeaderConstraintsTest {
   public void testParseApplicationsQuotesInString() throws IOException {
     thrown.expect(IllegalArgumentException.class);
     // quoted values in a non-json list
-    parseApplications(BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class));
+    parseApplications(
+        parseApplicationJsonToString(
+            BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class)));
   }
 
   @Test

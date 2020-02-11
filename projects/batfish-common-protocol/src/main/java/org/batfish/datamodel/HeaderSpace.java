@@ -123,10 +123,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _dstPorts;
     }
 
-    public SortedSet<Protocol> getDstProtocols() {
-      return _dstProtocols;
-    }
-
     public SortedSet<Integer> getEcns() {
       return _ecns;
     }
