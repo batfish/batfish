@@ -30,7 +30,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     private SortedSet<Integer> _dscps;
     private @Nullable IpSpace _dstIps;
     private SortedSet<SubRange> _dstPorts;
-    private SortedSet<Protocol> _dstProtocols;
     private SortedSet<Integer> _ecns;
     private SortedSet<SubRange> _fragmentOffsets;
     private SortedSet<SubRange> _icmpCodes;
@@ -40,7 +39,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     private SortedSet<Integer> _notDscps;
     private @Nullable IpSpace _notDstIps;
     private SortedSet<SubRange> _notDstPorts;
-    private SortedSet<Protocol> _notDstProtocols;
     private SortedSet<Integer> _notEcns;
     private SortedSet<SubRange> _notFragmentOffsets;
     private SortedSet<SubRange> _notIcmpCodes;
@@ -62,7 +60,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     private Builder() {
       _dscps = ImmutableSortedSet.of();
       _dstPorts = ImmutableSortedSet.of();
-      _dstProtocols = ImmutableSortedSet.of();
       _ecns = ImmutableSortedSet.of();
       _fragmentOffsets = ImmutableSortedSet.of();
       _icmpCodes = ImmutableSortedSet.of();
@@ -76,7 +73,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _tcpFlags = ImmutableList.of();
       _notDscps = ImmutableSortedSet.of();
       _notDstPorts = ImmutableSortedSet.of();
-      _notDstProtocols = ImmutableSortedSet.of();
       _notEcns = ImmutableSortedSet.of();
       _notFragmentOffsets = ImmutableSortedSet.of();
       _notIcmpCodes = ImmutableSortedSet.of();
@@ -157,10 +153,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     public SortedSet<SubRange> getNotDstPorts() {
       return _notDstPorts;
-    }
-
-    public SortedSet<Protocol> getNotDstProtocols() {
-      return _notDstProtocols;
     }
 
     public SortedSet<Integer> getNotEcns() {
@@ -255,11 +247,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return this;
     }
 
-    public Builder setDstProtocols(Iterable<Protocol> dstProtocols) {
-      _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
-      return this;
-    }
-
     public Builder setEcns(Iterable<Integer> ecns) {
       _ecns = ImmutableSortedSet.copyOf(ecns);
       return this;
@@ -337,11 +324,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     public Builder setNotDstPorts(Iterable<SubRange> notDstPorts) {
       _notDstPorts = ImmutableSortedSet.copyOf(notDstPorts);
-      return this;
-    }
-
-    public Builder setNotDstProtocols(Iterable<Protocol> notDstProtocols) {
-      _notDstProtocols = ImmutableSortedSet.copyOf(notDstProtocols);
       return this;
     }
 
@@ -454,8 +436,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       Comparator.comparing(HeaderSpace::getDscps, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getDstIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getDstPorts, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              HeaderSpace::getDstProtocols, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getEcns, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(
               HeaderSpace::getFragmentOffsets, Comparators.lexicographical(Ordering.natural()))
@@ -468,8 +448,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getNotDstIps, nullsFirst(naturalOrder()))
           .thenComparing(
               HeaderSpace::getNotDstPorts, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              HeaderSpace::getNotDstProtocols, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getNotEcns, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(
               HeaderSpace::getNotFragmentOffsets, Comparators.lexicographical(Ordering.natural()))
@@ -485,23 +463,16 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(
               HeaderSpace::getNotSrcPorts, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(
-              HeaderSpace::getNotSrcProtocols, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
               HeaderSpace::getPacketLengths, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getSrcIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getSrcOrDstIps, nullsFirst(naturalOrder()))
           .thenComparing(
               HeaderSpace::getSrcOrDstPorts, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              HeaderSpace::getSrcOrDstProtocols, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getSrcPorts, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              HeaderSpace::getSrcProtocols, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getTcpFlags, Comparators.lexicographical(Ordering.natural()));
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";
   private static final String PROP_DST_PORTS = "dstPorts";
-  private static final String PROP_DST_PROTOCOLS = "dstProtocols";
   private static final String PROP_ECNS = "ecns";
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
   private static final String PROP_ICMP_CODES = "icmpCodes";
@@ -511,7 +482,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private static final String PROP_NOT_DSCPS = "notDscps";
   private static final String PROP_NOT_DST_IPS = "notDstIps";
   private static final String PROP_NOT_DST_PORTS = "notDstPorts";
-  private static final String PROP_NOT_DST_PROTOCOLS = "notDstProtocols";
   private static final String PROP_NOT_ECNS = "notEcns";
   private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
   private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
@@ -520,14 +490,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private static final String PROP_NOT_PACKET_LENGTHS = "notPacketLengths";
   private static final String PROP_NOT_SRC_IPS = "notSrcIps";
   private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
-  private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
   private static final String PROP_PACKET_LENGTHS = "packetLengths";
   private static final String PROP_SRC_IPS = "srcIps";
   private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
   private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
-  private static final String PROP_SRC_OR_DST_PROTOCOLS = "srcOrDstProtocols";
   private static final String PROP_SRC_PORTS = "srcPorts";
-  private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
   private static final String PROP_DEPRECATED_STATES = "states";
 
@@ -538,7 +505,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private SortedSet<Integer> _dscps;
   private IpSpace _dstIps;
   private SortedSet<SubRange> _dstPorts;
-  private SortedSet<Protocol> _dstProtocols;
   private SortedSet<Integer> _ecns;
   private SortedSet<SubRange> _fragmentOffsets;
   private SortedSet<SubRange> _icmpCodes;
@@ -548,7 +514,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private SortedSet<Integer> _notDscps;
   private IpSpace _notDstIps;
   private SortedSet<SubRange> _notDstPorts;
-  private SortedSet<Protocol> _notDstProtocols;
   private SortedSet<Integer> _notEcns;
   private SortedSet<SubRange> _notFragmentOffsets;
   private SortedSet<SubRange> _notIcmpCodes;
@@ -557,20 +522,16 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   private SortedSet<SubRange> _notPacketLengths;
   private IpSpace _notSrcIps;
   private SortedSet<SubRange> _notSrcPorts;
-  private SortedSet<Protocol> _notSrcProtocols;
   private SortedSet<SubRange> _packetLengths;
   private IpSpace _srcIps;
   private IpSpace _srcOrDstIps;
   private SortedSet<SubRange> _srcOrDstPorts;
-  private SortedSet<Protocol> _srcOrDstProtocols;
   private SortedSet<SubRange> _srcPorts;
-  private SortedSet<Protocol> _srcProtocols;
   private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public HeaderSpace() {
     _dscps = Collections.emptySortedSet();
     _dstPorts = Collections.emptySortedSet();
-    _dstProtocols = Collections.emptySortedSet();
     _ecns = Collections.emptySortedSet();
     _fragmentOffsets = Collections.emptySortedSet();
     _icmpCodes = Collections.emptySortedSet();
@@ -578,13 +539,10 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _ipProtocols = Collections.emptySortedSet();
     _packetLengths = Collections.emptySortedSet();
     _srcOrDstPorts = Collections.emptySortedSet();
-    _srcOrDstProtocols = Collections.emptySortedSet();
     _srcPorts = Collections.emptySortedSet();
-    _srcProtocols = Collections.emptySortedSet();
     _tcpFlags = Collections.emptyList();
     _notDscps = Collections.emptySortedSet();
     _notDstPorts = Collections.emptySortedSet();
-    _notDstProtocols = Collections.emptySortedSet();
     _notEcns = Collections.emptySortedSet();
     _notFragmentOffsets = Collections.emptySortedSet();
     _notIcmpCodes = Collections.emptySortedSet();
@@ -592,14 +550,12 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _notIpProtocols = Collections.emptySortedSet();
     _notPacketLengths = Collections.emptySortedSet();
     _notSrcPorts = Collections.emptySortedSet();
-    _notSrcProtocols = Collections.emptySortedSet();
   }
 
   private HeaderSpace(Builder builder) {
     _dscps = ImmutableSortedSet.copyOf(builder._dscps);
     _dstIps = builder._dstIps;
     _dstPorts = ImmutableSortedSet.copyOf(builder._dstPorts);
-    _dstProtocols = ImmutableSortedSet.copyOf(builder._dstProtocols);
     _ecns = ImmutableSortedSet.copyOf(builder._ecns);
     _fragmentOffsets = ImmutableSortedSet.copyOf(builder._fragmentOffsets);
     _ipProtocols = ImmutableSortedSet.copyOf(builder._ipProtocols);
@@ -607,7 +563,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _notDscps = ImmutableSortedSet.copyOf(builder._notDscps);
     _notDstIps = builder._notDstIps;
     _notDstPorts = ImmutableSortedSet.copyOf(builder._notDstPorts);
-    _notDstProtocols = ImmutableSortedSet.copyOf(builder._notDstProtocols);
     _notEcns = ImmutableSortedSet.copyOf(builder._notEcns);
     _notFragmentOffsets = ImmutableSortedSet.copyOf(builder._notFragmentOffsets);
     _notIcmpCodes = ImmutableSortedSet.copyOf(builder._notIcmpCodes);
@@ -616,14 +571,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _notPacketLengths = ImmutableSortedSet.copyOf(builder._notPacketLengths);
     _notSrcIps = builder._notSrcIps;
     _notSrcPorts = ImmutableSortedSet.copyOf(builder._notSrcPorts);
-    _notSrcProtocols = ImmutableSortedSet.copyOf(builder._notSrcProtocols);
     _packetLengths = ImmutableSortedSet.copyOf(builder._packetLengths);
     _srcIps = builder._srcIps;
     _srcOrDstIps = builder._srcOrDstIps;
     _srcOrDstPorts = ImmutableSortedSet.copyOf(builder._srcOrDstPorts);
-    _srcOrDstProtocols = ImmutableSortedSet.copyOf(builder._srcOrDstProtocols);
     _srcPorts = ImmutableSortedSet.copyOf(builder._srcPorts);
-    _srcProtocols = ImmutableSortedSet.copyOf(builder._srcProtocols);
     _icmpTypes = ImmutableSortedSet.copyOf(builder._icmpTypes);
     _icmpCodes = ImmutableSortedSet.copyOf(builder._icmpCodes);
     _tcpFlags = ImmutableList.copyOf(builder._tcpFlags);
@@ -645,7 +597,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _dscps.equals(other._dscps)
         && Objects.equals(_dstIps, other._dstIps)
         && _dstPorts.equals(other._dstPorts)
-        && _dstProtocols.equals(other._dstProtocols)
         && _ecns.equals(other._ecns)
         && _fragmentOffsets.equals(other._fragmentOffsets)
         && _icmpCodes.equals(other._icmpCodes)
@@ -655,7 +606,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _notDscps.equals(other._notDscps)
         && Objects.equals(_notDstIps, other._notDstIps)
         && _notDstPorts.equals(other._notDstPorts)
-        && _notDstProtocols.equals(other._notDstProtocols)
         && _notEcns.equals(other._notEcns)
         && _notFragmentOffsets.equals(other._notFragmentOffsets)
         && _notIcmpCodes.equals(other._notIcmpCodes)
@@ -664,14 +614,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _notPacketLengths.equals(other._notPacketLengths)
         && Objects.equals(_notSrcIps, other._notSrcIps)
         && _notSrcPorts.equals(other._notSrcPorts)
-        && _notSrcProtocols.equals(other._notSrcProtocols)
         && _packetLengths.equals(other._packetLengths)
         && Objects.equals(_srcIps, other._srcIps)
         && Objects.equals(_srcOrDstIps, other._srcOrDstIps)
         && _srcOrDstPorts.equals(other._srcOrDstPorts)
-        && _srcOrDstProtocols.equals(other._srcOrDstProtocols)
         && _srcPorts.equals(other._srcPorts)
-        && _srcProtocols.equals(other._srcProtocols)
         && _tcpFlags.equals(other._tcpFlags);
   }
 
@@ -695,11 +642,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   @JsonProperty(PROP_DST_PORTS)
   public SortedSet<SubRange> getDstPorts() {
     return _dstPorts;
-  }
-
-  @JsonProperty(PROP_DST_PROTOCOLS)
-  public SortedSet<Protocol> getDstProtocols() {
-    return _dstProtocols;
   }
 
   /** A set of acceptable ECN values for a packet. */
@@ -756,11 +698,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _notDstPorts;
   }
 
-  @JsonProperty(PROP_NOT_DST_PROTOCOLS)
-  public SortedSet<Protocol> getNotDstProtocols() {
-    return _notDstProtocols;
-  }
-
   /** A set of unacceptable ECN values for a packet. */
   @JsonProperty(PROP_NOT_ECNS)
   public SortedSet<Integer> getNotEcns() {
@@ -808,11 +745,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _notSrcPorts;
   }
 
-  @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
-  public SortedSet<Protocol> getNotSrcProtocols() {
-    return _notSrcProtocols;
-  }
-
   @JsonProperty(PROP_PACKET_LENGTHS)
   public SortedSet<SubRange> getPacketLengths() {
     return _packetLengths;
@@ -842,20 +774,10 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _srcOrDstPorts;
   }
 
-  @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
-  public SortedSet<Protocol> getSrcOrDstProtocols() {
-    return _srcOrDstProtocols;
-  }
-
   /** A set of acceptable source port ranges for a TCP/UDP packet. */
   @JsonProperty(PROP_SRC_PORTS)
   public SortedSet<SubRange> getSrcPorts() {
     return _srcPorts;
-  }
-
-  @JsonProperty(PROP_SRC_PROTOCOLS)
-  public SortedSet<Protocol> getSrcProtocols() {
-    return _srcProtocols;
   }
 
   /** A set of acceptable TCP flag bitmasks for a TCP packet to match. */
@@ -870,7 +792,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         _dscps,
         _dstIps,
         _dstPorts,
-        _dstProtocols,
         _ecns,
         _fragmentOffsets,
         _icmpCodes,
@@ -880,7 +801,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         _notDscps,
         _notDstIps,
         _notDstPorts,
-        _notDstProtocols,
         _notEcns,
         _notFragmentOffsets,
         _notIcmpCodes,
@@ -889,14 +809,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         _notPacketLengths,
         _notSrcIps,
         _notSrcPorts,
-        _notSrcProtocols,
         _packetLengths,
         _srcIps,
         _srcOrDstIps,
         _srcOrDstPorts,
-        _srcOrDstProtocols,
         _srcPorts,
-        _srcProtocols,
         _tcpFlags);
   }
 
@@ -918,21 +835,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (_notDstPorts.stream().anyMatch(sr -> sr.includes(flow.getDstPort()))) {
-      return false;
-    }
-    if (!_dstProtocols.isEmpty()
-        && _dstProtocols.stream()
-            .noneMatch(
-                dstProtocol ->
-                    dstProtocol.getPort().equals(flow.getDstPort())
-                        && dstProtocol.getIpProtocol() == flow.getIpProtocol())) {
-      return false;
-    }
-    if (_notDstProtocols.stream()
-        .anyMatch(
-            notDstProtocol ->
-                notDstProtocol.getPort().equals(flow.getDstPort())
-                    && notDstProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
     if (!_ecns.isEmpty() && !_ecns.contains(flow.getEcn())) {
@@ -987,17 +889,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             .noneMatch(sr -> sr.includes(flow.getSrcPort()) || sr.includes(flow.getDstPort()))) {
       return false;
     }
-    if (!_srcOrDstProtocols.isEmpty()) {
-      IpProtocol flowProtocol = flow.getIpProtocol();
-      if (_srcOrDstProtocols.stream()
-          .noneMatch(
-              protocol ->
-                  (protocol.getPort().equals(flow.getDstPort())
-                          || protocol.getPort().equals(flow.getSrcPort()))
-                      && protocol.getIpProtocol() == flowProtocol)) {
-        return false;
-      }
-    }
     if (_srcIps != null && !_srcIps.containsIp(flow.getSrcIp(), namedIpSpaces)) {
       return false;
     }
@@ -1009,21 +900,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (_notSrcPorts.stream().anyMatch(sr -> sr.includes(flow.getSrcPort()))) {
-      return false;
-    }
-    if (!_srcProtocols.isEmpty()
-        && _srcProtocols.stream()
-            .noneMatch(
-                srcProtocol ->
-                    srcProtocol.getPort().equals(flow.getSrcPort())
-                        && srcProtocol.getIpProtocol() == flow.getIpProtocol())) {
-      return false;
-    }
-    if (_notSrcProtocols.stream()
-        .anyMatch(
-            notSrcProtocol ->
-                notSrcProtocol.getPort().equals(flow.getSrcPort())
-                    && notSrcProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
     if (!_tcpFlags.isEmpty() && _tcpFlags.stream().noneMatch(tcpFlags -> tcpFlags.match(flow))) {
@@ -1049,11 +925,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   @JsonProperty(PROP_DST_PORTS)
   public void setDstPorts(Iterable<SubRange> dstPorts) {
     _dstPorts = ImmutableSortedSet.copyOf(dstPorts);
-  }
-
-  @JsonProperty(PROP_DST_PROTOCOLS)
-  public void setDstProtocols(Iterable<Protocol> dstProtocols) {
-    _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
   }
 
   @JsonProperty(PROP_ECNS)
@@ -1105,11 +976,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _notDstPorts = ImmutableSortedSet.copyOf(notDstPorts);
   }
 
-  @JsonProperty(PROP_NOT_DST_PROTOCOLS)
-  public void setNotDstProtocols(Iterable<Protocol> notDstProtocols) {
-    _notDstProtocols = ImmutableSortedSet.copyOf(notDstProtocols);
-  }
-
   @JsonProperty(PROP_NOT_ECNS)
   public void setNotEcns(Iterable<Integer> notEcns) {
     _notEcns = ImmutableSortedSet.copyOf(notEcns);
@@ -1154,11 +1020,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _notSrcPorts = ImmutableSortedSet.copyOf(notSrcPorts);
   }
 
-  @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
-  public void setNotSrcProtocols(Iterable<Protocol> notSrcProtocols) {
-    _notSrcProtocols = ImmutableSortedSet.copyOf(notSrcProtocols);
-  }
-
   @JsonProperty(PROP_PACKET_LENGTHS)
   public void setPacketLengths(Iterable<SubRange> packetLengths) {
     _packetLengths = ImmutableSortedSet.copyOf(packetLengths);
@@ -1187,19 +1048,9 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _srcOrDstPorts = ImmutableSortedSet.copyOf(srcOrDstPorts);
   }
 
-  @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
-  public void setSrcOrDstProtocols(Iterable<Protocol> srcOrDstProtocols) {
-    _srcOrDstProtocols = ImmutableSortedSet.copyOf(srcOrDstProtocols);
-  }
-
   @JsonProperty(PROP_SRC_PORTS)
   public void setSrcPorts(Iterable<SubRange> srcPorts) {
     _srcPorts = ImmutableSortedSet.copyOf(srcPorts);
-  }
-
-  @JsonProperty(PROP_SRC_PROTOCOLS)
-  public void setSrcProtocols(Iterable<Protocol> srcProtocols) {
-    _srcProtocols = ImmutableSortedSet.copyOf(srcProtocols);
   }
 
   @Deprecated
@@ -1216,7 +1067,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .setDscps(_dscps)
         .setDstIps(_dstIps)
         .setDstPorts(_dstPorts)
-        .setDstProtocols(_dstProtocols)
         .setEcns(_ecns)
         .setFragmentOffsets(_fragmentOffsets)
         .setIcmpCodes(_icmpCodes)
@@ -1226,7 +1076,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .setNotDscps(_notDscps)
         .setNotDstIps(_notDstIps)
         .setNotDstPorts(_notDstPorts)
-        .setNotDstProtocols(_notDstProtocols)
         .setNotEcns(_notEcns)
         .setNotFragmentOffsets(_notFragmentOffsets)
         .setNotIcmpCodes(_notIcmpCodes)
@@ -1235,14 +1084,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .setNotPacketLengths(_notPacketLengths)
         .setNotSrcIps(_notSrcIps)
         .setNotSrcPorts(_notSrcPorts)
-        .setNotSrcProtocols(_notSrcProtocols)
         .setPacketLengths(_packetLengths)
         .setSrcIps(_srcIps)
         .setSrcOrDstIps(_srcOrDstIps)
         .setSrcOrDstPorts(_srcOrDstPorts)
-        .setSrcOrDstProtocols(_srcOrDstProtocols)
         .setSrcPorts(_srcPorts)
-        .setSrcProtocols(_srcProtocols)
         .setTcpFlags(_tcpFlags);
   }
 
@@ -1253,7 +1099,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .add(PROP_DSCPS, nullIfEmpty(_dscps))
         .add(PROP_DST_IPS, _dstIps)
         .add(PROP_DST_PORTS, nullIfEmpty(_dstPorts))
-        .add(PROP_DST_PROTOCOLS, nullIfEmpty(_dstProtocols))
         .add(PROP_ECNS, nullIfEmpty(_ecns))
         .add(PROP_FRAGMENT_OFFSETS, nullIfEmpty(_fragmentOffsets))
         .add(PROP_ICMP_CODES, nullIfEmpty(_icmpCodes))
@@ -1263,7 +1108,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .add(PROP_NOT_DSCPS, nullIfEmpty(_notDscps))
         .add(PROP_NOT_DST_IPS, _notDstIps)
         .add(PROP_NOT_DST_PORTS, nullIfEmpty(_notDstPorts))
-        .add(PROP_NOT_DST_PROTOCOLS, nullIfEmpty(_notDstProtocols))
         .add(PROP_NOT_ECNS, nullIfEmpty(_notEcns))
         .add(PROP_NOT_FRAGMENT_OFFSETS, nullIfEmpty(_notFragmentOffsets))
         .add(PROP_NOT_ICMP_CODES, nullIfEmpty(_notIcmpCodes))
@@ -1272,14 +1116,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         .add(PROP_NOT_PACKET_LENGTHS, nullIfEmpty(_notPacketLengths))
         .add(PROP_NOT_SRC_IPS, _notSrcIps)
         .add(PROP_NOT_SRC_PORTS, nullIfEmpty(_notSrcPorts))
-        .add(PROP_NOT_SRC_PROTOCOLS, nullIfEmpty(_notSrcProtocols))
         .add(PROP_PACKET_LENGTHS, nullIfEmpty(_packetLengths))
         .add(PROP_SRC_IPS, _srcIps)
         .add(PROP_SRC_OR_DST_IPS, _srcOrDstIps)
         .add(PROP_SRC_OR_DST_PORTS, nullIfEmpty(_srcOrDstPorts))
-        .add(PROP_SRC_OR_DST_PROTOCOLS, nullIfEmpty(_srcOrDstProtocols))
         .add(PROP_SRC_PORTS, nullIfEmpty(_srcPorts))
-        .add(PROP_SRC_PROTOCOLS, nullIfEmpty(_srcProtocols))
         .add(PROP_TCP_FLAGS_MATCH_CONDITIONS, nullIfEmpty(_tcpFlags))
         .toString();
   }
@@ -1292,8 +1133,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             && _notDstIps instanceof EmptyIpSpace
             && _dstPorts.isEmpty()
             && _notDstPorts.isEmpty()
-            && _dstProtocols.isEmpty()
-            && _notDstProtocols.isEmpty()
             && _ecns.isEmpty()
             && _notEcns.isEmpty()
             && _fragmentOffsets.isEmpty()
@@ -1310,11 +1149,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             && _notSrcIps instanceof EmptyIpSpace
             && _srcOrDstIps instanceof UniverseIpSpace
             && _srcOrDstPorts.isEmpty()
-            && _srcOrDstProtocols.isEmpty()
             && _srcPorts.isEmpty()
             && _notSrcPorts.isEmpty()
-            && _srcProtocols.isEmpty()
-            && _notSrcProtocols.isEmpty()
             && _tcpFlags.isEmpty();
     return ret;
   }
