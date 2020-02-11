@@ -1,5 +1,6 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -20,7 +21,7 @@ public class SpecifierContextImpl implements SpecifierContext {
   public SpecifierContextImpl(@Nonnull IBatfish batfish, @Nonnull NetworkSnapshot networkSnapshot) {
     _batfish = batfish;
     _configs = _batfish.loadConfigurations(networkSnapshot);
-    _locationInfo = _batfish.getLocationInfo(networkSnapshot);
+    _locationInfo = ImmutableMap.copyOf(_batfish.getLocationInfo(networkSnapshot));
   }
 
   @Nonnull
@@ -43,5 +44,10 @@ public class SpecifierContextImpl implements SpecifierContext {
   @Override
   public LocationInfo getLocationInfo(Location location) {
     return _locationInfo.get(location);
+  }
+
+  @Override
+  public Map<Location, LocationInfo> getLocationInfo() {
+    return _locationInfo;
   }
 }

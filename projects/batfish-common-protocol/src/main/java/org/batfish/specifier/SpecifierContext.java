@@ -27,6 +27,10 @@ public interface SpecifierContext {
   @Nonnull
   Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension);
 
-  /** */
+  /** @return the {@link LocationInfo} for the input {@link Location}. */
   LocationInfo getLocationInfo(Location location);
+
+  /** @return the {@link LocationInfo} for all {@link Location locations}. */
+  Map<Location, LocationInfo> getLocationInfo();
+
 }

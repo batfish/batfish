@@ -159,6 +159,11 @@ public final class DifferentialReachabilityAnswererTest {
                 });
         return new LocationInfo(true, srcIps, EmptyIpSpace.INSTANCE);
       }
+
+      @Override
+      public Map<Location, LocationInfo> getLocationInfo() {
+        throw new UnsupportedOperationException();
+      }
     };
   }
 }
