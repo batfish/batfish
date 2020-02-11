@@ -30,10 +30,12 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 
 /** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
-
   // node -> vrf -> ips accepted by that vrf
   private Map<String, Map<String, IpSpace>> _acceptedIps;
 
@@ -71,7 +73,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
-      Topology topology) {
+      Topology topology,
+      Map<Location, LocationInfo> locationInfo) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("Construct ForwardingAnalysisImpl").startActive()) {
       assert span != null; // avoid unused warning
@@ -228,26 +231,33 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             computeDstIpsWithOwnedNextHopIpArpFalse(matchingIps, routesWithOwnedNextHopIpArpFalse);
       }
 
-      // mapping: hostname -> interface -> ips belonging to a subnet of interface
-      // active interfaces only.
-      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-          ipOwners.getActiveInterfaceHostIps();
+      // mapping: hostname -> interface -> ips on which we should assume some external device (not
+      // modeled in batfish) is listening, and would reply to ARP in the real world.
+      Map<String, Map<String, IpSpace>> interfaceExternalArpIps =
+          locationInfo.entrySet().stream()
+              .filter(entry -> entry.getKey() instanceof InterfaceLinkLocation)
+              .collect(
+                  Collectors.groupingBy(
+                      entry -> entry.getKey().getNodeName(),
+                      Collectors.toMap(
+                          entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
+                          entry -> entry.getValue().getArpIps())));
 
       _deliveredToSubnet =
-          computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+          computeDeliveredToSubnet(arpFalseDestIp, interfaceExternalArpIps, ownedIps);
 
-      Map<String, Map<String, BDD>> interfaceHostSubnetIpBDDs =
-          computeInterfaceHostSubnetIpBDDs(interfaceHostSubnetIps, ipSpaceToBDD);
+      Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs =
+          computeInterfaceExternalArpIpBDDs(interfaceExternalArpIps, ipSpaceToBDD);
       // hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot
       Map<String, Set<String>> interfacesWithMissingDevices =
-          computeInterfacesWithMissingDevices(interfaceHostSubnetIpBDDs, unownedIpsBDD);
+          computeInterfacesWithMissingDevices(interfaceExternalArpIpBDDs, unownedIpsBDD);
 
       _neighborUnreachable =
           computeNeighborUnreachable(
               _arpFalse,
               interfacesWithMissingDevices,
               arpFalseDestIp,
-              interfaceHostSubnetIps,
+              interfaceExternalArpIps,
               ownedIps);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
@@ -255,7 +265,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
       _insufficientInfo =
           computeInsufficientInfo(
-              interfaceHostSubnetIps,
+              interfaceExternalArpIps,
               interfacesWithMissingDevices,
               arpFalseDestIp,
               dstIpsWithUnownedNextHopIpArpFalse,
@@ -1088,15 +1098,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _deliveredToSubnet;
   }
 
-  private static Map<String, Map<String, BDD>> computeInterfaceHostSubnetIpBDDs(
-      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps, IpSpaceToBDD ipSpaceToBDD) {
+  private static Map<String, Map<String, BDD>> computeInterfaceExternalArpIpBDDs(
+      Map<String, Map<String, IpSpace>> interfaceExternalArpIps, IpSpaceToBDD ipSpaceToBDD) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeInterfaceHostSubnetIpBDDs")
             .startActive()) {
       assert span != null; // avoid unused warning
       return toImmutableMap(
-          interfaceHostSubnetIps,
+          interfaceExternalArpIps,
           Entry::getKey /* host name */,
           nodeEntry ->
               nodeEntry.getValue().entrySet().stream()
@@ -1174,7 +1184,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet(
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
-      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps,
+      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -1196,7 +1206,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               AclIpSpace.difference(
                                   AclIpSpace.intersection(
                                       ifaceEntry.getValue(),
-                                      interfaceHostSubnetIps
+                                      interfaceExternalArpIps
                                           .get(nodeEntry.getKey())
                                           .get(ifaceEntry.getKey())),
                                   ownedIps))));
@@ -1264,7 +1274,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * is internal but not in the interface subnet, when arping for next hop ip, either next hop ip is
    * owned by interfaces or dst ip is internal.
    *
-   * @param interfaceHostSubnetIps Set of IPs belonging to the subnet of each interface.
+   * @param interfaceExternalArpIps Set of IPs for which some external device (not modeled by
+   *     Batfish) would reply to ARP in the real world.
    * @param interfacesWithMissingDevices Interfaces whose attached subnets are not full -- there may
    *     be other devices connected to the subnet for which we don't have a config.
    * @param arpFalseDestIp For each interface, dst IPs that can be ARP IPs and that we will not
@@ -1277,7 +1288,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    */
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
-      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps,
+      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
@@ -1313,7 +1324,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             IpSpace ipSpaceElsewhere =
                                 AclIpSpace.difference(
                                     internalIps,
-                                    interfaceHostSubnetIps.get(hostname).get(ifaceName));
+                                    interfaceExternalArpIps.get(hostname).get(ifaceName));
 
                             // case 1: arp for dst ip, dst ip is internal but not in any subnet of
                             // the interface
@@ -1359,7 +1370,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
-      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps,
+      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -1387,7 +1398,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             return interfacesWithMissingDevices.get(node).contains(iface)
                                 ? AclIpSpace.intersection(
                                     arpFalseDestIp.get(node).get(vrf).get(iface),
-                                    interfaceHostSubnetIps.get(node).get(iface),
+                                    interfaceExternalArpIps.get(node).get(iface),
                                     ownedIps)
                                 : ifaceArpFalse;
                           })));
@@ -1401,14 +1412,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /** hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot */
   private static Map<String, Set<String>> computeInterfacesWithMissingDevices(
-      Map<String, Map<String, BDD>> interfaceHostSubnetIpBDDs, BDD unownedIpsBDD) {
+      Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs, BDD unownedIpsBDD) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeInterfacesWithMissingDevices")
             .startActive()) {
       assert span != null; // avoid unused warning
       return toImmutableMap(
-          interfaceHostSubnetIpBDDs,
+          interfaceExternalArpIpBDDs,
           Entry::getKey,
           nodeEntry ->
               nodeEntry.getValue().entrySet().stream()
