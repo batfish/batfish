@@ -43,8 +43,6 @@ public final class IntersectHeaderSpaces {
     checkArgument(isUnconstrained(h2.getSrcOrDstIps()));
     checkArgument(isUnconstrained(h1.getSrcOrDstPorts()));
     checkArgument(isUnconstrained(h2.getSrcOrDstPorts()));
-    checkArgument(isUnconstrained(h1.getSrcOrDstProtocols()));
-    checkArgument(isUnconstrained(h2.getSrcOrDstProtocols()));
 
     try {
       return Optional.of(
@@ -52,7 +50,6 @@ public final class IntersectHeaderSpaces {
               .setDscps(intersectSimpleSets(h1.getDscps(), h2.getDscps()))
               .setDstIps(intersection(h1.getDstIps(), h2.getDstIps()))
               .setDstPorts(intersectSubRangeSets(h1.getDstPorts(), h2.getDstPorts()))
-              .setDstProtocols(intersectSimpleSets(h1.getDstProtocols(), h2.getDstProtocols()))
               .setIpProtocols(intersectSimpleSets(h1.getIpProtocols(), h2.getIpProtocols()))
               .setIcmpCodes(intersectSubRangeSets(h1.getIcmpCodes(), h2.getIcmpCodes()))
               .setIcmpTypes(intersectSubRangeSets(h1.getIcmpTypes(), h2.getIcmpTypes()))

@@ -187,8 +187,6 @@ public class DestinationClasses {
     h1.setDscps(h2.getDscps());
     h1.setDstPorts(h2.getDstPorts());
     h1.setNotDstPorts(h2.getNotDstPorts());
-    h1.setNotDstProtocols(h2.getNotDstProtocols());
-    h1.setDstProtocols(h2.getDstProtocols());
     h1.setSrcPorts(h2.getSrcPorts());
     h1.setSrcIps(h2.getSrcIps());
     h1.setSrcOrDstIps(h2.getSrcOrDstIps());
