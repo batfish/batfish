@@ -34,6 +34,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -300,6 +301,7 @@ public final class IspModelingUtils {
     Configuration internetConfiguration =
         cb.setHostname(INTERNET_HOST_NAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDeviceModel(DeviceModel.BATFISH_INTERNET)
             .build();
     internetConfiguration.setDeviceType(DeviceType.INTERNET);
     Vrf defaultVrf =
@@ -510,6 +512,7 @@ public final class IspModelingUtils {
         Configuration.builder()
             .setHostname(ispInfo.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDeviceModel(DeviceModel.BATFISH_ISP)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
     ispConfiguration.setRoutingPolicies(

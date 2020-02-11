@@ -5,6 +5,7 @@
       "aws-backbone" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aws-backbone",
+        "deviceModel" : "BATFISH_ISP",
         "deviceType" : "ISP",
         "interfaces" : {
           "~Interface_0~" : {
@@ -1168,6 +1169,7 @@
       "internet" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "internet",
+        "deviceModel" : "BATFISH_INTERNET",
         "deviceType" : "INTERNET",
         "interfaces" : {
           "Internet_out_interface" : {

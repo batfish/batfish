@@ -26,6 +26,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -287,7 +288,8 @@ final class Instance implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_instanceId, "aws", _tags);
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_instanceId, "aws", _tags, DeviceModel.AWS_EC2_INSTANCE);
 
     for (String interfaceId : _networkInterfaces) {
 

@@ -811,6 +811,7 @@
     },
     {
       "id" : "node-internet",
+      "model" : "BATFISH_INTERNET",
       "name" : "internet",
       "type" : "INTERNET"
     },
@@ -851,6 +852,7 @@
     },
     {
       "id" : "node-aws-backbone",
+      "model" : "BATFISH_ISP",
       "name" : "aws-backbone",
       "type" : "ISP"
     },

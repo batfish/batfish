@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -66,6 +67,11 @@ final class Utils {
 
   static Configuration newAwsConfiguration(
       String name, String domainName, Map<String, String> tags) {
+    return newAwsConfiguration(name, domainName, tags, null);
+  }
+
+  static Configuration newAwsConfiguration(
+      String name, String domainName, Map<String, String> tags, @Nullable DeviceModel model) {
     Configuration c =
         Configuration.builder()
             .setHostname(name)
@@ -73,6 +79,7 @@ final class Utils {
             .setConfigurationFormat(ConfigurationFormat.AWS)
             .setDefaultInboundAction(LineAction.PERMIT)
             .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDeviceModel(model)
             .setHumanName(tags.get(TAG_NAME))
             .build();
     Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
