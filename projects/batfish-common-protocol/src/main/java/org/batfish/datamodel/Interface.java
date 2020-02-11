@@ -58,6 +58,7 @@ public final class Interface extends ComparableStructure<String> {
     @Nullable private Integer _encapsulationVlan;
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
+    private @Nullable String _humanName;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
     private IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
@@ -137,6 +138,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setEncapsulationVlan(_encapsulationVlan);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
+      iface.setHumanName(_humanName);
       iface.setFirewallSessionInterfaceInfo(_firewallSessionInterfaceInfo);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIncomingTransformation(_incomingTransformation);
@@ -320,6 +322,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public @Nonnull Builder setHsrpVersion(@Nullable String hsrpVersion) {
       _hsrpVersion = hsrpVersion;
+      return this;
+    }
+
+    public @Nonnull Builder setHumanName(@Nullable String humanName) {
+      _humanName = humanName;
       return this;
     }
 
@@ -548,6 +555,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_FIREWALL_SESSION_INTERFACE_INFO = "firewallSessionInterfaceInfo";
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
   private static final String PROP_HSRP_VERSION = "hsrpVersion";
+  private static final String PROP_HUMAN_NAME = "humanName";
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
@@ -810,6 +818,7 @@ public final class Interface extends ComparableStructure<String> {
   @Nullable private Integer _encapsulationVlan;
   @Nullable private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
   private Map<Integer, HsrpGroup> _hsrpGroups;
+  private @Nullable String _humanName;
   private IpAccessList _inboundFilter;
   private transient String _inboundFilterName;
   private IpAccessList _incomingFilter;
@@ -1131,6 +1140,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_HSRP_VERSION)
   public @Nullable String getHsrpVersion() {
     return _hsrpVersion;
+  }
+
+  @JsonProperty(PROP_HUMAN_NAME)
+  public @Nullable String getHumanName() {
+    return _humanName;
   }
 
   @JsonIgnore
@@ -1562,6 +1576,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_HSRP_VERSION)
   public void setHsrpVersion(String hsrpVersion) {
     _hsrpVersion = hsrpVersion;
+  }
+
+  @JsonProperty(PROP_HUMAN_NAME)
+  public void setHumanName(@Nullable String humanName) {
+    _humanName = humanName;
   }
 
   @JsonIgnore
