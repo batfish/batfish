@@ -1,30 +1,15 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.specifier.LocationInfoUtils.configuredIps;
 import static org.batfish.specifier.LocationInfoUtils.connectedHostSubnetHostIps;
 
-import com.google.common.collect.ImmutableList;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.specifier.LocationInfo;
 
 /** Helpers for defining AWS-specific {@link LocationInfo}. */
 public final class AwsLocationInfoUtils {
   private AwsLocationInfoUtils() {}
-
-  private static IpSpace configuredIps(Interface iface) {
-    return firstNonNull(
-        AclIpSpace.union(
-            iface.getAllConcreteAddresses().stream()
-                .map(ConcreteInterfaceAddress::getIp)
-                .map(Ip::toIpSpace)
-                .collect(ImmutableList.toImmutableList())),
-        EmptyIpSpace.INSTANCE);
-  }
 
   static LocationInfo instanceInterfaceLocationInfo(Interface iface) {
     return new LocationInfo(
