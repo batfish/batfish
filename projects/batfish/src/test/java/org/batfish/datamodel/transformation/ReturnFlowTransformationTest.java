@@ -136,8 +136,8 @@ public final class ReturnFlowTransformationTest {
 
   @Test
   public void testGuardVisitor() {
-    MatchHeaderSpace dstIp = matchDstIp("1.1.1.1");
-    MatchHeaderSpace srcIp = matchSrcIp("1.1.1.1");
+    AclLineMatchExpr dstIp = matchDstIp("1.1.1.1");
+    AclLineMatchExpr srcIp = matchSrcIp("1.1.1.1");
 
     ImmutableList<SubRange> ports = ImmutableList.of(new SubRange(10, 20));
     MatchHeaderSpace dstPort = match(HeaderSpace.builder().setDstPorts(ports).build());
