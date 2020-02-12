@@ -14,7 +14,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
@@ -58,8 +57,8 @@ public final class SearchFiltersParameters {
 
   /** Resolve all parameters and update the underlying headerspace. */
   public AclLineMatchExpr resolveHeaderspace(SpecifierContext ctx) {
-    MatchHeaderSpace srcExpr = matchSrc((resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx)));
-    MatchHeaderSpace dstExpr = matchDst(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx));
+    AclLineMatchExpr srcExpr = matchSrc(resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx));
+    AclLineMatchExpr dstExpr = matchDst(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx));
 
     return _complementHeaderSpace
         ? not(and(_headerSpaceExpr, srcExpr, dstExpr))
