@@ -108,7 +108,7 @@ public class AwsConfigurationPrivateSubnetTest {
     testTrace(
         _onPremRouter,
         Ip.parse("10.0.1.205"),
-        FlowDisposition.DELIVERED_TO_SUBNET,
+        FlowDisposition.NEIGHBOR_UNREACHABLE,
         ImmutableList.of(_onPremRouter, _vgw, _subnet));
 
     // to a private IP outside the subnet
