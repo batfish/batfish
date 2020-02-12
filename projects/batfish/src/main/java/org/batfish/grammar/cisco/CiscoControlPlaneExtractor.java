@@ -706,6 +706,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.If_member_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
@@ -6647,6 +6648,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final int TRUST_SECURITY_LEVEL = 100;
   private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
   private static final int NO_TRUST_SECURITY_LEVEL = 0;
+
+  @Override
+  public void exitIf_member_interface(If_member_interfaceContext ctx) {
+    if (_currentInterfaces.size() != 1) {
+      warn(ctx, "member-interfaces can only be configured in single-interface context");
+      return;
+    }
+    String member = toInterfaceName(ctx.name);
+    _configuration.referenceStructure(
+        INTERFACE,
+        member,
+        CiscoStructureUsage.INTERFACE_MEMBER_INTERFACE,
+        ctx.name.getStart().getLine());
+    _currentInterfaces.get(0).getMemberInterfaces().add(member);
+  }
 
   @Override
   public void exitIf_nameif(If_nameifContext ctx) {

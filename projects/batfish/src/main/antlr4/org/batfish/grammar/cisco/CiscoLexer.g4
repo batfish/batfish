@@ -7747,6 +7747,11 @@ MEMBER
    'member'
 ;
 
+MEMBER_INTERFACE
+:
+   'member-interface' -> pushMode(M_Interface)
+;
+
 MEMORY
 :
    'memory'

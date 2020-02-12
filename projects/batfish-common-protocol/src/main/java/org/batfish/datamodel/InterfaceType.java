@@ -16,6 +16,8 @@ public enum InterfaceType {
   PHYSICAL,
   /** Logical redundant ethernet interface (in Juniper parlance) */
   REDUNDANT,
+  /** Child of a redundant interface: logical, sub-interface of a REDUNDANT interface */
+  REDUNDANT_CHILD,
   /** A logical tunnel interface (e.g., GRE, IP-in-IP encapsulation) */
   TUNNEL,
   /** Uknknown interface type */

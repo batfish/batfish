@@ -108,6 +108,9 @@
         "as_path_prepend" : [
           "configs/as_path_prepend"
         ],
+        "asa-interface-redundant" : [
+          "configs/cisco_asa/asa-interface-redundant"
+        ],
         "asa_acl" : [
           "configs/asa_acl"
         ],
@@ -979,6 +982,7 @@
         "configs/cisco_aaa" : "PASSED",
         "configs/cisco_acl" : "PASSED",
         "configs/cisco_additional_paths" : "PASSED",
+        "configs/cisco_asa/asa-interface-redundant" : "PASSED",
         "configs/cisco_authentication" : "PASSED",
         "configs/cisco_bgp" : "PASSED",
         "configs/cisco_bgp_confederation" : "PASSED",
@@ -14968,6 +14972,248 @@
             "              ADDITIONAL_PATHS:'additional-paths'",
             "              ALL:'all'",
             "              NEWLINE:'\\n'))))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cisco_asa/asa-interface-redundant" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.6'",
+            "        PAREN_LEFT:'('",
+            "        DEC:'3'",
+            "        PAREN_RIGHT:')'",
+            "        DEC:'8'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'asa-interface-redundant'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_speed_ios",
+            "          SPEED:'speed'",
+            "          mbits = DEC:'1000'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_null_block",
+            "          DUPLEX:'duplex'",
+            "          VARIABLE:'full'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_nameif",
+            "          NO:'no'",
+            "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_speed_ios",
+            "          SPEED:'speed'",
+            "          mbits = DEC:'1000'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_null_block",
+            "          DUPLEX:'duplex'",
+            "          VARIABLE:'full'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_nameif",
+            "          NO:'no'",
+            "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Redundant'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_member_interface",
+            "          MEMBER_INTERFACE:'member-interface'",
+            "          name = (interface_name",
+            "            name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "            DEC:'0'  <== mode:M_Interface",
+            "            FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "            (range",
+            "              (subrange",
+            "                low = DEC:'2'  <== mode:M_Interface)))",
+            "          NEWLINE:'\\n'  <== mode:M_Interface))",
+            "      (if_inner",
+            "        (if_member_interface",
+            "          MEMBER_INTERFACE:'member-interface'",
+            "          name = (interface_name",
+            "            name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "            DEC:'0'  <== mode:M_Interface",
+            "            FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "            (range",
+            "              (subrange",
+            "                low = DEC:'1'  <== mode:M_Interface)))",
+            "          NEWLINE:'\\n'  <== mode:M_Interface))",
+            "      (if_inner",
+            "        (if_no_nameif",
+            "          NO:'no'",
+            "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Redundant'  <== mode:M_Interface",
+            "        DEC:'1'  <== mode:M_Interface",
+            "        PERIOD:'.'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_vlan",
+            "          VLAN:'vlan'",
+            "          vlan = (vlan_id",
+            "            v = DEC:'2')",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_nameif",
+            "          NAMEIF:'nameif'",
+            "          name = (variable",
+            "            VARIABLE:'redundant1sub')",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_security_level",
+            "          SECURITY_LEVEL:'security-level'",
+            "          level = DEC:'75'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'10.0.0.1'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          STANDBY:'standby'",
+            "          standby_address = IP_ADDRESS:'10.0.0.2'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Redundant'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_no_nameif",
+            "          NO:'no'",
+            "          NAMEIF:'nameif'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_security_level",
+            "          NO:'no'",
+            "          SECURITY_LEVEL:'security-level'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_no_ip_address",
+            "          NO:'no'",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Redundant'  <== mode:M_Interface",
+            "        DEC:'2'  <== mode:M_Interface",
+            "        PERIOD:'.'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_vlan",
+            "          VLAN:'vlan'",
+            "          vlan = (vlan_id",
+            "            v = DEC:'2')",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_nameif",
+            "          NAMEIF:'nameif'",
+            "          name = (variable",
+            "            VARIABLE:'redundant2sub')",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_security_level",
+            "          SECURITY_LEVEL:'security-level'",
+            "          level = DEC:'75'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'10.0.1.1'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          STANDBY:'standby'",
+            "          standby_address = IP_ADDRESS:'10.0.1.2'",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -77864,6 +78110,7 @@
         "aruba_voice" : "PASSED",
         "aruba_vpn" : "PASSED",
         "as_path_prepend" : "PASSED",
+        "asa-interface-redundant" : "PASSED",
         "asa_acl" : "PASSED",
         "asa_banner" : "PASSED",
         "asa_interface" : "PASSED",
@@ -78975,6 +79222,84 @@
           }
         },
         "configs/cisco_additional_paths" : { },
+        "configs/cisco_asa/asa-interface-redundant" : {
+          "interface" : {
+            "GigabitEthernet0/1" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 1
+            },
+            "GigabitEthernet0/2" : {
+              "definitionLines" : [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ],
+              "numReferrers" : 1
+            },
+            "Redundant1" : {
+              "definitionLines" : [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28
+              ],
+              "numReferrers" : 1
+            },
+            "Redundant1.2" : {
+              "definitionLines" : [
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Redundant2" : {
+              "definitionLines" : [
+                38,
+                39,
+                40,
+                41
+              ],
+              "numReferrers" : 1
+            },
+            "Redundant2.2" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48
+              ],
+              "numReferrers" : 1
+            },
+            "redundant1sub" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            },
+            "redundant2sub" : {
+              "definitionLines" : [
+                46
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/cisco_authentication" : { },
         "configs/cisco_bgp" : {
           "as-path access-list" : {
@@ -86352,6 +86677,9 @@
         "configs/cisco_additional_paths" : [
           "cisco_additional_paths"
         ],
+        "configs/cisco_asa/asa-interface-redundant" : [
+          "asa-interface-redundant"
+        ],
         "configs/cisco_authentication" : [
           "cisco_authentication"
         ],
@@ -87653,6 +87981,56 @@
               "bgp neighbor without remote-as" : [
                 8,
                 9
+              ]
+            }
+          }
+        },
+        "configs/cisco_asa/asa-interface-redundant" : {
+          "interface" : {
+            "GigabitEthernet0/1" : {
+              "interface" : [
+                7
+              ],
+              "interface member-interface" : [
+                25
+              ]
+            },
+            "GigabitEthernet0/2" : {
+              "interface" : [
+                15
+              ],
+              "interface member-interface" : [
+                24
+              ]
+            },
+            "Redundant1" : {
+              "interface" : [
+                23
+              ]
+            },
+            "Redundant1.2" : {
+              "interface" : [
+                31
+              ]
+            },
+            "Redundant2" : {
+              "interface" : [
+                38
+              ]
+            },
+            "Redundant2.2" : {
+              "interface" : [
+                44
+              ]
+            },
+            "redundant1sub" : {
+              "interface" : [
+                33
+              ]
+            },
+            "redundant2sub" : {
+              "interface" : [
+                46
               ]
             }
           }
@@ -95556,6 +95934,7 @@
         "configs/cisco_aaa" : "PASSED",
         "configs/cisco_acl" : "PASSED",
         "configs/cisco_additional_paths" : "PASSED",
+        "configs/cisco_asa/asa-interface-redundant" : "PASSED",
         "configs/cisco_authentication" : "PASSED",
         "configs/cisco_bgp" : "PASSED",
         "configs/cisco_bgp_confederation" : "PASSED",
