@@ -396,7 +396,8 @@ public class IspModelingUtilsTest {
     Configuration internet = IspModelingUtils.createInternetNode();
     InterfaceAddress interfaceAddress =
         ConcreteInterfaceAddress.create(
-            IspModelingUtils.INTERNET_OUT_ADDRESS, IspModelingUtils.INTERNET_OUT_SUBNET);
+            IspModelingUtils.INTERNET_OUT_ADDRESS,
+            IspModelingUtils.INTERNET_OUT_SUBNET.getPrefixLength());
     assertThat(
         internet,
         allOf(

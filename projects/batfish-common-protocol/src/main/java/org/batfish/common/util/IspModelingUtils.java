@@ -36,7 +36,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
@@ -70,20 +69,25 @@ import org.batfish.specifier.LocationInfo;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
 public final class IspModelingUtils {
+  static final Prefix INTERNET_OUT_SUBNET = Prefix.parse("240.254.254.0/30");
+
   static final LocationInfo INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO =
       new LocationInfo(
-          true, // use as a source
-          UniverseIpSpace.INSTANCE, // pick any source IP (excluding snapshot owned IPs)
-          EmptyIpSpace.INSTANCE);
+          // use as a source
+          true,
+          // pick any source IP (excluding snapshot owned IPs)
+          UniverseIpSpace.INSTANCE,
+          // pretend there's a neighbor that responds to ARP, so we get EXITS_NETWORK instead of
+          // NEIGHBOR_UNREACHABLE for traffic routed to the internet
+          INTERNET_OUT_SUBNET.getLastHostIp().toIpSpace());
 
   static final String EXPORT_POLICY_ON_INTERNET = "exportPolicyOnInternet";
   static final String EXPORT_POLICY_ON_ISP = "exportPolicyOnIsp";
   private static final Ip FIRST_EVEN_INTERNET_IP = Ip.parse("240.1.1.2");
   static final long INTERNET_AS = 65537L;
   public static final String INTERNET_HOST_NAME = "internet";
-  static final Ip INTERNET_OUT_ADDRESS = Ip.parse("240.254.254.1");
+  static final Ip INTERNET_OUT_ADDRESS = INTERNET_OUT_SUBNET.getFirstHostIp();
   static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
-  static final int INTERNET_OUT_SUBNET = 30;
   private static final int ISP_INTERNET_SUBNET = 31;
   // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
   // that use this space internally
@@ -317,7 +321,9 @@ public final class IspModelingUtils {
             .setName(INTERNET_OUT_INTERFACE)
             .setOwner(internetConfiguration)
             .setVrf(defaultVrf)
-            .setAddress(ConcreteInterfaceAddress.create(INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET))
+            .setAddress(
+                ConcreteInterfaceAddress.create(
+                    INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET.getPrefixLength()))
             .build();
 
     internetConfiguration
