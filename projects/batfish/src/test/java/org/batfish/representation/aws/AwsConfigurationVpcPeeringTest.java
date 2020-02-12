@@ -161,7 +161,7 @@ public class AwsConfigurationVpcPeeringTest {
     testTrace(
         _instanceB,
         Ip.parse("10.10.10.11"),
-        FlowDisposition.DELIVERED_TO_SUBNET,
+        FlowDisposition.NEIGHBOR_UNREACHABLE,
         ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA, _subnetA));
   }
 }
