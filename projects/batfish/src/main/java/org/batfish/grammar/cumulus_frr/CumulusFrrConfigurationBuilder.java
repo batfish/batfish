@@ -59,7 +59,6 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
@@ -1122,24 +1121,24 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     IpCommunityList communityList =
-            _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
+        _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
     if (!(communityList instanceof IpCommunityListStandard)) {
       warn(
-              ctx,
-              String.format(
-                      "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
-                      name));
+          ctx,
+          String.format(
+              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
       return;
     }
     IpCommunityListStandard communityListStandard = (IpCommunityListStandard) communityList;
     communityListStandard
-            .getLines()
-            .add(new IpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
+        .getLines()
+        .add(new IpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
     _c.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
-          Iterable<Standard_communityContext> communities) {
+      Iterable<Standard_communityContext> communities) {
     ImmutableSet.Builder<StandardCommunity> builder = ImmutableSet.builder();
     for (Standard_communityContext communityCtx : communities) {
       Optional<StandardCommunity> community = toStandardCommunity(communityCtx);

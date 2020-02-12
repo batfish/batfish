@@ -1317,7 +1317,8 @@ public final class CumulusConversions {
       if (line.getCommunities().size() == 0) {
         continue;
       }
-      line.getCommunities().forEach(
+      line.getCommunities()
+          .forEach(
               (standardCommunity) -> {
                 if (line.getAction() == LineAction.PERMIT) {
                   if (!blacklist.contains(standardCommunity)) {
@@ -1328,8 +1329,8 @@ public final class CumulusConversions {
                   if (!whitelist.contains(standardCommunity)) {
                     blacklist.add(standardCommunity);
                   }
-              }
-          });
+                }
+              });
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
