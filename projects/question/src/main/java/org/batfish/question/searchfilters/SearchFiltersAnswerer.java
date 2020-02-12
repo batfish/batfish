@@ -36,6 +36,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -102,7 +103,7 @@ public final class SearchFiltersAnswerer extends Answerer {
             TableAnswerElement table = canQueryAcl ? baseTable : refTable;
             table.addRow(
                 Row.builder(table.getMetadata().toColumnMap())
-                    .put(COL_NODE, hostname)
+                    .put(COL_NODE, new Node(hostname))
                     .put(COL_FILTER_NAME, aclName)
                     .build());
           }
