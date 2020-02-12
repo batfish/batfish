@@ -1,11 +1,13 @@
 package org.batfish.question.searchfilters;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -15,9 +17,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -63,9 +67,8 @@ public class SearchFiltersQuestionTest {
     assertThat(q.getDataPlane(), equalTo(false));
     assertThat(q.getNodes(), nullValue());
     assertThat(q.getStartLocation(), nullValue());
-    // src/dst IPs NOT stored in headerspace at this stage
-    assertThat(q.getHeaderSpace().getDstIps(), nullValue());
-    assertThat(q.getHeaderSpace().getSrcIps(), nullValue());
+    // the headerspace should be empty i.e., TrueExpr
+    assertEquals(q.getHeaderSpaceExpr(), TrueExpr.INSTANCE);
     // src/dst IPs are in specifiers at this stage
     SearchFiltersParameters parameters = q.toSearchFiltersParameters();
     assertThat(parameters.getStartLocationSpecifier(), equalTo(LocationSpecifier.ALL_LOCATIONS));
@@ -111,10 +114,14 @@ public class SearchFiltersQuestionTest {
             .setHeaders(PacketHeaderConstraints.builder().setIpProtocols(ipProtocols).build())
             .build();
 
-    assertThat(question.getHeaderSpace().getIpProtocols(), equalTo(ipProtocols));
+    assertEquals(
+        question.getHeaderSpaceExpr(),
+        match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build()));
 
     // test (de)serialization
     question = BatfishObjectMapper.clone(question, SearchFiltersQuestion.class);
-    assertThat(question.getHeaderSpace().getIpProtocols(), equalTo(ipProtocols));
+    assertEquals(
+        question.getHeaderSpaceExpr(),
+        match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build()));
   }
 }
