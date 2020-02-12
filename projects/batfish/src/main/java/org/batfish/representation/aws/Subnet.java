@@ -1,24 +1,32 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.immutableEntry;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLocationInfo;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -264,6 +272,18 @@ public class Subnet implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+
+    // create LocationInfo for each link location on the node.
+    cfgNode.setLocationInfo(
+        cfgNode.getAllInterfaces().values().stream()
+            .flatMap(
+                iface ->
+                    Stream.of(
+                        immutableEntry(
+                            interfaceLocation(iface), subnetInterfaceLocationInfo(iface)),
+                        immutableEntry(
+                            interfaceLinkLocation(iface), subnetInterfaceLinkLocationInfo(iface))))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;
   }
