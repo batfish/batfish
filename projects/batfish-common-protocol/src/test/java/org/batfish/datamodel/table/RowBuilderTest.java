@@ -1,22 +1,20 @@
 package org.batfish.datamodel.table;
 
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.NoSuchElementException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-
 public class RowBuilderTest {
 
-  @Rule
-  public ExpectedException _thrown = ExpectedException.none();
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
   public void testGetTypeReference() {
