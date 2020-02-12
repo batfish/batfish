@@ -6,6 +6,7 @@ import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -47,6 +48,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -64,19 +66,29 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.specifier.LocationInfo;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
 public final class IspModelingUtils {
+  static final Prefix INTERNET_OUT_SUBNET = Prefix.parse("240.254.254.0/30");
+
+  static final LocationInfo INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO =
+      new LocationInfo(
+          // use as a source
+          true,
+          // pick any source IP (excluding snapshot owned IPs)
+          UniverseIpSpace.INSTANCE,
+          // pretend there's a neighbor that responds to ARP, so we get EXITS_NETWORK instead of
+          // NEIGHBOR_UNREACHABLE for traffic routed to the internet
+          INTERNET_OUT_SUBNET.getLastHostIp().toIpSpace());
 
   static final String EXPORT_POLICY_ON_INTERNET = "exportPolicyOnInternet";
   static final String EXPORT_POLICY_ON_ISP = "exportPolicyOnIsp";
   private static final Ip FIRST_EVEN_INTERNET_IP = Ip.parse("240.1.1.2");
   static final long INTERNET_AS = 65537L;
   public static final String INTERNET_HOST_NAME = "internet";
-  static final Ip INTERNET_OUT_ADDRESS = Ip.parse("240.254.254.1");
+  static final Ip INTERNET_OUT_ADDRESS = INTERNET_OUT_SUBNET.getFirstHostIp();
   static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
-  // picking a value < 30 so that @enter(internet) is meaningful
-  static final int INTERNET_OUT_SUBNET = 29;
   private static final int ISP_INTERNET_SUBNET = 31;
   // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
   // that use this space internally
@@ -306,12 +318,15 @@ public final class IspModelingUtils {
     internetConfiguration.setDeviceType(DeviceType.INTERNET);
     Vrf defaultVrf =
         Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(internetConfiguration).build();
-    Interface.builder()
-        .setName(INTERNET_OUT_INTERFACE)
-        .setOwner(internetConfiguration)
-        .setVrf(defaultVrf)
-        .setAddress(ConcreteInterfaceAddress.create(INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET))
-        .build();
+    Interface internetOutInterface =
+        Interface.builder()
+            .setName(INTERNET_OUT_INTERFACE)
+            .setOwner(internetConfiguration)
+            .setVrf(defaultVrf)
+            .setAddress(
+                ConcreteInterfaceAddress.create(
+                    INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET.getPrefixLength()))
+            .build();
 
     internetConfiguration
         .getDefaultVrf()
@@ -352,6 +367,11 @@ public final class IspModelingUtils {
                 EXPORT_POLICY_ON_INTERNET,
                 internetConfiguration,
                 new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO)))));
+
+    internetConfiguration.setLocationInfo(
+        ImmutableMap.of(
+            interfaceLinkLocation(internetOutInterface),
+            INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO));
     return internetConfiguration;
   }
 
