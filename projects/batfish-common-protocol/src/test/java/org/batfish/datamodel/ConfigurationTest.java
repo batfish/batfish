@@ -24,6 +24,9 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -178,16 +181,22 @@ public final class ConfigurationTest {
         ImmutableMap.of("csme", new HasCommunity(AllStandardCommunities.instance()));
     Map<String, CommunitySet> communitySets =
         ImmutableMap.of("cs", CommunitySet.of(StandardCommunity.of(1L)));
+    Map<Location, LocationInfo> locationInfo =
+        ImmutableMap.of(
+            new InterfaceLocation("n", "i"),
+            new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE));
     Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
     c.setCommunityMatchExprs(communityMatchExprs);
     c.setCommunitySetExprs(communitySetExprs);
     c.setCommunitySetMatchExprs(communitySetMatchExprs);
     c.setCommunitySets(communitySets);
+    c.setLocationInfo(locationInfo);
     Configuration cloned = SerializationUtils.clone(c);
 
     assertThat(cloned.getCommunityMatchExprs(), equalTo(communityMatchExprs));
     assertThat(cloned.getCommunitySetExprs(), equalTo(communitySetExprs));
     assertThat(cloned.getCommunitySetMatchExprs(), equalTo(communitySetMatchExprs));
     assertThat(cloned.getCommunitySets(), equalTo(communitySets));
+    assertThat(cloned.getLocationInfo(), equalTo(locationInfo));
   }
 }

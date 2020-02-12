@@ -24,6 +24,7 @@ import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.getInternetAndIspNodes;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
+import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -218,7 +219,6 @@ import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.batfish.specifier.LocationInfoUtils;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -835,11 +835,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
-    /* TODO this should be deserialized from disk. Ultimate source will be a combination of vendor
-     * configs and user input. For now, consolidating the default logic here. This logic will become
-     * the default implementation of the vendor config method.
-     */
-    return LocationInfoUtils.computeLocationInfo(
+    return computeLocationInfo(
         getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
   }
 
