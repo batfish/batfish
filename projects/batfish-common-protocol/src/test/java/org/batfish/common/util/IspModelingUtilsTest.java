@@ -2,7 +2,10 @@ package org.batfish.common.util;
 
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP;
+import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
+import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE;
+import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO;
 import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
 import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
@@ -25,6 +28,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -78,6 +82,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.junit.Test;
 
 /** Tests for {@link IspModelingUtils} */
@@ -430,6 +435,12 @@ public class IspModelingUtilsTest {
                             hasMultipathEbgp(true)))))));
 
     assertThat(internet.getRoutingPolicies(), hasKey(IspModelingUtils.EXPORT_POLICY_ON_INTERNET));
+
+    assertThat(
+        internet.getLocationInfo(),
+        hasEntry(
+            new InterfaceLinkLocation(INTERNET_HOST_NAME, INTERNET_OUT_INTERFACE),
+            INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO));
   }
 
   @Test
