@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -162,12 +163,12 @@ final class CiscoAsaNatUtil {
     throw new BatfishException("Unexpected NetworkObject type");
   }
 
-  private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
+  private static AclLineMatchExpr matchField(Prefix prefix, IpField field) {
     switch (field) {
       case DESTINATION:
-        return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(prefix.toIpSpace()).build());
+        return matchDst(prefix);
       case SOURCE:
-        return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(prefix.toIpSpace()).build());
+        return matchSrc(prefix);
       default:
         throw new BatfishException("Invalid field");
     }
