@@ -1,0 +1,49 @@
+!
+ASA Version 9.6(3)8
+!
+hostname asa-interface-redundant
+!
+
+interface GigabitEthernet0/1
+ speed 1000
+ duplex full
+ no nameif
+ no security-level
+ no ip address
+!
+
+interface GigabitEthernet0/2
+ speed 1000
+ duplex full
+ no nameif
+ no security-level
+ no ip address
+!
+
+interface Redundant1
+ member-interface GigabitEthernet0/2
+ member-interface GigabitEthernet0/1
+ no nameif
+ no security-level
+ no ip address
+!
+
+interface Redundant1.2
+ vlan 2
+ nameif redundant1sub
+ security-level 75
+ ip address 10.0.0.1 255.255.255.0 standby 10.0.0.2
+!
+
+interface Redundant2
+ no nameif
+ no security-level
+ no ip address
+!
+
+interface Redundant2.2
+ vlan 2
+ nameif redundant2sub
+ security-level 75
+ ip address 10.0.1.1 255.255.255.0 standby 10.0.1.2
+!

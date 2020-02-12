@@ -730,6 +730,44 @@ public class Batfish extends PluginConsumer implements IBatfish {
             });
   }
 
+  private static void computeRedundantInterfaceBandwidths(Map<String, Interface> interfaces) {
+    // Set bandwidths for redundant interfaces
+    interfaces.values().stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.REDUNDANT)
+        .forEach(
+            iface -> {
+              /* If interface has dependencies, bandwidth should be bandwidth of any active dependency. */
+              iface.setBandwidth(
+                  iface.getDependencies().stream()
+                      .map(dependency -> interfaces.get(dependency.getInterfaceName()))
+                      .filter(Objects::nonNull)
+                      .filter(Interface::getActive)
+                      .map(Interface::getBandwidth)
+                      .filter(Objects::nonNull)
+                      .mapToDouble(Double::doubleValue)
+                      .min()
+                      .orElse(0.0));
+            });
+    // Now that redundant interfaces have bandwidths, set bandwidths for redundant child interfaces
+    interfaces.values().stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.REDUNDANT_CHILD)
+        .forEach(
+            iface -> {
+              /*
+              Bandwidth for redundant child interfaces (e.g. units) should be inherited from parent.
+              */
+              double bandwidth =
+                  iface.getDependencies().stream()
+                      .filter(d -> d.getType() == DependencyType.BIND)
+                      .findFirst()
+                      .map(Dependency::getInterfaceName)
+                      .map(interfaces::get)
+                      .map(Interface::getBandwidth)
+                      .orElse(0.0);
+              iface.setBandwidth(bandwidth);
+            });
+  }
+
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
         settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -1726,6 +1764,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     computeAggregatedInterfaceBandwidths(interfaces);
   }
 
+  private void postProcessRedundantInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(
+                        v ->
+                            postProcessRedundantInterfacesHelper(c.getAllInterfaces(v.getName()))));
+  }
+
+  private void postProcessRedundantInterfacesHelper(Map<String, Interface> interfaces) {
+    /* Compute bandwidth for redundnant interfaces. */
+    computeRedundantInterfaceBandwidths(interfaces);
+  }
+
   private void identifyDeviceTypes(Collection<Configuration> configurations) {
     for (Configuration c : configurations) {
       if (c.getDeviceType() != null) {
@@ -1806,7 +1861,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // Look at aggregate dependencies only now
-    if (iface.getInterfaceType() == InterfaceType.AGGREGATED
+    if ((iface.getInterfaceType() == InterfaceType.AGGREGATED
+            || iface.getInterfaceType() == InterfaceType.REDUNDANT)
         && dependencies.stream()
             .filter(d1 -> d1.getType() == DependencyType.AGGREGATE)
             // Extract existing and active interfaces
@@ -2080,6 +2136,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     updateBlacklistedAndInactiveConfigs(snapshot, configurations);
     postProcessAggregatedInterfaces(configurations);
+    postProcessRedundantInterfaces(configurations);
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
