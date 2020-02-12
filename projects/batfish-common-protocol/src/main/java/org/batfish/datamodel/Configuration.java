@@ -60,6 +60,7 @@ public final class Configuration implements Serializable {
   public static class Builder {
 
     private ConfigurationFormat _configurationFormat;
+    private @Nullable DeviceModel _deviceModel;
     private String _hostname;
     private String _humanName;
     private Supplier<String> _hostnameGenerator;
@@ -84,12 +85,18 @@ public final class Configuration implements Serializable {
       if (_defaultInboundAction != null) {
         configuration.setDefaultInboundAction(_defaultInboundAction);
       }
+      configuration.setDeviceModel(_deviceModel);
       configuration.setDomainName(_domainName);
       return configuration;
     }
 
     public Builder setConfigurationFormat(ConfigurationFormat configurationFormat) {
       _configurationFormat = configurationFormat;
+      return this;
+    }
+
+    public Builder setDeviceModel(@Nullable DeviceModel model) {
+      _deviceModel = model;
       return this;
     }
 
@@ -135,6 +142,7 @@ public final class Configuration implements Serializable {
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
+  private static final String PROP_DEVICE_MODEL = "deviceModel";
   private static final String PROP_DEVICE_TYPE = "deviceType";
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
   private static final String PROP_DOMAIN_NAME = "domainName";
@@ -191,6 +199,7 @@ public final class Configuration implements Serializable {
 
   private LineAction _defaultInboundAction;
 
+  private DeviceModel _deviceModel;
   private DeviceType _deviceType;
 
   private NavigableSet<String> _dnsServers;
@@ -440,6 +449,11 @@ public final class Configuration implements Serializable {
   @JsonIgnore
   public Vrf getDefaultVrf() {
     return _vrfs.get(DEFAULT_VRF_NAME);
+  }
+
+  @JsonProperty(PROP_DEVICE_MODEL)
+  public DeviceModel getDeviceModel() {
+    return _deviceModel;
   }
 
   @JsonProperty(PROP_DEVICE_TYPE)
@@ -735,6 +749,11 @@ public final class Configuration implements Serializable {
 
   public void setDefaultInboundAction(LineAction defaultInboundAction) {
     _defaultInboundAction = defaultInboundAction;
+  }
+
+  @JsonProperty(PROP_DEVICE_MODEL)
+  public void setDeviceModel(DeviceModel deviceModel) {
+    _deviceModel = deviceModel;
   }
 
   @JsonProperty(PROP_DEVICE_TYPE)
