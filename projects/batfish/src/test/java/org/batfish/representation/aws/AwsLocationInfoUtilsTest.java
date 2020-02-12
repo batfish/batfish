@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLocationInfo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -8,6 +9,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -27,6 +29,20 @@ public class AwsLocationInfoUtilsTest {
         ImmutableList.of(
             ConcreteInterfaceAddress.parse("1.1.1.1/24"),
             ConcreteInterfaceAddress.parse("2.2.2.2/24")));
+  }
+
+  @Test
+  public void testInstanceInterfaceLocationInfo() {
+    LocationInfo info = instanceInterfaceLocationInfo(IFACE);
+    assertTrue(info.isSource());
+    assertThat(
+        info.getSourceIps(),
+        allOf(
+            containsIp(Ip.parse("1.1.1.1")),
+            containsIp(Ip.parse("2.2.2.2")),
+            not(containsIp(Ip.parse("1.1.1.2"))),
+            not(containsIp(Ip.parse("2.2.2.3")))));
+    assertThat(info.getArpIps(), equalTo(EmptyIpSpace.INSTANCE));
   }
 
   @Test
