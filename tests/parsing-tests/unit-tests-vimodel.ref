@@ -1786,10 +1786,6 @@
             },
             "mtu" : 1500,
             "proxyArp" : true,
-            "redundancyGroupMembers" : [
-              "GigabitEthernet0/1",
-              "GigabitEthernet0/2"
-            ],
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,

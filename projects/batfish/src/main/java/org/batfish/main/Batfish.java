@@ -745,7 +745,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       .map(Interface::getBandwidth)
                       .filter(Objects::nonNull)
                       .mapToDouble(Double::doubleValue)
-                      .findFirst()
+                      .min()
                       .orElse(0.0));
             });
     // Now that redundant interfaces have bandwidths, set bandwidths for redundant child interfaces

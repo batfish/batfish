@@ -573,7 +573,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_PRE_TRANSFORMATION_OUTGOING_FILTER =
       "preTransformationOutgoingFilter";
   private static final String PROP_PROXY_ARP = "proxyArp";
-  private static final String PROP_REDUNDANCY_GROUP_MEMBERS = "redundancyGroupMembers";
   private static final String PROP_RIP_ENABLED = "ripEnabled";
   private static final String PROP_RIP_PASSIVE = "ripPassive";
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
@@ -1373,11 +1372,6 @@ public final class Interface extends ComparableStructure<String> {
     return _redundancyGroupMembers;
   }
 
-  @JsonProperty(PROP_REDUNDANCY_GROUP_MEMBERS)
-  private @Nonnull SortedSet<String> getRedundancyGroupMembersSorted() {
-    return ImmutableSortedSet.copyOf(_redundancyGroupMembers);
-  }
-
   @JsonProperty(PROP_RIP_ENABLED)
   public boolean getRipEnabled() {
     return _ripEnabled;
@@ -1708,7 +1702,7 @@ public final class Interface extends ComparableStructure<String> {
     _proxyArp = proxyArp;
   }
 
-  @JsonProperty(PROP_REDUNDANCY_GROUP_MEMBERS)
+  @JsonIgnore
   public void setRedundancyGroupMembers(Iterable<String> redundancyGroupMembers) {
     _redundancyGroupMembers = ImmutableSortedSet.copyOf(redundancyGroupMembers);
   }
