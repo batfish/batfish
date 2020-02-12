@@ -92,7 +92,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   public void testApplicationsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr(
-            ImmutableSet.of(Protocol.SSH, Protocol.DNS)),
+            ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication())),
         or(
             match(
                 HeaderSpace.builder()

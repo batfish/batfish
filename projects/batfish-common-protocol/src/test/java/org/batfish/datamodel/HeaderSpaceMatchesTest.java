@@ -90,16 +90,6 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testDstProtocolsMatchers() {
-    // _flow is TCP port 22, so SSH
-    testMatches(
-        dstProtocols -> HeaderSpace.builder().setDstProtocols(dstProtocols).build(),
-        dstProtocols -> HeaderSpace.builder().setNotDstProtocols(dstProtocols).build(),
-        ImmutableSet.of(Protocol.SSH, Protocol.HTTP),
-        ImmutableSet.of(Protocol.HTTP, Protocol.DNS));
-  }
-
-  @Test
   public void testEcnsMatchers() {
     testMatches(
         ecns -> HeaderSpace.builder().setEcns(ecns).build(),
@@ -180,16 +170,6 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testSrcProtocolsMatchers() {
-    // _flow is TCP port 22, so SSH
-    testMatches(
-        srcProtocols -> HeaderSpace.builder().setSrcProtocols(srcProtocols).build(),
-        srcProtocols -> HeaderSpace.builder().setNotSrcProtocols(srcProtocols).build(),
-        ImmutableSet.of(Protocol.SSH, Protocol.HTTP),
-        ImmutableSet.of(Protocol.HTTP, Protocol.HTTP));
-  }
-
-  @Test
   public void testSrcOrDestIpsMatchers() {
     // _flow goes from 1.1.1.1 to 2.2.2.2; either should work.
     HeaderSpace withSrcIpAsSrcOrDst =
@@ -222,28 +202,6 @@ public class HeaderSpaceMatchesTest {
     assertThat(withSrcPortAsSrcOrDst.matches(newDstPortFlow, _namedIpSpaces), equalTo(true));
     assertThat(withDstPortAsSrcOrDst.matches(newDstPortFlow, _namedIpSpaces), equalTo(true));
     assertThat(withOtherPortAsSrcOrDst.matches(newDstPortFlow, _namedIpSpaces), equalTo(false));
-  }
-
-  @Test
-  public void testSrcOrDestProtocolsMatchers() {
-    // Need a new flow for this because _flow has the same protocol for src and dst (SSH).
-    // Set dstPort to port number for HTTP; this should work since HTTP and SSH are both TCP.
-    Flow newDstProtocolFlow = _sshFlow.toBuilder().setDstPort(Protocol.HTTP.getPort()).build();
-    HeaderSpace withSshAsSrcOrDst =
-        HeaderSpace.builder()
-            .setSrcOrDstProtocols(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
-            .build();
-    HeaderSpace withHttpAsSrcOrDst =
-        HeaderSpace.builder()
-            .setSrcOrDstProtocols(ImmutableSet.of(Protocol.HTTP, Protocol.DNS))
-            .build();
-    HeaderSpace withDnsAsSrcOrDst =
-        HeaderSpace.builder()
-            .setSrcOrDstProtocols(ImmutableSet.of(Protocol.DNS, Protocol.DNS))
-            .build();
-    assertThat(withSshAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(true));
-    assertThat(withHttpAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(true));
-    assertThat(withDnsAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(false));
   }
 
   @Test

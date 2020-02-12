@@ -19,7 +19,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.trace.TraceTree;
@@ -135,39 +134,6 @@ public final class AclTracer extends AclLineEvaluator {
         && rangesContain(headerSpace.getNotDstPorts(), _flow.getDstPort())) {
       return false;
     }
-    if (!headerSpace.getDstProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol dstProtocol : headerSpace.getDstProtocols()) {
-        if (dstProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = dstProtocol.getPort();
-          if (!dstPort.equals(_flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!headerSpace.getNotDstProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol notDstProtocol : headerSpace.getNotDstProtocols()) {
-        if (notDstProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = notDstProtocol.getPort();
-          if (!dstPort.equals(_flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
-    }
     if (!headerSpace.getFragmentOffsets().isEmpty()
         && !rangesContain(headerSpace.getFragmentOffsets(), _flow.getFragmentOffset())) {
       return false;
@@ -218,24 +184,6 @@ public final class AclTracer extends AclLineEvaluator {
             || rangesContain(headerSpace.getSrcOrDstPorts(), _flow.getDstPort()))) {
       return false;
     }
-    if (!headerSpace.getSrcOrDstProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol protocol : headerSpace.getSrcOrDstProtocols()) {
-        if (protocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer port = protocol.getPort();
-          if (!port.equals(_flow.getDstPort()) && !port.equals(_flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
     if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps(), _flow.getSrcIp())) {
       return false;
     }
@@ -250,39 +198,6 @@ public final class AclTracer extends AclLineEvaluator {
     if (!headerSpace.getNotSrcPorts().isEmpty()
         && rangesContain(headerSpace.getNotSrcPorts(), _flow.getSrcPort())) {
       return false;
-    }
-    if (!headerSpace.getSrcProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol srcProtocol : headerSpace.getSrcProtocols()) {
-        if (srcProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = srcProtocol.getPort();
-          if (!srcPort.equals(_flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!headerSpace.getNotSrcProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol notSrcProtocol : headerSpace.getNotSrcProtocols()) {
-        if (notSrcProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = notSrcProtocol.getPort();
-          if (!srcPort.equals(_flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
     }
     if (!headerSpace.getTcpFlags().isEmpty()
         && headerSpace.getTcpFlags().stream().noneMatch(tcpFlags -> tcpFlags.match(_flow))) {

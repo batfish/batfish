@@ -16,10 +16,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.specifier.ConstantEnumSetSpecifier;
+import org.batfish.datamodel.applications.Application;
+import org.batfish.datamodel.applications.PortsApplication;
 import org.batfish.specifier.NoIpProtocolsIpProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /**
  * A set of constraints on an IPv4 packet header, where each field (i.e., constraint) is a {@link
@@ -75,8 +75,7 @@ public class PacketHeaderConstraints {
   @Nullable private final IntegerSpace _dstPorts;
 
   // Shorthands for UDP/TCP fields
-  // TODO: allow specification of more complex applications, the existing Protocol Enum is limiting.
-  @Nullable private final Set<Protocol> _applications;
+  @Nullable private final String _applications;
   @Nullable private final Set<TcpFlagsMatchConditions> _tcpFlags;
 
   @VisibleForTesting
@@ -122,7 +121,7 @@ public class PacketHeaderConstraints {
         processBuilder(icmpTypes, VALID_ICMP_CODE_TYPE),
         processBuilder(srcPorts, IntegerSpace.PORTS),
         processBuilder(dstPorts, IntegerSpace.PORTS),
-        parseApplications(applications),
+        parseApplicationJsonToString(applications),
         tcpFlags);
   }
 
@@ -138,7 +137,7 @@ public class PacketHeaderConstraints {
       @Nullable IntegerSpace icmpType,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts,
-      @Nullable Set<Protocol> applications,
+      @Nullable String applications,
       @Nullable Set<TcpFlagsMatchConditions> tcpFlags) {
     _dscps = dscps;
     _ecns = ecns;
@@ -157,33 +156,42 @@ public class PacketHeaderConstraints {
   }
 
   /**
-   * Applications can be specified either as 1) a string like "ssh, telnet"; or 2) a (Json) list of
-   * strings like ["ssh", "telnet"]
+   * Applications can be specified as one or a list of terms. Each term can be either a named
+   * application such as "ssh", or a protocol name followed optionally by a list of
+   * protocol-specific parameters. For TCP/UDP, those parameters are a list of ports or port ranges,
+   * so one can specify "ssh" as "tcp/22". For ICMP, those parameters are ICMP types and codes,
+   * e.g., both "icmp/echo-request" specifies ICMP echo request, "icmp/1" defines ICMP wity type 1,
+   * and "icmp/1/1" defines ICMP type 1 and code 1.
    */
   @VisibleForTesting
-  static Set<Protocol> parseApplications(JsonNode applications) {
-    String input = "";
-    if (applications == null || applications.isNull()) {
+  static Set<Application> parseApplications(@Nullable String input) {
+    if (input == null) {
       return null;
-    } else if (applications.isTextual()) {
-      input = applications.asText();
-    } else if (applications.isArray()) {
-      input =
-          Streams.stream(applications.elements())
-              .map(JsonNode::textValue)
-              .collect(Collectors.joining(","));
-    } else {
-      throw new IllegalArgumentException(
-          String.format(
-              "Application specifier should be a string or a list of strings. Got: %s",
-              applications));
     }
 
-    return SpecifierFactories.getEnumSetSpecifierOrDefault(
-            input,
-            Grammar.APPLICATION_SPECIFIER,
-            new ConstantEnumSetSpecifier<Protocol>(ImmutableSet.of()))
+    return SpecifierFactories.getApplicationSpecifier(input, SpecifierFactories.ACTIVE_VERSION)
         .resolve();
+  }
+
+  @Nullable
+  static String parseApplicationJsonToString(JsonNode applications) {
+    if (applications == null || applications.isNull()) {
+      return null;
+    }
+
+    if (applications.isTextual()) {
+      return applications.asText();
+    }
+    if (applications.isArray()) {
+      return Streams.stream(applications.elements())
+          .map(JsonNode::textValue)
+          .collect(Collectors.joining(","));
+    }
+
+    throw new IllegalArgumentException(
+        String.format(
+            "Application specifier should be a string or a list of strings. Got: %s",
+            applications));
   }
 
   /**
@@ -308,10 +316,14 @@ public class PacketHeaderConstraints {
     return _dstPorts;
   }
 
-  @Nullable
   @JsonProperty(PROP_APPLICATIONS)
-  public Set<Protocol> getApplications() {
+  @Nullable
+  public String getApplicationsString() {
     return _applications;
+  }
+
+  public Set<Application> getApplications() {
+    return parseApplications(_applications);
   }
 
   @Nullable
@@ -431,7 +443,7 @@ public class PacketHeaderConstraints {
   static boolean areProtocolsAndPortsCompatible(
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable IntegerSpace ports,
-      @Nullable Set<Protocol> protocols)
+      @Nullable Set<Application> applications)
       throws IllegalArgumentException {
 
     // Ports are only applicable to TCP/UDP
@@ -443,24 +455,27 @@ public class PacketHeaderConstraints {
           ipProtocols);
     }
 
-    // Intersection of IP protocols and higher level protocols should not be empty
-    if (ipProtocols != null && protocols != null) {
+    // Intersection of IP protocols and higher level applications should not be empty
+    if (ipProtocols != null && applications != null) {
       // Resolve Ip protocols from higher-level application protocols
       Set<IpProtocol> resolvedIpProtocols =
-          protocols.stream().map(Protocol::getIpProtocol).collect(ImmutableSet.toImmutableSet());
+          applications.stream()
+              .map(Application::getIpProtocol)
+              .collect(ImmutableSet.toImmutableSet());
       checkArgument(
           !Sets.intersection(ipProtocols, resolvedIpProtocols).isEmpty(),
           "Combination of given IP protocols (%s) and application protocols (%s) cannot be satisfied",
           ipProtocols,
-          protocols);
+          applications);
     }
 
     // Intersection of ports given and ports resolved from higher-level protocols should
     // not be empty
-    if (ports != null && protocols != null) {
+    if (ports != null && applications != null) {
       IntegerSpace resolvedPorts =
-          protocols.stream()
-              .map(Protocol::getPort)
+          applications.stream()
+              .filter(application -> application instanceof PortsApplication)
+              .flatMap(application -> ((PortsApplication) application).getPorts().stream())
               .map(IntegerSpace::of)
               .reduce(IntegerSpace::union)
               .orElse(IntegerSpace.EMPTY);
@@ -470,7 +485,7 @@ public class PacketHeaderConstraints {
           ports.contains(resolvedPorts),
           "Given ports (%s) and protocols (%s) do not overlap",
           ports,
-          protocols);
+          applications);
     }
     return true;
   }
@@ -493,7 +508,7 @@ public class PacketHeaderConstraints {
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts,
-      @Nullable Set<Protocol> applications,
+      @Nullable Set<Application> applications,
       @Nullable Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
     @Nullable
@@ -510,7 +525,9 @@ public class PacketHeaderConstraints {
 
     if (applications != null) {
       Set<IpProtocol> collected =
-          applications.stream().map(Protocol::getIpProtocol).collect(ImmutableSet.toImmutableSet());
+          applications.stream()
+              .map(Application::getIpProtocol)
+              .collect(ImmutableSet.toImmutableSet());
       if (resolvedIpProtocols == null) {
         resolvedIpProtocols = collected;
       } else {
@@ -538,42 +555,41 @@ public class PacketHeaderConstraints {
   }
 
   /**
-   * Resolve set of allowed ports, given high-level constraints on application protocols.
+   * Resolve set of allowed ports, given high-level constraints on applications.
    *
    * @param ports specified ports
-   * @param protocols specified application protocols
+   * @param applications specified applications
    * @return a set of allowed port ranges that satisfy the constraints
    */
   @Nullable
   @VisibleForTesting
   static IntegerSpace resolvePorts(
-      @Nullable IntegerSpace ports, @Nullable Set<Protocol> protocols) {
+      @Nullable IntegerSpace ports, @Nullable Set<Application> applications) {
     // Don't care
-    if (ports == null && protocols == null) {
+    if (ports == null && applications == null) {
       return null;
     }
 
     // Only ports are specified
-    if (protocols == null) {
+    if (applications == null) {
       return ports;
     }
 
-    // Only protocols specified
+    IntegerSpace portsFromApplications =
+        applications.stream()
+            .filter(application -> application instanceof PortsApplication)
+            .flatMap(application -> ((PortsApplication) application).getPorts().stream())
+            .map(IntegerSpace::of)
+            .reduce(IntegerSpace::union)
+            .orElse(IntegerSpace.EMPTY);
+
+    // Only applications specified
     if (ports == null) {
-      return protocols.stream()
-          .map(Protocol::getPort)
-          .map(IntegerSpace::of)
-          .reduce(IntegerSpace::union)
-          .orElse(IntegerSpace.EMPTY);
+      return portsFromApplications;
     }
 
     // Intersect. Protocols are the limiting factor, but they must belong to at least one space
-    return protocols.stream()
-        .map(Protocol::getPort)
-        .map(IntegerSpace::of)
-        .reduce(IntegerSpace::union)
-        .orElse(IntegerSpace.EMPTY)
-        .intersection(ports);
+    return portsFromApplications.intersection(ports);
   }
 
   @Override
@@ -642,7 +658,7 @@ public class PacketHeaderConstraints {
     private @Nullable IntegerSpace _srcPorts;
     private @Nullable IntegerSpace _dstPorts;
     // Shorthands for UDP/TCP fields
-    private @Nullable Set<Protocol> _applications;
+    private @Nullable String _applications;
     private @Nullable Set<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {}
@@ -702,7 +718,7 @@ public class PacketHeaderConstraints {
       return this;
     }
 
-    public Builder setApplications(@Nullable Set<Protocol> applications) {
+    public Builder setApplications(@Nullable String applications) {
       _applications = applications;
       return this;
     }

@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
 
@@ -10,7 +11,7 @@ import org.batfish.datamodel.Interface;
  * allows them to be inspected.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface Location {
+public interface Location extends Serializable {
   <T> T accept(LocationVisitor<T> visitor);
 
   @Nonnull

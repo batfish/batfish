@@ -40,6 +40,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 
 /**
  * A Configuration represents an autonomous network device, such as a router, host, switch, or
@@ -229,6 +231,8 @@ public final class Configuration implements Serializable {
   private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
 
   private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
+
+  private @Nullable Map<Location, LocationInfo> _locationInfo;
 
   private NavigableSet<String> _loggingServers;
 
@@ -585,6 +589,11 @@ public final class Configuration implements Serializable {
     return _ipsecPhase2Proposals;
   }
 
+  @JsonIgnore
+  public @Nullable Map<Location, LocationInfo> getLocationInfo() {
+    return _locationInfo;
+  }
+
   @JsonProperty(PROP_LOGGING_SERVERS)
   public NavigableSet<String> getLoggingServers() {
     return _loggingServers;
@@ -832,6 +841,16 @@ public final class Configuration implements Serializable {
         ipsecPhase2Proposals == null
             ? ImmutableSortedMap.of()
             : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
+  }
+
+  /**
+   * Set the {@link LocationInfo} for {@link Location locations} on this node. Any missing locations
+   * will have their {@link LocationInfo} created automatically. See {@link
+   * org.batfish.specifier.LocationInfoUtils#computeLocationInfo(Map)}.
+   */
+  @JsonIgnore
+  public void setLocationInfo(Map<Location, LocationInfo> locationInfo) {
+    _locationInfo = ImmutableMap.copyOf(locationInfo);
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)

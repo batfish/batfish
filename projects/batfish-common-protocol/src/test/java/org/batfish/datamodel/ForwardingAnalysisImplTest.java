@@ -26,6 +26,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -1554,11 +1555,11 @@ public class ForwardingAnalysisImplTest {
             c1.getHostname(), ImmutableMap.of(v1.getName(), fib1),
             c2.getHostname(), ImmutableMap.of(v2.getName(), fib2));
 
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     ForwardingAnalysis analysis =
         new ForwardingAnalysisImpl(
-            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2),
-            fibs,
-            new Topology(ImmutableSortedSet.of()));
+            configs, fibs, new Topology(ImmutableSortedSet.of()), computeLocationInfo(configs));
 
     assertFalse(
         analysis
