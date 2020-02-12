@@ -13,7 +13,8 @@ import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUti
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.srcPortsToAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.tcpFlagsToAclLineMatchExpr;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -49,8 +50,8 @@ public class PacketHeaderConstraintsUtil {
       PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     List<AclLineMatchExpr> conjuncts =
         Stream.of(
-                match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
-                match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
+                matchSrc(srcIpSpace),
+                matchDst(dstIpSpace),
                 dscpsToAclLineMatchExpr(phc.getDscps()),
                 ecnsToAclLineMatchExpr(phc.getEcns()),
                 packetLengthToAclLineMatchExpr(phc.getPacketLengths()),

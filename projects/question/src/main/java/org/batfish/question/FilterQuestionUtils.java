@@ -93,7 +93,6 @@ public final class FilterQuestionUtils {
       return Optional.empty();
     }
     BDD assignment = bdd.fullSatOne();
-
     return Optional.of(
         pkt.getFlowFromAssignment(assignment)
             .setIngressNode(hostname)

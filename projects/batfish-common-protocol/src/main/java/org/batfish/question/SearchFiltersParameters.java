@@ -3,7 +3,8 @@ package org.batfish.question;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 
 import com.google.common.collect.ImmutableList;
@@ -11,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -58,16 +58,8 @@ public final class SearchFiltersParameters {
 
   /** Resolve all parameters and update the underlying headerspace. */
   public AclLineMatchExpr resolveHeaderspace(SpecifierContext ctx) {
-    MatchHeaderSpace srcExpr =
-        match(
-            HeaderSpace.builder()
-                .setSrcIps(resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx))
-                .build());
-    MatchHeaderSpace dstExpr =
-        match(
-            HeaderSpace.builder()
-                .setDstIps(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx))
-                .build());
+    MatchHeaderSpace srcExpr = matchSrc((resolveIpSpaceSpecifier(_sourceIpSpaceSpecifier, ctx)));
+    MatchHeaderSpace dstExpr = matchDst(resolveIpSpaceSpecifier(_destinationIpSpaceSpecifier, ctx));
 
     return _complementHeaderSpace
         ? not(and(_headerSpaceExpr, srcExpr, dstExpr))
