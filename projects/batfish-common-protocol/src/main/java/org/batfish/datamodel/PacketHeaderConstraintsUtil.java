@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -47,15 +46,11 @@ public class PacketHeaderConstraintsUtil {
    * @param dstIpSpace Resolved destination IP space
    */
   public static AclLineMatchExpr toAclLineMatchExpr(
-      PacketHeaderConstraints phc, @Nullable IpSpace srcIpSpace, @Nullable IpSpace dstIpSpace) {
+      PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     List<AclLineMatchExpr> conjuncts =
         Stream.of(
-                srcIpSpace == null
-                    ? null
-                    : match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
-                dstIpSpace == null
-                    ? null
-                    : match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
+                match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
+                match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
                 dscpsToAclLineMatchExpr(phc.getDscps()),
                 ecnsToAclLineMatchExpr(phc.getEcns()),
                 packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
@@ -79,7 +74,7 @@ public class PacketHeaderConstraintsUtil {
    * @param phc the packet header constraints
    */
   public static AclLineMatchExpr toAclLineMatchExpr(PacketHeaderConstraints phc) {
-    return toAclLineMatchExpr(phc, null, null);
+    return toAclLineMatchExpr(phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
   }
 
   /**

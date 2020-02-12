@@ -106,7 +106,8 @@ public class DifferentialReachabilityAnswerer extends Answerer {
             UniverseIpSpace.INSTANCE);
 
     AclLineMatchExpr headerSpace =
-        PacketHeaderConstraintsUtil.toAclLineMatchExpr(headerConstraints, null, dstIps);
+        PacketHeaderConstraintsUtil.toAclLineMatchExpr(
+            headerConstraints, UniverseIpSpace.INSTANCE, dstIps);
 
     return new DifferentialReachabilityParameters(
         ReachabilityParameters.filterDispositions(question.getActions().getDispositions()),
