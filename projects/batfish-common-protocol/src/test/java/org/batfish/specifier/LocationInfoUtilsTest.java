@@ -59,7 +59,7 @@ public class LocationInfoUtilsTest {
     // iloc
     {
       LocationInfo info = locationInfo.get(iloc);
-      assertTrue(info.isSource());
+      assertFalse(info.isSource());
       // source Ips taken from interfaceOwnedIps.
       assertThat(info.getSourceIps(), containsIp(ip1));
       assertEquals(EmptyIpSpace.INSTANCE, info.getArpIps());

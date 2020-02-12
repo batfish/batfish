@@ -128,7 +128,14 @@ public final class LocationInfoUtils {
   private static LocationInfo getInterfaceLocationInfo(
       @Nullable LocationInfo vendorLocationInfo, IpSpace interfaceOwnedIps) {
     return firstNonNull(
-        vendorLocationInfo, new LocationInfo(true, interfaceOwnedIps, EmptyIpSpace.INSTANCE));
+        vendorLocationInfo,
+        new LocationInfo(
+            // assume the interface is infrastructure, and so not a source
+            false,
+            // when used as a source, pick one of its owned IPs
+            interfaceOwnedIps,
+            // interface locations do not have external ARP IPs
+            EmptyIpSpace.INSTANCE));
   }
 
   private static LocationInfo getInterfaceLinkLocationInfo(
