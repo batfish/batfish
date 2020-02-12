@@ -412,34 +412,28 @@ public class CumulusConcatenatedGrammarTest {
                     StandardCommunity.of(3, 1),
                     StandardCommunity.of(3, 2)))
             .build();
-/*
+
+    // RMs using expanded comm-lists.
     RoutingPolicy rp_extended_1 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES");
     RoutingPolicy rp_extended_2 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1");
     RoutingPolicy rp_extended_3 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2");
     RoutingPolicy rp_extended_4 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3");
 
- */
+    // RMs using standard comm-lists.
     RoutingPolicy rp_standard_1 = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_ALL_COMMUNITIES");
-    /*
     RoutingPolicy rp_standard_2 = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_BEGIN_WITH_1");
     RoutingPolicy rp_standard_3 = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_BEGIN_WITH_2");
     RoutingPolicy rp_standard_4 = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_BEGIN_WITH_3");
-     */
 
-    /*
     Bgpv4Route outputRoute1 = processRouteIn(rp_extended_1, inRoute);
     Bgpv4Route outputRoute2 = processRouteIn(rp_extended_2, inRoute);
     Bgpv4Route outputRoute3 = processRouteIn(rp_extended_3, inRoute);
     Bgpv4Route outputRoute4 = processRouteIn(rp_extended_4, inRoute);
-    */
     Bgpv4Route outputRoute5 = processRouteIn(rp_standard_1, inRoute);
-    /*
     Bgpv4Route outputRoute6 = processRouteIn(rp_standard_2, inRoute);
     Bgpv4Route outputRoute7 = processRouteIn(rp_standard_3, inRoute);
     Bgpv4Route outputRoute8 = processRouteIn(rp_standard_4, inRoute);
-*/
     // Check behavior of "set comm-list delete" with expanded comm-lists.
-    /*
     assertThat(outputRoute1.getCommunities(), hasSize(0));
     assertThat(
         outputRoute2.getCommunities(),
@@ -463,10 +457,8 @@ public class CumulusConcatenatedGrammarTest {
             StandardCommunity.of(2, 1),
             StandardCommunity.of(2, 2)));
 
-*/
     // Check behavior of "set comm-list delete" with standard comm-lists.
     assertThat(outputRoute5.getCommunities(), hasSize(0));
-    /*
     assertThat(
             outputRoute6.getCommunities(),
             contains(
@@ -488,6 +480,5 @@ public class CumulusConcatenatedGrammarTest {
                     StandardCommunity.of(1, 2),
                     StandardCommunity.of(2, 1),
                     StandardCommunity.of(2, 2)));
-        */
   }
 }

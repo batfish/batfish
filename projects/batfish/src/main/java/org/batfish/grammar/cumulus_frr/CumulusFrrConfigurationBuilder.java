@@ -1117,7 +1117,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (!communities.isPresent()) {
       return;
     }
-    String name = toString(ctx);
+    String name = toString(ctx.name);
     if (Strings.isNullOrEmpty(name)) {
       return;
     }
