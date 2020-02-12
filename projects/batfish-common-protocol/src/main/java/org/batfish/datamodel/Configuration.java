@@ -42,7 +42,6 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.batfish.specifier.LocationInfoUtils;
 
 /**
  * A Configuration represents an autonomous network device, such as a router, host, switch, or
@@ -828,7 +827,7 @@ public final class Configuration implements Serializable {
   /**
    * Set the {@link LocationInfo} for {@link Location locations} on this node. Any missing locations
    * will have their {@link LocationInfo} created automatically. See {@link
-   * LocationInfoUtils#computeLocationInfo}.
+   * org.batfish.specifier.LocationInfoUtils#computeLocationInfo(Map)}.
    */
   @JsonIgnore
   public void setLocationInfo(Map<Location, LocationInfo> locationInfo) {
