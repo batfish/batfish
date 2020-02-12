@@ -228,11 +228,7 @@ public final class SearchFiltersTest {
     assertNotNull("Should find permitted flow for IP0", flow);
     assertThat(flow, hasDstIp(IP0));
 
-    params =
-        paramsBuilder
-            .setComplementHeaderSpace(true)
-            //            .setHeaderSpace(HeaderSpace.builder().setNegate(true).build())
-            .build();
+    params = paramsBuilder.setComplementHeaderSpace(true).build();
     configContext = getConfigContextWithParams(params);
     flow = configContext.getFlow(configContext.getReachBdd(ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow for IP3 since IP0 is now excluded", flow);

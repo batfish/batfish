@@ -67,7 +67,6 @@ public class SearchFiltersQuestionTest {
     assertThat(q.getDataPlane(), equalTo(false));
     assertThat(q.getNodes(), nullValue());
     assertThat(q.getStartLocation(), nullValue());
-    // the headerspace should be empty i.e., TrueExpr
     assertEquals(q.getHeaderSpaceExpr(), TrueExpr.INSTANCE);
     // src/dst IPs are in specifiers at this stage
     SearchFiltersParameters parameters = q.toSearchFiltersParameters();
