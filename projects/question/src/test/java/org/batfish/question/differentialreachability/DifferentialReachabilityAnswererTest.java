@@ -1,6 +1,6 @@
 package org.batfish.question.differentialreachability;
 
-import static org.batfish.specifier.LocationInfoUtils.connectedSubnetIps;
+import static org.batfish.specifier.LocationInfoUtils.connectedHostSubnetHostIps;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
@@ -142,7 +142,7 @@ public final class DifferentialReachabilityAnswererTest {
                             .get(interfaceLinkLocation.getNodeName())
                             .getAllInterfaces()
                             .get(interfaceLinkLocation.getInterfaceName());
-                    return connectedSubnetIps(iface);
+                    return connectedHostSubnetHostIps(iface);
                   }
 
                   @Override

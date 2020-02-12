@@ -26,9 +26,12 @@ import org.batfish.datamodel.IpSpace;
 public final class LocationInfoUtils {
   private LocationInfoUtils() {}
 
+  /**
+   * @return the host IP space of connected host subnets (subnets shorter than {@link
+   *     HOST_SUBNET_MAX_PREFIX_LENGTH}).
+   */
   @Nonnull
-  public static IpSpace connectedSubnetIps(Interface iface) {
-
+  public static IpSpace connectedHostSubnetHostIps(Interface iface) {
     return firstNonNull(
         AclIpSpace.union(
             iface.getAllConcreteAddresses().stream()
@@ -36,6 +39,17 @@ public final class LocationInfoUtils {
                  * Only include addresses on networks that might have hosts.
                  */
                 .filter(address -> address.getNetworkBits() <= HOST_SUBNET_MAX_PREFIX_LENGTH)
+                .map(address -> address.getPrefix().toHostIpSpace())
+                .collect(Collectors.toList())),
+        EmptyIpSpace.INSTANCE);
+  }
+
+  /** @return the host IP space of all connected subnets. */
+  @Nonnull
+  public static IpSpace connectedSubnetHostIps(Interface iface) {
+    return firstNonNull(
+        AclIpSpace.union(
+            iface.getAllConcreteAddresses().stream()
                 .map(address -> address.getPrefix().toHostIpSpace())
                 .collect(Collectors.toList())),
         EmptyIpSpace.INSTANCE);
@@ -61,16 +75,13 @@ public final class LocationInfoUtils {
             EmptyIpSpace.INSTANCE);
 
     Map<String, Map<String, IpSpace>> interfaceOwnedIps = ipOwners.getInterfaceOwnedIpSpaces();
-    Map<String, Map<String, IpSpace>> activeInterfaceHostIps = ipOwners.getActiveInterfaceHostIps();
-    return computeLocationInfo(
-        snapshotDeviceOwnedIps, interfaceOwnedIps, activeInterfaceHostIps, configs);
+    return computeLocationInfo(snapshotDeviceOwnedIps, interfaceOwnedIps, configs);
   }
 
   @VisibleForTesting
   static Map<Location, LocationInfo> computeLocationInfo(
       IpSpace snapshotDeviceOwnedIps,
       Map<String, Map<String, IpSpace>> interfaceOwnedIps,
-      Map<String, Map<String, IpSpace>> activeInterfaceHostIps,
       Map<String, Configuration> configs) {
 
     return configs.values().stream()
@@ -108,9 +119,6 @@ public final class LocationInfoUtils {
                                 getInterfaceLinkLocationInfo(
                                     locationInfo.get(linkLocation),
                                     iface,
-                                    activeInterfaceHostIps
-                                        .getOrDefault(hostname, ImmutableMap.of())
-                                        .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE),
                                     snapshotDeviceOwnedIps)));
                       });
             })
@@ -124,18 +132,15 @@ public final class LocationInfoUtils {
   }
 
   private static LocationInfo getInterfaceLinkLocationInfo(
-      @Nullable LocationInfo vendorLocationInfo,
-      Interface iface,
-      IpSpace activeInterfaceHostIps,
-      IpSpace snapshotOwnedIps) {
+      @Nullable LocationInfo vendorLocationInfo, Interface iface, IpSpace snapshotOwnedIps) {
     if (vendorLocationInfo != null) {
       return subtractSnapshotOwnedIpsFromSourceIps(vendorLocationInfo, snapshotOwnedIps);
     }
     return new LocationInfo(
         true,
         firstNonNull(
-            difference(connectedSubnetIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
-        activeInterfaceHostIps);
+            difference(connectedHostSubnetHostIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
+        connectedSubnetHostIps(iface));
   }
 
   private static LocationInfo subtractSnapshotOwnedIpsFromSourceIps(
