@@ -13,6 +13,8 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toAclLineMatchEx
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toFlow;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -50,6 +52,8 @@ public class PacketHeaderConstraintsUtilTest {
     AclLineMatchExpr hs = PacketHeaderConstraintsUtil.toAclLineMatchExpr(phc);
     assertEquals(
         and(
+            matchSrc(UniverseIpSpace.INSTANCE),
+            matchDst(UniverseIpSpace.INSTANCE),
             match(
                 HeaderSpace.builder()
                     .setEcns(IntegerSpace.of(new SubRange(1, 3)).enumerate())
