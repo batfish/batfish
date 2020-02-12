@@ -22,6 +22,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -148,7 +149,7 @@ public class TestFiltersAnswerer extends Answerer {
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
       try {
-        Builder flowBuilder = pkt.getFlow(hsBDD).get();
+        Builder flowBuilder = pkt.getFlow(hsBDD, FlowPreference.TESTFILTER).get();
 
         flowBuilder.setIngressNode(node);
         flowBuilder.setIngressInterface(null);
@@ -169,7 +170,10 @@ public class TestFiltersAnswerer extends Answerer {
       Flow.Builder flowBuilder;
       try {
         flowBuilder =
-            pkt.getFlow(PacketHeaderConstraintsUtil.toBDD(pkt, constraints, srcIps, dstIps)).get();
+            pkt.getFlow(
+                    PacketHeaderConstraintsUtil.toBDD(pkt, constraints, srcIps, dstIps),
+                    FlowPreference.TESTFILTER)
+                .get();
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
         continue;
