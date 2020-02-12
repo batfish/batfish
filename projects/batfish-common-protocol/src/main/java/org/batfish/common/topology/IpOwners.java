@@ -55,13 +55,6 @@ public final class IpOwners {
    */
   private final Map<String, Map<String, IpSpace>> _allInterfaceHostIps;
 
-  /**
-   * Mapping from hostname to interface name to host IP subnet (for active interfaces only).
-   *
-   * @see Prefix#toHostIpSpace()
-   */
-  private final Map<String, Map<String, IpSpace>> _activeInterfaceHostIps;
-
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
@@ -81,7 +74,6 @@ public final class IpOwners {
       _hostToInterfaceToIpSpace =
           ImmutableMap.copyOf(computeInterfaceOwnedIpSpaces(_activeDeviceOwnedIps));
       _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
-      _activeInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, true);
     }
 
     {
@@ -370,16 +362,6 @@ public final class IpOwners {
    */
   public Map<Ip, Map<String, Set<String>>> getAllDeviceOwnedIps() {
     return _allDeviceOwnedIps;
-  }
-
-  /**
-   * Returns a mapping from hostname to interface name to the host {@link IpSpace} of that
-   * interface, for active interfaces only.
-   *
-   * @see Prefix#toHostIpSpace()
-   */
-  public Map<String, Map<String, IpSpace>> getActiveInterfaceHostIps() {
-    return _activeInterfaceHostIps;
   }
 
   /**

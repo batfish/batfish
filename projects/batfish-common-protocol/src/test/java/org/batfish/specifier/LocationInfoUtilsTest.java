@@ -50,13 +50,10 @@ public class LocationInfoUtilsTest {
 
     Map<String, Map<String, IpSpace>> interfaceOwnedIps =
         ImmutableMap.of("a", ImmutableMap.of("i", ip1.toIpSpace()));
-    Map<String, Map<String, IpSpace>> activeInterfaceHostIps =
-        ImmutableMap.of("a", ImmutableMap.of("i", ip3.toIpSpace()));
     Map<Location, LocationInfo> locationInfo =
         computeLocationInfo(
             ip1.toIpSpace(), // ip1 is owned, so subtracted from link locations' source IPs
             interfaceOwnedIps,
-            activeInterfaceHostIps,
             ImmutableMap.of(config.getHostname(), config));
 
     // iloc
@@ -109,7 +106,6 @@ public class LocationInfoUtilsTest {
         computeLocationInfo(
             ip1.toIpSpace(), // ip1 is owned, so subtracted from link locations' source IPs
             ImmutableMap.of(),
-            ImmutableMap.of(),
             ImmutableMap.of(config.getHostname(), config));
 
     // iLoc
@@ -159,7 +155,6 @@ public class LocationInfoUtilsTest {
     Map<Location, LocationInfo> locationInfo =
         computeLocationInfo(
             ip1.toIpSpace(), // ip1 is owned, so subtracted from link locations' source IPs
-            ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(config.getHostname(), config));
 
