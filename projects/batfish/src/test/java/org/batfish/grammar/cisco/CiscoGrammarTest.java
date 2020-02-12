@@ -1010,6 +1010,71 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaInterfaceRedundantExtraction() {
+    CiscoConfiguration config =
+        parseCiscoConfig("asa-interface-redundant", ConfigurationFormat.CISCO_ASA);
+
+    assertThat(
+        config.getInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/1",
+            "GigabitEthernet0/2",
+            "Redundant1",
+            "Redundant1.2",
+            "Redundant2",
+            "Redundant2.2"));
+    {
+      org.batfish.representation.cisco.Interface iface = config.getInterfaces().get("Redundant1");
+      assertThat(
+          iface.getMemberInterfaces(),
+          containsInAnyOrder("GigabitEthernet0/1", "GigabitEthernet0/2"));
+    }
+    {
+      org.batfish.representation.cisco.Interface iface = config.getInterfaces().get("Redundant2");
+      assertThat(iface.getMemberInterfaces(), empty());
+    }
+  }
+
+  @Test
+  public void testAsaInterfaceRedundantConversion() throws IOException {
+    Configuration config = parseConfig("asa-interface-redundant");
+
+    assertThat(
+        config.getAllInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/1",
+            "GigabitEthernet0/2",
+            "Redundant1",
+            "redundant1sub",
+            "Redundant2",
+            "redundant2sub"));
+    {
+      Interface iface = config.getAllInterfaces().get("Redundant1");
+      assertThat(
+          iface.getRedundancyGroupMembers(),
+          containsInAnyOrder("GigabitEthernet0/1", "GigabitEthernet0/2"));
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("redundant1sub");
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("Redundant2");
+      assertThat(iface.getRedundancyGroupMembers(), empty());
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("redundant2sub");
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+  }
+
+  @Test
   public void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
     assertThat(
