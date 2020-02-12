@@ -6,6 +6,7 @@ import static org.batfish.datamodel.AclIpSpace.difference;
 import static org.batfish.datamodel.Prefix.HOST_SUBNET_MAX_PREFIX_LENGTH;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
@@ -16,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
@@ -128,7 +130,14 @@ public final class LocationInfoUtils {
   private static LocationInfo getInterfaceLocationInfo(
       @Nullable LocationInfo vendorLocationInfo, IpSpace interfaceOwnedIps) {
     return firstNonNull(
-        vendorLocationInfo, new LocationInfo(true, interfaceOwnedIps, EmptyIpSpace.INSTANCE));
+        vendorLocationInfo,
+        new LocationInfo(
+            // assume the interface is infrastructure, and so not a source
+            false,
+            // when used as a source, pick one of its owned IPs
+            interfaceOwnedIps,
+            // interface locations do not have external ARP IPs
+            EmptyIpSpace.INSTANCE));
   }
 
   private static LocationInfo getInterfaceLinkLocationInfo(
@@ -149,5 +158,15 @@ public final class LocationInfoUtils {
         locationInfo.isSource(),
         checkNotNull(difference(locationInfo.getSourceIps(), snapshotOwnedIps)),
         locationInfo.getArpIps());
+  }
+
+  public static IpSpace configuredIps(Interface iface) {
+    return firstNonNull(
+        AclIpSpace.union(
+            iface.getAllConcreteAddresses().stream()
+                .map(ConcreteInterfaceAddress::getIp)
+                .map(Ip::toIpSpace)
+                .collect(ImmutableList.toImmutableList())),
+        EmptyIpSpace.INSTANCE);
   }
 }

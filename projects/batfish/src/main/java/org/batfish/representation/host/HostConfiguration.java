@@ -2,6 +2,10 @@ package org.batfish.representation.host;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.immutableEntry;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
+import static org.batfish.specifier.LocationInfoUtils.configuredIps;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,11 +19,13 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -27,6 +33,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -41,6 +48,7 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.vendor.VendorConfiguration;
 
 public class HostConfiguration extends VendorConfiguration {
@@ -72,6 +80,19 @@ public class HostConfiguration extends VendorConfiguration {
   private static final String RAW_OUTPUT = "raw::OUTPUT";
 
   private static final String RAW_PREROUTING = "raw::PREROUTING";
+
+  private static final LocationInfo HOST_INTERFACE_LINK_LOCATION_INFO =
+      new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
+
+  private static LocationInfo hostInterfaceLocationInfo(Interface iface) {
+    return new LocationInfo(
+        // host interface is a traffic source
+        true,
+        // default source IPs
+        configuredIps(iface),
+        // interface locations do not have external ARP IPs
+        EmptyIpSpace.INSTANCE);
+  }
 
   public static HostConfiguration fromJson(String filename, String text, Warnings warnings)
       throws IOException {
@@ -268,6 +289,18 @@ public class HostConfiguration extends VendorConfiguration {
                   .setTag(Route.UNSET_ROUTE_TAG)
                   .build());
     }
+
+    // create LocationInfo for each link location on the instance.
+    _c.setLocationInfo(
+        _c.getAllInterfaces().values().stream()
+            .flatMap(
+                iface ->
+                    Stream.of(
+                        immutableEntry(interfaceLocation(iface), hostInterfaceLocationInfo(iface)),
+                        immutableEntry(
+                            interfaceLinkLocation(iface), HOST_INTERFACE_LINK_LOCATION_INFO)))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
+
     return ImmutableList.of(_c);
   }
 
