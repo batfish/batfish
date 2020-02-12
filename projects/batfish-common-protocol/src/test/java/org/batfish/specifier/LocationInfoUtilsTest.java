@@ -47,7 +47,6 @@ public class LocationInfoUtilsTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.2");
     Ip ip3 = Ip.parse("1.1.1.3");
-    IpSpace ips12 = checkNotNull(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace()));
 
     Map<String, Map<String, IpSpace>> interfaceOwnedIps =
         ImmutableMap.of("a", ImmutableMap.of("i", ip1.toIpSpace()));
