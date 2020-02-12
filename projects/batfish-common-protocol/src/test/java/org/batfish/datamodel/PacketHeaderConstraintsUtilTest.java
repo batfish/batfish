@@ -13,18 +13,19 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toAclLineMatchEx
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toFlow;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +36,7 @@ public class PacketHeaderConstraintsUtilTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void testToHeaderSpaceConversion() {
+  public void testToAclLineMatchExprConversion() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setSrcPorts(
@@ -48,12 +49,20 @@ public class PacketHeaderConstraintsUtilTest {
             .setIpProtocols(Collections.singleton(IpProtocol.TCP))
             .build();
 
-    HeaderSpace hs = PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(phc).build();
-    assertThat(
-        hs.getSrcPorts(), equalTo(ImmutableSortedSet.of(new SubRange(1, 3), new SubRange(5, 6))));
-    assertThat(hs.getDstPorts(), equalTo(Collections.singleton(new SubRange(11, 12))));
-    assertThat(hs.getIpProtocols(), equalTo(Collections.singleton(IpProtocol.TCP)));
-    assertThat(hs.getNotDstPorts(), empty());
+    AclLineMatchExpr hs = PacketHeaderConstraintsUtil.toAclLineMatchExpr(phc);
+    assertEquals(
+        and(
+            matchSrc(UniverseIpSpace.INSTANCE),
+            matchDst(UniverseIpSpace.INSTANCE),
+            match(
+                HeaderSpace.builder()
+                    .setEcns(IntegerSpace.of(new SubRange(1, 3)).enumerate())
+                    .build()),
+            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).build()),
+            match(
+                HeaderSpace.builder().setSrcPorts(new SubRange(1, 3), new SubRange(5, 6)).build()),
+            match(HeaderSpace.builder().setDstPorts(new SubRange(11, 12)).build())),
+        hs);
   }
 
   @Test

@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dscpsToAclLineMatchExpr;
@@ -14,20 +13,17 @@ import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUti
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.srcPortsToAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.tcpFlagsToAclLineMatchExpr;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -40,6 +36,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 @ParametersAreNonnullByDefault
 public class PacketHeaderConstraintsUtil {
 
+  /** default packet length */
   public static final int DEFAULT_PACKET_LENGTH = 512;
 
   /**
@@ -53,8 +50,8 @@ public class PacketHeaderConstraintsUtil {
       PacketHeaderConstraints phc, IpSpace srcIpSpace, IpSpace dstIpSpace) {
     List<AclLineMatchExpr> conjuncts =
         Stream.of(
-                match(HeaderSpace.builder().setSrcIps(srcIpSpace).build()),
-                match(HeaderSpace.builder().setDstIps(dstIpSpace).build()),
+                matchSrc(srcIpSpace),
+                matchDst(dstIpSpace),
                 dscpsToAclLineMatchExpr(phc.getDscps()),
                 ecnsToAclLineMatchExpr(phc.getEcns()),
                 packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
@@ -78,23 +75,7 @@ public class PacketHeaderConstraintsUtil {
    * @param phc the packet header constraints
    */
   public static AclLineMatchExpr toAclLineMatchExpr(PacketHeaderConstraints phc) {
-    List<AclLineMatchExpr> conjuncts =
-        Stream.of(
-                dscpsToAclLineMatchExpr(phc.getDscps()),
-                ecnsToAclLineMatchExpr(phc.getEcns()),
-                packetLengthToAclLineMatchExpr(phc.getPacketLengths()),
-                fragmentOffsetsToAclLineMatchExpr(phc.getFragmentOffsets()),
-                ipProtocolsToAclLineMatchExpr(phc.getIpProtocols()),
-                icmpCodeToAclLineMatchExpr(phc.getIcmpCodes()),
-                icmpTypeToAclLineMatchExpr(phc.getIcmpTypes()),
-                srcPortsToAclLineMatchExpr(phc.getSrcPorts()),
-                dstPortsToAclLineMatchExpr(phc.getDstPorts()),
-                applicationsToAclLineMatchExpr(phc.getApplications()),
-                tcpFlagsToAclLineMatchExpr(phc.getTcpFlags()))
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList());
-
-    return and(conjuncts);
+    return toAclLineMatchExpr(phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
   }
 
   /**
@@ -132,40 +113,6 @@ public class PacketHeaderConstraintsUtil {
             pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), namedIpSpaces);
 
     return converter.toBdd(toAclLineMatchExpr(phc, srcIpSpace, dstIpSpace));
-  }
-
-  private static SortedSet<SubRange> extractSubranges(@Nullable IntegerSpace space) {
-    if (space == null || space.isEmpty()) {
-      return ImmutableSortedSet.of();
-    }
-    return ImmutableSortedSet.copyOf(space.getSubRanges());
-  }
-
-  /**
-   * Convert packet header constraints to a {@link HeaderSpace.Builder}
-   *
-   * <p><b>Does not resolve/set source and destination IPs</b>
-   */
-  public static HeaderSpace.Builder toHeaderSpaceBuilder(PacketHeaderConstraints phc) {
-    // Note: headerspace builder does not accept nulls, so we have to convert nulls to empty sets
-    HeaderSpace.Builder builder =
-        HeaderSpace.builder()
-            .setIpProtocols(firstNonNull(phc.resolveIpProtocols(), ImmutableSortedSet.of()))
-            .setSrcPorts(extractSubranges(phc.getSrcPorts()))
-            .setDstPorts(extractSubranges(phc.resolveDstPorts()))
-            .setIcmpCodes(extractSubranges(phc.getIcmpCodes()))
-            .setIcmpTypes(extractSubranges(phc.getIcmpTypes()))
-            .setFragmentOffsets(extractSubranges(phc.getFragmentOffsets()))
-            .setPacketLengths(extractSubranges(phc.getPacketLengths()))
-            .setTcpFlags(firstNonNull(phc.getTcpFlags(), ImmutableSet.of()));
-
-    if (phc.getDscps() != null) {
-      builder.setDscps(phc.getDscps().enumerate());
-    }
-    if (phc.getEcns() != null) {
-      builder.setEcns(ImmutableSortedSet.copyOf(phc.getEcns().enumerate()));
-    }
-    return builder;
   }
 
   /**
