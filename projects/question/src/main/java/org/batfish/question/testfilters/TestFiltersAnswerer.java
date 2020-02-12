@@ -19,17 +19,17 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
-import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.HeaderSpaceToFlow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -140,26 +140,21 @@ public class TestFiltersAnswerer extends Answerer {
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);
 
-    HeaderSpaceToFlow headerSpaceToFlow =
-        new HeaderSpaceToFlow(c.getIpSpaces(), FlowPreference.TESTFILTER);
-
-    HeaderSpace.Builder hsBuilder =
-        PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints).setDstIps(dstIps);
+    BDDPacket pkt = new BDDPacket();
+    BDD hsBDD =
+        PacketHeaderConstraintsUtil.toBDD(
+            pkt,
+            constraints,
+            srcIpAssignments.getEntries().stream()
+                .findFirst()
+                .map(Entry::getIpSpace)
+                .orElse(UniverseIpSpace.INSTANCE),
+            dstIps);
 
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
       try {
-        Builder flowBuilder =
-            headerSpaceToFlow
-                .getRepresentativeFlow(
-                    hsBuilder
-                        .setSrcIps(
-                            srcIpAssignments.getEntries().stream()
-                                .findFirst()
-                                .map(Entry::getIpSpace)
-                                .orElse(UniverseIpSpace.INSTANCE))
-                        .build())
-                .get();
+        Builder flowBuilder = pkt.getFlow(hsBDD, FlowPreference.TESTFILTER).get();
 
         flowBuilder.setIngressNode(node);
         flowBuilder.setIngressInterface(null);
@@ -183,7 +178,10 @@ public class TestFiltersAnswerer extends Answerer {
       Flow.Builder flowBuilder;
       try {
         flowBuilder =
-            headerSpaceToFlow.getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build()).get();
+            pkt.getFlow(
+                    PacketHeaderConstraintsUtil.toBDD(pkt, constraints, srcIps, dstIps),
+                    FlowPreference.TESTFILTER)
+                .get();
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
         continue;
