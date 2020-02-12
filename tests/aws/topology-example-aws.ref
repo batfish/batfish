@@ -801,16 +801,19 @@
   "nodes" : [
     {
       "id" : "node-vpc-b390fad5",
+      "model" : "AWS_VPC",
       "name" : "vpc-b390fad5",
       "type" : "SWITCH"
     },
     {
       "id" : "node-vpc-815775e7",
+      "model" : "AWS_VPC",
       "name" : "vpc-815775e7",
       "type" : "SWITCH"
     },
     {
       "id" : "node-internet",
+      "model" : "BATFISH_INTERNET",
       "name" : "internet",
       "type" : "INTERNET"
     },
@@ -851,6 +854,7 @@
     },
     {
       "id" : "node-aws-backbone",
+      "model" : "BATFISH_ISP",
       "name" : "aws-backbone",
       "type" : "ISP"
     },
@@ -871,6 +875,7 @@
     },
     {
       "id" : "node-vpc-f8fad69d",
+      "model" : "AWS_VPC",
       "name" : "vpc-f8fad69d",
       "type" : "SWITCH"
     },
@@ -911,6 +916,7 @@
     },
     {
       "id" : "node-vpc-925131f4",
+      "model" : "AWS_VPC",
       "name" : "vpc-925131f4",
       "type" : "SWITCH"
     }

@@ -5,6 +5,7 @@ import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -46,6 +47,17 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Vrf featureValueOf(Configuration actual) {
       return actual.getDefaultVrf();
+    }
+  }
+
+  static final class HasDeviceModel extends FeatureMatcher<Configuration, DeviceModel> {
+    HasDeviceModel(@Nonnull Matcher<? super DeviceModel> subMatcher) {
+      super(subMatcher, "a configuration with deviceModel", "deviceModel");
+    }
+
+    @Override
+    protected DeviceModel featureValueOf(Configuration actual) {
+      return actual.getDeviceModel();
     }
   }
 

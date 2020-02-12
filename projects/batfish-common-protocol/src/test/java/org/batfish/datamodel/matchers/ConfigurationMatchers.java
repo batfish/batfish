@@ -9,6 +9,7 @@ import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDeviceModel;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDeviceType;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasHostname;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkePhase1Policy;
@@ -66,6 +68,22 @@ public class ConfigurationMatchers {
    */
   public static HasDefaultVrf hasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
     return new HasDefaultVrf(subMatcher);
+  }
+
+  public static HasDeviceModel hasDeviceModel(DeviceModel model) {
+    return hasDeviceModel(equalTo(model));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * device model
+   */
+  public static HasDeviceModel hasDeviceModel(@Nonnull Matcher<? super DeviceModel> subMatcher) {
+    return new HasDeviceModel(subMatcher);
+  }
+
+  public static HasDeviceType hasDeviceType(DeviceType type) {
+    return hasDeviceType(equalTo(type));
   }
 
   /**

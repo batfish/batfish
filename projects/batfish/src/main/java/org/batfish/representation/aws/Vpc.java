@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -109,7 +110,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_vpcId), "aws");
+    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_vpcId), "aws", DeviceModel.AWS_VPC);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
 
