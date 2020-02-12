@@ -1,6 +1,9 @@
 package org.batfish.question.searchfilters;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
@@ -21,7 +24,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -67,7 +69,9 @@ public class SearchFiltersQuestionTest {
     assertThat(q.getDataPlane(), equalTo(false));
     assertThat(q.getNodes(), nullValue());
     assertThat(q.getStartLocation(), nullValue());
-    assertEquals(q.getHeaderSpaceExpr(), TrueExpr.INSTANCE);
+    assertEquals(
+        q.getHeaderSpaceExpr(),
+        and(matchSrc(UniverseIpSpace.INSTANCE), matchDst(UniverseIpSpace.INSTANCE)));
     // src/dst IPs are in specifiers at this stage
     SearchFiltersParameters parameters = q.toSearchFiltersParameters();
     assertThat(parameters.getStartLocationSpecifier(), equalTo(LocationSpecifier.ALL_LOCATIONS));
@@ -115,12 +119,18 @@ public class SearchFiltersQuestionTest {
 
     assertEquals(
         question.getHeaderSpaceExpr(),
-        match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build()));
+        and(
+            matchSrc(UniverseIpSpace.INSTANCE),
+            matchDst(UniverseIpSpace.INSTANCE),
+            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build())));
 
     // test (de)serialization
     question = BatfishObjectMapper.clone(question, SearchFiltersQuestion.class);
     assertEquals(
         question.getHeaderSpaceExpr(),
-        match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build()));
+        and(
+            matchSrc(UniverseIpSpace.INSTANCE),
+            matchDst(UniverseIpSpace.INSTANCE),
+            match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP, IpProtocol.ICMP).build())));
   }
 }

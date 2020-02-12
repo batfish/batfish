@@ -3,7 +3,10 @@ package org.batfish.question.specifiers;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -105,11 +108,14 @@ public class SpecifiersReachabilityQuestionTest {
     AclLineMatchExpr headerSpace = question.getHeaderSpace();
     assertEquals(
         headerSpace,
-        match(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.UDP)
-                .setDstPorts(SubRange.singleton(53))
-                .build()));
+        and(
+            matchSrc(UniverseIpSpace.INSTANCE),
+            matchDst(UniverseIpSpace.INSTANCE),
+            match(
+                HeaderSpace.builder()
+                    .setIpProtocols(IpProtocol.UDP)
+                    .setDstPorts(SubRange.singleton(53))
+                    .build())));
   }
 
   @Test
