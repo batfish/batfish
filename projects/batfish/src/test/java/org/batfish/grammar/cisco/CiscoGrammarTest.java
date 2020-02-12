@@ -355,6 +355,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -5996,9 +5997,9 @@ public final class CiscoGrammarTest {
     String hostname = "asa-nat-twice-dynamic";
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
 
-    MatchHeaderSpace matchSourceSubnet =
+    AclLineMatchExpr matchSourceSubnet =
         matchSrc(new IpSpaceReference("source-subnet", "Match network object: 'source-subnet'"));
-    MatchHeaderSpace matchSourceGroup =
+    AclLineMatchExpr matchSourceGroup =
         matchSrc(
             new IpSpaceReference("source-group", "Match network object-group: 'source-group'"));
     AssignIpAddressFromPool assignSourceRange =
