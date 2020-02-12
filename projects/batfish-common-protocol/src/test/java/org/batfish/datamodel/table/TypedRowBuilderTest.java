@@ -75,4 +75,13 @@ public class TypedRowBuilderTest {
     assertThat(row.getColumnNames(), contains("col"));
     assertThat(row.hasNonNull("col"), equalTo(false));
   }
+
+  @Test
+  public void testPutStringIntoNodeSchema() {
+    String colName = "Node";
+    _thrown.expect(IllegalArgumentException.class);
+    Row.builder(ImmutableMap.of(colName, new ColumnMetadata(colName, Schema.NODE, "desc")))
+        .put(colName, "Just_a_string")
+        .build();
+  }
 }

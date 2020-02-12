@@ -3,6 +3,7 @@ package org.batfish.datamodel.pojo;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
@@ -12,6 +13,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 
+@JsonAutoDetect(creatorVisibility= JsonAutoDetect.Visibility.NONE)
 public class Node extends BfObject {
   private static final String PROP_NAME = "name";
   private static final String PROP_MODEL = "model";
