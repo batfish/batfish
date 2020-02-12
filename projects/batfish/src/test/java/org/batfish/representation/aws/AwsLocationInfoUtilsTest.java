@@ -30,7 +30,7 @@ public class AwsLocationInfoUtilsTest {
   }
 
   @Test
-  public void testSubnetInteraceLocationInfo() {
+  public void testSubnetInterfaceLocationInfo() {
     LocationInfo info = subnetInterfaceLocationInfo(IFACE);
     assertFalse(info.isSource());
     assertThat(
@@ -44,7 +44,7 @@ public class AwsLocationInfoUtilsTest {
   }
 
   @Test
-  public void testSubnetInteraceLinkLocationInfo() {
+  public void testSubnetInterfaceLinkLocationInfo() {
     LocationInfo info = subnetInterfaceLinkLocationInfo(IFACE);
     assertFalse(info.isSource());
     assertThat(
