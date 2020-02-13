@@ -18,6 +18,8 @@ public interface StateExprVisitor<R> {
 
   R visitInsufficientInfo();
 
+  R visitInterfaceAccept(InterfaceAccept interfaceAccept);
+
   R visitNeighborUnreachable();
 
   R visitNodeAccept(NodeAccept nodeAccept);
@@ -39,6 +41,8 @@ public interface StateExprVisitor<R> {
 
   R visitNodeInterfaceNeighborUnreachable(
       NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable);
+
+  R visitOriginateInterface(OriginateInterface originateInterface);
 
   R visitOriginateInterfaceLink(OriginateInterfaceLink originateInterfaceLink);
 

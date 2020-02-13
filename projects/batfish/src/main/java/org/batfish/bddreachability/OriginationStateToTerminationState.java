@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -12,6 +13,7 @@ import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
@@ -87,6 +89,11 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
   }
 
   @Override
+  public List<StateExpr> visitInterfaceAccept(InterfaceAccept interfaceAccept) {
+    return null;
+  }
+
+  @Override
   public List<StateExpr> visitNeighborUnreachable() {
     return null;
   }
@@ -138,6 +145,12 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
   public List<StateExpr> visitNodeInterfaceNeighborUnreachable(
       NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable) {
     return null;
+  }
+
+  @Override
+  public List<StateExpr> visitOriginateInterface(OriginateInterface originateInterface) {
+    return ImmutableList.of(
+        new InterfaceAccept(originateInterface.getHostname(), originateInterface.getInterface()));
   }
 
   @Override
