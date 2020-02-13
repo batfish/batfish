@@ -10,6 +10,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
@@ -84,9 +85,14 @@ public class AwsConfigurationSubnetTest {
         equalTo(expectedNodes));
   }
 
-  private static void assertFilterAtStep(Trace trace, int hop, int step, String filter) {
-    FilterStep filterStep1 = (FilterStep) trace.getHops().get(hop).getSteps().get(step);
-    assertThat(filterStep1.getDetail().getFilter(), equalTo(filter));
+  private static void assertFilterAtHop(Trace trace, int hop, String filter) {
+    List<String> hopFilters =
+        trace.getHops().get(hop).getSteps().stream()
+            .filter(s -> s instanceof FilterStep)
+            .map(s -> ((FilterStep) s).getDetail().getFilter())
+            .collect(ImmutableList.toImmutableList());
+    String hopFilter = Iterables.getOnlyElement(hopFilters); // should be only one
+    assertThat(hopFilter, equalTo(filter));
   }
 
   @Test
@@ -97,10 +103,10 @@ public class AwsConfigurationSubnetTest {
     assertTracePath(trace, ImmutableList.of(_instance1, _instance2));
 
     // security group at instance1
-    assertFilterAtStep(trace, 0, 2, SG_EGRESS_ACL_NAME);
+    assertFilterAtHop(trace, 0, SG_EGRESS_ACL_NAME);
 
     // security group at instance2
-    assertFilterAtStep(trace, 1, 1, SG_INGRESS_ACL_NAME);
+    assertFilterAtHop(trace, 1, SG_INGRESS_ACL_NAME);
 
     // denied because of security group on instance2
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_IN));
@@ -114,7 +120,7 @@ public class AwsConfigurationSubnetTest {
     assertTracePath(trace, ImmutableList.of(_instance1, _subnet, _vpc));
 
     // network acl is applied when leaving the subnet
-    assertFilterAtStep(trace, 1, 1, getAclName(_networkAcl, true));
+    assertFilterAtHop(trace, 1, getAclName(_networkAcl, true));
   }
 
   @Test
@@ -125,6 +131,6 @@ public class AwsConfigurationSubnetTest {
     assertTracePath(trace, ImmutableList.of(_vpc, _subnet, _instance2));
 
     // network acl is applied when leaving the subnet
-    assertFilterAtStep(trace, 1, 2, getAclName(_networkAcl, false));
+    assertFilterAtHop(trace, 1, getAclName(_networkAcl, false));
   }
 }
