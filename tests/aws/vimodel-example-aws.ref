@@ -5,6 +5,7 @@
       "aws-backbone" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aws-backbone",
+        "deviceModel" : "BATFISH_ISP",
         "deviceType" : "ISP",
         "interfaces" : {
           "~Interface_0~" : {
@@ -1168,6 +1169,7 @@
       "internet" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "internet",
+        "deviceModel" : "BATFISH_INTERNET",
         "deviceType" : "INTERNET",
         "interfaces" : {
           "Internet_out_interface" : {
@@ -1177,12 +1179,12 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "240.254.254.1/29"
+              "240.254.254.1/30"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "prefix" : "240.254.254.1/29",
+            "prefix" : "240.254.254.1/30",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -5935,6 +5937,7 @@
         "name" : "vpc-815775e7",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "vendorFamily" : {
@@ -5965,6 +5968,7 @@
         "name" : "vpc-925131f4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -6059,6 +6063,7 @@
         "name" : "vpc-b390fad5",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -6246,6 +6251,7 @@
         "name" : "vpc-f8fad69d",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {

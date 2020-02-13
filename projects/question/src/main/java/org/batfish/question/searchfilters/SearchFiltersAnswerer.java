@@ -27,15 +27,16 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -102,7 +103,7 @@ public final class SearchFiltersAnswerer extends Answerer {
             TableAnswerElement table = canQueryAcl ? baseTable : refTable;
             table.addRow(
                 Row.builder(table.getMetadata().toColumnMap())
-                    .put(COL_NODE, hostname)
+                    .put(COL_NODE, new Node(hostname))
                     .put(COL_FILTER_NAME, aclName)
                     .build());
           }
@@ -312,8 +313,12 @@ public final class SearchFiltersAnswerer extends Answerer {
       Set<String> activeSources = getActiveSources(config, specifierContext, parameters);
       Set<String> referencedSources = referencedSources(config.getIpAccessLists(), specifiedAcls);
       _mgr = BDDSourceManager.forSources(_pkt, activeSources, referencedSources);
-      HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
-      BDD headerSpaceBdd = new HeaderSpaceToBDD(_pkt, config.getIpSpaces()).toBDD(headerSpace);
+      AclLineMatchExpr headerSpace = parameters.resolveHeaderspace(specifierContext);
+      BDD headerSpaceBdd =
+          new IpAccessListToBddImpl(
+                  _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), config.getIpSpaces())
+              .toBdd(headerSpace);
+
       _prerequisiteBdd = headerSpaceBdd.and(_mgr.isValidValue());
 
       _ipAccessListToBdd =
@@ -374,8 +379,12 @@ public final class SearchFiltersAnswerer extends Answerer {
               parameters.getStartLocationSpecifier());
 
       // TODO: How to adjust _headerSpace in differential context?
-      HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
-      BDD headerSpaceBdd = new HeaderSpaceToBDD(_pkt, config.getIpSpaces()).toBDD(headerSpace);
+      AclLineMatchExpr headerSpace = parameters.resolveHeaderspace(specifierContext);
+      BDD headerSpaceBdd =
+          new IpAccessListToBddImpl(
+                  _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), config.getIpSpaces())
+              .toBdd(headerSpace);
+
       _prerequisiteBdd = headerSpaceBdd.and(_mgr.isValidValue());
 
       _ipAccessListToBdd =

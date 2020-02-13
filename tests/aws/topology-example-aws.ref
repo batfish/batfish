@@ -160,12 +160,6 @@
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-aws-backbone-~Interface_2~",
-      "name" : "~Interface_2~",
-      "nodeId" : "node-aws-backbone",
-      "type" : "UNKNOWN"
-    },
-    {
       "id" : "interface-node-igw-9b93ddfc-subnet-30398256",
       "name" : "subnet-30398256",
       "nodeId" : "node-igw-9b93ddfc",
@@ -188,6 +182,12 @@
       "name" : "subnet-f73a8191",
       "nodeId" : "node-vpc-b390fad5",
       "type" : "PHYSICAL"
+    },
+    {
+      "id" : "interface-node-aws-backbone-~Interface_2~",
+      "name" : "~Interface_2~",
+      "nodeId" : "node-aws-backbone",
+      "type" : "UNKNOWN"
     },
     {
       "id" : "interface-node-subnet-30398256-igw-9b93ddfc",
@@ -316,6 +316,12 @@
       "type" : "PHYSICAL"
     },
     {
+      "id" : "interface-node-aws-backbone-~Interface_0~",
+      "name" : "~Interface_0~",
+      "nodeId" : "node-aws-backbone",
+      "type" : "UNKNOWN"
+    },
+    {
       "id" : "interface-node-subnet-d9cafabc-vpc-f8fad69d",
       "name" : "vpc-f8fad69d",
       "nodeId" : "node-subnet-d9cafabc",
@@ -346,22 +352,16 @@
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-subnet-7044ff16-subnet-7044ff16",
-      "name" : "subnet-7044ff16",
-      "nodeId" : "node-subnet-7044ff16",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-aws-backbone-~Interface_0~",
-      "name" : "~Interface_0~",
-      "nodeId" : "node-aws-backbone",
-      "type" : "UNKNOWN"
-    },
-    {
       "id" : "interface-node-aws-backbone-~Interface_4~",
       "name" : "~Interface_4~",
       "nodeId" : "node-aws-backbone",
       "type" : "UNKNOWN"
+    },
+    {
+      "id" : "interface-node-subnet-7044ff16-subnet-7044ff16",
+      "name" : "subnet-7044ff16",
+      "nodeId" : "node-subnet-7044ff16",
+      "type" : "PHYSICAL"
     },
     {
       "id" : "interface-node-igw-068fee63-subnet-d9cafabc",
@@ -801,16 +801,19 @@
   "nodes" : [
     {
       "id" : "node-vpc-b390fad5",
+      "model" : "AWS_VPC",
       "name" : "vpc-b390fad5",
       "type" : "SWITCH"
     },
     {
       "id" : "node-vpc-815775e7",
+      "model" : "AWS_VPC",
       "name" : "vpc-815775e7",
       "type" : "SWITCH"
     },
     {
       "id" : "node-internet",
+      "model" : "BATFISH_INTERNET",
       "name" : "internet",
       "type" : "INTERNET"
     },
@@ -851,6 +854,7 @@
     },
     {
       "id" : "node-aws-backbone",
+      "model" : "BATFISH_ISP",
       "name" : "aws-backbone",
       "type" : "ISP"
     },
@@ -871,6 +875,7 @@
     },
     {
       "id" : "node-vpc-f8fad69d",
+      "model" : "AWS_VPC",
       "name" : "vpc-f8fad69d",
       "type" : "SWITCH"
     },
@@ -911,6 +916,7 @@
     },
     {
       "id" : "node-vpc-925131f4",
+      "model" : "AWS_VPC",
       "name" : "vpc-925131f4",
       "type" : "SWITCH"
     }

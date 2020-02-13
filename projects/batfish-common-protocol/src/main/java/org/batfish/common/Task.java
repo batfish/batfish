@@ -51,8 +51,9 @@ public final class Task {
     }
 
     @JsonProperty(PROP_COMPLETED)
-    private void setCompleted(AtomicInteger completed) {
-      _completed = completed;
+    @Deprecated // only for Jackson
+    private void setCompleted(int completed) {
+      _completed = new AtomicInteger(completed);
     }
 
     @JsonProperty(PROP_DESCRIPTION)

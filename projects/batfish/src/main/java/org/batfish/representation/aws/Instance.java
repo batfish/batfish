@@ -2,7 +2,12 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.immutableEntry;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,8 +22,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,6 +33,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -287,7 +296,9 @@ final class Instance implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_instanceId, "aws", _tags);
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_instanceId, "aws", _tags, DeviceModel.AWS_EC2_INSTANCE);
+    cfgNode.setDeviceType(DeviceType.HOST);
 
     for (String interfaceId : _networkInterfaces) {
 
@@ -369,6 +380,18 @@ final class Instance implements AwsVpcEntity, Serializable {
     }
 
     Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
+
+    // create LocationInfo for each link location on the instance.
+    cfgNode.setLocationInfo(
+        cfgNode.getAllInterfaces().values().stream()
+            .flatMap(
+                iface ->
+                    Stream.of(
+                        immutableEntry(
+                            interfaceLocation(iface), instanceInterfaceLocationInfo(iface)),
+                        immutableEntry(
+                            interfaceLinkLocation(iface), INSTANCE_INTERFACE_LINK_LOCATION_INFO)))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;
   }

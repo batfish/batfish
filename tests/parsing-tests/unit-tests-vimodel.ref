@@ -1699,6 +1699,371 @@
           }
         }
       },
+      "asa-interface-redundant" : {
+        "configurationFormat" : "CISCO_ASA",
+        "name" : "asa-interface-redundant",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "GigabitEthernet0/1" : {
+            "name" : "GigabitEthernet0/1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/1"
+            ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "GigabitEthernet0/1"
+              ]
+            },
+            "mtu" : 1500,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "GigabitEthernet0/2" : {
+            "name" : "GigabitEthernet0/2",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/2"
+            ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "GigabitEthernet0/2"
+              ]
+            },
+            "mtu" : 1500,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "Redundant1" : {
+            "name" : "Redundant1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Redundant1"
+            ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "Redundant1"
+              ]
+            },
+            "mtu" : 1500,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "REDUNDANT",
+            "vrf" : "default"
+          },
+          "Redundant2" : {
+            "name" : "Redundant2",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Redundant2"
+            ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "Redundant2"
+              ]
+            },
+            "mtu" : 1500,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "REDUNDANT",
+            "vrf" : "default"
+          },
+          "redundant1sub" : {
+            "name" : "redundant1sub",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "10.0.0.1/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Redundant1.2",
+              "redundant1sub"
+            ],
+            "encapsulationVlan" : 2,
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "redundant1sub"
+              ]
+            },
+            "mtu" : 1500,
+            "preTransformationOutgoingFilter" : "~COMBINED_OUTGOING_ACL~redundant1sub~",
+            "prefix" : "10.0.0.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "REDUNDANT_CHILD",
+            "vrf" : "default"
+          },
+          "redundant2sub" : {
+            "name" : "redundant2sub",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "10.0.1.1/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Redundant2.2",
+              "redundant2sub"
+            ],
+            "encapsulationVlan" : 2,
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : true,
+              "sessionInterfaces" : [
+                "redundant2sub"
+              ]
+            },
+            "mtu" : 1500,
+            "preTransformationOutgoingFilter" : "~COMBINED_OUTGOING_ACL~redundant2sub~",
+            "prefix" : "10.0.1.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "REDUNDANT_CHILD",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~COMBINED_OUTGOING_ACL~redundant1sub~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "redundant1sub"
+                      ],
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit intra-interface is not set"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "redundant2sub"
+                      ],
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit inter-interface is not set"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_75~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~COMBINED_OUTGOING_ACL~redundant1sub~"
+          },
+          "~COMBINED_OUTGOING_ACL~redundant2sub~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "redundant2sub"
+                      ],
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit intra-interface is not set"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "redundant1sub"
+                      ],
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "same-security-traffic permit inter-interface is not set"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_75~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~COMBINED_OUTGOING_ACL~redundant2sub~"
+          },
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_75~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "Allow traffic originating from this device",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched traffic originating from this device"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_75~"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "asa-interface-redundant",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        },
+        "zones" : {
+          "SECURITY_LEVEL_75" : {
+            "name" : "SECURITY_LEVEL_75",
+            "interfaces" : [
+              "redundant1sub",
+              "redundant2sub"
+            ]
+          }
+        }
+      },
       "asa_acl" : {
         "configurationFormat" : "CISCO_ASA",
         "name" : "asa_acl",
@@ -20183,7 +20548,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "channelGroupMembers" : [
               "ge-0/0/0",
               "ge-0/0/1"
@@ -20204,7 +20569,7 @@
           },
           "reth0.3" : {
             "name" : "reth0.3",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -20213,7 +20578,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "reth0.3"
             ],

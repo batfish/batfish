@@ -320,6 +320,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("Port-channel", "Port-Channel")
           .put("POS", "POS")
           .put("PTP", "PTP")
+          .put("Redundant", "Redundant")
           .put("Serial", "Serial")
           .put("Service-Engine", "Service-Engine")
           .put("TenGigabitEthernet", "TenGigabitEthernet")
@@ -2023,6 +2024,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
+    newIface.setRedundancyGroupMembers(iface.getMemberInterfaces());
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
@@ -3541,8 +3543,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getAllInterfaces().put(newIfaceName, newInterface);
         });
     /*
-     * Second pass over the interfaces to set dependency pointers correctly for portchannels
-     * and tunnel interfaces
+     * Second pass over the interfaces to set dependency pointers correctly for:
+     * - portchannels
+     * - subinterfaces
+     * - redundant interfaces
+     * - tunnel interfaces
      * TODO: VLAN interfaces
      */
     _interfaces.forEach(
@@ -3555,16 +3560,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
               viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
             }
           }
-          // Portchannel subinterfaces
+          // subinterfaces
           Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
           if (m.matches()) {
             String parentInterfaceName = m.group(1);
             Interface parentInterface = _interfaces.get(parentInterfaceName);
             if (parentInterface != null) {
-              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+              org.batfish.datamodel.Interface viIface =
+                  iface.getAlias() != null
+                      ? c.getAllInterfaces().get(iface.getAlias())
+                      : c.getAllInterfaces().get(ifaceName);
               if (viIface != null) {
                 viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
               }
+            }
+          }
+          // Redundant Interfaces
+          {
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+            if (viIface != null && viIface.getInterfaceType() == InterfaceType.REDUNDANT) {
+              iface.getMemberInterfaces().stream()
+                  .map(c.getAllInterfaces()::get)
+                  .filter(Objects::nonNull)
+                  .forEach(
+                      memberViIface ->
+                          viIface.addDependency(
+                              new Dependency(memberViIface.getName(), DependencyType.AGGREGATE)));
             }
           }
           // Tunnels

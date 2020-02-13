@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -187,6 +188,8 @@ public class Interface implements Serializable {
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
+  private final @Nonnull Set<String> _memberInterfaces;
+
   @Nullable private Integer _mlagId;
 
   private int _mtu;
@@ -302,6 +305,7 @@ public class Interface implements Serializable {
     _dhcpRelayAddresses = new TreeSet<>();
     _hsrpGroups = new TreeMap<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
+    _memberInterfaces = new HashSet<>();
     _name = name;
     _secondaryAddresses = new LinkedHashSet<>();
     ConfigurationFormat vendor = c.getVendor();
@@ -433,6 +437,10 @@ public class Interface implements Serializable {
 
   public IsisInterfaceMode getIsisInterfaceMode() {
     return _isisInterfaceMode;
+  }
+
+  public @Nonnull Set<String> getMemberInterfaces() {
+    return _memberInterfaces;
   }
 
   @Nullable

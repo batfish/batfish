@@ -104,6 +104,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_IP_VRF_SITEMAP("interface ip vrf sitemap"),
   INTERFACE_IPV6_TRAFFIC_FILTER_IN("interface ipv6 traffic-filter in"),
   INTERFACE_IPV6_TRAFFIC_FILTER_OUT("interface ipv6 traffic-filter out"),
+  INTERFACE_MEMBER_INTERFACE("interface member-interface"),
   INTERFACE_OUTGOING_FILTER("interface outgoing ip access-list"),
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),

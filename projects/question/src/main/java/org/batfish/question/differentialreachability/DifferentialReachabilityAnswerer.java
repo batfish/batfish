@@ -1,7 +1,6 @@
 package org.batfish.question.differentialreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
@@ -105,11 +104,10 @@ public class DifferentialReachabilityAnswerer extends Answerer {
                     .map(Entry::getIpSpace)
                     .collect(ImmutableList.toImmutableList())),
             UniverseIpSpace.INSTANCE);
+
     AclLineMatchExpr headerSpace =
-        match(
-            PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(headerConstraints)
-                .setDstIps(dstIps)
-                .build());
+        PacketHeaderConstraintsUtil.toAclLineMatchExpr(
+            headerConstraints, UniverseIpSpace.INSTANCE, dstIps);
 
     return new DifferentialReachabilityParameters(
         ReachabilityParameters.filterDispositions(question.getActions().getDispositions()),

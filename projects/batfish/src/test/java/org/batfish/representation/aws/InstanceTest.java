@@ -1,10 +1,20 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCES;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_RESERVATIONS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -16,15 +26,21 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.Instance.Status;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
 /** Test for {@link Instance} */
@@ -115,7 +131,13 @@ public class InstanceTest {
     Interface configInterface = getOnlyElement(configuration.getAllInterfaces().values());
 
     assertTrue(warnings.isEmpty());
-    assertThat(configuration.getHostname(), equalTo(instance.getId()));
+    assertThat(
+        configuration,
+        allOf(
+            hasConfigurationFormat(ConfigurationFormat.AWS),
+            hasHostname(instance.getId()),
+            hasDeviceModel(DeviceModel.AWS_EC2_INSTANCE),
+            hasDeviceType(DeviceType.HOST)));
     assertThat(configuration.getHumanName(), equalTo("UserVisibleName!"));
     assertThat(configInterface.getDescription(), equalTo("desc"));
     assertThat(
@@ -134,5 +156,13 @@ public class InstanceTest {
                     Subnet.instancesInterfaceName(subnet.getId()),
                     instance.getId(),
                     configInterface.getName()))));
+
+    Map<Location, LocationInfo> locationInfo = configuration.getLocationInfo();
+    assertEquals(
+        instanceInterfaceLocationInfo(configInterface),
+        locationInfo.get(interfaceLocation(configInterface)));
+    assertEquals(
+        INSTANCE_INTERFACE_LINK_LOCATION_INFO,
+        locationInfo.get(interfaceLinkLocation(configInterface)));
   }
 }

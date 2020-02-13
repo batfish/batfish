@@ -5,6 +5,7 @@ import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
@@ -219,8 +220,7 @@ public final class SearchFiltersTest {
         DEFAULT_PARAMS
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
-            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setHeaderSpace(HeaderSpace.builder().build());
+            .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
 
     SearchFiltersParameters params = paramsBuilder.build();
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
@@ -228,7 +228,7 @@ public final class SearchFiltersTest {
     assertNotNull("Should find permitted flow for IP0", flow);
     assertThat(flow, hasDstIp(IP0));
 
-    params = paramsBuilder.setHeaderSpace(HeaderSpace.builder().setNegate(true).build()).build();
+    params = paramsBuilder.setComplementHeaderSpace(true).build();
     configContext = getConfigContextWithParams(params);
     flow = configContext.getFlow(configContext.getReachBdd(ACL, PERMIT_QUERY));
     assertNotNull("Should find permitted flow for IP3 since IP0 is now excluded", flow);
@@ -475,7 +475,6 @@ public final class SearchFiltersTest {
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setHeaderSpace(new HeaderSpace())
             .build();
 
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
@@ -492,7 +491,6 @@ public final class SearchFiltersTest {
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
-            .setHeaderSpace(new HeaderSpace())
             .build();
 
     NonDiffConfigContext configContext = getConfigContextWithParams(params);
@@ -512,7 +510,7 @@ public final class SearchFiltersTest {
             .toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setHeaderSpace(hs)
+            .setHeaderSpaceExpr(match(hs))
             .build();
 
     NonDiffConfigContext configContext = getConfigContextWithParams(params);

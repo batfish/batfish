@@ -41,7 +41,11 @@ public class Topology extends BfObject {
       if (configuration == null) {
         throw new BatfishException("Node '" + nodeName + "' not found in configurations");
       }
-      Node pojoNode = new Node(configuration.getHostname(), configuration.getDeviceType());
+      Node pojoNode =
+          new Node(
+              configuration.getHostname(),
+              configuration.getDeviceModel(),
+              configuration.getDeviceType());
       pojoTopology.getNodes().add(pojoNode);
 
       Map<String, org.batfish.datamodel.Interface> nodeInterfaces =
@@ -118,7 +122,11 @@ public class Topology extends BfObject {
 
     // add nodes that were not in Topology (because they have no Edges)
     for (Configuration configuration : configurations.values()) {
-      Node pojoNode = new Node(configuration.getHostname(), configuration.getDeviceType());
+      Node pojoNode =
+          new Node(
+              configuration.getHostname(),
+              configuration.getDeviceModel(),
+              configuration.getDeviceType());
       pojoTopology.getNodes().add(pojoNode);
     }
     return pojoTopology;

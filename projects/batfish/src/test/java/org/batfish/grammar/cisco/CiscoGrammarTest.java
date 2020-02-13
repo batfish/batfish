@@ -355,6 +355,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -1006,6 +1007,71 @@ public final class CiscoGrammarTest {
         config,
         hasInterface(
             "GigabitEthernet0/2", hasAddress(ConcreteInterfaceAddress.parse("172.16.1.1/30"))));
+  }
+
+  @Test
+  public void testAsaInterfaceRedundantExtraction() {
+    CiscoConfiguration config =
+        parseCiscoConfig("asa-interface-redundant", ConfigurationFormat.CISCO_ASA);
+
+    assertThat(
+        config.getInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/1",
+            "GigabitEthernet0/2",
+            "Redundant1",
+            "Redundant1.2",
+            "Redundant2",
+            "Redundant2.2"));
+    {
+      org.batfish.representation.cisco.Interface iface = config.getInterfaces().get("Redundant1");
+      assertThat(
+          iface.getMemberInterfaces(),
+          containsInAnyOrder("GigabitEthernet0/1", "GigabitEthernet0/2"));
+    }
+    {
+      org.batfish.representation.cisco.Interface iface = config.getInterfaces().get("Redundant2");
+      assertThat(iface.getMemberInterfaces(), empty());
+    }
+  }
+
+  @Test
+  public void testAsaInterfaceRedundantConversion() throws IOException {
+    Configuration config = parseConfig("asa-interface-redundant");
+
+    assertThat(
+        config.getAllInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/1",
+            "GigabitEthernet0/2",
+            "Redundant1",
+            "redundant1sub",
+            "Redundant2",
+            "redundant2sub"));
+    {
+      Interface iface = config.getAllInterfaces().get("Redundant1");
+      assertThat(
+          iface.getRedundancyGroupMembers(),
+          containsInAnyOrder("GigabitEthernet0/1", "GigabitEthernet0/2"));
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("redundant1sub");
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("Redundant2");
+      assertThat(iface.getRedundancyGroupMembers(), empty());
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("redundant2sub");
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
   }
 
   @Test
@@ -5996,9 +6062,9 @@ public final class CiscoGrammarTest {
     String hostname = "asa-nat-twice-dynamic";
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
 
-    MatchHeaderSpace matchSourceSubnet =
+    AclLineMatchExpr matchSourceSubnet =
         matchSrc(new IpSpaceReference("source-subnet", "Match network object: 'source-subnet'"));
-    MatchHeaderSpace matchSourceGroup =
+    AclLineMatchExpr matchSourceGroup =
         matchSrc(
             new IpSpaceReference("source-group", "Match network object-group: 'source-group'"));
     AssignIpAddressFromPool assignSourceRange =

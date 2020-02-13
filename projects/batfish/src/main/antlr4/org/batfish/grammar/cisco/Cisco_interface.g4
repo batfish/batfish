@@ -671,6 +671,11 @@ if_load_interval
    LOAD_INTERVAL li = DEC NEWLINE
 ;
 
+if_member_interface
+:
+  MEMBER_INTERFACE name = interface_name NEWLINE
+;
+
 if_eos_mlag
 :
    MLAG id = DEC NEWLINE
@@ -1853,6 +1858,7 @@ if_inner
    | if_isis_passive
    | if_isis_tag
    | if_load_interval
+   | if_member_interface
    | if_mtu
    | if_nameif
    | if_no_bfd
