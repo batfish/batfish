@@ -137,6 +137,7 @@ public final class BatfishObjectMapper {
   private static ObjectMapper baseMapper() {
     ObjectMapper mapper = new ObjectMapper();
 
+    mapper.disable(MapperFeature.AUTO_DETECT_CREATORS);
     mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     mapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
     // Next two lines make Instant class serialize as an RFC-3339 timestamp

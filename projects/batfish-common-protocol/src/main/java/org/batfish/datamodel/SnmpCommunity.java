@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.util.ComparableStructure;
 
@@ -13,6 +14,7 @@ public class SnmpCommunity extends ComparableStructure<String> {
 
   private boolean _rw;
 
+  @JsonCreator
   public SnmpCommunity(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }

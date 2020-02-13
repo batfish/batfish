@@ -1,5 +1,6 @@
 package org.batfish.question.ospfsession;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
@@ -28,6 +29,7 @@ public class OspfSessionCompatibilityQuestion extends Question {
 
   @Nonnull private final Set<OspfSessionStatus> _expandedStatuses;
 
+  @JsonCreator
   public OspfSessionCompatibilityQuestion(
       @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_REMOTE_NODES) @Nullable String remoteNodes,
