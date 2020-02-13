@@ -448,6 +448,16 @@ public class CumulusConcatenatedGrammarTest {
               StandardCommunity.of(2, 1),
               StandardCommunity.of(2, 2)));
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_DENY_PERMIT");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
 
     // RMs using standard comm-lists.
     {
@@ -481,6 +491,17 @@ public class CumulusConcatenatedGrammarTest {
               StandardCommunity.of(1, 2),
               StandardCommunity.of(2, 1),
               StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_DENY_PERMIT");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
               StandardCommunity.of(3, 2)));
     }
   }
