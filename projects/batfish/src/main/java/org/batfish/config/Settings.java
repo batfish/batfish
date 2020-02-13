@@ -68,8 +68,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_NO_SHUFFLE = "noshuffle";
 
-  public static final String ARG_PARENT_PID = "parentpid";
-
   private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
   private static final String ARG_PRINT_PARSE_TREE_LINE_NUMS = "printparsetreelinenums";
@@ -287,10 +285,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public String getLogLevel() {
     return _config.getString(BfConsts.ARG_LOG_LEVEL);
-  }
-
-  public int getParentPid() {
-    return _config.getInt(ARG_PARENT_PID);
   }
 
   public boolean getParseReuse() {
@@ -520,7 +514,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
-    setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PARSE_REUSE, true);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
@@ -689,8 +682,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
-    addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
-
     addBooleanOption(ARG_PARSE_REUSE, "reuse parse results when appropriate");
 
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
@@ -786,6 +777,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "gsremoteas",
           "logtee",
           "outputenv",
+          "parentpid",
           "pedanticsuppress",
           "ppa",
           "redflagsuppress",
@@ -855,7 +847,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
     getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
-    getIntOptionValue(ARG_PARENT_PID);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
