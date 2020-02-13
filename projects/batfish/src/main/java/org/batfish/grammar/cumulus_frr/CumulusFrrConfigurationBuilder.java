@@ -59,6 +59,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
@@ -298,7 +299,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     return Long.parseLong(t.getText());
   }
 
-  private @Nonnull String toString(ParserRuleContext ctx) {
+  private @Nonnull String toString(Ip_community_list_nameContext ctx) {
     return ctx.getText();
   }
 

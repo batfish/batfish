@@ -1312,25 +1312,23 @@ public final class CumulusConversions {
       IpCommunityListStandard ipCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
+
+    // TODO: support set comm-list delete semantics for line with more than one community
     for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines()) {
-      // Cumulus lets one specify multiple communities in a line.
-      if (line.getCommunities().size() == 0) {
+      if (line.getCommunities().size() != 1) {
         continue;
       }
-      line.getCommunities()
-          .forEach(
-              (standardCommunity) -> {
-                if (line.getAction() == LineAction.PERMIT) {
-                  if (!blacklist.contains(standardCommunity)) {
-                    whitelist.add(standardCommunity);
-                  }
-                } else {
-                  // DENY
-                  if (!whitelist.contains(standardCommunity)) {
-                    blacklist.add(standardCommunity);
-                  }
-                }
-              });
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
