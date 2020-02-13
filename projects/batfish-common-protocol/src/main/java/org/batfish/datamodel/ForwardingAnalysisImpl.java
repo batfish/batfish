@@ -36,8 +36,9 @@ import org.batfish.specifier.LocationInfo;
 
 /** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
-  // node -> vrf -> ips accepted by that vrf
-  private Map<String, Map<String, IpSpace>> _acceptedIps;
+
+  /** node -&gt; vrf -&gt; interface -&gt; ips accepted by that interface */
+  private Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
 
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
@@ -287,13 +288,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   /**
-   * Compute the space of IPs accepted by a VRF<br>
-   * Mapping: hostname -&gt; vrf name -&gt; space of IPs
+   * Compute the space of IPs accepted by an interface<br>
+   * Mapping: hostname -&gt; vrf name -&gt; interface name -&gt; space of IPs
    */
-  private Map<String, Map<String, IpSpace>> computeAcceptedIps(IpOwners ipOwners) {
-
-    // TODO: also special case VRF-accepted IPs that are not interface IPs here.
-    return ipOwners.getVrfOwnedIpSpaces();
+  // TODO: Account for special case VRF-accepted IPs that are not interface IPs.
+  private static Map<String, Map<String, Map<String, IpSpace>>> computeAcceptedIps(
+      IpOwners ipOwners) {
+    return ipOwners.getVrfIfaceOwnedIpSpaces();
   }
 
   /**
@@ -1064,7 +1065,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @Nonnull
   @Override
-  public Map<String, Map<String, IpSpace>> getAcceptsIps() {
+  public Map<String, Map<String, Map<String, IpSpace>>> getAcceptsIps() {
     return _acceptedIps;
   }
 

@@ -9,7 +9,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
   public static class Builder {
 
-    private Map<String, Map<String, IpSpace>> _acceptedIps;
+    private Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
     private Map<String, Map<String, IpSpace>> _arpReplies;
     private Map<
             String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
@@ -35,7 +35,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
       return new MockForwardingAnalysis(this);
     }
 
-    public Builder setAcceptedIps(Map<String, Map<String, IpSpace>> acceptedIps) {
+    public Builder setAcceptedIps(Map<String, Map<String, Map<String, IpSpace>>> acceptedIps) {
       _acceptedIps = acceptedIps;
       return this;
     }
@@ -83,7 +83,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     return new Builder();
   }
 
-  private Map<String, Map<String, IpSpace>> _acceptedIps;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
   private final Map<String, Map<String, IpSpace>> _arpReplies;
   private final Map<
           String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
@@ -107,7 +107,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
   @Nonnull
   @Override
-  public Map<String, Map<String, IpSpace>> getAcceptsIps() {
+  public Map<String, Map<String, Map<String, IpSpace>>> getAcceptsIps() {
     return _acceptedIps;
   }
 
