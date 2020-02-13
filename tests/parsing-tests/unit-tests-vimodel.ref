@@ -20569,7 +20569,7 @@
           },
           "reth0.3" : {
             "name" : "reth0.3",
-            "active" : false,
+            "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -20591,7 +20591,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "REDUNDANT",
+            "type" : "REDUNDANT_CHILD",
             "vrf" : "default"
           }
         },
