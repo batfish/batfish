@@ -9,6 +9,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -20,7 +21,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -48,6 +48,9 @@ public final class IpOwners {
   /** Mapping from hostname to interface name to IpSpace owned by that interface */
   private final Map<String, Map<String, IpSpace>> _hostToInterfaceToIpSpace;
 
+  /** Mapping from hostname to VRF name to interface name to IpSpace owned by that interface */
+  private final Map<String, Map<String, Map<String, IpSpace>>> _hostToVrfToInterfaceToIpSpace;
+
   /**
    * Mapping from hostname to interface name to host IP subnet.
    *
@@ -57,8 +60,6 @@ public final class IpOwners {
 
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
-
-  private final Map<String, Map<String, IpSpace>> _vrfOwnedIpSpaces;
 
   public IpOwners(Map<String, Configuration> configurations) {
     /* Mapping from a hostname to a set of all (including inactive) interfaces that node owns */
@@ -71,35 +72,31 @@ public final class IpOwners {
     }
 
     {
-      _hostToInterfaceToIpSpace =
-          ImmutableMap.copyOf(computeInterfaceOwnedIpSpaces(_activeDeviceOwnedIps));
-      _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
+      Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners =
+          computeIpIfaceOwners(allInterfaces, _activeDeviceOwnedIps);
+      _ipVrfOwners = computeIpVrfOwners(ipIfaceOwners);
+      _hostToVrfToInterfaceToIpSpace = computeIfaceOwnedIpSpaces(ipIfaceOwners);
     }
 
     {
-      _ipVrfOwners = computeIpVrfOwners(allInterfaces, _activeDeviceOwnedIps);
-      _vrfOwnedIpSpaces = computeVrfOwnedIpSpaces(_ipVrfOwners);
+      _hostToInterfaceToIpSpace = computeInterfaceOwnedIpSpaces(_hostToVrfToInterfaceToIpSpace);
+      _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
     }
   }
 
   /**
-   * Invert a mapping from {@link Ip} to owner interfaces (Ip -&gt; hostname -&gt; interface name)
-   * and convert the set of owned Ips into an IpSpace.
+   * Computes a map of hostname -&gt; interface name -&gt; {@link IpSpace} from a map of hostname
+   * -&gt; vrf name -&gt; interface name -&gt; {@link IpSpace}.
    */
   private static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
-      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+      Map<String, Map<String, Map<String, IpSpace>>> ipOwners) {
     return toImmutableMap(
-        computeInterfaceOwnedIps(ipInterfaceOwners),
+        ipOwners,
         Entry::getKey, /* host */
         hostEntry ->
-            toImmutableMap(
-                hostEntry.getValue(),
-                Entry::getKey, /* interface */
-                ifaceEntry ->
-                    AclIpSpace.union(
-                        ifaceEntry.getValue().stream()
-                            .map(Ip::toIpSpace)
-                            .collect(Collectors.toList()))));
+            hostEntry.getValue().values().stream() /* Skip VRF keys */
+                .flatMap(ifaceMap -> ifaceMap.entrySet().stream())
+                .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
   }
 
   @VisibleForTesting
@@ -286,58 +283,89 @@ public final class IpOwners {
    * Compute a mapping of IP addresses to the VRFs that "own" this IP (e.g., as a network interface
    * address).
    *
-   * @param allInterfaces A mapping of enabled interfaces hostname -&gt; interface name -&gt; {@link
-   *     Interface}
-   * @param activeDeviceOwnedIps Mapping from a IP to hostname to set of interfaces that own that IP
-   *     (for active interfaces only)
+   * @param ipVrfIfaceOwners A mapping of IP owners hostname -&gt; vrf name -&gt; interface names
    * @return A map of {@link Ip}s to a map of hostnames to vrfs that own the Ip.
    */
   @VisibleForTesting
   static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
+      Map<Ip, Map<String, Map<String, Set<String>>>> ipVrfIfaceOwners) {
+    return toImmutableMap(
+        ipVrfIfaceOwners,
+        Entry::getKey, /* Ip */
+        ipEntry ->
+            toImmutableMap(
+                ipEntry.getValue(),
+                Entry::getKey, /* Hostname */
+                nodeEntry -> ImmutableSet.copyOf(nodeEntry.getValue().keySet()))); /* VRFs */
+  }
+
+  /**
+   * Compute a mapping of IP addresses to the VRFs and interfaces that "own" this IP (e.g., as a
+   * network interface address).
+   *
+   * @param allInterfaces A mapping of enabled interfaces hostname -&gt; set of {@link Interface}
+   * @param activeDeviceOwnedIps Mapping from a IP to hostname to set of interfaces that own that IP
+   *     (for active interfaces only)
+   * @return A map of {@link Ip}s to a map of hostnames to vrfs to interfaces that own the Ip.
+   */
+  @VisibleForTesting
+  static Map<Ip, Map<String, Map<String, Set<String>>>> computeIpIfaceOwners(
       Map<String, Set<Interface>> allInterfaces,
       Map<Ip, Map<String, Set<String>>> activeDeviceOwnedIps) {
 
-    // Helper mapping: Hostname -> interface name -> vrf name
-    Map<String, Map<String, String>> allInterfaceVrfs =
-        toImmutableMap(
-            allInterfaces,
-            Entry::getKey, /* hostname */
-            nodeInterfaces ->
-                nodeInterfaces.getValue().stream()
-                    .collect(
-                        ImmutableMap.toImmutableMap(Interface::getName, Interface::getVrfName)));
+    // Helper mapping: hostname -> vrf -> interfaces
+    Map<String, Map<String, Set<String>>> hostsToVrfsToIfaces = new HashMap<>();
+    allInterfaces.forEach(
+        (hostname, ifaces) ->
+            ifaces.forEach(
+                iface -> {
+                  hostsToVrfsToIfaces
+                      .computeIfAbsent(hostname, n -> new HashMap<>())
+                      .computeIfAbsent(iface.getVrfName(), n -> new HashSet<>())
+                      .add(iface.getName());
+                }));
 
     return toImmutableMap(
         activeDeviceOwnedIps,
         Entry::getKey, /* Ip */
-        ipInterfaceOwnersEntry ->
+        ipEntry ->
             toImmutableMap(
-                ipInterfaceOwnersEntry.getValue(),
-                Entry::getKey, /* Hostname */
-                ipNodeInterfaceOwnersEntry ->
-                    ipNodeInterfaceOwnersEntry.getValue().stream()
-                        .map(allInterfaceVrfs.get(ipNodeInterfaceOwnersEntry.getKey())::get)
-                        .collect(ImmutableSet.toImmutableSet())));
+                ipEntry.getValue(),
+                Entry::getKey, /* hostname */
+                nodeEntry -> {
+                  String hostname = nodeEntry.getKey();
+                  Set<String> ownerIfaces = nodeEntry.getValue();
+                  return hostsToVrfsToIfaces.get(hostname).entrySet().stream()
+                      // Filter to VRFs containing interfaces that own this IP
+                      .filter(vrfEntry -> !Collections.disjoint(vrfEntry.getValue(), ownerIfaces))
+                      .collect(
+                          // Map each VRF to its set of interfaces that own this IP
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey,
+                              vrfEntry -> Sets.intersection(vrfEntry.getValue(), ownerIfaces)));
+                }));
   }
 
   /**
-   * Invert a mapping from Ip to VRF owners (Ip -&gt; host name -&gt; VRF name) and combine all IPs
-   * owned by each VRF into an IpSpace.
+   * Invert a mapping from Ip to interface owners (Ip -&gt; host name -&gt; VRF name -&gt; interface
+   * names) and combine all IPs owned by each interface into an IpSpace.
    */
-  private static Map<String, Map<String, IpSpace>> computeVrfOwnedIpSpaces(
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
-    Map<String, Map<String, AclIpSpace.Builder>> builders = new HashMap<>();
-    ipVrfOwners.forEach(
-        (ip, ipNodeVrfs) ->
-            ipNodeVrfs.forEach(
-                (node, vrfs) ->
-                    vrfs.forEach(
-                        vrf ->
-                            builders
-                                .computeIfAbsent(node, k -> new HashMap<>())
-                                .computeIfAbsent(vrf, k -> AclIpSpace.builder())
-                                .thenPermitting(ip.toIpSpace()))));
-
+  private static Map<String, Map<String, Map<String, IpSpace>>> computeIfaceOwnedIpSpaces(
+      Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners) {
+    Map<String, Map<String, Map<String, AclIpSpace.Builder>>> builders = new HashMap<>();
+    ipIfaceOwners.forEach(
+        (ip, nodeMap) ->
+            nodeMap.forEach(
+                (node, vrfMap) ->
+                    vrfMap.forEach(
+                        (vrf, ifaces) ->
+                            ifaces.forEach(
+                                iface ->
+                                    builders
+                                        .computeIfAbsent(node, k -> new HashMap<>())
+                                        .computeIfAbsent(vrf, k -> new HashMap<>())
+                                        .computeIfAbsent(iface, k -> AclIpSpace.builder())
+                                        .thenPermitting(ip.toIpSpace())))));
     return toImmutableMap(
         builders,
         Entry::getKey, /* node */
@@ -345,7 +373,11 @@ public final class IpOwners {
             toImmutableMap(
                 nodeEntry.getValue(),
                 Entry::getKey, /* vrf */
-                vrfEntry -> vrfEntry.getValue().build()));
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue(),
+                        Entry::getKey, /* interface */
+                        ifaceEntry -> ifaceEntry.getValue().build())));
   }
 
   /**
@@ -388,10 +420,10 @@ public final class IpOwners {
   }
 
   /**
-   * Returns a mapping from hostname to vrf name to a space of IPs owned by that VRF. Only considers
-   * interface IPs. Considers <em>only active</em> interfaces.
+   * Returns a mapping from hostname to vrf name to interface name to a space of IPs owned by that
+   * interface. Only considers interface IPs. Considers <em>only active</em> interfaces.
    */
-  public Map<String, Map<String, IpSpace>> getVrfOwnedIpSpaces() {
-    return _vrfOwnedIpSpaces;
+  public Map<String, Map<String, Map<String, IpSpace>>> getVrfIfaceOwnedIpSpaces() {
+    return _hostToVrfToInterfaceToIpSpace;
   }
 }

@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -171,11 +170,9 @@ public class TracerouteEngineImplContext {
    * ip}
    */
   boolean acceptsIp(String node, String vrf, Ip ip) {
-    return _forwardingAnalysis
-        .getAcceptsIps()
-        .getOrDefault(node, ImmutableMap.of())
-        .getOrDefault(vrf, EmptyIpSpace.INSTANCE)
-        .containsIp(ip, ImmutableMap.of());
+    return _forwardingAnalysis.getAcceptsIps().getOrDefault(node, ImmutableMap.of())
+        .getOrDefault(vrf, ImmutableMap.of()).values().stream()
+        .anyMatch(ipSpace -> ipSpace.containsIp(ip, ImmutableMap.of()));
   }
 
   /**
