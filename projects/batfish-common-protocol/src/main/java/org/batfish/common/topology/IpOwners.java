@@ -328,30 +328,22 @@ public final class IpOwners {
     return toImmutableMap(
         activeDeviceOwnedIps,
         Entry::getKey, /* Ip */
-        ipEntry -> {
-          Map<String, Set<String>> owners = ipEntry.getValue();
-          return toImmutableMap(
-              owners,
-              Entry::getKey, /* hostname */
-              nodeEntry -> {
-                String hostname = nodeEntry.getKey();
-                Set<String> ownerIfaces = nodeEntry.getValue();
-                ImmutableMap.Builder<String, Set<String>> ownerVrfsAndIfaces =
-                    ImmutableMap.builder();
-                hostsToVrfsToIfaces
-                    .get(hostname)
-                    .forEach(
-                        (vrf, ifaces) -> {
-                          // Find interfaces in this VRF that own this IP
-                          Set<String> vrfOwnerIfaces = Sets.intersection(ownerIfaces, ifaces);
-                          if (!vrfOwnerIfaces.isEmpty()) {
-                            // Only include VRFs that have any interfaces that own this IP
-                            ownerVrfsAndIfaces.put(vrf, vrfOwnerIfaces);
-                          }
-                        });
-                return ownerVrfsAndIfaces.build();
-              });
-        });
+        ipEntry ->
+            toImmutableMap(
+                ipEntry.getValue(),
+                Entry::getKey, /* hostname */
+                nodeEntry -> {
+                  String hostname = nodeEntry.getKey();
+                  Set<String> ownerIfaces = nodeEntry.getValue();
+                  return hostsToVrfsToIfaces.get(hostname).entrySet().stream()
+                      // Filter to VRFs containing interfaces that own this IP
+                      .filter(vrfEntry -> !Collections.disjoint(vrfEntry.getValue(), ownerIfaces))
+                      .collect(
+                          // Map each VRF to its set of interfaces that own this IP
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey,
+                              vrfEntry -> Sets.intersection(vrfEntry.getValue(), ownerIfaces)));
+                }));
   }
 
   /**

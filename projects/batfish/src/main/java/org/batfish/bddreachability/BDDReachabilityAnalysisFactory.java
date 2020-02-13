@@ -1618,7 +1618,7 @@ public final class BDDReachabilityAnalysisFactory {
                   Map<String, IpSpace> vrfAcceptIps =
                       nodeAcceptIps.getOrDefault(vrf, ImmutableMap.of());
                   // Create entry for every interface in the current VRF
-                  return c.getActiveInterfaces().values().stream()
+                  return c.getAllInterfaces().values().stream()
                       .filter(iface -> iface.getVrfName().equals(vrf))
                       .map(Interface::getName)
                       .collect(

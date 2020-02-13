@@ -554,7 +554,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
 
-    // when interface is inactive, its Ip does not belong to the VRF
+    // when interface is inactive, it doesn't own any IPs
     {
       iface.setActive(false);
       Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
@@ -568,13 +568,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
               new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
               false,
               false);
-      // Interface isn't active, so shouldn't appear in map
       Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
-          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
+          ImmutableMap.of(
+              config.getHostname(),
+              ImmutableMap.of(
+                  vrf.getName(), ImmutableMap.of(iface.getName(), PKT.getFactory().zero())));
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
 
-    // when interface is blacklisted, its Ip does not belong to the VRF
+    // when interface is blacklisted, it doesn't own any IPs
     {
       iface.blacklist();
       Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
@@ -589,9 +591,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
               new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
               false,
               false);
-      // Interface isn't active, so shouldn't appear in map
       Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
-          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
+          ImmutableMap.of(
+              config.getHostname(),
+              ImmutableMap.of(
+                  vrf.getName(), ImmutableMap.of(iface.getName(), PKT.getFactory().zero())));
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
   }
