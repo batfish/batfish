@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -44,8 +43,6 @@ public class Node extends BfObject {
     return new Node(name, id, model, type);
   }
 
-  // this annotation prevents jackson from converting a string to a node object
-  @JsonIgnore
   public Node(String name) {
     this(name, null, null, null);
   }
