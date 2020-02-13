@@ -2,6 +2,9 @@ package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.datamodel.Flow.builder;
+import static org.batfish.representation.aws.NetworkAcl.getAclName;
+import static org.batfish.representation.aws.Region.SG_EGRESS_ACL_NAME;
+import static org.batfish.representation.aws.Region.SG_INGRESS_ACL_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -14,6 +17,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -52,6 +56,7 @@ public class AwsConfigurationSubnetTest {
   private static Ip _instance2Ip = Ip.parse("10.10.1.44");
   private static String _subnet = "subnet-06c8307e34ffadb04";
   private static String _vpc = "vpc-062867d29dbf9386f";
+  private static String _networkAcl = "acl-07102431133dec52a";
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -61,33 +66,65 @@ public class AwsConfigurationSubnetTest {
     _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
-  private static void testTrace(
-      String ingressNode,
-      Ip dstIp,
-      FlowDisposition expectedDisposition,
-      List<String> expectedNodes) {
+  private static Trace getTrace(String ingressNode, Ip dstIp) {
     Flow flow = builder().setIngressNode(ingressNode).setDstIp(dstIp).build();
     SortedMap<Flow, List<Trace>> traces =
         _batfish
             .getTracerouteEngine(_batfish.getSnapshot())
             .computeTraces(ImmutableSet.of(flow), false);
 
-    Trace trace = getOnlyElement(traces.get(flow).iterator());
+    return getOnlyElement(traces.get(flow).iterator());
+  }
 
+  private static void assertTracePath(Trace trace, List<String> expectedNodes) {
     assertThat(
         trace.getHops().stream()
             .map(h -> h.getNode().getName())
             .collect(ImmutableList.toImmutableList()),
         equalTo(expectedNodes));
-    assertThat(trace.getDisposition(), equalTo(expectedDisposition));
+  }
+
+  private static void assertFilterAtStep(Trace trace, int hop, int step, String filter) {
+    FilterStep filterStep1 = (FilterStep) trace.getHops().get(hop).getSteps().get(step);
+    assertThat(filterStep1.getDetail().getFilter(), equalTo(filter));
   }
 
   @Test
   public void testInstanceToInstance() {
-    testTrace(
-        _instance1,
-        _instance2Ip,
-        FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instance1, _instance2));
+    Trace trace = getTrace(_instance1, _instance2Ip);
+
+    // Instance to instance traffic is direct, without passing through the subnet node
+    assertTracePath(trace, ImmutableList.of(_instance1, _instance2));
+
+    // security group at instance1
+    assertFilterAtStep(trace, 0, 2, SG_EGRESS_ACL_NAME);
+
+    // security group at instance2
+    assertFilterAtStep(trace, 1, 1, SG_INGRESS_ACL_NAME);
+
+    // denied because of security group on instance2
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_IN));
+  }
+
+  @Test
+  public void testInstanceToOutsideSubnet() {
+    Trace trace = getTrace(_instance1, Ip.parse("10.10.0.1"));
+
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.NULL_ROUTED));
+    assertTracePath(trace, ImmutableList.of(_instance1, _subnet, _vpc));
+
+    // network acl is applied when leaving the subnet
+    assertFilterAtStep(trace, 1, 1, getAclName(_networkAcl, true));
+  }
+
+  @Test
+  public void testOutsideSubnetToInstance() {
+    Trace trace = getTrace(_vpc, _instance2Ip);
+
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_IN)); // security group
+    assertTracePath(trace, ImmutableList.of(_vpc, _subnet, _instance2));
+
+    // network acl is applied when leaving the subnet
+    assertFilterAtStep(trace, 1, 2, getAclName(_networkAcl, false));
   }
 }
