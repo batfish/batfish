@@ -220,6 +220,7 @@ import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -5517,5 +5518,69 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         config.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getNbmaNeighbors(), empty());
+  }
+
+  @Test
+  public void testRethExtraction() {
+    JuniperConfiguration config = parseJuniperConfig("juniper-reth");
+
+    assertThat(
+        config.getMasterLogicalSystem().getInterfaces(),
+        hasKeys("reth1", "reth2", "ge-1/0/0", "ge-1/0/1"));
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("reth1");
+      assertThat(iface.getUnits(), hasKeys("reth1.1"));
+    }
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("reth2");
+      assertThat(iface.getUnits(), hasKeys("reth2.1"));
+    }
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("ge-1/0/0");
+      assertThat(iface.getRedundantParentInterface(), equalTo("reth1"));
+    }
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("ge-1/0/1");
+      assertThat(iface.getRedundantParentInterface(), equalTo("reth1"));
+    }
+  }
+
+  @Test
+  public void testRethConversion() throws IOException {
+    Configuration config = parseConfig("juniper-reth");
+
+    assertThat(
+        config.getAllInterfaces(),
+        hasKeys("reth1", "reth1.1", "reth2", "reth2.1", "ge-1/0/0", "ge-1/0/1"));
+    {
+      Interface iface = config.getAllInterfaces().get("reth1");
+      assertThat(
+          iface.getDependencies(),
+          containsInAnyOrder(
+              new Dependency("ge-1/0/0", DependencyType.AGGREGATE),
+              new Dependency("ge-1/0/1", DependencyType.AGGREGATE)));
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("reth1.1");
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("reth2");
+      assertThat(iface.getDependencies(), empty());
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("reth2.1");
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
   }
 }
