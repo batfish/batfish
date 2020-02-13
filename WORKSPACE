@@ -24,6 +24,7 @@ load(":library_deps.bzl", "BATFISH_MAVEN_ARTIFACTS")
 maven_install(
     artifacts = BATFISH_MAVEN_ARTIFACTS,
     excluded_artifacts = ["org.hamcrest:hamcrest-core"],
+    fetch_sources = True,
     maven_install_json = "@batfish//:maven_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
