@@ -1051,8 +1051,10 @@ public final class CiscoGrammarTest {
     {
       Interface iface = config.getAllInterfaces().get("Redundant1");
       assertThat(
-          iface.getRedundancyGroupMembers(),
-          containsInAnyOrder("GigabitEthernet0/1", "GigabitEthernet0/2"));
+          iface.getDependencies(),
+          containsInAnyOrder(
+              new Dependency("GigabitEthernet0/1", DependencyType.AGGREGATE),
+              new Dependency("GigabitEthernet0/2", DependencyType.AGGREGATE)));
       assertThat(iface.getBandwidth(), equalTo(1E9D));
       assertTrue(iface.getActive());
     }
@@ -1063,7 +1065,7 @@ public final class CiscoGrammarTest {
     }
     {
       Interface iface = config.getAllInterfaces().get("Redundant2");
-      assertThat(iface.getRedundancyGroupMembers(), empty());
+      assertThat(iface.getDependencies(), empty());
       assertThat(iface.getBandwidth(), equalTo(0.0D));
       assertFalse(iface.getActive());
     }

@@ -768,6 +768,8 @@ public final class Interface extends ComparableStructure<String> {
   private static InterfaceType computeJuniperInterfaceType(String name) {
     if (name.startsWith("st")) {
       return InterfaceType.VPN;
+    } else if (name.startsWith("reth") && name.contains(".")) {
+      return InterfaceType.REDUNDANT_CHILD;
     } else if (name.startsWith("reth")) {
       return InterfaceType.REDUNDANT;
     } else if (name.startsWith("ae") && name.contains(".")) {
@@ -844,7 +846,6 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _proxyArp;
   private IpAccessList _preTransformationOutgoingFilter;
   private transient String _preTransformationOutgoingFilterName;
-  private @Nonnull Set<String> _redundancyGroupMembers;
   private boolean _ripEnabled;
   private boolean _ripPassive;
   private String _routingPolicyName;
@@ -892,7 +893,6 @@ public final class Interface extends ComparableStructure<String> {
     _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
     _owner = owner;
-    _redundancyGroupMembers = ImmutableSet.of();
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _vrfName = Configuration.DEFAULT_VRF_NAME;
@@ -1367,11 +1367,6 @@ public final class Interface extends ComparableStructure<String> {
     return _proxyArp;
   }
 
-  @JsonIgnore
-  public @Nonnull Set<String> getRedundancyGroupMembers() {
-    return _redundancyGroupMembers;
-  }
-
   @JsonProperty(PROP_RIP_ENABLED)
   public boolean getRipEnabled() {
     return _ripEnabled;
@@ -1700,11 +1695,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_PROXY_ARP)
   public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
-  }
-
-  @JsonIgnore
-  public void setRedundancyGroupMembers(Iterable<String> redundancyGroupMembers) {
-    _redundancyGroupMembers = ImmutableSortedSet.copyOf(redundancyGroupMembers);
   }
 
   @JsonProperty(PROP_RIP_ENABLED)
