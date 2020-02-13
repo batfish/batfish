@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -217,8 +218,8 @@ public final class BDDReachabilityAnalysisFactory {
   // ranges of ports in all transformations in the network, per port field.
   private final Map<PortField, BDD> _transformationPortRanges;
 
-  // node --> vrf --> set of packets accepted by the vrf
-  private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
+  /** node --&gt; vrf --&gt; interface --&gt; set of packets accepted by the interface */
+  private final Map<String, Map<String, Map<String, BDD>>> _ifaceAcceptBDDs;
 
   // node --> vrf --> nextVrf --> set of packets vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, BDD>>> _nextVrfBDDs;
@@ -271,8 +272,8 @@ public final class BDDReachabilityAnalysisFactory {
           computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
       _nullRoutedBDDs = computeNullRoutedBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
-      _vrfAcceptBDDs =
-          computeVrfAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
+      _ifaceAcceptBDDs =
+          computeIfaceAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
 
       _convertedPacketPolicies = convertPacketPolicies(configs, ipsRoutedOutInterfacesFactory);
@@ -293,10 +294,11 @@ public final class BDDReachabilityAnalysisFactory {
               _deliveredToSubnetBDDs,
               _exitsNetworkBDDs,
               _insufficientInfoBDDs,
-              _vrfAcceptBDDs,
+              _ifaceAcceptBDDs,
               _routableBDDs,
               _nextVrfBDDs,
-              _nullRoutedBDDs);
+              _nullRoutedBDDs,
+              _bddPacket.getFactory()::orAll);
     }
   }
 
@@ -493,8 +495,8 @@ public final class BDDReachabilityAnalysisFactory {
     return _dstIpSpaceToBDD;
   }
 
-  Map<String, Map<String, BDD>> getVrfAcceptBDDs() {
-    return _vrfAcceptBDDs;
+  Map<String, Map<String, Map<String, BDD>>> getIfaceAcceptBDDs() {
+    return _ifaceAcceptBDDs;
   }
 
   BDD getRequiredTransitNodeBDD() {
@@ -1078,11 +1080,11 @@ public final class BDDReachabilityAnalysisFactory {
 
   @Nonnull
   private Stream<Edge> generateRules_VrfAccept_NodeAccept() {
-    return _vrfAcceptBDDs.entrySet().stream()
+    return _ifaceAcceptBDDs.entrySet().stream()
         .flatMap(
-            vrfAcceptBDDsByNodeVrfEntry -> {
-              String hostname = vrfAcceptBDDsByNodeVrfEntry.getKey();
-              return vrfAcceptBDDsByNodeVrfEntry.getValue().keySet().stream()
+            nodeEntry -> {
+              String hostname = nodeEntry.getKey();
+              return nodeEntry.getValue().keySet().stream() // vrf names
                   .map(
                       vrf ->
                           new Edge(
@@ -1591,28 +1593,43 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
-  private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
+  private static Map<String, Map<String, Map<String, BDD>>> computeIfaceAcceptBDDs(
       Map<String, Configuration> configs,
-      Map<String, Map<String, IpSpace>> acceptIps,
+      Map<String, Map<String, Map<String, IpSpace>>> acceptIps, // hostname -> vrf -> iface -> ips
       IpSpaceToBDD ipSpaceToBDD) {
     try (ActiveSpan span =
         GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeVrfAcceptBDDs")
+            .buildSpan("BDDReachabilityAnalysisFactory.computeIfaceAcceptBDDs")
             .startActive()) {
       assert span != null; // avoid unused warning
-      // Iterate over configs because we want all node/vrf keys to be present in the map
+      // Iterate over configs because we want all node/vrf/iface keys to be present in the map
       return toImmutableMap(
           configs,
-          Entry::getKey,
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue().getVrfs(),
-                  Entry::getKey,
-                  vrfEntry ->
-                      acceptIps
-                          .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
-                          .getOrDefault(vrfEntry.getKey(), EmptyIpSpace.INSTANCE)
-                          .accept(ipSpaceToBDD)));
+          Entry::getKey, /* hostname */
+          nodeEntry -> {
+            String hostname = nodeEntry.getKey();
+            Configuration c = nodeEntry.getValue();
+            Map<String, Map<String, IpSpace>> nodeAcceptIps =
+                acceptIps.getOrDefault(hostname, ImmutableMap.of());
+            return toImmutableMap(
+                c.getVrfs().keySet(),
+                Function.identity(), /* vrf */
+                vrf -> {
+                  Map<String, IpSpace> vrfAcceptIps =
+                      nodeAcceptIps.getOrDefault(vrf, ImmutableMap.of());
+                  // Create entry for every interface in the current VRF
+                  return c.getActiveInterfaces().values().stream()
+                      .filter(iface -> iface.getVrfName().equals(vrf))
+                      .map(Interface::getName)
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Function.identity(), /* interface */
+                              ifaceName ->
+                                  vrfAcceptIps
+                                      .getOrDefault(ifaceName, EmptyIpSpace.INSTANCE)
+                                      .accept(ipSpaceToBDD)));
+                });
+          });
     }
   }
 

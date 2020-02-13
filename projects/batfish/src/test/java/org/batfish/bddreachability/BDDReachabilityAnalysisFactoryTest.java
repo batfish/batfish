@@ -547,10 +547,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
               new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
               false,
               false);
-      assertThat(
-          factory.getVrfAcceptBDDs(),
-          hasEntry(
-              equalTo(config.getHostname()), hasEntry(equalTo(vrf.getName()), equalTo(ipBDD))));
+      Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
+          ImmutableMap.of(
+              config.getHostname(),
+              ImmutableMap.of(vrf.getName(), ImmutableMap.of(iface.getName(), ipBDD)));
+      assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
 
     // when interface is inactive, its Ip does not belong to the VRF
@@ -567,11 +568,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
               new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
               false,
               false);
-      assertThat(
-          factory.getVrfAcceptBDDs(),
-          hasEntry(
-              equalTo(config.getHostname()),
-              hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+      // Interface isn't active, so shouldn't appear in map
+      Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
+          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
+      assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
 
     // when interface is blacklisted, its Ip does not belong to the VRF
@@ -589,11 +589,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
               new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
               false,
               false);
-      assertThat(
-          factory.getVrfAcceptBDDs(),
-          hasEntry(
-              equalTo(config.getHostname()),
-              hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
+      // Interface isn't active, so shouldn't appear in map
+      Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
+          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
+      assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
   }
 
