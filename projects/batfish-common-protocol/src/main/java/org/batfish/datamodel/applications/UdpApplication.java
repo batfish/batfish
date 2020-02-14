@@ -47,4 +47,9 @@ public final class UdpApplication extends PortsApplication {
     }
     return "udp/" + stringifySubRanges(_ports);
   }
+
+  @Override
+  public <T> T accept(ApplicationVisitor<T> visitor) {
+    return visitor.visitUdpApplication(this);
+  }
 }
