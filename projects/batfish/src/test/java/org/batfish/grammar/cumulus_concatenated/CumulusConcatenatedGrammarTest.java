@@ -8,11 +8,11 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeMatch
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -413,35 +413,96 @@ public class CumulusConcatenatedGrammarTest {
                     StandardCommunity.of(3, 2)))
             .build();
 
-    RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES");
-    RoutingPolicy rp2 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1");
-    RoutingPolicy rp3 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2");
-    RoutingPolicy rp4 = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3");
-    Bgpv4Route outputRoute1 = processRouteIn(rp1, inRoute);
-    Bgpv4Route outputRoute2 = processRouteIn(rp2, inRoute);
-    Bgpv4Route outputRoute3 = processRouteIn(rp3, inRoute);
-    Bgpv4Route outputRoute4 = processRouteIn(rp4, inRoute);
-    assertThat(outputRoute1.getCommunities(), hasSize(0));
-    assertThat(
-        outputRoute2.getCommunities(),
-        contains(
-            StandardCommunity.of(2, 1),
-            StandardCommunity.of(2, 2),
-            StandardCommunity.of(3, 1),
-            StandardCommunity.of(3, 2)));
-    assertThat(
-        outputRoute3.getCommunities(),
-        contains(
-            StandardCommunity.of(1, 1),
-            StandardCommunity.of(1, 2),
-            StandardCommunity.of(3, 1),
-            StandardCommunity.of(3, 2)));
-    assertThat(
-        outputRoute4.getCommunities(),
-        contains(
-            StandardCommunity.of(1, 1),
-            StandardCommunity.of(1, 2),
-            StandardCommunity.of(2, 1),
-            StandardCommunity.of(2, 2)));
+    // RMs using expanded comm-lists.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES");
+      assertThat(processRouteIn(rp, inRoute).getCommunities(), empty());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_DENY_PERMIT");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+
+    // RMs using standard comm-lists.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_1_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_2_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_3_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_DENY_PERMIT");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
   }
 }

@@ -1312,7 +1312,9 @@ public final class CumulusConversions {
       IpCommunityListStandard ipCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
-    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines().values()) {
+
+    // TODO: support set comm-list delete semantics for line with more than one community
+    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines()) {
       if (line.getCommunities().size() != 1) {
         continue;
       }
