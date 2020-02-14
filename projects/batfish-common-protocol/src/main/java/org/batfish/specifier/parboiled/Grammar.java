@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -26,9 +25,6 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
-  /** new application specifier that allows tcp/80 syntax */
-  APP_SPECIFIER("applicationSpecifier", "application-specifier"),
-  // TODO: remove this old application specifier
   APPLICATION_SPECIFIER("applicationSpecifier", "application-specifier"),
   BGP_PEER_PROPERTY_SPECIFIER("bgpPeerPropertySpecifier", "bgp-peer-property-specifier"),
   BGP_PROCESS_PROPERTY_SPECIFIER("bgpProcessPropertySpecifier", "bgp-process-property-specifier"),
@@ -90,8 +86,6 @@ public enum Grammar {
   /** Returns all values in the enum set for {@code grammar} */
   public static Collection<?> getEnumValues(Grammar grammar) {
     switch (grammar) {
-      case APPLICATION_SPECIFIER:
-        return Arrays.asList(Protocol.values());
       case BGP_PEER_PROPERTY_SPECIFIER:
         return BgpPeerPropertySpecifier.ALL.getMatchingProperties();
       case BGP_PROCESS_PROPERTY_SPECIFIER:

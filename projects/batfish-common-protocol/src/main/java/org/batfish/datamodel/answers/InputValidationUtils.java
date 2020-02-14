@@ -36,7 +36,11 @@ public final class InputValidationUtils {
     switch (varType) {
       case APPLICATION_SPEC:
         return ParboiledInputValidator.validate(
-            Grammar.APP_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
+            Grammar.APPLICATION_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case BGP_PEER_PROPERTY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.BGP_PEER_PROPERTY_SPECIFIER,

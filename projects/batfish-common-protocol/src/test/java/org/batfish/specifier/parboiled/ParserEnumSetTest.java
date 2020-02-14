@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -315,18 +314,18 @@ public class ParserEnumSetTest {
         equalTo(expectedNode));
   }
 
-  /** Test that application enums (which are not strings) work */
+  /** Test that enums that are not strings work */
   @Test
-  public void testApplication() {
+  public void testNonStringEnums() {
     String query = "";
     Set<ParboiledAutoCompleteSuggestion> suggestions =
-        getPAC("", Grammar.APPLICATION_SPECIFIER).run();
+        getPAC("", Grammar.BGP_SESSION_STATUS_SPECIFIER).run();
 
     assertThat(
         suggestions,
         equalTo(
             Stream.concat(
-                    Arrays.stream(Protocol.values())
+                    Arrays.stream(BgpSessionStatus.values())
                         .map(
                             val ->
                                 new ParboiledAutoCompleteSuggestion(
@@ -345,36 +344,40 @@ public class ParserEnumSetTest {
   @Test
   public void testAutoCompleteSuperStrings() {
     assertThat(
-        getPAC("ht", Grammar.APPLICATION_SPECIFIER).run(),
+        getPAC("est", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
             new ParboiledAutoCompleteSuggestion(
-                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
+                BgpSessionStatus.ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE)));
 
     assertThat(
-        getPAC("http", Grammar.APPLICATION_SPECIFIER).run(),
+        getPAC("established", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(",", 4, Type.ENUM_SET_SET_OP),
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(",", 11, Type.ENUM_SET_SET_OP),
             new ParboiledAutoCompleteSuggestion(
-                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
+                BgpSessionStatus.ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE)));
 
     assertThat(
-        getPAC("https", Grammar.APPLICATION_SPECIFIER).run(),
+        getPAC("not_established", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE),
-            new ParboiledAutoCompleteSuggestion(",", 5, Type.ENUM_SET_SET_OP)));
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(",", 15, Type.ENUM_SET_SET_OP)));
   }
 
   /** Test that we auto complete properly when the query is a non-prefix substring */
   @Test
   public void testAutoCompleteNonPrefixSubstrings() {
     assertThat(
-        getPAC("tt", Grammar.APPLICATION_SPECIFIER).run(),
+        getPAC("tab", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
             new ParboiledAutoCompleteSuggestion(
-                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE)));
   }
 
   /** Test that bgp peer properties are being parsed */

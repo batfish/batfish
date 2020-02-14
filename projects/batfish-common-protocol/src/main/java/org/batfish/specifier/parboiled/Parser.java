@@ -114,9 +114,8 @@ public class Parser extends CommonParser {
   @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
-      case APP_SPECIFIER:
-        return input(AppSpec());
       case APPLICATION_SPECIFIER:
+        return input(AppSpec());
       case BGP_PEER_PROPERTY_SPECIFIER:
       case BGP_PROCESS_PROPERTY_SPECIFIER:
       case BGP_SESSION_COMPAT_STATUS_SPECIFIER:
