@@ -98,13 +98,42 @@ enumSetTerm :=
 
 ### Application Specifier
 
-A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
+A combined specification for an IP protocols (ICMP, TCP, UDP) and *destination* ports for  to denote packets for common applications. XXX
 
-* `HTTP` specifies TCP to port 80. 
+* `HTTP` specifies TCP traffic to port 80. 
 
-* `HTTP, HTTPS` specifies TCP to port 80 or 443.
+* `tcp/80` also specifies TCP traffic to port 80. 
 
-An application specifier is the name of one or more of the following applications separated by commas: `DNS` (means udp/53), `HTTP` (tcp/80), `HTTPS` (tcp/443), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
+* `tcp/80,443` specifies TCP traffic to port 80 and 443.
+
+* `tcp` specifies TCP traffic to all ports.
+
+* `icmp` also specifies ICMP traffic of all types. 
+
+* `icmp/0/0` specifies ICMP traffic of type 0 and code 0. 
+
+* `HTTP, udp/53` specifies TCP traffic to port 80 and UDP traffic to port 53.
+
+#### Application Specifier Grammar
+
+<pre>
+applicationSpec :=
+    applicationTerm [<b>,</b> applicationTerm]
+
+applicationTerm :=
+    <b>tcp</b> [<b>/</b>portSpec]
+    | <b>udp</b> [<b>/</b>portSpec]
+    | <b>icmp</b> [<b>/</b>&lt;<i>icmp-type</i>&gt; [<b>/</b> &lt;<i>icmp-code</i>&gt;]]
+    | &lt;<i>application-name</i>&gt;
+
+portSpec :=
+    portTerm [<b>,</b> portTerm]
+
+portTerm := 
+    &lt;<i>port-number</i>&gt;
+    | &lt;<i>from-port</i>&gt; <b>,</b> &lt;<i>to-port</i>&gt;
+
+Application name is one of `DNS` (means udp/53), `ECHO-REPLY` (icmp/0/0), `ECHO-REQUEST` (icmp/8/0), `HTTP` (tcp/80), `HTTPS` (tcp/443), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
 
 ### BGP Peer Property Specifier
 
