@@ -47,4 +47,9 @@ public final class TcpApplication extends PortsApplication {
     }
     return "tcp/" + stringifySubRanges(_ports);
   }
+
+  @Override
+  public <T> T accept(ApplicationVisitor<T> visitor) {
+    return visitor.visitTcpApplication(this);
+  }
 }
