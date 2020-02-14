@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -311,6 +312,72 @@ public class ParserEnumSetTest {
     assertThat(
         ParserUtils.getAst(getRunner().run(String.format(" %s , /%s/ ", t1, t2Regex))),
         equalTo(expectedNode));
+  }
+
+  /** Test that enums that are not strings work */
+  @Test
+  public void testNonStringEnums() {
+    String query = "";
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        getPAC("", Grammar.BGP_SESSION_STATUS_SPECIFIER).run();
+
+    assertThat(
+        suggestions,
+        equalTo(
+            Stream.concat(
+                    Arrays.stream(BgpSessionStatus.values())
+                        .map(
+                            val ->
+                                new ParboiledAutoCompleteSuggestion(
+                                    val.toString(), query.length(), Type.ENUM_SET_VALUE)),
+                    ImmutableSet.of(
+                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX),
+                        new ParboiledAutoCompleteSuggestion("!", 0, Type.ENUM_SET_NOT))
+                        .stream())
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  /**
+   * Test that in enums where some options are substrings, we autocomplete to their super strings
+   * properly, instead of limiting ourselves to the first match.
+   */
+  @Test
+  public void testAutoCompleteSuperStrings() {
+    assertThat(
+        getPAC("est", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE)));
+
+    assertThat(
+        getPAC("established", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", 11, Type.ENUM_SET_SET_OP),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE)));
+
+    assertThat(
+        getPAC("not_established", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(",", 15, Type.ENUM_SET_SET_OP)));
+  }
+
+  /** Test that we auto complete properly when the query is a non-prefix substring */
+  @Test
+  public void testAutoCompleteNonPrefixSubstrings() {
+    assertThat(
+        getPAC("tab", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.NOT_ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE),
+            new ParboiledAutoCompleteSuggestion(
+                BgpSessionStatus.ESTABLISHED.toString(), 0, Type.ENUM_SET_VALUE)));
   }
 
   /** Test that bgp peer properties are being parsed */
