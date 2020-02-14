@@ -1,9 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.routing_policy.Environment;
 

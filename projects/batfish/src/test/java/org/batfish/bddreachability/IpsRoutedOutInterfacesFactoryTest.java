@@ -11,15 +11,15 @@ import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
-import org.batfish.common.ip.Ip;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.MockFib;
-import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 public class IpsRoutedOutInterfacesFactoryTest {

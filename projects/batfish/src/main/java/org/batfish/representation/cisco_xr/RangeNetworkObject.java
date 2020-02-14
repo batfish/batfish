@@ -4,8 +4,8 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.ip.Ip;
-import org.batfish.datamodel.IpRange;
 import org.batfish.common.ip.IpSpace;
+import org.batfish.datamodel.IpRange;
 
 /** Represents a network object that contains an range */
 @ParametersAreNonnullByDefault

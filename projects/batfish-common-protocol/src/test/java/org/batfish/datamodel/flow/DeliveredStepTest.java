@@ -4,8 +4,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.ip.Ip;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.DeliveredStep.DeliveredStepDetail;
 import org.junit.Test;

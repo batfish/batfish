@@ -2,8 +2,8 @@ package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IkeKeyType;
 import org.batfish.common.ip.IpSpace;
+import org.batfish.datamodel.IkeKeyType;
 
 /** Stores the ISAKMP key which are not part of any keyring or RSA pub keys */
 public class IsakmpKey implements Serializable {

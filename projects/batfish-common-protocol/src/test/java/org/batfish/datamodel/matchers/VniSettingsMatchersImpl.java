@@ -1,8 +1,8 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.hamcrest.FeatureMatcher;

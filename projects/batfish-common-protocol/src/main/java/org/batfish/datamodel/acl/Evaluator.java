@@ -1,9 +1,9 @@
 package org.batfish.datamodel.acl;
 
 import java.util.Map;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.LineAction;
 
 public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {

@@ -1,9 +1,9 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
-import org.batfish.common.ip.IpSpace;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

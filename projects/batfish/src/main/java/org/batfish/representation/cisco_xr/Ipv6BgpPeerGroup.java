@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco_xr;
 
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip6;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix6;
 
 public class Ipv6BgpPeerGroup extends LeafBgpPeerGroup {

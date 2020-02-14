@@ -5,9 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.Prefix;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.junit.Test;

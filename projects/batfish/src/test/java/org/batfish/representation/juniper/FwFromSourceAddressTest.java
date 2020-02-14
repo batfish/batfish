@@ -2,8 +2,8 @@ package org.batfish.representation.juniper;
 
 import static org.junit.Assert.assertEquals;
 
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.common.ip.IpWildcard;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Test;

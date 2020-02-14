@@ -12,9 +12,9 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.ip.AclIpSpace;
 import org.batfish.common.ip.EmptyIpSpace;
-import org.batfish.datamodel.Fib;
 import org.batfish.common.ip.IpSpace;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.Fib;
 
 /**
  * Generates {@link IpsRoutedOutInterfaces} objects for a {@link Fib} (identified by node/vrf

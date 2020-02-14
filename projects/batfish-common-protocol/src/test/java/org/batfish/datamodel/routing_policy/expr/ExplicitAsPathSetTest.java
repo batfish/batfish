@@ -5,15 +5,15 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.Environment;

@@ -2,10 +2,10 @@ package org.batfish.question.filterlinereachability;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CircularReferenceException;

@@ -15,14 +15,14 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 

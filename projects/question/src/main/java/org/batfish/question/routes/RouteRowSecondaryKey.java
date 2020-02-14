@@ -3,8 +3,8 @@ package org.batfish.question.routes;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.BgpRoute;
 
 /**
  * Class representing the secondary key used for grouping {@link

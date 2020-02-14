@@ -5,12 +5,12 @@ import com.google.common.collect.ImmutableList;
 import java.util.IdentityHashMap;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.visitors.IpSpaceRenamer;
 
 /**

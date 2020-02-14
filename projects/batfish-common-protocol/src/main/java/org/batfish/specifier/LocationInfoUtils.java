@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.topology.IpOwners;
 import org.batfish.common.ip.AclIpSpace;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.common.ip.EmptyIpSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.IpSpace;
+import org.batfish.common.topology.IpOwners;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 
 /** Utility methods for constructing {@link LocationInfo}. */
 public final class LocationInfoUtils {

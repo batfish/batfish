@@ -12,15 +12,15 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import org.batfish.common.Warnings;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.common.ip.Prefix;
 import org.batfish.representation.host.HostInterface;
 import org.hamcrest.FeatureMatcher;
 import org.junit.Before;

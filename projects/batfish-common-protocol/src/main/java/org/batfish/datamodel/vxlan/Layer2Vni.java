@@ -11,9 +11,9 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
-import org.batfish.common.ip.Ip;
 
 /** Settings for a VXLAN segment identified by a L2 VNI */
 public final class Layer2Vni implements Vni {

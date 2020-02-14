@@ -11,9 +11,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.common.ip.Ip;
-import org.batfish.datamodel.IpRange;
 import org.batfish.common.ip.IpSpace;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.IpRange;
 
 /** Represents a Palo Alto address object */
 @ParametersAreNonnullByDefault

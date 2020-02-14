@@ -12,10 +12,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.common.ip.EmptyIpSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Interface;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 

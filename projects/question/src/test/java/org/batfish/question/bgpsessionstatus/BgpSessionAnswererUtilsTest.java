@@ -8,15 +8,15 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.junit.Before;

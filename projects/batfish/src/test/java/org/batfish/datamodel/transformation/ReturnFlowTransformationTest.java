@@ -21,11 +21,11 @@ import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.IpIpSpace;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;

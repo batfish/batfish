@@ -31,13 +31,13 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
-import org.batfish.common.ip.Ip;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.StaticRoute;
 
 /** Representation for an EC2 instance */

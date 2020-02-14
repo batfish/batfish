@@ -5,14 +5,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpActivePeerConfig.Builder;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.common.ip.Ip;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.junit.Test;
 import org.junit.runner.RunWith;

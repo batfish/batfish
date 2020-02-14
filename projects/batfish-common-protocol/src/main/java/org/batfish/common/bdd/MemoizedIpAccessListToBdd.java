@@ -5,9 +5,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**

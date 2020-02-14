@@ -7,8 +7,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Map;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.ip.Ip;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

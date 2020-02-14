@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Configuration;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.Configuration;
 
 /** BGP routing process */
 public class BgpProcess implements Serializable {

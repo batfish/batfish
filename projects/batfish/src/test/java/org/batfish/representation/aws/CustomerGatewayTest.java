@@ -10,9 +10,9 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.ip.Ip;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 /** Test for {@link org.batfish.representation.aws.CustomerGateway} */

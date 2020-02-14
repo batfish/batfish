@@ -11,8 +11,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.datamodel.Flow;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExprs;

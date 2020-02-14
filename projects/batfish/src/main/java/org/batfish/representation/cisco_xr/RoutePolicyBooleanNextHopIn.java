@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco_xr;
 
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Configuration;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Ip6Prefix;

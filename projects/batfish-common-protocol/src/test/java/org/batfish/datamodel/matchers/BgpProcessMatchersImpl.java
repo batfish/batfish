@@ -3,13 +3,13 @@ package org.batfish.datamodel.matchers;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.common.ip.Prefix;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

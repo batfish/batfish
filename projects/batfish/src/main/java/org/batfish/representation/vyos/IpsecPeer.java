@@ -1,8 +1,8 @@
 package org.batfish.representation.vyos;
 
 import java.io.Serializable;
-import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 
 public class IpsecPeer implements Serializable {
 

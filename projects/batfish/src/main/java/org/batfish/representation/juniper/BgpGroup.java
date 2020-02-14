@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 
 public class BgpGroup implements Serializable {
 

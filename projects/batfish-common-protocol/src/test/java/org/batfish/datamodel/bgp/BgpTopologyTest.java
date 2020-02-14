@@ -8,11 +8,11 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.junit.Test;
 

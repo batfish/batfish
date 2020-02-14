@@ -10,9 +10,9 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
-import org.batfish.common.ip.Ip;
 
 /** Configuration for an L3 VXLAN VNI */
 public final class Layer3Vni implements Vni {

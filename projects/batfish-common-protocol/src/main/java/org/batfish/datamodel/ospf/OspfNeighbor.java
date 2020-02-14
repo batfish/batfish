@@ -10,9 +10,9 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpLink;
 
 /** Configuration for one end of an OSPF adjacency */

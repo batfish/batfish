@@ -16,10 +16,10 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.common.ip.Prefix;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**

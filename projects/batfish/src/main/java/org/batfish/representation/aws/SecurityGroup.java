@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.common.ip.Ip;
 
 /** Represents an AWS security group */
 @JsonIgnoreProperties(ignoreUnknown = true)

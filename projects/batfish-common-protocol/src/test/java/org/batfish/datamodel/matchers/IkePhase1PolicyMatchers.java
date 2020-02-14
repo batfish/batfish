@@ -2,9 +2,9 @@ package org.batfish.datamodel.matchers;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.IpSpace;
+import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Key;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasIkePhase1Proposals;
 import org.batfish.datamodel.matchers.IkePhase1PolicyMatchersImpl.HasLocalInterface;

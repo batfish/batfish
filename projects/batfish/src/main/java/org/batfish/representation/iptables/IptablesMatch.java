@@ -5,9 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ip.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.common.ip.IpWildcard;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
 public class IptablesMatch implements Serializable {

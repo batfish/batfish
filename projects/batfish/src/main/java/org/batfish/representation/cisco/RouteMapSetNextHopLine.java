@@ -2,8 +2,8 @@ package org.batfish.representation.cisco;
 
 import java.util.List;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Configuration;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;

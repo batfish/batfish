@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.ip.Prefix;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 /** Tests for {@link Vpc} */

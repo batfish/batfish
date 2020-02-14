@@ -4,8 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.io.IOException;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.ip.Ip;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests for {@link Address} */

@@ -6,8 +6,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.ip.Ip;
+import org.batfish.common.util.CommonUtil;
 import org.w3c.dom.Element;
 
 /** Represents an AWs IPSec tunnel */

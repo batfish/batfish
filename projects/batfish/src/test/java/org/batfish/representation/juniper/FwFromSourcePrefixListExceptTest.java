@@ -3,14 +3,14 @@ package org.batfish.representation.juniper;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.common.ip.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.common.ip.IpSpace;
 import org.batfish.common.ip.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;

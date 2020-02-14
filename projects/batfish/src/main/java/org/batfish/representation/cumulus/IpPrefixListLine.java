@@ -2,8 +2,8 @@ package org.batfish.representation.cumulus;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.LineAction;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 
 /** A line of an {@link IpPrefixList}. */

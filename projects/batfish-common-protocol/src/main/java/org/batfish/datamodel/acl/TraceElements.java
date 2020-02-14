@@ -3,10 +3,10 @@ package org.batfish.datamodel.acl;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AclLine;
 import org.batfish.common.ip.Ip;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.common.ip.IpSpace;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.TraceElement;
 

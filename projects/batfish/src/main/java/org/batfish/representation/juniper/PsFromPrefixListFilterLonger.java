@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.common.Warnings;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;

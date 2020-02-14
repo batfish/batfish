@@ -10,8 +10,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.IntegerSpace;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {

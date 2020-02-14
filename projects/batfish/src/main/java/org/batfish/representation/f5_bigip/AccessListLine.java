@@ -3,10 +3,10 @@ package org.batfish.representation.f5_bigip;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** A line to be matched in order within an {@link AccessList}. */

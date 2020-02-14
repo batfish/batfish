@@ -6,18 +6,18 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.DscpType;
-import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.common.ip.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.common.ip.IpSpace;
 import org.batfish.common.ip.IpWildcard;
 import org.batfish.common.ip.Prefix;
+import org.batfish.common.ip.UniverseIpSpace;
+import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.common.ip.UniverseIpSpace;
 
 public final class AclLineMatchExprs {
 

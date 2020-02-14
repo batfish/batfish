@@ -25,11 +25,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import org.batfish.common.Warnings;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.common.ip.Prefix;
 import org.junit.Before;
 import org.junit.Test;
 

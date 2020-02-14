@@ -3,13 +3,13 @@ package org.batfish.bddreachability;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedMap;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 

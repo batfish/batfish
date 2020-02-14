@@ -2,8 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
-import org.batfish.datamodel.Flow;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasDstIp;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasDstPort;

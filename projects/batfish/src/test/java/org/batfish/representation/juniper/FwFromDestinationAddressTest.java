@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.common.ip.IpWildcard;
+import org.batfish.datamodel.HeaderSpace;
 import org.junit.Test;
 
 /** Test for {@link FwFromDestinationAddress} */

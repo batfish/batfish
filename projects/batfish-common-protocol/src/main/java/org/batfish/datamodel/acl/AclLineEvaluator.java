@@ -4,13 +4,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.LineAction;
 
 /**

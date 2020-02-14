@@ -21,9 +21,9 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.MacAddress;
 
 /** Model of an iface block in a cumulus /etc/network/interfaces file. */

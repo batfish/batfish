@@ -2,9 +2,9 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.Evaluator;
 import org.hamcrest.Description;

@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
@@ -25,7 +26,6 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 

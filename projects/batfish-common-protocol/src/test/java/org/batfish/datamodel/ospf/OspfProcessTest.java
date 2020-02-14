@@ -5,10 +5,10 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.junit.Rule;
 import org.junit.Test;

@@ -16,10 +16,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.StaticRoute;
 
 /** Represents as RDS instance */

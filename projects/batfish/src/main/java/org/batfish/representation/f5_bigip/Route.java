@@ -4,8 +4,8 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.ip.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix6;
 
 /** A static route with one or more next-hop-ips on one or more directly-connected interfaces */

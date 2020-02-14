@@ -6,9 +6,9 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import org.batfish.common.ip.Ip;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 

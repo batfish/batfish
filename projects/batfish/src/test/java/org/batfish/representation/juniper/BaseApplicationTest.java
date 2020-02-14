@@ -4,9 +4,9 @@ import static org.batfish.representation.juniper.ApplicationSetMember.getTraceEl
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;

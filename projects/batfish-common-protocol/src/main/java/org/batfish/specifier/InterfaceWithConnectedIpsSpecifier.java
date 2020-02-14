@@ -12,11 +12,11 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDUtils;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Interface;
 import org.batfish.common.ip.IpSpace;
 import org.batfish.common.ip.IpWildcard;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** An {@link InterfaceSpecifier} that resolves interfaces connected to a given {@link IpSpace}. */

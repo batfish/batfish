@@ -1,8 +1,8 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;

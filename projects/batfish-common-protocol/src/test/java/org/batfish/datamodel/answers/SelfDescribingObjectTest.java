@@ -6,8 +6,8 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.ip.Ip;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 public final class SelfDescribingObjectTest {

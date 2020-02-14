@@ -11,8 +11,8 @@ import java.util.Objects;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Interface;
 import org.batfish.common.ip.Ip;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.tracking.TrackAction;
 
 /** An HSRP group defined on an {@link Interface} */

@@ -19,9 +19,9 @@ import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
-import org.batfish.datamodel.Flow;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.Flow;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs

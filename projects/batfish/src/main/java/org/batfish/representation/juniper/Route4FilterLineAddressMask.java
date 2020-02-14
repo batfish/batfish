@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import java.util.Objects;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 

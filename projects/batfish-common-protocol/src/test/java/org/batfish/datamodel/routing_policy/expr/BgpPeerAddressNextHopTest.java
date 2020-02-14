@@ -3,10 +3,10 @@ package org.batfish.datamodel.routing_policy.expr;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.junit.Rule;

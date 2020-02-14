@@ -22,13 +22,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.common.ip.AclIpSpace;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.common.ip.EmptyIpSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.common.ip.Ip;
 import org.batfish.common.ip.IpSpace;
 import org.batfish.common.ip.Prefix;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 
 /** A utility class for working with IPs owned by network devices. */
 public final class IpOwners {

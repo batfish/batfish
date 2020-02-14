@@ -7,9 +7,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.junit.Test;
 
