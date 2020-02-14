@@ -123,4 +123,9 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
     }
     return String.format("icmp/%d/%s", _type, stringifySubRanges(_codes));
   }
+
+  @Override
+  public <T> T accept(ApplicationVisitor<T> visitor) {
+    return visitor.visitIcmpTypeCodesApplication(this);
+  }
 }

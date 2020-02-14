@@ -38,4 +38,6 @@ public abstract class Application {
   }
 
   public abstract AclLineMatchExpr toAclLineMatchExpr();
+
+  public abstract <T> T accept(ApplicationVisitor<T> visitor);
 }
