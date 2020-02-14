@@ -143,8 +143,6 @@ junit_tests(
         ":common",
         ":common_testlib",
         ":recovery_grammar",
-        ":recovery_inline_alts_grammar",
-        ":recovery_rule_alts_grammar",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
