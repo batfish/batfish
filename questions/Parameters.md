@@ -98,7 +98,7 @@ enumSetTerm :=
 
 ### Application Specifier
 
-A combined specification for an IP protocols (ICMP, TCP, UDP) and *destination* ports for  to denote packets for common applications. XXX
+A specification for IP traffic that includes information about protocols (ICMP, TCP, UDP) and about *destination* ports for TCP and UDP and type, code for ICMP.
 
 * `HTTP` specifies TCP traffic to port 80. 
 
@@ -132,6 +132,8 @@ portSpec :=
 portTerm := 
     &lt;<i>port-number</i>&gt;
     | &lt;<i>from-port</i>&gt; <b>,</b> &lt;<i>to-port</i>&gt;
+
+</pre>
 
 Application name is one of `DNS` (means udp/53), `ECHO-REPLY` (icmp/0/0), `ECHO-REQUEST` (icmp/8/0), `HTTP` (tcp/80), `HTTPS` (tcp/443), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
 
