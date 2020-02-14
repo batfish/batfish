@@ -243,7 +243,7 @@ public final class AutoCompleteUtils {
           {
             suggestions =
                 ParboiledAutoComplete.autoComplete(
-                    Grammar.APP_SPECIFIER,
+                    Grammar.APPLICATION_SPECIFIER,
                     network,
                     snapshot,
                     query,

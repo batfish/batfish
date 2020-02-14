@@ -91,20 +91,21 @@ public final class ParboiledAppSpecifier implements ApplicationSpecifier {
 
   /**
    * Returns an {@link ApplicationSpecifier} based on {@code input} which is parsed as {@link
-   * Grammar#APP_SPECIFIER}.
+   * Grammar#APPLICATION_SPECIFIER}.
    *
    * @throws IllegalArgumentException if the parsing fails or does not produce the expected AST
    */
   public static ParboiledAppSpecifier parse(String input) {
     ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(Grammar.APP_SPECIFIER))
+        new ReportingParseRunner<AstNode>(
+                Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER))
             .run(input);
 
     if (!result.parseErrors.isEmpty()) {
       throw new IllegalArgumentException(
           ParserUtils.getErrorString(
               input,
-              Grammar.APP_SPECIFIER,
+              Grammar.APPLICATION_SPECIFIER,
               (InvalidInputError) result.parseErrors.get(0),
               Parser.ANCHORS));
     }
