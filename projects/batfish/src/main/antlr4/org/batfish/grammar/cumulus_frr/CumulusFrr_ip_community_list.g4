@@ -8,7 +8,11 @@ options {
 
 ip_community_list
 :
-  COMMUNITY_LIST icl_expanded
+  COMMUNITY_LIST
+  (
+    icl_expanded
+    | icl_standard
+  )
 ;
 
 icl_expanded
@@ -20,3 +24,10 @@ icl_expanded
     | regex = REMARK_TEXT
   ) NEWLINE
 ;
+
+icl_standard
+:
+  STANDARD name = ip_community_list_name
+  action = line_action communities += standard_community+ NEWLINE
+;
+
