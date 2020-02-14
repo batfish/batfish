@@ -104,7 +104,7 @@ A specification for IP traffic that includes information about protocols (ICMP, 
 
 * `tcp/80` also specifies TCP traffic to port 80. 
 
-* `tcp/80,443` specifies TCP traffic to port 80 and 443.
+* `tcp/80,3000-3030` specifies TCP traffic to port 80 and ports between 3000 and 3030.
 
 * `tcp` specifies TCP traffic to all ports.
 
@@ -131,7 +131,7 @@ portSpec :=
 
 portTerm := 
     &lt;<i>port-number</i>&gt;
-    | &lt;<i>from-port</i>&gt; <b>-</b> &lt;<i>to-port</i>&gt;
+    | &lt;<i>from-port</i>&gt;<b>-</b>&lt;<i>to-port</i>&gt;
 
 </pre>
 
