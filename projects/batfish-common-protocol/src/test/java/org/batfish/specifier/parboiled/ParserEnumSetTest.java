@@ -7,13 +7,11 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -313,68 +311,6 @@ public class ParserEnumSetTest {
     assertThat(
         ParserUtils.getAst(getRunner().run(String.format(" %s , /%s/ ", t1, t2Regex))),
         equalTo(expectedNode));
-  }
-
-  /** Test that application enums (which are not strings) work */
-  @Test
-  public void testApplication() {
-    String query = "";
-    Set<ParboiledAutoCompleteSuggestion> suggestions =
-        getPAC("", Grammar.APPLICATION_SPECIFIER).run();
-
-    assertThat(
-        suggestions,
-        equalTo(
-            Stream.concat(
-                    Arrays.stream(Protocol.values())
-                        .map(
-                            val ->
-                                new ParboiledAutoCompleteSuggestion(
-                                    val.toString(), query.length(), Type.ENUM_SET_VALUE)),
-                    ImmutableSet.of(
-                        new ParboiledAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX),
-                        new ParboiledAutoCompleteSuggestion("!", 0, Type.ENUM_SET_NOT))
-                        .stream())
-                .collect(ImmutableSet.toImmutableSet())));
-  }
-
-  /**
-   * Test that in enums where some options are substrings, we autocomplete to their super strings
-   * properly, instead of limiting ourselves to the first match.
-   */
-  @Test
-  public void testAutoCompleteSuperStrings() {
-    assertThat(
-        getPAC("ht", Grammar.APPLICATION_SPECIFIER).run(),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
-            new ParboiledAutoCompleteSuggestion(
-                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
-
-    assertThat(
-        getPAC("http", Grammar.APPLICATION_SPECIFIER).run(),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(",", 4, Type.ENUM_SET_SET_OP),
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
-            new ParboiledAutoCompleteSuggestion(
-                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
-
-    assertThat(
-        getPAC("https", Grammar.APPLICATION_SPECIFIER).run(),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE),
-            new ParboiledAutoCompleteSuggestion(",", 5, Type.ENUM_SET_SET_OP)));
-  }
-
-  /** Test that we auto complete properly when the query is a non-prefix substring */
-  @Test
-  public void testAutoCompleteNonPrefixSubstrings() {
-    assertThat(
-        getPAC("tt", Grammar.APPLICATION_SPECIFIER).run(),
-        containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(Protocol.HTTP.toString(), 0, Type.ENUM_SET_VALUE),
-            new ParboiledAutoCompleteSuggestion(
-                Protocol.HTTPS.toString(), 0, Type.ENUM_SET_VALUE)));
   }
 
   /** Test that bgp peer properties are being parsed */

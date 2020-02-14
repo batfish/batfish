@@ -26,10 +26,6 @@ import org.batfish.specifier.SpecifierContext;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
-  /** new application specifier that allows tcp/80 syntax */
-  APP_SPECIFIER(
-      "applicationSpecifier",
-      "application-specifier"), // TODO: updated when we change documentation
   APPLICATION_SPECIFIER("applicationSpecifier", "application-specifier"),
   BGP_PEER_PROPERTY_SPECIFIER("bgpPeerPropertySpecifier", "bgp-peer-property-specifier"),
   BGP_PROCESS_PROPERTY_SPECIFIER("bgpProcessPropertySpecifier", "bgp-process-property-specifier"),

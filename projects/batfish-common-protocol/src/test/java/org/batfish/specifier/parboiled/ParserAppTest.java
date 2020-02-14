@@ -36,13 +36,14 @@ public class ParserAppTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.APP_SPECIFIER));
+    return new ReportingParseRunner<>(
+        Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER));
   }
 
   private static ParboiledAutoComplete getPAC(String query) {
     return new ParboiledAutoComplete(
         Parser.instance(),
-        Grammar.APP_SPECIFIER,
+        Grammar.APPLICATION_SPECIFIER,
         Parser.ANCHORS,
         "network",
         "snapshot",
