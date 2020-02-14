@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.MacAddress;
 
 /** CLAG settings for a layer-3 interface */

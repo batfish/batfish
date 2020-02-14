@@ -9,7 +9,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.routing_policy.Environment;
 

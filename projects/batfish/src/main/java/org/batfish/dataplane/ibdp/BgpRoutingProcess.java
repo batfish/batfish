@@ -46,7 +46,7 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginType;

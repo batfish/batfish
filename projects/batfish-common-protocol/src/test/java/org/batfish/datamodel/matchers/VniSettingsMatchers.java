@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasBumTransportIps;
 import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasBumTransportMethod;
 import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasSourceAddress;

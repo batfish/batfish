@@ -18,7 +18,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;

@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;

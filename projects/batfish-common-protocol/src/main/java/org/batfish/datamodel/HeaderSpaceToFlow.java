@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.ip.IpSpace;
 
 /** Class for picking a representative flow from a header space. */
 public final class HeaderSpaceToFlow {

@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** A VXLAN Network Identifier configuration */
 public interface Vni extends Serializable {

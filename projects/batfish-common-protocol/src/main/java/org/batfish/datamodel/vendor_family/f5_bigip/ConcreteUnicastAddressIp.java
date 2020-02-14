@@ -2,7 +2,7 @@ package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** A concrete IP address within a {@link UnicastAddress}. */
 public final class ConcreteUnicastAddressIp implements UnicastAddressIp {

@@ -1,10 +1,9 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class IpSpace implements Comparable<IpSpace>, Serializable {

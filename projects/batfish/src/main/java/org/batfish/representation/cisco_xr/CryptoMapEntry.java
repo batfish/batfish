@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.DiffieHellmanGroup;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 public class CryptoMapEntry implements Serializable {
 

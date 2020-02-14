@@ -10,8 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
 /** Keeps data about which prefixes where advertised to neighboring routers */

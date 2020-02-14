@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** Represents an IPv4 network ACL entry in AWS */
 final class NetworkAclEntryV4 extends NetworkAclEntry {

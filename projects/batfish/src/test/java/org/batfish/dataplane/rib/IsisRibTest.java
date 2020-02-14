@@ -5,9 +5,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IsisRoute;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.junit.Test;

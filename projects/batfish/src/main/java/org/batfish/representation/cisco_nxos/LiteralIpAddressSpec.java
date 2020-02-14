@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 /** An {@link IpAddressSpec} consisting of a literal {@link IpSpace}. */
 public final class LiteralIpAddressSpec implements IpAddressSpec {

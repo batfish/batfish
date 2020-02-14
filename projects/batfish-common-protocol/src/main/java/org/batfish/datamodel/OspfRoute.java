@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** A generic OSPF route */
 @ParametersAreNonnullByDefault

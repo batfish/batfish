@@ -10,7 +10,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.LineAction;
 
 /**

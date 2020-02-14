@@ -3,8 +3,8 @@ package org.batfish.datamodel.visitors;
 import java.util.Optional;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 
 /** Simple class for finding representative {@link Ip IP Addresses} in an {@link IpSpace}. */
 public final class IpSpaceRepresentative {

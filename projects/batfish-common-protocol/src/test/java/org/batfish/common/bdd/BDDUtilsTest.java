@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.function.BiFunction;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 public class BDDUtilsTest {

@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.function.Function;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 import org.junit.Test;
 
 public class HeaderSpaceMatchesTest {
@@ -75,8 +77,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         dstIps -> HeaderSpace.builder().setDstIps(dstIps).build(),
         dstIps -> HeaderSpace.builder().setNotDstIps(dstIps).build(),
-        new IpIpSpace(_dstIp),
-        new IpIpSpace(Ip.parse("3.3.3.3")));
+        _dstIp.toIpSpace(),
+        Ip.parse("3.3.3.3").toIpSpace());
   }
 
   @Test
@@ -155,8 +157,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         srcIps -> HeaderSpace.builder().setSrcIps(srcIps).build(),
         srcIps -> HeaderSpace.builder().setNotSrcIps(srcIps).build(),
-        new IpIpSpace(_srcIp),
-        new IpIpSpace(Ip.parse("3.3.3.3")));
+        _srcIp.toIpSpace(),
+        Ip.parse("3.3.3.3").toIpSpace());
   }
 
   @Test
@@ -173,11 +175,11 @@ public class HeaderSpaceMatchesTest {
   public void testSrcOrDestIpsMatchers() {
     // _flow goes from 1.1.1.1 to 2.2.2.2; either should work.
     HeaderSpace withSrcIpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(_srcIp)).build();
+        HeaderSpace.builder().setSrcOrDstIps(_srcIp.toIpSpace()).build();
     HeaderSpace withDstIpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(_dstIp)).build();
+        HeaderSpace.builder().setSrcOrDstIps(_dstIp.toIpSpace()).build();
     HeaderSpace withOtherIpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(Ip.parse("3.3.3.3"))).build();
+        HeaderSpace.builder().setSrcOrDstIps(Ip.parse("3.3.3.3").toIpSpace()).build();
     assertThat(withSrcIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(true));
     assertThat(withDstIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(true));
     assertThat(withOtherIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(false));

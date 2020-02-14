@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.Prefix.longestCommonPrefix;
+import static org.batfish.common.ip.Prefix.longestCommonPrefix;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -18,6 +18,8 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /**
  * A generic implementation of a Trie, specialized to keys being prefixes and values to being a set

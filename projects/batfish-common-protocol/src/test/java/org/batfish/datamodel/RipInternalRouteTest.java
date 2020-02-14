@@ -4,6 +4,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;

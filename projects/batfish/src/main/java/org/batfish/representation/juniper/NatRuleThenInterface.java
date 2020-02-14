@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;

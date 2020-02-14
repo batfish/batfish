@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** IPv4 unicast BGP configuration for a VRF. */
 public class BgpIpv4UnicastAddressFamily implements Serializable {

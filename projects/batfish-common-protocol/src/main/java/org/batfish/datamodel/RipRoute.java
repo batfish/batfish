@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 @ParametersAreNonnullByDefault
 public abstract class RipRoute extends AbstractRoute {

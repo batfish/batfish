@@ -3,7 +3,7 @@ package org.batfish.representation.vyos;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 public class BgpProcess implements Serializable {
 

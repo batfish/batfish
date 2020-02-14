@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.IpSpace;
 
 public class MockForwardingAnalysis implements ForwardingAnalysis {
 

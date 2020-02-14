@@ -2,8 +2,8 @@ package org.batfish.representation.cisco_xr;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
 
 public class WildcardAddressSpecifier implements AccessListAddressSpecifier {
 

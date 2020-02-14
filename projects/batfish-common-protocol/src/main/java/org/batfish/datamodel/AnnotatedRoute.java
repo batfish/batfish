@@ -6,6 +6,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Prefix;
 
 /** Represents an {@link AbstractRoute} annotated with additional information. */
 @ParametersAreNonnullByDefault

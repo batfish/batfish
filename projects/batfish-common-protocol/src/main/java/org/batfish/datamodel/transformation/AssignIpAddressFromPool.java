@@ -12,7 +12,7 @@ import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /** A {@link TransformationStep} that transforms the destination IP */

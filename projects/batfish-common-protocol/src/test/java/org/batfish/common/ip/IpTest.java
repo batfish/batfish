@@ -1,6 +1,6 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
-import static org.batfish.datamodel.Ip.getBitAtPosition;
+import static org.batfish.common.ip.Ip.getBitAtPosition;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;

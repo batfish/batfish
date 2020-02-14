@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 /** Tests for {@link AssignIpAddressFromPool}. */

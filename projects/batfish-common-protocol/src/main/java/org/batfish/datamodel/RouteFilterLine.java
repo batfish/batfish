@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 
 /** A line in a {@link RouteFilterList}. */
 @ParametersAreNonnullByDefault

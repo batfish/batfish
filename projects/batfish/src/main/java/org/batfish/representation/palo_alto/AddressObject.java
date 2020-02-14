@@ -9,11 +9,11 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpRange;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
 
 /** Represents a Palo Alto address object */
 @ParametersAreNonnullByDefault

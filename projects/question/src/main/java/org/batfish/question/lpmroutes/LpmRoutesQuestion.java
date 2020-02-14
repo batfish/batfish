@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.AllNodesNodeSpecifier;

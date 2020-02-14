@@ -3,7 +3,7 @@ package org.batfish.specifier;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 /**
  * An {@link IpSpaceSpecifier} that is constant (independent of the input {@link Location}). All

@@ -17,11 +17,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.junit.Test;
 

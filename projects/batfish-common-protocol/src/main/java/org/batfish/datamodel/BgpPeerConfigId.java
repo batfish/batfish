@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Prefix;
 
 /** Uniquely identifies a {@link BgpPeerConfig} in a network. */
 public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {

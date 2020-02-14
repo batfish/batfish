@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Used during IKE phase 1 negotiation for authentication */
 public class NamedRsaPubKey implements Serializable {

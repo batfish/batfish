@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 
 public final class Flow implements Comparable<Flow>, Serializable {
   public static class Builder {

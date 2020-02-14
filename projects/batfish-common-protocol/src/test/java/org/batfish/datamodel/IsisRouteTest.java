@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
 import com.google.common.testing.EqualsTester;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.junit.Test;
 

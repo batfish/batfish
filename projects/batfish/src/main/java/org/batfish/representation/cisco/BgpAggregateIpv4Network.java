@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
 

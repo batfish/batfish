@@ -24,12 +24,12 @@
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
                   "dstIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "255.255.255.0"
                   },
                   "negate" : false,
                   "srcIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "3.0.1.0"
                   }
                 }
@@ -51,12 +51,12 @@
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
                   "dstIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "255.255.255.0"
                   },
                   "negate" : false,
                   "srcIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "3.0.2.0"
                   }
                 }

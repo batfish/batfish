@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.Set;
+import org.batfish.common.ip.Ip;
 
 public interface GenericRib<R extends AbstractRouteDecorator> extends Serializable {
 

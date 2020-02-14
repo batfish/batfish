@@ -12,7 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** Represents an AWS prefix list */
 @JsonIgnoreProperties(ignoreUnknown = true)

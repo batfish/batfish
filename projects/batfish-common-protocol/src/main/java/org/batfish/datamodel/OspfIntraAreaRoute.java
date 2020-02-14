@@ -9,6 +9,8 @@ import com.google.common.collect.Interners;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** OSPF intra-area route. Must stay within a single OSPF area. */
 @ParametersAreNonnullByDefault

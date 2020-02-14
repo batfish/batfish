@@ -5,6 +5,8 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 import org.junit.Before;
 import org.junit.Test;
 

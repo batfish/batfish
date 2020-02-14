@@ -2,8 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRouteDecorator;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

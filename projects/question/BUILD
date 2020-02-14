@@ -15,6 +15,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/common/ip",
         "//projects/bdd",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",

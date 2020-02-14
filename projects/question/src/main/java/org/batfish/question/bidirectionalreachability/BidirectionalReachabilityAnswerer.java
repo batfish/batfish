@@ -25,7 +25,7 @@ import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PathConstraints;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.question.ReachabilityParameters;

@@ -11,7 +11,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Accepts;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasLines;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasName;

@@ -17,6 +17,8 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** Describes a collection of {@link Prefix}es and {@link PrefixRange}s */
 public class PrefixSpace implements Serializable {

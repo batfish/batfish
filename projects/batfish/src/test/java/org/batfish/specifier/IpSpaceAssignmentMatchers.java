@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.hasItem;
 
 import java.util.Collection;
 import java.util.Set;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceAssignmentMatchersImpl.HasIpSpace;
 import org.batfish.specifier.IpSpaceAssignmentMatchersImpl.HasLocations;

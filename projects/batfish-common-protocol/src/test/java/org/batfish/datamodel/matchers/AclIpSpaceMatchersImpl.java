@@ -1,9 +1,9 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.List;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.AclIpSpaceLine;
+import org.batfish.common.ip.IpSpace;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

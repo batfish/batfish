@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /**
  * Contains either name of the redist profile referenced by a redist rule or the prefix used in

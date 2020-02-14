@@ -3,7 +3,7 @@ package org.batfish.representation.vyos;
 import java.io.Serializable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.SubRange;
 
 public class PrefixListRule implements Serializable {

@@ -21,7 +21,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;

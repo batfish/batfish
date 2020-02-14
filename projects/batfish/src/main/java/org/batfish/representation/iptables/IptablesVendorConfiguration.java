@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclIpSpace;
+import org.batfish.common.ip.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;

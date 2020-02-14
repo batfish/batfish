@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 public abstract class BgpPeerGroup implements Serializable {
 

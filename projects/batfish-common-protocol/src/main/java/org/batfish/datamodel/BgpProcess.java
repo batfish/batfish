@@ -19,6 +19,8 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.bgp.BgpConfederation;
 
 /** Represents a bgp process on a router */

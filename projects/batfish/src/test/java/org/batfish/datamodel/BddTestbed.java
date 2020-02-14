@@ -9,6 +9,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /** Testbed for {@link BDD}-based comparisons and conversions. */

@@ -7,7 +7,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Utility methods related to {@link Transformation}. */
 @ParametersAreNonnullByDefault

@@ -2,8 +2,8 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import org.batfish.common.ip.IpSpaceReference;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.SubRange;
 
 public class NatRuleMatchToHeaderSpace implements NatRuleMatchVisitor<Void> {

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;

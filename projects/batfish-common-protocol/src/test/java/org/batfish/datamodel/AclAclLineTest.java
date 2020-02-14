@@ -13,6 +13,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import org.batfish.common.ip.Ip;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 

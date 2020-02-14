@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.util.SortedSet;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.junit.Rule;
 import org.junit.Test;

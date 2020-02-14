@@ -7,7 +7,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 @ParametersAreNonnullByDefault
 public final class Tunnel implements Serializable {

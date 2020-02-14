@@ -9,8 +9,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** A statically-configured route */
 public class StaticRoute implements Serializable {

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import org.batfish.common.ip.Ip;
+
 public class RipNeighbor {
 
   private Interface _iface;

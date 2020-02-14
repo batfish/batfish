@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.common.util.ComparableStructure;
 
 /** Represents the IKE policy used for IKE phase 1 negotiation */

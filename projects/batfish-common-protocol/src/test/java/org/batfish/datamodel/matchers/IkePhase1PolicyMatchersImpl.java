@@ -4,8 +4,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

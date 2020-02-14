@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
+import org.batfish.common.ip.Prefix;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.bddreachability.TestNetwork;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.TraceMatchers;

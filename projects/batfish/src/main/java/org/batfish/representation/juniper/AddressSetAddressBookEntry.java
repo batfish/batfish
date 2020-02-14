@@ -5,7 +5,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 
 public final class AddressSetAddressBookEntry extends AddressBookEntry {
 

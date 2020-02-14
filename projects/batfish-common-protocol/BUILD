@@ -67,10 +67,14 @@ java_library(
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
     ],
+    exports = [
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/common/ip",
+    ],
     runtime_deps = [
         "@maven//:commons_beanutils_commons_beanutils",
     ],
     deps = [
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/common/ip",
         "//projects/bdd",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",

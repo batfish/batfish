@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;

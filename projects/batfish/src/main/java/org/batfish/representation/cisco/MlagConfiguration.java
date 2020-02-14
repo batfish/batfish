@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Arista-specific MLAG configuration on a single device */
 @ParametersAreNullableByDefault

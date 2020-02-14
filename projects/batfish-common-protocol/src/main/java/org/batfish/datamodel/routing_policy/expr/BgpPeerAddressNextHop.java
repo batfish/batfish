@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** NextHopExpr that gets the peer address of the BGP peer where the policy is being evaluated. */

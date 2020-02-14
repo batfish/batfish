@@ -1,7 +1,7 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
-import static org.batfish.datamodel.AclIpSpace.intersection;
-import static org.batfish.datamodel.AclIpSpace.union;
+import static org.batfish.common.ip.AclIpSpace.intersection;
+import static org.batfish.common.ip.AclIpSpace.union;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;

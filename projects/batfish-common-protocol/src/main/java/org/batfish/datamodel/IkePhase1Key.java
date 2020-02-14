@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 
 /** Represents a key to be used with IKE phase 1 policy */

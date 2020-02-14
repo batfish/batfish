@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 
 @ParametersAreNonnullByDefault
 public final class AddressBook implements Serializable {

@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** BGP configuration for a particular VRF. */
 public class BgpVrf implements Serializable {

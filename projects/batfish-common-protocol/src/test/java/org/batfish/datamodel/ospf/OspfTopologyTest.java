@@ -14,7 +14,7 @@ import java.io.IOException;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.junit.Test;

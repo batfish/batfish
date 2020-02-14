@@ -3,8 +3,8 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 @ParametersAreNonnullByDefault
 public class StaticRoute implements Serializable {

@@ -15,7 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;

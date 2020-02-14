@@ -5,13 +5,13 @@ import java.util.Collection;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.IpWildcardIpSpace;
+import org.batfish.common.ip.IpWildcardSetIpSpace;
+import org.batfish.common.ip.Prefix;
+import org.batfish.common.ip.UniverseIpSpace;
 
 public class PrefixUtils {
 

@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import java.util.BitSet;
 import java.util.Set;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

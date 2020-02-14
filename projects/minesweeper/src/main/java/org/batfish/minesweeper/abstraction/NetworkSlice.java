@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.bdd.BDDNetwork;
 import org.batfish.minesweeper.utils.Tuple;

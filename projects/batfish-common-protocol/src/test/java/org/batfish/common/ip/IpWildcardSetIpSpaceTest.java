@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.not;

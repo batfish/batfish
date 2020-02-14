@@ -10,7 +10,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.queues.WorkQueue;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 public class Settings extends BaseSettings {
 

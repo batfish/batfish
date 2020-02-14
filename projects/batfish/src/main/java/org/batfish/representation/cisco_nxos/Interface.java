@@ -11,7 +11,7 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** A layer-2- or layer-3-capable network interface */
 public final class Interface implements Serializable {

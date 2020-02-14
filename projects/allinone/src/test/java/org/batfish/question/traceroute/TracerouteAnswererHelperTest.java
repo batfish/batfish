@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.main.BatfishTestUtils;

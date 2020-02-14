@@ -3,7 +3,7 @@ package org.batfish.representation.palo_alto;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** Represents an address-prefix used in match policy rules */
 public class AddressPrefix implements Serializable {

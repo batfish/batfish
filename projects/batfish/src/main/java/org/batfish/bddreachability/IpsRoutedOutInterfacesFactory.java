@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
 
 /**
  * Generates {@link IpsRoutedOutInterfaces} objects for a {@link Fib} (identified by node/vrf

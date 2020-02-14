@@ -14,23 +14,23 @@ import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.AclIpSpaceLine;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.GenericIpSpaceVisitor;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpIpSpace;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpSpaceReference;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.IpWildcardIpSpace;
+import org.batfish.common.ip.IpWildcardSetIpSpace;
+import org.batfish.common.ip.Prefix;
+import org.batfish.common.ip.PrefixIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.common.util.NonRecursiveSupplier;
 import org.batfish.common.util.NonRecursiveSupplier.NonRecursiveSupplierException;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpIpSpace;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixIpSpace;
-import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * Visitor that converts an {@link IpSpace} to a {@link BDD}. Its constructor takes a {@link
@@ -140,7 +140,10 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     List<BDD> lineBdds = new ArrayList<>(size);
     List<LineAction> lineActions = new ArrayList<>(size);
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
-      lineActions.add(line.getAction());
+      lineActions.add(
+          line.getAction() == AclIpSpaceLine.LineAction.PERMIT
+              ? LineAction.PERMIT
+              : LineAction.DENY);
       lineBdds.add(visit(line.getIpSpace()));
     }
     return _bddOps.bddAclLines(lineBdds, lineActions);

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 
 public interface DataPlane extends Serializable {

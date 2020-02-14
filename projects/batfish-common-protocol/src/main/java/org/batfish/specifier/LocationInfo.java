@@ -3,7 +3,7 @@ package org.batfish.specifier;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 /** Information about whether/how to treat a location as a source or sink of traffic. */
 public final class LocationInfo implements Serializable {

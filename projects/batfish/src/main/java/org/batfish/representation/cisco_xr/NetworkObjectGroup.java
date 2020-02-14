@@ -2,7 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 public class NetworkObjectGroup extends ObjectGroup {
 

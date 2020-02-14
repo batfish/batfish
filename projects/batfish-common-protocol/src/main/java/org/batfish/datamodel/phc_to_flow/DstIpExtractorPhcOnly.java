@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.specifier.Location;
 

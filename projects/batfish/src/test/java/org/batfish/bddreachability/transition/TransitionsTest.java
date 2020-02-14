@@ -30,7 +30,7 @@ import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 /** Tests of {@link Transitions}. */

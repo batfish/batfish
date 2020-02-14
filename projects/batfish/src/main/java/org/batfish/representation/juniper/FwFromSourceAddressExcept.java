@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;

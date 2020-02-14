@@ -7,6 +7,9 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
 
 public class MockFib implements Fib {
 

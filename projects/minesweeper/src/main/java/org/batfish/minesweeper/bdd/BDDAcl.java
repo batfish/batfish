@@ -12,8 +12,8 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
 
 /** Representation of an Access Control List (ACL) as a Binary Decision Diagram (BDD). */
 @ParametersAreNonnullByDefault

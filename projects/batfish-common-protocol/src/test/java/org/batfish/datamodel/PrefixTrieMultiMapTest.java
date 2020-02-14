@@ -20,6 +20,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 import org.junit.Rule;
 import org.junit.Test;

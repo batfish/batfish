@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /**
  * Perform a FIB lookup for one (or more) of the {@link #getIps() next hop IPs}. After the first IP

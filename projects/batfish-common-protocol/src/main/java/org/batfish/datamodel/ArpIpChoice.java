@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.Ip;
 
 public class ArpIpChoice {
 

@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpaceReference;
 import org.batfish.datamodel.Flow.Builder;
 import org.junit.Test;
 

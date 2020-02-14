@@ -10,7 +10,7 @@ import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.visitors.FibActionVisitor;

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** BGP routing process */
 public class BgpProcess implements Serializable {

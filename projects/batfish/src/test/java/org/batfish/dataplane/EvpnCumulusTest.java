@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EvpnRoute;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;

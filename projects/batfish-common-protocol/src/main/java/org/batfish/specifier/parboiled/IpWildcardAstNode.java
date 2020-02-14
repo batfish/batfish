@@ -1,8 +1,8 @@
 package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpWildcard;
 
 final class IpWildcardAstNode implements IpSpaceAstNode {
 

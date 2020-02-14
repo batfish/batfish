@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 /**
  * Collects an assignment of {@link IpSpace}s to {@link Location}s. Each {@link Location} must be

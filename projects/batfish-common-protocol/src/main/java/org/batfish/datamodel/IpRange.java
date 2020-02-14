@@ -5,6 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
 
 /** Utility class to create an {@link IpSpace} including all IPs between two given IPs. */
 @ParametersAreNonnullByDefault

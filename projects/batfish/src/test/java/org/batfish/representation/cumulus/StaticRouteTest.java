@@ -1,8 +1,8 @@
 package org.batfish.representation.cumulus;
 
 import com.google.common.testing.EqualsTester;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 public class StaticRouteTest {

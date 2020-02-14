@@ -2,11 +2,11 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclIpSpace;
+import org.batfish.common.ip.AclIpSpace;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;

@@ -9,7 +9,7 @@ java_library(
         "*.java",
     ]),
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/main/java/org/batfish/common/ip",
         "//projects/batfish/src/main/java/org/batfish/representation/aws",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",

@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.LineAction;
 
 public class StandardAccessListLine implements Serializable {

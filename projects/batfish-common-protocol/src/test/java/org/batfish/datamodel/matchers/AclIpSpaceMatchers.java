@@ -2,8 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.AclIpSpaceLine;
 import org.batfish.datamodel.matchers.AclIpSpaceMatchersImpl.HasLines;
 import org.batfish.datamodel.matchers.AclIpSpaceMatchersImpl.IsAclIpSpaceThat;
 import org.hamcrest.Matcher;

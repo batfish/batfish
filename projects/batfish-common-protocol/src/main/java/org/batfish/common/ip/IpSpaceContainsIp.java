@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;

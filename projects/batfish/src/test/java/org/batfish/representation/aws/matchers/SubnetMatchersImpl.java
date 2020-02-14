@@ -1,6 +1,6 @@
 package org.batfish.representation.aws.matchers;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.representation.aws.Subnet;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

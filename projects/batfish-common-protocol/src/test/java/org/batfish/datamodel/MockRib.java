@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.ip.Ip;
 
 public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
 

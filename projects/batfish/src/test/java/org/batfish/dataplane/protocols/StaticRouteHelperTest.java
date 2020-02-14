@@ -8,8 +8,8 @@ import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.Rib;

@@ -12,7 +12,7 @@ import java.util.Map;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.symbolic.state.EdgeStateExpr;
 import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.InterfaceStateExpr;

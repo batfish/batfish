@@ -7,7 +7,7 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 
 import com.google.common.testing.EqualsTester;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 /** Tests for {@link Transformation}. */

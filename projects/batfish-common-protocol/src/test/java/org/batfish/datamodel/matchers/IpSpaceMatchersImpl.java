@@ -2,9 +2,9 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 

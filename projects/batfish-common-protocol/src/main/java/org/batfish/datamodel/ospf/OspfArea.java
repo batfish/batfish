@@ -18,7 +18,7 @@ import java.util.SortedSet;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** Represents an OSPF area configuration */
 public class OspfArea implements Serializable {

@@ -10,9 +10,9 @@ import java.math.RoundingMode;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 
 public final class AddressRangeAddressBookEntry extends AddressBookEntry {
 

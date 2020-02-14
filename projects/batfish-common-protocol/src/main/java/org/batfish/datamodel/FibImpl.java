@@ -21,6 +21,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.IpWildcardSetIpSpace;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 
 @ParametersAreNonnullByDefault

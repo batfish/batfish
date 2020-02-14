@@ -5,7 +5,7 @@ import static org.batfish.datamodel.questions.IpsecSessionStatus.MISSING_END_POI
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 
 /** Captures the configuration state of an IPSec session */

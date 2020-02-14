@@ -3,9 +3,9 @@ package org.batfish.representation.cisco_xr;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.Prefix;
 
 /** Represents a network object that contains a subnet */
 @ParametersAreNonnullByDefault

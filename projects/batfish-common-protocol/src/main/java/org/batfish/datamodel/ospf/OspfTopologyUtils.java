@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;

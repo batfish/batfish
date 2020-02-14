@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

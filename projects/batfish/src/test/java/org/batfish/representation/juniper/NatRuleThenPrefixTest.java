@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import java.util.List;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStep;

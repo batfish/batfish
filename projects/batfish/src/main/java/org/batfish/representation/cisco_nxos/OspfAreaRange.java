@@ -3,7 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 public final class OspfAreaRange implements Serializable {
 

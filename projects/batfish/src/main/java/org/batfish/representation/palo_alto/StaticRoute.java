@@ -2,8 +2,8 @@ package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 public class StaticRoute implements Serializable {
 

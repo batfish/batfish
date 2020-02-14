@@ -9,6 +9,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.ip.Prefix;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.bgp.community.StandardCommunity;

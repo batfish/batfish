@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** Settings specific to IPv4 unicast address family, which can be set at the VRF level. */
 public class AristaBgpVrfIpv4UnicastAddressFamily extends AristaBgpVrfAddressFamily {

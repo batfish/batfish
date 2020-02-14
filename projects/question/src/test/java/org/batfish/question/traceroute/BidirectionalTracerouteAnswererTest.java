@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.Accept;

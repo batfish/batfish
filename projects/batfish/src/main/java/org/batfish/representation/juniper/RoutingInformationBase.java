@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** A Juniper RIB */
 public class RoutingInformationBase implements Serializable {

@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 /** Tests of {@link AddressRangeAddressBookEntry}. */

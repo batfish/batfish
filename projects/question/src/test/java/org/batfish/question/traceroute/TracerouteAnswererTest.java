@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;

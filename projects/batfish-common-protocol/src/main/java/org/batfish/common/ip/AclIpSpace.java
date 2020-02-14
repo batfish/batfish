@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.common.ip.AclIpSpaceLine.LineAction;
 
 /**
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or

@@ -1,10 +1,9 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 @ParametersAreNonnullByDefault
 public final class PrefixIpSpace extends IpSpace {

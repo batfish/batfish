@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.hamcrest.FeatureMatcher;

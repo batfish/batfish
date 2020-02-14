@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork>, Serializable {
 

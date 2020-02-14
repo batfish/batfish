@@ -2,7 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;

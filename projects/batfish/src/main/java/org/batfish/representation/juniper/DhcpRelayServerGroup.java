@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 public class DhcpRelayServerGroup implements Serializable {
 

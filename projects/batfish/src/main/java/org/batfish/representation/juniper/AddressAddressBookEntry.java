@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 
 public final class AddressAddressBookEntry extends AddressBookEntry {
 

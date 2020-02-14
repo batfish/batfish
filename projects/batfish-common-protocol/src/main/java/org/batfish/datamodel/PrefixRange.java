@@ -7,6 +7,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 public final class PrefixRange implements Serializable, Comparable<PrefixRange> {
 

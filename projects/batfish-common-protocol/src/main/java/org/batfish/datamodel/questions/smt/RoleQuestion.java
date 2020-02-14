@@ -2,7 +2,7 @@ package org.batfish.datamodel.questions.smt;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.questions.Question;
 
 public class RoleQuestion extends Question {

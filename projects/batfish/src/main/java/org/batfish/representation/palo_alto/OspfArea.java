@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Configuration of an OSPF area {@code network virtual-router NAME protocol ospf area AREA_ID}. */
 public class OspfArea implements Serializable {

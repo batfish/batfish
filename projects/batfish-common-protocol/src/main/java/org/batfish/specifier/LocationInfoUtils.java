@@ -2,8 +2,8 @@ package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.datamodel.AclIpSpace.difference;
-import static org.batfish.datamodel.Prefix.HOST_SUBNET_MAX_PREFIX_LENGTH;
+import static org.batfish.common.ip.AclIpSpace.difference;
+import static org.batfish.common.ip.Prefix.HOST_SUBNET_MAX_PREFIX_LENGTH;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -16,13 +16,13 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.datamodel.AclIpSpace;
+import org.batfish.common.ip.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 
 /** Utility methods for constructing {@link LocationInfo}. */
 public final class LocationInfoUtils {

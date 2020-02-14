@@ -3,11 +3,11 @@ package org.batfish.datamodel.visitors;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
 
 import java.util.Map;
-import org.batfish.datamodel.AbstractIpSpaceContainsIp;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.AbstractIpSpaceContainsIp;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpSpaceReference;
 import org.batfish.datamodel.IpSpaceMetadata;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.trace.Tracer;
 
 /**

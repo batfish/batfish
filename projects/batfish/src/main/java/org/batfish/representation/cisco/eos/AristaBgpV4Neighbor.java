@@ -4,7 +4,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** IPv4 BGP neighbor */
 public final class AristaBgpV4Neighbor extends AristaBgpNeighbor implements AristaBgpHasPeerGroup {

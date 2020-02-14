@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import org.batfish.common.ip.Ip;
+
 /** Generic route constants */
 public final class Route {
 

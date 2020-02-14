@@ -23,7 +23,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;

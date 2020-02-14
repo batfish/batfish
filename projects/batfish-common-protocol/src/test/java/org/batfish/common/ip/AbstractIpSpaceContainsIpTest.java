@@ -1,6 +1,6 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
-import static org.batfish.datamodel.AclIpSpace.rejecting;
+import static org.batfish.common.ip.AclIpSpace.rejecting;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 

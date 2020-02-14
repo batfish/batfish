@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 
@@ -68,7 +69,7 @@ public final class FirewallSessionTraceInfo {
 
   /**
    * The allowed ingress flows for the session. Not allowed to contain {@link
-   * org.batfish.datamodel.acl.PermittedByAcl} or {@link org.batfish.datamodel.IpSpaceReference}.
+   * org.batfish.datamodel.acl.PermittedByAcl} or {@link IpSpaceReference}.
    */
   public @Nonnull AclLineMatchExpr getSessionFlows() {
     return _sessionFlows.toAclLineMatchExpr();

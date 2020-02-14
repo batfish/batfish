@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
+import org.batfish.common.ip.Ip;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;

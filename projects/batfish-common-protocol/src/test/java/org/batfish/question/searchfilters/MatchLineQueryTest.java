@@ -17,9 +17,9 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 /** Tests of {@link MatchLineQuery} */

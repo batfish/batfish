@@ -12,8 +12,8 @@ import com.google.common.collect.Range;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 /** Tests for {@link AddressGroup} */

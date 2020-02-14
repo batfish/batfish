@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import org.batfish.datamodel.AclIpSpace;
+import org.batfish.common.ip.AclIpSpace;
 import org.batfish.datamodel.LineAction;
 
 public final class BDDOps {

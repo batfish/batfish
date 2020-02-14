@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.tracking.TrackAction;
 
 public class HsrpGroup implements Serializable {

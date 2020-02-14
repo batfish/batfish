@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;

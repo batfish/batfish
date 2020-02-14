@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 /** Tests of {@link EraseAndSet}. */

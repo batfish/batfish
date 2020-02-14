@@ -3,7 +3,7 @@ package org.batfish.representation.palo_alto;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /**
  * Configuration of a BGP Peer {@code network virtual-router NAME protocol bgp peer-group NAME peer

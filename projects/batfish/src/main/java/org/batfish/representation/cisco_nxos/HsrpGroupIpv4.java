@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** IPv4 HSRP group within {@link InterfaceHsrp} settings for an {@link Interface}. */
 public final class HsrpGroupIpv4 extends HsrpGroup {

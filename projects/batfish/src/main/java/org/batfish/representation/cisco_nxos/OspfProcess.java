@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 
 public abstract class OspfProcess implements Serializable {
 

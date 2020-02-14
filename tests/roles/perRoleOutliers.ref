@@ -17,7 +17,7 @@
           "name" : "GigabitEthernet2/0",
           "active" : true,
           "additionalArpIps" : {
-            "class" : "org.batfish.datamodel.EmptyIpSpace"
+            "class" : "org.batfish.common.ip.EmptyIpSpace"
           },
           "allPrefixes" : [
             "2.23.11.2/24"
@@ -71,7 +71,7 @@
           "name" : "GigabitEthernet3/0",
           "active" : true,
           "additionalArpIps" : {
-            "class" : "org.batfish.datamodel.EmptyIpSpace"
+            "class" : "org.batfish.common.ip.EmptyIpSpace"
           },
           "allPrefixes" : [
             "2.23.12.2/24"
@@ -132,12 +132,12 @@
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
                   "dstIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "255.0.0.0"
                   },
                   "negate" : false,
                   "srcIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "2.0.0.0"
                   }
                 }
@@ -159,12 +159,12 @@
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
                   "dstIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "255.255.0.0"
                   },
                   "negate" : false,
                   "srcIps" : {
-                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                     "ipWildcard" : "2.128.0.0"
                   }
                 }

@@ -8,6 +8,8 @@ import java.util.Comparator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** A concrete IPv4 address assigned to an interface */
 @ParametersAreNonnullByDefault

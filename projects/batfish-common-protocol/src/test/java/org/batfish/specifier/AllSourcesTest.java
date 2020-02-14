@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 import com.google.common.collect.ImmutableMap;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.junit.Test;
 
 public class AllSourcesTest {

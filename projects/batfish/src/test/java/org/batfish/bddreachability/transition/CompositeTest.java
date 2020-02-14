@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 /** Test of {@link Composite}. */

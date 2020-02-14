@@ -4,8 +4,8 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.matchers.BgpAdvertisementMatchersImpl.HasDestinationIp;
 import org.batfish.datamodel.matchers.BgpAdvertisementMatchersImpl.HasNetwork;
 import org.batfish.datamodel.matchers.BgpAdvertisementMatchersImpl.HasOriginatorIp;

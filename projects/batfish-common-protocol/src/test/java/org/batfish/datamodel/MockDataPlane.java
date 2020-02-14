@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 
 public class MockDataPlane implements DataPlane {

@@ -1,7 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** BGP neighbor identified by an IPv4 peer address */
 public class BgpIpNeighbor extends BgpNeighbor {

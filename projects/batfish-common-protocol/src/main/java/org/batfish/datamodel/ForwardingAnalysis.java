@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.common.ip.IpSpace;
 
 public interface ForwardingAnalysis {
   /**

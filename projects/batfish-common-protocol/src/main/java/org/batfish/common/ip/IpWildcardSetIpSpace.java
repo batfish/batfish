@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * Represents a space of IPv4 addresses using a whitelist and blacklist of {@link IpWildcard}s. The

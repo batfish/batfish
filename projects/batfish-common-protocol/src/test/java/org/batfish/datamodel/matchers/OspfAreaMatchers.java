@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasInjectDefaultRoute;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasMetricOfDefaultRoute;

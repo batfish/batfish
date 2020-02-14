@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
 
 /** Represents a Layer 3 link by a pair of IP addresses. */
 @ParametersAreNonnullByDefault

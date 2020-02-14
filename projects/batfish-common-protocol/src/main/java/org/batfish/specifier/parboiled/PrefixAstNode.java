@@ -2,7 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 final class PrefixAstNode implements IpSpaceAstNode {
   private final Prefix _prefix;

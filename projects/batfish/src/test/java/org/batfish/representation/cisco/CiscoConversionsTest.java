@@ -29,7 +29,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;

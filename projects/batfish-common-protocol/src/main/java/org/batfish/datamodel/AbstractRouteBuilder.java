@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /**
  * Base builder for all route types that carry IPv4 reachability information (i.e., {@link

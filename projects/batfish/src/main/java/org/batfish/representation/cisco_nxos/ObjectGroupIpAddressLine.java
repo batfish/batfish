@@ -2,7 +2,7 @@ package org.batfish.representation.cisco_nxos;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 
 /** A line of an {@link ObjectGroupIpAddress}. */
 public final class ObjectGroupIpAddressLine implements Serializable {

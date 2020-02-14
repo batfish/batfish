@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.representation.juniper.Nat.Type;
 import org.junit.Test;
 

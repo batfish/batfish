@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Apply filter on top of created ISPs through {@link BorderInterfaceInfo}s */
 public class IspFilter {

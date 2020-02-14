@@ -1,9 +1,8 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpWildcardIpSpace extends IpSpace {
   private static final String PROP_IP_WILDCARD = "ipWildcard";

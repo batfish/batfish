@@ -10,7 +10,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 /** Tests for {@link VpcPeeringConnection} */

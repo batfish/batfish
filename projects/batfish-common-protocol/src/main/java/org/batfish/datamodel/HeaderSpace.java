@@ -19,6 +19,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.IpWildcardSetIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 

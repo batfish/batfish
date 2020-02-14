@@ -15,7 +15,7 @@ import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

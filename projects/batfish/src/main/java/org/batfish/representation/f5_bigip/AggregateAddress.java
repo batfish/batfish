@@ -2,7 +2,7 @@ package org.batfish.representation.f5_bigip;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** An aggregate prefix for which more specific prefixes should be aggregated in BGP. */
 public final class AggregateAddress implements Serializable {

@@ -15,10 +15,10 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 
 /** Represents a Palo Alto address group */
 public final class AddressGroup implements Serializable {

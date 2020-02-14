@@ -6,7 +6,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Loopback adapter */
 public class Loopback implements Serializable {

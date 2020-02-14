@@ -3,7 +3,7 @@ package org.batfish.representation.f5_bigip;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 @ParametersAreNonnullByDefault
 public class Ipv4Origin implements Serializable {

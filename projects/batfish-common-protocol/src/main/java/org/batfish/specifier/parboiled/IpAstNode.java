@@ -2,7 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 final class IpAstNode implements IpSpaceAstNode {
   private final Ip _ip;

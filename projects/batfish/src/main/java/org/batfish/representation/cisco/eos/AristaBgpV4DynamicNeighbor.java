@@ -4,7 +4,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** Config for dynamic BGP neighbors (created using "bgp listen range") */
 public class AristaBgpV4DynamicNeighbor extends AristaBgpNeighbor implements AristaBgpHasPeerGroup {

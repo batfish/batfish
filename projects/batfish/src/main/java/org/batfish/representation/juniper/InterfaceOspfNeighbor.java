@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Ospf interface neighbor information */
 public final class InterfaceOspfNeighbor implements Serializable {

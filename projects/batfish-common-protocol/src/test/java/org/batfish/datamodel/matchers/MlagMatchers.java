@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.matchers.MlagMatchersImpl.HasId;
 import org.batfish.datamodel.matchers.MlagMatchersImpl.HasLocalInterface;

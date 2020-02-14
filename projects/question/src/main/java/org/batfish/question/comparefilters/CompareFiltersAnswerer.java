@@ -27,7 +27,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.ActionGetter;
 import org.batfish.datamodel.answers.AnswerElement;

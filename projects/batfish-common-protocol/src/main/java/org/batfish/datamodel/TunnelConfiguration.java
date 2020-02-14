@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ip.Ip;
 
 /**
  * Stores settings applicable to tunnel interfaces. Does not handle IPsec configuration, for that

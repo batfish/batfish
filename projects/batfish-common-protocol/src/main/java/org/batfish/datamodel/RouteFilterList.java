@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.Prefix;
 
 /**
  * Filter list for IPV4 routes. Performs filtering on IPv4 prefixes with access-list-like behavior

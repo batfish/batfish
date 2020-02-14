@@ -1,8 +1,8 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
-import static org.batfish.datamodel.Prefix.longestCommonPrefix;
-import static org.batfish.datamodel.Prefix.parse;
-import static org.batfish.datamodel.Prefix.strict;
+import static org.batfish.common.ip.Prefix.longestCommonPrefix;
+import static org.batfish.common.ip.Prefix.parse;
+import static org.batfish.common.ip.Prefix.strict;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;

@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 public class PrefixList implements Serializable {
 

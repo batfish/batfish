@@ -1,6 +1,6 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.common.ip.AclIpSpaceLine.LineAction;
 
 /**
  * An {@link GenericIpSpaceVisitor IpSpace visitor} that tests if the {@link IpSpace} contains an

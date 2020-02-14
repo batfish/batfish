@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.EnumSet;
+import org.batfish.common.ip.Ip;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties.Builder;
 import org.batfish.datamodel.BgpSessionProperties.RouteExchange;

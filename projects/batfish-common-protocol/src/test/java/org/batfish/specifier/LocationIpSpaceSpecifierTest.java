@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.junit.Rule;
 import org.junit.Test;

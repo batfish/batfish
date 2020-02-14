@@ -3,7 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.IkeKeyType;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchersImpl.HasKeyHash;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchersImpl.HasKeyType;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchersImpl.HasRemoteIdentity;

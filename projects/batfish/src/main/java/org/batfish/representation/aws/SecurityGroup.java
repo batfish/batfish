@@ -20,7 +20,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Represents an AWS security group */
 @JsonIgnoreProperties(ignoreUnknown = true)

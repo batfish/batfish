@@ -13,7 +13,7 @@ import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.PathConstraints;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;

@@ -7,7 +7,7 @@ import com.google.common.cache.LoadingCache;
 import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 /** An {@link IpSpaceToBDD} that memoizes its {@link IpSpaceToBDD#visit} method. */
 public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {

@@ -610,7 +610,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "224.0.0.0/4"
                     },
                     "ipProtocols" : [
@@ -618,7 +618,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -640,7 +640,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "102.66.49.0/24"
                     },
                     "dstPorts" : [
@@ -653,7 +653,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "tcpFlagsMatchConditions" : [
@@ -697,12 +697,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -810,7 +810,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -838,7 +838,7 @@
             "name" : "Ethernet1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -884,7 +884,7 @@
             "name" : "Vlan1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.2.3.4/23",
@@ -1014,12 +1014,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.0.0/16"
                     }
                   }
@@ -1085,7 +1085,7 @@
             "name" : "Ethernet1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.1.1.1/32"
@@ -1141,12 +1141,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -1404,7 +1404,7 @@
             "name" : "GigabitEthernet0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.2.3.4/5"
@@ -1710,7 +1710,7 @@
             "name" : "GigabitEthernet0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -1740,7 +1740,7 @@
             "name" : "GigabitEthernet0/2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -1770,7 +1770,7 @@
             "name" : "Redundant1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -1799,7 +1799,7 @@
             "name" : "Redundant2",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -1828,7 +1828,7 @@
             "name" : "redundant1sub",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.0.0.1/24"
@@ -1864,7 +1864,7 @@
             "name" : "redundant2sub",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.0.1.1/24"
@@ -2080,12 +2080,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0"
                     }
                   }
@@ -2114,7 +2114,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2125,7 +2125,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2147,7 +2147,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2158,7 +2158,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2180,7 +2180,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2191,7 +2191,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2213,7 +2213,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2224,7 +2224,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2246,7 +2246,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2257,7 +2257,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2279,7 +2279,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2290,7 +2290,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2312,7 +2312,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2323,7 +2323,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2345,7 +2345,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2356,7 +2356,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2378,7 +2378,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2389,7 +2389,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2411,7 +2411,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2422,7 +2422,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2444,7 +2444,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2455,7 +2455,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2477,7 +2477,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2488,7 +2488,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2510,7 +2510,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2521,7 +2521,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2543,7 +2543,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2554,7 +2554,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2576,7 +2576,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2587,7 +2587,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2609,7 +2609,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2620,7 +2620,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2642,7 +2642,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2653,7 +2653,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2675,7 +2675,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2686,7 +2686,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2708,7 +2708,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -2719,7 +2719,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2741,7 +2741,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -2749,7 +2749,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2778,7 +2778,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -2789,7 +2789,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "class" : "org.batfish.common.ip.IpSpaceReference",
                       "description" : "Match network object-group: 'drawbridge_hosts'",
                       "name" : "drawbridge_hosts"
                     }
@@ -2819,7 +2819,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4"
                     },
                     "dstPorts" : [
@@ -2830,7 +2830,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -2909,7 +2909,7 @@
             "name" : "ifname",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -2997,7 +2997,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "class" : "org.batfish.common.ip.IpSpaceReference",
                       "description" : "Match network object: 'server02'",
                       "name" : "server02"
                     },
@@ -3006,7 +3006,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -3067,40 +3067,40 @@
         },
         "ipSpaces" : {
           "range-10.0.0.10-20" : {
-            "class" : "org.batfish.datamodel.AclIpSpace",
+            "class" : "org.batfish.common.ip.AclIpSpace",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "ipSpace" : {
-                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "class" : "org.batfish.common.ip.PrefixIpSpace",
                   "prefix" : "10.0.0.10/31"
                 }
               },
               {
                 "action" : "PERMIT",
                 "ipSpace" : {
-                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "class" : "org.batfish.common.ip.PrefixIpSpace",
                   "prefix" : "10.0.0.12/30"
                 }
               },
               {
                 "action" : "PERMIT",
                 "ipSpace" : {
-                  "class" : "org.batfish.datamodel.PrefixIpSpace",
+                  "class" : "org.batfish.common.ip.PrefixIpSpace",
                   "prefix" : "10.0.0.16/30"
                 }
               },
               {
                 "action" : "PERMIT",
                 "ipSpace" : {
-                  "class" : "org.batfish.datamodel.IpIpSpace",
+                  "class" : "org.batfish.common.ip.IpIpSpace",
                   "ip" : "10.0.0.20"
                 }
               }
             ]
           },
           "server02" : {
-            "class" : "org.batfish.datamodel.IpIpSpace",
+            "class" : "org.batfish.common.ip.IpIpSpace",
             "ip" : "192.168.126.64"
           }
         },
@@ -3134,7 +3134,7 @@
             "name" : "blah",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.168.1.0/24"
@@ -4749,12 +4749,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.0/24"
                     }
                   }
@@ -4783,12 +4783,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "2.3.4.0/24"
                     }
                   }
@@ -4810,12 +4810,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -4844,12 +4844,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "3.4.5.6"
                     }
                   }
@@ -5192,7 +5192,7 @@
             "name" : "Ethernet6/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "11.22.33.44/30"
@@ -5221,7 +5221,7 @@
             "name" : "Ethernet6/0.48",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "22.33.44.55/30"
@@ -5249,7 +5249,7 @@
             "name" : "Ethernet6/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5273,7 +5273,7 @@
             "name" : "cable-downstream1/2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5296,7 +5296,7 @@
             "name" : "cable-downstream1/2/3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5320,7 +5320,7 @@
             "name" : "cable-downstream5/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5343,7 +5343,7 @@
             "name" : "cable-mac1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5367,7 +5367,7 @@
             "name" : "cable-mac1.1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.2.3.0/30"
@@ -5395,7 +5395,7 @@
             "name" : "cable-mac1.2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.2.2.0/25",
@@ -5426,7 +5426,7 @@
             "name" : "cable-mac2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5449,7 +5449,7 @@
             "name" : "cable-mac3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5472,7 +5472,7 @@
             "name" : "cable-upstream1/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5496,7 +5496,7 @@
             "name" : "cable-upstream1/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5520,7 +5520,7 @@
             "name" : "cable-upstream1/0/10",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -5543,7 +5543,7 @@
             "name" : "mgmt6/0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -6096,7 +6096,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpCodes" : [
@@ -6110,7 +6110,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6138,12 +6138,12 @@
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
                         "dstIps" : {
-                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                           "ipWildcard" : "0.0.0.0/0"
                         },
                         "negate" : false,
                         "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                           "ipWildcard" : "0.0.0.0/0"
                         }
                       }
@@ -6167,7 +6167,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -6175,7 +6175,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6197,7 +6197,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6208,7 +6208,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6230,7 +6230,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6242,7 +6242,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6270,12 +6270,12 @@
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
                         "dstIps" : {
-                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                           "ipWildcard" : "0.0.0.0/0"
                         },
                         "negate" : false,
                         "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                           "ipWildcard" : "0.0.0.0/0"
                         }
                       }
@@ -6305,12 +6305,12 @@
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
                         "dstIps" : {
-                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                           "ipWildcard" : "0.0.0.0/0"
                         },
                         "negate" : false,
                         "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                           "ipWildcard" : "0.0.0.0/0"
                         }
                       }
@@ -6334,7 +6334,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -6342,7 +6342,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6364,7 +6364,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -6372,7 +6372,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6394,7 +6394,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -6402,7 +6402,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6424,7 +6424,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -6432,7 +6432,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6454,7 +6454,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6465,7 +6465,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6487,7 +6487,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6498,7 +6498,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "10.0.0.0/19"
                     }
                   }
@@ -6520,7 +6520,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6531,7 +6531,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "10.0.0.0"
                     }
                   }
@@ -6553,7 +6553,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6564,7 +6564,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "10.0.0.0/19"
                     }
                   }
@@ -6586,7 +6586,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6597,7 +6597,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "10.0.0.0"
                     }
                   }
@@ -6619,7 +6619,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6631,7 +6631,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6653,7 +6653,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpCodes" : [
@@ -6667,7 +6667,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6689,7 +6689,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpTypes" : [
@@ -6700,7 +6700,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6722,7 +6722,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "icmpCodes" : [
@@ -6736,7 +6736,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6758,12 +6758,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6792,12 +6792,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6819,12 +6819,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6846,12 +6846,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6880,12 +6880,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6924,7 +6924,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6935,7 +6935,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -6957,7 +6957,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -6968,7 +6968,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -7160,12 +7160,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -7927,7 +7927,7 @@
             "name" : "Cable1/2/3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -8076,7 +8076,7 @@
             "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
               "ipWildcard" : "1.1.1.1"
             }
           },
@@ -8085,7 +8085,7 @@
             "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
               "ipWildcard" : "1.2.3.4"
             }
           },
@@ -8094,7 +8094,7 @@
             "keyType" : "RSA_PUB_KEY",
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpIpSpace",
+              "class" : "org.batfish.common.ip.IpIpSpace",
               "ip" : "1.2.3.4"
             }
           }
@@ -8107,7 +8107,7 @@
             ],
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
               "ipWildcard" : "1.2.3.4"
             },
             "selfIdentity" : "2.3.4.6"
@@ -8119,7 +8119,7 @@
               "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "unset_local_interface",
               "remoteIdentity" : {
-                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                 "ipWildcard" : "1.2.3.4"
               }
             },
@@ -8128,7 +8128,7 @@
             ],
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
               "ipWildcard" : "1.2.3.4"
             }
           },
@@ -8139,13 +8139,13 @@
               "keyType" : "RSA_PUB_KEY",
               "localInterface" : "unset_local_interface",
               "remoteIdentity" : {
-                "class" : "org.batfish.datamodel.IpIpSpace",
+                "class" : "org.batfish.common.ip.IpIpSpace",
                 "ip" : "1.2.3.4"
               }
             },
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpIpSpace",
+              "class" : "org.batfish.common.ip.IpIpSpace",
               "ip" : "1.2.3.4"
             }
           }
@@ -8376,7 +8376,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -8407,7 +8407,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.1.1.1"
                     },
                     "dstPorts" : [
@@ -8418,7 +8418,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "30.9.132.0/23"
                     }
                   }
@@ -8440,7 +8440,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -8451,7 +8451,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.1.1.1"
                     }
                   }
@@ -8473,7 +8473,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.1.1.1"
                     },
                     "dstPorts" : [
@@ -8484,7 +8484,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -8506,7 +8506,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -8517,7 +8517,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.1.1.1"
                     }
                   }
@@ -8539,7 +8539,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.1.1.1"
                     },
                     "dstPorts" : [
@@ -8550,7 +8550,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -8579,7 +8579,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
@@ -8590,7 +8590,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -8858,7 +8858,7 @@
             "name" : "GigabitEthernet0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -8924,7 +8924,7 @@
             "name" : "TenGigabitEthernet0/0/2/2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -8970,7 +8970,7 @@
             "name" : "Async1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -8993,7 +8993,7 @@
             "name" : "Cable1/2/3:4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9016,7 +9016,7 @@
             "name" : "Crypto-Engine1/2/3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9039,7 +9039,7 @@
             "name" : "Dot11Radio0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9062,7 +9062,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.2.3.4/30"
@@ -9129,7 +9129,7 @@
             "name" : "Ethernet1/11",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9154,7 +9154,7 @@
             "accessVlan" : 3,
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9178,7 +9178,7 @@
             "name" : "Loopback0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9201,7 +9201,7 @@
             "name" : "Modular-Cable1/2/3:4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9224,7 +9224,7 @@
             "name" : "Null0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9247,7 +9247,7 @@
             "name" : "Tunnel0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9270,7 +9270,7 @@
             "name" : "Vlan1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9294,7 +9294,7 @@
             "name" : "Vlan1005",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9318,7 +9318,7 @@
             "name" : "Vlan1006",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9342,7 +9342,7 @@
             "name" : "Vlan111",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9366,7 +9366,7 @@
             "name" : "Vlan1234",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9390,7 +9390,7 @@
             "name" : "Vlan2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9414,7 +9414,7 @@
             "name" : "Vlan3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9438,7 +9438,7 @@
             "name" : "Vlan4094",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9462,7 +9462,7 @@
             "name" : "Wideband-Cable1/2/3:4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9485,7 +9485,7 @@
             "name" : "Wlan-GigabitEthernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9509,7 +9509,7 @@
             "name" : "Wlan-ap0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9532,7 +9532,7 @@
             "name" : "inside",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.168.0.1/24"
@@ -9571,7 +9571,7 @@
             "name" : "tunnel-ip6",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -9601,7 +9601,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -9609,7 +9609,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -10326,7 +10326,7 @@
             "name" : "GigabitEthernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -10359,7 +10359,7 @@
             "name" : "GigabitEthernet0/0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "137.164.25.57/30"
@@ -10398,7 +10398,7 @@
             "name" : "GigabitEthernet0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -10431,7 +10431,7 @@
             "name" : "HundredGigabitEthernet0/0/0/0.2302",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -10463,7 +10463,7 @@
             "name" : "Loopback0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -10495,7 +10495,7 @@
             "name" : "Serial4/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -11382,7 +11382,7 @@
             "name" : "Ethernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "3.3.3.0/24"
@@ -11421,7 +11421,7 @@
             "name" : "Ethernet1/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "4.4.4.0/24"
@@ -11457,7 +11457,7 @@
             "name" : "Loopback0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.1.1.1/32"
@@ -11743,7 +11743,7 @@
             "name" : "Ethernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.2.2.0/24"
@@ -11801,7 +11801,7 @@
             "name" : "Ethernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.2.2.0/24"
@@ -11840,7 +11840,7 @@
             "name" : "Ethernet1/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "3.3.3.0/24"
@@ -11879,7 +11879,7 @@
             "name" : "Loopback0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.1.1.1/32"
@@ -12079,7 +12079,7 @@
             "name" : "Ethernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.2.2.0/24"
@@ -12237,34 +12237,34 @@
         },
         "ipSpaces" : {
           "1.2.3.4-24" : {
-            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+            "class" : "org.batfish.common.ip.IpWildcardIpSpace",
             "ipWildcard" : "1.2.3.0/24"
           },
           "dns_servers" : {
-            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+            "class" : "org.batfish.common.ip.IpWildcardIpSpace",
             "ipWildcard" : "1.2.2.1"
           },
           "ntp_servers" : {
-            "class" : "org.batfish.datamodel.AclIpSpace",
+            "class" : "org.batfish.common.ip.AclIpSpace",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "ipSpace" : {
-                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                  "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                   "ipWildcard" : "1.1.1.1"
                 }
               },
               {
                 "action" : "PERMIT",
                 "ipSpace" : {
-                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                  "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                   "ipWildcard" : "1.1.1.1"
                 }
               }
             ]
           },
           "obj_any" : {
-            "class" : "org.batfish.datamodel.UniverseIpSpace"
+            "class" : "org.batfish.common.ip.UniverseIpSpace"
           }
         },
         "vendorFamily" : {
@@ -12856,12 +12856,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -12911,12 +12911,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -13224,7 +13224,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.0.0.0/24"
@@ -15519,7 +15519,7 @@
             "name" : "bond1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15550,7 +15550,7 @@
             "name" : "bond1.4094",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.0.2.6/24"
@@ -15575,7 +15575,7 @@
             "name" : "bond2",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15595,7 +15595,7 @@
             "name" : "eth0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15615,7 +15615,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.0.2.7/32",
@@ -15640,7 +15640,7 @@
             "name" : "mgmt",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.0.0.2/8"
@@ -15663,7 +15663,7 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15685,7 +15685,7 @@
             "name" : "swp2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15707,7 +15707,7 @@
             "name" : "swp3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15729,7 +15729,7 @@
             "name" : "swp4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15750,7 +15750,7 @@
             "name" : "swp5",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15771,7 +15771,7 @@
             "name" : "swp6",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15792,7 +15792,7 @@
             "name" : "swp7",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15813,7 +15813,7 @@
             "name" : "swp8",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -15834,7 +15834,7 @@
             "name" : "vlan4",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.0.2.9/24",
@@ -15859,7 +15859,7 @@
             "name" : "vrf1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -16530,7 +16530,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -16550,7 +16550,7 @@
             "name" : "vrf1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -16769,7 +16769,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -16849,7 +16849,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -16869,7 +16869,7 @@
             "name" : "vrf1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -16987,7 +16987,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.0.2.8/32"
@@ -17071,7 +17071,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17151,7 +17151,7 @@
             "name" : "AGG",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17183,7 +17183,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17203,7 +17203,7 @@
             "name" : "otherbond",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17226,7 +17226,7 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17247,7 +17247,7 @@
             "name" : "swp10",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17268,7 +17268,7 @@
             "name" : "swp2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17289,7 +17289,7 @@
             "name" : "swp3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17310,7 +17310,7 @@
             "name" : "swp3s0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17331,7 +17331,7 @@
             "name" : "swp4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17352,7 +17352,7 @@
             "name" : "swp5",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17373,7 +17373,7 @@
             "name" : "swp6",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17394,7 +17394,7 @@
             "name" : "swp7",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17415,7 +17415,7 @@
             "name" : "swp8",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17436,7 +17436,7 @@
             "name" : "swp9",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17479,7 +17479,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17499,7 +17499,7 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17519,7 +17519,7 @@
             "name" : "swp1s2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17561,7 +17561,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17581,7 +17581,7 @@
             "name" : "vrf1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17625,7 +17625,7 @@
             "name" : "bond1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17645,7 +17645,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17665,7 +17665,7 @@
             "name" : "vrf1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17709,7 +17709,7 @@
             "name" : "bond1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17732,7 +17732,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17752,7 +17752,7 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17795,7 +17795,7 @@
             "name" : "bond1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17818,7 +17818,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17838,7 +17838,7 @@
             "name" : "swp0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17859,7 +17859,7 @@
             "name" : "vrf1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17903,7 +17903,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17945,7 +17945,7 @@
             "name" : "bond1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17968,7 +17968,7 @@
             "name" : "lo",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -17988,7 +17988,7 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -18031,7 +18031,7 @@
             "name" : "Port-Channel1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "1-4094",
             "autostate" : true,
@@ -18056,7 +18056,7 @@
             "name" : "Port-Channel2",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.2.2.2/32"
@@ -18111,7 +18111,7 @@
             "name" : "Port-Channel1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "1-4,7-9,11",
             "autostate" : true,
@@ -18382,7 +18382,7 @@
             "name" : "/Common/MYVLAN",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.0.0.1/24"
@@ -18414,7 +18414,7 @@
             "name" : "1.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "123",
             "autostate" : true,
@@ -18435,7 +18435,7 @@
             "name" : "2.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -18455,7 +18455,7 @@
             "name" : "3.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -18475,7 +18475,7 @@
             "name" : "trunk1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -18853,7 +18853,7 @@
                   "headerSpace" : {
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
+                      "class" : "org.batfish.common.ip.UniverseIpSpace"
                     }
                   }
                 },
@@ -18880,7 +18880,7 @@
                   "headerSpace" : {
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
+                      "class" : "org.batfish.common.ip.PrefixIpSpace",
                       "prefix" : "192.0.2.0/24"
                     }
                   }
@@ -19399,7 +19399,7 @@
             "name" : "Ethernet1/15",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -19493,7 +19493,7 @@
             "name" : "eth0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.128.0.101/24"
@@ -19536,7 +19536,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4"
                     }
                   }
@@ -19565,7 +19565,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "11.22.33.44"
                     }
                   }
@@ -19594,7 +19594,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "111.222.111.222"
                     }
                   }
@@ -19623,7 +19623,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "4.3.2.1"
                     }
                   }
@@ -19652,7 +19652,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "44.22.33.11"
                     }
                   }
@@ -19905,7 +19905,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.130.0.1/24"
@@ -19945,7 +19945,7 @@
             "name" : "Ethernet1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "2.131.0.1/24"
@@ -19993,7 +19993,7 @@
                   "headerSpace" : {
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.101"
                     }
                   }
@@ -20442,7 +20442,7 @@
             "name" : "ge-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20466,7 +20466,7 @@
             "name" : "ge-0/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.0.0.0/31"
@@ -20493,7 +20493,7 @@
             "name" : "ge-0/0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20517,7 +20517,7 @@
             "name" : "ge-0/0/1.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.0.0.1/31"
@@ -20544,7 +20544,7 @@
             "name" : "reth0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20571,7 +20571,7 @@
             "name" : "reth0.3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "3.3.3.3/31"
@@ -20645,7 +20645,7 @@
             "name" : "Vlan303",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.22.33.10/29"
@@ -20673,7 +20673,7 @@
             "name" : "Vlan803",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.12.12.1/23"
@@ -20727,7 +20727,7 @@
             "name" : "FastEthernet12/13",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20751,7 +20751,7 @@
             "name" : "HundredGigabitEthernet0/6/0/8",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20774,7 +20774,7 @@
             "name" : "Port-Channel1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20797,7 +20797,7 @@
             "name" : "Vlan100",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20836,7 +20836,7 @@
             "name" : "Loopback0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "137.164.16.80/32"
@@ -20886,7 +20886,7 @@
             "name" : "xe-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20909,7 +20909,7 @@
             "name" : "xe-0/0/0:0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -20932,7 +20932,7 @@
             "name" : "xe-0/0/0:0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.1.2.3/31"
@@ -21209,7 +21209,7 @@
             "name" : "GigabitEthernet1/0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -21255,7 +21255,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -21301,7 +21301,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -21347,7 +21347,7 @@
             "name" : "Ethernet0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -21393,7 +21393,7 @@
             "name" : "Vlan1000",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -21990,7 +21990,7 @@
             "name" : "GigabitEthernet0/2/1/6",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22093,7 +22093,7 @@
             "name" : "Bundle-Ethernet101",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22126,7 +22126,7 @@
             "name" : "Bundle-Ethernet103",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22159,7 +22159,7 @@
             "name" : "Bundle-Ethernet201",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22193,7 +22193,7 @@
             "name" : "HundredGigabitEthernet0/2/0/0.292",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22227,7 +22227,7 @@
             "name" : "HundredGigabitEthernet0/2/0/3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22261,7 +22261,7 @@
             "name" : "Loopback0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22295,7 +22295,7 @@
             "name" : "TenGigabitEthernet0/0/0/2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22330,7 +22330,7 @@
             "name" : "TenGigabitEthernet0/0/0/4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -22365,7 +22365,7 @@
             "name" : "TenGigabitEthernet0/0/0/5",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -24351,7 +24351,7 @@
                           "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                           "headerSpace" : {
                             "dstIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                               "ipWildcard" : "1.2.3.4"
                             },
                             "negate" : false
@@ -24369,7 +24369,7 @@
                           "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                           "headerSpace" : {
                             "dstIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                               "ipWildcard" : "1.2.3.5"
                             },
                             "negate" : false
@@ -24387,7 +24387,7 @@
                           "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                           "headerSpace" : {
                             "dstIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                               "ipWildcard" : "1.2.3.8/30"
                             },
                             "negate" : false
@@ -24722,7 +24722,7 @@
                           "headerSpace" : {
                             "negate" : false,
                             "srcIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                               "ipWildcard" : "2.4.6.8/30"
                             }
                           },
@@ -24740,7 +24740,7 @@
                           "headerSpace" : {
                             "negate" : false,
                             "srcIps" : {
-                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                               "ipWildcard" : "2.4.6.9"
                             }
                           },
@@ -24836,7 +24836,7 @@
                             "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                             "headerSpace" : {
                               "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                                 "ipWildcard" : "1.2.3.4"
                               },
                               "negate" : false
@@ -24854,7 +24854,7 @@
                             "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                             "headerSpace" : {
                               "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                                 "ipWildcard" : "1.2.3.5"
                               },
                               "negate" : false
@@ -24872,7 +24872,7 @@
                             "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                             "headerSpace" : {
                               "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                                 "ipWildcard" : "1.2.3.8/30"
                               },
                               "negate" : false
@@ -25207,7 +25207,7 @@
                             "headerSpace" : {
                               "negate" : false,
                               "srcIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                                 "ipWildcard" : "2.4.6.8/30"
                               }
                             },
@@ -25225,7 +25225,7 @@
                             "headerSpace" : {
                               "negate" : false,
                               "srcIps" : {
-                                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                                 "ipWildcard" : "2.4.6.9"
                               }
                             },
@@ -25408,7 +25408,7 @@
             "name" : "ae0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25434,7 +25434,7 @@
             "name" : "ae0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25457,7 +25457,7 @@
             "name" : "fab0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25481,7 +25481,7 @@
             "name" : "ge-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25504,7 +25504,7 @@
             "name" : "ge-1/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25528,7 +25528,7 @@
             "name" : "ge-2/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25551,7 +25551,7 @@
             "name" : "ge-2/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25574,7 +25574,7 @@
             "name" : "ge-2/0/0.1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25597,7 +25597,7 @@
             "name" : "ge-3/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25620,7 +25620,7 @@
             "name" : "ge-3/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25643,7 +25643,7 @@
             "name" : "ge-4/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25666,7 +25666,7 @@
             "name" : "ge-4/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25689,7 +25689,7 @@
             "name" : "ge-5/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25712,7 +25712,7 @@
             "name" : "ge-5/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25735,7 +25735,7 @@
             "name" : "irb.5",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.2.3.0/24",
@@ -25770,7 +25770,7 @@
             "name" : "vme",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25793,7 +25793,7 @@
             "name" : "vme.0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "100.100.100.100/32"
@@ -25820,7 +25820,7 @@
             "name" : "xe-0/0/0:0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25843,7 +25843,7 @@
             "name" : "xe-0/0/0:0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25866,7 +25866,7 @@
             "name" : "xe-0/0/5:0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25889,7 +25889,7 @@
             "name" : "xe-0/0/5:0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25912,7 +25912,7 @@
             "name" : "xe-0/0/6",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -25986,7 +25986,7 @@
             "name" : "ge-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -26009,7 +26009,7 @@
             "name" : "ge-0/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -26173,7 +26173,7 @@
             "name" : "ge-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -26196,7 +26196,7 @@
             "name" : "ge-0/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.0.0.1/24"
@@ -26218,12 +26218,12 @@
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                 "headerSpace" : {
                   "dstIps" : {
-                    "class" : "org.batfish.datamodel.IpSpaceReference",
+                    "class" : "org.batfish.common.ip.IpSpaceReference",
                     "name" : "global~NAME"
                   },
                   "negate" : false,
                   "srcIps" : {
-                    "class" : "org.batfish.datamodel.IpSpaceReference",
+                    "class" : "org.batfish.common.ip.IpSpaceReference",
                     "name" : "global~SA-NAME"
                   }
                 }
@@ -26251,12 +26251,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "class" : "org.batfish.common.ip.IpSpaceReference",
                       "name" : "global~NAME"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "class" : "org.batfish.common.ip.IpSpaceReference",
                       "name" : "global~SA-NAME"
                     }
                   }
@@ -26266,7 +26266,7 @@
                     "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                     "headerSpace" : {
                       "dstIps" : {
-                        "class" : "org.batfish.datamodel.PrefixIpSpace",
+                        "class" : "org.batfish.common.ip.PrefixIpSpace",
                         "prefix" : "2.2.2.0/24"
                       },
                       "negate" : false
@@ -26277,7 +26277,7 @@
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
                         "dstIps" : {
-                          "class" : "org.batfish.datamodel.PrefixIpSpace",
+                          "class" : "org.batfish.common.ip.PrefixIpSpace",
                           "prefix" : "3.3.3.0/24"
                         },
                         "negate" : false
@@ -28208,7 +28208,7 @@
             "name" : "ge-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -28231,7 +28231,7 @@
             "name" : "ge-0/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "1.1.1.1/24",
@@ -28375,7 +28375,7 @@
             "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
             "localInterface" : "unset_local_interface",
             "remoteIdentity" : {
-              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+              "class" : "org.batfish.common.ip.IpWildcardIpSpace",
               "ipWildcard" : "0.0.0.0"
             }
           }
@@ -28387,7 +28387,7 @@
               "keyType" : "PRE_SHARED_KEY_UNENCRYPTED",
               "localInterface" : "unset_local_interface",
               "remoteIdentity" : {
-                "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                 "ipWildcard" : "0.0.0.0"
               }
             },
@@ -28775,7 +28775,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "224.2.127.254"
                       ]
@@ -29442,13 +29442,13 @@
         },
         "ipSpaces" : {
           "global~ASET" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.common.ip.IpWildcardSetIpSpace"
           },
           "notglobalAttached~ASET" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.common.ip.IpWildcardSetIpSpace"
           },
           "notglobalUnattached~ASET" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.common.ip.IpWildcardSetIpSpace"
           }
         },
         "vendorFamily" : {
@@ -29788,7 +29788,7 @@
             "name" : "xe-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -29811,7 +29811,7 @@
             "name" : "xe-0/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "30,40,50",
             "autostate" : true,
@@ -29984,7 +29984,7 @@
             "name" : "Ethernet1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -30008,7 +30008,7 @@
             "name" : "Ethernet2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -30032,7 +30032,7 @@
             "name" : "Management1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -30055,7 +30055,7 @@
             "name" : "ap1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -30632,7 +30632,7 @@
             "name" : "GigabitEthernet1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.10.10.1/24"
@@ -30880,12 +30880,12 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     }
                   }
@@ -31267,7 +31267,7 @@
             "name" : "Ethernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "addressMetadata" : {
               "1.2.3.4/24" : {
@@ -31302,7 +31302,7 @@
             "name" : "Ethernet0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -31404,7 +31404,7 @@
             "name" : "Ethernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "addressMetadata" : {
               "1.1.1.2/31" : {
@@ -33531,7 +33531,7 @@
             "name" : "ge-0/0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33554,7 +33554,7 @@
             "name" : "ge-0/0/0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.0.0.0/31"
@@ -33664,7 +33664,7 @@
             "name" : "ethernet1/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33685,7 +33685,7 @@
             "accessVlan" : 4,
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33706,7 +33706,7 @@
             "name" : "ethernet1/1.5",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33728,7 +33728,7 @@
             "name" : "loopback",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33749,7 +33749,7 @@
             "name" : "loopback.1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33769,7 +33769,7 @@
             "name" : "tunnel",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33789,7 +33789,7 @@
             "name" : "tunnel.3",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33810,7 +33810,7 @@
             "name" : "vlan",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -33831,7 +33831,7 @@
             "name" : "vlan.1",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -34203,7 +34203,7 @@
         },
         "ipSpaces" : {
           "rfc1918_10" : {
-            "class" : "org.batfish.datamodel.PrefixIpSpace",
+            "class" : "org.batfish.common.ip.PrefixIpSpace",
             "prefix" : "10.0.0.0/8"
           }
         },
@@ -34220,7 +34220,7 @@
             "name" : "ethernet1/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -34240,7 +34240,7 @@
             "name" : "ethernet1/2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -34267,7 +34267,7 @@
             "name" : "ethernet1/3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -34287,7 +34287,7 @@
             "name" : "ethernet1/4",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -34472,7 +34472,7 @@
             "name" : "Loopback1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "137.164.17.8/32"
@@ -38374,7 +38374,7 @@
             "name" : "FastEthernet0/1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "12,34,56-78,99",
             "autostate" : true,
@@ -38459,7 +38459,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -38467,7 +38467,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4/31"
                     },
                     "tcpFlagsMatchConditions" : [
@@ -38511,7 +38511,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -38519,7 +38519,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4/31"
                     },
                     "tcpFlagsMatchConditions" : [
@@ -38563,7 +38563,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -38571,7 +38571,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4/31"
                     },
                     "tcpFlagsMatchConditions" : [
@@ -38755,7 +38755,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -38763,7 +38763,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4/31"
                     },
                     "tcpFlagsMatchConditions" : [
@@ -38807,7 +38807,7 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "ipProtocols" : [
@@ -38815,7 +38815,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "class" : "org.batfish.common.ip.IpWildcardIpSpace",
                       "ipWildcard" : "1.2.3.4/31"
                     },
                     "tcpFlagsMatchConditions" : [
@@ -38954,7 +38954,7 @@
             "name" : "FastEthernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39000,7 +39000,7 @@
             "name" : "FastEthernet0/0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39180,7 +39180,7 @@
             "name" : "fxp0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39203,7 +39203,7 @@
             "name" : "fxp0.0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.10.20.4/24"
@@ -39230,7 +39230,7 @@
             "name" : "irb.100",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "10.200.100.254/24"
@@ -39257,7 +39257,7 @@
             "name" : "lo0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39280,7 +39280,7 @@
             "name" : "lo0.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.168.1.2/32"
@@ -39307,7 +39307,7 @@
             "name" : "lo0.1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "192.168.100.200/32"
@@ -39334,7 +39334,7 @@
             "name" : "xe-0/0/2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39357,7 +39357,7 @@
             "name" : "xe-0/0/2.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "172.16.7.1/30"
@@ -39384,7 +39384,7 @@
             "name" : "xe-0/0/3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39407,7 +39407,7 @@
             "name" : "xe-0/0/3.0",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "172.16.5.1/30"
@@ -39434,7 +39434,7 @@
             "name" : "xe-0/0/4",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -39457,7 +39457,7 @@
             "name" : "xe-0/0/4.0",
             "active" : false,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.common.ip.EmptyIpSpace"
             },
             "allPrefixes" : [
               "172.16.3.1/30"

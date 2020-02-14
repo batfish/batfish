@@ -1,19 +1,19 @@
 package org.batfish.minesweeper.utils;
 
 import java.util.Map;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IpIpSpace;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.PrefixIpSpace;
-import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.AclIpSpaceLine;
+import org.batfish.common.ip.AclIpSpaceLine.LineAction;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.GenericIpSpaceVisitor;
+import org.batfish.common.ip.IpIpSpace;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpSpaceReference;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.IpWildcardIpSpace;
+import org.batfish.common.ip.IpWildcardSetIpSpace;
+import org.batfish.common.ip.PrefixIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 
 /**
  * Test if it's possible (or certain) that {@code _ipWildcard} might not be contained within an

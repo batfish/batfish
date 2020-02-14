@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 public class FwThenNextIp implements FwThen {
 

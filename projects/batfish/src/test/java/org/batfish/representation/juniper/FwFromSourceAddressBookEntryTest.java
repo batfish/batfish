@@ -3,10 +3,10 @@ package org.batfish.representation.juniper;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.IpSpaceReference;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.IpWildcard;
 import org.junit.Test;
 
 /** Test for {@link FwFromSourceAddressBookEntry } */

@@ -1,6 +1,4 @@
-package org.batfish.datamodel;
-
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+package org.batfish.common.ip;
 
 public class EmptyIpSpace extends IpSpace {
 

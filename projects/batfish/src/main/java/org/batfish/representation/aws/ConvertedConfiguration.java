@@ -11,8 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 /** Represents vendor independent configuration data after conversion of native AWS data. */
 @ParametersAreNonnullByDefault

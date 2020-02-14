@@ -1,8 +1,8 @@
 package org.batfish.representation.vyos;
 
 import java.io.Serializable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 public class StaticNextHopRoute implements Serializable {
 

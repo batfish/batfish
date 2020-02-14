@@ -4,7 +4,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /**
  * Class representing the primary key used for grouping {@link org.batfish.datamodel.AbstractRoute}s

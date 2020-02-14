@@ -3,7 +3,7 @@ package org.batfish.datamodel.questions;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Contains the values needed to populate a table answer row with VXLAN VNI properties. */
 @ParametersAreNonnullByDefault

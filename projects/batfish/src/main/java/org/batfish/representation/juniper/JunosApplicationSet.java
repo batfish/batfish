@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.HeaderSpace.Builder;

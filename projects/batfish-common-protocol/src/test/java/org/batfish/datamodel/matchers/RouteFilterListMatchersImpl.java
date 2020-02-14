@@ -2,7 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.hamcrest.Description;

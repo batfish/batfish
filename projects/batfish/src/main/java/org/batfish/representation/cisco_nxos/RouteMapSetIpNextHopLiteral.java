@@ -3,7 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /**
  * In routing context, a {@link RouteMapSetIpNextHop} that sets the NEXT_HOP attribute of the route

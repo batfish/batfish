@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 

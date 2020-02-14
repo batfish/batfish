@@ -2,7 +2,7 @@ package org.batfish.representation.juniper;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterList;
 

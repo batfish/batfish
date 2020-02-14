@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 
 public class PrefixTrie implements Serializable {
 

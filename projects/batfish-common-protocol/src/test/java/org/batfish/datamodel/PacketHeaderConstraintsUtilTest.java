@@ -24,6 +24,8 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.junit.Rule;

@@ -1,7 +1,7 @@
 package org.batfish.representation.f5_bigip;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** BGP neighbor update source ip setting */
 public final class UpdateSourceIp implements UpdateSource {

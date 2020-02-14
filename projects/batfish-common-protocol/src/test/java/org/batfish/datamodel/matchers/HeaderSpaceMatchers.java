@@ -2,7 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasDstIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasDstPorts;

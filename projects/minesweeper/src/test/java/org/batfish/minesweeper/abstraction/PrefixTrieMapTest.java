@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.junit.Test;
 
 public class PrefixTrieMapTest {

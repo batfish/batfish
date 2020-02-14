@@ -2,9 +2,9 @@ package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 
 /** Represents a network object that contains an FQDN */
 @ParametersAreNonnullByDefault

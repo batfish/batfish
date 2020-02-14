@@ -18,7 +18,7 @@ import com.google.common.collect.Multiset;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;

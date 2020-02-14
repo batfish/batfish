@@ -2,7 +2,7 @@ package org.batfish.representation.f5_bigip;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Ip6;
 
 /** Configuration for a BGP neighbor representing an actual peer. */

@@ -2,8 +2,8 @@ package org.batfish.datamodel.matchers;
 
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

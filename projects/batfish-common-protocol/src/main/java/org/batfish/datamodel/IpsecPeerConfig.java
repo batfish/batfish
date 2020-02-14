@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 
 /** Represents a configured IPSec peer */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")

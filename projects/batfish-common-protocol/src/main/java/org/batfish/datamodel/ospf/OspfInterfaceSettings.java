@@ -14,7 +14,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Contains OSPF settings for an OSPF interface. */
 @ParametersAreNonnullByDefault

@@ -7,9 +7,9 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 import org.junit.Before;
 import org.junit.Test;
 

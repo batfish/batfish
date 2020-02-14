@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable {
+  public enum LineAction {
+    PERMIT,
+    DENY,
+  }
 
   public static class Builder {
 

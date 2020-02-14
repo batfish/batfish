@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.matchers.FlowMatchers;

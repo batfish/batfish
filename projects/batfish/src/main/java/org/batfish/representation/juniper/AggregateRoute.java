@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 @ParametersAreNonnullByDefault
 public final class AggregateRoute extends AbstractAggregateRoute {

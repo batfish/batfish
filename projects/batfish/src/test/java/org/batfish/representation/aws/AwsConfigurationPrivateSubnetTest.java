@@ -13,7 +13,7 @@ import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;

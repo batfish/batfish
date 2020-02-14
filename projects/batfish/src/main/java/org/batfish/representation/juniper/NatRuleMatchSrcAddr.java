@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** A {@link NatRule} that matches on source address */
 @ParametersAreNonnullByDefault

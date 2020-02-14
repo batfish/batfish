@@ -14,7 +14,7 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;

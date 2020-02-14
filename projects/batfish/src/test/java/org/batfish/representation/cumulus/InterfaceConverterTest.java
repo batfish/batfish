@@ -27,9 +27,9 @@ import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.junit.Before;
 import org.junit.Test;
 

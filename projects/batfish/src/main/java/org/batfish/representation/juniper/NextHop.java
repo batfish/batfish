@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 
 /** Represents a next-hop for Juniper static routes */
 public class NextHop implements Serializable {

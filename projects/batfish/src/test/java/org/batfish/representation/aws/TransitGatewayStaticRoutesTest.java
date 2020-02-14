@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGatewayRoute.Type;
 import org.junit.Test;

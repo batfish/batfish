@@ -5,8 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Rule;

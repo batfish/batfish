@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.SortedSet;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.IpWildcard;
 
 public final class AddressSetEntry implements Serializable {
 

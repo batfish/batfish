@@ -1,7 +1,7 @@
 package org.batfish.specifier;
 
 import java.util.Set;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 
 /**
  * An {@link IpSpaceSpecifier} that specifies the {@link IpSpace} owned by each {@link Location}.

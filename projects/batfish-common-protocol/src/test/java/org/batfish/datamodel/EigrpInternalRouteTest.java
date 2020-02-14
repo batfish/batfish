@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static org.junit.Assert.assertThat;
 
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.hamcrest.Matchers;

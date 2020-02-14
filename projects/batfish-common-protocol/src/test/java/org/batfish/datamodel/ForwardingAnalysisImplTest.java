@@ -45,8 +45,17 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.AclIpSpaceLine;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.GenericIpSpaceVisitor;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
+import org.batfish.common.ip.IpWildcardSetIpSpace;
+import org.batfish.common.ip.Prefix;
+import org.batfish.common.ip.UniverseIpSpace;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -226,10 +235,10 @@ public class ForwardingAnalysisImplTest {
             vrf2.getName(),
             ImmutableMap.of(i2.getName(), ipsRoutedOutI2, i3.getName(), ipsRoutedOutI3));
 
-    i1.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.1")));
-    i2.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.2")));
-    i3.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.3")));
-    i4.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.4")));
+    i1.setAdditionalArpIps(Ip.parse("10.10.10.1").toIpSpace());
+    i2.setAdditionalArpIps(Ip.parse("10.10.10.2").toIpSpace());
+    i3.setAdditionalArpIps(Ip.parse("10.10.10.3").toIpSpace());
+    i4.setAdditionalArpIps(Ip.parse("10.10.10.4").toIpSpace());
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =

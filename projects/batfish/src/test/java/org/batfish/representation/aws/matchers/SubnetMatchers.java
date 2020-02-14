@@ -3,7 +3,7 @@ package org.batfish.representation.aws.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.representation.aws.matchers.SubnetMatchersImpl.HasCidrBlock;
 import org.batfish.representation.aws.matchers.SubnetMatchersImpl.HasId;
 import org.batfish.representation.aws.matchers.SubnetMatchersImpl.HasVpcId;

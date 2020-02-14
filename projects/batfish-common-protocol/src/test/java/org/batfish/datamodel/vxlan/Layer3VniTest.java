@@ -5,7 +5,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.vxlan.Layer3Vni.Builder;
 import org.junit.Test;
 

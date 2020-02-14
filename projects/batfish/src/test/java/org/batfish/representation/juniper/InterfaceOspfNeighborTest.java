@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.testing.EqualsTester;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 public class InterfaceOspfNeighborTest {

@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

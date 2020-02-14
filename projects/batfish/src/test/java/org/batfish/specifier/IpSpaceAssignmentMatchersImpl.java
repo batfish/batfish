@@ -2,7 +2,7 @@ package org.batfish.specifier;
 
 import java.util.Collection;
 import java.util.Set;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

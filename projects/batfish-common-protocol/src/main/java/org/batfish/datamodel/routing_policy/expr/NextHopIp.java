@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** Expression that extracts a route's next hop IP given a routing policy environment. */

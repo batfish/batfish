@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 
 /** Represents a configured static (having a specified remote peer) IPSec peer */
 public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializable {

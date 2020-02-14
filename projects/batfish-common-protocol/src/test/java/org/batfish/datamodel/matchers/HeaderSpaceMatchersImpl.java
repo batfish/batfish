@@ -4,7 +4,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.SubRange;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;

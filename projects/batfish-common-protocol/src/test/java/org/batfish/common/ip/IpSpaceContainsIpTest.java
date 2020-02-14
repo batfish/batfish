@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.common.ip;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

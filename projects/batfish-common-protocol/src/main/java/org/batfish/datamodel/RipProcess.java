@@ -7,6 +7,7 @@ import com.google.common.collect.Table;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.batfish.common.ip.Ip;
 
 public class RipProcess implements Serializable {
 

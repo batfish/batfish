@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.Range;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.Prefix;
 import org.batfish.representation.palo_alto.AddressObject.Type;
 import org.junit.Test;
 

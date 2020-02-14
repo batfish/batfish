@@ -9,6 +9,8 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

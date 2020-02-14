@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.common.ip.Ip;
+import org.batfish.common.ip.IpSpace;
 
 public interface NetworkObject {
 

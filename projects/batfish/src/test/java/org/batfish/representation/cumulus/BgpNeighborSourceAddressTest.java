@@ -1,7 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import com.google.common.testing.EqualsTester;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.junit.Test;
 
 /** Tests for {@link BgpNeighborSourceAddress} */

@@ -18,11 +18,11 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
@@ -115,7 +115,7 @@ final class Utils {
 
   /**
    * Updates {@link Region}'s mapping between {@link Configuration} names and {@link SecurityGroup}
-   * for a given configuration. Also updates {@link org.batfish.datamodel.Ip} of instances in {@link
+   * for a given configuration. Also updates {@link Ip} of instances in {@link
    * SecurityGroup}
    *
    * @param region {@link Region} in which the configuration is in

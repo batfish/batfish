@@ -3,7 +3,7 @@ package org.batfish.representation.aws;
 import static org.batfish.specifier.LocationInfoUtils.configuredIps;
 import static org.batfish.specifier.LocationInfoUtils.connectedHostSubnetHostIps;
 
-import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.specifier.LocationInfo;
 

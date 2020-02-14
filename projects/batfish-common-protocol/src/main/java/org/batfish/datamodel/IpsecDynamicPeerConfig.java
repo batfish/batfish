@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.Ip;
 
 /** Represents a configured dynamic (remote peer not specified) IPSec peer */
 public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {

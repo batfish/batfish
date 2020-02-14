@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.ip.IpSpace;
 import org.batfish.datamodel.acl.AclLineEvaluator;
 
 /** An access-list used to filter IPV4 packets */

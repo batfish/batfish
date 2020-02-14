@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Prefix;
+import org.batfish.common.ip.Prefix;
 
 /** A network to be exported over BGP. */
 public class BgpNetwork implements Serializable {

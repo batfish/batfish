@@ -8,10 +8,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.common.ip.AclIpSpace;
+import org.batfish.common.ip.EmptyIpSpace;
+import org.batfish.common.ip.IpSpace;
+import org.batfish.common.ip.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 
 /**

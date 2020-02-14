@@ -1,6 +1,6 @@
 package org.batfish.question.ipowners;
 
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.common.ip.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_ACTIVE;
 import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_INTERFACE_NAME;
@@ -27,7 +27,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
+import org.batfish.common.ip.Ip;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
