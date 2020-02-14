@@ -66,4 +66,9 @@ public final class IcmpTypesApplication extends IcmpApplication {
     }
     return "icmp/" + stringifySubRanges(_types);
   }
+
+  @Override
+  public <T> T accept(ApplicationVisitor<T> visitor) {
+    return visitor.visitIcmpTypesApplication(this);
+  }
 }
