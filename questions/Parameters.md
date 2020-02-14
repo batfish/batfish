@@ -121,9 +121,9 @@ applicationSpec :=
     applicationTerm [<b>,</b> applicationTerm]
 
 applicationTerm :=
-    <b>tcp</b> [<b>/</b>portSpec]
-    | <b>udp</b> [<b>/</b>portSpec]
-    | <b>icmp</b> [<b>/</b>&lt;<i>icmp-type</i>&gt; [<b>/</b> &lt;<i>icmp-code</i>&gt;]]
+    <b>tcp</b>[<b>/</b>portSpec]
+    | <b>udp</b>[<b>/</b>portSpec]
+    | <b>icmp</b>[<b>/</b>&lt;<i>icmp-type</i>&gt;[<b>/</b>&lt;<i>icmp-code</i>&gt;]]
     | &lt;<i>application-name</i>&gt;
 
 portSpec :=
@@ -131,7 +131,7 @@ portSpec :=
 
 portTerm := 
     &lt;<i>port-number</i>&gt;
-    | &lt;<i>from-port</i>&gt; <b>,</b> &lt;<i>to-port</i>&gt;
+    | &lt;<i>from-port</i>&gt; <b>-</b> &lt;<i>to-port</i>&gt;
 
 </pre>
 
