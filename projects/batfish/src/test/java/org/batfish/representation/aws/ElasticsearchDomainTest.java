@@ -4,6 +4,7 @@ import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
@@ -35,6 +36,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
@@ -183,6 +185,7 @@ public class ElasticsearchDomainTest {
 
     assertThat(configurations, hasKey("es-domain"));
     Configuration esDomain = configurations.get("es-domain");
+    assertThat(esDomain, hasDeviceModel(DeviceModel.AWS_ELASTICSEARCH_DOMAIN));
     assertThat(esDomain.getAllInterfaces().entrySet(), hasSize(2));
     assertThat(
         esDomain

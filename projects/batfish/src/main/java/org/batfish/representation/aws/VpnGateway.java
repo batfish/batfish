@@ -23,6 +23,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.PrefixSpace;
@@ -99,7 +100,8 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_vpnGatewayId, "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_vpnGatewayId, "aws", DeviceModel.AWS_VPN_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // if this VGW has any BGP-based VPN connections, configure BGP on it

@@ -27,6 +27,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -229,7 +230,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   /** Creates a node for the transit gateway. */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_gatewayId), "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(nodeName(_gatewayId), "aws", DeviceModel.AWS_TRANSIT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // make connections to the attachments

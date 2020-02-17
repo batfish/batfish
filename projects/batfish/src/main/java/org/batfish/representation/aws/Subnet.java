@@ -34,6 +34,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -167,7 +168,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_subnetId), "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(nodeName(_subnetId), "aws", DeviceModel.AWS_SUBNET);
 
     // add one interface that faces all instances (assumes a LAN)
     String instancesIfaceName = instancesInterfaceName(_subnetId);

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +62,8 @@ final class Utils {
     }
   }
 
+  /** Prefer variants that provide {@link DeviceModel}. */
+  @VisibleForTesting
   static Configuration newAwsConfiguration(String name, String domainName) {
     return newAwsConfiguration(name, domainName, Collections.emptyMap(), null);
   }

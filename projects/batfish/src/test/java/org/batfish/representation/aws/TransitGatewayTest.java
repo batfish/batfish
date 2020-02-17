@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
@@ -23,6 +24,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -126,6 +128,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrfs exist
     assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
@@ -193,6 +196,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
@@ -252,6 +256,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
@@ -334,6 +339,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
@@ -413,6 +419,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
@@ -485,6 +492,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
