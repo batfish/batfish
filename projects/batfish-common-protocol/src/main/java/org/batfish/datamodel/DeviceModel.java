@@ -18,5 +18,4 @@ public enum DeviceModel {
   AWS_VPN_GATEWAY,
   BATFISH_INTERNET,
   BATFISH_ISP,
-  ;
 }
