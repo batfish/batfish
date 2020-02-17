@@ -975,7 +975,7 @@ class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.getAllCommunities();
@@ -985,7 +985,8 @@ class TransferBDD {
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
-    return result.getReturnValue().getFirst();
+    //    return result.getReturnValue().getFirst();
+    return result;
   }
 
   /*
