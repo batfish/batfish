@@ -6,10 +6,10 @@ import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -22,9 +22,11 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
@@ -80,6 +82,7 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
+    assertThat(vgwConfig, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), nullValue());
   }
@@ -115,6 +118,7 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
+    assertThat(vgwConfig, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     // the loopback interface, bgp process, and static route should exist
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), notNullValue());
