@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 
 /** Represents an AWS NAT gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -75,7 +76,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId, "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_natGatewayId, "aws", DeviceModel.AWS_NAT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // TODO: Configure forwarding for this NAT

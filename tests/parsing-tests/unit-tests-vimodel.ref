@@ -30186,6 +30186,7 @@
         "name" : "nat-08c21704416f06046",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_NAT_GATEWAY",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "vendorFamily" : {
@@ -30204,6 +30205,7 @@
         "name" : "nat-09fd8f73171d2d9a3",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_NAT_GATEWAY",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "vendorFamily" : {

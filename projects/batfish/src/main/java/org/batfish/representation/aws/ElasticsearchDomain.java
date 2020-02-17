@@ -15,6 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -135,7 +136,8 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
   public Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_domainName, "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_domainName, "aws", DeviceModel.AWS_ELASTICSEARCH_DOMAIN);
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());

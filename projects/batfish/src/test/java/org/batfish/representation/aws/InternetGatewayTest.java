@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
@@ -30,6 +31,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -97,6 +99,7 @@ public class InternetGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration igwConfig = internetGateway.toConfigurationNode(awsConfiguration, region);
+    assertThat(igwConfig, hasDeviceModel(DeviceModel.AWS_INTERNET_GATEWAY));
 
     // gateway should have interfaces to the backbone and vpc
     assertThat(

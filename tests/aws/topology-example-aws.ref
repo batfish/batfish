@@ -819,31 +819,37 @@
     },
     {
       "id" : "node-subnet-d9cafabc",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-d9cafabc",
       "type" : "SWITCH"
     },
     {
       "id" : "node-subnet-30398256",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-30398256",
       "type" : "SWITCH"
     },
     {
       "id" : "node-es-domain",
+      "model" : "AWS_ELASTICSEARCH_DOMAIN",
       "name" : "es-domain",
       "type" : "HOST"
     },
     {
       "id" : "node-test-rds",
+      "model" : "AWS_RDS_INSTANCE",
       "name" : "test-rds",
       "type" : "HOST"
     },
     {
       "id" : "node-igw-9b93ddfc",
+      "model" : "AWS_INTERNET_GATEWAY",
       "name" : "igw-9b93ddfc",
       "type" : "ROUTER"
     },
     {
       "id" : "node-subnet-9c8adceb",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-9c8adceb",
       "type" : "SWITCH"
     },
@@ -860,16 +866,19 @@
     },
     {
       "id" : "node-subnet-1f315846",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-1f315846",
       "type" : "SWITCH"
     },
     {
       "id" : "node-subnet-073b8061",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-073b8061",
       "type" : "SWITCH"
     },
     {
       "id" : "node-subnet-1641fa70",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-1641fa70",
       "type" : "SWITCH"
     },
@@ -881,36 +890,43 @@
     },
     {
       "id" : "node-subnet-62f14104",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-62f14104",
       "type" : "SWITCH"
     },
     {
       "id" : "node-igw-068fee63",
+      "model" : "AWS_INTERNET_GATEWAY",
       "name" : "igw-068fee63",
       "type" : "ROUTER"
     },
     {
       "id" : "node-subnet-7044ff16",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-7044ff16",
       "type" : "SWITCH"
     },
     {
       "id" : "node-igw-fac5839d",
+      "model" : "AWS_INTERNET_GATEWAY",
       "name" : "igw-fac5839d",
       "type" : "ROUTER"
     },
     {
       "id" : "node-subnet-8d0cbdeb",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-8d0cbdeb",
       "type" : "SWITCH"
     },
     {
       "id" : "node-vgw-81fd279f",
+      "model" : "AWS_VPN_GATEWAY",
       "name" : "vgw-81fd279f",
       "type" : "ROUTER"
     },
     {
       "id" : "node-subnet-f73a8191",
+      "model" : "AWS_SUBNET",
       "name" : "subnet-f73a8191",
       "type" : "SWITCH"
     },

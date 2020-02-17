@@ -24,6 +24,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -110,7 +111,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   }
 
   Configuration toConfigurationNode(ConvertedConfiguration awsConfiguration, Region region) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_internetGatewayId, "aws", DeviceModel.AWS_INTERNET_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // Create an interface facing the backbone and run a BGP process that advertises static routes
