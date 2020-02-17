@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
@@ -26,7 +27,6 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
@@ -82,7 +82,7 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(vgwConfig, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
+    assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), nullValue());
   }
@@ -118,7 +118,7 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(vgwConfig, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
+    assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     // the loopback interface, bgp process, and static route should exist
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), notNullValue());

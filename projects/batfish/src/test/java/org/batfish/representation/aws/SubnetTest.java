@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
@@ -36,7 +37,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
@@ -127,7 +127,7 @@ public class SubnetTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_SUBNET));
+    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET));
 
     // subnet should have interfaces to the instances and vpc
     assertThat(
@@ -229,7 +229,7 @@ public class SubnetTest {
                 vpcConfig.getHostname(), vpcConfig, vgwConfig.getHostname(), vgwConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_SUBNET));
+    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET));
 
     // subnet should have interfaces to the instances, vpc, and vgw
     assertThat(
@@ -317,7 +317,7 @@ public class SubnetTest {
                 vpcConfig.getHostname(), vpcConfig, igwConfig.getHostname(), igwConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_SUBNET));
+    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET));
 
     // subnet should have interfaces to the instances, vpc, and igw
     assertThat(
@@ -752,7 +752,7 @@ public class SubnetTest {
         new ConvertedConfiguration(ImmutableMap.of(nodeName(vpc.getId()), vpcCfg));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg, ConfigurationMatchers.hasDeviceModel(DeviceModel.AWS_SUBNET));
+    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET));
 
     Interface instancesInterface =
         subnetCfg.getAllInterfaces().get(instancesInterfaceName(subnet.getId()));
