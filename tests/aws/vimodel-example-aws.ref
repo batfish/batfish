@@ -2944,7 +2944,7 @@
         "name" : "subnet-073b8061",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3150,7 +3150,7 @@
         "name" : "subnet-1641fa70",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3356,7 +3356,7 @@
         "name" : "subnet-1f315846",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3574,7 +3574,7 @@
         "name" : "subnet-30398256",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3780,7 +3780,7 @@
         "name" : "subnet-62f14104",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -3986,7 +3986,7 @@
         "name" : "subnet-7044ff16",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -4192,7 +4192,7 @@
         "name" : "subnet-8d0cbdeb",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PRIVATE",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -4398,7 +4398,7 @@
         "name" : "subnet-9c8adceb",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -4616,7 +4616,7 @@
         "name" : "subnet-d9cafabc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
@@ -4834,7 +4834,7 @@
         "name" : "subnet-f73a8191",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_SUBNET",
+        "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {

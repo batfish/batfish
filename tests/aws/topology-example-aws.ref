@@ -819,13 +819,13 @@
     },
     {
       "id" : "node-subnet-d9cafabc",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-d9cafabc",
       "type" : "SWITCH"
     },
     {
       "id" : "node-subnet-30398256",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-30398256",
       "type" : "SWITCH"
     },
@@ -849,7 +849,7 @@
     },
     {
       "id" : "node-subnet-9c8adceb",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-9c8adceb",
       "type" : "SWITCH"
     },
@@ -866,19 +866,19 @@
     },
     {
       "id" : "node-subnet-1f315846",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-1f315846",
       "type" : "SWITCH"
     },
     {
       "id" : "node-subnet-073b8061",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-073b8061",
       "type" : "SWITCH"
     },
     {
       "id" : "node-subnet-1641fa70",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-1641fa70",
       "type" : "SWITCH"
     },
@@ -890,7 +890,7 @@
     },
     {
       "id" : "node-subnet-62f14104",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-62f14104",
       "type" : "SWITCH"
     },
@@ -902,7 +902,7 @@
     },
     {
       "id" : "node-subnet-7044ff16",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-7044ff16",
       "type" : "SWITCH"
     },
@@ -914,7 +914,7 @@
     },
     {
       "id" : "node-subnet-8d0cbdeb",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PRIVATE",
       "name" : "subnet-8d0cbdeb",
       "type" : "SWITCH"
     },
@@ -926,7 +926,7 @@
     },
     {
       "id" : "node-subnet-f73a8191",
-      "model" : "AWS_SUBNET",
+      "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-f73a8191",
       "type" : "SWITCH"
     },
