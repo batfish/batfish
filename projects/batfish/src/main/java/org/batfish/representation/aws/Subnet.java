@@ -44,6 +44,7 @@ import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
+import org.batfish.representation.aws.Route.TargetType;
 
 /**
  * Representation of an AWS subnet
@@ -168,8 +169,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+    // Private subnet by default, may get overridden below.
     Configuration cfgNode =
-        Utils.newAwsConfiguration(nodeName(_subnetId), "aws", DeviceModel.AWS_SUBNET);
+        Utils.newAwsConfiguration(nodeName(_subnetId), "aws", DeviceModel.AWS_SUBNET_PRIVATE);
 
     // add one interface that faces all instances (assumes a LAN)
     String instancesIfaceName = instancesInterfaceName(_subnetId);
@@ -267,6 +269,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
                       optVpnGateway.orElse(null),
                       awsConfiguration,
                       warnings);
+                }
+                // A public subnet is a subnet that’s associated with a route table that has a
+                // route to an Internet gateway.
+                // https://docs.amazonaws.cn/en_us/vpc/latest/userguide/VPC_Scenario2.html
+                if (route.getTargetType() == TargetType.Gateway
+                    && optInternetGateway
+                        .map(g -> g.getId().equals(route.getTarget()))
+                        .orElse(false)) {
+                  cfgNode.setDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC);
                 }
               });
     }
