@@ -100,6 +100,7 @@ import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
@@ -224,6 +225,9 @@ public final class BDDReachabilityAnalysisFactory {
   // node --> vrf --> nextVrf --> set of packets vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, BDD>>> _nextVrfBDDs;
 
+  // node --> interface --> vrf
+  private final Map<String, Map<String, String>> _interfacesToVrfsMap;
+
   private BDD _zero;
 
   public BDDReachabilityAnalysisFactory(
@@ -275,6 +279,7 @@ public final class BDDReachabilityAnalysisFactory {
       _ifaceAcceptBDDs =
           computeIfaceAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
+      _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
       _convertedPacketPolicies = convertPacketPolicies(configs, ipsRoutedOutInterfacesFactory);
 
@@ -550,7 +555,8 @@ public final class BDDReachabilityAnalysisFactory {
   private Stream<Edge> generateRootEdges(Map<StateExpr, BDD> rootBdds) {
     return Streams.concat(
         generateRootEdges_OriginateInterfaceLink_PreInInterface(rootBdds),
-        generateRootEdges_OriginateVrf_PostInVrf(rootBdds));
+        generateRootEdges_OriginateVrf_PostInVrf(rootBdds),
+        generateRootEdges_OriginateInterface_PostInVrf(rootBdds));
   }
 
   private static Stream<Edge> generateQueryEdges(Set<FlowDisposition> actions) {
@@ -624,6 +630,25 @@ public final class BDDReachabilityAnalysisFactory {
                   compose(
                       addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
                       constraint(rootBdd)));
+            });
+  }
+
+  @VisibleForTesting
+  Stream<Edge> generateRootEdges_OriginateInterface_PostInVrf(Map<StateExpr, BDD> rootBdds) {
+    return rootBdds.entrySet().stream()
+        .filter(e -> e.getKey() instanceof OriginateInterface)
+        .map(
+            e -> {
+              OriginateInterface state = (OriginateInterface) e.getKey();
+              String vrf = _interfacesToVrfsMap.get(state.getHostname()).get(state.getInterface());
+              PostInVrf postInVrf = new PostInVrf(state.getHostname(), vrf);
+              return new Edge(
+                  state,
+                  postInVrf,
+                  compose(
+                      addOriginatingFromDeviceConstraint(
+                          _bddSourceManagers.get(state.getHostname())),
+                      constraint(e.getValue())));
             });
   }
 
@@ -1593,6 +1618,19 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
+  /** Creates mapping of hostname -&gt; interface name -&gt; vrf name for active interfaces */
+  private static Map<String, Map<String, String>> computeInterfacesToVrfsMap(
+      Map<String, Configuration> configs) {
+    return toImmutableMap(
+        configs,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getActiveInterfaces().values(),
+                Interface::getName,
+                Interface::getVrfName));
+  }
+
   private static Map<String, Map<String, Map<String, BDD>>> computeIfaceAcceptBDDs(
       Map<String, Configuration> configs,
       Map<String, Map<String, Map<String, IpSpace>>> acceptIps, // hostname -> vrf -> iface -> ips
@@ -1739,6 +1777,7 @@ public final class BDDReachabilityAnalysisFactory {
                   ? adaptEdgeSetTransitedBit(edge)
                   : edge;
             } else if (edge.getPreState() instanceof OriginateVrf
+                || edge.getPreState() instanceof OriginateInterface
                 || edge.getPreState() instanceof OriginateInterfaceLink) {
               return andThen(edge, notTransited);
             } else if (edge.getPostState() instanceof Query) {
