@@ -10,4 +10,9 @@ public class NeighborUnreachable implements StateExpr {
   public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitNeighborUnreachable();
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }

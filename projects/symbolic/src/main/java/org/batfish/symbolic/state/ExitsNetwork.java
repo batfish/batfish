@@ -10,4 +10,9 @@ public final class ExitsNetwork implements StateExpr {
   public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitExitsNetwork();
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }
