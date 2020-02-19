@@ -4,15 +4,16 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.alwaysTrue;
 import static org.batfish.bddreachability.BidirectionalReachabilityReturnPassInstrumentation.instrumentReturnPassEdges;
 import static org.batfish.bddreachability.SessionInstrumentation.sessionInstrumentation;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addNoLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
-import static org.batfish.bddreachability.transition.Transitions.or;
 import static org.batfish.bddreachability.transition.Transitions.removeLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
@@ -136,7 +137,7 @@ import org.batfish.symbolic.state.VrfAccept;
  * that node). For forward edges this is established by constraining to a single source. For
  * backward edges it's established using {@link BDDSourceManager#isValidValue}. When we exit the
  * node (e.g. forward into another node or a disposition state, or backward into another node or an
- * origination state), we erase the contraint on source by existential quantification.
+ * origination state), we erase the constraint on source by existential quantification.
  */
 @ParametersAreNonnullByDefault
 public final class BDDReachabilityAnalysisFactory {
@@ -1066,29 +1067,35 @@ public final class BDDReachabilityAnalysisFactory {
                         StateExpr postState = new NodeDropAclOut(node);
                         return nodeEntry.getValue().getActiveInterfaces(vrfEntry.getKey()).values()
                             .stream()
-                            .filter(iface -> iface.getOutgoingFilterName() != null)
+                            .filter(
+                                iface ->
+                                    iface.getPreTransformationOutgoingFilterName() != null
+                                        || iface.getOutgoingFilterName() != null)
                             .flatMap(
                                 iface -> {
                                   String ifaceName = iface.getName();
                                   BDD denyPreAclBDD =
                                       ignorableAclDenyBDD(
                                           node, iface.getPreTransformationOutgoingFilterName());
-                                  BDD permitPreAclBDD =
-                                      ignorableAclPermitBDD(
-                                          node, iface.getPreTransformationOutgoingFilterName());
                                   BDD denyPostAclBDD =
                                       ignorableAclDenyBDD(node, iface.getOutgoingFilterName());
                                   Transition transformation =
                                       _bddOutgoingTransformations.get(node).get(ifaceName);
 
+                                  // DENIED_OUT: either denied by the pre-Transformation ACL or
+                                  // transformed and denied by the post-Transformation ACL.
+                                  Transition deniedFlows =
+                                      branch(
+                                          denyPreAclBDD, // denied by pre-trans ACL
+                                          IDENTITY, // .. and not transformed
+                                          // Transformed and then denied by post-trans ACL.
+                                          compose(transformation, constraint(denyPostAclBDD)));
+
+                                  // We must clear any node-specific constraints before exiting the
+                                  // node.
                                   Transition transition =
                                       compose(
-                                          or(
-                                              constraint(denyPreAclBDD),
-                                              compose(
-                                                  constraint(permitPreAclBDD),
-                                                  transformation,
-                                                  constraint(denyPostAclBDD))),
+                                          deniedFlows,
                                           removeSourceConstraint(_bddSourceManagers.get(node)),
                                           removeLastHopConstraint(_lastHopMgr, node));
 
