@@ -9,4 +9,9 @@ public final class DropNullRoute implements StateExpr {
   public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitDropNullRoute();
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }

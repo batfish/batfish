@@ -10,4 +10,9 @@ public final class InsufficientInfo implements StateExpr {
   public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitInsufficientInfo();
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }
