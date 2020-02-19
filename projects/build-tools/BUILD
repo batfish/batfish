@@ -1,3 +1,5 @@
+load("@rules_java//java:defs.bzl", "java_binary")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files(["src/main/resources/org/batfish/pmd/pmd-ruleset.xml"])

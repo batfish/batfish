@@ -1,6 +1,6 @@
-package(default_visibility = ["//projects/symbolic:__pkg__"])
+load("@rules_java//java:defs.bzl", "java_library")
 
-load("@batfish//skylark:junit.bzl", "junit_tests")
+package(default_visibility = ["//projects/symbolic:__pkg__"])
 
 java_library(
     name = "state",
