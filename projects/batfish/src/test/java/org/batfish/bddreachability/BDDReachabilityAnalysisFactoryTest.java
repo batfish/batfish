@@ -1,5 +1,7 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.EdgeMatchers.edge;
+import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
@@ -1950,5 +1952,53 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     addOriginatingFromDeviceConstraint(
                         factory.getBDDSourceManagers().get(c.getHostname())),
                     constraint(rootBdd)))));
+  }
+
+  @Test
+  public void testDroppedByPreTransformationOutgoingFilter() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
+    Interface iface1 =
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+            .setPreTransformationOutgoingFilter(
+                nf.aclBuilder().setOwner(c).setLines(ExprAclLine.REJECT_ALL).build())
+            .setOutgoingFilter(null)
+            .build();
+
+    String hostname = c.getHostname();
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT,
+            configs,
+            dataPlane.getForwardingAnalysis(),
+            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+            false,
+            false);
+    List<Edge> edges =
+        factory
+            .generateRules_PreOutInterfaceDisposition_NodeDropAclOut()
+            .collect(ImmutableList.toImmutableList());
+
+    String ifaceName = iface1.getName();
+    StateExpr deliveredToSubnet = new PreOutInterfaceDeliveredToSubnet(hostname, ifaceName);
+    StateExpr exitsNetwork = new PreOutInterfaceExitsNetwork(hostname, ifaceName);
+    StateExpr neighborUnreachable = new PreOutInterfaceNeighborUnreachable(hostname, ifaceName);
+    StateExpr insufficientInfo = new PreOutInterfaceInsufficientInfo(hostname, ifaceName);
+    StateExpr nodeDropAclOut = new NodeDropAclOut(hostname);
+
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            edge(deliveredToSubnet, nodeDropAclOut, mapsForward(ONE, ONE)),
+            edge(exitsNetwork, nodeDropAclOut, mapsForward(ONE, ONE)),
+            edge(neighborUnreachable, nodeDropAclOut, mapsForward(ONE, ONE)),
+            edge(insufficientInfo, nodeDropAclOut, mapsForward(ONE, ONE))));
   }
 }

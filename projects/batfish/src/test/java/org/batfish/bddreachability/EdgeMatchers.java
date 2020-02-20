@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.bddreachability.EdgeMatchersImpl.HasPostState;
@@ -24,5 +25,13 @@ public final class EdgeMatchers {
   /** Matches {@link Edge#getTransition()}. */
   public static Matcher<Edge> hasTransition(Matcher<Transition> matcher) {
     return new HasTransition(matcher);
+  }
+
+  /**
+   * Matches {@link Edge#getPostState}, {@link Edge#getPreState}, and {@link Edge#getTransition}.
+   */
+  public static Matcher<Edge> edge(
+      StateExpr preState, StateExpr postState, Matcher<Transition> transitionMatcher) {
+    return allOf(hasPreState(preState), hasPostState(postState), hasTransition(transitionMatcher));
   }
 }
