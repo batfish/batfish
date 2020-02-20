@@ -1052,7 +1052,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeDropAclOut() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeDropAclOut() {
     if (_ignoreFilters) {
       return Stream.of();
     }
@@ -1086,9 +1087,13 @@ public final class BDDReachabilityAnalysisFactory {
                                   // transformed and denied by the post-Transformation ACL.
                                   Transition deniedFlows =
                                       branch(
-                                          denyPreAclBDD, // denied by pre-trans ACL
-                                          IDENTITY, // .. and not transformed
-                                          // Transformed and then denied by post-trans ACL.
+                                          // branch on whether denied by pre-trans ACL
+                                          denyPreAclBDD,
+                                          // deny all flows denied by pre-trans ACL
+                                          IDENTITY,
+                                          // for flows permitted by pre-trans ACL, transform and
+                                          // then apply the post-trans ACL. deny any that are denied
+                                          // by the post-trans ACL.
                                           compose(transformation, constraint(denyPostAclBDD)));
 
                                   // We must clear any node-specific constraints before exiting the
