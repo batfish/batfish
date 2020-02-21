@@ -2777,14 +2777,14 @@ public final class FlatJuniperGrammarTest {
                                                             .toIpSpace())
                                                     .build(),
                                                 TraceElement.of(
-                                                    "Matched source-address 1.0.3.0:0.255.0.255")),
+                                                    "Matched source-address 1.2.3.4/255.0.255.0")),
                                             new MatchHeaderSpace(
                                                 HeaderSpace.builder()
                                                     .setSrcIps(
                                                         IpWildcard.parse("2.3.4.5/24").toIpSpace())
                                                     .build(),
                                                 TraceElement.of(
-                                                    "Matched source-address 2.3.4.0/24"))))))
+                                                    "Matched source-address 2.3.4.5/24"))))))
                             .setName("TERM")
                             .setTraceElement(
                                 matchingFirewallFilterTerm(
@@ -3083,14 +3083,14 @@ public final class FlatJuniperGrammarTest {
                                                             .toIpSpace())
                                                     .build(),
                                                 TraceElement.of(
-                                                    "Matched destination-address 1.0.3.0:0.255.0.255")),
+                                                    "Matched destination-address 1.2.3.4/255.0.255.0")),
                                             new MatchHeaderSpace(
                                                 HeaderSpace.builder()
                                                     .setDstIps(
                                                         IpWildcard.parse("2.3.4.5/24").toIpSpace())
                                                     .build(),
                                                 TraceElement.of(
-                                                    "Matched destination-address 2.3.4.0/24"))))))
+                                                    "Matched destination-address 2.3.4.5/24"))))))
                             .setName("TERM")
                             .setTraceElement(
                                 matchingFirewallFilterTerm(

@@ -24381,7 +24381,7 @@
                             "fragments" : [
                               {
                                 "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched destination-address 1.2.3.5"
+                                "text" : "Matched destination-address 1.2.3.5/32"
                               }
                             ]
                           }
@@ -24799,12 +24799,30 @@
                             "fragments" : [
                               {
                                 "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched source-address 2.4.6.9"
+                                "text" : "Matched source-address 2.4.6.9/32"
                               }
                             ]
                           }
                         }
                       ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "notSrcIps" : {
+                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "ipWildcard" : "5.5.5.4/31"
+                        }
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched source-address 5.5.5.5/31 except"
+                          }
+                        ]
+                      }
                     }
                   ]
                 },
@@ -24914,7 +24932,7 @@
                               "fragments" : [
                                 {
                                   "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched destination-address 1.2.3.5"
+                                  "text" : "Matched destination-address 1.2.3.5/32"
                                 }
                               ]
                             }
@@ -25332,12 +25350,30 @@
                               "fragments" : [
                                 {
                                   "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched source-address 2.4.6.9"
+                                  "text" : "Matched source-address 2.4.6.9/32"
                                 }
                               ]
                             }
                           }
                         ]
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "negate" : false,
+                          "notSrcIps" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "5.5.5.4/31"
+                          }
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched source-address 5.5.5.5/31 except"
+                            }
+                          ]
+                        }
                       }
                     ],
                     "traceElement" : {
