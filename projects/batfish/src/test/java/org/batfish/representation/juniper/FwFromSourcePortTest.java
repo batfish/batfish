@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -17,7 +18,10 @@ public class FwFromSourcePortTest {
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setSrcPorts(new SubRange(1, 2)).build(),
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+                .setSrcPorts(new SubRange(1, 2))
+                .build(),
             TraceElement.of("Matched source-port 1-2")));
   }
 
@@ -27,7 +31,10 @@ public class FwFromSourcePortTest {
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setSrcPorts(SubRange.singleton(1)).build(),
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+                .setSrcPorts(SubRange.singleton(1))
+                .build(),
             TraceElement.of("Matched source-port 1")));
   }
 }
