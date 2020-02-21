@@ -22975,6 +22975,9 @@
                     {
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
+                        "ipProtocols" : [
+                          "TCP"
+                        ],
                         "negate" : false,
                         "tcpFlagsMatchConditions" : [
                           {
@@ -24409,6 +24412,9 @@
                         "icmpCodes" : [
                           "2-2"
                         ],
+                        "ipProtocols" : [
+                          "ICMP"
+                        ],
                         "negate" : false
                       },
                       "traceElement" : {
@@ -24429,6 +24435,9 @@
                             "icmpTypes" : [
                               "3-3"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24445,6 +24454,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "0-0"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24463,6 +24475,9 @@
                             "icmpTypes" : [
                               "8-8"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24479,6 +24494,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "16-16"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24497,6 +24515,9 @@
                             "icmpTypes" : [
                               "15-15"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24513,6 +24534,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "12-12"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24531,6 +24555,9 @@
                             "icmpTypes" : [
                               "5-5"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24547,6 +24574,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "9-9"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24565,6 +24595,9 @@
                             "icmpTypes" : [
                               "10-10"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24581,6 +24614,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "4-4"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24599,6 +24635,9 @@
                             "icmpTypes" : [
                               "11-11"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24615,6 +24654,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "13-13"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24633,6 +24675,9 @@
                             "icmpTypes" : [
                               "14-14"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24650,6 +24695,9 @@
                             "icmpTypes" : [
                               "3-3"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24666,6 +24714,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "1-1"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24894,6 +24945,9 @@
                           "icmpCodes" : [
                             "2-2"
                           ],
+                          "ipProtocols" : [
+                            "ICMP"
+                          ],
                           "negate" : false
                         },
                         "traceElement" : {
@@ -24914,6 +24968,9 @@
                               "icmpTypes" : [
                                 "3-3"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -24930,6 +24987,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "0-0"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -24948,6 +25008,9 @@
                               "icmpTypes" : [
                                 "8-8"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -24964,6 +25027,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "16-16"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -24982,6 +25048,9 @@
                               "icmpTypes" : [
                                 "15-15"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -24998,6 +25067,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "12-12"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25016,6 +25088,9 @@
                               "icmpTypes" : [
                                 "5-5"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25032,6 +25107,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "9-9"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25050,6 +25128,9 @@
                               "icmpTypes" : [
                                 "10-10"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25066,6 +25147,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "4-4"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25084,6 +25168,9 @@
                               "icmpTypes" : [
                                 "11-11"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25100,6 +25187,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "13-13"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25118,6 +25208,9 @@
                               "icmpTypes" : [
                                 "14-14"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25135,6 +25228,9 @@
                               "icmpTypes" : [
                                 "3-3"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25151,6 +25247,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "1-1"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
