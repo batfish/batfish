@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -29,7 +30,10 @@ public class FwFromIcmpType implements FwFrom {
   }
 
   private HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder().setIcmpTypes(_icmpTypeRange).build();
+    return HeaderSpace.builder()
+        .setIpProtocols(IpProtocol.ICMP)
+        .setIcmpTypes(_icmpTypeRange)
+        .build();
   }
 
   private TraceElement getTraceElement() {

@@ -5,6 +5,7 @@ import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.TraceElement;
@@ -31,7 +32,7 @@ public final class FwFromTcpFlags implements FwFrom {
   }
 
   /** from tcp-established */
-  public static FwFromTcpFlags TCP_ESTABLISHED =
+  public static final FwFromTcpFlags TCP_ESTABLISHED =
       new FwFromTcpFlags(
           ImmutableList.of(
               TcpFlagsMatchConditions.builder()
@@ -45,7 +46,7 @@ public final class FwFromTcpFlags implements FwFrom {
           CommandType.ESTABLISHED);
 
   /** from tcp-initial */
-  public static FwFromTcpFlags TCP_INITIAL =
+  public static final FwFromTcpFlags TCP_INITIAL =
       new FwFromTcpFlags(
           ImmutableList.of(
               TcpFlagsMatchConditions.builder()
@@ -79,7 +80,7 @@ public final class FwFromTcpFlags implements FwFrom {
   }
 
   private HeaderSpace toHeaderSpace() {
-    return HeaderSpace.builder().setTcpFlags(_tcpFlags).build();
+    return HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).setTcpFlags(_tcpFlags).build();
   }
 
   private TraceElement getTraceElement(Warnings w) {

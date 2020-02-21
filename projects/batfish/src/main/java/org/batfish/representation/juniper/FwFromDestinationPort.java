@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -39,7 +40,10 @@ public final class FwFromDestinationPort implements FwFrom {
 
   @VisibleForTesting
   HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder().setDstPorts(_portRange).build();
+    return HeaderSpace.builder()
+        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+        .setDstPorts(_portRange)
+        .build();
   }
 
   private TraceElement getTraceElement() {

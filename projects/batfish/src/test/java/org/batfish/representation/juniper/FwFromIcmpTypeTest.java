@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -16,7 +17,10 @@ public class FwFromIcmpTypeTest {
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setIcmpTypes(new SubRange(1, 2)).build(),
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.ICMP)
+                .setIcmpTypes(new SubRange(1, 2))
+                .build(),
             TraceElement.of("Matched icmp-type 1-2")));
   }
 
@@ -26,7 +30,10 @@ public class FwFromIcmpTypeTest {
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setIcmpTypes(SubRange.singleton(1)).build(),
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.ICMP)
+                .setIcmpTypes(SubRange.singleton(1))
+                .build(),
             TraceElement.of("Matched icmp-type 1")));
   }
 }
