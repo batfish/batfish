@@ -20,6 +20,10 @@ def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
         srcs = [allinone, commands],
     )
 
+    # Ref tests are exclusive since running many in parallel kills the machine
+    tags = kwargs.get("tags", [])
+    tags.append("exclusive")
+
     # Run the sh_test on the needed inputs.
     if extra_deps == None:
         extra_deps = []
@@ -30,5 +34,5 @@ def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
             allinone,
             commands,
         ] + extra_deps,
-        tags = ["exclusive"],
+        tags = tags,
     )
