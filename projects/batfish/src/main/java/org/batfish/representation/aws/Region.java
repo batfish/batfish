@@ -917,7 +917,7 @@ final class Region implements Serializable {
     private Map<String, Instance> _instances;
     private Map<String, InternetGateway> _internetGateways;
     private Map<String, LoadBalancer> _loadBalancers;
-    private Map<String, LoadBalancerAttributes> _loadBalancersAttributes;
+    private Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
     private Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
     private String _name;
     private Map<String, NatGateway> _natGateways;
@@ -983,7 +983,7 @@ final class Region implements Serializable {
 
     public RegionBuilder setLoadBalancerAttributes(
         Map<String, LoadBalancerAttributes> loadBalancerAttributes) {
-      _loadBalancersAttributes = _loadBalancersAttributes;
+      _loadBalancerAttributes = loadBalancerAttributes;
       return this;
     }
 
@@ -1109,7 +1109,7 @@ final class Region implements Serializable {
           firstNonNull(_instances, ImmutableMap.of()),
           firstNonNull(_internetGateways, ImmutableMap.of()),
           firstNonNull(_loadBalancers, ImmutableMap.of()),
-          firstNonNull(_loadBalancersAttributes, ImmutableMap.of()),
+          firstNonNull(_loadBalancerAttributes, ImmutableMap.of()),
           firstNonNull(_loadBalancerTargetHealths, ImmutableMap.of()),
           firstNonNull(_natGateways, ImmutableMap.of()),
           firstNonNull(_networkAcls, ImmutableMap.of()),
