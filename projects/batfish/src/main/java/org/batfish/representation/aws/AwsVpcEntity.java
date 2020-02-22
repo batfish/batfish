@@ -14,6 +14,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_ASSOCIATIONS = "Associations";
   String JSON_KEY_ATTACHMENT = "Attachment";
   String JSON_KEY_ATTACHMENTS = "Attachments";
+  String JSON_KEY_ATTRIBUTES = "Attributes";
   String JSON_KEY_AVAILABILITY_ZONE = "AvailabilityZone";
   String JSON_KEY_AVAILABILITY_ZONES = "AvailabilityZones";
   String JSON_KEY_BGP_ASN = "BgpAsn";
@@ -51,6 +52,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_GROUP_NAME = "GroupName";
   String JSON_KEY_GROUPS = "Groups";
   String JSON_KEY_ICMP_TYPE_CODE = "IcmpTypeCode";
+  String JSON_KEY_ID = "Id";
   String JSON_KEY_INSTANCE_ID = "InstanceId";
   String JSON_KEY_INSTANCE_STATUSES = "InstanceStatuses";
   String JSON_KEY_INSTANCES = "Instances";
@@ -64,6 +66,12 @@ public interface AwsVpcEntity {
   String JSON_KEY_IPV6_CIDR_BLOCK = "Ipv6CidrBlock";
   String JSON_KEY_IS_DEFAULT = "IsDefault";
   String JSON_KEY_KEY = "Key";
+  String JSON_KEY_LOAD_BALANCER_ARN = "LoadBalancerArn";
+  String JSON_KEY_LOAD_BALANCER_ARNS = "LoadBalancerArns";
+  String JSON_KEY_LOAD_BALANCER_ATTRIBUTES = "LoadBalancerAttributes";
+  String JSON_KEY_LOAD_BALANCER_NAME = "LoadBalancerName";
+  String JSON_KEY_LOAD_BALANCER_TARGET_HEALTH = "LoadBalancerTargetHealth";
+  String JSON_KEY_LOAD_BALANCERS = "LoadBalancers";
   String JSON_KEY_MAIN = "Main";
   String JSON_KEY_MULTI_AZ = "MultiAZ";
   String JSON_KEY_NAME = "Name";
@@ -77,6 +85,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_OPTIONS = "Options";
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
+  String JSON_KEY_PORT = "Port";
   String JSON_KEY_PORT_RANGE = "PortRange";
   String JSON_KEY_PREFIX_LIST_ID = "PrefixListId";
   String JSON_KEY_PREFIX_LIST_IDS = "PrefixListIds";
@@ -89,6 +98,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_PROTOCOL = "Protocol";
   String JSON_KEY_PRIVATE_IP = "PrivateIp";
   String JSON_KEY_PUBLIC_IP = "PublicIp";
+  String JSON_KEY_REASON = "Reason";
   String JSON_KEY_REGIONS = "Regions";
   String JSON_KEY_RESOURCE_ID = "ResourceId";
   String JSON_KEY_RESOURCE_TYPE = "ResourceType";
@@ -99,6 +109,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_ROUTES = "Routes";
   String JSON_KEY_RULE_ACTION = "RuleAction";
   String JSON_KEY_RULE_NUMBER = "RuleNumber";
+  String JSON_KEY_SCHEME = "Scheme";
   String JSON_KEY_SECURITY_GROUPS = "SecurityGroups";
   String JSON_KEY_SECURITY_GROUP_IDS = "SecurityGroupIds";
   String JSON_KEY_SERVICE_NAMES = "ServiceNames";
@@ -113,6 +124,13 @@ public interface AwsVpcEntity {
   String JSON_KEY_SUBNET_STATUS = "SubnetStatus";
   String JSON_KEY_SUBNETS = "Subnets";
   String JSON_KEY_TAGS = "Tags";
+  String JSON_KEY_TARGET = "Target";
+  String JSON_KEY_TARGET_HEALTH = "TargetHealth";
+  String JSON_KEY_TARGET_HEALTH_DESCRIPTIONS = "TargetHealthDescriptions";
+  String JSON_KEY_TARGET_GROUP_ARN = "TargetGroupArn";
+  String JSON_KEY_TARGET_GROUP_NAME = "TargetGroupName";
+  String JSON_KEY_TARGET_GROUPS = "TargetGroups";
+  String JSON_KEY_TARGET_TYPE = "TargetType";
   String JSON_KEY_TO = "To";
   String JSON_KEY_TO_PORT = "ToPort";
   String JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID = "TransitGatewayAttachmentId";
@@ -143,6 +161,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_VPN_ECMP_SUPPORT = "VpnEcmpSupport";
   String JSON_KEY_VPN_GATEWAY_ID = "VpnGatewayId";
   String JSON_KEY_VPN_GATEWAYS = "VpnGateways";
+  String JSON_KEY_ZONE_NAME = "ZoneName";
 
   String STATE_AVAILABLE = "available";
   String STATE_ASSOCIATED = "associated";

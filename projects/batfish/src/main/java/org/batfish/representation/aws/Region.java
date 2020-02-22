@@ -69,6 +69,12 @@ final class Region implements Serializable {
 
   @Nonnull private final Map<String, InternetGateway> _internetGateways;
 
+  @Nonnull private final Map<String, LoadBalancer> _loadBalancers;
+
+  @Nonnull private final Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
+
+  @Nonnull private final Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
+
   @Nonnull private final String _name;
 
   @Nonnull private final Map<String, NatGateway> _natGateways;
@@ -86,6 +92,8 @@ final class Region implements Serializable {
   @Nonnull private final Map<String, SecurityGroup> _securityGroups;
 
   @Nonnull private final Map<String, Subnet> _subnets;
+
+  @Nonnull private final Map<String, TargetGroup> _targetGroups;
 
   @Nonnull private final Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
 
@@ -133,6 +141,10 @@ final class Region implements Serializable {
         new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
         new HashMap<>());
   }
 
@@ -144,6 +156,9 @@ final class Region implements Serializable {
       Map<String, ElasticsearchDomain> elasticsearchDomains,
       Map<String, Instance> instances,
       Map<String, InternetGateway> internetGateways,
+      Map<String, LoadBalancer> loadBalancers,
+      Map<String, LoadBalancerAttributes> loadBalancerAttributes,
+      Map<String, LoadBalancerTargetHealth> loadBalancerTargetHealths,
       Map<String, NatGateway> natGateways,
       Map<String, NetworkAcl> networkAcls,
       Map<String, NetworkInterface> networkInterfaces,
@@ -152,6 +167,7 @@ final class Region implements Serializable {
       Map<String, RouteTable> routeTables,
       Map<String, SecurityGroup> securityGroups,
       Map<String, Subnet> subnets,
+      Map<String, TargetGroup> targetGroups,
       Map<String, TransitGatewayAttachment> transitGatewayAttachments,
       Map<String, TransitGatewayPropagations> transitGatewayPropagations,
       Map<String, TransitGatewayRouteTable> transitGatewayRouteTables,
@@ -169,6 +185,9 @@ final class Region implements Serializable {
     _elasticsearchDomains = elasticsearchDomains;
     _instances = instances;
     _internetGateways = internetGateways;
+    _loadBalancers = loadBalancers;
+    _loadBalancerAttributes = loadBalancerAttributes;
+    _loadBalancerTargetHealths = loadBalancerTargetHealths;
     _natGateways = natGateways;
     _networkAcls = networkAcls;
     _networkInterfaces = networkInterfaces;
@@ -177,6 +196,7 @@ final class Region implements Serializable {
     _routeTables = routeTables;
     _securityGroups = securityGroups;
     _subnets = subnets;
+    _targetGroups = targetGroups;
     _transitGatewayAttachments = transitGatewayAttachments;
     _transitGatewayPropagations = transitGatewayPropagations;
     _transitGatewayRouteTables = transitGatewayRouteTables;
@@ -298,6 +318,29 @@ final class Region implements Serializable {
               BatfishObjectMapper.mapper().convertValue(json, InternetGateway.class);
           _internetGateways.put(iGateway.getId(), iGateway);
         };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_ATTRIBUTES:
+        return json -> {
+          LoadBalancerAttributes loadBalancerAttributes =
+              BatfishObjectMapper.mapper().convertValue(json, LoadBalancerAttributes.class);
+          _loadBalancerAttributes.put(loadBalancerAttributes.getId(), loadBalancerAttributes);
+        };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_TARGET_HEALTH:
+        return json -> {
+          LoadBalancerTargetHealth loadBalancerTargetHealth =
+              BatfishObjectMapper.mapper().convertValue(json, LoadBalancerTargetHealth.class);
+          _loadBalancerTargetHealths.put(
+              loadBalancerTargetHealth.getId(), loadBalancerTargetHealth);
+        };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCERS:
+        return json -> {
+          String stateCode =
+              json.get(AwsVpcEntity.JSON_KEY_STATE).get(AwsVpcEntity.JSON_KEY_CODE).textValue();
+          if (stateCode.equals(AwsVpcEntity.STATUS_ACTIVE)) {
+            LoadBalancer loadBalancer =
+                BatfishObjectMapper.mapper().convertValue(json, LoadBalancer.class);
+            _loadBalancers.put(loadBalancer.getId(), loadBalancer);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
         return json -> {
           NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(json, NatGateway.class);
@@ -344,6 +387,12 @@ final class Region implements Serializable {
         return json -> {
           Subnet subnet = BatfishObjectMapper.mapper().convertValue(json, Subnet.class);
           _subnets.put(subnet.getId(), subnet);
+        };
+      case AwsVpcEntity.JSON_KEY_TARGET_GROUPS:
+        return json -> {
+          TargetGroup targetGroup =
+              BatfishObjectMapper.mapper().convertValue(json, TargetGroup.class);
+          _targetGroups.put(targetGroup.getId(), targetGroup);
         };
       case AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS:
         return json -> {
@@ -471,6 +520,21 @@ final class Region implements Serializable {
   }
 
   @Nonnull
+  Map<String, LoadBalancer> getLoadBalancers() {
+    return _loadBalancers;
+  }
+
+  @Nonnull
+  Map<String, LoadBalancerAttributes> getLoadBalancerAttributes() {
+    return _loadBalancerAttributes;
+  }
+
+  @Nonnull
+  Map<String, LoadBalancerTargetHealth> getLoadBalancerTargetHealths() {
+    return _loadBalancerTargetHealths;
+  }
+
+  @Nonnull
   String getName() {
     return _name;
   }
@@ -513,6 +577,11 @@ final class Region implements Serializable {
   @Nonnull
   Map<String, Subnet> getSubnets() {
     return _subnets;
+  }
+
+  @Nonnull
+  Map<String, TargetGroup> getTargetGroups() {
+    return _targetGroups;
   }
 
   @Nonnull
@@ -847,6 +916,9 @@ final class Region implements Serializable {
     private Map<String, ElasticsearchDomain> _elasticsearchDomains;
     private Map<String, Instance> _instances;
     private Map<String, InternetGateway> _internetGateways;
+    private Map<String, LoadBalancer> _loadBalancers;
+    private Map<String, LoadBalancerAttributes> _loadBalancersAttributes;
+    private Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
     private String _name;
     private Map<String, NatGateway> _natGateways;
     private Map<String, NetworkAcl> _networkAcls;
@@ -856,6 +928,7 @@ final class Region implements Serializable {
     private Map<String, RouteTable> _routeTables;
     private Map<String, SecurityGroup> _securityGroups;
     private Map<String, Subnet> _subnets;
+    private Map<String, TargetGroup> _targetGroups;
     private Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
     private Map<String, TransitGatewayPropagations> _transitGatewayPropagations;
     private Map<String, TransitGatewayRouteTable> _transitGatewayRouteTables;
@@ -903,6 +976,23 @@ final class Region implements Serializable {
       return this;
     }
 
+    public RegionBuilder setLoadBalancers(Map<String, LoadBalancer> loadBalancers) {
+      _loadBalancers = loadBalancers;
+      return this;
+    }
+
+    public RegionBuilder setLoadBalancerAttributes(
+        Map<String, LoadBalancerAttributes> loadBalancerAttributes) {
+      _loadBalancersAttributes = _loadBalancersAttributes;
+      return this;
+    }
+
+    public RegionBuilder setLoadBalancerTargetHealths(
+        Map<String, LoadBalancerTargetHealth> loadBalancerTargetHealths) {
+      _loadBalancerTargetHealths = loadBalancerTargetHealths;
+      return this;
+    }
+
     public RegionBuilder setName(String name) {
       _name = name;
       return this;
@@ -945,6 +1035,11 @@ final class Region implements Serializable {
 
     public RegionBuilder setSubnets(Map<String, Subnet> subnets) {
       _subnets = subnets;
+      return this;
+    }
+
+    public RegionBuilder setTargetGroups(Map<String, TargetGroup> targetGroups) {
+      _targetGroups = targetGroups;
       return this;
     }
 
@@ -1013,6 +1108,9 @@ final class Region implements Serializable {
           firstNonNull(_elasticsearchDomains, ImmutableMap.of()),
           firstNonNull(_instances, ImmutableMap.of()),
           firstNonNull(_internetGateways, ImmutableMap.of()),
+          firstNonNull(_loadBalancers, ImmutableMap.of()),
+          firstNonNull(_loadBalancersAttributes, ImmutableMap.of()),
+          firstNonNull(_loadBalancerTargetHealths, ImmutableMap.of()),
           firstNonNull(_natGateways, ImmutableMap.of()),
           firstNonNull(_networkAcls, ImmutableMap.of()),
           firstNonNull(_networkInterfaces, ImmutableMap.of()),
@@ -1021,6 +1119,7 @@ final class Region implements Serializable {
           firstNonNull(_routeTables, ImmutableMap.of()),
           firstNonNull(_securityGroups, ImmutableMap.of()),
           firstNonNull(_subnets, ImmutableMap.of()),
+          firstNonNull(_targetGroups, ImmutableMap.of()),
           firstNonNull(_transitGatewayAttachments, ImmutableMap.of()),
           firstNonNull(_transitGatewayPropagations, ImmutableMap.of()),
           firstNonNull(_transitGatewayRouteTables, ImmutableMap.of()),
