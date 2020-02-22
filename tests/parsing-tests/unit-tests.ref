@@ -60760,6 +60760,33 @@
             "                      text = VARIABLE:'blorp')",
             "                    (fft_from",
             "                      FROM:'from'",
+            "                      (fftf_source_address",
+            "                        SOURCE_ADDRESS:'source-address'",
+            "                        (fftfa_address_mask_prefix",
+            "                          IP_PREFIX:'5.5.5.5/31')",
+            "                        EXCEPT:'except'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'blah')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'blorp')",
+            "                    (fft_from",
+            "                      FROM:'from'",
             "                      (fftf_icmp_type",
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp_type",
@@ -77816,55 +77843,55 @@
           "Parse warnings" : [
             {
               "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported",
-              "Line" : 35,
+              "Line" : 36,
               "Parser_Context" : "[fftt_next_ip fft_then ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "next-ip 1.2.3.4/5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 43,
+              "Line" : 44,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options any"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 44,
+              "Line" : 45,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options loose-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 45,
+              "Line" : 46,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options route-record"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 46,
+              "Line" : 47,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options router-alert"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 47,
+              "Line" : 48,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options security"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 48,
+              "Line" : 49,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options stream-id"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 49,
+              "Line" : 50,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options strict-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 50,
+              "Line" : 51,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options timestamp"
             }
@@ -83904,7 +83931,7 @@
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
               "definitionLines" : [
-                42
+                43
               ],
               "numReferrers" : 0
             },
@@ -83933,18 +83960,19 @@
                 25,
                 26,
                 27,
-                30,
+                28,
                 31,
-                33,
-                35
+                32,
+                34,
+                36
               ],
               "numReferrers" : 0
             },
             "blah6" : {
               "definitionLines" : [
-                37,
                 38,
-                39
+                39,
+                40
               ],
               "numReferrers" : 0
             },
@@ -83956,14 +83984,14 @@
             },
             "ip_options" : {
               "definitionLines" : [
-                43,
                 44,
                 45,
                 46,
                 47,
                 48,
                 49,
-                50
+                50,
+                51
               ],
               "numReferrers" : 0
             }
@@ -83971,7 +83999,7 @@
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
               "definitionLines" : [
-                42
+                43
               ],
               "numReferrers" : 1
             },
@@ -84000,28 +84028,29 @@
                 25,
                 26,
                 27,
-                30,
-                31
+                28,
+                31,
+                32
               ],
-              "numReferrers" : 25
+              "numReferrers" : 26
             },
             "blah t2" : {
               "definitionLines" : [
-                33
+                34
               ],
               "numReferrers" : 1
             },
             "blah t3" : {
               "definitionLines" : [
-                35
+                36
               ],
               "numReferrers" : 1
             },
             "blah6 blorp6" : {
               "definitionLines" : [
-                37,
                 38,
-                39
+                39,
+                40
               ],
               "numReferrers" : 3
             },
@@ -84033,14 +84062,14 @@
             },
             "ip_options t1" : {
               "definitionLines" : [
-                43,
                 44,
                 45,
                 46,
                 47,
                 48,
                 49,
-                50
+                50,
+                51
               ],
               "numReferrers" : 8
             }
@@ -91207,7 +91236,7 @@
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
               "firewall filter term" : [
-                42
+                43
               ]
             },
             "blah blorp" : {
@@ -91235,25 +91264,26 @@
                 25,
                 26,
                 27,
-                30,
-                31
+                28,
+                31,
+                32
               ]
             },
             "blah t2" : {
               "firewall filter term" : [
-                33
+                34
               ]
             },
             "blah t3" : {
               "firewall filter term" : [
-                35
+                36
               ]
             },
             "blah6 blorp6" : {
               "firewall filter term" : [
-                37,
                 38,
-                39
+                39,
+                40
               ]
             },
             "f1 t1" : {
@@ -91263,21 +91293,21 @@
             },
             "ip_options t1" : {
               "firewall filter term" : [
-                43,
                 44,
                 45,
                 46,
                 47,
                 48,
                 49,
-                50
+                50,
+                51
               ]
             }
           },
           "routing-instance" : {
             "OTHER_INSTANCE" : {
               "firewall filter then routing-instance" : [
-                33
+                34
               ]
             }
           }

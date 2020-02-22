@@ -13,7 +13,7 @@ public class FwFromDestinationAddressExceptTest {
   @Test
   public void testToHeaderspace() {
     IpWildcard ips = IpWildcard.parse("1.1.1.0/24");
-    FwFromDestinationAddressExcept from = new FwFromDestinationAddressExcept(ips);
+    FwFromDestinationAddressExcept from = new FwFromDestinationAddressExcept(ips, ips.toString());
     assertThat(
         from.toHeaderspace(), equalTo(HeaderSpace.builder().setNotDstIps(ips.toIpSpace()).build()));
   }
