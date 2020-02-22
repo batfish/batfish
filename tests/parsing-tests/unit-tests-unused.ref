@@ -2769,7 +2769,7 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_firewall",
           "lines" : [
-            42
+            43
           ]
         }
       },
@@ -2802,10 +2802,11 @@
             25,
             26,
             27,
-            30,
+            28,
             31,
-            33,
-            35
+            32,
+            34,
+            36
           ]
         }
       },
@@ -2815,9 +2816,9 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_firewall",
           "lines" : [
-            37,
             38,
-            39
+            39,
+            40
           ]
         }
       },
@@ -2837,14 +2838,14 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_firewall",
           "lines" : [
-            43,
             44,
             45,
             46,
             47,
             48,
             49,
-            50
+            50,
+            51
           ]
         }
       },
