@@ -12,6 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.representation.aws.LoadBalancer.Protocol;
 
 /**
  * Represents a target group for an elastic load balancer v2
@@ -20,13 +21,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class TargetGroup implements AwsVpcEntity, Serializable {
-
-  enum Protocol {
-    TCP,
-    TLS,
-    UDP,
-    TCP_UDP
-  }
 
   enum Type {
     INSTANCE,

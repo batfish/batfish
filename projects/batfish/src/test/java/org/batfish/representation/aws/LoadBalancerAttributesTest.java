@@ -23,7 +23,6 @@ public class LoadBalancerAttributesTest {
     Region region = new Region("r1");
     region.addConfigElement(json, null, null);
 
-    /** inactive load balancer should not show */
     assertThat(
         region.getLoadBalancerAttributes(),
         equalTo(

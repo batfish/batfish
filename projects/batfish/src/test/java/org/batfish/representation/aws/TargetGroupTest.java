@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.representation.aws.TargetGroup.Protocol;
+import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.TargetGroup.Type;
 import org.junit.Test;
 

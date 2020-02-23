@@ -1,18 +1,29 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface;
 
 /**
  * Represents an elastic load balancer v2 https://docs.aws.amazon.com/elasticloadbalancing/.
@@ -31,6 +42,15 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   enum Type {
     APPLICATION,
     NETWORK
+  }
+
+  enum Protocol {
+    HTTP,
+    HTTPS,
+    TCP,
+    TLS,
+    UDP,
+    TCP_UDP
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
@@ -96,7 +116,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<AvailabilityZone> _availabilityZones;
 
-  @Nullable private final String _name;
+  @Nonnull private final String _name;
 
   @Nonnull private final Scheme _scheme;
 
@@ -114,18 +134,18 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
     checkNonNull(arn, JSON_KEY_LOAD_BALANCER_ARN, "LoadBalancer");
     checkNonNull(availabilityZones, JSON_KEY_AVAILABILITY_ZONES, "LoadBalancer");
+    checkNonNull(name, JSON_KEY_LOAD_BALANCER_NAME, "LoadBalancer");
     checkNonNull(scheme, JSON_KEY_SCHEME, "LoadBalancer");
     checkNonNull(type, JSON_KEY_TYPE, "LoadBalancer");
     checkNonNull(vpcId, JSON_KEY_VPC_ID, "LoadBalancer");
 
-    Scheme schemeEnum =
-        scheme.equals("internal")
-            ? Scheme.INTERNAL
-            : scheme.equals("internet-facing") ? Scheme.INTERNET_FACING : null;
-    checkArgument(schemeEnum != null, "Unknown scheme for LoadBalances %s", scheme);
-
     return new LoadBalancer(
-        arn, availabilityZones, name, schemeEnum, Type.valueOf(type.toUpperCase()), vpcId);
+        arn,
+        availabilityZones,
+        name,
+        Scheme.valueOf(scheme.toUpperCase().replace('-', '_')),
+        Type.valueOf(type.toUpperCase()),
+        vpcId);
   }
 
   public LoadBalancer(
@@ -143,6 +163,76 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     _vpcId = vpcId;
   }
 
+  List<Configuration> toConfigurationNodes(
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+    if (_type == Type.APPLICATION) {
+      warnings.redFlag("Application load balancer is not currently supported");
+      return ImmutableList.of();
+    }
+    List<Configuration> configurations = new LinkedList<>();
+    _availabilityZones.forEach(
+        zone -> configurations.add(toConfigurationNode(zone, awsConfiguration, region, warnings)));
+    return configurations;
+  }
+
+  private Configuration toConfigurationNode(
+      AvailabilityZone zone,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(
+            getNodeId(_arn, zone.getZoneName()), "aws", DeviceModel.AWS_ELB_NETWORK);
+    cfgNode.setHumanName(_name);
+    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode.getVendorFamily().getAws().setSubnetId(zone.getSubnetId());
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+
+    Optional<NetworkInterface> networkInterface = getMyInterface(zone.getSubnetId(), _arn, region);
+    if (!networkInterface.isPresent()) {
+      warnings.redFlag(
+          String.format(
+              "Network interface not found for load balancer %s in subnet %s.",
+              _name, zone.getSubnetId()));
+      return cfgNode;
+    }
+    Subnet subnet = region.getSubnets().get(zone.getSubnetId());
+    Interface viIface =
+        addNodeToSubnet(cfgNode, networkInterface.get(), subnet, awsConfiguration, warnings);
+
+    Set<TargetGroup> targetGroups =
+        region.getTargetGroups().values().stream()
+            .filter(group -> group.getLoadBalancerArns().contains(_arn))
+            .collect(ImmutableSet.toImmutableSet());
+
+    // viIface.setIncomingTransformation();
+    return cfgNode;
+  }
+
+  /** Regex for load balancer ARN. Used to find the right interface in {@link #getMyInterface).
+   *
+   * <p> Example arn is  'arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1'.
+   * The regex extracts 'net/lb-lb/6f57a43b75d8f2c1' and uses that to join with interface descriptions which are like 'ELB net/lb-lb/6f57a43b75d8f2c1'.
+   * https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#availability-zones
+   */
+  static final Pattern LOAD_BALANCER_ARN_PATTERN =
+      Pattern.compile("^arn:aws:elasticloadbalancing:[^:]+:[0-9]+:loadbalancer\\/(.+)$");
+
+  static Optional<NetworkInterface> getMyInterface(String subnetId, String arn, Region region) {
+    Matcher matcher = LOAD_BALANCER_ARN_PATTERN.matcher(arn);
+    if (!matcher.matches()) {
+      return Optional.empty();
+    }
+    String matchString = matcher.group(1);
+    return region.getNetworkInterfaces().values().stream()
+        .filter(iface -> iface.getDescription().equals("ELB " + matchString))
+        .findAny();
+  }
+
+  static String getNodeId(String loadBalancerArn, String availabilityZoneName) {
+    return String.format("%s::%s", loadBalancerArn, availabilityZoneName);
+  }
+
   @Override
   public String getId() {
     return _arn;
@@ -153,7 +243,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     return _availabilityZones;
   }
 
-  @Nullable
+  @Nonnull
   public String getName() {
     return _name;
   }

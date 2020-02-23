@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Ip;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
 import org.batfish.representation.aws.LoadBalancer.Type;
@@ -43,9 +44,34 @@ public class LoadBalancerTest {
                 new LoadBalancer(
                     "arn-application",
                     ImmutableList.of(),
-                    null,
+                    "lb3",
                     Scheme.INTERNAL,
                     Type.APPLICATION,
                     "vpc-08afc01f5013ddc43"))));
+  }
+
+  @Test
+  public void testGetMyInterface() {
+    NetworkInterface networkInterface =
+        new NetworkInterface(
+            "id",
+            "subnet",
+            "vpc",
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.1.1.1"), null)),
+            "ELB net/lb-lb/6f57a43b75d8f2c1",
+            null);
+    Region region =
+        Region.builder("r1")
+            .setNetworkInterfaces(ImmutableMap.of(networkInterface.getId(), networkInterface))
+            .build();
+
+    assertThat(
+        LoadBalancer.getMyInterface(
+                "subnet",
+                "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
+                region)
+            .get(),
+        equalTo(networkInterface));
   }
 }

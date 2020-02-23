@@ -73,6 +73,8 @@ final class Region implements Serializable {
 
   @Nonnull private final Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
 
+  @Nonnull private final Map<String, LoadBalancerListener> _loadBalancerListeners;
+
   @Nonnull private final Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
 
   @Nonnull private final String _name;
@@ -145,6 +147,7 @@ final class Region implements Serializable {
         new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
+        new HashMap<>(),
         new HashMap<>());
   }
 
@@ -158,6 +161,7 @@ final class Region implements Serializable {
       Map<String, InternetGateway> internetGateways,
       Map<String, LoadBalancer> loadBalancers,
       Map<String, LoadBalancerAttributes> loadBalancerAttributes,
+      Map<String, LoadBalancerListener> loadBalancerListeners,
       Map<String, LoadBalancerTargetHealth> loadBalancerTargetHealths,
       Map<String, NatGateway> natGateways,
       Map<String, NetworkAcl> networkAcls,
@@ -187,6 +191,7 @@ final class Region implements Serializable {
     _internetGateways = internetGateways;
     _loadBalancers = loadBalancers;
     _loadBalancerAttributes = loadBalancerAttributes;
+    _loadBalancerListeners = loadBalancerListeners;
     _loadBalancerTargetHealths = loadBalancerTargetHealths;
     _natGateways = natGateways;
     _networkAcls = networkAcls;
@@ -323,6 +328,12 @@ final class Region implements Serializable {
           LoadBalancerAttributes loadBalancerAttributes =
               BatfishObjectMapper.mapper().convertValue(json, LoadBalancerAttributes.class);
           _loadBalancerAttributes.put(loadBalancerAttributes.getId(), loadBalancerAttributes);
+        };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_LISTENERS:
+        return json -> {
+          LoadBalancerListener loadBalancerListener =
+              BatfishObjectMapper.mapper().convertValue(json, LoadBalancerListener.class);
+          _loadBalancerListeners.put(loadBalancerListener.getId(), loadBalancerListener);
         };
       case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_TARGET_HEALTH:
         return json -> {
@@ -530,6 +541,11 @@ final class Region implements Serializable {
   }
 
   @Nonnull
+  Map<String, LoadBalancerListener> getLoadBalancerListeners() {
+    return _loadBalancerListeners;
+  }
+
+  @Nonnull
   Map<String, LoadBalancerTargetHealth> getLoadBalancerTargetHealths() {
     return _loadBalancerTargetHealths;
   }
@@ -692,6 +708,12 @@ final class Region implements Serializable {
       Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       awsConfiguration.addNode(cfgNode);
+    }
+
+    for (LoadBalancer loadBalancer : getLoadBalancers().values()) {
+      List<Configuration> cfgNodes =
+          loadBalancer.toConfigurationNodes(awsConfiguration, this, warnings);
+      cfgNodes.forEach(cfgNode -> awsConfiguration.addNode(cfgNode));
     }
 
     for (Subnet subnet : getSubnets().values()) {
@@ -918,6 +940,7 @@ final class Region implements Serializable {
     private Map<String, InternetGateway> _internetGateways;
     private Map<String, LoadBalancer> _loadBalancers;
     private Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
+    private Map<String, LoadBalancerListener> _loadBalancerListeners;
     private Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
     private String _name;
     private Map<String, NatGateway> _natGateways;
@@ -984,6 +1007,12 @@ final class Region implements Serializable {
     public RegionBuilder setLoadBalancerAttributes(
         Map<String, LoadBalancerAttributes> loadBalancerAttributes) {
       _loadBalancerAttributes = loadBalancerAttributes;
+      return this;
+    }
+
+    public RegionBuilder setLoadBalancerListeners(
+        Map<String, LoadBalancerListener> loadBalancerListeners) {
+      _loadBalancerListeners = loadBalancerListeners;
       return this;
     }
 
@@ -1110,6 +1139,7 @@ final class Region implements Serializable {
           firstNonNull(_internetGateways, ImmutableMap.of()),
           firstNonNull(_loadBalancers, ImmutableMap.of()),
           firstNonNull(_loadBalancerAttributes, ImmutableMap.of()),
+          firstNonNull(_loadBalancerListeners, ImmutableMap.of()),
           firstNonNull(_loadBalancerTargetHealths, ImmutableMap.of()),
           firstNonNull(_natGateways, ImmutableMap.of()),
           firstNonNull(_networkAcls, ImmutableMap.of()),

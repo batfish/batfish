@@ -32,6 +32,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_DB_INSTANCE_IDENTIFIER = "DBInstanceIdentifier";
   String JSON_KEY_DB_INSTANCE_STATUS = "DBInstanceStatus";
   String JSON_KEY_DB_SUBNET_GROUP = "DBSubnetGroup";
+  String JSON_KEY_DEFAULT_ACTIONS = "DefaultActions";
   String JSON_KEY_DEFAULT_ASSOCIATION_ROUTE_TABLE = "DefaultAssociationRouteTable";
   String JSON_KEY_DEFAULT_PROPAGATION_ROUTE_TABLE = "DefaultPropagationRouteTable";
   String JSON_KEY_DEFAULT_ROUTE_TABLE_ASSOCIATION = "DefaultRouteTableAssociation";
@@ -66,9 +67,11 @@ public interface AwsVpcEntity {
   String JSON_KEY_IPV6_CIDR_BLOCK = "Ipv6CidrBlock";
   String JSON_KEY_IS_DEFAULT = "IsDefault";
   String JSON_KEY_KEY = "Key";
+  String JSON_KEY_LISTENER_ARN = "ListenerArn";
   String JSON_KEY_LOAD_BALANCER_ARN = "LoadBalancerArn";
   String JSON_KEY_LOAD_BALANCER_ARNS = "LoadBalancerArns";
   String JSON_KEY_LOAD_BALANCER_ATTRIBUTES = "LoadBalancerAttributes";
+  String JSON_KEY_LOAD_BALANCER_LISTENERS = "LoadBalancerListeners";
   String JSON_KEY_LOAD_BALANCER_NAME = "LoadBalancerName";
   String JSON_KEY_LOAD_BALANCER_TARGET_HEALTH = "LoadBalancerTargetHealth";
   String JSON_KEY_LOAD_BALANCERS = "LoadBalancers";
@@ -83,6 +86,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_NETWORK_INTERFACE_ID = "NetworkInterfaceId";
   String JSON_KEY_NETWORK_INTERFACES = "NetworkInterfaces";
   String JSON_KEY_OPTIONS = "Options";
+  String JSON_KEY_ORDER = "Order";
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
   String JSON_KEY_PORT = "Port";

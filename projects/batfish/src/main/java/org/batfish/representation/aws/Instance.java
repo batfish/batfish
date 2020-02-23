@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
+import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
@@ -15,30 +16,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 
 /** Representation for an EC2 instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -310,69 +303,9 @@ final class Instance implements AwsVpcEntity, Serializable {
                 interfaceId, _instanceId));
         continue;
       }
-
-      ImmutableSet.Builder<ConcreteInterfaceAddress> ifaceAddressesBuilder =
-          new ImmutableSet.Builder<>();
-
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
-      Prefix ifaceSubnet = subnet.getCidrBlock();
-      Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
-      StaticRoute defaultRoute =
-          StaticRoute.builder()
-              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-              .setNextHopIp(defaultGatewayAddress)
-              .setNetwork(Prefix.ZERO)
-              .build();
-      cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
-      for (PrivateIpAddress privateIp : netInterface.getPrivateIpAddresses()) {
-        if (!ifaceSubnet.containsIp(privateIp.getPrivateIp())) {
-          warnings.pedantic(
-              String.format(
-                  "Instance subnet \"%s\" does not contain private ip: \"%s\"",
-                  ifaceSubnet, privateIp));
-          continue;
-        }
-
-        if (privateIp.getPrivateIp().equals(ifaceSubnet.getEndIp())) {
-          warnings.pedantic(
-              String.format(
-                  "Expected end address \"%s\" to be used by generated subnet node", privateIp));
-          continue;
-        }
-
-        ConcreteInterfaceAddress address =
-            ConcreteInterfaceAddress.create(
-                privateIp.getPrivateIp(), ifaceSubnet.getPrefixLength());
-        ifaceAddressesBuilder.add(address);
-      }
-      Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
-      ConcreteInterfaceAddress primaryAddress =
-          ifaceAddresses.stream()
-              .filter(
-                  addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
-              .findFirst()
-              .orElseGet(
-                  () -> {
-                    warnings.redFlag(
-                        String.format(
-                            "Primary address not found for interface '%s'. Using lowest address as primary",
-                            netInterface.getId()));
-                    // get() is safe here: ifaceAddresses cannot be empty
-                    return ifaceAddresses.stream().min(Comparator.naturalOrder()).get();
-                  });
-
-      Interface iface =
-          Utils.newInterface(interfaceId, cfgNode, primaryAddress, netInterface.getDescription());
-      iface.setAllAddresses(ifaceAddresses);
-
-      Utils.addLayer1Edge(
-          awsConfiguration,
-          cfgNode.getHostname(),
-          iface.getName(),
-          Subnet.nodeName(subnet.getId()),
-          Subnet.instancesInterfaceName(subnet.getId()));
+      addNodeToSubnet(cfgNode, netInterface, subnet, awsConfiguration, warnings);
 
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
