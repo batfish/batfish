@@ -8,13 +8,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -23,7 +21,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.Interface;
 
 /**
  * Represents an elastic load balancer v2 https://docs.aws.amazon.com/elasticloadbalancing/.
@@ -197,22 +194,25 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       return cfgNode;
     }
     Subnet subnet = region.getSubnets().get(zone.getSubnetId());
-    Interface viIface =
-        addNodeToSubnet(cfgNode, networkInterface.get(), subnet, awsConfiguration, warnings);
+    // Interface viIface =
+    addNodeToSubnet(cfgNode, networkInterface.get(), subnet, awsConfiguration, warnings);
 
-    Set<TargetGroup> targetGroups =
-        region.getTargetGroups().values().stream()
-            .filter(group -> group.getLoadBalancerArns().contains(_arn))
-            .collect(ImmutableSet.toImmutableSet());
+    //    Set<TargetGroup> targetGroups =
+    //        region.getTargetGroups().values().stream()
+    //            .filter(group -> group.getLoadBalancerArns().contains(_arn))
+    //            .collect(ImmutableSet.toImmutableSet());
 
     // viIface.setIncomingTransformation();
     return cfgNode;
   }
 
-  /** Regex for load balancer ARN. Used to find the right interface in {@link #getMyInterface).
+  /**
+   * Regex for load balancer ARN. Used to find the right interface in {@link #getMyInterface}.
    *
-   * <p> Example arn is  'arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1'.
-   * The regex extracts 'net/lb-lb/6f57a43b75d8f2c1' and uses that to join with interface descriptions which are like 'ELB net/lb-lb/6f57a43b75d8f2c1'.
+   * <p>Example arn is
+   * 'arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1'.
+   * The regex extracts 'net/lb-lb/6f57a43b75d8f2c1' and uses that to join with interface
+   * descriptions which are like 'ELB net/lb-lb/6f57a43b75d8f2c1'.
    * https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#availability-zones
    */
   static final Pattern LOAD_BALANCER_ARN_PATTERN =
