@@ -88,10 +88,18 @@ import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1294,6 +1302,18 @@ public final class CumulusConversions {
 
   static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
+    // create CommunitySetMatchExpr for route-map match community
+    ipCommunityLists.forEach(
+        (name, list) -> {
+          if (list instanceof IpCommunityListStandard) {
+            c.getCommunitySetMatchExprs()
+                    .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
+          } else if (list instanceof IpCommunityListExpanded) {
+            c.getCommunitySetMatchExprs()
+                    .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
+          }
+        });
+
     // The following code-block is only for "set comm-list delete" statements.
     ipCommunityLists.forEach(
         (name, list) -> {
@@ -1340,6 +1360,41 @@ public final class CumulusConversions {
         ipCommunityListExpanded.getLines().stream()
             .map(CumulusConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+          IpCommunityListStandard ipCommunityListStandard) {
+    return new CommunitySetAcl(
+            ipCommunityListStandard.getLines().stream()
+                    .map(CumulusConversions::toCommunitySetAclLine)
+                    .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+          IpCommunityListExpanded ipCommunityListExpanded) {
+    return new CommunitySetAcl(
+            ipCommunityListExpanded.getLines().stream()
+                    .map(CumulusConversions::toCommunitySetAclLine)
+                    .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+          IpCommunityListStandardLine line) {
+    return new CommunitySetAclLine(
+            line.getAction(),
+            new CommunitySetMatchAll(
+                    line.getCommunities().stream()
+                            .map(community -> new HasCommunity(new CommunityIs(community)))
+                            .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+          IpCommunityListExpandedLine line) {
+    return new CommunitySetAclLine(
+            line.getAction(),
+            new CommunitySetMatchRegex(
+                    new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+                    toJavaRegex(line.getRegex())));
   }
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {

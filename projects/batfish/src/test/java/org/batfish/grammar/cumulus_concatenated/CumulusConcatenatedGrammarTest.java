@@ -505,4 +505,31 @@ public class CumulusConcatenatedGrammarTest {
               StandardCommunity.of(3, 2)));
     }
   }
+
+  @Test
+  public void testCommSetMatchExpr() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+            Bgpv4Route.builder()
+                    .setAsPath(AsPath.ofSingletonAsSets(2L))
+                    .setOriginatorIp(Ip.ZERO)
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setNextHopIp(origNextHopIp)
+                    .setNetwork(Prefix.parse("10.20.30.0/31"))
+                    .setTag(0L)
+                    .build();
+    Configuration c = parseConfig("comm_set_match_expr_test");
+    Bgpv4Route inRoute =
+            base.toBuilder()
+                    .setCommunities(
+                            ImmutableSet.of(
+                                    StandardCommunity.of(1, 1)))
+                    .build();
+    // RMs using expanded comm-lists.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM1");
+      assertThat(processRouteIn(rp, inRoute).getCommunities(), empty());
+    }
+  }
 }
