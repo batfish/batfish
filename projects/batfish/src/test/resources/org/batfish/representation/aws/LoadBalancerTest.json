@@ -45,6 +45,7 @@
       "AvailabilityZones": [
       ],
       "CanonicalHostedZoneId": "ZLMOA37VPKANP",
+      "DNSName": "lb-lb-6f57a43b75d8f2c1.elb.us-east-2.amazonaws.com",
       "IpAddressType": "ipv4",
       "LoadBalancerArn": "arn-application",
       "LoadBalancerName": "lb3",

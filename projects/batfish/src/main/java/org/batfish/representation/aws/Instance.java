@@ -32,6 +32,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.Ip;
 
 /** Representation for an EC2 instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -100,6 +101,46 @@ final class Instance implements AwsVpcEntity, Serializable {
     @Nonnull
     public String getId() {
       return _id;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  static class Placement implements Serializable {
+
+    @Nonnull private final String _availabilityZone;
+
+    @JsonCreator
+    private static Placement create(
+        @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone) {
+      checkNonNull(availabilityZone, JSON_KEY_AVAILABILITY_ZONE, "Instance placement");
+      return new Placement(availabilityZone);
+    }
+
+    Placement(String availabilityZone) {
+      _availabilityZone = availabilityZone;
+    }
+
+    @Nonnull
+    public String getAvailabilityZone() {
+      return _availabilityZone;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Placement)) {
+        return false;
+      }
+      Placement placement = (Placement) o;
+      return _availabilityZone.equals(placement._availabilityZone);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_availabilityZone);
     }
   }
 
@@ -182,6 +223,10 @@ final class Instance implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<String> _networkInterfaces;
 
+  @Nullable private final Placement _placement;
+
+  @Nullable private final Ip _primaryPrivateIpAddress;
+
   @Nonnull private final List<String> _securityGroups;
 
   @Nonnull private final Status _status;
@@ -200,8 +245,10 @@ final class Instance implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_SECURITY_GROUPS) List<SecurityGroupId> securityGroups,
       @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACES)
           List<NetworkInterfaceId> networkInterfaces,
+      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
       @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
-      @Nullable @JsonProperty(JSON_KEY_STATE) State state) {
+      @Nullable @JsonProperty(JSON_KEY_STATE) State state,
+      @Nullable @JsonProperty(JSON_KEY_PLACEMENT) Placement placement) {
 
     checkNonNull(instanceId, "InstanceId", "Instance");
     checkArgument(
@@ -213,6 +260,8 @@ final class Instance implements AwsVpcEntity, Serializable {
     checkNonNull(networkInterfaces, "Network interfaces", "Instance");
     checkNonNull(state, "State", "Instance");
 
+    // we don't know if Placement can be null. assuming for now that it can be
+
     return new Instance(
         instanceId,
         vpcId,
@@ -223,9 +272,11 @@ final class Instance implements AwsVpcEntity, Serializable {
         networkInterfaces.stream()
             .map(NetworkInterfaceId::getId)
             .collect(ImmutableList.toImmutableList()),
+        privateIpAddress,
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)),
-        state.getName());
+        state.getName(),
+        placement);
 
     // check if the public and private ip addresses are associated with an
     // interface
@@ -237,15 +288,19 @@ final class Instance implements AwsVpcEntity, Serializable {
       @Nullable String subnetId,
       List<String> securityGroups,
       List<String> networkInterfaces,
+      @Nullable Ip primaryPrivateIpAddress,
       Map<String, String> tags,
-      Status status) {
+      Status status,
+      @Nullable Placement placement) {
     _instanceId = instanceId;
     _vpcId = vpcId;
     _subnetId = subnetId;
     _securityGroups = securityGroups;
     _networkInterfaces = networkInterfaces;
+    _primaryPrivateIpAddress = primaryPrivateIpAddress;
     _tags = tags;
     _status = status;
+    _placement = placement;
   }
 
   static InstanceBuilder builder() {
@@ -265,6 +320,16 @@ final class Instance implements AwsVpcEntity, Serializable {
   @Nonnull
   public List<String> getNetworkInterfaces() {
     return _networkInterfaces;
+  }
+
+  @Nullable
+  public Placement getPlacement() {
+    return _placement;
+  }
+
+  @Nullable
+  public Ip getPrimaryPrivateIpAddress() {
+    return _primaryPrivateIpAddress;
   }
 
   @Nonnull
@@ -340,6 +405,8 @@ final class Instance implements AwsVpcEntity, Serializable {
     Instance instance = (Instance) o;
     return Objects.equals(_instanceId, instance._instanceId)
         && Objects.equals(_networkInterfaces, instance._networkInterfaces)
+        && Objects.equals(_placement, instance._placement)
+        && Objects.equals(_primaryPrivateIpAddress, instance._primaryPrivateIpAddress)
         && Objects.equals(_securityGroups, instance._securityGroups)
         && _status == instance._status
         && Objects.equals(_subnetId, instance._subnetId)
@@ -352,6 +419,8 @@ final class Instance implements AwsVpcEntity, Serializable {
     return Objects.hash(
         _instanceId,
         _networkInterfaces,
+        _placement,
+        _primaryPrivateIpAddress,
         _securityGroups,
         _status.ordinal(),
         _subnetId,
@@ -362,6 +431,8 @@ final class Instance implements AwsVpcEntity, Serializable {
   static final class InstanceBuilder {
     private String _instanceId;
     private List<String> _networkInterfaces;
+    private Placement _placement;
+    private Ip _primaryPrivateIpAddress;
     private List<String> _securityGroups;
     private Status _status;
     private String _subnetId;
@@ -377,6 +448,16 @@ final class Instance implements AwsVpcEntity, Serializable {
 
     public InstanceBuilder setNetworkInterfaces(List<String> networkInterfaces) {
       _networkInterfaces = networkInterfaces;
+      return this;
+    }
+
+    public InstanceBuilder setPlacement(Placement placement) {
+      _placement = placement;
+      return this;
+    }
+
+    public InstanceBuilder setPrimaryPrivateIpAddress(Ip primaryPrivateIpAddress) {
+      _primaryPrivateIpAddress = primaryPrivateIpAddress;
       return this;
     }
 
@@ -413,8 +494,10 @@ final class Instance implements AwsVpcEntity, Serializable {
           _subnetId,
           firstNonNull(_securityGroups, new LinkedList<>()),
           firstNonNull(_networkInterfaces, new LinkedList<>()),
+          _primaryPrivateIpAddress,
           firstNonNull(_tags, new HashMap<>()),
-          firstNonNull(_status, Status.RUNNING));
+          firstNonNull(_status, Status.RUNNING),
+          _placement);
     }
   }
 }

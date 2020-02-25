@@ -32,11 +32,11 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class TargetHealth {
+  static class TargetHealth implements Serializable {
 
-    @Nonnull private final String _description;
+    @Nullable private final String _description;
 
-    @Nonnull private final String _reason;
+    @Nullable private final String _reason;
 
     @Nonnull private final HealthState _state;
 
@@ -45,8 +45,6 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
         @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
         @Nullable @JsonProperty(JSON_KEY_REASON) String reason,
         @Nullable @JsonProperty(JSON_KEY_STATE) String state) {
-      checkNonNull(description, JSON_KEY_DESCRIPTION, "Load balancer target health");
-      checkNonNull(reason, JSON_KEY_REASON, "Load balancer target health");
       checkNonNull(state, JSON_KEY_STATE, "Load balancer target health");
 
       return new TargetHealth(description, reason, HealthState.valueOf(state.toUpperCase()));
@@ -58,12 +56,12 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
       _state = state;
     }
 
-    @Nonnull
+    @Nullable
     public String getDescription() {
       return _description;
     }
 
-    @Nonnull
+    @Nullable
     public String getReason() {
       return _reason;
     }
@@ -82,8 +80,8 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
         return false;
       }
       TargetHealth that = (TargetHealth) o;
-      return _description.equals(that._description)
-          && _reason.equals(that._reason)
+      return Objects.equals(_description, that._description)
+          && Objects.equals(_reason, that._reason)
           && _state.equals(that._state);
     }
 
@@ -95,6 +93,7 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this)
+          .omitNullValues()
           .add("_description", _description)
           .add("_reason", _reason)
           .add("_state", _state)
@@ -104,86 +103,15 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class Target {
+  static class TargetHealthDescription implements Serializable {
 
-    @Nonnull private final String _avaialabilityZone;
-
-    @Nonnull private final String _id;
-
-    private final int _port;
-
-    @JsonCreator
-    private static Target create(
-        @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone,
-        @Nullable @JsonProperty(JSON_KEY_ID) String id,
-        @Nullable @JsonProperty(JSON_KEY_PORT) Integer port) {
-      checkNonNull(availabilityZone, JSON_KEY_AVAILABILITY_ZONE, "Load balancer target");
-      checkNonNull(id, JSON_KEY_ID, "Load balancer target");
-      checkNonNull(port, JSON_KEY_PORT, "Load balancer target");
-
-      return new Target(availabilityZone, id, port);
-    }
-
-    Target(String availabilityZone, String id, int port) {
-      _avaialabilityZone = availabilityZone;
-      _id = id;
-      _port = port;
-    }
-
-    @Nonnull
-    public String getAvaialabilityZone() {
-      return _avaialabilityZone;
-    }
-
-    @Nonnull
-    public String getId() {
-      return _id;
-    }
-
-    public int getPort() {
-      return _port;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof Target)) {
-        return false;
-      }
-      Target that = (Target) o;
-      return _avaialabilityZone.equals(that._avaialabilityZone)
-          && _id.equals(that._id)
-          && _port == that._port;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_avaialabilityZone, _id, _port);
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(this)
-          .add("availabilityZone", _avaialabilityZone)
-          .add("id", _id)
-          .add("port", _port)
-          .toString();
-    }
-  }
-
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  static class TargetHealthDescription {
-
-    @Nonnull private final Target _target;
+    @Nonnull private final LoadBalancerTarget _target;
 
     @Nonnull private final TargetHealth _targetHealth;
 
     @JsonCreator
     private static TargetHealthDescription create(
-        @Nullable @JsonProperty(JSON_KEY_TARGET) Target target,
+        @Nullable @JsonProperty(JSON_KEY_TARGET) LoadBalancerTarget target,
         @Nullable @JsonProperty(JSON_KEY_TARGET_HEALTH) TargetHealth targetHealth) {
       checkNonNull(target, JSON_KEY_TARGET, "Load balancer target health");
       checkNonNull(targetHealth, JSON_KEY_TARGET_HEALTH, "Load balancer target health");
@@ -191,13 +119,13 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
       return new TargetHealthDescription(target, targetHealth);
     }
 
-    TargetHealthDescription(Target target, TargetHealth targetHealth) {
+    TargetHealthDescription(LoadBalancerTarget target, TargetHealth targetHealth) {
       _target = target;
       _targetHealth = targetHealth;
     }
 
     @Nonnull
-    public Target getTarget() {
+    public LoadBalancerTarget getTarget() {
       return _target;
     }
 

@@ -10,7 +10,6 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
-import org.batfish.representation.aws.LoadBalancerTargetHealth.Target;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealth;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
 import org.junit.Test;
@@ -35,13 +34,13 @@ public class LoadBalancerTargetHealthTest {
                     "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/target1/10b6be82e58c40a8",
                     ImmutableList.of(
                         new TargetHealthDescription(
-                            new Target("us-east-2a", "10.10.1.4", 80),
+                            new LoadBalancerTarget("us-east-2a", "10.10.1.4", 80),
                             new TargetHealth(
                                 "Health checks failed",
                                 "Target.FailedHealthChecks",
                                 HealthState.UNHEALTHY)),
                         new TargetHealthDescription(
-                            new Target("all", "10.11.1.4", 80),
+                            new LoadBalancerTarget("all", "10.11.1.4", 80),
                             new TargetHealth(
                                 "Health checks failed",
                                 "Target.FailedHealthChecks",

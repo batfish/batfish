@@ -1,0 +1,22 @@
+{
+ "LoadBalancerListeners": [
+  {
+   "Listeners": [
+    {
+     "DefaultActions": [
+      {
+       "Order": 1,
+       "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/test-lb-tg/8e891d8fcdf8ece8",
+       "Type": "forward"
+      }
+     ],
+     "ListenerArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:listener/net/test-lb/725b996cb6be8fba/bad604160f6b5da7",
+     "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/test-lb/725b996cb6be8fba",
+     "Port": 80,
+     "Protocol": "TCP"
+    }
+   ],
+   "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/test-lb/725b996cb6be8fba"
+  }
+ ]
+}

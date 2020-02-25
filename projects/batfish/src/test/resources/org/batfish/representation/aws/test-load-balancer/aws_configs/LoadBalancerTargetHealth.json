@@ -1,0 +1,29 @@
+{
+  "LoadBalancerTargetHealth": [
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/test-lb-tg/8e891d8fcdf8ece8",
+      "TargetHealthDescriptions": [
+        {
+          "HealthCheckPort": "22",
+          "Target": {
+            "Id": "i-0f4af951d61a19245",
+            "Port": 22
+          },
+          "TargetHealth": {
+            "State": "healthy"
+          }
+        },
+        {
+          "HealthCheckPort": "22",
+          "Target": {
+            "Id": "i-055b0db7be365202c",
+            "Port": 22
+          },
+          "TargetHealth": {
+            "State": "healthy"
+          }
+        }
+      ]
+    }
+  ]
+}

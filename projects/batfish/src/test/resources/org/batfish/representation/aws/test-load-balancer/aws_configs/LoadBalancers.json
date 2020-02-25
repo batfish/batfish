@@ -1,0 +1,30 @@
+{
+ "LoadBalancers": [
+  {
+   "AvailabilityZones": [
+    {
+     "LoadBalancerAddresses": [],
+     "SubnetId": "subnet-0873d71031a560a88",
+     "ZoneName": "us-east-2a"
+    },
+    {
+     "LoadBalancerAddresses": [],
+     "SubnetId": "subnet-090fe152cd18ced20",
+     "ZoneName": "us-east-2b"
+    }
+   ],
+   "CanonicalHostedZoneId": "ZLMOA37VPKANP",
+   "CreatedTime": "2020-02-25 04:56:32.326000+00:00",
+   "DNSName": "test-lb-725b996cb6be8fba.elb.us-east-2.amazonaws.com",
+   "IpAddressType": "ipv4",
+   "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/test-lb/725b996cb6be8fba",
+   "LoadBalancerName": "test-lb",
+   "Scheme": "internal",
+   "State": {
+    "Code": "active"
+   },
+   "Type": "network",
+   "VpcId": "vpc-015b20578b48c1349"
+  }
+ ]
+}

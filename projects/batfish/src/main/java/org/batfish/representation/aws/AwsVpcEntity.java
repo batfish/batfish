@@ -42,6 +42,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
   String JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK = "DestinationIpv6CidrBlock";
   String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
+  String JSON_KEY_DNS_NAME = "DNSName";
   String JSON_KEY_DOMAIN_NAME = "DomainName";
   String JSON_KEY_DOMAIN_STATUS_LIST = "DomainStatusList";
   String JSON_KEY_EGRESS = "Egress";
@@ -68,6 +69,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_IS_DEFAULT = "IsDefault";
   String JSON_KEY_KEY = "Key";
   String JSON_KEY_LISTENER_ARN = "ListenerArn";
+  String JSON_KEY_LISTENERS = "Listeners";
   String JSON_KEY_LOAD_BALANCER_ARN = "LoadBalancerArn";
   String JSON_KEY_LOAD_BALANCER_ARNS = "LoadBalancerArns";
   String JSON_KEY_LOAD_BALANCER_ATTRIBUTES = "LoadBalancerAttributes";
@@ -88,6 +90,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_OPTIONS = "Options";
   String JSON_KEY_ORDER = "Order";
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
+  String JSON_KEY_PLACEMENT = "Placement";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
   String JSON_KEY_PORT = "Port";
   String JSON_KEY_PORT_RANGE = "PortRange";

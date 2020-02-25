@@ -21,9 +21,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
 
+  static final String CROSS_ZONE_KEY = "load_balancing.cross_zone.enabled";
+
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class Attribute {
+  static class Attribute implements Serializable {
 
     @Nonnull private final String _key;
 
@@ -93,6 +95,18 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
   public LoadBalancerAttributes(String arn, List<Attribute> attributes) {
     _loadBalancerArn = arn;
     _attributes = attributes;
+  }
+
+  /**
+   * Returns whether cross zone load balancing is enabled. Assumes that it is NOT enabled if the key
+   * is not found
+   */
+  boolean getCrossZoneLoadBalancing() {
+    return _attributes.stream()
+        .filter(attr -> attr.getKey().equals(CROSS_ZONE_KEY))
+        .map(attr -> attr.getValue().equals("true"))
+        .findFirst()
+        .orElse(false);
   }
 
   @Override

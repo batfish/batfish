@@ -12,6 +12,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
 import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
+import org.batfish.representation.aws.LoadBalancerListener.Listener;
 import org.junit.Test;
 
 public class LoadBalancerListenerTest {
@@ -29,15 +30,18 @@ public class LoadBalancerListenerTest {
         region.getLoadBalancerListeners(),
         equalTo(
             ImmutableMap.of(
-                "arn:aws:elasticloadbalancing:us-east-2:554773406868:listener/net/lb-lb/6f57a43b75d8f2c1/281a594cec3f37fa",
+                "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
                 new LoadBalancerListener(
-                    "arn:aws:elasticloadbalancing:us-east-2:554773406868:listener/net/lb-lb/6f57a43b75d8f2c1/281a594cec3f37fa",
                     "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
                     ImmutableList.of(
-                        new DefaultAction(
-                            1,
-                            "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/target1/10b6be82e58c40a8",
-                            ActionType.FORWARD)),
-                    Protocol.TCP))));
+                        new Listener(
+                            "arn:aws:elasticloadbalancing:us-east-2:554773406868:listener/net/lb-lb/6f57a43b75d8f2c1/c866a2736f6c4d68",
+                            ImmutableList.of(
+                                new DefaultAction(
+                                    1,
+                                    "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/target1/10b6be82e58c40a8",
+                                    ActionType.FORWARD)),
+                            Protocol.TCP,
+                            80))))));
   }
 }

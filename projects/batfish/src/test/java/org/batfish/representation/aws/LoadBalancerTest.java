@@ -36,6 +36,7 @@ public class LoadBalancerTest {
                     ImmutableList.of(
                         new AvailabilityZone("subnet-01822d50b2db5a4a0", "us-east-2a"),
                         new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                    "lb-lb-6f57a43b75d8f2c1.elb.us-east-2.amazonaws.com",
                     "lb-lb",
                     Scheme.INTERNET_FACING,
                     Type.NETWORK,
@@ -44,6 +45,7 @@ public class LoadBalancerTest {
                 new LoadBalancer(
                     "arn-application",
                     ImmutableList.of(),
+                    "lb-lb-6f57a43b75d8f2c1.elb.us-east-2.amazonaws.com",
                     "lb3",
                     Scheme.INTERNAL,
                     Type.APPLICATION,
