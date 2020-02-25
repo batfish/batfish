@@ -5,10 +5,11 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
 /** A {@link RouteMapMatch} that matches routes based on the route's community attribute. */
 public final class RouteMapMatchCommunity implements RouteMapMatch {
@@ -27,10 +28,11 @@ public final class RouteMapMatchCommunity implements RouteMapMatch {
   public BooleanExpr toBooleanExpr(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
     return new Disjunction(
         _names.stream()
-            .filter(
-                vc.getIpCommunityLists()
-                    ::containsKey) // only handle ip community lists in the config
-            .map(name -> new MatchEntireCommunitySet(new NamedCommunitySet(name)))
+            .filter(c.getCommunitySetMatchExprs()::containsKey)
+            .map(
+                name ->
+                    new MatchCommunities(
+                        InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
             .collect(ImmutableList.toImmutableList()));
   }
 }

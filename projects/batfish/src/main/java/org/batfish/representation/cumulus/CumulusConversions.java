@@ -1307,10 +1307,10 @@ public final class CumulusConversions {
         (name, list) -> {
           if (list instanceof IpCommunityListStandard) {
             c.getCommunitySetMatchExprs()
-                    .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
+                .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
           } else if (list instanceof IpCommunityListExpanded) {
             c.getCommunitySetMatchExprs()
-                    .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
+                .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
           }
         });
 
@@ -1363,38 +1363,38 @@ public final class CumulusConversions {
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
-          IpCommunityListStandard ipCommunityListStandard) {
+      IpCommunityListStandard ipCommunityListStandard) {
     return new CommunitySetAcl(
-            ipCommunityListStandard.getLines().stream()
-                    .map(CumulusConversions::toCommunitySetAclLine)
-                    .collect(ImmutableList.toImmutableList()));
+        ipCommunityListStandard.getLines().stream()
+            .map(CumulusConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
-          IpCommunityListExpanded ipCommunityListExpanded) {
+      IpCommunityListExpanded ipCommunityListExpanded) {
     return new CommunitySetAcl(
-            ipCommunityListExpanded.getLines().stream()
-                    .map(CumulusConversions::toCommunitySetAclLine)
-                    .collect(ImmutableList.toImmutableList()));
+        ipCommunityListExpanded.getLines().stream()
+            .map(CumulusConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
-          IpCommunityListStandardLine line) {
+      IpCommunityListStandardLine line) {
     return new CommunitySetAclLine(
-            line.getAction(),
-            new CommunitySetMatchAll(
-                    line.getCommunities().stream()
-                            .map(community -> new HasCommunity(new CommunityIs(community)))
-                            .collect(ImmutableSet.toImmutableSet())));
+        line.getAction(),
+        new CommunitySetMatchAll(
+            line.getCommunities().stream()
+                .map(community -> new HasCommunity(new CommunityIs(community)))
+                .collect(ImmutableSet.toImmutableSet())));
   }
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
-          IpCommunityListExpandedLine line) {
+      IpCommunityListExpandedLine line) {
     return new CommunitySetAclLine(
-            line.getAction(),
-            new CommunitySetMatchRegex(
-                    new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-                    toJavaRegex(line.getRegex())));
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
   }
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
