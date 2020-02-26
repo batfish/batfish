@@ -19,26 +19,4 @@ public class RouteMapMatchCommunityTest {
     RouteMapMatchCommunity match = new RouteMapMatchCommunity(ImmutableList.of("M1", "M2", "M3"));
     assertThat(match.getNames(), equalTo(ImmutableList.of("M1", "M2", "M3")));
   }
-
-  @Test
-  public void testToBooleanExpr() {
-    RouteMapMatchCommunity match = new RouteMapMatchCommunity(ImmutableList.of("M1", "M2", "M3"));
-    CumulusNcluConfiguration cumulusNcluConfiguration = new CumulusNcluConfiguration();
-
-    cumulusNcluConfiguration
-        .getIpCommunityLists()
-        .putAll(
-            ImmutableMap.of(
-                "M1", new IpCommunityListExpanded("M1", LineAction.PERMIT),
-                "M2", new IpCommunityListExpanded("M2", LineAction.PERMIT)));
-    BooleanExpr result = match.toBooleanExpr(null, cumulusNcluConfiguration, null);
-
-    assertThat(
-        result,
-        equalTo(
-            new Disjunction(
-                ImmutableList.of(
-                    new MatchEntireCommunitySet(new NamedCommunitySet("M1")),
-                    new MatchEntireCommunitySet(new NamedCommunitySet("M2"))))));
-  }
 }
