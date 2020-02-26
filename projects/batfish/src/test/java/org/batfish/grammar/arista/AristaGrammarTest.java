@@ -304,6 +304,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testCommunityListExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_community_list");
+    assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
+  }
+
+  @Test
   public void testNeighborExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbors");
     {
