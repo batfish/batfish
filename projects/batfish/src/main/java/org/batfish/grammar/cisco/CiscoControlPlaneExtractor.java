@@ -3474,6 +3474,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       name = ctx.num.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
+    } else if (ctx.name_cl != null) {
+      name = ctx.name_cl.getText();
     } else {
       throw new BatfishException("Invalid standard community-list name");
     }

@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_community_list
+!
+! On Arista EOS, you can name a standard community-list even without the word `standard`
+ip community-list SOME_CL permit 1:1
+
