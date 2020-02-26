@@ -4,12 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.junit.Test;
 
 public class RouteMapMatchCommunityTest {
