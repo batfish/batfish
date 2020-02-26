@@ -619,26 +619,16 @@ public class CumulusConcatenatedGrammarTest {
       assertThat(builder.build().getMetric(), equalTo(0L));
     }
 
-    // Route-map with match on comm-list with deny and permit statements on communities.
-    // Input route has communities in reverse order.
+    // Test a route-map with expanded comm-lists against an input route whose communities don't
+    // satisfy its regex.
     {
       Bgpv4Route inRoute =
-          base.toBuilder()
-              .setCommunities(
-                  ImmutableSet.of(StandardCommunity.of(2, 2), StandardCommunity.of(1, 1)))
-              .build();
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
 
-      // Use standard comm-lists.
-      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      RoutingPolicy rp = c.getRoutingPolicies().get("Expanded_RM1");
       Bgpv4Route.Builder builder = inRoute.toBuilder();
       rp.process(inRoute, builder, Direction.IN);
-      assertThat(builder.build().getMetric(), equalTo(2L));
-
-      // Use expanded comm-lists.
-      rp = c.getRoutingPolicies().get("Expanded_RM2");
-      builder = inRoute.toBuilder();
-      rp.process(inRoute, builder, Direction.IN);
-      assertThat(builder.build().getMetric(), equalTo(2L));
+      assertThat(builder.build().getMetric(), equalTo(0L));
     }
   }
 }
