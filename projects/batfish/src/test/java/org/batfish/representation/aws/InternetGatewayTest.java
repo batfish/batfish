@@ -1,9 +1,15 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonForwarding;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
@@ -12,6 +18,8 @@ import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWA
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -136,6 +144,17 @@ public class InternetGatewayTest {
             Collections.singletonList(
                 IspModelingUtils.getAdvertiseStaticStatement(
                     new PrefixSpace(PrefixRange.fromPrefix(publicIp.toPrefix()))))));
+
+    assertThat(
+        igwConfig,
+        hasVrf(
+            Configuration.DEFAULT_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    allOf(
+                        hasPrefix(publicIp.toPrefix()),
+                        hasNextHopInterface(NULL_INTERFACE_NAME),
+                        isNonForwarding(true))))));
 
     BgpActivePeerConfig nbr =
         getOnlyElement(igwConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
