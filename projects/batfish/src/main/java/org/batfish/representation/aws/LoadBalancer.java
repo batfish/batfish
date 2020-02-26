@@ -38,7 +38,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
-import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
@@ -84,9 +83,8 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   /** Name for the filter that drops all packets that are not transformed */
   static final String DEFAULT_FILTER_NAME = "~DENY~UNMATCHED~PACKETS~";
 
-  /** A no-op transformation that helps with tracing */
-  static final Transformation TRACING_TRANSFORMATION =
-      new Transformation(TrueExpr.INSTANCE, ImmutableList.of(Noop.NOOP_DEST_NAT), null, null);
+  /** We end the transformation chain with this */
+  static final Transformation FINAL_TRANSFORMATION = null;
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -469,7 +467,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   static Transformation chainListenerTransformations(
       List<LoadBalancerTransformation> listenerTransformations) {
-    Transformation tailTransformation = TRACING_TRANSFORMATION;
+    Transformation tailTransformation = FINAL_TRANSFORMATION;
     for (int index = listenerTransformations.size() - 1; index >= 0; index--) {
       tailTransformation = listenerTransformations.get(index).toTransformation(tailTransformation);
     }

@@ -3,8 +3,8 @@ package org.batfish.representation.aws;
 import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
+import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
 import static org.batfish.representation.aws.LoadBalancer.LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX;
-import static org.batfish.representation.aws.LoadBalancer.TRACING_TRANSFORMATION;
 import static org.batfish.representation.aws.LoadBalancer.chainListenerTransformations;
 import static org.batfish.representation.aws.LoadBalancer.computeDefaultFilter;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTransformationStep;
@@ -12,7 +12,6 @@ import static org.batfish.representation.aws.LoadBalancer.computeTargetTransform
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
 import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -205,7 +204,7 @@ public class LoadBalancerTest {
         viIface.getConcreteAddress(),
         equalTo(ConcreteInterfaceAddress.create(_loadBalancerIp, 24)));
 
-    assertThat(viIface.getIncomingTransformation(), notNullValue());
+    assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getPostTransformationIncomingFilter(),
         equalTo(
@@ -284,7 +283,7 @@ public class LoadBalancerTest {
     Interface viIface = Interface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
     _loadBalancer.installTransformations(viIface, "zone1", true, region, new Warnings());
-    assertThat(viIface.getIncomingTransformation(), equalTo(TRACING_TRANSFORMATION));
+    assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getFirewallSessionInterfaceInfo(),
         equalTo(
@@ -600,7 +599,7 @@ public class LoadBalancerTest {
 
   @Test
   public void testChainListenerTransformations() {
-    assertThat(chainListenerTransformations(ImmutableList.of()), equalTo(TRACING_TRANSFORMATION));
+    assertThat(chainListenerTransformations(ImmutableList.of()), equalTo(FINAL_TRANSFORMATION));
 
     AclLineMatchExpr matchExpr =
         new MatchHeaderSpace(
@@ -611,7 +610,7 @@ public class LoadBalancerTest {
             ImmutableList.of(new LoadBalancerTransformation(matchExpr, Noop.NOOP_SOURCE_NAT))),
         equalTo(
             new Transformation(
-                matchExpr, ImmutableList.of(Noop.NOOP_SOURCE_NAT), null, TRACING_TRANSFORMATION)));
+                matchExpr, ImmutableList.of(Noop.NOOP_SOURCE_NAT), null, FINAL_TRANSFORMATION)));
   }
 
   @Test
