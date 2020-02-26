@@ -226,6 +226,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
     _listeners = listeners;
   }
 
+  @Override
   @Nonnull
   public String getId() {
     return _loadBalancerArn;

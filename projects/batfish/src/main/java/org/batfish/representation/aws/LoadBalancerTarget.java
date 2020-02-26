@@ -45,6 +45,7 @@ final class LoadBalancerTarget implements AwsVpcEntity, Serializable {
     return _availabilityZone;
   }
 
+  @Override
   @Nonnull
   public String getId() {
     return _id;
