@@ -505,4 +505,130 @@ public class CumulusConcatenatedGrammarTest {
               StandardCommunity.of(3, 2)));
     }
   }
+
+  @Test
+  public void testCommSetMatchExpr() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("comm_set_match_expr_test");
+
+    // Route-map with match on comm-list with single community.
+    // Input route has the same community.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM1");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(1L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM1");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(1L));
+    }
+
+    // Route-map with match on comm-list with multiple communities.
+    // Input route has the same communities.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+    }
+
+    // Route-map with match on comm-list with single community.
+    // Input route has additional communities.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(2, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+    }
+
+    // Route-map with match on comm-list with communities.
+    // Input route partially matches comm-list.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      Bgpv4Route.Builder builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM2");
+      builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+    }
+
+    // Route-map with match on comm-list with deny and permit statements on communities.
+    // Input route has a community that matches the deny followed by permit.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM3");
+      Bgpv4Route.Builder builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM3");
+      builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+    }
+
+    // Test a route-map with expanded comm-lists against an input route whose communities don't
+    // satisfy its regex.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+
+      RoutingPolicy rp = c.getRoutingPolicies().get("Expanded_RM1");
+      Bgpv4Route.Builder builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+    }
+  }
 }
