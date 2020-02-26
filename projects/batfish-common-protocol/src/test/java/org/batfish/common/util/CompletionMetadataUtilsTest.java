@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
@@ -184,13 +185,22 @@ public final class CompletionMetadataUtilsTest {
   public void testGetNodes() {
     String node1 = "node1";
     String node2 = "node2";
+    String humanName2 = "humanName2";
 
-    Map<String, Configuration> configs =
-        ImmutableMap.of(
-            node1, createTestConfiguration(node1, ConfigurationFormat.HOST),
-            node2, createTestConfiguration(node2, ConfigurationFormat.HOST));
+    Configuration config1 = createTestConfiguration(node1, ConfigurationFormat.HOST);
+    Configuration config2 = createTestConfiguration(node2, ConfigurationFormat.HOST);
+    config2.setHumanName(humanName2);
 
-    assertThat(getNodes(configs), equalTo(ImmutableSet.of(node1, node2)));
+    Map<String, Configuration> configs = ImmutableMap.of(node1, config1, node2, config2);
+
+    assertThat(
+        getNodes(configs),
+        equalTo(
+            ImmutableMap.of(
+                node1,
+                new NodeCompletionMetadata(null),
+                node2,
+                new NodeCompletionMetadata(humanName2))));
   }
 
   @Test
