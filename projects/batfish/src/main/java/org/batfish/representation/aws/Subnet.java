@@ -229,9 +229,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
 
     // 1. connect the internet gateway if one exists
-    // 2. for public IPs in the subnet, add static routes to enable inbound traffic
-    //  - on internet gateway toward the subnet
-    //  - on the subnet toward instances
+    // 2. create static routes for private IPs. (public IPs are NAT'd at IGW.)
     List<Ip> publicIps = findMyPublicIps(region);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
     if (optInternetGateway.isPresent()) {
