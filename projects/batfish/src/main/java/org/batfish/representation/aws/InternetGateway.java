@@ -142,16 +142,18 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
             .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
             .build();
 
-    /*
-    Create a BGP policy that announces public IPs by installing and advertising static routes
-    */
+    // In order for the backbone to know that this IGW has these public IPs, we create
+    // static null routes that will be advertised into BGP. These are non-forwarding routes so that
+    // traffic from the subnet to the public IPs of the subnet will get delivered, by leaving the
+    // IGW and then coming back in.
     PrefixSpace publicPrefixSpace = new PrefixSpace();
     privatePublicMap
         .values()
         .forEach(
             publicIp -> {
               publicPrefixSpace.addPrefix(publicIp.toPrefix());
-              addStaticRoute(cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME));
+              addStaticRoute(
+                  cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME, true));
             });
 
     installRoutingPolicyAdvertiseStatic(BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace);

@@ -183,32 +183,43 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
-    return StaticRoute.builder()
-        .setNetwork(targetPrefix)
-        .setNextHopIp(nextHopIp)
-        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-        .build();
+    return toStaticRoute(targetPrefix, nextHopIp, false);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp, boolean nonForwarding) {
+    return toStaticRoute(targetPrefix, null, nextHopIp, nonForwarding);
   }
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
-    return StaticRoute.builder()
-        .setNetwork(targetPrefix)
-        .setNextHopInterface(nextHopInterfaceName)
-        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-        .build();
+    return toStaticRoute(targetPrefix, nextHopInterfaceName, null, false);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(
+      Prefix targetPrefix, String nextHopInterfaceName, boolean nonForwarding) {
+    return toStaticRoute(targetPrefix, nextHopInterfaceName, null, nonForwarding);
   }
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
+    return toStaticRoute(targetPrefix, nextHopInterfaceName, nextHopIp, false);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(
+      Prefix targetPrefix,
+      @Nullable String nextHopInterfaceName,
+      @Nullable Ip nextHopIp,
+      boolean nonForwarding) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
         .setNextHopInterface(nextHopInterfaceName)
         .setNextHopIp(nextHopIp)
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .setNonForwarding(nonForwarding)
         .build();
   }
 
