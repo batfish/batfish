@@ -2,6 +2,7 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -12,6 +13,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
@@ -532,7 +535,12 @@ public final class AutoCompleteUtils {
         case NODE_NAME:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
-            suggestions = stringAutoComplete(query, completionMetadata.getNodes());
+            Map<String, Optional<String>> nodesWithHints =
+                toImmutableMap(
+                    completionMetadata.getNodes(),
+                    Entry::getKey,
+                    entry -> Optional.ofNullable(entry.getValue().getHumanName()));
+            suggestions = stringAutoComplete(query, nodesWithHints);
             break;
           }
         case NODE_PROPERTY_SPEC:
@@ -568,7 +576,7 @@ public final class AutoCompleteUtils {
             checkNodeRolesData(nodeRolesData, network);
             ImmutableSet<String> roles =
                 nodeRolesData.toNodeRoleDimensions().values().stream()
-                    .flatMap(d -> d.roleNamesFor(completionMetadata.getNodes()).stream())
+                    .flatMap(d -> d.roleNamesFor(completionMetadata.getNodes().keySet()).stream())
                     .collect(ImmutableSet.toImmutableSet());
             suggestions = stringAutoComplete(query, roles);
             break;
@@ -759,6 +767,28 @@ public final class AutoCompleteUtils {
     return strings.stream()
         .filter(s -> s.toLowerCase().contains(testQuery))
         .map(s -> new AutocompleteSuggestion(s, false))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a list of suggestions based on query strings.
+   *
+   * <p>The search is case-insensitive and looks for a substring match.
+   */
+  @Nonnull
+  public static List<AutocompleteSuggestion> stringAutoComplete(
+      @Nullable String query, Map<String, Optional<String>> stringsWithHints) {
+
+    String testQuery = query == null ? "" : query.toLowerCase();
+
+    return stringsWithHints.entrySet().stream()
+        .filter(
+            s ->
+                s.getKey().toLowerCase().contains(testQuery)
+                    || s.getValue()
+                        .map(hint -> hint.toLowerCase().contains(testQuery))
+                        .orElse(false))
+        .map(s -> new AutocompleteSuggestion(s.getKey(), s.getValue().orElse(null), false))
         .collect(ImmutableList.toImmutableList());
   }
 

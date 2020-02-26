@@ -1,8 +1,10 @@
 package org.batfish.common.util;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -76,8 +78,13 @@ public final class CompletionMetadataUtils {
     return mlags.build();
   }
 
-  public static Set<String> getNodes(Map<String, Configuration> configurations) {
-    return ImmutableSet.copyOf(configurations.keySet());
+  public static Map<String, NodeCompletionMetadata> getNodes(
+      Map<String, Configuration> configurations) {
+    return configurations.values().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Configuration::getHostname,
+                config -> new NodeCompletionMetadata(config.getHumanName())));
   }
 
   public static Set<String> getPrefixes(Map<String, Configuration> configurations) {
