@@ -284,7 +284,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
           loadBalancerListener.getListeners().stream()
               .map(
                   listener ->
-                      computerListenerTransformation(
+                      computeListenerTransformation(
                           listener,
                           lbAvailabilityZoneName,
                           viIface.getConcreteAddress().getIp(),
@@ -310,7 +310,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
    */
   @Nullable
   @VisibleForTesting
-  LoadBalancerTransformation computerListenerTransformation(
+  LoadBalancerTransformation computeListenerTransformation(
       LoadBalancerListener.Listener listener,
       String lbAvailabilityZoneName,
       Ip loadBalancerIp,

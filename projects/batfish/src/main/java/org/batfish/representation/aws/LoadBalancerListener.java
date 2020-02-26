@@ -77,7 +77,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -177,7 +177,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -238,7 +238,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

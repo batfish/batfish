@@ -1,4 +1,6 @@
-#################### common ####################
+#################### this file defines the setup used for test-load-balancer.
+#################### it is not actively used for the test -- the setup was created using it.
+#################### then we pulled the AWS data and committed under aws_configs
 # change profile as necessary. Generally profile is "default"
 variable "profile" {
   default     = "ratul.org"

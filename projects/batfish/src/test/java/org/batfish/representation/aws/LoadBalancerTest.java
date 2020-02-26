@@ -255,7 +255,7 @@ public class LoadBalancerTest {
             chainListenerTransformations(
                 ImmutableList.of(
                     Objects.requireNonNull(
-                        _loadBalancer.computerListenerTransformation(
+                        _loadBalancer.computeListenerTransformation(
                             loadBalancerListener.getListeners().get(0),
                             "zone1",
                             _loadBalancerIp,
@@ -263,7 +263,7 @@ public class LoadBalancerTest {
                             region,
                             new Warnings())),
                     Objects.requireNonNull(
-                        _loadBalancer.computerListenerTransformation(
+                        _loadBalancer.computeListenerTransformation(
                             loadBalancerListener.getListeners().get(1),
                             "zone1",
                             _loadBalancerIp,
@@ -332,7 +332,7 @@ public class LoadBalancerTest {
             .build();
 
     LoadBalancerTransformation loadBalancerTransformation =
-        _loadBalancer.computerListenerTransformation(
+        _loadBalancer.computeListenerTransformation(
             listener, "zone", _loadBalancerIp, true, region, new Warnings());
 
     assertThat(
@@ -370,7 +370,7 @@ public class LoadBalancerTest {
             .build();
 
     assertThat(
-        _loadBalancer.computerListenerTransformation(
+        _loadBalancer.computeListenerTransformation(
             listener, "zone", _loadBalancerIp, true, region, new Warnings()),
         nullValue());
   }
