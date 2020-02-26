@@ -38,7 +38,6 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.representation.aws.Instance.Placement;
 import org.batfish.representation.aws.Instance.Status;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -76,8 +75,7 @@ public class InstanceTest {
                     ImmutableList.of("eni-a9d44c8a"),
                     Ip.parse("10.100.1.20"),
                     ImmutableMap.of("Name", "fin-app-02"),
-                    Status.PENDING,
-                    new Placement("us-west-2a")),
+                    Status.PENDING),
                 new Instance(
                     "i-05f467abe21e9b883",
                     "vpc-815775e7",
@@ -94,8 +92,7 @@ public class InstanceTest {
                         "ratul",
                         "Name",
                         "shutdown"),
-                    Status.STOPPED,
-                    new Placement("us-west-2a")))));
+                    Status.STOPPED))));
   }
 
   @Test

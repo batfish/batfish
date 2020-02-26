@@ -452,10 +452,13 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
                 targetHealthDescription.getTarget().getAvailabilityZone());
       case INSTANCE:
         Instance instance = region.getInstances().get(targetHealthDescription.getTarget().getId());
-        return instance != null
-            && instance.getPlacement() != null
+        if (instance == null) {
+          return false;
+        }
+        Subnet subnet = region.getSubnets().get(instance.getSubnetId());
+        return subnet != null
             && (crossZoneLoadBalancing
-                || lbAvailabilityZoneName.equals(instance.getPlacement().getAvailabilityZone()));
+                || lbAvailabilityZoneName.equals(subnet.getAvailabilityZone()));
       default:
         throw new IllegalArgumentException(
             "Unknown target group type " + targetGroup.getTargetType());

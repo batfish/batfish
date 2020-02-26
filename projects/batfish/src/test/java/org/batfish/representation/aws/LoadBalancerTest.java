@@ -46,7 +46,6 @@ import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.batfish.representation.aws.Instance.Placement;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
@@ -515,11 +514,9 @@ public class LoadBalancerTest {
 
   @Test
   public void testIsValidTarget_instanceTarget() {
+    Subnet subnet = new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone");
     Instance instance =
-        Instance.builder()
-            .setInstanceId("instance")
-            .setPlacement(new Placement("targetZone"))
-            .build();
+        Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
     TargetGroup targetGroup =
         new TargetGroup(
             "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.INSTANCE);
@@ -528,7 +525,10 @@ public class LoadBalancerTest {
             new LoadBalancerTarget("targetZone", instance.getId(), 80),
             new TargetHealth(HealthState.HEALTHY));
     Region region =
-        Region.builder("r1").setInstances(ImmutableMap.of(instance.getId(), instance)).build();
+        Region.builder("r1")
+            .setInstances(ImmutableMap.of(instance.getId(), instance))
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
+            .build();
 
     // LB in same zone; cross zone load balancing is off
     assertTrue(isValidTarget(targetHealthDescription, targetGroup, "targetZone", false, region));
