@@ -758,6 +758,7 @@ final class Region implements Serializable {
    * <p>AWS limits VPCs to one gateway. If more are present, return the first one found.
    */
   Optional<InternetGateway> findInternetGateway(String vpcId) {
+    // AWS does not allow multiple internet gateways to be attached to a VPC
     return _internetGateways.values().stream()
         .filter(igw -> igw.getAttachmentVpcIds().contains(vpcId))
         .findFirst();
