@@ -135,11 +135,8 @@ public class AwsConfigurationLoadBalancerTest {
 
   private static void testUnidirectionalTrace(
       Flow flow, FlowDisposition expectedDisposition, List<String> expectedPath) {
-    List<Trace> reverseTraces =
-        _tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
-
-    Trace reverseTrace = getOnlyElement(reverseTraces.iterator());
-    testTrace(reverseTrace, expectedDisposition, expectedPath);
+    List<Trace> traces = _tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
+    testTrace(getOnlyElement(traces.iterator()), expectedDisposition, expectedPath);
   }
 
   private static void testBidirectionalTrace(

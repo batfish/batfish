@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -36,5 +38,27 @@ final class LoadBalancerTransformation {
   @Nonnull
   public Transformation toTransformation(@Nullable Transformation elseTransformation) {
     return new Transformation(_guard, ImmutableList.of(_step), null, elseTransformation);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof LoadBalancerTransformation)) {
+      return false;
+    }
+    LoadBalancerTransformation that = (LoadBalancerTransformation) o;
+    return _guard.equals(that._guard) && _step.equals(that._step);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_guard, _step);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("_guard", _guard).add("_step", _step).toString();
   }
 }

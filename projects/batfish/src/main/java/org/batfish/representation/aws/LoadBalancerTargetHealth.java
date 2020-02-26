@@ -50,7 +50,11 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
       return new TargetHealth(description, reason, HealthState.valueOf(state.toUpperCase()));
     }
 
-    TargetHealth(String description, String reason, HealthState state) {
+    TargetHealth(HealthState state) {
+      this(null, null, state);
+    }
+
+    TargetHealth(@Nullable String description, @Nullable String reason, HealthState state) {
       _description = description;
       _reason = reason;
       _state = state;

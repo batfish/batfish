@@ -1,7 +1,10 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.LoadBalancerAttributes.CROSS_ZONE_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -33,5 +36,27 @@ public class LoadBalancerAttributesTest {
                     ImmutableList.of(
                         new Attribute("load_balancing.cross_zone.enabled", "false"),
                         new Attribute("access_logs.s3.prefix", ""))))));
+  }
+
+  @Test
+  public void testGetCrossZoneLoadBalancing() {
+    // key does not exist
+    assertFalse(new LoadBalancerAttributes("arn", ImmutableList.of()).getCrossZoneLoadBalancing());
+
+    assertFalse(
+        new LoadBalancerAttributes("arn", ImmutableList.of(new Attribute(CROSS_ZONE_KEY, "false")))
+            .getCrossZoneLoadBalancing());
+
+    assertTrue(
+        new LoadBalancerAttributes("arn", ImmutableList.of(new Attribute(CROSS_ZONE_KEY, "true")))
+            .getCrossZoneLoadBalancing());
+
+    // first one winds
+    assertFalse(
+        new LoadBalancerAttributes(
+                "arn",
+                ImmutableList.of(
+                    new Attribute(CROSS_ZONE_KEY, "false"), new Attribute(CROSS_ZONE_KEY, "true")))
+            .getCrossZoneLoadBalancing());
   }
 }
