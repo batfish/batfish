@@ -1362,7 +1362,7 @@ public final class CumulusConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+  private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       IpCommunityListStandard ipCommunityListStandard) {
     return new CommunitySetAcl(
         ipCommunityListStandard.getLines().stream()
@@ -1370,7 +1370,7 @@ public final class CumulusConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+  private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       IpCommunityListExpanded ipCommunityListExpanded) {
     return new CommunitySetAcl(
         ipCommunityListExpanded.getLines().stream()
