@@ -1,9 +1,12 @@
 package org.batfish.common.autocomplete;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -23,5 +26,11 @@ public final class NodeCompletionMetadataTest {
     NodeCompletionMetadata clone =
         BatfishObjectMapper.clone(metadata, NodeCompletionMetadata.class);
     assertEquals(metadata, clone);
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    NodeCompletionMetadata metadata = new NodeCompletionMetadata("a");
+    assertThat(SerializationUtils.clone(metadata), equalTo(metadata));
   }
 }

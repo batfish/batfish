@@ -2,6 +2,7 @@ package org.batfish.common.autocomplete;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -9,7 +10,7 @@ import org.batfish.datamodel.Configuration;
 
 /** Metadata about a {@link org.batfish.datamodel.Configuration} needed for autocomplete. */
 @ParametersAreNonnullByDefault
-public final class NodeCompletionMetadata {
+public final class NodeCompletionMetadata implements Serializable {
   private static final String PROP_HUMAN_NAME = "humanName";
 
   @Nullable private final String _humanName;
