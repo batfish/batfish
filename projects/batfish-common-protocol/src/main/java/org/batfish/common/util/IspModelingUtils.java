@@ -206,6 +206,10 @@ public final class IspModelingUtils {
       return _name;
     }
 
+    /**
+     * Returns the prefixes that the ISP should announce to the Internet over the BGP connection
+     * (beyond just passing along what it hears from other connected nodes)
+     */
     @Nonnull
     public Set<Prefix> getAdditionalPrefixesToInternet() {
       return _additionalPrefixesToInternet;
