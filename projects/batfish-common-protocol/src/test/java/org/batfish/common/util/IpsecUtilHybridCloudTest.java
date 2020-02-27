@@ -1,10 +1,11 @@
 package org.batfish.common.util;
 
-import static org.batfish.common.util.IpsecUtil.*;
+import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
+import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.datamodel.ConfigurationFormat.AWS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.empty;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.MutableValueGraph;
