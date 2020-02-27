@@ -53,6 +53,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -83,7 +84,8 @@ public final class IspModelingUtils {
           INTERNET_OUT_SUBNET.getLastHostIp().toIpSpace());
 
   static final String EXPORT_POLICY_ON_INTERNET = "exportPolicyOnInternet";
-  static final String EXPORT_POLICY_ON_ISP = "exportPolicyOnIsp";
+  static final String EXPORT_POLICY_ON_ISP_TO_CUSTOMERS = "exportPolicyOnIspToCustomers";
+  static final String EXPORT_POLICY_ON_ISP_TO_INTERNET = "exportPolicyOnIspToInternet";
   private static final Ip FIRST_EVEN_INTERNET_IP = Ip.parse("240.1.1.2");
   static final long INTERNET_AS = 65537L;
   public static final String INTERNET_HOST_NAME = "internet";
@@ -98,6 +100,9 @@ public final class IspModelingUtils {
           Prefix.parse("172.16.0.0/12"),
           Prefix.parse("192.168.0.0/16"));
 
+  /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
+  static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
+
   public static String getDefaultIspNodeName(Long asn) {
     return String.format("%s_%s", "isp", asn);
   }
@@ -111,9 +116,14 @@ public final class IspModelingUtils {
     private @Nonnull List<ConcreteInterfaceAddress> _interfaceAddresses;
     private @Nonnull List<BgpActivePeerConfig> _bgpActivePeerConfigs;
     private @Nonnull String _name;
+    private @Nonnull Set<Prefix> _additionalPrefixesToInternet;
 
     IspInfo(long asn, String name) {
-      this(asn, new ArrayList<>(), new ArrayList<>(), name);
+      this(asn, new ArrayList<>(), new ArrayList<>(), name, ImmutableSet.of());
+    }
+
+    IspInfo(long asn, String name, Set<Prefix> additionalPrefixesToInternet) {
+      this(asn, new ArrayList<>(), new ArrayList<>(), name, additionalPrefixesToInternet);
     }
 
     IspInfo(
@@ -121,10 +131,20 @@ public final class IspModelingUtils {
         List<ConcreteInterfaceAddress> interfaceAddresses,
         List<BgpActivePeerConfig> bgpActivePeerConfigs,
         String name) {
+      this(asn, interfaceAddresses, bgpActivePeerConfigs, name, ImmutableSet.of());
+    }
+
+    IspInfo(
+        long asn,
+        List<ConcreteInterfaceAddress> interfaceAddresses,
+        List<BgpActivePeerConfig> bgpActivePeerConfigs,
+        String name,
+        Set<Prefix> additionalPrefixesToInternet) {
       _asn = asn;
       _interfaceAddresses = interfaceAddresses;
       _bgpActivePeerConfigs = bgpActivePeerConfigs;
       _name = name;
+      _additionalPrefixesToInternet = ImmutableSet.copyOf(additionalPrefixesToInternet);
     }
 
     void addInterfaceAddress(ConcreteInterfaceAddress interfaceAddress) {
@@ -184,6 +204,15 @@ public final class IspModelingUtils {
     @Nonnull
     public String getName() {
       return _name;
+    }
+
+    /**
+     * Returns the prefixes that the ISP should announce to the Internet over the BGP connection
+     * (beyond just passing along what it hears from other connected nodes)
+     */
+    @Nonnull
+    public Set<Prefix> getAdditionalPrefixesToInternet() {
+      return _additionalPrefixesToInternet;
     }
   }
 
@@ -404,7 +433,9 @@ public final class IspModelingUtils {
           .setLocalAs(ispAs)
           .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
           .setIpv4UnicastAddressFamily(
-              Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
+              Ipv4UnicastAddressFamily.builder()
+                  .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_INTERNET)
+                  .build())
           .build();
 
       BgpActivePeerConfig.builder()
@@ -493,18 +524,21 @@ public final class IspModelingUtils {
     }
     for (BgpActivePeerConfig bgpActivePeerConfig : validBgpActivePeerConfigs) {
       Long asn = bgpActivePeerConfig.getRemoteAsns().least();
+      // Pick the first name we find; else, use default
+      String ispName =
+          ispNodeInfos.stream()
+              .filter(i -> i.getAsn() == asn)
+              .map(IspNodeInfo::getName)
+              .findFirst()
+              .orElse(getDefaultIspNodeName(asn));
+      // Merge the sets of additional announcements to internet is merging their prefixes
+      Set<Prefix> additionalPrefixes =
+          ispNodeInfos.stream()
+              .filter(i -> i.getAsn() == asn)
+              .flatMap(i -> i.getAdditionalAnnouncements().stream().map(IspAnnouncement::getPrefix))
+              .collect(ImmutableSet.toImmutableSet());
       IspInfo ispInfo =
-          allIspInfos.computeIfAbsent(
-              asn,
-              k ->
-                  new IspInfo(
-                      asn,
-                      // if we have a name pick that; else default name
-                      ispNodeInfos.stream()
-                          .filter(i -> i.getAsn() == asn)
-                          .map(i -> i.getName())
-                          .findFirst()
-                          .orElse(getDefaultIspNodeName(asn))));
+          allIspInfos.computeIfAbsent(asn, k -> new IspInfo(asn, ispName, additionalPrefixes));
       // merging ISP's interface addresses and eBGP confs from the current configuration
       ispInfo.addInterfaceAddress(
           ConcreteInterfaceAddress.create(
@@ -535,9 +569,32 @@ public final class IspModelingUtils {
             .setDeviceModel(DeviceModel.BATFISH_ISP)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
-    ispConfiguration.setRoutingPolicies(
-        ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getRoutingPolicyForIsp(ispConfiguration)));
     Vrf defaultVrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
+
+    // add a static route for each additional prefix announced to the internet
+    ispConfiguration
+        .getDefaultVrf()
+        .setStaticRoutes(
+            ImmutableSortedSet.copyOf(
+                ispInfo.getAdditionalPrefixesToInternet().stream()
+                    .map(
+                        prefix ->
+                            StaticRoute.builder()
+                                .setNetwork(prefix)
+                                .setNextHopInterface(NULL_INTERFACE_NAME)
+                                .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
+                                .build())
+                    .collect(ImmutableSet.toImmutableSet())));
+
+    PrefixSpace prefixSpace = new PrefixSpace();
+    ispInfo.getAdditionalPrefixesToInternet().forEach(prefixSpace::addPrefix);
+
+    ispConfiguration.setRoutingPolicies(
+        ImmutableSortedMap.of(
+            EXPORT_POLICY_ON_ISP_TO_CUSTOMERS,
+            installRoutingPolicyForIspToCustomers(ispConfiguration),
+            EXPORT_POLICY_ON_ISP_TO_INTERNET,
+            installRoutingPolicyForIspToInternet(ispConfiguration, prefixSpace)));
 
     ispInfo
         .getInterfaceAddresses()
@@ -636,17 +693,32 @@ public final class IspModelingUtils {
             Statements.ExitAccept.toStaticStatement()));
   }
 
+  /** Returns a routing policy statement that advertises all BGP routes */
+  public static Statement getAdvertiseBgpStatement() {
+    return new If(
+        new MatchProtocol(RoutingProtocol.BGP),
+        ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
+  }
+
   /** Creates a routing policy to export all BGP routes */
   @VisibleForTesting
-  static RoutingPolicy getRoutingPolicyForIsp(Configuration isp) {
+  static RoutingPolicy installRoutingPolicyForIspToCustomers(Configuration isp) {
     return RoutingPolicy.builder()
-        .setName(EXPORT_POLICY_ON_ISP)
+        .setName(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+        .setOwner(isp)
+        .setStatements(Collections.singletonList(getAdvertiseBgpStatement()))
+        .build();
+  }
+
+  /** Creates a routing policy to export all BGP and static routes */
+  @VisibleForTesting
+  static RoutingPolicy installRoutingPolicyForIspToInternet(
+      Configuration isp, PrefixSpace prefixSpace) {
+    return RoutingPolicy.builder()
+        .setName(EXPORT_POLICY_ON_ISP_TO_INTERNET)
         .setOwner(isp)
         .setStatements(
-            Collections.singletonList(
-                new If(
-                    new MatchProtocol(RoutingProtocol.BGP),
-                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
+            ImmutableList.of(getAdvertiseBgpStatement(), getAdvertiseStaticStatement(prefixSpace)))
         .build();
   }
 
@@ -681,7 +753,9 @@ public final class IspModelingUtils {
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
         .setLocalAs(bgpActivePeerConfig.getRemoteAsns().least())
         .setIpv4UnicastAddressFamily(
-            Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+                .build())
         .build();
   }
 }

@@ -132,8 +132,8 @@ public class AwsConfigurationPublicSubnetTest {
     testTraceNodesAndDisposition(
         IspModelingUtils.INTERNET_HOST_NAME,
         Ip.parse("54.191.107.23"),
-        FlowDisposition.EXITS_NETWORK,
-        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
+        FlowDisposition.NULL_ROUTED,
+        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME));
   }
 
   @Test
