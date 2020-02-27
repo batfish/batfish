@@ -1,17 +1,22 @@
 package org.batfish.common;
 
+import static com.google.common.base.Functions.constant;
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.function.Function.identity;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Grouping of various snapshot properties used for autocomplete */
@@ -29,7 +34,8 @@ public final class CompletionMetadata implements Serializable {
 
     private Set<String> _mlagIds;
 
-    private Set<String> _nodes;
+    // mapping: hostname --> humanName
+    private Map<String, NodeCompletionMetadata> _nodes;
 
     private Set<String> _prefixes;
 
@@ -80,7 +86,15 @@ public final class CompletionMetadata implements Serializable {
     }
 
     public @Nonnull Builder setNodes(Set<String> nodes) {
-      _nodes = ImmutableSet.copyOf(nodes);
+      return setNodes(
+          nodes.stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      identity(), constant(new NodeCompletionMetadata(null)))));
+    }
+
+    public @Nonnull Builder setNodes(Map<String, NodeCompletionMetadata> nodes) {
+      _nodes = ImmutableMap.copyOf(nodes);
       return this;
     }
 
@@ -136,7 +150,7 @@ public final class CompletionMetadata implements Serializable {
 
   private final Set<String> _mlagIds;
 
-  private final Set<String> _nodes;
+  private final Map<String, NodeCompletionMetadata> _nodes;
 
   private final Set<String> _prefixes;
 
@@ -162,7 +176,7 @@ public final class CompletionMetadata implements Serializable {
       @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
       @Nullable @JsonProperty(PROP_IPS) Set<String> ips,
       @Nullable @JsonProperty(PROP_MLAG_IDS) Set<String> mlagIds,
-      @Nullable @JsonProperty(PROP_NODES) Set<String> nodes,
+      @Nullable @JsonProperty(PROP_NODES) Map<String, NodeCompletionMetadata> nodes,
       @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
       @Nullable @JsonProperty(PROP_ROUTING_POLICY_NAMES) Set<String> routingPolicyNames,
       @Nullable @JsonProperty(PROP_STRUCTURE_NAMES) Set<String> structureNames,
@@ -173,7 +187,7 @@ public final class CompletionMetadata implements Serializable {
         firstNonNull(interfaces, ImmutableSet.of()),
         firstNonNull(ips, ImmutableSet.of()),
         firstNonNull(mlagIds, ImmutableSet.of()),
-        firstNonNull(nodes, ImmutableSet.of()),
+        firstNonNull(nodes, ImmutableMap.of()),
         firstNonNull(prefixes, ImmutableSet.of()),
         firstNonNull(routingPolicyNames, ImmutableSet.of()),
         firstNonNull(structureNames, ImmutableSet.of()),
@@ -186,7 +200,7 @@ public final class CompletionMetadata implements Serializable {
       Set<NodeInterfacePair> interfaces,
       Set<String> ips,
       Set<String> mlagIds,
-      Set<String> nodes,
+      Map<String, NodeCompletionMetadata> nodes,
       Set<String> prefixes,
       Set<String> routingPolicyNames,
       Set<String> structureNames,
@@ -231,7 +245,7 @@ public final class CompletionMetadata implements Serializable {
 
   @JsonProperty(PROP_NODES)
   @Nonnull
-  public Set<String> getNodes() {
+  public Map<String, NodeCompletionMetadata> getNodes() {
     return _nodes;
   }
 
