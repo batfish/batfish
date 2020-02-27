@@ -1033,28 +1033,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "subnet-8d0cbdeb" : {
-            "name" : "subnet-8d0cbdeb",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-8d0cbdeb",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
           }
         },
         "routingPolicies" : {
@@ -1154,15 +1132,6 @@
                 "metric" : 0,
                 "network" : "10.0.0.0/24",
                 "nextHopInterface" : "subnet-62f14104",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "10.0.1.0/24",
-                "nextHopInterface" : "subnet-8d0cbdeb",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
@@ -4196,28 +4165,6 @@
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
-          "igw-fac5839d" : {
-            "name" : "igw-fac5839d",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-fac5839d",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-8d0cbdeb" : {
             "name" : "subnet-8d0cbdeb",
             "active" : true,

@@ -17,6 +17,7 @@ import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -356,6 +357,55 @@ public class SubnetTest {
                     privatePrefix,
                     interfaceNameToRemote(vpcConfig),
                     Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())))));
+  }
+
+  /** Test that we do not create a link to the VPC's IGW if the subnet is private. */
+  @Test
+  public void testToConfigurationNodePrivateIgw() {
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of());
+    Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    InternetGateway igw = new InternetGateway("igw", ImmutableList.of(vpc.getId()));
+    Configuration igwConfig = Utils.newAwsConfiguration(igw.getId(), "awstest");
+
+    Subnet subnet = new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", vpc.getId(), "zone");
+
+    Region region =
+        Region.builder("region")
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setInternetGateways(ImmutableMap.of(igw.getId(), igw))
+            .setRouteTables(
+                ImmutableMap.of(
+                    "rt1",
+                    new RouteTable(
+                        "rt1",
+                        vpc.getId(),
+                        ImmutableList.of(new Association(false, subnet.getId())),
+                        ImmutableList.of(
+                            new RouteV4(
+                                Prefix.parse("1.1.1.1/32"),
+                                State.ACTIVE,
+                                "local",
+                                TargetType.Gateway)))))
+            .build();
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(
+            ImmutableMap.of(
+                vpcConfig.getHostname(), vpcConfig, igwConfig.getHostname(), igwConfig));
+
+    Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
+    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
+
+    // should have only two interfaces -- one toward instances and one toward the VPC router
+    assertThat(
+        subnetCfg.getAllInterfaces().keySet(),
+        equalTo(
+            ImmutableSet.of(instancesInterfaceName("subnet"), interfaceNameToRemote(vpcConfig))));
+
+    // the internet gateway should have any interfaces
+    assertTrue(igwConfig.getAllInterfaces().isEmpty());
   }
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
