@@ -9,6 +9,7 @@ package org.batfish.datamodel;
 public enum DeviceModel {
   AWS_EC2_INSTANCE,
   AWS_ELASTICSEARCH_DOMAIN,
+  AWS_ELB_NETWORK,
   AWS_INTERNET_GATEWAY,
   AWS_NAT_GATEWAY,
   AWS_RDS_INSTANCE,

@@ -1,0 +1,17 @@
+{
+  "LoadBalancerAttributes": [
+    {
+      "Attributes": [
+        {
+          "Key": "load_balancing.cross_zone.enabled",
+          "Value": "false"
+        },
+        {
+          "Key": "access_logs.s3.prefix",
+          "Value": ""
+        }
+      ],
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1"
+    }
+  ]
+}

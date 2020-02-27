@@ -1,0 +1,35 @@
+{
+  "LoadBalancerTargetHealth": [
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/target1/10b6be82e58c40a8",
+      "TargetHealthDescriptions": [
+        {
+          "HealthCheckPort": "80",
+          "Target": {
+            "AvailabilityZone": "us-east-2a",
+            "Id": "10.10.1.4",
+            "Port": 80
+          },
+          "TargetHealth": {
+            "Description": "Health checks failed",
+            "Reason": "Target.FailedHealthChecks",
+            "State": "unhealthy"
+          }
+        },
+        {
+          "HealthCheckPort": "80",
+          "Target": {
+            "AvailabilityZone": "all",
+            "Id": "10.11.1.4",
+            "Port": 80
+          },
+          "TargetHealth": {
+            "Description": "Health checks failed",
+            "Reason": "Target.FailedHealthChecks",
+            "State": "healthy"
+          }
+        }
+      ]
+    }
+  ]
+}

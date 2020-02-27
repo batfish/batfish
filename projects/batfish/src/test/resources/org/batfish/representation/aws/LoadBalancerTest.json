@@ -1,0 +1,60 @@
+{
+  "LoadBalancers": [
+    {
+      "AvailabilityZones": [
+        {
+          "LoadBalancerAddresses": [],
+          "SubnetId": "subnet-01822d50b2db5a4a0",
+          "ZoneName": "us-east-2a"
+        },
+        {
+          "LoadBalancerAddresses": [],
+          "SubnetId": "subnet-09f78a95e9df6b959",
+          "ZoneName": "us-east-2b"
+        }
+      ],
+      "CanonicalHostedZoneId": "ZLMOA37VPKANP",
+      "CreatedTime": "2020-02-22 05:31:21.816000+00:00",
+      "DNSName": "lb-lb-6f57a43b75d8f2c1.elb.us-east-2.amazonaws.com",
+      "IpAddressType": "ipv4",
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
+      "LoadBalancerName": "lb-lb",
+      "Scheme": "internet-facing",
+      "State": {
+        "Code": "active"
+      },
+      "Type": "network",
+      "VpcId": "vpc-08afc01f5013ddc43"
+    },
+    {
+      "AvailabilityZones": [
+      ],
+      "CanonicalHostedZoneId": "ZLMOA37VPKANP",
+      "DNSName": "lb-lb-6f57a43b75d8f2c1.elb.us-east-2.amazonaws.com",
+      "IpAddressType": "ipv4",
+      "LoadBalancerArn": "arn-failed",
+      "LoadBalancerName": "lb2",
+      "Scheme": "internet-facing",
+      "State": {
+        "Code": "failed"
+      },
+      "Type": "network",
+      "VpcId": "vpc-08afc01f5013ddc43"
+    },
+    {
+      "AvailabilityZones": [
+      ],
+      "CanonicalHostedZoneId": "ZLMOA37VPKANP",
+      "DNSName": "lb-lb-6f57a43b75d8f2c1.elb.us-east-2.amazonaws.com",
+      "IpAddressType": "ipv4",
+      "LoadBalancerArn": "arn-application",
+      "LoadBalancerName": "lb3",
+      "Scheme": "internal",
+      "State": {
+        "Code": "active"
+      },
+      "Type": "application",
+      "VpcId": "vpc-08afc01f5013ddc43"
+    }
+  ]
+}

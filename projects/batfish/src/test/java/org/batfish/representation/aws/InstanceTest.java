@@ -73,6 +73,7 @@ public class InstanceTest {
                     "subnet-9a0c48fc",
                     ImmutableList.of("sg-adcd87d0"),
                     ImmutableList.of("eni-a9d44c8a"),
+                    Ip.parse("10.100.1.20"),
                     ImmutableMap.of("Name", "fin-app-02"),
                     Status.PENDING),
                 new Instance(
@@ -81,6 +82,7 @@ public class InstanceTest {
                     "subnet-9a0c48fc",
                     ImmutableList.of("sg-adcd87d0"),
                     ImmutableList.of("eni-bd11cc9d"),
+                    Ip.parse("10.100.1.71"),
                     ImmutableMap.of(
                         "purpose",
                         "solarwinds",
