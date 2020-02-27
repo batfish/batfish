@@ -13,7 +13,14 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.*;
+
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.junit.Before;
 import org.junit.Test;
