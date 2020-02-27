@@ -228,26 +228,23 @@ public class Subnet implements AwsVpcEntity, Serializable {
           vgwConfig, toStaticRoute(_cidrBlock, interfaceNameToRemote(cfgNode), nhipOnVgw));
     }
 
-    // 1. connect the internet gateway if one exists
-    // 2. create static routes for private IPs. (public IPs are NAT'd at IGW.)
-    List<Ip> publicIps = findMyPublicIps(region);
+    // 1. connect the internet gateway if its a public subnet
+    // 2. create static routes on it for the subnet's prefix
+    Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
-    if (optInternetGateway.isPresent()) {
+    if (optInternetGateway.isPresent()
+        && routeTable.isPresent()
+        && isPublicSubnet(optInternetGateway.get(), routeTable.get())) {
+      cfgNode.setDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC);
       Configuration igwConfig =
           awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
       connect(awsConfiguration, cfgNode, igwConfig);
       Ip nhipOnIgw = getInterfaceLinkLocalIp(cfgNode, igwConfig.getHostname());
       addStaticRoute(
           igwConfig, toStaticRoute(_cidrBlock, interfaceNameToRemote(cfgNode), nhipOnIgw));
-    } else if (!publicIps.isEmpty()) {
-      warnings.redFlag(
-          String.format(
-              "Internet gateway not found for subnet %s in vpc %s with public IPs %s",
-              _subnetId, _vpcId, publicIps));
     }
 
     // process route tables to get outbound traffic going
-    Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     if (!routeTable.isPresent()) {
       warnings.redFlag(
           String.format("Route table not found for subnet %s in vpc %s", _subnetId, _vpcId));
@@ -267,15 +264,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
                       optVpnGateway.orElse(null),
                       awsConfiguration,
                       warnings);
-                }
-                // A public subnet is a subnet that’s associated with a route table that has a
-                // route to an Internet gateway.
-                // https://docs.amazonaws.cn/en_us/vpc/latest/userguide/VPC_Scenario2.html
-                if (route.getTargetType() == TargetType.Gateway
-                    && optInternetGateway
-                        .map(g -> g.getId().equals(route.getTarget()))
-                        .orElse(false)) {
-                  cfgNode.setDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC);
                 }
               });
     }
@@ -299,13 +287,16 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
-  private List<Ip> findMyPublicIps(Region region) {
-    return region.getNetworkInterfaces().values().stream()
-        .filter(ni -> ni.getSubnetId().equals(_subnetId))
-        .flatMap(ni -> ni.getPrivateIpAddresses().stream())
-        .map(PrivateIpAddress::getPublicIp)
-        .filter(Objects::nonNull)
-        .collect(ImmutableList.toImmutableList());
+  /**
+   * A public subnet is one whose route table has a route to an Internet gateway.
+   * https://docs.amazonaws.cn/en_us/vpc/latest/userguide/VPC_Scenario2.html
+   */
+  private static boolean isPublicSubnet(InternetGateway internetGateway, RouteTable routeTable) {
+    return routeTable.getRoutes().stream()
+        .anyMatch(
+            route ->
+                route.getTargetType() == TargetType.Gateway
+                    && internetGateway.getId().equals(route.getTarget()));
   }
 
   /**
