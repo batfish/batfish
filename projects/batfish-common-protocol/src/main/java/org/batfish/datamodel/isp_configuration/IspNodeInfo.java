@@ -6,26 +6,39 @@ import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Prefix;
 
 /** Information about auto-generated ISP node */
+@ParametersAreNonnullByDefault
 public class IspNodeInfo {
   private static final String PROP_ASN = "asn";
   private static final String PROP_NAME = "name";
+  private static final String PROP_ADDITIONAL_PREFIXES_TO_INTERNET = "additionalPrefixesToInternet";
 
   private final long _asn;
 
   @Nonnull private final String _name;
 
-  public IspNodeInfo(long asn, @Nonnull String name) {
+  @Nonnull private final List<Prefix> _additionalPrefixes;
+
+  public IspNodeInfo(long asn, String name) {
+    this(asn, name, ImmutableList.of());
+  }
+
+  public IspNodeInfo(long asn, String name, List<Prefix> additionalPrefixes) {
     _asn = asn;
     _name = name;
+    _additionalPrefixes = additionalPrefixes;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -33,19 +46,27 @@ public class IspNodeInfo {
       return false;
     }
     IspNodeInfo that = (IspNodeInfo) o;
-    return _asn == that._asn && _name.equals(that._name);
+    return _asn == that._asn
+        && _name.equals(that._name)
+        && _additionalPrefixes.equals(that._additionalPrefixes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _name);
+    return Objects.hash(_asn, _name, _additionalPrefixes);
   }
 
   @JsonCreator
   private static IspNodeInfo jsonCreator(
-      @JsonProperty(PROP_ASN) @Nullable Long asn, @JsonProperty(PROP_NAME) @Nullable String name) {
+      @JsonProperty(PROP_ASN) @Nullable Long asn,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @Nullable @JsonProperty(PROP_ADDITIONAL_PREFIXES_TO_INTERNET)
+          List<Prefix> additionalPrefixes) {
     checkArgument(asn != null, "Missing %", PROP_ASN);
-    return new IspNodeInfo(asn, firstNonNull(name, getDefaultIspNodeName(asn)));
+    return new IspNodeInfo(
+        asn,
+        firstNonNull(name, getDefaultIspNodeName(asn)),
+        firstNonNull(additionalPrefixes, ImmutableList.of()));
   }
 
   @JsonProperty(PROP_ASN)
@@ -58,5 +79,11 @@ public class IspNodeInfo {
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @JsonProperty(PROP_ADDITIONAL_PREFIXES_TO_INTERNET)
+  @Nonnull
+  public List<Prefix> getAdditionalPrefixes() {
+    return _additionalPrefixes;
   }
 }

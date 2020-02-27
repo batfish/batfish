@@ -1,12 +1,17 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
-import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP;
+import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
+import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.common.util.IspModelingUtils.getAdvertiseBgpStatement;
+import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
+import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToCustomers;
+import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToInternet;
 import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -278,7 +283,7 @@ public class IspModelingUtilsTest {
             .iterator()
             .next(),
         equalTo(peer));
-    assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP));
+    assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS));
   }
 
   @Test
@@ -336,7 +341,9 @@ public class IspModelingUtilsTest {
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRemoteAs(_localAsn)
             .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder().setExportPolicy(EXPORT_POLICY_ON_ISP).build())
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
+                    .build())
             .build();
     assertThat(ispInfo.getBgpActivePeerConfigs(), equalTo(ImmutableList.of(reversedPeer)));
     assertThat(
@@ -362,6 +369,35 @@ public class IspModelingUtilsTest {
     IspInfo ispInfo = inputMap.get(_remoteAsn);
 
     assertThat(ispInfo.getName(), equalTo("myisp"));
+  }
+
+  @Test
+  public void testPopulateIspInfosMergeAdditionalPrefixes() {
+    Map<Long, IspInfo> inputMap = Maps.newHashMap();
+    IspModelingUtils.populateIspInfos(
+        configurationWithOnePeer(),
+        ImmutableSet.of("interface"),
+        ImmutableList.of(),
+        ImmutableList.of(),
+        ImmutableList.of(
+            new IspNodeInfo(
+                _remoteAsn,
+                "myisp",
+                ImmutableList.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"))),
+            new IspNodeInfo(
+                _remoteAsn,
+                "myisp",
+                ImmutableList.of(Prefix.parse("3.3.3.3/32"), Prefix.parse("2.2.2.2/32")))),
+        inputMap,
+        new Warnings());
+
+    assertThat(
+        inputMap.get(_remoteAsn).getAdditionalPrefixesToInternet(),
+        equalTo(
+            ImmutableSet.of(
+                Prefix.parse("1.1.1.1/32"),
+                Prefix.parse("2.2.2.2/32"),
+                Prefix.parse("3.3.3.3/32"))));
   }
 
   @Test
@@ -583,7 +619,7 @@ public class IspModelingUtilsTest {
                                 .setLocalAs(1L)
                                 .setIpv4UnicastAddressFamily(
                                     Ipv4UnicastAddressFamily.builder()
-                                        .setExportPolicy(EXPORT_POLICY_ON_ISP)
+                                        .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
                                         .build())
                                 .build(),
                             Prefix.parse("240.1.1.2/32"),
@@ -594,7 +630,7 @@ public class IspModelingUtilsTest {
                                 .setLocalAs(1L)
                                 .setIpv4UnicastAddressFamily(
                                     Ipv4UnicastAddressFamily.builder()
-                                        .setExportPolicy(EXPORT_POLICY_ON_ISP)
+                                        .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_INTERNET)
                                         .build())
                                 .build()))))));
   }
@@ -636,18 +672,18 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetRoutingPolicyForIsp() {
+  public void testInstallRoutingPolicyForIspToCustomers() {
     NetworkFactory nf = new NetworkFactory();
     Configuration isp =
         nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname("fakeIsp")
             .build();
-    RoutingPolicy ispRoutingPolicy = IspModelingUtils.getRoutingPolicyForIsp(isp);
+    RoutingPolicy ispRoutingPolicy = installRoutingPolicyForIspToCustomers(isp);
 
     RoutingPolicy expectedRoutingPolicy =
         nf.routingPolicyBuilder()
-            .setName(EXPORT_POLICY_ON_ISP)
+            .setName(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
             .setOwner(isp)
             .setStatements(
                 Collections.singletonList(
@@ -656,6 +692,28 @@ public class IspModelingUtilsTest {
                         ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
             .build();
     assertThat(ispRoutingPolicy, equalTo(expectedRoutingPolicy));
+  }
+
+  @Test
+  public void testInstallRoutingPolicyForIspToInternet() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration isp =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("fakeIsp")
+            .build();
+    PrefixSpace prefixSpace = new PrefixSpace(PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")));
+    RoutingPolicy expectedRoutingPolicy =
+        nf.routingPolicyBuilder()
+            .setName(EXPORT_POLICY_ON_ISP_TO_INTERNET)
+            .setOwner(isp)
+            .setStatements(
+                ImmutableList.of(
+                    getAdvertiseBgpStatement(), getAdvertiseStaticStatement(prefixSpace)))
+            .build();
+
+    assertThat(
+        installRoutingPolicyForIspToInternet(isp, prefixSpace), equalTo(expectedRoutingPolicy));
   }
 
   @Test
@@ -861,7 +919,7 @@ public class IspModelingUtilsTest {
                             .setRemoteAs(1L)
                             .setIpv4UnicastAddressFamily(
                                 Ipv4UnicastAddressFamily.builder()
-                                    .setExportPolicy(EXPORT_POLICY_ON_ISP)
+                                    .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
                                     .build())
                             .build(),
                         BgpActivePeerConfig.builder()
@@ -871,7 +929,7 @@ public class IspModelingUtilsTest {
                             .setRemoteAs(1L)
                             .setIpv4UnicastAddressFamily(
                                 Ipv4UnicastAddressFamily.builder()
-                                    .setExportPolicy(EXPORT_POLICY_ON_ISP)
+                                    .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
                                     .build())
                             .build()),
                     getDefaultIspNodeName(remoteAsn)))));

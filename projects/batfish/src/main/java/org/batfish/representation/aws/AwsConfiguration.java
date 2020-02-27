@@ -97,7 +97,8 @@ public class AwsConfiguration extends VendorConfiguration {
     return new IspConfiguration(
         borderInterfaces,
         IspFilter.ALLOW_ALL,
-        ImmutableList.of(new IspNodeInfo(AWS_BACKBONE_ASN, AWS_BACKBONE_NODE_NAME)));
+        ImmutableList.of(
+            new IspNodeInfo(AWS_BACKBONE_ASN, AWS_BACKBONE_NODE_NAME, AwsPrefixes.getPrefixes())));
   }
 
   @Override
