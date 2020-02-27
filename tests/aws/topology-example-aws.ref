@@ -244,6 +244,12 @@
       "type" : "PHYSICAL"
     },
     {
+      "id" : "interface-node-igw-fac5839d-subnet-8d0cbdeb",
+      "name" : "subnet-8d0cbdeb",
+      "nodeId" : "node-igw-fac5839d",
+      "type" : "PHYSICAL"
+    },
+    {
       "id" : "interface-node-vpc-f8fad69d-subnet-1f315846",
       "name" : "subnet-1f315846",
       "nodeId" : "node-vpc-f8fad69d",
@@ -418,6 +424,12 @@
       "type" : "PHYSICAL"
     },
     {
+      "id" : "interface-node-subnet-8d0cbdeb-igw-fac5839d",
+      "name" : "igw-fac5839d",
+      "nodeId" : "node-subnet-8d0cbdeb",
+      "type" : "PHYSICAL"
+    },
+    {
       "id" : "interface-node-subnet-d9cafabc-igw-068fee63",
       "name" : "igw-068fee63",
       "nodeId" : "node-subnet-d9cafabc",
@@ -460,6 +472,12 @@
       "id" : "link-interface-node-igw-9b93ddfc-backbone-interface-node-aws-backbone-~Interface_2~",
       "srcId" : "interface-node-igw-9b93ddfc-backbone",
       "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-subnet-8d0cbdeb-igw-fac5839d",
+      "id" : "link-interface-node-igw-fac5839d-subnet-8d0cbdeb-interface-node-subnet-8d0cbdeb-igw-fac5839d",
+      "srcId" : "interface-node-igw-fac5839d-subnet-8d0cbdeb",
+      "type" : "PHYSICAL"
     },
     {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
@@ -615,6 +633,12 @@
       "dstId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
       "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-subnet-7044ff16",
       "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "type" : "PHYSICAL"
+    },
+    {
+      "dstId" : "interface-node-igw-fac5839d-subnet-8d0cbdeb",
+      "id" : "link-interface-node-subnet-8d0cbdeb-igw-fac5839d-interface-node-igw-fac5839d-subnet-8d0cbdeb",
+      "srcId" : "interface-node-subnet-8d0cbdeb-igw-fac5839d",
       "type" : "PHYSICAL"
     },
     {
