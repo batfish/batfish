@@ -10,9 +10,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.DeviceType;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +48,9 @@ public class ParserNodeTest {
     String query = "";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1")).build();
+        CompletionMetadata.builder()
+            .setNodes(ImmutableMap.of("node1", new NodeCompletionMetadata(null)))
+            .build();
 
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         new ParboiledAutoComplete(

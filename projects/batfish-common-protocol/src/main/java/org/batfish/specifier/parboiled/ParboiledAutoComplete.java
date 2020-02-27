@@ -539,7 +539,7 @@ public final class ParboiledAutoComplete {
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
-            matchPrefix, nodeRoleDimension.roleNamesFor(_completionMetadata.getNodes())),
+            matchPrefix, nodeRoleDimension.roleNamesFor(_completionMetadata.getNodes().keySet())),
         !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
         pm.getMatchStartIndex());
@@ -684,6 +684,7 @@ public final class ParboiledAutoComplete {
                     escape || (isEscapableNameAnchor(anchorType) && nameNeedsEscaping(s.getText()))
                         ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
                         : s.getText(),
+                    Optional.ofNullable(s.getHint()).orElseGet(anchorType::getHint),
                     startIndex,
                     anchorType))
         .collect(ImmutableSet.toImmutableSet());

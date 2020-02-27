@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
@@ -34,8 +35,16 @@ final class ParboiledAutoCompleteSuggestion {
   /** Actual text of the suggestion */
   @Nonnull private final String _text;
 
+  @Nullable private final String _hint;
+
   ParboiledAutoCompleteSuggestion(String text, int insertionIndex, Anchor.Type anchorType) {
+    this(text, anchorType.getHint(), insertionIndex, anchorType);
+  }
+
+  ParboiledAutoCompleteSuggestion(
+      String text, @Nullable String hint, int insertionIndex, Anchor.Type anchorType) {
     _text = text;
+    _hint = hint;
     _insertionIndex = insertionIndex;
     _anchorType = anchorType;
   }
@@ -75,7 +84,7 @@ final class ParboiledAutoCompleteSuggestion {
         .setText(suggestion._text)
         .setInsertionIndex(suggestion._insertionIndex)
         .setDescription(completeDescriptionIfNeeded(suggestion))
-        .setHint(suggestion._anchorType.getHint())
+        .setHint(suggestion._hint)
         .setSuggestionType(suggestion._anchorType.getSuggestionType())
         .build();
   }

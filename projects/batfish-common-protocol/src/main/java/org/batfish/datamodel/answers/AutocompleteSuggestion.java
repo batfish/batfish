@@ -174,6 +174,10 @@ public final class AutocompleteSuggestion {
     this(text, isPartial, null, DEFAULT_RANK);
   }
 
+  public AutocompleteSuggestion(String text, @Nullable String hint, boolean isPartial) {
+    this(text, SuggestionType.UNKNOWN, isPartial, null, DEFAULT_RANK, 0, hint);
+  }
+
   public AutocompleteSuggestion(String text, boolean isPartial, @Nullable String description) {
     this(text, isPartial, description, DEFAULT_RANK);
   }
