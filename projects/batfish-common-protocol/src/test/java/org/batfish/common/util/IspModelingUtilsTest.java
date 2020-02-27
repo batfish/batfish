@@ -3,6 +3,7 @@ package org.batfish.common.util;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
+import static org.batfish.common.util.IspModelingUtils.HIGH_ADMINISTRATIVE_COST;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE;
@@ -10,6 +11,7 @@ import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE_LI
 import static org.batfish.common.util.IspModelingUtils.getAdvertiseBgpStatement;
 import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
+import static org.batfish.common.util.IspModelingUtils.getIspConfigurationNode;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToCustomers;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToInternet;
 import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
@@ -74,6 +76,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
@@ -254,8 +257,7 @@ public class IspModelingUtilsTest {
             getDefaultIspNodeName(asn));
 
     Configuration ispConfiguration =
-        IspModelingUtils.getIspConfigurationNode(
-            ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
+        getIspConfigurationNode(ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
 
     assertThat(
         ispConfiguration,
@@ -308,14 +310,51 @@ public class IspModelingUtilsTest {
             ImmutableList.of(peer),
             getDefaultIspNodeName(asn));
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Configuration ispConfiguration =
-        IspModelingUtils.getIspConfigurationNode(ispInfo, new NetworkFactory(), logger);
+    Configuration ispConfiguration = getIspConfigurationNode(ispInfo, new NetworkFactory(), logger);
 
     assertThat(ispConfiguration, nullValue());
 
     assertThat(logger.getHistory(), hasSize(1));
     assertThat(
         logger.getHistory().toString(300), equalTo("ISP information for ASN '2' is not correct"));
+  }
+
+  /** Test that null static routes are created for additional announcements to the Internet */
+  @Test
+  public void testGetIspConfigurationNodeAdditionalAnnouncements() {
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setRemoteAs(1L)
+            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    Set<Prefix> additionalPrefixes =
+        ImmutableSet.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"));
+    IspInfo ispInfo =
+        new IspInfo(
+            2L,
+            ImmutableList.of(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30)),
+            ImmutableList.of(peer),
+            getDefaultIspNodeName(2L),
+            additionalPrefixes);
+    Configuration ispConfiguration =
+        getIspConfigurationNode(ispInfo, new NetworkFactory(), new BatfishLogger("debug", false));
+
+    assertThat(
+        ispConfiguration.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.copyOf(
+                ispInfo.getAdditionalPrefixesToInternet().stream()
+                    .map(
+                        prefix ->
+                            StaticRoute.builder()
+                                .setNetwork(prefix)
+                                .setNextHopInterface(NULL_INTERFACE_NAME)
+                                .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
+                                .build())
+                    .collect(ImmutableSet.toImmutableSet()))));
   }
 
   @Test
@@ -383,11 +422,15 @@ public class IspModelingUtilsTest {
             new IspNodeInfo(
                 _remoteAsn,
                 "myisp",
-                ImmutableList.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"))),
+                ImmutableList.of(
+                    new IspAnnouncement(Prefix.parse("1.1.1.1/32")),
+                    new IspAnnouncement(Prefix.parse("2.2.2.2/32")))),
             new IspNodeInfo(
                 _remoteAsn,
                 "myisp",
-                ImmutableList.of(Prefix.parse("3.3.3.3/32"), Prefix.parse("2.2.2.2/32")))),
+                ImmutableList.of(
+                    new IspAnnouncement(Prefix.parse("3.3.3.3/32")),
+                    new IspAnnouncement(Prefix.parse("2.2.2.2/32"))))),
         inputMap,
         new Warnings());
 

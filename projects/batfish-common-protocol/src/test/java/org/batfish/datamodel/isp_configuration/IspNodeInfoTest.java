@@ -15,20 +15,24 @@ import org.junit.Test;
 public class IspNodeInfoTest {
   @Test
   public void testEquals() {
-    List<Prefix> prefixList = ImmutableList.of(Prefix.parse("1.1.1.1/32"));
+    List<IspAnnouncement> prefixList =
+        ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32")));
     new EqualsTester()
         .addEqualityGroup(
             new IspNodeInfo(42, "n1", prefixList), new IspNodeInfo(42L, "n1", prefixList))
         .addEqualityGroup(new IspNodeInfo(42, "other", prefixList))
         .addEqualityGroup(new IspNodeInfo(24, "n1", prefixList))
-        .addEqualityGroup(new IspNodeInfo(42, "n1", ImmutableList.of(Prefix.parse("2.2.2.2/32"))))
+        .addEqualityGroup(
+            new IspNodeInfo(
+                42, "n1", ImmutableList.of(new IspAnnouncement(Prefix.parse("2.2.2.2/32")))))
         .testEquals();
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
     IspNodeInfo ispNodeInfo =
-        new IspNodeInfo(42, "n1", ImmutableList.of(Prefix.parse("1.1.1.1/32")));
+        new IspNodeInfo(
+            42, "n1", ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32"))));
 
     assertThat(BatfishObjectMapper.clone(ispNodeInfo, IspNodeInfo.class), equalTo(ispNodeInfo));
   }

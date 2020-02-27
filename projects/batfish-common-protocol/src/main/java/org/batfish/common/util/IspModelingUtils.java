@@ -53,6 +53,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -100,7 +101,7 @@ public final class IspModelingUtils {
           Prefix.parse("192.168.0.0/16"));
 
   /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
-  private static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
+  static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
 
   public static String getDefaultIspNodeName(Long asn) {
     return String.format("%s_%s", "isp", asn);
@@ -526,11 +527,11 @@ public final class IspModelingUtils {
               .map(IspNodeInfo::getName)
               .findFirst()
               .orElse(getDefaultIspNodeName(asn));
-      // Merge the sets of additional prefixes to internet
+      // Merge the sets of additional announcements to internet is merging their prefixes
       Set<Prefix> additionalPrefixes =
           ispNodeInfos.stream()
               .filter(i -> i.getAsn() == asn)
-              .flatMap(i -> i.getAdditionalPrefixes().stream())
+              .flatMap(i -> i.getAdditionalAnnouncements().stream().map(IspAnnouncement::getPrefix))
               .collect(ImmutableSet.toImmutableSet());
       IspInfo ispInfo =
           allIspInfos.computeIfAbsent(asn, k -> new IspInfo(asn, ispName, additionalPrefixes));
@@ -570,18 +571,16 @@ public final class IspModelingUtils {
     ispConfiguration
         .getDefaultVrf()
         .setStaticRoutes(
-            new ImmutableSortedSet.Builder<StaticRoute>(naturalOrder())
-                .addAll(
-                    ispInfo.getAdditionalPrefixesToInternet().stream()
-                        .map(
-                            prefix ->
-                                StaticRoute.builder()
-                                    .setNetwork(prefix)
-                                    .setNextHopInterface(NULL_INTERFACE_NAME)
-                                    .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
-                                    .build())
-                        .collect(ImmutableSet.toImmutableSet()))
-                .build());
+            ImmutableSortedSet.copyOf(
+                ispInfo.getAdditionalPrefixesToInternet().stream()
+                    .map(
+                        prefix ->
+                            StaticRoute.builder()
+                                .setNetwork(prefix)
+                                .setNextHopInterface(NULL_INTERFACE_NAME)
+                                .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
+                                .build())
+                    .collect(ImmutableSet.toImmutableSet())));
 
     PrefixSpace prefixSpace = new PrefixSpace();
     ispInfo.getAdditionalPrefixesToInternet().forEach(prefixSpace::addPrefix);
