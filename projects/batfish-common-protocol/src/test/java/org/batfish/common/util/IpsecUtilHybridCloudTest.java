@@ -13,7 +13,6 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
