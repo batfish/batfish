@@ -1,22 +1,21 @@
 package org.batfish.common.util;
 
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
-import org.batfish.datamodel.*;
-import org.batfish.datamodel.ipsec.IpsecTopology;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import static org.batfish.common.util.IpsecUtil.*;
 import static org.batfish.datamodel.ConfigurationFormat.AWS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.datamodel.*;
+import org.batfish.datamodel.ipsec.IpsecTopology;
+import org.junit.Before;
+import org.junit.Test;
 
 public class IpsecUtilHybridCloudTest {
   private IpsecTopology _ipsecTopology;
