@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
+import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
@@ -72,13 +73,14 @@ public class InternetGatewayTest {
         gateways,
         equalTo(
             ImmutableList.of(
-                new InternetGateway("igw-fac5839d", ImmutableList.of("vpc-925131f4")))));
+                new InternetGateway(
+                    "igw-fac5839d", ImmutableList.of("vpc-925131f4"), ImmutableMap.of()))));
   }
 
   @Test
   public void testToConfiguration() {
 
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of());
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Ip privateIp = Ip.parse("10.10.10.10");
@@ -94,7 +96,9 @@ public class InternetGatewayTest {
             "desc",
             null);
 
-    InternetGateway internetGateway = new InternetGateway("igw", ImmutableList.of(vpc.getId()));
+    InternetGateway internetGateway =
+        new InternetGateway(
+            "igw", ImmutableList.of(vpc.getId()), ImmutableMap.of(TAG_NAME, "igw-name"));
 
     Region region =
         Region.builder("region")
@@ -108,6 +112,7 @@ public class InternetGatewayTest {
 
     Configuration igwConfig = internetGateway.toConfigurationNode(awsConfiguration, region);
     assertThat(igwConfig, hasDeviceModel(DeviceModel.AWS_INTERNET_GATEWAY));
+    assertThat(igwConfig.getHumanName(), equalTo("igw-name"));
 
     // gateway should have interfaces to the backbone and vpc
     assertThat(

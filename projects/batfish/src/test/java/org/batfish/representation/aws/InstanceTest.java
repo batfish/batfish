@@ -99,7 +99,8 @@ public class InstanceTest {
   public void testToConfigurationNode() {
     String vpcId = "vpc";
 
-    Subnet subnet = new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId, "zone");
+    Subnet subnet =
+        new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId, "zone", ImmutableMap.of());
 
     NetworkInterface networkInterface =
         new NetworkInterface(

@@ -14171,6 +14171,7 @@
         "deviceModel" : "AWS_INTERNET_GATEWAY",
         "deviceType" : "ROUTER",
         "domainName" : "aws",
+        "humanName" : "Arista Demo",
         "interfaces" : {
           "backbone" : {
             "name" : "backbone",
@@ -16386,6 +16387,7 @@
         "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "border_01-core_01",
         "interfaces" : {
           "igw-9b93ddfc" : {
             "name" : "igw-9b93ddfc",
@@ -16592,6 +16594,7 @@
         "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "Management",
         "interfaces" : {
           "igw-9b93ddfc" : {
             "name" : "igw-9b93ddfc",
@@ -17016,6 +17019,7 @@
         "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "border_02-core_02",
         "interfaces" : {
           "igw-9b93ddfc" : {
             "name" : "igw-9b93ddfc",
@@ -17222,6 +17226,7 @@
         "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "Public subnet",
         "interfaces" : {
           "igw-fac5839d" : {
             "name" : "igw-fac5839d",
@@ -17428,6 +17433,7 @@
         "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "border_01-core_02",
         "interfaces" : {
           "igw-9b93ddfc" : {
             "name" : "igw-9b93ddfc",
@@ -17634,6 +17640,7 @@
         "deviceModel" : "AWS_SUBNET_PRIVATE",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "Private subnet",
         "interfaces" : {
           "subnet-8d0cbdeb" : {
             "name" : "subnet-8d0cbdeb",
@@ -18254,6 +18261,7 @@
         "deviceModel" : "AWS_SUBNET_PUBLIC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "border_02-core_01",
         "interfaces" : {
           "igw-9b93ddfc" : {
             "name" : "igw-9b93ddfc",
@@ -18954,6 +18962,7 @@
         "deviceModel" : "AWS_VPN_GATEWAY",
         "deviceType" : "ROUTER",
         "domainName" : "aws",
+        "humanName" : "lhr-aws-01",
         "ikePhase1Keys" : {
           "vpn-ba2e34a8-1" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
@@ -19373,6 +19382,7 @@
         "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "GNS3-BGP-Test",
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -19404,6 +19414,7 @@
         "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "Demo-Test2",
         "interfaces" : {
           "subnet-62f14104" : {
             "name" : "subnet-62f14104",
@@ -19499,6 +19510,7 @@
         "deviceModel" : "AWS_VPC",
         "deviceType" : "SWITCH",
         "domainName" : "aws",
+        "humanName" : "Arista Demo",
         "interfaces" : {
           "subnet-073b8061" : {
             "name" : "subnet-073b8061",

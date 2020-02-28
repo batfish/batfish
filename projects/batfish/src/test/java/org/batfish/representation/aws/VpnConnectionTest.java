@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -187,7 +188,7 @@ public class VpnConnectionTest {
 
   @Test
   public void testApplyToGateway() {
-    VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of());
+    VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of());
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     BgpProcess bgpProc =
         BgpProcess.builder()

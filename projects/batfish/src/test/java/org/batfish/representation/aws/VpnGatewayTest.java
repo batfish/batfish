@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
+import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
@@ -49,15 +50,20 @@ public class VpnGatewayTest {
         region.getVpnGateways(),
         equalTo(
             ImmutableMap.of(
-                "vgw-81fd279f", new VpnGateway("vgw-81fd279f", ImmutableList.of("vpc-815775e7")))));
+                "vgw-81fd279f",
+                new VpnGateway(
+                    "vgw-81fd279f",
+                    ImmutableList.of("vpc-815775e7"),
+                    ImmutableMap.of(TAG_NAME, "lhr-aws-01")))));
   }
 
   @Test
   public void testToConfigurationNodeNoBgp() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")));
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()));
+    VpnGateway vgw =
+        new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of(TAG_NAME, "vgw-name"));
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -83,17 +89,17 @@ public class VpnGatewayTest {
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
-
+    assertThat(vgwConfig.getHumanName(), equalTo("vgw-name"));
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), nullValue());
   }
 
   @Test
   public void testToConfigurationNodeBgp() {
     Prefix vpcPrefix = Prefix.parse("10.0.0.0/16");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix));
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()));
+    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
 
     VpnConnection vpnConnection =
         new VpnConnection(

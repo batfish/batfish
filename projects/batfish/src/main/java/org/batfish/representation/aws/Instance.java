@@ -148,37 +148,6 @@ final class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  @ParametersAreNonnullByDefault
-  private static class Tag {
-
-    @Nonnull private final String _key;
-
-    @Nonnull private final String _value;
-
-    @JsonCreator
-    private static Tag create(
-        @Nullable @JsonProperty("Key") String key, @Nullable @JsonProperty("Value") String value) {
-      checkArgument(key != null, "Tag key is null");
-      checkArgument(value != null, "Tag value is null");
-      return new Tag(key, value);
-    }
-
-    private Tag(String key, String value) {
-      _key = key;
-      _value = value;
-    }
-
-    @Nonnull
-    public String getKey() {
-      return _key;
-    }
-
-    @Nonnull
-    public String getValue() {
-      return _value;
-    }
-  }
-
   @Nonnull private final String _instanceId;
 
   @Nonnull private final List<String> _networkInterfaces;

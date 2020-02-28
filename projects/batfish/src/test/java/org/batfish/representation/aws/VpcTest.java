@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -37,7 +38,7 @@ public class VpcTest {
             ImmutableList.of(
                 new Vpc(
                     "vpc-CCCCCC",
-                    ImmutableSet.of(
-                        Prefix.parse("10.100.0.0/16"), Prefix.parse("10.200.0.0/16"))))));
+                    ImmutableSet.of(Prefix.parse("10.100.0.0/16"), Prefix.parse("10.200.0.0/16")),
+                    ImmutableMap.of()))));
   }
 }
