@@ -22,8 +22,8 @@ public class Tag {
   private static Tag create(
       @Nullable @JsonProperty(PROP_KEY) String key,
       @Nullable @JsonProperty(PROP_VALUE) String value) {
-    checkArgument(key != null, "Tag key is null");
-    checkArgument(value != null, "Tag value is null");
+    checkArgument(key != null, "Missing %s", PROP_KEY);
+    checkArgument(value != null, "Missing %s", PROP_VALUE);
     return new Tag(key, value);
   }
 
@@ -32,18 +32,12 @@ public class Tag {
     _value = value;
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
   @Nonnull
-  @JsonProperty(PROP_KEY)
   public String getKey() {
     return _key;
   }
 
   @Nonnull
-  @JsonProperty(PROP_VALUE)
   public String getValue() {
     return _value;
   }
@@ -63,30 +57,5 @@ public class Tag {
   @Override
   public int hashCode() {
     return Objects.hash(_key, _value);
-  }
-
-  public static final class Builder {
-    @Nullable private String _key;
-    @Nullable private String _value;
-
-    @Nonnull
-    public Builder setKey(String key) {
-      _key = key;
-      return this;
-    }
-
-    @Nonnull
-    public Builder setValue(String value) {
-      _value = value;
-      return this;
-    }
-
-    public Builder() {}
-
-    public Tag build() {
-      checkArgument(_key != null, "Missing %s", PROP_KEY);
-      checkArgument(_value != null, "Missing %s", PROP_VALUE);
-      return new Tag(_key, _value);
-    }
   }
 }
