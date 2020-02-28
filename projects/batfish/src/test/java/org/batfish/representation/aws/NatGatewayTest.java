@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +44,7 @@ public class NatGatewayTest {
                             "eipalloc-89c620ec",
                             "eni-9dec76cd",
                             Ip.parse("10.0.0.149"),
-                            Ip.parse("198.11.222.33")))))));
+                            Ip.parse("198.11.222.33"))),
+                    ImmutableMap.of("Department", "IT")))));
   }
 }

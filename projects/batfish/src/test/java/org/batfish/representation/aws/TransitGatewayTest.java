@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
+import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
 import static org.batfish.representation.aws.TransitGateway.supportedVpnBgpConfiguration;
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
@@ -88,7 +89,8 @@ public class TransitGatewayTest {
                         "tgw-rtb-0fa40c8df355dce6e",
                         true,
                         "tgw-rtb-0fa40c8df355dce6e",
-                        true)))));
+                        true),
+                    ImmutableMap.of(TAG_NAME, "transit-test")))));
   }
 
   @Test
@@ -97,10 +99,12 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
-            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            ImmutableMap.of());
 
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix));
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
 
     TransitGatewayAttachment tgwAttachment =
@@ -163,7 +167,9 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
-            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            ImmutableMap.of());
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -215,7 +221,9 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
-            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            ImmutableMap.of(TAG_NAME, "tgw-name"));
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -256,6 +264,7 @@ public class TransitGatewayTest {
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    assertThat(tgwCfg.getHumanName(), equalTo("tgw-name"));
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
@@ -296,10 +305,12 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb"; // propagation table
     TransitGateway tgw =
         new TransitGateway(
-            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            ImmutableMap.of());
 
     Prefix vpcPrefix = Prefix.parse("2.2.2.2/32");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix)); // no prefix
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of()); // no prefix
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
 
     TransitGatewayAttachment tgwAttachment =
@@ -367,9 +378,11 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
-            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            ImmutableMap.of());
 
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of()); // no prefix
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of()); // no prefix
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
 
     TransitGatewayAttachment tgwAttachment =
@@ -443,7 +456,9 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
-            "tgw", new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true));
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            ImmutableMap.of());
 
     VpnConnection vpnConnection =
         new VpnConnection(

@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
@@ -60,6 +61,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _subnetId;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @Nonnull private final String _vpcId;
 
   @Nonnull private final Set<Long> _allocatedIps;
@@ -71,15 +74,27 @@ public class Subnet implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock,
       @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone) {
     checkArgument(cidrBlock != null, "CIDR block cannot be null for subnet");
     checkArgument(subnetId != null, "Subnet id cannot be null for subnet");
     checkArgument(vpcId != null, "VPC id cannot be null for subnet");
     checkArgument(availabilityZone != null, "Availability zone cannot be null for subnet");
-    return new Subnet(cidrBlock, subnetId, vpcId, availabilityZone);
+    return new Subnet(
+        cidrBlock,
+        subnetId,
+        vpcId,
+        availabilityZone,
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  Subnet(Prefix cidrBlock, String subnetId, String vpcId, String availabilityZone) {
+  Subnet(
+      Prefix cidrBlock,
+      String subnetId,
+      String vpcId,
+      String availabilityZone,
+      Map<String, String> tags) {
     _cidrBlock = cidrBlock;
     _subnetId = subnetId;
     _vpcId = vpcId;
@@ -88,6 +103,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     _allocatedIps = new HashSet<>();
     // skipping (startIp+1) as it is used as the default gateway for instances in this subnet
     _lastGeneratedIp = _cidrBlock.getStartIp().asLong() + 1;
+    _tags = tags;
   }
 
   Set<Long> getAllocatedIps() {
@@ -171,7 +187,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     // Private subnet by default, may get overridden below.
     Configuration cfgNode =
-        Utils.newAwsConfiguration(nodeName(_subnetId), "aws", DeviceModel.AWS_SUBNET_PRIVATE);
+        Utils.newAwsConfiguration(
+            nodeName(_subnetId), "aws", _tags, DeviceModel.AWS_SUBNET_PRIVATE);
 
     // add one interface that faces all instances (assumes a LAN)
     String instancesIfaceName = instancesInterfaceName(_subnetId);
@@ -466,13 +483,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
         && Objects.equals(_subnetId, subnet._subnetId)
         && Objects.equals(_vpcId, subnet._vpcId)
         && Objects.equals(_availabilityZone, subnet._availabilityZone)
+        && Objects.equals(_tags, subnet._tags)
         && Objects.equals(_allocatedIps, subnet._allocatedIps);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _cidrBlock, _subnetId, _vpcId, _availabilityZone, _allocatedIps, _lastGeneratedIp);
+        _cidrBlock, _subnetId, _vpcId, _availabilityZone, _allocatedIps, _lastGeneratedIp, _tags);
   }
 
   public static String nodeName(String subnetId) {

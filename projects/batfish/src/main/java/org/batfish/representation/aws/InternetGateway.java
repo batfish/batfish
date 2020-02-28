@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -61,6 +62,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private String _internetGatewayId;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static class Attachment {
@@ -86,18 +89,23 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   @JsonCreator
   private static InternetGateway create(
       @Nullable @JsonProperty(JSON_KEY_INTERNET_GATEWAY_ID) String internetGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_ATTACHMENTS) List<Attachment> attachments) {
+      @Nullable @JsonProperty(JSON_KEY_ATTACHMENTS) List<Attachment> attachments,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
     checkArgument(internetGatewayId != null, "Id cannot be null for Internet gateway");
     checkArgument(attachments != null, "Attachments cannot be null for Internet gateway");
 
     return new InternetGateway(
         internetGatewayId,
-        attachments.stream().map(Attachment::getVpcId).collect(ImmutableList.toImmutableList()));
+        attachments.stream().map(Attachment::getVpcId).collect(ImmutableList.toImmutableList()),
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  public InternetGateway(String internetGatewayId, List<String> attachmentVpcIds) {
+  public InternetGateway(
+      String internetGatewayId, List<String> attachmentVpcIds, Map<String, String> tags) {
     _internetGatewayId = internetGatewayId;
     _attachmentVpcIds = attachmentVpcIds;
+    _tags = tags;
   }
 
   @Override
@@ -112,7 +120,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(ConvertedConfiguration awsConfiguration, Region region) {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(_internetGatewayId, "aws", DeviceModel.AWS_INTERNET_GATEWAY);
+        Utils.newAwsConfiguration(
+            _internetGatewayId, "aws", _tags, DeviceModel.AWS_INTERNET_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // Create an interface facing the backbone and run a BGP process that advertises static routes
@@ -209,11 +218,12 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     }
     InternetGateway that = (InternetGateway) o;
     return Objects.equals(_attachmentVpcIds, that._attachmentVpcIds)
+        && Objects.equals(_tags, that._tags)
         && Objects.equals(_internetGatewayId, that._internetGatewayId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_attachmentVpcIds, _internetGatewayId);
+    return Objects.hash(_attachmentVpcIds, _internetGatewayId, _tags);
   }
 }
