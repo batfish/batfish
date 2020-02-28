@@ -1,12 +1,16 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,6 +30,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _subnetId;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @Nonnull private final String _vpcId;
 
   @JsonCreator
@@ -33,6 +39,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) String natGatewayId,
       @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ADDRESSES)
           List<NatGatewayAddress> natGatewayAddresses) {
     checkArgument(natGatewayId != null, "NAT gateway id cannot be null");
@@ -40,18 +47,26 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     checkArgument(vpcId != null, "VPC id cannot be null for nat gateway");
     checkArgument(natGatewayAddresses != null, "Nat gateway addresses cannot be null");
 
-    return new NatGateway(natGatewayId, subnetId, vpcId, natGatewayAddresses);
+    return new NatGateway(
+        natGatewayId,
+        subnetId,
+        vpcId,
+        natGatewayAddresses,
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
   NatGateway(
       String natGatewayId,
       String subnetId,
       String vpcId,
-      List<NatGatewayAddress> natGatewayAddresses) {
+      List<NatGatewayAddress> natGatewayAddresses,
+      Map<String, String> tags) {
     _natGatewayId = natGatewayId;
     _subnetId = subnetId;
     _vpcId = vpcId;
     _natGatewayAddresses = natGatewayAddresses;
+    _tags = tags;
   }
 
   @Override
@@ -77,7 +92,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(_natGatewayId, "aws", DeviceModel.AWS_NAT_GATEWAY);
+        Utils.newAwsConfiguration(_natGatewayId, "aws", _tags, DeviceModel.AWS_NAT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // TODO: Configure forwarding for this NAT
@@ -101,11 +116,12 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     return Objects.equals(_natGatewayAddresses, that._natGatewayAddresses)
         && Objects.equals(_natGatewayId, that._natGatewayId)
         && Objects.equals(_subnetId, that._subnetId)
+        && Objects.equals(_tags, that._tags)
         && Objects.equals(_vpcId, that._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_natGatewayAddresses, _natGatewayId, _subnetId, _vpcId);
+    return Objects.hash(_natGatewayAddresses, _natGatewayId, _subnetId, _vpcId, _tags);
   }
 }

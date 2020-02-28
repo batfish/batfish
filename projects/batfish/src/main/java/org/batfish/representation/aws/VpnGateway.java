@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -12,9 +13,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,10 +66,13 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _vpnGatewayId;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @JsonCreator
   private static VpnGateway create(
       @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ATTACHMENTS) List<VpcAttachment> vpcAttachments) {
+      @Nullable @JsonProperty(JSON_KEY_VPC_ATTACHMENTS) List<VpcAttachment> vpcAttachments,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
     checkArgument(vpnGatewayId != null, "Id cannot be null for VPC gateway");
     checkArgument(vpcAttachments != null, "Vpc attachments cannot be null for VPN gateway");
 
@@ -74,12 +80,15 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
         vpnGatewayId,
         vpcAttachments.stream()
             .map(VpcAttachment::getVpcId)
-            .collect(ImmutableList.toImmutableList()));
+            .collect(ImmutableList.toImmutableList()),
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  VpnGateway(String vpnGatewayId, List<String> attachmentVpcIds) {
+  VpnGateway(String vpnGatewayId, List<String> attachmentVpcIds, Map<String, String> tags) {
     _vpnGatewayId = vpnGatewayId;
     _attachmentVpcIds = attachmentVpcIds;
+    _tags = tags;
   }
 
   @Nonnull
@@ -101,7 +110,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(_vpnGatewayId, "aws", DeviceModel.AWS_VPN_GATEWAY);
+        Utils.newAwsConfiguration(_vpnGatewayId, "aws", _tags, DeviceModel.AWS_VPN_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // if this VGW has any BGP-based VPN connections, configure BGP on it
@@ -166,11 +175,12 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     }
     VpnGateway that = (VpnGateway) o;
     return Objects.equals(_attachmentVpcIds, that._attachmentVpcIds)
+        && Objects.equals(_tags, that._tags)
         && Objects.equals(_vpnGatewayId, that._vpnGatewayId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_attachmentVpcIds, _vpnGatewayId);
+    return Objects.hash(_attachmentVpcIds, _vpnGatewayId, _tags);
   }
 }

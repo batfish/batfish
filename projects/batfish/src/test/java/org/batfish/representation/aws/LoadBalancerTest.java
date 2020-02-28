@@ -181,7 +181,8 @@ public class LoadBalancerTest {
                         subnetPrefix,
                         availabilityZone.getSubnetId(),
                         _loadBalancer.getVpcId(),
-                        availabilityZone.getZoneName())))
+                        availabilityZone.getZoneName(),
+                        ImmutableMap.of())))
             .build();
     Configuration cfgNode =
         _loadBalancer.toConfigurationNode(
@@ -514,7 +515,8 @@ public class LoadBalancerTest {
 
   @Test
   public void testIsValidTarget_instanceTarget() {
-    Subnet subnet = new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone");
+    Subnet subnet =
+        new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone", ImmutableMap.of());
     Instance instance =
         Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
     TargetGroup targetGroup =

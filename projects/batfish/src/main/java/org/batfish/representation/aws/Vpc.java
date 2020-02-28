@@ -1,13 +1,18 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -68,11 +73,14 @@ final class Vpc implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Set<Prefix> _cidrBlockAssociations;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @Nonnull private final String _vpcId;
 
   @JsonCreator
   private static Vpc create(
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET)
           Set<CidrBlockAssociation> cidrBlockAssociations) {
     /*
@@ -84,12 +92,15 @@ final class Vpc implements AwsVpcEntity, Serializable {
         vpcId,
         cidrBlockAssociations.stream()
             .map(CidrBlockAssociation::getBlock)
-            .collect(ImmutableSet.toImmutableSet()));
+            .collect(ImmutableSet.toImmutableSet()),
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  Vpc(String vpcId, Set<Prefix> cidrBlockAssociations) {
+  Vpc(String vpcId, Set<Prefix> cidrBlockAssociations, Map<String, String> tags) {
     _vpcId = vpcId;
     _cidrBlockAssociations = cidrBlockAssociations;
+    _tags = tags;
   }
 
   @Nonnull
@@ -110,7 +121,8 @@ final class Vpc implements AwsVpcEntity, Serializable {
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_vpcId), "aws", DeviceModel.AWS_VPC);
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(nodeName(_vpcId), "aws", _tags, DeviceModel.AWS_VPC);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
 
@@ -159,11 +171,12 @@ final class Vpc implements AwsVpcEntity, Serializable {
     }
     Vpc vpc = (Vpc) o;
     return Objects.equals(_cidrBlockAssociations, vpc._cidrBlockAssociations)
+        && Objects.equals(_tags, vpc._tags)
         && Objects.equals(_vpcId, vpc._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return com.google.common.base.Objects.hashCode(_cidrBlockAssociations, _vpcId);
+    return com.google.common.base.Objects.hashCode(_cidrBlockAssociations, _tags, _vpcId);
   }
 }
