@@ -177,9 +177,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
+import org.batfish.datamodel.OspfInterAreaRoute;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterLine;
@@ -317,6 +320,8 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchRouteType;
+import org.batfish.representation.cisco_nxos.RouteMapMatchRouteType.Type;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
@@ -372,6 +377,14 @@ public final class CiscoNxosGrammarTest {
         .setArea(0L)
         .setCostToAdvertiser(0L)
         .setLsaMetric(0L);
+  }
+
+  private static @Nonnull OspfIntraAreaRoute.Builder ospfRouteBuilder() {
+    return OspfIntraAreaRoute.builder().setArea(0L);
+  }
+
+  private static @Nonnull OspfInterAreaRoute.Builder ospfIARouteBuilder() {
+    return OspfInterAreaRoute.builder().setArea(0L);
   }
 
   private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -5764,6 +5777,14 @@ public final class CiscoNxosGrammarTest {
             "match_ipv6_address",
             "match_ipv6_address_prefix_list",
             "match_metric",
+            "match_route_type_external",
+            "match_route_type_internal",
+            "match_route_type_local",
+            "match_route_type_nssa_external",
+            "match_route_type_type_1",
+            "match_route_type_type_2",
+            "match_route_types",
+            "match_route_types_unsupported",
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
@@ -5888,6 +5909,103 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route route = base.toBuilder().setMetric(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_external");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_internal");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(rp, ospfRouteBuilder().setNetwork(Prefix.ZERO).build());
+      assertRoutingPolicyPermitsRoute(rp, ospfIARouteBuilder().setNetwork(Prefix.ZERO).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_local");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          LocalRoute.builder()
+              .setNetwork(Prefix.parse("1.2.3.4/32"))
+              .setSourcePrefixLength(24)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_nssa_external");
+      // Should be FALSE.
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_type_1");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_type_2");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_types");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyDeniesRoute(rp, ospfRouteBuilder().setNetwork(Prefix.ZERO).build());
+      assertRoutingPolicyDeniesRoute(rp, ospfIARouteBuilder().setNetwork(Prefix.ZERO).build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_types_unsupported");
+      // Even though the policy has type-1, since it also has nssa-external it's unmatchable
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_connected");
@@ -6141,6 +6259,14 @@ public final class CiscoNxosGrammarTest {
             "match_ipv6_address",
             "match_ipv6_address_prefix_list",
             "match_metric",
+            "match_route_type_external",
+            "match_route_type_internal",
+            "match_route_type_local",
+            "match_route_type_nssa_external",
+            "match_route_type_type_1",
+            "match_route_type_type_2",
+            "match_route_types",
+            "match_route_types_unsupported",
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
@@ -6283,6 +6409,62 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchMetric match = entry.getMatchMetric();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_external");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.EXTERNAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_internal");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.INTERNAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_local");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.LOCAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_nssa_external");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.NSSA_EXTERNAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_type_1");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_1)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_type_2");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_2)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_types");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_1, Type.TYPE_2)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_types_unsupported");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_1, Type.NSSA_EXTERNAL)));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_source_protocol_connected");
