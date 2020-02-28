@@ -99,8 +99,7 @@ public class VpnGatewayTest {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    VpnGateway vgw =
-        new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of(TAG_NAME, "vgw-name"));
+    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -125,7 +124,6 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(vgwConfig.getHumanName(), equalTo("vgw-name"));
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     // the loopback interface, bgp process, and static route should exist
