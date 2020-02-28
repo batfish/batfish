@@ -487,6 +487,7 @@ i_ip_ospf
     | iipo_message_digest_key
     | iipo_network
     | iipo_passive_interface
+    | iipo_priority
   )
 ;
 
@@ -674,6 +675,11 @@ iipo_network
 iipo_passive_interface
 :
   PASSIVE_INTERFACE NEWLINE
+;
+
+iipo_priority
+:
+  PRIORITY priority = ospf_priority NEWLINE
 ;
 
 i_ip_rip

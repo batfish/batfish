@@ -5319,6 +5319,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf.getDeadIntervalS(), equalTo(10));
       assertThat(ospf.getHelloIntervalS(), equalTo(20));
       assertThat(ospf.getPassive(), nullValue());
+      assertThat(ospf.getPriority(), equalTo(10));
       assertThat(ospf.getProcess(), equalTo("pi_d"));
       assertThat(ospf.getArea(), equalTo(0L));
       assertThat(ospf.getNetwork(), nullValue());
@@ -5333,6 +5334,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf.getDeadIntervalS(), nullValue());
       assertThat(ospf.getHelloIntervalS(), nullValue());
       assertThat(ospf.getPassive(), nullValue());
+      assertThat(ospf.getPriority(), nullValue());
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(BROADCAST));

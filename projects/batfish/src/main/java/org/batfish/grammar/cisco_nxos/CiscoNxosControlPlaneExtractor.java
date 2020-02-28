@@ -346,6 +346,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_hello_intervalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_networkContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_passive_interfaceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_jp_policy_prefix_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_jp_policy_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipp_neighbor_policy_prefix_listContext;
@@ -441,6 +442,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costCont
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_instanceContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_priorityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospfv3_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Packet_lengthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Pl6_actionContext;
@@ -2031,6 +2033,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitIipo_passive_interface(Iipo_passive_interfaceContext ctx) {
     _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setPassive(true));
+  }
+
+  @Override
+  public void exitIipo_priority(Iipo_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    todo(ctx);
+    _currentInterfaces.forEach(iface -> iface.getOrCreateOspf().setPriority(priority));
   }
 
   @Override
@@ -6127,6 +6136,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       ParserRuleContext messageCtx, Ospf_area_range_costContext ctx) {
     return toIntegerInSpace(
         messageCtx, ctx, OSPF_AREA_RANGE_COST_RANGE, "router ospf area range cost");
+  }
+
+  private static int toInteger(Ospf_priorityContext ctx) {
+    return toInteger(ctx.uint8());
   }
 
   private @Nonnull Optional<Integer> toInteger(
