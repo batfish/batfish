@@ -21,6 +21,8 @@ public interface RouteMapMatchVisitor<T> {
 
   T visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric);
 
+  T visitRouteMapMatchRouteType(RouteMapMatchRouteType routeMapMatchRouteType);
+
   T visitRouteMapMatchSourceProtocol(RouteMapMatchSourceProtocol routeMapMatchSourceProtocol);
 
   T visitRouteMapMatchTag(RouteMapMatchTag routeMapMatchTag);

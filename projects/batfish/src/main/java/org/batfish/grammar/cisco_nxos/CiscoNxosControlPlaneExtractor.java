@@ -544,6 +544,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_metricContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_route_typeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_source_protocolContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_tagContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_vlanContext;
@@ -751,6 +752,7 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchRouteType;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
@@ -5614,6 +5616,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRmm_metric(Rmm_metricContext ctx) {
     _currentRouteMapEntry.setMatchMetric(new RouteMapMatchMetric(toLong(ctx.metric)));
+  }
+
+  @Override
+  public void exitRmm_route_type(Rmm_route_typeContext ctx) {
+    ImmutableSet.Builder<RouteMapMatchRouteType.Type> types = ImmutableSet.builder();
+    if (ctx.external != null) {
+      types.add(RouteMapMatchRouteType.Type.EXTERNAL);
+    }
+    if (ctx.internal != null) {
+      types.add(RouteMapMatchRouteType.Type.INTERNAL);
+    }
+    if (ctx.local != null) {
+      types.add(RouteMapMatchRouteType.Type.LOCAL);
+    }
+    if (ctx.nssa_external != null) {
+      types.add(RouteMapMatchRouteType.Type.NSSA_EXTERNAL);
+      warn(ctx, "match route-type nssa-external is not currently supported");
+    }
+    if (ctx.type_1 != null) {
+      types.add(RouteMapMatchRouteType.Type.TYPE_1);
+    }
+    if (ctx.type_2 != null) {
+      types.add(RouteMapMatchRouteType.Type.TYPE_2);
+    }
+    _currentRouteMapEntry.setMatchRouteType(new RouteMapMatchRouteType(types.build()));
   }
 
   @Override

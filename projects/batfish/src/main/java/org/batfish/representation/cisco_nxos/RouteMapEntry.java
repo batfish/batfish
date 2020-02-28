@@ -20,6 +20,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchIpv6Address _matchIpv6Address;
   private @Nullable RouteMapMatchIpv6AddressPrefixList _matchIpv6AddressPrefixList;
   private @Nullable RouteMapMatchMetric _matchMetric;
+  private @Nullable RouteMapMatchRouteType _matchRouteType;
   private @Nullable RouteMapMatchSourceProtocol _matchSourceProtocol;
   private @Nullable RouteMapMatchTag _matchTag;
   private @Nullable RouteMapMatchVlan _matchVlan;
@@ -64,6 +65,7 @@ public final class RouteMapEntry implements Serializable {
             _matchIpv6Address,
             _matchIpv6AddressPrefixList,
             _matchMetric,
+            _matchRouteType,
             _matchSourceProtocol,
             _matchTag,
             _matchVlan)
@@ -92,6 +94,10 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapMatchMetric getMatchMetric() {
     return _matchMetric;
+  }
+
+  public @Nullable RouteMapMatchRouteType getMatchRouteType() {
+    return _matchRouteType;
   }
 
   public @Nullable RouteMapMatchSourceProtocol getMatchSourceProtocol() {
@@ -202,6 +208,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setMatchMetric(@Nullable RouteMapMatchMetric matchMetric) {
     _matchMetric = matchMetric;
+  }
+
+  public void setMatchRouteType(@Nullable RouteMapMatchRouteType matchRouteType) {
+    _matchRouteType = matchRouteType;
   }
 
   public void setMatchSourceProtocol(@Nullable RouteMapMatchSourceProtocol matchSourceProtocol) {
