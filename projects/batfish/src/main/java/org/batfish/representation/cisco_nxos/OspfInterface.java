@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 public final class OspfInterface implements Serializable {
 
   // Default dead interval is hello interval times 4
-  static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
+  static final int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
 
   // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/ospf/ip-ospf-dead-interval.html
   public static final int DEFAULT_HELLO_INTERVAL_S = 10; // s
@@ -69,6 +69,14 @@ public final class OspfInterface implements Serializable {
     _passive = passive;
   }
 
+  public @Nullable Integer getPriority() {
+    return _priority;
+  }
+
+  public void setPriority(@Nullable Integer priority) {
+    _priority = priority;
+  }
+
   public @Nullable String getProcess() {
     return _process;
   }
@@ -88,5 +96,6 @@ public final class OspfInterface implements Serializable {
   private @Nullable Integer _helloIntervalS;
   private @Nullable OspfNetworkType _network;
   private @Nullable Boolean _passive;
+  private @Nullable Integer _priority;
   private @Nullable String _process;
 }
