@@ -66,6 +66,30 @@ route-map match_ipv6_address_prefix_list permit 10
 route-map match_metric permit 10
   match metric 1
 
+route-map match_route_type_external permit 10
+  match route-type external
+
+route-map match_route_type_internal permit 10
+  match route-type internal
+
+route-map match_route_type_local permit 10
+  match route-type local
+
+route-map match_route_type_nssa_external permit 10
+  match route-type nssa-external
+
+route-map match_route_type_type_1 permit 10
+  match route-type type-1
+
+route-map match_route_type_type_2 permit 10
+  match route-type type-2
+
+route-map match_route_types permit 10
+  match route-type type-1 type-2
+
+route-map match_route_types_unsupported permit 10
+  match route-type type-1 nssa-external
+
 route-map match_source_protocol_connected permit 10
   match source-protocol connected
 
