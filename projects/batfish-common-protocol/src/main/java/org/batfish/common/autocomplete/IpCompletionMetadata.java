@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -25,7 +26,7 @@ public final class IpCompletionMetadata implements Serializable {
   }
 
   /** Represents one reason why this IP is relevant */
-  public static final class Relevance {
+  public static final class Relevance implements Serializable {
 
     private static final String PROP_REASON = "reason";
     private static final String PROP_MATCH_OBJECT = "matchObject";
@@ -85,7 +86,7 @@ public final class IpCompletionMetadata implements Serializable {
   }
 
   public IpCompletionMetadata(List<Relevance> relevances) {
-    _relevances = ImmutableList.copyOf(relevances);
+    _relevances = new LinkedList<>(relevances);
   }
 
   @JsonCreator
@@ -122,6 +123,6 @@ public final class IpCompletionMetadata implements Serializable {
   @JsonProperty(PROP_RELEVANCES)
   @Nonnull
   public List<Relevance> getRelevances() {
-    return _relevances;
+    return ImmutableList.copyOf(_relevances);
   }
 }
