@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.autocomplete.IpCompletionMetadata.Reason.INTERFACE_IP;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -10,6 +11,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
+import static org.batfish.common.util.CompletionMetadataUtils.relevanceMatchString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -20,6 +22,8 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -117,18 +121,29 @@ public final class CompletionMetadataUtilsTest {
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);
 
-    config
-        .getAllInterfaces()
-        .get(int1)
-        .setAllAddresses(ImmutableSet.of(interfaceAddress1, interfaceAddress2));
-    config
-        .getAllInterfaces()
-        .get(int2)
-        .setAllAddresses(ImmutableSet.of(interfaceAddress2, interfaceAddress3));
+    Interface iface1 = config.getAllInterfaces().get(int1);
+    iface1.setAllAddresses(ImmutableSet.of(interfaceAddress1, interfaceAddress2));
+
+    Interface iface2 = config.getAllInterfaces().get(int2);
+    iface2.setAllAddresses(ImmutableSet.of(interfaceAddress2, interfaceAddress3));
 
     configs.put(nodeName, config);
 
-    assertThat(getIps(configs), equalTo(ImmutableSet.of(ip1, ip2, ip3)));
+    assertThat(
+        getIps(configs),
+        equalTo(
+            ImmutableMap.of(
+                ip1,
+                new IpCompletionMetadata(
+                    new Relevance(INTERFACE_IP, relevanceMatchString(config, iface1))),
+                ip2,
+                new IpCompletionMetadata(
+                    ImmutableList.of(
+                        new Relevance(INTERFACE_IP, relevanceMatchString(config, iface1)),
+                        new Relevance(INTERFACE_IP, relevanceMatchString(config, iface2)))),
+                ip3,
+                new IpCompletionMetadata(
+                    new Relevance(INTERFACE_IP, relevanceMatchString(config, iface2))))));
   }
 
   @Test
@@ -158,7 +173,17 @@ public final class CompletionMetadataUtilsTest {
     configs.put("node", config);
 
     assertThat(
-        getIps(configs), equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4")));
+        getIps(configs),
+        equalTo(
+            ImmutableMap.of(
+                "1.1.1.1",
+                new IpCompletionMetadata(),
+                "2.2.2.2",
+                new IpCompletionMetadata(),
+                "3.3.3.3",
+                new IpCompletionMetadata(),
+                "4.4.4.4",
+                new IpCompletionMetadata())));
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
@@ -41,7 +42,8 @@ public final class CompletionMetadataUtils {
     return interfaces.build();
   }
 
-  private static String relevanceMatchString(Configuration configuration, Interface iface) {
+  @VisibleForTesting
+  static String relevanceMatchString(Configuration configuration, Interface iface) {
     if (configuration.getHumanName() == null) {
       return String.format("%s[%s]", configuration.getHostname(), iface.getName());
     } else {

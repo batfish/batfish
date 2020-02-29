@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -77,12 +78,24 @@ public final class IpCompletionMetadata implements Serializable {
     public int hashCode() {
       return Objects.hash(_reason, _matchObject);
     }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("_reason", _reason)
+          .add("_matchObject", _matchObject)
+          .toString();
+    }
   }
 
   @Nonnull private final List<Relevance> _relevances;
 
   public IpCompletionMetadata() {
     this(ImmutableList.of());
+  }
+
+  public IpCompletionMetadata(Relevance relevance) {
+    this(ImmutableList.of(relevance));
   }
 
   public IpCompletionMetadata(List<Relevance> relevances) {
@@ -117,6 +130,11 @@ public final class IpCompletionMetadata implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hashCode(_relevances);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("_relevances", _relevances).toString();
   }
 
   /** List of reasons why this IP is relevant */
