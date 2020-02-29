@@ -6,8 +6,10 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.ipStringAutoComplete;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.orderSuggestions;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.toHint;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
@@ -36,7 +38,9 @@ import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -44,9 +48,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata.Reason;
+import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -1310,6 +1318,51 @@ public class AutoCompleteUtilsTest {
     assertThat(
         getSuggestionsTextSet(stringAutoComplete("aBCd", strings)),
         equalTo(ImmutableSet.of("abcd")));
+  }
+
+  /** Test that ip matches should be first, relevance match second, and non-matches never */
+  @Test
+  public void testIpStringAutocomplete_ordering() {
+    List<Relevance> relevances2 = ImmutableList.of(new Relevance(Reason.INTERFACE_IP, "2.2.2.2"));
+    Map<String, IpCompletionMetadata> metadata =
+        ImmutableMap.of(
+            "1.1.1.1",
+            new IpCompletionMetadata(relevances2),
+            "2.2.2.2",
+            new IpCompletionMetadata(),
+            "3.3.3.3",
+            new IpCompletionMetadata());
+
+    assertThat(
+        ipStringAutoComplete("2", metadata),
+        equalTo(
+            ImmutableList.of(
+                new AutocompleteSuggestion("2.2.2.2", false),
+                new AutocompleteSuggestion("1.1.1.1", toHint(relevances2), false))));
+  }
+
+  @Test
+  public void testIpStringAutocomplete_matchingRelevances() {
+    Relevance match = new Relevance(Reason.INTERFACE_IP, "match");
+    Relevance other = new Relevance(Reason.INTERFACE_IP, "other");
+
+    assertThat(
+        ipStringAutoComplete(
+            "mat",
+            ImmutableMap.of("1.1.1.1", new IpCompletionMetadata(ImmutableList.of(match, other)))),
+        equalTo(ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", toHint(match), false))));
+  }
+
+  @Test
+  public void testToHint_shortenRelevances() {
+    String hint =
+        toHint(
+            ImmutableList.of(
+                new Relevance(Reason.INTERFACE_IP, "match1"),
+                new Relevance(Reason.INTERFACE_IP, "match2")));
+    assertTrue(hint.contains("match1"));
+    assertFalse(hint.contains("match2"));
+    assertTrue(hint.contains("1 more"));
   }
 
   @Test

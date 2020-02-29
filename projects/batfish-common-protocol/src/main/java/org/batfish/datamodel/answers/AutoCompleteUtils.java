@@ -7,6 +7,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +28,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
@@ -439,7 +442,7 @@ public final class AutoCompleteUtils {
         case IP:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
-            suggestions = stringAutoComplete(query, completionMetadata.getIps());
+            suggestions = ipStringAutoComplete(query, completionMetadata.getIps());
             break;
           }
         case IP_PROTOCOL_SPEC:
@@ -790,6 +793,75 @@ public final class AutoCompleteUtils {
                         .orElse(false))
         .map(s -> new AutocompleteSuggestion(s.getKey(), s.getValue().orElse(null), false))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a list of suggestions based on a query for Ips.
+   *
+   * <p>The query string may be an IP (e.g., "10.") or another string altogether (e.g., "nod"). The
+   * method first matches on IPs (and includes all of its {@link IpCompletionMetadata} as hint and
+   * then matches on {@link IpCompletionMetadata} (and includes only matching {@link Relevance} in
+   * hints).
+   */
+  @Nonnull
+  public static List<AutocompleteSuggestion> ipStringAutoComplete(
+      @Nullable String query, Map<String, IpCompletionMetadata> ips) {
+
+    String testQuery = query == null ? "" : query.toLowerCase();
+
+    // find matching IPs
+    Set<String> ipMatches =
+        ips.keySet().stream()
+            .filter(e -> e.contains(testQuery))
+            .collect(ImmutableSet.toImmutableSet());
+
+    // find relevance matches
+    List<AutocompleteSuggestion> relevanceMatches =
+        ips.entrySet().stream()
+            .filter(e -> !ipMatches.contains(e.getKey()))
+            .map(
+                e ->
+                    new SimpleEntry<>(
+                        e.getKey(),
+                        e.getValue().getRelevances().stream()
+                            .filter(r -> r.getMatchObject().toLowerCase().contains(testQuery))
+                            .collect(ImmutableList.toImmutableList())))
+            .filter(e -> !e.getValue().isEmpty())
+            .map(e -> new AutocompleteSuggestion(e.getKey(), toHint(e.getValue()), false))
+            .collect(ImmutableList.toImmutableList());
+
+    return new ImmutableList.Builder<AutocompleteSuggestion>()
+        .addAll(
+            ipMatches.stream()
+                .map(ip -> new AutocompleteSuggestion(ip, toHint(ips.get(ip)), false))
+                .collect(ImmutableList.toImmutableList()))
+        .addAll(relevanceMatches)
+        .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static String toHint(IpCompletionMetadata ipCompletionMetadata) {
+    return toHint(ipCompletionMetadata.getRelevances());
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static String toHint(List<Relevance> relevances) {
+    if (relevances.isEmpty()) {
+      return null;
+    }
+    if (relevances.size() == 1) {
+      return toHint(relevances.get(0));
+    }
+    return String.format("%s ... (%d more)", toHint(relevances.get(0)), relevances.size() - 1);
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  static String toHint(Relevance relevance) {
+    // For now, we have only one type of reason, so we don't add any explanation
+    return relevance.getMatchObject();
   }
 
   private static void checkCompletionMetadata(

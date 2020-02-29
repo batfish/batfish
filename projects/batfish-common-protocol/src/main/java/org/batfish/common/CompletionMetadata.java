@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -30,7 +31,7 @@ public final class CompletionMetadata implements Serializable {
 
     private Set<NodeInterfacePair> _interfaces;
 
-    private Set<String> _ips;
+    private Map<String, IpCompletionMetadata> _ips;
 
     private Set<String> _mlagIds;
 
@@ -76,7 +77,14 @@ public final class CompletionMetadata implements Serializable {
     }
 
     public @Nonnull Builder setIps(Set<String> ips) {
-      _ips = ImmutableSet.copyOf(ips);
+      setIps(
+          ips.stream()
+              .collect(ImmutableMap.toImmutableMap(identity(), ip -> new IpCompletionMetadata())));
+      return this;
+    }
+
+    public @Nonnull Builder setIps(Map<String, IpCompletionMetadata> ips) {
+      _ips = ImmutableMap.copyOf(ips);
       return this;
     }
 
@@ -146,7 +154,7 @@ public final class CompletionMetadata implements Serializable {
 
   private final Set<NodeInterfacePair> _interfaces;
 
-  private final Set<String> _ips;
+  private final Map<String, IpCompletionMetadata> _ips;
 
   private final Set<String> _mlagIds;
 
@@ -174,7 +182,7 @@ public final class CompletionMetadata implements Serializable {
       @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) Set<String> addressGroups,
       @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
       @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
-      @Nullable @JsonProperty(PROP_IPS) Set<String> ips,
+      @Nullable @JsonProperty(PROP_IPS) Map<String, IpCompletionMetadata> ips,
       @Nullable @JsonProperty(PROP_MLAG_IDS) Set<String> mlagIds,
       @Nullable @JsonProperty(PROP_NODES) Map<String, NodeCompletionMetadata> nodes,
       @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
@@ -185,7 +193,7 @@ public final class CompletionMetadata implements Serializable {
     return new CompletionMetadata(
         firstNonNull(filterNames, ImmutableSet.of()),
         firstNonNull(interfaces, ImmutableSet.of()),
-        firstNonNull(ips, ImmutableSet.of()),
+        firstNonNull(ips, ImmutableMap.of()),
         firstNonNull(mlagIds, ImmutableSet.of()),
         firstNonNull(nodes, ImmutableMap.of()),
         firstNonNull(prefixes, ImmutableSet.of()),
@@ -198,7 +206,7 @@ public final class CompletionMetadata implements Serializable {
   public CompletionMetadata(
       Set<String> filterNames,
       Set<NodeInterfacePair> interfaces,
-      Set<String> ips,
+      Map<String, IpCompletionMetadata> ips,
       Set<String> mlagIds,
       Map<String, NodeCompletionMetadata> nodes,
       Set<String> prefixes,
@@ -232,7 +240,7 @@ public final class CompletionMetadata implements Serializable {
 
   @JsonProperty(PROP_IPS)
   @Nonnull
-  public Set<String> getIps() {
+  public Map<String, IpCompletionMetadata> getIps() {
     return _ips;
   }
 

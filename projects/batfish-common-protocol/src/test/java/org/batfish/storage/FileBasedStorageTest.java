@@ -40,6 +40,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
@@ -455,7 +456,7 @@ public final class FileBasedStorageTest {
         new CompletionMetadata(
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
-            ImmutableSet.of("1.1.1.1"),
+            ImmutableMap.of("1.1.1.1", new IpCompletionMetadata()),
             ImmutableSet.of("mlag"),
             ImmutableMap.of("node", new NodeCompletionMetadata(null)),
             ImmutableSet.of("1.1.1.1/30"),
