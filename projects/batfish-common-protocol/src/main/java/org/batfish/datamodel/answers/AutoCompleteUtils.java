@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
-import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
@@ -808,6 +808,7 @@ public final class AutoCompleteUtils {
       @Nullable String query, Map<String, IpCompletionMetadata> ips) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
+    String[] subQueries = testQuery.split("\\s+");
 
     // find matching IPs
     Set<String> ipMatches =
@@ -824,7 +825,7 @@ public final class AutoCompleteUtils {
                     new SimpleEntry<>(
                         e.getKey(),
                         e.getValue().getRelevances().stream()
-                            .filter(r -> r.getMatchObject().toLowerCase().contains(testQuery))
+                            .filter(r -> r.matches(subQueries))
                             .collect(ImmutableList.toImmutableList())))
             .filter(e -> !e.getValue().isEmpty())
             .map(e -> new AutocompleteSuggestion(e.getKey(), toHint(e.getValue()), false))
@@ -847,21 +848,14 @@ public final class AutoCompleteUtils {
 
   @Nullable
   @VisibleForTesting
-  static String toHint(List<Relevance> relevances) {
+  static String toHint(List<IpCompletionRelevance> relevances) {
     if (relevances.isEmpty()) {
       return null;
     }
     if (relevances.size() == 1) {
-      return toHint(relevances.get(0));
+      return relevances.get(0).getDisplay();
     }
-    return String.format("%s ... (%d more)", toHint(relevances.get(0)), relevances.size() - 1);
-  }
-
-  @Nonnull
-  @VisibleForTesting
-  static String toHint(Relevance relevance) {
-    // For now, we have only one type of reason, so we don't add any explanation
-    return relevance.getMatchObject();
+    return String.format("%s ... (%d more)", relevances.get(0).getDisplay(), relevances.size() - 1);
   }
 
   private static void checkCompletionMetadata(

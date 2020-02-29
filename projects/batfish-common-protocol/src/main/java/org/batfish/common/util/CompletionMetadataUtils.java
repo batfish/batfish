@@ -7,8 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
-import org.batfish.common.autocomplete.IpCompletionMetadata.Reason;
-import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -43,13 +42,13 @@ public final class CompletionMetadataUtils {
   }
 
   @VisibleForTesting
-  static String relevanceMatchString(Configuration configuration, Interface iface) {
-    if (configuration.getHumanName() == null) {
-      return String.format("%s[%s]", configuration.getHostname(), iface.getName());
-    } else {
-      return String.format(
-          "%s(%s)[%s]", configuration.getHostname(), configuration.getHumanName(), iface.getName());
-    }
+  static String interfaceDisplayString(Configuration configuration, Interface iface) {
+    return String.format(
+        "%s[%s]",
+        configuration.getHumanName() == null
+            ? configuration.getHostname()
+            : configuration.getHumanName(),
+        iface.getName());
   }
 
   public static Map<String, IpCompletionMetadata> getIps(
@@ -70,9 +69,11 @@ public final class CompletionMetadataUtils {
                                   ip ->
                                       ips.computeIfAbsent(ip, k -> new IpCompletionMetadata())
                                           .addRelevance(
-                                              new Relevance(
-                                                  Reason.INTERFACE_IP,
-                                                  relevanceMatchString(configuration, iface)))));
+                                              new IpCompletionRelevance(
+                                                  interfaceDisplayString(configuration, iface),
+                                                  configuration.getHumanName(),
+                                                  configuration.getHostname(),
+                                                  iface.getName()))));
 
               configuration
                   .getGeneratedReferenceBooks()

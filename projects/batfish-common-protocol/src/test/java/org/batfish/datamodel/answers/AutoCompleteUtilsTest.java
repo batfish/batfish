@@ -53,8 +53,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
-import org.batfish.common.autocomplete.IpCompletionMetadata.Reason;
-import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -1323,7 +1322,8 @@ public class AutoCompleteUtilsTest {
   /** Test that ip matches should be first, relevance match second, and non-matches never */
   @Test
   public void testIpStringAutocomplete_ordering() {
-    List<Relevance> relevances2 = ImmutableList.of(new Relevance(Reason.INTERFACE_IP, "2.2.2.2"));
+    List<IpCompletionRelevance> relevances2 =
+        ImmutableList.of(new IpCompletionRelevance("display", "42"));
     Map<String, IpCompletionMetadata> metadata =
         ImmutableMap.of(
             "1.1.1.1",
@@ -1343,14 +1343,15 @@ public class AutoCompleteUtilsTest {
 
   @Test
   public void testIpStringAutocomplete_matchingRelevances() {
-    Relevance match = new Relevance(Reason.INTERFACE_IP, "match");
-    Relevance other = new Relevance(Reason.INTERFACE_IP, "other");
+    IpCompletionRelevance match = new IpCompletionRelevance("match", "match");
+    IpCompletionRelevance other = new IpCompletionRelevance("other", "other");
 
     assertThat(
         ipStringAutoComplete(
             "mat",
             ImmutableMap.of("1.1.1.1", new IpCompletionMetadata(ImmutableList.of(match, other)))),
-        equalTo(ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", toHint(match), false))));
+        equalTo(
+            ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", match.getDisplay(), false))));
   }
 
   @Test
@@ -1358,8 +1359,8 @@ public class AutoCompleteUtilsTest {
     String hint =
         toHint(
             ImmutableList.of(
-                new Relevance(Reason.INTERFACE_IP, "match1"),
-                new Relevance(Reason.INTERFACE_IP, "match2")));
+                new IpCompletionRelevance("match1", "match1"),
+                new IpCompletionRelevance("match2", "match2")));
     assertTrue(hint.contains("match1"));
     assertFalse(hint.contains("match2"));
     assertTrue(hint.contains("1 more"));

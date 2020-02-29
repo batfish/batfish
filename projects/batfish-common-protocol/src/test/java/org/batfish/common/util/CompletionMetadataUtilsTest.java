@@ -1,6 +1,5 @@
 package org.batfish.common.util;
 
-import static org.batfish.common.autocomplete.IpCompletionMetadata.Reason.INTERFACE_IP;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -11,7 +10,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
-import static org.batfish.common.util.CompletionMetadataUtils.relevanceMatchString;
+import static org.batfish.common.util.CompletionMetadataUtils.interfaceDisplayString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -23,7 +22,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
-import org.batfish.common.autocomplete.IpCompletionMetadata.Relevance;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -135,15 +134,27 @@ public final class CompletionMetadataUtilsTest {
             ImmutableMap.of(
                 ip1,
                 new IpCompletionMetadata(
-                    new Relevance(INTERFACE_IP, relevanceMatchString(config, iface1))),
+                    new IpCompletionRelevance(
+                        interfaceDisplayString(config, iface1),
+                        config.getHostname(),
+                        iface1.getName())),
                 ip2,
                 new IpCompletionMetadata(
                     ImmutableList.of(
-                        new Relevance(INTERFACE_IP, relevanceMatchString(config, iface1)),
-                        new Relevance(INTERFACE_IP, relevanceMatchString(config, iface2)))),
+                        new IpCompletionRelevance(
+                            interfaceDisplayString(config, iface1),
+                            config.getHostname(),
+                            iface1.getName()),
+                        new IpCompletionRelevance(
+                            interfaceDisplayString(config, iface2),
+                            config.getHostname(),
+                            iface2.getName()))),
                 ip3,
                 new IpCompletionMetadata(
-                    new Relevance(INTERFACE_IP, relevanceMatchString(config, iface2))))));
+                    new IpCompletionRelevance(
+                        interfaceDisplayString(config, iface2),
+                        config.getHostname(),
+                        iface2.getName())))));
   }
 
   @Test

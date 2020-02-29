@@ -1,7 +1,6 @@
 package org.batfish.common.autocomplete;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,95 +20,28 @@ public final class IpCompletionMetadata implements Serializable {
 
   private static final String PROP_RELEVANCES = "relevances";
 
-  public enum Reason {
-    // more reasons to come later
-    INTERFACE_IP
-  }
-
-  /** Represents one reason why this IP is relevant */
-  public static final class Relevance implements Serializable {
-
-    private static final String PROP_REASON = "reason";
-    private static final String PROP_MATCH_OBJECT = "matchObject";
-
-    @Nonnull private final Reason _reason;
-
-    @Nonnull private final String _matchObject;
-
-    @JsonCreator
-    private static Relevance jsonCreator(
-        @Nullable @JsonProperty(PROP_REASON) Reason reason,
-        @Nullable @JsonProperty(PROP_MATCH_OBJECT) String matchObject) {
-      checkNotNull(reason, "Reason for Relevance cannot be null");
-      checkNotNull(matchObject, "MatchObject for Relevance cannot be null");
-      return new Relevance(reason, matchObject);
-    }
-
-    public Relevance(Reason reason, String matchObject) {
-      _reason = reason;
-      _matchObject = matchObject;
-    }
-
-    /** Type of relevance */
-    @JsonProperty(PROP_REASON)
-    public Reason getReason() {
-      return _reason;
-    }
-
-    /** String representation to match on for the underlying object that leads to the relevance. */
-    @JsonProperty(PROP_MATCH_OBJECT)
-    public String getMatchObject() {
-      return _matchObject;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof Relevance)) {
-        return false;
-      }
-      Relevance relevance = (Relevance) o;
-      return _reason == relevance._reason && _matchObject.equals(relevance._matchObject);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_reason, _matchObject);
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(this)
-          .add("_reason", _reason)
-          .add("_matchObject", _matchObject)
-          .toString();
-    }
-  }
-
-  @Nonnull private final List<Relevance> _relevances;
+  @Nonnull private final List<IpCompletionRelevance> _relevances;
 
   public IpCompletionMetadata() {
     this(ImmutableList.of());
   }
 
-  public IpCompletionMetadata(Relevance relevance) {
+  public IpCompletionMetadata(IpCompletionRelevance relevance) {
     this(ImmutableList.of(relevance));
   }
 
-  public IpCompletionMetadata(List<Relevance> relevances) {
+  public IpCompletionMetadata(List<IpCompletionRelevance> relevances) {
     _relevances = new LinkedList<>(relevances);
   }
 
   @JsonCreator
   private static IpCompletionMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_RELEVANCES) List<Relevance> relevances) {
+      @Nullable @JsonProperty(PROP_RELEVANCES) List<IpCompletionRelevance> relevances) {
     return new IpCompletionMetadata(firstNonNull(relevances, ImmutableList.of()));
   }
 
-  /** Add another relevance */
-  public void addRelevance(Relevance relevance) {
+  /** Add another relevance with the specified display and match tags. */
+  public void addRelevance(IpCompletionRelevance relevance) {
     if (!_relevances.contains(relevance)) {
       _relevances.add(relevance);
     }
@@ -140,7 +72,7 @@ public final class IpCompletionMetadata implements Serializable {
   /** List of reasons why this IP is relevant */
   @JsonProperty(PROP_RELEVANCES)
   @Nonnull
-  public List<Relevance> getRelevances() {
+  public List<IpCompletionRelevance> getRelevances() {
     return ImmutableList.copyOf(_relevances);
   }
 }
