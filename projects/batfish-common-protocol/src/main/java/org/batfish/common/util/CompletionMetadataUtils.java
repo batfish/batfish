@@ -15,6 +15,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 
 /** Various functions useful for fetching data used in the creation of CompletionMetadata */
 public final class CompletionMetadataUtils {
@@ -88,16 +90,58 @@ public final class CompletionMetadataUtils {
                                           // when we process that group itself
                                           .forEach(
                                               a ->
-                                                  Ip.tryParse(a)
-                                                      .ifPresent(
-                                                          ip ->
-                                                              ips.computeIfAbsent(
-                                                                  ip.toString(),
-                                                                  k ->
-                                                                      new IpCompletionMetadata())))));
+                                                  addGeneratedRefBookAddress(
+                                                      a,
+                                                      configuration,
+                                                      book.getName(),
+                                                      ag.getName(),
+                                                      ips))));
             });
 
     return ImmutableMap.copyOf(ips);
+  }
+
+  @VisibleForTesting
+  static String addressGroupDisplayString(
+      Configuration configuration, String bookName, String groupName) {
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PoolAddresses))) {
+      // include only group name (no hostname), which should be enough of a distinguisher
+      return String.format("Pool address %s", groupName);
+    }
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.VirtualAddresses))) {
+      // include only group name (no hostname), which should be enough of a distinguisher
+      return String.format("Virtual address %s", groupName);
+    }
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps))) {
+      return String.format(
+          "Public IP of %s",
+          configuration.getHumanName() == null
+              ? configuration.getHostname()
+              : configuration.getHumanName());
+    }
+    // Don't know what type of address this is; just use group name
+    return groupName;
+  }
+
+  private static void addGeneratedRefBookAddress(
+      String ipString,
+      Configuration configuration,
+      String bookName,
+      String groupName,
+      Map<String, IpCompletionMetadata> ips) {
+    Ip.tryParse(ipString)
+        .ifPresent(
+            ip ->
+                ips.computeIfAbsent(ip.toString(), k -> new IpCompletionMetadata())
+                    .addRelevance(
+                        new IpCompletionRelevance(
+                            addressGroupDisplayString(configuration, bookName, groupName),
+                            configuration.getHostname(),
+                            configuration.getHumanName(),
+                            groupName)));
   }
 
   public static Set<String> getMlagIds(Map<String, Configuration> configurations) {

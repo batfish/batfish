@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
+import static java.util.Comparator.naturalOrder;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
@@ -14,8 +15,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -33,6 +36,10 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 
 /** Representation for an EC2 instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -273,7 +280,8 @@ final class Instance implements AwsVpcEntity, Serializable {
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(_instanceId, "aws", _tags, DeviceModel.AWS_EC2_INSTANCE);
+        Utils.newAwsConfiguration(
+            instanceHostname(_instanceId), "aws", _tags, DeviceModel.AWS_EC2_INSTANCE);
     cfgNode.setDeviceType(DeviceType.HOST);
 
     for (String interfaceId : _networkInterfaces) {
@@ -295,6 +303,8 @@ final class Instance implements AwsVpcEntity, Serializable {
       cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     }
 
+    addPublicIpRefBook(cfgNode, region);
+
     Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     // create LocationInfo for each link location on the instance.
@@ -310,6 +320,45 @@ final class Instance implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;
+  }
+
+  /** Adds a generated references book for public Ips if the instance has any such Ips */
+  @VisibleForTesting
+  void addPublicIpRefBook(Configuration cfgNode, Region region) {
+    List<AddressGroup> publicIpAddressGroups =
+        _networkInterfaces.stream()
+            .map(id -> region.getNetworkInterfaces().get(id))
+            .filter(Objects::nonNull)
+            .map(
+                iface ->
+                    new AddressGroup(
+                        iface.getPrivateIpAddresses().stream()
+                            .filter(privIp -> privIp.getPublicIp() != null)
+                            .map(privIp -> privIp.getPublicIp().toString())
+                            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())),
+                        publicIpAddressGroupName(iface)))
+            .filter(ag -> !ag.getAddresses().isEmpty())
+            .collect(ImmutableList.toImmutableList());
+
+    if (!publicIpAddressGroups.isEmpty()) {
+      String publicIpBookName =
+          GeneratedRefBookUtils.getName(instanceHostname(_instanceId), BookType.PublicIps);
+      cfgNode
+          .getGeneratedReferenceBooks()
+          .put(
+              publicIpBookName,
+              ReferenceBook.builder(publicIpBookName)
+                  .setAddressGroups(publicIpAddressGroups)
+                  .build());
+    }
+  }
+
+  static String publicIpAddressGroupName(NetworkInterface iface) {
+    return String.format("(%s (%s)", iface.getDescription(), iface.getId());
+  }
+
+  static String instanceHostname(String instanceId) {
+    return instanceId;
   }
 
   @Override
