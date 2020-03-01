@@ -7893,7 +7893,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    if (ctx.HEARTBEAT() == null) {
+      _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    } else {
+      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+    }
   }
 
   @Override

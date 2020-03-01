@@ -5403,6 +5403,11 @@ HEADER_PASSING
    'header-passing'
 ;
 
+HEARTBEAT
+:
+   'heartbeat'
+;
+
 HEARTBEAT_INTERVAL
 :
    'heartbeat-interval'
