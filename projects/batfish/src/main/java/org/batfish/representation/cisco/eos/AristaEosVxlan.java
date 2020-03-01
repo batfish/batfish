@@ -8,12 +8,14 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 public class AristaEosVxlan implements Serializable {
 
   public static final Integer DEFAULT_UDP_PORT = 4789;
 
+  private @Nullable Boolean _arpReplyRelay;
   private String _description;
   private SortedSet<Ip> _floodAddresses;
   private String _interfaceName;
@@ -33,6 +35,14 @@ public class AristaEosVxlan implements Serializable {
     _vlanFloodAddresses = new TreeMap<>();
     _vlanVnis = new TreeMap<>();
     _vrfToVni = new HashMap<>(0);
+  }
+
+  public @Nullable Boolean getArpReplyRelay() {
+    return _arpReplyRelay;
+  }
+
+  public void setArpReplyRelay(@Nullable Boolean arpReplyRelay) {
+    this._arpReplyRelay = arpReplyRelay;
   }
 
   public String getDescription() {
