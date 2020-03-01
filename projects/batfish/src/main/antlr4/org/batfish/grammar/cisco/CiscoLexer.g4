@@ -10705,6 +10705,11 @@ REPLACE_AS
    'replace-as'
 ;
 
+REPLY
+:
+   'reply'
+;
+
 REPLY_TO
 :
    'reply-to'
