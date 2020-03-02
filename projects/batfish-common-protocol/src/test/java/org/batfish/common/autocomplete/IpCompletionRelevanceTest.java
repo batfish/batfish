@@ -59,12 +59,14 @@ public class IpCompletionRelevanceTest {
   public void testMatches() {
     IpCompletionRelevance relevance = new IpCompletionRelevance("a", "tag1", "gat1");
 
-    // matches both tags
-    assertTrue(relevance.matches(new String[] {"a"}));
-    assertTrue(relevance.matches(new String[] {"tag", "gat"}));
+    // each subquery matches ip or tags
+    assertTrue(relevance.matches(new String[] {"a"}, "1.1.1.1"));
+    assertTrue(relevance.matches(new String[] {"tag", "gat"}, "1.1.1.1"));
+    assertTrue(relevance.matches(new String[] {"1.1"}, "1.1.1.1"));
+    assertTrue(relevance.matches(new String[] {"1.1", "tag"}, "1.1.1.1"));
 
     // does not match at least one tag
-    assertFalse(relevance.matches(new String[] {"b"}));
-    assertFalse(relevance.matches(new String[] {"tag", "b"}));
+    assertFalse(relevance.matches(new String[] {"b"}, "1.1.1.1"));
+    assertFalse(relevance.matches(new String[] {"tag", "b"}, "1.1.1.1"));
   }
 }

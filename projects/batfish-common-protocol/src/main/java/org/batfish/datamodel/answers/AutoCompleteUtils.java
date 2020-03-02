@@ -7,6 +7,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Streams;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -461,7 +462,16 @@ public final class AutoCompleteUtils {
           }
         case IP_SPACE_SPEC:
           {
-            suggestions =
+            // first, get the suggestions based on IP metadata
+            List<AutocompleteSuggestion> metadataSuggestions =
+                ipStringAutoComplete(query, completionMetadata.getIps());
+            Set<String> metadataSuggestionTexts =
+                metadataSuggestions.stream()
+                    .map(s -> s.getText())
+                    .collect(ImmutableSet.toImmutableSet());
+
+            // then, get grammar-based suggestions
+            List<AutocompleteSuggestion> grammarSuggestions =
                 ParboiledAutoComplete.autoComplete(
                     Grammar.IP_SPACE_SPECIFIER,
                     network,
@@ -471,6 +481,14 @@ public final class AutoCompleteUtils {
                     completionMetadata,
                     nodeRolesData,
                     referenceLibrary);
+
+            // merge the suggestions
+            suggestions =
+                Streams.concat(
+                        metadataSuggestions.stream(),
+                        grammarSuggestions.stream()
+                            .filter(s -> !metadataSuggestionTexts.contains(s.getText())))
+                    .collect(ImmutableList.toImmutableList());
             break;
           }
         case IPSEC_SESSION_STATUS_SPEC:
@@ -825,16 +843,28 @@ public final class AutoCompleteUtils {
                     new SimpleEntry<>(
                         e.getKey(),
                         e.getValue().getRelevances().stream()
-                            .filter(r -> r.matches(subQueries))
+                            .filter(r -> r.matches(subQueries, e.getKey()))
                             .collect(ImmutableList.toImmutableList())))
             .filter(e -> !e.getValue().isEmpty())
-            .map(e -> new AutocompleteSuggestion(e.getKey(), toHint(e.getValue()), false))
+            .map(
+                e ->
+                    AutocompleteSuggestion.builder()
+                        .setText(e.getKey())
+                        .setHint(toHint(e.getValue()))
+                        .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+                        .build())
             .collect(ImmutableList.toImmutableList());
 
     return new ImmutableList.Builder<AutocompleteSuggestion>()
         .addAll(
             ipMatches.stream()
-                .map(ip -> new AutocompleteSuggestion(ip, toHint(ips.get(ip)), false))
+                .map(
+                    ip ->
+                        AutocompleteSuggestion.builder()
+                            .setText(ip)
+                            .setHint(toHint(ips.get(ip)))
+                            .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+                            .build())
                 .collect(ImmutableList.toImmutableList()))
         .addAll(relevanceMatches)
         .build();

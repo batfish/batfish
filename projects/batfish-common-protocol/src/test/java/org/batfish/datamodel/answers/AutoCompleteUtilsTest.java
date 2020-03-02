@@ -873,6 +873,62 @@ public class AutoCompleteUtilsTest {
                 "@connectedTo(", "@deviceType(", "@enter(", "@interfaceType(", "@vrf")));
   }
 
+  /** Tests that metadata based suggestions are included */
+  @Test
+  public void testIpSpaceIncludeMetadataMatches() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setIps(
+                ImmutableMap.of(
+                    "1.1.1.1",
+                    new IpCompletionMetadata(new IpCompletionRelevance("display", "tag"))))
+            .build();
+
+    // Just the valid function names in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "tag",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(ImmutableSet.of("1.1.1.1", "[", "&", ",", "\\")));
+  }
+
+  /** Tests that IPs that match based on both metadata and grammar are included only once */
+  @Test
+  public void testIpSpaceIncludeOnce() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setIps(
+                ImmutableMap.of(
+                    "1.1.1.1",
+                    new IpCompletionMetadata(new IpCompletionRelevance("display", "tag"))))
+            .build();
+
+    // Just the valid function names in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1.1.",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("1.1.1.1")));
+  }
+
   @Ignore
   @Test
   public void testInterfacesSpecEmptyString() {
