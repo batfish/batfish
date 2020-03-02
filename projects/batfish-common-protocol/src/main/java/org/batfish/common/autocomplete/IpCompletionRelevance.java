@@ -52,10 +52,10 @@ public class IpCompletionRelevance implements Serializable {
             .collect(ImmutableList.toImmutableList());
   }
 
-  /** Returns true if each subQuery is a substring of at least one tag */
-  public boolean matches(String[] subQueries) {
+  /** Returns true if each subQuery is a substring of at least one tag or of the ip */
+  public boolean matches(String[] subQueries, String ip) {
     return Arrays.stream(subQueries)
-        .allMatch(sq -> _matchTags.stream().anyMatch(tag -> tag.contains(sq)));
+        .allMatch(sq -> ip.contains(sq) || _matchTags.stream().anyMatch(tag -> tag.contains(sq)));
   }
 
   /** The string to display when this relevance matches */
