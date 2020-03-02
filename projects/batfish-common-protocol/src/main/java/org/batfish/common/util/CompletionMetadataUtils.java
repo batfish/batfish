@@ -122,8 +122,8 @@ public final class CompletionMetadataUtils {
               ? configuration.getHostname()
               : configuration.getHumanName());
     }
-    // Don't know what type of address this is; just use group name
-    return groupName;
+    // Don't know what type of address this is; use default value.
+    return String.format("%s in %s", groupName, bookName);
   }
 
   private static void addGeneratedRefBookAddress(
