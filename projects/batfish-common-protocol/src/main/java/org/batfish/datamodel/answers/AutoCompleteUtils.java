@@ -800,8 +800,8 @@ public final class AutoCompleteUtils {
    *
    * <p>The query string may be an IP (e.g., "10.") or another string altogether (e.g., "nod"). The
    * method first matches on IPs (and includes all of its {@link IpCompletionMetadata} as hint and
-   * then matches on {@link IpCompletionMetadata} (and includes only matching {@link Relevance} in
-   * hints).
+   * then matches on {@link IpCompletionMetadata} (and includes only matching {@link
+   * IpCompletionRelevance} in hints).
    */
   @Nonnull
   public static List<AutocompleteSuggestion> ipStringAutoComplete(
