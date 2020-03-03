@@ -179,4 +179,20 @@ public class AwsConfigurationPublicSubnetTest {
                     ImmutableSortedSet.of(flowDiff(SOURCE, _privateIp, _publicIp))),
                 StepAction.TRANSFORMED)));
   }
+
+  /** Packets comes with a private IP for which we don't have a public IP association */
+  @Test
+  public void testToInternetInvalidPrivateIp() {
+    Ip dstIp = Ip.parse("8.8.8.8");
+    Flow flow =
+        builder().setIngressNode(_instance).setDstIp(dstIp).setSrcIp(Ip.parse("10.0.0.92")).build();
+    SortedMap<Flow, List<Trace>> traces =
+        _batfish
+            .getTracerouteEngine(_batfish.getSnapshot())
+            .computeTraces(ImmutableSet.of(flow), false);
+    Trace trace = getOnlyElement(traces.get(flow).iterator());
+
+    testTraceNodesAndDisposition(
+        trace, FlowDisposition.DENIED_IN, ImmutableList.of(_instance, _subnet, _igw));
+  }
 }

@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,11 +28,18 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -57,6 +66,9 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   /** Name of the routing policy on the Internet Gateway that faces the backbone */
   static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
+
+  /** Name of the filter that drops from invalid private IPs (those without a public IP) */
+  static final String INVALID_PRIVATE_IP_FILTER_NAME = "~DENY~INVALID~PRIVATE~IPs~";
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -142,6 +154,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
                 ImmutableMap.toImmutableMap(
                     PrivateIpAddress::getPrivateIp, PrivateIpAddress::getPublicIp));
 
+    // configureInvalidPrivateIpFilter(cfgNode, bbInterface, privatePublicMap.keySet());
+
     configureNat(bbInterface, privatePublicMap);
 
     BgpProcess bgpProcess =
@@ -178,6 +192,29 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
         .build();
 
     return cfgNode;
+  }
+
+  /** Installs a filter on the interface that drops all packets that do not match a private IP */
+  @VisibleForTesting
+  static void configureInvalidPrivateIpFilter(
+      Configuration cfgNode, Interface bbInterface, Set<Ip> validPrivateIps) {
+    IpSpace invalidIpSpace =
+        IpWildcardSetIpSpace.builder()
+            .excluding(
+                validPrivateIps.stream().map(IpWildcard::create).collect(Collectors.toList()))
+            .build();
+
+    IpAccessList filter =
+        IpAccessList.builder()
+            .setName(INVALID_PRIVATE_IP_FILTER_NAME)
+            .setLines(
+                ExprAclLine.rejecting(
+                    "Deny invalid private source IPs",
+                    new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(invalidIpSpace).build())))
+            .build();
+
+    cfgNode.getIpAccessLists().put(filter.getName(), filter);
+    bbInterface.setPreTransformationOutgoingFilter(filter);
   }
 
   @VisibleForTesting
