@@ -13984,6 +13984,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-1f315846",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14006,6 +14007,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-9c8adceb",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14028,6 +14030,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-d9cafabc",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14039,6 +14042,49 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Allowed private instance IPs associated with a public IP"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
           }
         },
         "routingPolicies" : {
@@ -14208,6 +14254,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-073b8061",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14230,6 +14277,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-1641fa70",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14252,6 +14300,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-30398256",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14274,6 +14323,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-7044ff16",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14296,6 +14346,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-f73a8191",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14307,6 +14358,49 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Allowed private instance IPs associated with a public IP"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
           }
         },
         "routingPolicies" : {
@@ -14493,6 +14587,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To subnet-62f14104",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -14504,6 +14599,49 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Allowed private instance IPs associated with a public IP"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
           }
         },
         "routingPolicies" : {
