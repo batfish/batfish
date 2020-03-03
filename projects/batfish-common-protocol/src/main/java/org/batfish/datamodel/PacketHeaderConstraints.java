@@ -480,10 +480,9 @@ public class PacketHeaderConstraints {
               .reduce(IntegerSpace::union)
               .orElse(IntegerSpace.EMPTY);
 
-      // for each subrange, run all resolved ports through it, to see if a match occurs
       checkArgument(
           !ports.intersection(resolvedPorts).isEmpty(),
-          "Given ports (%s) and protocols (%s) do not overlap",
+          "Given ports (%s) and applications (%s) do not overlap",
           ports,
           applications);
     }
