@@ -8,7 +8,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
-import static org.batfish.representation.aws.InternetGateway.INVALID_PRIVATE_IP_FILTER_NAME;
+import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.findMyNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
@@ -362,7 +362,7 @@ public class SubnetTest {
             .get(interfaceNameToRemote(subnetCfg))
             .getIncomingFilter()
             .getName(),
-        equalTo(INVALID_PRIVATE_IP_FILTER_NAME));
+        equalTo(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     // the subnet router should have routes from the table and to the public ip
     assertThat(

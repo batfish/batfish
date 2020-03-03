@@ -68,8 +68,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   /** Name of the routing policy on the Internet Gateway that faces the backbone */
   static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
 
-  /** Name of the filter that drops from invalid private IPs (those without a public IP) */
-  static final String INVALID_PRIVATE_IP_FILTER_NAME = "~DENY~INVALID~PRIVATE~IPs~";
+  /** Name of the filter that drops from private IPs without an associated public IP */
+  static final String UNASSOCIATED_PRIVATE_IP_FILTER_NAME = "~DENY~UNASSOCIATED~PRIVATE~IPs~";
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -157,10 +157,12 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
     configureNat(bbInterface, privatePublicMap);
 
-    // Configure a filter that will drop all incoming packets with invalid private IPs.
+    // Install a filter that will drop all incoming packets from subnets that have invalid private
+    // IPs (i.e., there is no associated public IP).
     // This filter is installed on subnet-facing interfaces when they are created in Subnet.java.
-    IpAccessList invalidIpFilter = computeInvalidPrivateIpFilter(privatePublicMap.keySet());
-    cfgNode.getIpAccessLists().put(invalidIpFilter.getName(), invalidIpFilter);
+    IpAccessList unassociatedIpFilter =
+        computeUnassociatedPrivateIpFilter(privatePublicMap.keySet());
+    cfgNode.getIpAccessLists().put(unassociatedIpFilter.getName(), unassociatedIpFilter);
 
     BgpProcess bgpProcess =
         BgpProcess.builder()
@@ -199,19 +201,20 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   }
 
   @VisibleForTesting
-  static IpAccessList computeInvalidPrivateIpFilter(Collection<Ip> validPrivateIps) {
+  static IpAccessList computeUnassociatedPrivateIpFilter(Collection<Ip> validPrivateIps) {
     IpSpace validPrivateIpSpace =
         IpWildcardSetIpSpace.builder()
             .including(
                 validPrivateIps.stream().map(IpWildcard::create).collect(Collectors.toList()))
             .build();
     return IpAccessList.builder()
-        .setName(INVALID_PRIVATE_IP_FILTER_NAME)
+        .setName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME)
         .setLines(
             ExprAclLine.accepting(
-                "Allow valid private IPs",
+                "Allow private instance IPs associated with a public IP.",
                 new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(validPrivateIpSpace).build())),
-            ExprAclLine.rejecting("Deny invalid private IPs", TrueExpr.INSTANCE))
+            ExprAclLine.rejecting(
+                "Deny private instance IPs not associated with a public IP", TrueExpr.INSTANCE))
         .build();
   }
 

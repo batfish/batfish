@@ -94,10 +94,24 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     testTrace(flowTrace, expectedDisposition, expectedNodes);
   }
 
+  /** Returns an IP address of the node. */
+  private static Ip getFirstNodeIp(String nodeName) {
+    return _batfish
+        .loadConfigurations(_batfish.getSnapshot())
+        .get(nodeName)
+        .getAllInterfaces()
+        .values()
+        .iterator()
+        .next()
+        .getConcreteAddress()
+        .getIp();
+  }
+
   private static SortedMap<Flow, List<Trace>> getTraces(String ingressNode, Ip dstIp) {
     Flow flow =
         Flow.builder()
             .setIngressNode(ingressNode)
+            .setSrcIp(getFirstNodeIp(ingressNode))
             .setDstIp(dstIp) // this public IP does not exists in the network
             .build();
     return _batfish

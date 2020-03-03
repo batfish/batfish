@@ -8,8 +8,8 @@ import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -171,17 +171,14 @@ public class AwsConfigurationPublicSubnetTest {
             _instance, _subnet, _igw, AWS_BACKBONE_NODE_NAME, IspModelingUtils.INTERNET_HOST_NAME));
 
     // Test NAT behavior
-    assertTrue(
-        trace
-            .getHops()
-            .get(2)
-            .getSteps()
-            .contains(
-                new TransformationStep(
-                    new TransformationStepDetail(
-                        TransformationType.SOURCE_NAT,
-                        ImmutableSortedSet.of(flowDiff(SOURCE, _privateIp, _publicIp))),
-                    StepAction.TRANSFORMED)));
+    assertThat(
+        trace.getHops().get(2).getSteps(),
+        hasItem(
+            new TransformationStep(
+                new TransformationStepDetail(
+                    TransformationType.SOURCE_NAT,
+                    ImmutableSortedSet.of(flowDiff(SOURCE, _privateIp, _publicIp))),
+                StepAction.TRANSFORMED)));
   }
 
   /** Packets comes with a private IP for which we don't have a public IP association */

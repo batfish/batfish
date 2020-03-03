@@ -18,12 +18,13 @@ import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
-import static org.batfish.representation.aws.InternetGateway.INVALID_PRIVATE_IP_FILTER_NAME;
-import static org.batfish.representation.aws.InternetGateway.computeInvalidPrivateIpFilter;
+import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
+import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -129,7 +130,7 @@ public class InternetGatewayTest {
     Interface bbInterface = igwConfig.getAllInterfaces().get(BACKBONE_INTERFACE_NAME);
     Prefix bbInterfacePrefix = bbInterface.getConcreteAddress().getPrefix();
 
-    assertTrue(igwConfig.getAllInterfaces().containsKey(BACKBONE_INTERFACE_NAME));
+    assertThat(igwConfig.getAllInterfaces(), hasKey(BACKBONE_INTERFACE_NAME));
     assertThat(
         igwConfig.getDefaultVrf().getBgpProcess().getRouterId(),
         equalTo(bbInterfacePrefix.getStartIp()));
@@ -148,8 +149,9 @@ public class InternetGatewayTest {
                 .apply(TransformationStep.shiftDestinationIp(privateIp.toPrefix()))
                 .build()));
 
-    // Check that the filter to block private IPs is installed. its behavior tested separately
-    assertTrue(igwConfig.getIpAccessLists().containsKey(INVALID_PRIVATE_IP_FILTER_NAME));
+    // Check that the filter to block unassociated private IPs is installed. Its behavior is  tested
+    // separately.
+    assertTrue(igwConfig.getIpAccessLists().containsKey(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
@@ -227,14 +229,15 @@ public class InternetGatewayTest {
   }
 
   @Test
-  public void testComputeInvalidPrivateFilter() {
-    Ip validIp = Ip.parse("1.1.1.1");
-    Ip invalidIp = Ip.parse("6.6.6.6");
-    IpAccessList invalidIpFilter = computeInvalidPrivateIpFilter(ImmutableList.of(validIp));
+  public void testComputeUnassociatedPrivateIpFilter() {
+    Ip associatedPrivateIp = Ip.parse("1.1.1.1");
+    Ip unassociatedPrivateIp = Ip.parse("6.6.6.6");
+    IpAccessList invalidIpFilter =
+        computeUnassociatedPrivateIpFilter(ImmutableList.of(associatedPrivateIp));
     assertThat(
         invalidIpFilter
             .filter(
-                Flow.builder().setSrcIp(validIp).setIngressNode("aa").build(),
+                Flow.builder().setSrcIp(associatedPrivateIp).setIngressNode("aa").build(),
                 null,
                 ImmutableMap.of(),
                 ImmutableMap.of())
@@ -243,7 +246,7 @@ public class InternetGatewayTest {
     assertThat(
         invalidIpFilter
             .filter(
-                Flow.builder().setSrcIp(invalidIp).setIngressNode("aa").build(),
+                Flow.builder().setSrcIp(unassociatedPrivateIp).setIngressNode("aa").build(),
                 null,
                 ImmutableMap.of(),
                 ImmutableMap.of())
