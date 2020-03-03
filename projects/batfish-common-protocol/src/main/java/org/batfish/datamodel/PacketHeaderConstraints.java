@@ -482,7 +482,7 @@ public class PacketHeaderConstraints {
 
       // for each subrange, run all resolved ports through it, to see if a match occurs
       checkArgument(
-          ports.contains(resolvedPorts),
+          !ports.intersection(resolvedPorts).isEmpty(),
           "Given ports (%s) and protocols (%s) do not overlap",
           ports,
           applications);
