@@ -190,6 +190,11 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       // drop all packets that were not NAT'd
       vpcIface.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
       cfgNode.getIpAccessLists().put(UNSUPPORTED_PROTOCOL_FILTER_NAME, UNSUPPORTED_PROTOCOL_FILTER);
+
+      // not sure why this is needed
+      vpcIface.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              false, ImmutableList.of(vpcIface.getName()), null, null));
     }
 
     // any packet that comes in on subnetIface and is not reverse-transformed should be dropped

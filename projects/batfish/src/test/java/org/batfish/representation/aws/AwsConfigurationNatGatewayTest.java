@@ -154,6 +154,7 @@ public class AwsConfigurationNatGatewayTest {
             INTERNET_HOST_NAME,
             AWS_BACKBONE_NODE_NAME,
             _internetGateway,
+            _subnetNat,
             _natGateway,
             _subnetNat,
             _internetGateway,
