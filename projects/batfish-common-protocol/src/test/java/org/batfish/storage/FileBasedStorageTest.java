@@ -456,7 +456,7 @@ public final class FileBasedStorageTest {
         new CompletionMetadata(
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
-            ImmutableMap.of("1.1.1.1", new IpCompletionMetadata()),
+            ImmutableMap.of(Ip.parse("1.1.1.1"), new IpCompletionMetadata()),
             ImmutableSet.of("mlag"),
             ImmutableMap.of("node", new NodeCompletionMetadata(null)),
             ImmutableSet.of("1.1.1.1/30"),

@@ -32,6 +32,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -818,20 +819,22 @@ public final class AutoCompleteUtils {
    *
    * <p>The query string may be an IP (e.g., "10.") or another string altogether (e.g., "nod"). The
    * method first matches on IPs (and includes all of its {@link IpCompletionMetadata} as hint and
-   * then matches on {@link IpCompletionMetadata} (and includes only matching {@link Relevance} in
-   * hints).
+   * then matches on {@link IpCompletionMetadata} (and includes only matching {@link
+   * IpCompletionRelevance} in hints).
    */
   @Nonnull
-  public static List<AutocompleteSuggestion> ipStringAutoComplete(
-      @Nullable String query, Map<String, IpCompletionMetadata> ips) {
+  public static ImmutableList<AutocompleteSuggestion> ipStringAutoComplete(
+      @Nullable String query, Map<Ip, IpCompletionMetadata> ips) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
+
+    // when the query has multiple words, each of those words should match
     String[] subQueries = testQuery.split("\\s+");
 
     // find matching IPs
-    Set<String> ipMatches =
+    Set<Ip> ipMatches =
         ips.keySet().stream()
-            .filter(e -> e.contains(testQuery))
+            .filter(e -> Arrays.stream(subQueries).allMatch(sq -> e.toString().contains(sq)))
             .collect(ImmutableSet.toImmutableSet());
 
     // find relevance matches
@@ -849,7 +852,7 @@ public final class AutoCompleteUtils {
             .map(
                 e ->
                     AutocompleteSuggestion.builder()
-                        .setText(e.getKey())
+                        .setText(e.getKey().toString())
                         .setHint(toHint(e.getValue()))
                         .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
                         .build())
@@ -861,7 +864,7 @@ public final class AutoCompleteUtils {
                 .map(
                     ip ->
                         AutocompleteSuggestion.builder()
-                            .setText(ip)
+                            .setText(ip.toString())
                             .setHint(toHint(ips.get(ip)))
                             .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
                             .build())
