@@ -18,6 +18,8 @@ import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+import static org.batfish.representation.aws.InternetGateway.INVALID_PRIVATE_IP_FILTER_NAME;
+import static org.batfish.representation.aws.InternetGateway.computeInvalidPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -41,8 +43,11 @@ import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -143,6 +148,9 @@ public class InternetGatewayTest {
                 .apply(TransformationStep.shiftDestinationIp(privateIp.toPrefix()))
                 .build()));
 
+    // Check that the filter to block private IPs is installed. its behavior tested separately
+    assertTrue(igwConfig.getIpAccessLists().containsKey(INVALID_PRIVATE_IP_FILTER_NAME));
+
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
         equalTo(
@@ -216,5 +224,30 @@ public class InternetGatewayTest {
                         .apply(shiftSourceIp(pub1.toPrefix()))
                         .build())
                 .build()));
+  }
+
+  @Test
+  public void testComputeInvalidPrivateFilter() {
+    Ip validIp = Ip.parse("1.1.1.1");
+    Ip invalidIp = Ip.parse("6.6.6.6");
+    IpAccessList invalidIpFilter = computeInvalidPrivateIpFilter(ImmutableList.of(validIp));
+    assertThat(
+        invalidIpFilter
+            .filter(
+                Flow.builder().setSrcIp(validIp).setIngressNode("aa").build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.PERMIT));
+    assertThat(
+        invalidIpFilter
+            .filter(
+                Flow.builder().setSrcIp(invalidIp).setIngressNode("aa").build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
   }
 }

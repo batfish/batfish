@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLocationInfo;
+import static org.batfish.representation.aws.InternetGateway.INVALID_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
@@ -247,6 +248,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // 1. connect the internet gateway if its a public subnet
     // 2. create static routes on it for the subnet's prefix
+    // 3. install the filter on the created IGW interface that drops invalid private IPs.
     Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
     if (optInternetGateway.isPresent()
@@ -256,9 +258,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Configuration igwConfig =
           awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
       connect(awsConfiguration, cfgNode, igwConfig);
+
+      Interface ifaceIgw = igwConfig.getAllInterfaces().get(interfaceNameToRemote(cfgNode));
       Ip nhipOnIgw = getInterfaceLinkLocalIp(cfgNode, igwConfig.getHostname());
-      addStaticRoute(
-          igwConfig, toStaticRoute(_cidrBlock, interfaceNameToRemote(cfgNode), nhipOnIgw));
+      addStaticRoute(igwConfig, toStaticRoute(_cidrBlock, ifaceIgw.getName(), nhipOnIgw));
+
+      ifaceIgw.setIncomingFilter(igwConfig.getIpAccessLists().get(INVALID_PRIVATE_IP_FILTER_NAME));
     }
 
     // process route tables to get outbound traffic going
