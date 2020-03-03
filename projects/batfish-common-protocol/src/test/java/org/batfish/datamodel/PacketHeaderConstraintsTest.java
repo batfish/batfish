@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
+import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.IP_PROTOCOLS_WITH_PORTS;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.IpProtocol.UDP;
@@ -31,6 +32,8 @@ import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.applications.Application;
+import org.batfish.datamodel.applications.IcmpApplication;
+import org.batfish.datamodel.applications.IcmpTypesApplication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -159,7 +162,7 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsIcmpAndPorts() {
     thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
-        ImmutableSet.of(IpProtocol.ICMP),
+        ImmutableSet.of(ICMP),
         IntegerSpace.of(SubRange.singleton(10)),
         null,
         null,
@@ -170,7 +173,7 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsIcmpAndTcp() {
     thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
-        ImmutableSet.of(IpProtocol.ICMP), null, null, ImmutableSet.of(SSH.toApplication()), null);
+        ImmutableSet.of(ICMP), null, null, ImmutableSet.of(SSH.toApplication()), null);
   }
 
   @Test
@@ -206,6 +209,10 @@ public class PacketHeaderConstraintsTest {
                 .build(),
             ImmutableSet.of(SSH.toApplication(), HTTP.toApplication())),
         equalTo(sshSet));
+
+    assertThat(
+        resolvePorts(null, ImmutableSet.of(IcmpTypesApplication.ALL)),
+        equalTo(null));
   }
 
   @Test
@@ -270,7 +277,7 @@ public class PacketHeaderConstraintsTest {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setSrcPorts(IntegerSpace.of(SubRange.singleton(22)))
-        .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP))
+        .setIpProtocols(ImmutableSet.of(ICMP))
         .build();
   }
 
@@ -280,7 +287,7 @@ public class PacketHeaderConstraintsTest {
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
         .setDstPorts(IntegerSpace.of(SubRange.singleton(22)))
-        .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP))
+        .setIpProtocols(ImmutableSet.of(ICMP))
         .build();
   }
 
@@ -359,7 +366,7 @@ public class PacketHeaderConstraintsTest {
     // Reject empty IP protocol intersections
     thrown.expect(IllegalArgumentException.class);
     PacketHeaderConstraints.builder()
-        .setIpProtocols(ImmutableSet.of(IpProtocol.ICMP, TCP))
+        .setIpProtocols(ImmutableSet.of(ICMP, TCP))
         .setApplications("dns")
         .build();
   }
@@ -444,7 +451,7 @@ public class PacketHeaderConstraintsTest {
         ipProtocols,
         equalTo(
             Sets.difference(
-                ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(IpProtocol.ICMP))));
+                ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(ICMP))));
   }
 
   @Test
