@@ -1,0 +1,178 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-18-216-129-140.us-east-2.compute.amazonaws.com",
+    "PublicIp": "18.216.129.140"
+   },
+   "Attachment": {
+    "AttachTime": "2020-03-03 01:21:03+00:00",
+    "AttachmentId": "eni-attach-05fca753605c9df43",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-0b31b509174d7f5de",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-2b",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0253af84ae6485905",
+     "GroupName": "terraform-20200303012059260200000002"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "06:18:ef:b9:a5:74",
+   "NetworkInterfaceId": "eni-068fb5a0a9a57f23c",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-250-116.us-east-2.compute.internal",
+   "PrivateIpAddress": "10.1.250.116",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-18-216-129-140.us-east-2.compute.amazonaws.com",
+      "PublicIp": "18.216.129.140"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-250-116.us-east-2.compute.internal",
+     "PrivateIpAddress": "10.1.250.116"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-0428892a357fa1f94",
+   "TagSet": [],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  },
+  {
+   "Association": {
+    "AllocationId": "eipalloc-0353e2d101e93f4a1",
+    "AssociationId": "eipassoc-0953857acf709a354",
+    "IpOwnerId": "554773406868",
+    "PublicDnsName": "ec2-3-135-127-225.us-east-2.compute.amazonaws.com",
+    "PublicIp": "3.135.127.225"
+   },
+   "Attachment": {
+    "AttachmentId": "ela-attach-9f7299cb",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-2b",
+   "Description": "Interface for NAT Gateway nat-07ab4846da51f4612",
+   "Groups": [],
+   "InterfaceType": "nat_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "06:2d:32:a5:9c:e2",
+   "NetworkInterfaceId": "eni-017aaec115610308a",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-250-210.us-east-2.compute.internal",
+   "PrivateIpAddress": "10.1.250.210",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "AllocationId": "eipalloc-0353e2d101e93f4a1",
+      "AssociationId": "eipassoc-0953857acf709a354",
+      "IpOwnerId": "554773406868",
+      "PublicDnsName": "ec2-3-135-127-225.us-east-2.compute.amazonaws.com",
+      "PublicIp": "3.135.127.225"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-250-210.us-east-2.compute.internal",
+     "PrivateIpAddress": "10.1.250.210"
+    }
+   ],
+   "RequesterId": "062328495474",
+   "RequesterManaged": true,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-0428892a357fa1f94",
+   "TagSet": [],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  },
+  {
+   "Attachment": {
+    "AttachTime": "2020-03-03 01:21:04+00:00",
+    "AttachmentId": "eni-attach-0649ab1065ffe4772",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-0a128d26e59be60f3",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-2b",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0253af84ae6485905",
+     "GroupName": "terraform-20200303012059260200000002"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "06:18:1c:80:ae:ec",
+   "NetworkInterfaceId": "eni-0e4ce6a7777b9bff8",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-1-98.us-east-2.compute.internal",
+   "PrivateIpAddress": "10.1.1.98",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-1-98.us-east-2.compute.internal",
+     "PrivateIpAddress": "10.1.1.98"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-06f469bcee42e408e",
+   "TagSet": [],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  },
+  {
+   "Attachment": {
+    "AttachTime": "2020-03-03 01:21:04+00:00",
+    "AttachmentId": "eni-attach-0f7b2f0b940738a08",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-0a73a1a6021c03ddb",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-2b",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0253af84ae6485905",
+     "GroupName": "terraform-20200303012059260200000002"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "06:77:04:fd:d3:14",
+   "NetworkInterfaceId": "eni-0cbd69297d26de519",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-20-173.us-east-2.compute.internal",
+   "PrivateIpAddress": "10.1.20.173",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-20-173.us-east-2.compute.internal",
+     "PrivateIpAddress": "10.1.20.173"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-02ff259e663e9613e",
+   "TagSet": [],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  }
+ ]
+}

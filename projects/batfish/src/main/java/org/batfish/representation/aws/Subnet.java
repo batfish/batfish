@@ -131,8 +131,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return Ip.create(generatedIp);
   }
 
-  @VisibleForTesting
-  static List<NetworkAcl> findMyNetworkAcl(
+  static List<NetworkAcl> findSubnetNetworkAcl(
       Map<String, NetworkAcl> networkAcls, String vpcId, String subnetId) {
     List<NetworkAcl> subnetAcls =
         networkAcls.values().stream()
@@ -200,7 +199,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
             instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
     // add network acls on the interface facing the instances
-    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
+    List<NetworkAcl> myNetworkAcls =
+        findSubnetNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
     if (!myNetworkAcls.isEmpty()) {
       if (myNetworkAcls.size() > 1) {
         List<String> aclIds =
@@ -414,6 +414,22 @@ public class Subnet implements AwsVpcEntity, Serializable {
             vpcNode,
             region.getVpcs().get(_vpcId),
             attachment.getId(),
+            sr,
+            awsConfiguration);
+        return;
+      case NatGateway:
+        NatGateway natGateway = region.getNatGateways().get(route.getTarget());
+        if (natGateway == null) {
+          warnings.redFlag(
+              String.format(
+                  "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route));
+          return;
+        }
+        initializeVpcLink(
+            cfgNode,
+            vpcNode,
+            region.getVpcs().get(_vpcId),
+            natGateway.getId(),
             sr,
             awsConfiguration);
         return;
