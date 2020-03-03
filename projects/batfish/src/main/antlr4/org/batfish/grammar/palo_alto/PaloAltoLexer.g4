@@ -98,6 +98,16 @@ AGGREGATE
     'aggregate'
 ;
 
+AGGREGATE_ETHERNET
+:
+    'aggregate-ethernet'
+;
+
+AGGREGATE_GROUP
+:
+    'aggregate-group'
+;
+
 AGGREGATE_MED
 :
     'aggregate-med'
@@ -503,6 +513,11 @@ FROM_PEER
     'from-peer'
 ;
 
+FULL
+:
+    'full'
+;
+
 GATEWAY
 :
     'gateway'
@@ -556,6 +571,11 @@ GROUP19
 GROUP20
 :
     'group20'
+;
+
+HALF
+:
+    'half'
 ;
 
 HAS_KNOWN_VULNERABILITIES
@@ -711,6 +731,16 @@ LIFETIME
 LINK
 :
     'link' -> pushMode ( M_Url )
+;
+
+LINK_DUPLEX
+:
+    'link-duplex'
+;
+
+LINK_SPEED
+:
+    'link-speed'
 ;
 
 LINK_STATE
