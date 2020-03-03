@@ -17,24 +17,33 @@ eos_bandwidth_specifier
 
 eos_vxlan_if_inner
 :
-   (
-      VXLAN
-      (
-         eos_vxif_vxlan_flood
-         | eos_vxif_vxlan_multicast_group
-         | eos_vxif_vxlan_source_interface
-         | eos_vxif_vxlan_udp_port
-         | eos_vxif_vxlan_virtual_router
-         | eos_vxif_vxlan_vlan
-         | eos_vxif_vxlan_vrf
-      )
-   )
+   eos_vxif_arp
    | eos_vxif_description
+   | eos_vxif_vxlan
+;
+
+eos_vxif_arp
+:
+   ARP REPLY RELAY NEWLINE
 ;
 
 eos_vxif_description
 :
    description_line
+;
+
+eos_vxif_vxlan
+:
+  VXLAN
+  (
+     eos_vxif_vxlan_flood
+     | eos_vxif_vxlan_multicast_group
+     | eos_vxif_vxlan_source_interface
+     | eos_vxif_vxlan_udp_port
+     | eos_vxif_vxlan_virtual_router
+     | eos_vxif_vxlan_vlan
+     | eos_vxif_vxlan_vrf
+  )
 ;
 
 eos_vxif_vxlan_flood
