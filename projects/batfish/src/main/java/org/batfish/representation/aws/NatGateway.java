@@ -64,7 +64,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
                   "Allow supported protocols",
                   new MatchHeaderSpace(
                       HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build())),
-              ExprAclLine.accepting("Deny unsupported protocols", TrueExpr.INSTANCE))
+              ExprAclLine.rejecting("Deny unsupported protocols", TrueExpr.INSTANCE))
           .build();
 
   /** Filter for dropping all packets that do not match a session */

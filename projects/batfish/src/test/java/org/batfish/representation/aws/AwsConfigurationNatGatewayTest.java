@@ -59,6 +59,7 @@ public class AwsConfigurationNatGatewayTest {
   private static String _vpc = "vpc-0008a7b45e3ddf1dd";
   private static String _natGateway = "nat-07ab4846da51f4612";
   private static String _subnetNat = "subnet-0428892a357fa1f94";
+  private static Ip _publicIpNat = Ip.parse("3.135.127.225");
   private static String _internetGateway = "igw-071753b9c23d8a9b2";
 
   private static String _instanceS1 = "i-0a128d26e59be60f3"; // private subnet
@@ -136,23 +137,6 @@ public class AwsConfigurationNatGatewayTest {
   }
 
   @Test
-  public void testInstanceToInternet() {
-    Flow flow = getTcpFlow(_instanceS1, Ip.parse("8.8.8.8"));
-    testUnidirectionalTrace(
-        flow,
-        FlowDisposition.EXITS_NETWORK,
-        ImmutableList.of(
-            _instanceS1,
-            _subnetS1,
-            _vpc,
-            _natGateway,
-            _subnetNat,
-            _internetGateway,
-            AWS_BACKBONE_NODE_NAME,
-            INTERNET_HOST_NAME));
-  }
-
-  @Test
   public void testInstanceToInternet_bidirectional() {
     Flow flow = getTcpFlow(_instanceS1, INTERNET_OUT_ADDRESS);
     testBidirectionalTrace(
@@ -175,5 +159,40 @@ public class AwsConfigurationNatGatewayTest {
             _internetGateway,
             AWS_BACKBONE_NODE_NAME,
             INTERNET_HOST_NAME));
+  }
+
+  /** Test that packets for unsupported IP protocols are dropped at the NAT */
+  @Test
+  public void testUnsupportedIpProtocol() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(_instanceS1)
+            .setSrcIp(getNodeIp(_instanceS1))
+            .setDstIp(INTERNET_OUT_ADDRESS)
+            .setIpProtocol(IpProtocol.AN)
+            .build();
+    testUnidirectionalTrace(
+        flow,
+        FlowDisposition.DENIED_IN,
+        ImmutableList.of(_instanceS1, _subnetS1, _vpc, _natGateway));
+  }
+
+  /** Test that packets that come into the NAT without an installed session are dropped */
+  @Test
+  public void testNonSessionPacket() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(INTERNET_HOST_NAME)
+            .setSrcIp(INTERNET_OUT_ADDRESS)
+            .setDstIp(_publicIpNat)
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(80)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .build();
+    testUnidirectionalTrace(
+        flow,
+        FlowDisposition.DENIED_IN,
+        ImmutableList.of(
+            INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME, _internetGateway, _subnetNat, _natGateway));
   }
 }
