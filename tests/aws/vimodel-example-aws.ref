@@ -14059,12 +14059,11 @@
                     }
                   }
                 },
-                "name" : "Allow private instance IPs associated with a public IP.",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line Allow private instance IPs associated with a public IP."
+                      "text" : "Allowed private instance IPs associated with a public IP"
                     }
                   ]
                 }
@@ -14075,12 +14074,11 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Deny private instance IPs not associated with a public IP",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line Deny private instance IPs not associated with a public IP"
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
                     }
                   ]
                 }
@@ -14377,12 +14375,11 @@
                     }
                   }
                 },
-                "name" : "Allow private instance IPs associated with a public IP.",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line Allow private instance IPs associated with a public IP."
+                      "text" : "Allowed private instance IPs associated with a public IP"
                     }
                   ]
                 }
@@ -14393,12 +14390,11 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Deny private instance IPs not associated with a public IP",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line Deny private instance IPs not associated with a public IP"
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
                     }
                   ]
                 }
@@ -14620,12 +14616,11 @@
                     }
                   }
                 },
-                "name" : "Allow private instance IPs associated with a public IP.",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line Allow private instance IPs associated with a public IP."
+                      "text" : "Allowed private instance IPs associated with a public IP"
                     }
                   ]
                 }
@@ -14636,12 +14631,11 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
-                "name" : "Deny private instance IPs not associated with a public IP",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line Deny private instance IPs not associated with a public IP"
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
                     }
                   ]
                 }

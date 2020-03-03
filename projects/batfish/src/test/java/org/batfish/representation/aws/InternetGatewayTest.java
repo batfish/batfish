@@ -232,10 +232,10 @@ public class InternetGatewayTest {
   public void testComputeUnassociatedPrivateIpFilter() {
     Ip associatedPrivateIp = Ip.parse("1.1.1.1");
     Ip unassociatedPrivateIp = Ip.parse("6.6.6.6");
-    IpAccessList invalidIpFilter =
+    IpAccessList unassociatedIpFilter =
         computeUnassociatedPrivateIpFilter(ImmutableList.of(associatedPrivateIp));
     assertThat(
-        invalidIpFilter
+        unassociatedIpFilter
             .filter(
                 Flow.builder().setSrcIp(associatedPrivateIp).setIngressNode("aa").build(),
                 null,
@@ -244,7 +244,7 @@ public class InternetGatewayTest {
             .getAction(),
         equalTo(LineAction.PERMIT));
     assertThat(
-        invalidIpFilter
+        unassociatedIpFilter
             .filter(
                 Flow.builder().setSrcIp(unassociatedPrivateIp).setIngressNode("aa").build(),
                 null,

@@ -36,8 +36,10 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -70,6 +72,12 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   /** Name of the filter that drops from private IPs without an associated public IP */
   static final String UNASSOCIATED_PRIVATE_IP_FILTER_NAME = "~DENY~UNASSOCIATED~PRIVATE~IPs~";
+
+  static final TraceElement ALLOWED_ASSOCIATED_PRIVATE_IP_TRACE_ELEMENT =
+      TraceElement.of("Allowed private instance IPs associated with a public IP");
+
+  static final TraceElement DENIED_UNASSOCIATED_PRIVATE_IP_TRACE =
+      TraceElement.of("Denied private instance IPs NOT associated with a public IP");
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -210,11 +218,18 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     return IpAccessList.builder()
         .setName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME)
         .setLines(
-            ExprAclLine.accepting(
-                "Allow private instance IPs associated with a public IP.",
-                new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(validPrivateIpSpace).build())),
-            ExprAclLine.rejecting(
-                "Deny private instance IPs not associated with a public IP", TrueExpr.INSTANCE))
+            ExprAclLine.builder()
+                .setTraceElement(ALLOWED_ASSOCIATED_PRIVATE_IP_TRACE_ELEMENT)
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setSrcIps(validPrivateIpSpace).build()))
+                .setAction(LineAction.PERMIT)
+                .build(),
+            ExprAclLine.builder()
+                .setTraceElement(DENIED_UNASSOCIATED_PRIVATE_IP_TRACE)
+                .setMatchCondition(TrueExpr.INSTANCE)
+                .setAction(LineAction.DENY)
+                .build())
         .build();
   }
 

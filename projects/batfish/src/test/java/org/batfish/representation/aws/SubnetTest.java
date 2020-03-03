@@ -9,6 +9,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
+import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.findMyNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
@@ -272,6 +273,10 @@ public class SubnetTest {
     InternetGateway igw =
         new InternetGateway("igw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
     Configuration igwConfig = Utils.newAwsConfiguration(igw.getId(), "awstest");
+    igwConfig.setIpAccessLists(
+        ImmutableMap.of(
+            UNASSOCIATED_PRIVATE_IP_FILTER_NAME,
+            computeUnassociatedPrivateIpFilter(ImmutableSet.of())));
 
     Ip privateIp = Ip.parse("10.10.10.10");
     Prefix privatePrefix = Prefix.create(privateIp, 24);
@@ -355,7 +360,7 @@ public class SubnetTest {
                     interfaceNameToRemote(subnetCfg),
                     Utils.getInterfaceLinkLocalIp(subnetCfg, igw.getId())))));
 
-    // igw's subnet facing interface should have the filter to block private IPs.
+    // igw's subnet facing interface should have the filter to block unassociated private IPs.
     assertThat(
         igwConfig
             .getAllInterfaces()
