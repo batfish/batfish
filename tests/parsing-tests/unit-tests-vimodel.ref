@@ -30326,7 +30326,9 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs"
+            "region" : "aws_configs",
+            "subnetId" : "subnet-a9660ce1",
+            "vpcId" : "vpc-50fffd36"
           }
         },
         "vrfs" : {
@@ -30345,7 +30347,9 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs"
+            "region" : "aws_configs",
+            "subnetId" : "subnet-3e7e3458",
+            "vpcId" : "vpc-50fffd36"
           }
         },
         "vrfs" : {

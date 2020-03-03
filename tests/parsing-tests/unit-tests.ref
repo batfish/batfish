@@ -95779,11 +95779,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "NAT functionality not yet implemented for nat-08c21704416f06046"
+              "text" : "Network interface eni-dba5f6e8 not found for nat gateway nat-08c21704416f06046."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+              "text" : "Network interface eni-3f245d1f not found for nat gateway nat-09fd8f73171d2d9a3."
             }
           ]
         },
@@ -95791,11 +95791,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "NAT functionality not yet implemented for nat-08c21704416f06046"
+              "text" : "Network interface eni-dba5f6e8 not found for nat gateway nat-08c21704416f06046."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+              "text" : "Network interface eni-3f245d1f not found for nat gateway nat-09fd8f73171d2d9a3."
             }
           ]
         },
