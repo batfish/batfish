@@ -2,7 +2,7 @@ _CMD = """
 ALL_FILES="$(rootpaths {allinone})"
 BIN_FILE=$$(tr " " "\n" <<< $${{ALL_FILES}} | grep -v jar)
 echo \
-  $${{BIN_FILE}} \
+  $${{BIN_FILE}} --jvm_flag=-ea \
     -coordinatorargs '"-periodassignworkms 5"' \
     -cmdfile $(location {commands}) > $@
 """
