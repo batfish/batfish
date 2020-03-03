@@ -18,10 +18,13 @@ import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
+import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -41,8 +44,11 @@ import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -124,7 +130,7 @@ public class InternetGatewayTest {
     Interface bbInterface = igwConfig.getAllInterfaces().get(BACKBONE_INTERFACE_NAME);
     Prefix bbInterfacePrefix = bbInterface.getConcreteAddress().getPrefix();
 
-    assertTrue(igwConfig.getAllInterfaces().containsKey(BACKBONE_INTERFACE_NAME));
+    assertThat(igwConfig.getAllInterfaces(), hasKey(BACKBONE_INTERFACE_NAME));
     assertThat(
         igwConfig.getDefaultVrf().getBgpProcess().getRouterId(),
         equalTo(bbInterfacePrefix.getStartIp()));
@@ -142,6 +148,10 @@ public class InternetGatewayTest {
             Transformation.when(matchDst(publicIp))
                 .apply(TransformationStep.shiftDestinationIp(privateIp.toPrefix()))
                 .build()));
+
+    // Check that the filter to block unassociated private IPs is installed. Its behavior is  tested
+    // separately.
+    assertTrue(igwConfig.getIpAccessLists().containsKey(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
@@ -216,5 +226,31 @@ public class InternetGatewayTest {
                         .apply(shiftSourceIp(pub1.toPrefix()))
                         .build())
                 .build()));
+  }
+
+  @Test
+  public void testComputeUnassociatedPrivateIpFilter() {
+    Ip associatedPrivateIp = Ip.parse("1.1.1.1");
+    Ip unassociatedPrivateIp = Ip.parse("6.6.6.6");
+    IpAccessList unassociatedIpFilter =
+        computeUnassociatedPrivateIpFilter(ImmutableList.of(associatedPrivateIp));
+    assertThat(
+        unassociatedIpFilter
+            .filter(
+                Flow.builder().setSrcIp(associatedPrivateIp).setIngressNode("aa").build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.PERMIT));
+    assertThat(
+        unassociatedIpFilter
+            .filter(
+                Flow.builder().setSrcIp(unassociatedPrivateIp).setIngressNode("aa").build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
   }
 }
