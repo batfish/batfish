@@ -11,7 +11,7 @@ import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
-import static org.batfish.representation.aws.Subnet.findMyNetworkAcl;
+import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -846,7 +846,7 @@ public class SubnetTest {
             "aclId",
             new NetworkAcl("aclId", "novpc", ImmutableList.of(), ImmutableList.of(), true));
 
-    assertThat(findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of()));
+    assertThat(findSubnetNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of()));
   }
 
   @Test
@@ -871,7 +871,7 @@ public class SubnetTest {
                 true));
 
     assertThat(
-        findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
+        findSubnetNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
   }
 
   @Test
@@ -897,7 +897,7 @@ public class SubnetTest {
                 true));
 
     assertThat(
-        findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
+        findSubnetNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
   }
 
   @Test
@@ -917,6 +917,6 @@ public class SubnetTest {
                 true));
 
     assertThat(
-        findMyNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
+        findSubnetNetworkAcl(networkAcls, "vpc", "subnet"), equalTo(ImmutableList.of(networkAcl)));
   }
 }

@@ -688,7 +688,6 @@ final class Region implements Serializable {
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
-      warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
       Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
     }
