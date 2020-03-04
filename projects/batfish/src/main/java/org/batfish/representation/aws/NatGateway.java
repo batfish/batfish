@@ -156,57 +156,61 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
+    // configure the unsupported protocol filter on the node. we'll attach to interfaces later
+    cfgNode.getIpAccessLists().put(UNSUPPORTED_PROTOCOL_FILTER_NAME, UNSUPPORTED_PROTOCOL_FILTER);
+
     String networkInterfaceId = _natGatewayAddresses.get(0).getNetworkInterfaceId();
     NetworkInterface networkInterface = region.getNetworkInterfaces().get(networkInterfaceId);
     if (networkInterface == null) {
       warnings.redFlag(
           String.format(
-              "Network interface %s not found for nat gateway %s.",
+              "Network interface %s not found for NAT gateway %s.",
               networkInterfaceId, _natGatewayId));
       return cfgNode;
     }
     Subnet subnet = region.getSubnets().get(_subnetId);
     if (subnet == null) {
       warnings.redFlag(
-          String.format("Subnet %s not found for nat gateway %s.", _subnetId, _natGatewayId));
+          String.format("Subnet %s not found for NAT gateway %s.", _subnetId, _natGatewayId));
       return cfgNode;
     }
-    Interface subnetIface =
+    Interface ifaceToSubnet =
         addNodeToSubnet(cfgNode, networkInterface, subnet, awsConfiguration, warnings);
+    ifaceToSubnet.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(
+            false, ImmutableList.of(ifaceToSubnet.getName()), null, null));
 
-    Interface vpcIface = connectToVpc(cfgNode, awsConfiguration, region, warnings);
+    // install the NAT on the interface facing the subnet as well to serve instances in the subnet
+    ifaceToSubnet.setIncomingTransformation(computeNatTransformation(getPrivateIp()));
+    ifaceToSubnet.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
 
-    if (vpcIface != null) {
-      vpcIface.setIncomingTransformation(computeNatTransformation(getPrivateIp()));
-      subnetIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(
-              false, ImmutableList.of(subnetIface.getName()), null, null));
-
-      // packets coming in for NAT'ing pass through the network ACL here because they don't traverse
-      // the subnet node. outgoing packets traverse the subnet node (and the egress NACL)
+    Interface ifaceToVpc = connectToVpc(cfgNode, awsConfiguration, region, warnings);
+    if (ifaceToVpc != null) {
+      // packets coming into the NAT from instances outside the subnet and the reverse traffic going
+      // to those instances should be subjected to the network ACL since they do not traverse the
+      // subnet node where we usually place the ACL.
       List<NetworkAcl> networkAcls =
           findSubnetNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
+      IpAccessList egressAcl = null;
       // we do not warn if network Acls are not found. toConfigurationNode in subnet will do that
       if (!networkAcls.isEmpty()) {
         IpAccessList ingressAcl = networkAcls.get(0).getIngressAcl();
         cfgNode.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
-        vpcIface.setIncomingFilter(ingressAcl);
+        ifaceToVpc.setIncomingFilter(ingressAcl);
+
+        egressAcl = networkAcls.get(0).getEgressAcl();
+        cfgNode.getIpAccessLists().put(egressAcl.getName(), egressAcl);
+        // no need to install this ACL as the outgoing filter on the interface to the VPC because we
+        // install it below as the outgoing ACL in the FirewallSessionInterfaceInfo for the
+        // interface, where it will hit all reverse traffic
       }
 
-      // drop all packets that were not NAT'd
-      vpcIface.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
-      cfgNode.getIpAccessLists().put(UNSUPPORTED_PROTOCOL_FILTER_NAME, UNSUPPORTED_PROTOCOL_FILTER);
-
-      // Needed because we "Cannot have a session exiting an interface without
-      // FirewallSessionInterfaceInfo" (FlowTracer#visitForwardOutInterface)
-      vpcIface.setFirewallSessionInterfaceInfo(
+      ifaceToVpc.setIncomingTransformation(computeNatTransformation(getPrivateIp()));
+      ifaceToVpc.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
+      ifaceToVpc.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              false, ImmutableList.of(vpcIface.getName()), null, null));
+              false, ImmutableList.of(), null, egressAcl == null ? null : egressAcl.getName()));
     }
-
-    // any packet that comes in on subnetIface and is not reverse-transformed should be dropped
-    subnetIface.setIncomingFilter(NON_SESSION_PACKET_FILTER);
-    cfgNode.getIpAccessLists().put(NON_SESSION_PACKET_FILTER_NAME, NON_SESSION_PACKET_FILTER);
 
     return cfgNode;
   }
@@ -229,12 +233,19 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     if (vpc == null) {
       warnings.redFlag(
           String.format(
-              "VPC %s for nat gateway %s not found in region %s",
+              "VPC %s for NAT gateway %s not found in region %s",
               _vpcId, _natGatewayId, region.getName()));
       return null;
     }
 
     Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    if (vpcCfg == null) {
+      warnings.redFlag(
+          String.format(
+              "Configuration for VPC %s not found while building the NAT gateway node",
+              _vpcId, _natGatewayId));
+      return null;
+    }
 
     String vrfNameOnVpc = Vpc.vrfNameForLink(_natGatewayId);
 

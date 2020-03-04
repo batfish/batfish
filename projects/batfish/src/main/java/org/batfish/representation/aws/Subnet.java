@@ -431,13 +431,24 @@ public class Subnet implements AwsVpcEntity, Serializable {
                   "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route));
           return;
         }
-        initializeVpcLink(
-            cfgNode,
-            vpcNode,
-            region.getVpcs().get(_vpcId),
-            natGateway.getId(),
-            sr,
-            awsConfiguration);
+        // If the NAT is in our subnet, send it directly. Otherwise, send it via the VPC
+        if (natGateway.getSubnetId().equals(_subnetId)) {
+          addStaticRoute(
+              cfgNode,
+              sr.setNextHopIp(natGateway.getPrivateIp())
+                  .setNextHopInterface(
+                      interfaceNameToRemote(
+                          awsConfiguration.getConfigurationNodes().get(natGateway.getId())))
+                  .build());
+        } else {
+          initializeVpcLink(
+              cfgNode,
+              vpcNode,
+              region.getVpcs().get(_vpcId),
+              natGateway.getId(),
+              sr,
+              awsConfiguration);
+        }
         return;
       default:
         warnings.redFlag("Unsupported target type: " + route.getTargetType());
