@@ -7,6 +7,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Streams;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +29,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -439,7 +444,7 @@ public final class AutoCompleteUtils {
         case IP:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
-            suggestions = stringAutoComplete(query, completionMetadata.getIps());
+            suggestions = ipStringAutoComplete(query, completionMetadata.getIps());
             break;
           }
         case IP_PROTOCOL_SPEC:
@@ -458,7 +463,16 @@ public final class AutoCompleteUtils {
           }
         case IP_SPACE_SPEC:
           {
-            suggestions =
+            // first, get the suggestions based on IP metadata
+            List<AutocompleteSuggestion> metadataSuggestions =
+                ipStringAutoComplete(query, completionMetadata.getIps());
+            Set<String> metadataSuggestionTexts =
+                metadataSuggestions.stream()
+                    .map(s -> s.getText())
+                    .collect(ImmutableSet.toImmutableSet());
+
+            // then, get grammar-based suggestions
+            List<AutocompleteSuggestion> grammarSuggestions =
                 ParboiledAutoComplete.autoComplete(
                     Grammar.IP_SPACE_SPECIFIER,
                     network,
@@ -468,6 +482,14 @@ public final class AutoCompleteUtils {
                     completionMetadata,
                     nodeRolesData,
                     referenceLibrary);
+
+            // merge the suggestions
+            suggestions =
+                Streams.concat(
+                        metadataSuggestions.stream(),
+                        grammarSuggestions.stream()
+                            .filter(s -> !metadataSuggestionTexts.contains(s.getText())))
+                    .collect(ImmutableList.toImmutableList());
             break;
           }
         case IPSEC_SESSION_STATUS_SPEC:
@@ -790,6 +812,83 @@ public final class AutoCompleteUtils {
                         .orElse(false))
         .map(s -> new AutocompleteSuggestion(s.getKey(), s.getValue().orElse(null), false))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a list of suggestions based on a query for Ips.
+   *
+   * <p>The query string may be an IP (e.g., "10.") or another string altogether (e.g., "nod"). The
+   * method first matches on IPs (and includes all of its {@link IpCompletionMetadata} as hint and
+   * then matches on {@link IpCompletionMetadata} (and includes only matching {@link
+   * IpCompletionRelevance} in hints).
+   */
+  @Nonnull
+  public static ImmutableList<AutocompleteSuggestion> ipStringAutoComplete(
+      @Nullable String query, Map<Ip, IpCompletionMetadata> ips) {
+
+    String testQuery = query == null ? "" : query.toLowerCase();
+
+    // when the query has multiple words, each of those words should match
+    String[] subQueries = testQuery.split("\\s+");
+
+    // find matching IPs
+    Set<Ip> ipMatches =
+        ips.keySet().stream()
+            .filter(e -> Arrays.stream(subQueries).allMatch(sq -> e.toString().contains(sq)))
+            .collect(ImmutableSet.toImmutableSet());
+
+    // find relevance matches
+    List<AutocompleteSuggestion> relevanceMatches =
+        ips.entrySet().stream()
+            .filter(e -> !ipMatches.contains(e.getKey()))
+            .map(
+                e ->
+                    new SimpleEntry<>(
+                        e.getKey(),
+                        e.getValue().getRelevances().stream()
+                            .filter(r -> r.matches(subQueries, e.getKey()))
+                            .collect(ImmutableList.toImmutableList())))
+            .filter(e -> !e.getValue().isEmpty())
+            .map(
+                e ->
+                    AutocompleteSuggestion.builder()
+                        .setText(e.getKey().toString())
+                        .setHint(toHint(e.getValue()))
+                        .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+                        .build())
+            .collect(ImmutableList.toImmutableList());
+
+    return new ImmutableList.Builder<AutocompleteSuggestion>()
+        .addAll(
+            ipMatches.stream()
+                .map(
+                    ip ->
+                        AutocompleteSuggestion.builder()
+                            .setText(ip.toString())
+                            .setHint(toHint(ips.get(ip)))
+                            .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+                            .build())
+                .collect(ImmutableList.toImmutableList()))
+        .addAll(relevanceMatches)
+        .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static String toHint(IpCompletionMetadata ipCompletionMetadata) {
+    return toHint(ipCompletionMetadata.getRelevances());
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static String toHint(List<IpCompletionRelevance> relevances) {
+    if (relevances.isEmpty()) {
+      return null;
+    }
+    if (relevances.size() == 1) {
+      return relevances.get(0).getDisplay();
+    }
+    return String.format("%s ... (%d more)", relevances.get(0).getDisplay(), relevances.size() - 1);
   }
 
   private static void checkCompletionMetadata(
