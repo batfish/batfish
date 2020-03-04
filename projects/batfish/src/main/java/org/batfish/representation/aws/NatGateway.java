@@ -234,7 +234,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     if (vpcCfg == null) {
       warnings.redFlag(
           String.format(
-              "Configuration for VPC %s not found while building the NAT gateway node",
+              "Configuration for VPC %s not found while building the NAT gateway node %s",
               _vpcId, _natGatewayId));
       return null;
     }

@@ -2,10 +2,6 @@ package org.batfish.representation.aws;
 
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_ADDRESS;
-import static org.batfish.representation.aws.AwsConfigurationTestUtils.getOnlyNodeIp;
-import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
-import static org.batfish.representation.aws.AwsConfigurationTestUtils.testBidirectionalTrace;
-import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 
 import com.google.common.collect.ImmutableList;
@@ -69,8 +65,9 @@ public class AwsConfigurationNatGatewayTest {
 
   @Test
   public void testInstanceToInternet_bidirectional() {
-    Flow flow = getTcpFlow(_instanceS1, INTERNET_OUT_ADDRESS, 80, _batfish);
-    testBidirectionalTrace(
+    Flow flow =
+        AwsConfigurationTestUtils.getTcpFlow(_instanceS1, INTERNET_OUT_ADDRESS, 80, _batfish);
+    AwsConfigurationTestUtils.testBidirectionalTrace(
         flow,
         ImmutableList.of(
             _instanceS1,
@@ -99,11 +96,11 @@ public class AwsConfigurationNatGatewayTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(_instanceS1)
-            .setSrcIp(getOnlyNodeIp(_instanceS1, _batfish))
+            .setSrcIp(AwsConfigurationTestUtils.getOnlyNodeIp(_instanceS1, _batfish))
             .setDstIp(INTERNET_OUT_ADDRESS)
             .setIpProtocol(IpProtocol.AN)
             .build();
-    testTrace(
+    AwsConfigurationTestUtils.testTrace(
         flow,
         FlowDisposition.DENIED_IN,
         ImmutableList.of(_instanceS1, _subnetS1, _vpc, _natGateway),
@@ -113,8 +110,10 @@ public class AwsConfigurationNatGatewayTest {
   /** Test that packets that come into the NAT without an installed session are dropped */
   @Test
   public void testNonSessionPacket() {
-    Flow flow = getTcpFlow(INTERNET_HOST_NAME, INTERNET_OUT_ADDRESS, _publicIpNat, 80);
-    testTrace(
+    Flow flow =
+        AwsConfigurationTestUtils.getTcpFlow(
+            INTERNET_HOST_NAME, INTERNET_OUT_ADDRESS, _publicIpNat, 80);
+    AwsConfigurationTestUtils.testTrace(
         flow,
         FlowDisposition.DENIED_IN,
         ImmutableList.of(
