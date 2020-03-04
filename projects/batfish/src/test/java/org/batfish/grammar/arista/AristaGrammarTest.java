@@ -597,6 +597,7 @@ public class AristaGrammarTest {
   @Test
   public void testVxlanExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_vxlan");
+    assertThat(config.getEosVxlan().getArpReplyRelay(), equalTo(true));
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 10001));
   }

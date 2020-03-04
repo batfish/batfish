@@ -11,6 +11,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 public class IpCompletionRelevanceTest {
@@ -58,15 +59,16 @@ public class IpCompletionRelevanceTest {
   @Test
   public void testMatches() {
     IpCompletionRelevance relevance = new IpCompletionRelevance("a", "tag1", "gat1");
+    Ip testIp = Ip.parse("1.1.1.1");
 
     // each subquery matches ip or tags
-    assertTrue(relevance.matches(new String[] {"a"}, "1.1.1.1"));
-    assertTrue(relevance.matches(new String[] {"tag", "gat"}, "1.1.1.1"));
-    assertTrue(relevance.matches(new String[] {"1.1"}, "1.1.1.1"));
-    assertTrue(relevance.matches(new String[] {"1.1", "tag"}, "1.1.1.1"));
+    assertTrue(relevance.matches(new String[] {"a"}, testIp));
+    assertTrue(relevance.matches(new String[] {"tag", "gat"}, testIp));
+    assertTrue(relevance.matches(new String[] {"1.1"}, testIp));
+    assertTrue(relevance.matches(new String[] {"1.1", "tag"}, testIp));
 
     // does not match at least one tag
-    assertFalse(relevance.matches(new String[] {"b"}, "1.1.1.1"));
-    assertFalse(relevance.matches(new String[] {"tag", "b"}, "1.1.1.1"));
+    assertFalse(relevance.matches(new String[] {"b"}, testIp));
+    assertFalse(relevance.matches(new String[] {"tag", "b"}, testIp));
   }
 }

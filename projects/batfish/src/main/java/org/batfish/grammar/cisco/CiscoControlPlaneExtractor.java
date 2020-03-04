@@ -648,6 +648,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_multicast_groupContext;
@@ -3192,6 +3193,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.defineStructure(VXLAN, canonicalVxlanName, ctx);
     _configuration.referenceStructure(
         VXLAN, canonicalVxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
+  }
+
+  @Override
+  public void exitEos_vxif_arp(Eos_vxif_arpContext ctx) {
+    _eosVxlan.setArpReplyRelay(true);
   }
 
   @Override
@@ -7893,7 +7899,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    if (ctx.HEARTBEAT() == null) {
+      _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    } else {
+      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+    }
   }
 
   @Override

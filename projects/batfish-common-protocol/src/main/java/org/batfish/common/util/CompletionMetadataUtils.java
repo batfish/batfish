@@ -53,9 +53,8 @@ public final class CompletionMetadataUtils {
         iface.getName());
   }
 
-  public static Map<String, IpCompletionMetadata> getIps(
-      Map<String, Configuration> configurations) {
-    Map<String, IpCompletionMetadata> ips = new HashMap<>();
+  public static Map<Ip, IpCompletionMetadata> getIps(Map<String, Configuration> configurations) {
+    Map<Ip, IpCompletionMetadata> ips = new HashMap<>();
     configurations
         .values()
         .forEach(
@@ -66,7 +65,7 @@ public final class CompletionMetadataUtils {
                   .forEach(
                       iface ->
                           iface.getAllConcreteAddresses().stream()
-                              .map(interfaceAddress -> interfaceAddress.getIp().toString())
+                              .map(interfaceAddress -> interfaceAddress.getIp())
                               .forEach(
                                   ip ->
                                       ips.computeIfAbsent(ip, k -> new IpCompletionMetadata())
@@ -131,11 +130,11 @@ public final class CompletionMetadataUtils {
       Configuration configuration,
       String bookName,
       String groupName,
-      Map<String, IpCompletionMetadata> ips) {
+      Map<Ip, IpCompletionMetadata> ips) {
     Ip.tryParse(ipString)
         .ifPresent(
             ip ->
-                ips.computeIfAbsent(ip.toString(), k -> new IpCompletionMetadata())
+                ips.computeIfAbsent(ip, k -> new IpCompletionMetadata())
                     .addRelevance(
                         new IpCompletionRelevance(
                             addressGroupDisplayString(configuration, bookName, groupName),

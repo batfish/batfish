@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 
 /** Represents one reason why this IP is relevant. */
 @ParametersAreNonnullByDefault
@@ -53,9 +54,12 @@ public class IpCompletionRelevance implements Serializable {
   }
 
   /** Returns true if each subQuery is a substring of at least one tag or of the ip */
-  public boolean matches(String[] subQueries, String ip) {
+  public boolean matches(String[] subQueries, Ip ip) {
     return Arrays.stream(subQueries)
-        .allMatch(sq -> ip.contains(sq) || _matchTags.stream().anyMatch(tag -> tag.contains(sq)));
+        .allMatch(
+            sq ->
+                ip.toString().contains(sq)
+                    || _matchTags.stream().anyMatch(tag -> tag.contains(sq)));
   }
 
   /** The string to display when this relevance matches */

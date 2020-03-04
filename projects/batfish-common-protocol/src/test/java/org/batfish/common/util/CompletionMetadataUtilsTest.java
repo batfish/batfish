@@ -36,6 +36,7 @@ import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -106,9 +107,9 @@ public final class CompletionMetadataUtilsTest {
     String int1 = "int1";
     String int2 = "int2";
 
-    String ip1 = "10.1.3.7";
-    String ip2 = "128.212.155.30";
-    String ip3 = "124.51.32.2";
+    Ip ip1 = Ip.parse("10.1.3.7");
+    Ip ip2 = Ip.parse("128.212.155.30");
+    Ip ip3 = Ip.parse("124.51.32.2");
 
     String address1 = ip1 + "/30";
     String address2 = ip2 + "/24";
@@ -188,21 +189,21 @@ public final class CompletionMetadataUtilsTest {
         getIps(configs),
         equalTo(
             ImmutableMap.of(
-                "1.1.1.1",
+                Ip.parse("1.1.1.1"),
                 new IpCompletionMetadata(
                     new IpCompletionRelevance(
                         addressGroupDisplayString(config, book1.getName(), "ag1"),
                         config.getHostname(),
                         config.getHumanName(),
                         "ag1")),
-                "2.2.2.2",
+                Ip.parse("2.2.2.2"),
                 new IpCompletionMetadata(
                     new IpCompletionRelevance(
                         addressGroupDisplayString(config, book1.getName(), "ag1"),
                         config.getHostname(),
                         config.getHumanName(),
                         "ag1")),
-                "3.3.3.3",
+                Ip.parse("3.3.3.3"),
                 new IpCompletionMetadata(
                     ImmutableList.of(
                         new IpCompletionRelevance(
@@ -215,7 +216,7 @@ public final class CompletionMetadataUtilsTest {
                             config.getHostname(),
                             config.getHumanName(),
                             "ag1"))),
-                "4.4.4.4",
+                Ip.parse("4.4.4.4"),
                 new IpCompletionMetadata(
                     new IpCompletionRelevance(
                         addressGroupDisplayString(config, book2.getName(), "ag1"),

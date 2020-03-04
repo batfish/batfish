@@ -10,6 +10,7 @@ import org.batfish.datamodel.Ip;
 public final class MlagConfiguration implements Serializable {
 
   @Nullable private Ip _peerAddress;
+  @Nullable private Ip _peerAddressHeartbeat;
   @Nullable private String _peerLink;
   @Nullable private String _localInterface;
   @Nullable private String _domainId;
@@ -25,6 +26,15 @@ public final class MlagConfiguration implements Serializable {
 
   public void setPeerAddress(Ip peerAddress) {
     _peerAddress = peerAddress;
+  }
+
+  @Nullable
+  public Ip getPeerAddressHeartbeat() {
+    return _peerAddressHeartbeat;
+  }
+
+  public void setPeerAddressHeartbeat(Ip address) {
+    _peerAddressHeartbeat = address;
   }
 
   @Nullable
