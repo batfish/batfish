@@ -68,7 +68,7 @@ To install Pybatfish run the following commands (in a virtual environment if app
 
 Afer installing Pybatfish, use your Python environment of choice (e.g., PyCharm, interactive Python shell, Jupyter, ..) to interact with Batfish. The [notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) provide examples of such scripts. 
 
-See complete documentation of Pybatfish on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html).
+See complete documentation of Pybatfish on [readthedocs](https://pybatfish.readthedocs.io/en/latest/).
 
 
 ## System Requirements for running Batfish
