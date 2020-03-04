@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Optional;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
+import org.batfish.datamodel.Ip;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -143,7 +144,9 @@ public class ParboiledAutoCompleteTest {
     String query = "1.1.1";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "2.2.2.2")).build();
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")))
+            .build();
 
     // 1.1.1.1 matches, but 2.2.2.2 does not
     assertThat(
@@ -160,7 +163,9 @@ public class ParboiledAutoCompleteTest {
     String query = "1.1.1.1";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "1.1.1.10")).build();
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.10")))
+            .build();
 
     // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(

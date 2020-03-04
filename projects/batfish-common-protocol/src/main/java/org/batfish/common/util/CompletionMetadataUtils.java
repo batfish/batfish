@@ -1,9 +1,13 @@
 package org.batfish.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -37,8 +41,18 @@ public final class CompletionMetadataUtils {
     return interfaces.build();
   }
 
-  public static Set<String> getIps(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> ips = ImmutableSet.builder();
+  @VisibleForTesting
+  static String interfaceDisplayString(Configuration configuration, Interface iface) {
+    return String.format(
+        "%s[%s]",
+        configuration.getHumanName() == null
+            ? configuration.getHostname()
+            : configuration.getHumanName(),
+        iface.getName());
+  }
+
+  public static Map<Ip, IpCompletionMetadata> getIps(Map<String, Configuration> configurations) {
+    Map<Ip, IpCompletionMetadata> ips = new HashMap<>();
     configurations
         .values()
         .forEach(
@@ -49,8 +63,16 @@ public final class CompletionMetadataUtils {
                   .forEach(
                       iface ->
                           iface.getAllConcreteAddresses().stream()
-                              .map(interfaceAddress -> interfaceAddress.getIp().toString())
-                              .forEach(ips::add));
+                              .map(interfaceAddress -> interfaceAddress.getIp())
+                              .forEach(
+                                  ip ->
+                                      ips.computeIfAbsent(ip, k -> new IpCompletionMetadata())
+                                          .addRelevance(
+                                              new IpCompletionRelevance(
+                                                  interfaceDisplayString(configuration, iface),
+                                                  configuration.getHumanName(),
+                                                  configuration.getHostname(),
+                                                  iface.getName()))));
 
               configuration
                   .getGeneratedReferenceBooks()
@@ -64,10 +86,17 @@ public final class CompletionMetadataUtils {
                                           // we are ignoring child groups; their IPs will be caught
                                           // when we process that group itself
                                           .forEach(
-                                              a -> Ip.tryParse(a).ifPresent(ip -> ips.add(a)))));
+                                              a ->
+                                                  Ip.tryParse(a)
+                                                      .ifPresent(
+                                                          ip ->
+                                                              ips.computeIfAbsent(
+                                                                  ip,
+                                                                  k ->
+                                                                      new IpCompletionMetadata())))));
             });
 
-    return ips.build();
+    return ImmutableMap.copyOf(ips);
   }
 
   public static Set<String> getMlagIds(Map<String, Configuration> configurations) {
