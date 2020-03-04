@@ -433,6 +433,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
         }
         // If the NAT is in our subnet, send it directly. Otherwise, send it via the VPC
         if (natGateway.getSubnetId().equals(_subnetId)) {
+          // This configuration won't actually work (which manual testing confirms). The packet will
+          // go the NAT, which will NAT the *source ip* and send it back to the subnet router, which
+          // will then send it to NAT, and so on. Nevertheless, we add this route instead of
+          // ignoring it because it is the correct model and users expect routes in AWS and Batfish
+          // to line up.
           addStaticRoute(
               cfgNode,
               sr.setNextHopIp(natGateway.getPrivateIp())

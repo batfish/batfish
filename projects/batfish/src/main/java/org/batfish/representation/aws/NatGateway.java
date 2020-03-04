@@ -35,10 +35,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -54,33 +56,11 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
   static final List<IpProtocol> NAT_PROTOCOLS = ImmutableList.of(TCP, UDP, ICMP);
 
-  /** Filter that drops all packets that are not NAT'd */
-  static final String UNSUPPORTED_PROTOCOL_FILTER_NAME = "~DENY~UNSUPPORTED~PROTOCOLS~";
-
-  static final IpAccessList UNSUPPORTED_PROTOCOL_FILTER =
-      IpAccessList.builder()
-          .setName(UNSUPPORTED_PROTOCOL_FILTER_NAME)
-          .setLines(
-              ExprAclLine.accepting(
-                  TraceElement.of("Permitted IP protocols supported by the NAT gateway"),
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build())),
-              ExprAclLine.rejecting(
-                  TraceElement.of("Denied IP protocols NOT supported by the NAT gateway"),
-                  TrueExpr.INSTANCE))
-          .build();
-
-  /** Filter for dropping all packets that do not match a session */
-  static final String NON_SESSION_PACKET_FILTER_NAME = "~DENY~NON~SESSION~PACKETS~";
-
-  static final IpAccessList NON_SESSION_PACKET_FILTER =
-      IpAccessList.builder()
-          .setName(NON_SESSION_PACKET_FILTER_NAME)
-          .setLines(
-              ExprAclLine.rejecting(
-                  TraceElement.of("Denied packets that do not match an active NAT session"),
-                  TrueExpr.INSTANCE))
-          .build();
+  /**
+   * Filter that drops all illegal packets. Included packets belonging to unsupported protocols,
+   * packets not trna
+   */
+  static final String ILLEGAL_PACKET_FILTER_NAME = "~ILLEGAL~PACKET~FILTER~";
 
   @Nonnull private final List<NatGatewayAddress> _natGatewayAddresses;
 
@@ -157,7 +137,9 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // configure the unsupported protocol filter on the node. we'll attach to interfaces later
-    cfgNode.getIpAccessLists().put(UNSUPPORTED_PROTOCOL_FILTER_NAME, UNSUPPORTED_PROTOCOL_FILTER);
+    IpAccessList postTransformationFilter =
+        computePostTransformationIllegalPacketFilter(getPrivateIp());
+    cfgNode.getIpAccessLists().put(ILLEGAL_PACKET_FILTER_NAME, postTransformationFilter);
 
     String networkInterfaceId = _natGatewayAddresses.get(0).getNetworkInterfaceId();
     NetworkInterface networkInterface = region.getNetworkInterfaces().get(networkInterfaceId);
@@ -180,9 +162,10 @@ final class NatGateway implements AwsVpcEntity, Serializable {
         new FirewallSessionInterfaceInfo(
             false, ImmutableList.of(ifaceToSubnet.getName()), null, null));
 
-    // install the NAT on the interface facing the subnet as well to serve instances in the subnet
-    ifaceToSubnet.setIncomingTransformation(computeNatTransformation(getPrivateIp()));
-    ifaceToSubnet.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
+    // install the NAT on the interface facing the subnet as well for packets from within the subnet
+    Transformation natTransformation = computeNatTransformation(getPrivateIp());
+    ifaceToSubnet.setIncomingTransformation(natTransformation);
+    ifaceToSubnet.setPostTransformationIncomingFilter(postTransformationFilter);
 
     Interface ifaceToVpc = connectToVpc(cfgNode, awsConfiguration, region, warnings);
     if (ifaceToVpc != null) {
@@ -205,11 +188,14 @@ final class NatGateway implements AwsVpcEntity, Serializable {
         // interface, where it will hit all reverse traffic
       }
 
-      ifaceToVpc.setIncomingTransformation(computeNatTransformation(getPrivateIp()));
-      ifaceToVpc.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
+      ifaceToVpc.setIncomingTransformation(natTransformation);
+      ifaceToVpc.setPostTransformationIncomingFilter(postTransformationFilter);
       ifaceToVpc.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              false, ImmutableList.of(), null, egressAcl == null ? null : egressAcl.getName()));
+              false,
+              ImmutableList.of(ifaceToVpc.getName()),
+              null,
+              egressAcl == null ? null : egressAcl.getName()));
     }
 
     return cfgNode;
@@ -281,6 +267,28 @@ final class NatGateway implements AwsVpcEntity, Serializable {
             TransformationStep.assignSourcePort(NAT_PORT_LOWEST, NAT_PORT_HIGHEST)),
         null,
         null);
+  }
+
+  @VisibleForTesting
+  static IpAccessList computePostTransformationIllegalPacketFilter(Ip privateIp) {
+    return IpAccessList.builder()
+        .setName(ILLEGAL_PACKET_FILTER_NAME)
+        .setLines(
+            ExprAclLine.rejecting(
+                TraceElement.of("Denied IP protocols NOT supported by the NAT gateway"),
+                new NotMatchExpr(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()))),
+            ExprAclLine.rejecting(
+                TraceElement.of("Denied packets that did NOT match an active NAT session"),
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setDstIps(ImmutableList.of(IpWildcard.create(privateIp)))
+                        .build())),
+            ExprAclLine.accepting(
+                TraceElement.of("Permitted packets transformed by the NAT gateway"),
+                TrueExpr.INSTANCE))
+        .build();
   }
 
   /**
