@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_ADDRESS;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 
 import com.google.common.collect.ImmutableList;
@@ -21,9 +20,14 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  * E2e tests of NAT behavior. The snapshot was created using the terraform definition file that is
- * checked into {@link #TESTCONFIGS_DIR}.
+ * checked into {@link #TESTCONFIGS_DIR} and then AWS data was pulled.
  *
- * <p>TODO: description of the test
+ * <p>The test setup has two subnets in the same VPC, one public and one private. It also has a NAT
+ * gateway in the public subnet and an Internet gateway. The private subnet's default route points
+ * to the NAT gateway, and it has an instance to act as the client of the NAT.
+ *
+ * <p>There are other entities in the setup (e.g., another private subnet) that are not relevant to
+ * the tests below but were part of the definition file (and pulled data) for manual testing.
  */
 public class AwsConfigurationNatGatewayTest {
 
@@ -66,7 +70,7 @@ public class AwsConfigurationNatGatewayTest {
   @Test
   public void testInstanceToInternet_bidirectional() {
     Flow flow =
-        AwsConfigurationTestUtils.getTcpFlow(_instanceS1, INTERNET_OUT_ADDRESS, 80, _batfish);
+        AwsConfigurationTestUtils.getTcpFlow(_instanceS1, Ip.parse("8.8.8.8"), 80, _batfish);
     AwsConfigurationTestUtils.testBidirectionalTrace(
         flow,
         ImmutableList.of(
@@ -97,7 +101,7 @@ public class AwsConfigurationNatGatewayTest {
         Flow.builder()
             .setIngressNode(_instanceS1)
             .setSrcIp(AwsConfigurationTestUtils.getOnlyNodeIp(_instanceS1, _batfish))
-            .setDstIp(INTERNET_OUT_ADDRESS)
+            .setDstIp(Ip.parse("8.8.8.8"))
             .setIpProtocol(IpProtocol.AN)
             .build();
     AwsConfigurationTestUtils.testTrace(
@@ -112,7 +116,7 @@ public class AwsConfigurationNatGatewayTest {
   public void testNonSessionPacket() {
     Flow flow =
         AwsConfigurationTestUtils.getTcpFlow(
-            INTERNET_HOST_NAME, INTERNET_OUT_ADDRESS, _publicIpNat, 80);
+            INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _publicIpNat, 80);
     AwsConfigurationTestUtils.testTrace(
         flow,
         FlowDisposition.DENIED_IN,

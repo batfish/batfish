@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -106,7 +107,10 @@ public final class AwsConfigurationTestUtils {
         tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
 
     TraceAndReverseFlow forwardTrace = getOnlyElement(forwardTraces.iterator());
-    testTrace(forwardTrace.getTrace(), FlowDisposition.ACCEPTED, expectedForwardPath);
+    assertThat(getTraceHops(forwardTrace.getTrace()), equalTo(expectedForwardPath));
+    assertThat(
+        forwardTrace.getTrace().getDisposition(),
+        anyOf(equalTo(FlowDisposition.ACCEPTED), equalTo(FlowDisposition.EXITS_NETWORK)));
 
     List<TraceAndReverseFlow> reverseTraces =
         tracerouteEngine

@@ -63,8 +63,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   static final List<IpProtocol> NAT_PROTOCOLS = ImmutableList.of(TCP, UDP, ICMP);
 
   /**
-   * Filter that drops all illegal packets. Included packets belonging to unsupported protocols,
-   * packets not trna
+   * Filter that drops all illegal packets. Includes packets belonging to unsupported protocols, and
+   * return traffic without a NAT session.
    */
   static final String ILLEGAL_PACKET_FILTER_NAME = "~ILLEGAL~PACKET~FILTER~";
 
@@ -208,7 +208,9 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   }
 
   /**
-   * Connects the NAT gateway to its VPC. Creates
+   * Connects the NAT gateway to its VPC. Creates the right VRF on the VPC if it is not there
+   * already, creates the interfaces on both nodes for the link, and puts a static route to the NAT
+   * in the right VPC VRF.
    *
    * @return the interface on the NAT gateway that connects to the VPC, or null if the VPC is not
    *     found
@@ -266,13 +268,12 @@ final class NatGateway implements AwsVpcEntity, Serializable {
    */
   @VisibleForTesting
   static Transformation computeOutgoingNatTransformation(Ip privateIp) {
-    return new Transformation(
-        new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()),
-        ImmutableList.of(
+    return Transformation.when(
+            new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()))
+        .apply(
             TransformationStep.assignSourceIp(privateIp, privateIp),
-            TransformationStep.assignSourcePort(NAT_PORT_LOWEST, NAT_PORT_HIGHEST)),
-        null,
-        null);
+            TransformationStep.assignSourcePort(NAT_PORT_LOWEST, NAT_PORT_HIGHEST))
+        .build();
   }
 
   @VisibleForTesting
