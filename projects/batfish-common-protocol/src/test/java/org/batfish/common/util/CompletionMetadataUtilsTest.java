@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CompletionMetadataUtils.addressGroupDisplayString;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -189,13 +190,39 @@ public final class CompletionMetadataUtilsTest {
         equalTo(
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"),
-                new IpCompletionMetadata(),
+                new IpCompletionMetadata(
+                    new IpCompletionRelevance(
+                        addressGroupDisplayString(config, book1.getName(), "ag1"),
+                        config.getHostname(),
+                        config.getHumanName(),
+                        "ag1")),
                 Ip.parse("2.2.2.2"),
-                new IpCompletionMetadata(),
+                new IpCompletionMetadata(
+                    new IpCompletionRelevance(
+                        addressGroupDisplayString(config, book1.getName(), "ag1"),
+                        config.getHostname(),
+                        config.getHumanName(),
+                        "ag1")),
                 Ip.parse("3.3.3.3"),
-                new IpCompletionMetadata(),
+                new IpCompletionMetadata(
+                    ImmutableList.of(
+                        new IpCompletionRelevance(
+                            addressGroupDisplayString(config, book1.getName(), "ag2"),
+                            config.getHostname(),
+                            config.getHumanName(),
+                            "ag2"),
+                        new IpCompletionRelevance(
+                            addressGroupDisplayString(config, book2.getName(), "ag1"),
+                            config.getHostname(),
+                            config.getHumanName(),
+                            "ag1"))),
                 Ip.parse("4.4.4.4"),
-                new IpCompletionMetadata())));
+                new IpCompletionMetadata(
+                    new IpCompletionRelevance(
+                        addressGroupDisplayString(config, book2.getName(), "ag1"),
+                        config.getHostname(),
+                        config.getHumanName(),
+                        "ag1")))));
   }
 
   @Test

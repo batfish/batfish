@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -564,31 +565,30 @@ public class PacketHeaderConstraints {
   @VisibleForTesting
   static IntegerSpace resolvePorts(
       @Nullable IntegerSpace ports, @Nullable Set<Application> applications) {
-    // Don't care
-    if (ports == null && applications == null) {
-      return null;
-    }
-
-    // Only ports are specified
-    if (applications == null) {
-      return ports;
-    }
-
+    @Nullable
     IntegerSpace portsFromApplications =
-        applications.stream()
+        firstNonNull(applications, ImmutableSet.of()).stream()
             .filter(application -> application instanceof PortsApplication)
             .flatMap(application -> ((PortsApplication) application).getPorts().stream())
             .map(IntegerSpace::of)
             .reduce(IntegerSpace::union)
-            .orElse(IntegerSpace.EMPTY);
+            .orElse(null);
+    return intersectNullable(ports, portsFromApplications);
+  }
 
-    // Only applications specified
-    if (ports == null) {
-      return portsFromApplications;
+  /** Intersect two {@link Nullable} {@link IntegerSpace IntegerSpaces}. */
+  private static @Nullable IntegerSpace intersectNullable(
+      @Nullable IntegerSpace is1, @Nullable IntegerSpace is2) {
+    if (is1 == null && is2 == null) {
+      return null;
     }
-
-    // Intersect. Protocols are the limiting factor, but they must belong to at least one space
-    return portsFromApplications.intersection(ports);
+    if (is1 == null) {
+      return is2;
+    }
+    if (is2 == null) {
+      return is1;
+    }
+    return is1.intersection(is2);
   }
 
   @Override
