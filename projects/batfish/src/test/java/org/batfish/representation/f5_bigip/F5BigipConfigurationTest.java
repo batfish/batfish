@@ -1,7 +1,5 @@
 package org.batfish.representation.f5_bigip;
 
-import static org.batfish.representation.f5_bigip.F5BigipConfiguration.REFBOOK_SOURCE_POOLS;
-import static org.batfish.representation.f5_bigip.F5BigipConfiguration.REFBOOK_SOURCE_VIRTUAL_ADDRESSES;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toAddressGroup;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -15,8 +13,9 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Names;
 import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Test;
 
@@ -37,7 +36,7 @@ public class F5BigipConfigurationTest {
     Configuration configuration =
         Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
 
-    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_POOLS);
+    String refbookName = GeneratedRefBookUtils.getName("node", BookType.PoolAddresses);
     assertThat(
         configuration.getGeneratedReferenceBooks().get(refbookName),
         equalTo(
@@ -121,7 +120,7 @@ public class F5BigipConfigurationTest {
     Configuration configuration =
         Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
 
-    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
+    String refbookName = GeneratedRefBookUtils.getName("node", BookType.VirtualAddresses);
     assertThat(
         configuration.getGeneratedReferenceBooks().get(refbookName),
         equalTo(
