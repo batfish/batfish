@@ -132,8 +132,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return Ip.create(generatedIp);
   }
 
-  @VisibleForTesting
-  static List<NetworkAcl> findMyNetworkAcl(
+  static List<NetworkAcl> findSubnetNetworkAcl(
       Map<String, NetworkAcl> networkAcls, String vpcId, String subnetId) {
     List<NetworkAcl> subnetAcls =
         networkAcls.values().stream()
@@ -201,7 +200,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
             instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
     // add network acls on the interface facing the instances
-    List<NetworkAcl> myNetworkAcls = findMyNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
+    List<NetworkAcl> myNetworkAcls =
+        findSubnetNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
     if (!myNetworkAcls.isEmpty()) {
       if (myNetworkAcls.size() > 1) {
         List<String> aclIds =
@@ -422,6 +422,38 @@ public class Subnet implements AwsVpcEntity, Serializable {
             attachment.getId(),
             sr,
             awsConfiguration);
+        return;
+      case NatGateway:
+        NatGateway natGateway = region.getNatGateways().get(route.getTarget());
+        if (natGateway == null) {
+          warnings.redFlag(
+              String.format(
+                  "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route));
+          return;
+        }
+        // If the NAT is in our subnet, send it directly. Otherwise, send it via the VPC
+        if (natGateway.getSubnetId().equals(_subnetId)) {
+          // This configuration won't actually work (which manual testing confirms). The packet will
+          // go the NAT, which will NAT the *source ip* and send it back to the subnet router, which
+          // will then send it to NAT, and so on. Nevertheless, we add this route instead of
+          // ignoring it because it is the correct model and users expect routes in AWS and Batfish
+          // to line up.
+          addStaticRoute(
+              cfgNode,
+              sr.setNextHopIp(natGateway.getPrivateIp())
+                  .setNextHopInterface(
+                      interfaceNameToRemote(
+                          awsConfiguration.getConfigurationNodes().get(natGateway.getId())))
+                  .build());
+        } else {
+          initializeVpcLink(
+              cfgNode,
+              vpcNode,
+              region.getVpcs().get(_vpcId),
+              natGateway.getId(),
+              sr,
+              awsConfiguration);
+        }
         return;
       default:
         warnings.redFlag("Unsupported target type: " + route.getTargetType());

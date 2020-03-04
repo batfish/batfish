@@ -1,19 +1,41 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAYS;
+import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
+import static org.batfish.representation.aws.NatGateway.computeOutgoingNatTransformation;
+import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.junit.Test;
 
 /** Tests for {@link NatGateway} */
@@ -46,5 +68,197 @@ public class NatGatewayTest {
                             Ip.parse("10.0.0.149"),
                             Ip.parse("198.11.222.33"))),
                     ImmutableMap.of("Department", "IT")))));
+  }
+
+  @Test
+  public void testToConfigurationNode() {
+    NatGatewayAddress ngwAddress =
+        new NatGatewayAddress(
+            "allocationId", "netInterface", Ip.parse("10.10.10.10"), Ip.parse("1.1.1.1"));
+    NatGateway ngw =
+        new NatGateway("ngw", "subnet", "vpc", ImmutableList.of(ngwAddress), ImmutableMap.of());
+
+    Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
+    Subnet subnet =
+        new Subnet(
+            Prefix.parse("10.10.10.0/24"),
+            ngw.getSubnetId(),
+            ngw.getVpcId(),
+            "zone",
+            ImmutableMap.of());
+    NetworkAcl nacl =
+        new NetworkAcl(
+            "netAcl",
+            vpc.getId(),
+            ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
+            ImmutableList.of(),
+            true);
+    NetworkInterface netInterface =
+        new NetworkInterface(
+            "netInterface",
+            subnet.getId(),
+            subnet.getVpcId(),
+            ImmutableList.of(),
+            ImmutableList.of(
+                new PrivateIpAddress(true, ngwAddress.getPrivateIp(), ngw.getPublicIp())),
+            "desc",
+            null);
+    Region region =
+        Region.builder("r1")
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
+            .setNetworkInterfaces(ImmutableMap.of(netInterface.getId(), netInterface))
+            .setNetworkAcls(ImmutableMap.of(nacl.getId(), nacl))
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .build();
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+    Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
+    awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
+
+    Configuration ngwConfig = ngw.toConfigurationNode(awsConfiguration, region, new Warnings());
+
+    // test the basics
+    assertThat(ngwConfig.getDeviceModel(), equalTo(AWS_NAT_GATEWAY));
+    assertThat(ngwConfig.getVendorFamily().getAws().getSubnetId(), equalTo(ngw.getSubnetId()));
+    assertThat(ngwConfig.getVendorFamily().getAws().getVpcId(), equalTo(ngw.getVpcId()));
+    assertThat(ngwConfig.getVendorFamily().getAws().getRegion(), equalTo(region.getName()));
+    assertThat(ngwConfig.getIpAccessLists(), hasKey(ILLEGAL_PACKET_FILTER_NAME));
+
+    // test that ngw was connected to the subnet
+    assertThat(
+        awsConfiguration.getLayer1Edges(),
+        hasItem(
+            new Layer1Edge(
+                ngw.getId(),
+                netInterface.getId(),
+                Subnet.nodeName(subnet.getId()),
+                Subnet.instancesInterfaceName(subnet.getId()))));
+
+    // is the subnet interface properly configured?
+    Interface ifaceToSubnet = ngwConfig.getAllInterfaces().get(netInterface.getId());
+    assertThat(
+        ifaceToSubnet.getIncomingTransformation(),
+        equalTo(computeOutgoingNatTransformation(ngw.getPrivateIp())));
+    assertThat(
+        ifaceToSubnet.getFirewallSessionInterfaceInfo(),
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                false, ImmutableList.of(ifaceToSubnet.getName()), null, null)));
+    assertThat(
+        ifaceToSubnet.getPostTransformationIncomingFilter().getName(),
+        equalTo(ILLEGAL_PACKET_FILTER_NAME));
+
+    // test that ngw was connected to the vpc
+    assertThat(ngwConfig.getAllInterfaces(), hasKey(vpc.getId()));
+
+    // test that the network ACLs were installed
+    assertThat(ngwConfig.getIpAccessLists(), hasKey(nacl.getIngressAcl().getName()));
+    assertThat(ngwConfig.getIpAccessLists(), hasKey(nacl.getEgressAcl().getName()));
+
+    // is the interface to vpc properly configured?
+    Interface ifaceToVpc = ngwConfig.getAllInterfaces().get(vpc.getId());
+    assertThat(ifaceToVpc.getIncomingFilter().getName(), equalTo(nacl.getIngressAcl().getName()));
+    assertThat(
+        ifaceToVpc.getPostTransformationIncomingFilter().getName(),
+        equalTo(ILLEGAL_PACKET_FILTER_NAME));
+    assertThat(
+        ifaceToVpc.getFirewallSessionInterfaceInfo(),
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                false,
+                ImmutableList.of(ifaceToVpc.getName()),
+                null,
+                nacl.getEgressAcl().getName())));
+  }
+
+  @Test
+  public void testConnectToVpc() {
+    NatGateway ngw = new NatGateway("ngw", "subnet", "vpc", ImmutableList.of(), ImmutableMap.of());
+    Configuration ngwConfig = new Configuration("c", ConfigurationFormat.AWS);
+    ngwConfig.getVrfs().put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
+
+    Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
+    Region region = Region.builder("r1").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+    Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
+    awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
+
+    ngw.connectToVpc(ngwConfig, awsConfiguration, region, new Warnings());
+
+    // new VRF on VPC
+    assertThat(vpcCfg.getVrfs(), hasKey(Vpc.vrfNameForLink(ngw.getId())));
+
+    // connection between NGW and VPC
+    assertThat(
+        awsConfiguration.getLayer1Edges(),
+        hasItem(
+            new Layer1Edge(
+                ngwConfig.getHostname(),
+                Utils.interfaceNameToRemote(vpcCfg),
+                vpcCfg.getHostname(),
+                Utils.interfaceNameToRemote(ngwConfig))));
+
+    // static route on VPC
+    assertThat(
+        vpcCfg.getVrfs().get(Vpc.vrfNameForLink(ngw.getId())).getStaticRoutes(),
+        hasItem(
+            toStaticRoute(
+                Prefix.ZERO,
+                Utils.interfaceNameToRemote(ngwConfig),
+                Utils.getInterfaceLinkLocalIp(ngwConfig, Utils.interfaceNameToRemote(vpcCfg)))));
+  }
+
+  @Test
+  public void testComputePostTransformationIllegalPacketFilter() {
+    Ip privateIp = Ip.parse("10.10.10.10");
+    IpAccessList filter = computePostTransformationIllegalPacketFilter(privateIp);
+
+    // unsupported protocol
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.ANY_0_HOP_PROTOCOL)
+                    .build(),
+                "a",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // has the same ip has the nat
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(345)
+                    .setDstIp(privateIp)
+                    .setDstPort(80)
+                    .build(),
+                "a",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // legal packet
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(345)
+                    .setDstIp(Ip.parse("2.2.2.2"))
+                    .setDstPort(80)
+                    .build(),
+                "a",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.PERMIT));
   }
 }
