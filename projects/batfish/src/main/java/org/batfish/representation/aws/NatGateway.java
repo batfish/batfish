@@ -49,8 +49,15 @@ import org.batfish.datamodel.transformation.TransformationStep;
  * Represents an AWS NAT gateway:
  * https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html
  *
- * <p>Design doc on modeling is here:
- * https://docs.google.com/document/d/1QzwRM6XmTGQcJkmcbDfxSgNDGDIAhC7_B3w-JQy6RMM/
+ * <p>Design doc on modeling is at
+ * https://docs.google.com/document/d/1QzwRM6XmTGQcJkmcbDfxSgNDGDIAhC7_B3w-JQy6RMM/, but the overall
+ * approach is: 1) NatGateways become nodes in their subnet (duh!); 2) In addition to connecting to
+ * their subnet node, they also connect to the VPC router directly; 3) On the VPC router the
+ * interface that connects to the NAT gateway is in its own VRF; 4) Subnets that send traffic to
+ * this NAT connect to the VPC on an interface that is also in this VRF. These subnet-to-VPC links
+ * are in addition subnet-to-VPC links that exist to connect subnets to other subnets and gateways.
+ * The VRF-based design helps isolate different flows at the VPC since different subnets send
+ * different types of traffic to different gateways.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
