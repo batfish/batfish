@@ -36,6 +36,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -61,10 +62,12 @@ final class NatGateway implements AwsVpcEntity, Serializable {
           .setName(UNSUPPORTED_PROTOCOL_FILTER_NAME)
           .setLines(
               ExprAclLine.accepting(
-                  "Allow supported protocols",
+                  TraceElement.of("Permitted IP protocols supported by the NAT gateway"),
                   new MatchHeaderSpace(
                       HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build())),
-              ExprAclLine.rejecting("Deny unsupported protocols", TrueExpr.INSTANCE))
+              ExprAclLine.rejecting(
+                  TraceElement.of("Denied IP protocols NOT supported by the NAT gateway"),
+                  TrueExpr.INSTANCE))
           .build();
 
   /** Filter for dropping all packets that do not match a session */
@@ -73,7 +76,10 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   static final IpAccessList NON_SESSION_PACKET_FILTER =
       IpAccessList.builder()
           .setName(NON_SESSION_PACKET_FILTER_NAME)
-          .setLines(ExprAclLine.rejecting("Deny-non-NAT-session-packets", TrueExpr.INSTANCE))
+          .setLines(
+              ExprAclLine.rejecting(
+                  TraceElement.of("Denied packets that do not match an active NAT session"),
+                  TrueExpr.INSTANCE))
           .build();
 
   @Nonnull private final List<NatGatewayAddress> _natGatewayAddresses;
@@ -191,7 +197,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       vpcIface.setPostTransformationIncomingFilter(UNSUPPORTED_PROTOCOL_FILTER);
       cfgNode.getIpAccessLists().put(UNSUPPORTED_PROTOCOL_FILTER_NAME, UNSUPPORTED_PROTOCOL_FILTER);
 
-      // not sure why this is needed
+      // Needed because we "Cannot have a session exiting an interface without
+      // FirewallSessionInterfaceInfo" (FlowTracer#visitForwardOutInterface)
       vpcIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               false, ImmutableList.of(vpcIface.getName()), null, null));
@@ -204,8 +211,15 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
+  /**
+   * Connects the NAT gateway to its VPC. Creates
+   *
+   * @return the interface on the NAT gateway that connects to the VPC, or null if the VPC is not
+   *     found
+   */
   @Nullable
-  private Interface connectToVpc(
+  @VisibleForTesting
+  Interface connectToVpc(
       Configuration natGwCfg,
       ConvertedConfiguration awsConfiguration,
       Region region,

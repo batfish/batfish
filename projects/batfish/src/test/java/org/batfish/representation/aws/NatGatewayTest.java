@@ -47,4 +47,7 @@ public class NatGatewayTest {
                             Ip.parse("198.11.222.33"))),
                     ImmutableMap.of("Department", "IT")))));
   }
+
+  @Test
+  public void testToConfigurationNode() {}
 }

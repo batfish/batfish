@@ -92,6 +92,10 @@ public final class ExprAclLine extends AclLine {
     return accepting().setMatchCondition(expr).setName(name).build();
   }
 
+  public static ExprAclLine accepting(@Nonnull TraceElement traceElement, AclLineMatchExpr expr) {
+    return accepting().setMatchCondition(expr).setTraceElement(traceElement).build();
+  }
+
   /** Prefer {@link #acceptingHeaderSpace(String, HeaderSpace)}. */
   @VisibleForTesting
   public static ExprAclLine acceptingHeaderSpace(HeaderSpace headerSpace) {
@@ -118,6 +122,10 @@ public final class ExprAclLine extends AclLine {
 
   public static ExprAclLine rejecting(String name, AclLineMatchExpr expr) {
     return rejecting().setMatchCondition(expr).setName(name).build();
+  }
+
+  public static ExprAclLine rejecting(@Nonnull TraceElement traceElement, AclLineMatchExpr expr) {
+    return rejecting().setMatchCondition(expr).setTraceElement(traceElement).build();
   }
 
   /** Prefer {@link #rejectingHeaderSpace(String, HeaderSpace)}. */
