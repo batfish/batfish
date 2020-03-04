@@ -65,7 +65,6 @@ import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -114,6 +113,8 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -124,9 +125,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
   // Ephemeral port range defined in https://support.f5.com/csp/article/K8246
   private static final TransformationStep ASSIGN_EPHEMERAL_SOURCE_PORT =
       new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
-
-  static final String REFBOOK_SOURCE_POOLS = "pools";
-  static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
 
   // https://techdocs.f5.com/content/kb/en-us/products/big-ip_ltm/manuals/related/ospf-commandreference-7-10-4/_jcr_content/pdfAttach/download/file.res/arm-ospf-command-reference-7-10-4.pdf
   private static final int DEFAULT_DEAD_INTERVAL_S = 40;
@@ -1874,7 +1872,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // add a reference book for virtual addresses
     String virtualAddressesBookname =
-        Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
+        GeneratedRefBookUtils.getName(_hostname, BookType.VirtualAddresses);
     _c.getGeneratedReferenceBooks()
         .put(
             virtualAddressesBookname,
@@ -1886,7 +1884,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .build());
 
     // add a reference book for pools
-    String poolAddressBookname = Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_POOLS);
+    String poolAddressBookname = GeneratedRefBookUtils.getName(_hostname, BookType.PoolAddresses);
     _c.getGeneratedReferenceBooks()
         .put(
             poolAddressBookname,
