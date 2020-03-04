@@ -4,6 +4,7 @@ import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -12,6 +13,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -40,6 +42,10 @@ import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
 import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
@@ -263,7 +269,34 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     viIface.setPostTransformationIncomingFilter(defaultFilter);
     cfgNode.getIpAccessLists().put(defaultFilter.getName(), defaultFilter);
 
+    addPublicIpRefBook(networkInterface.get(), cfgNode, region);
+
     return cfgNode;
+  }
+
+  /** Adds a generated references book for public Ips if the instance has any such Ips */
+  private void addPublicIpRefBook(
+      NetworkInterface networkInterface, Configuration cfgNode, Region region) {
+    List<String> publicIps =
+        networkInterface.getPrivateIpAddresses().stream()
+            .filter(privIp -> privIp.getPublicIp() != null)
+            .map(privIp -> privIp.getPublicIp().toString())
+            .collect(ImmutableList.toImmutableList());
+    if (!publicIps.isEmpty()) {
+      String publicIpBookName =
+          GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps);
+      cfgNode
+          .getGeneratedReferenceBooks()
+          .put(
+              publicIpBookName,
+              ReferenceBook.builder(publicIpBookName)
+                  .setAddressGroups(
+                      ImmutableList.of(
+                          new AddressGroup(
+                              ImmutableSortedSet.copyOf(publicIps),
+                              publicIpAddressGroupName(networkInterface))))
+                  .build());
+    }
   }
 
   @VisibleForTesting

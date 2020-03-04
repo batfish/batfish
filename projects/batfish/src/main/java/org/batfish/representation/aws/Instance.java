@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTER
 import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 
@@ -351,10 +352,6 @@ final class Instance implements AwsVpcEntity, Serializable {
                   .setAddressGroups(publicIpAddressGroups)
                   .build());
     }
-  }
-
-  static String publicIpAddressGroupName(NetworkInterface iface) {
-    return String.format("(%s (%s)", iface.getDescription(), iface.getId());
   }
 
   static String instanceHostname(String instanceId) {

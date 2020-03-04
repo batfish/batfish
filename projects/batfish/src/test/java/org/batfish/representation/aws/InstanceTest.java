@@ -11,7 +11,7 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCES;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_RESERVATIONS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Instance.instanceHostname;
-import static org.batfish.representation.aws.Instance.publicIpAddressGroupName;
+import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.Matchers.allOf;

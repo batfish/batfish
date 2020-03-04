@@ -11,8 +11,10 @@ import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTran
 import static org.batfish.representation.aws.LoadBalancer.computeTargetTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
 import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
+import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -20,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +49,9 @@ import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
@@ -161,19 +167,19 @@ public class LoadBalancerTest {
   public void testToConfigurationNode() {
     AvailabilityZone availabilityZone = _loadBalancer.getAvailabilityZones().get(0);
     Prefix subnetPrefix = Prefix.create(_loadBalancerIp, 24);
+    Ip publicIp = Ip.parse("1.1.1.1");
+    NetworkInterface networkInterface =
+        new NetworkInterface(
+            "interface",
+            availabilityZone.getSubnetId(),
+            _loadBalancer.getVpcId(),
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, publicIp)),
+            LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
+            null);
     Region region =
         Region.builder("r1")
-            .setNetworkInterfaces(
-                ImmutableMap.of(
-                    "interface",
-                    new NetworkInterface(
-                        "interface",
-                        availabilityZone.getSubnetId(),
-                        _loadBalancer.getVpcId(),
-                        ImmutableList.of(),
-                        ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, null)),
-                        LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-                        null)))
+            .setNetworkInterfaces(ImmutableMap.of("interface", networkInterface))
             .setSubnets(
                 ImmutableMap.of(
                     availabilityZone.getSubnetId(),
@@ -210,6 +216,16 @@ public class LoadBalancerTest {
         equalTo(
             computeDefaultFilter(
                 ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, null)))));
+
+    assertThat(
+        cfgNode
+            .getGeneratedReferenceBooks()
+            .get(GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps))
+            .getAddressGroups(),
+        hasItem(
+            new AddressGroup(
+                ImmutableSortedSet.of(publicIp.toString()),
+                publicIpAddressGroupName(networkInterface))));
   }
 
   @Test

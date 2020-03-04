@@ -66,6 +66,10 @@ final class Utils {
     }
   }
 
+  static String publicIpAddressGroupName(NetworkInterface iface) {
+    return String.format("%s (%s)", iface.getDescription(), iface.getId());
+  }
+
   /** Prefer variants that provide {@link DeviceModel}. */
   @VisibleForTesting
   static Configuration newAwsConfiguration(String name, String domainName) {
