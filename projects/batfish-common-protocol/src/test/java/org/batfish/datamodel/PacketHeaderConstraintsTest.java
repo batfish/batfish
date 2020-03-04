@@ -171,11 +171,7 @@ public class PacketHeaderConstraintsTest {
   public void testResolveIpProtocolsIcmpAndPorts() {
     thrown.expect(IllegalArgumentException.class);
     resolveIpProtocols(
-        ImmutableSet.of(ICMP),
-        IntegerSpace.of(SubRange.singleton(10)),
-        null,
-        null,
-        null);
+        ImmutableSet.of(ICMP), IntegerSpace.of(SubRange.singleton(10)), null, null, null);
   }
 
   @Test
@@ -219,9 +215,7 @@ public class PacketHeaderConstraintsTest {
             ImmutableSet.of(SSH.toApplication(), HTTP.toApplication())),
         equalTo(sshSet));
 
-    assertThat(
-        resolvePorts(null, ImmutableSet.of(IcmpTypesApplication.ALL)),
-        equalTo(null));
+    assertThat(resolvePorts(null, ImmutableSet.of(IcmpTypesApplication.ALL)), equalTo(null));
   }
 
   @Test
@@ -458,9 +452,7 @@ public class PacketHeaderConstraintsTest {
         parseIpProtocols(BatfishObjectMapper.mapper().readValue("\"!ICMP\"", JsonNode.class));
     assertThat(
         ipProtocols,
-        equalTo(
-            Sets.difference(
-                ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(ICMP))));
+        equalTo(Sets.difference(ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(ICMP))));
   }
 
   @Test
