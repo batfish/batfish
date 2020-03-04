@@ -183,7 +183,7 @@ public class NatGatewayTest {
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
     awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
 
-    Interface ifaceToVpc = ngw.connectToVpc(ngwConfig, awsConfiguration, region, new Warnings());
+    ngw.connectToVpc(ngwConfig, awsConfiguration, region, new Warnings());
 
     // new VRF on VPC
     assertThat(vpcCfg.getVrfs(), hasKey(Vpc.vrfNameForLink(ngw.getId())));
