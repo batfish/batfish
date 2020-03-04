@@ -269,14 +269,14 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     viIface.setPostTransformationIncomingFilter(defaultFilter);
     cfgNode.getIpAccessLists().put(defaultFilter.getName(), defaultFilter);
 
-    addPublicIpRefBook(networkInterface.get(), cfgNode, region);
+    addPublicIpRefBook(networkInterface.get(), cfgNode);
 
     return cfgNode;
   }
 
   /** Adds a generated references book for public Ips if the instance has any such Ips */
   private void addPublicIpRefBook(
-      NetworkInterface networkInterface, Configuration cfgNode, Region region) {
+      NetworkInterface networkInterface, Configuration cfgNode) {
     List<String> publicIps =
         networkInterface.getPrivateIpAddresses().stream()
             .filter(privIp -> privIp.getPublicIp() != null)
