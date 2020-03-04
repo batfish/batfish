@@ -8,7 +8,7 @@ load("@batfish//skylark:junit.bzl", "junit_tests")
 junit_tests(
     name = "tests",
     srcs = glob([
-        "**/*Test.java",
+        "**/*Test*.java",
     ]),
     resources = ["//projects/batfish/src/test/resources/org/batfish/representation/aws"],
     deps = [
