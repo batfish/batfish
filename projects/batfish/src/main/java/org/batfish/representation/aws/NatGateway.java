@@ -45,7 +45,13 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
-/** Represents an AWS NAT gateway */
+/**
+ * Represents an AWS NAT gateway:
+ * https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html
+ *
+ * <p>Design doc on modeling is here:
+ * https://docs.google.com/document/d/1QzwRM6XmTGQcJkmcbDfxSgNDGDIAhC7_B3w-JQy6RMM/
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class NatGateway implements AwsVpcEntity, Serializable {
@@ -163,7 +169,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
             false, ImmutableList.of(ifaceToSubnet.getName()), null, null));
 
     // install the NAT on the interface facing the subnet as well for packets from within the subnet
-    Transformation natTransformation = computeNatTransformation(getPrivateIp());
+    Transformation natTransformation = computeOutgoingNatTransformation(getPrivateIp());
     ifaceToSubnet.setIncomingTransformation(natTransformation);
     ifaceToSubnet.setPostTransformationIncomingFilter(postTransformationFilter);
 
@@ -259,7 +265,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
    * outside.
    */
   @VisibleForTesting
-  static Transformation computeNatTransformation(Ip privateIp) {
+  static Transformation computeOutgoingNatTransformation(Ip privateIp) {
     return new Transformation(
         new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()),
         ImmutableList.of(

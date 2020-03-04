@@ -4,7 +4,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAYS;
 import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
-import static org.batfish.representation.aws.NatGateway.computeNatTransformation;
+import static org.batfish.representation.aws.NatGateway.computeOutgoingNatTransformation;
 import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -138,7 +138,7 @@ public class NatGatewayTest {
     Interface ifaceToSubnet = ngwConfig.getAllInterfaces().get(netInterface.getId());
     assertThat(
         ifaceToSubnet.getIncomingTransformation(),
-        equalTo(computeNatTransformation(ngw.getPrivateIp())));
+        equalTo(computeOutgoingNatTransformation(ngw.getPrivateIp())));
     assertThat(
         ifaceToSubnet.getFirewallSessionInterfaceInfo(),
         equalTo(
