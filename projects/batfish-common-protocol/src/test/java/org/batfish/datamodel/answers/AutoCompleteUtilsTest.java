@@ -6,8 +6,10 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.ipStringAutoComplete;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.orderSuggestions;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.toHint;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
@@ -36,7 +38,9 @@ import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -44,10 +48,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
@@ -94,7 +102,10 @@ public class AutoCompleteUtilsTest {
                 NodeInterfacePair.of("spine", "int1"),
                 NodeInterfacePair.of("leaf", "leafInterface"),
                 NodeInterfacePair.of("\"/foo/leaf\"", "fooInterface")))
-        .setIps(ImmutableSet.of("1.1.1.1", "11.2.3.4", "3.1.2.4", "1.2.3.4", "4.4.4.4"))
+        .setIps(
+            ImmutableSet.of("1.1.1.1", "11.2.3.4", "3.1.2.4", "1.2.3.4", "4.4.4.4").stream()
+                .map(Ip::parse)
+                .collect(ImmutableSet.toImmutableSet()))
         .setMlagIds(ImmutableSet.of("mlag1", "mlag2", "other"))
         .setVrfs(ImmutableSet.of("default"))
         .build();
@@ -339,7 +350,7 @@ public class AutoCompleteUtilsTest {
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
-            .setIps(ImmutableSet.of("1.2.3.4", "1.3.2.4", "1.23.4.5"))
+            .setIps(ImmutableSet.of(Ip.parse("1.2.3.4"), Ip.parse("1.3.2.4"), Ip.parse("1.23.4.5")))
             .build();
 
     assertThat(
@@ -866,6 +877,62 @@ public class AutoCompleteUtilsTest {
                 "@connectedTo(", "@deviceType(", "@enter(", "@interfaceType(", "@vrf")));
   }
 
+  /** Tests that metadata based suggestions are included */
+  @Test
+  public void testIpSpaceIncludeMetadataMatches() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setIps(
+                ImmutableMap.of(
+                    Ip.parse("1.1.1.1"),
+                    new IpCompletionMetadata(new IpCompletionRelevance("display", "tag"))))
+            .build();
+
+    // Just the valid function names in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "tag",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(ImmutableSet.of("1.1.1.1", "[", "&", ",", "\\")));
+  }
+
+  /** Tests that IPs that match based on both metadata and grammar are included only once */
+  @Test
+  public void testIpSpaceIncludeOnce() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setIps(
+                ImmutableMap.of(
+                    Ip.parse("1.1.1.1"),
+                    new IpCompletionMetadata(new IpCompletionRelevance("display", "tag"))))
+            .build();
+
+    // Just the valid function names in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1.1.",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("1.1.1.1")));
+  }
+
   @Ignore
   @Test
   public void testInterfacesSpecEmptyString() {
@@ -1310,6 +1377,69 @@ public class AutoCompleteUtilsTest {
     assertThat(
         getSuggestionsTextSet(stringAutoComplete("aBCd", strings)),
         equalTo(ImmutableSet.of("abcd")));
+  }
+
+  /** Test that ip matches should be first, relevance match second, and non-matches never */
+  @Test
+  public void testIpStringAutocomplete_ordering() {
+    List<IpCompletionRelevance> relevances2 =
+        ImmutableList.of(new IpCompletionRelevance("display", "42"));
+    Map<Ip, IpCompletionMetadata> metadata =
+        ImmutableMap.of(
+            Ip.parse("1.1.1.1"),
+            new IpCompletionMetadata(relevances2),
+            Ip.parse("2.2.2.2"),
+            new IpCompletionMetadata(),
+            Ip.parse("3.3.3.3"),
+            new IpCompletionMetadata());
+
+    assertThat(
+        ipStringAutoComplete("2", metadata),
+        equalTo(
+            ImmutableList.of(
+                new AutocompleteSuggestion("2.2.2.2", false),
+                new AutocompleteSuggestion("1.1.1.1", toHint(relevances2), false))));
+  }
+
+  @Test
+  public void testIpStringAutocomplete_matchingRelevances() {
+    IpCompletionRelevance match = new IpCompletionRelevance("match", "match");
+    IpCompletionRelevance other = new IpCompletionRelevance("other", "other");
+
+    assertThat(
+        ipStringAutoComplete(
+            "mat",
+            ImmutableMap.of(
+                Ip.parse("1.1.1.1"), new IpCompletionMetadata(ImmutableList.of(match, other)))),
+        equalTo(
+            ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", match.getDisplay(), false))));
+  }
+
+  /** Test that multiword queries match relevant IPs */
+  @Test
+  public void testIpStringAutocomplete_multipleWordsMatcIp() {
+    Map<Ip, IpCompletionMetadata> metadata =
+        ImmutableMap.of(
+            Ip.parse("1.1.2.2"),
+            new IpCompletionMetadata(),
+            Ip.parse("2.2.2.2"),
+            new IpCompletionMetadata());
+
+    assertThat(
+        ipStringAutoComplete("1 2", metadata),
+        equalTo(ImmutableList.of(new AutocompleteSuggestion("1.1.2.2", false))));
+  }
+
+  @Test
+  public void testToHint_shortenRelevances() {
+    String hint =
+        toHint(
+            ImmutableList.of(
+                new IpCompletionRelevance("match1", "match1"),
+                new IpCompletionRelevance("match2", "match2")));
+    assertTrue(hint.contains("match1"));
+    assertFalse(hint.contains("match2"));
+    assertTrue(hint.contains("1 more"));
   }
 
   @Test

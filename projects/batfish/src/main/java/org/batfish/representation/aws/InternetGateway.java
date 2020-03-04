@@ -14,9 +14,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,11 +28,21 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -57,6 +69,15 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   /** Name of the routing policy on the Internet Gateway that faces the backbone */
   static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
+
+  /** Name of the filter that drops from private IPs without an associated public IP */
+  static final String UNASSOCIATED_PRIVATE_IP_FILTER_NAME = "~DENY~UNASSOCIATED~PRIVATE~IPs~";
+
+  static final TraceElement ALLOWED_ASSOCIATED_PRIVATE_IP_TRACE_ELEMENT =
+      TraceElement.of("Allowed private instance IPs associated with a public IP");
+
+  static final TraceElement DENIED_UNASSOCIATED_PRIVATE_IP_TRACE =
+      TraceElement.of("Denied private instance IPs NOT associated with a public IP");
 
   @Nonnull private final List<String> _attachmentVpcIds;
 
@@ -132,7 +153,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     Interface bbInterface =
         Utils.newInterface(BACKBONE_INTERFACE_NAME, cfgNode, bbInterfaceAddress, "To AWS backbone");
 
-    // Implement NAT from private to public IPs
+    // Map from private to public IPs that will be used for the NAT
     Map<Ip, Ip> privatePublicMap =
         region.getNetworkInterfaces().values().stream()
             .filter(ni -> _attachmentVpcIds.contains(ni.getVpcId()))
@@ -143,6 +164,13 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
                     PrivateIpAddress::getPrivateIp, PrivateIpAddress::getPublicIp));
 
     configureNat(bbInterface, privatePublicMap);
+
+    // Install a filter that will drop all incoming packets from subnets that have invalid private
+    // IPs (i.e., there is no associated public IP).
+    // This filter is installed on subnet-facing interfaces when they are created in Subnet.java.
+    IpAccessList unassociatedIpFilter =
+        computeUnassociatedPrivateIpFilter(privatePublicMap.keySet());
+    cfgNode.getIpAccessLists().put(unassociatedIpFilter.getName(), unassociatedIpFilter);
 
     BgpProcess bgpProcess =
         BgpProcess.builder()
@@ -178,6 +206,31 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
         .build();
 
     return cfgNode;
+  }
+
+  @VisibleForTesting
+  static IpAccessList computeUnassociatedPrivateIpFilter(Collection<Ip> validPrivateIps) {
+    IpSpace validPrivateIpSpace =
+        IpWildcardSetIpSpace.builder()
+            .including(
+                validPrivateIps.stream().map(IpWildcard::create).collect(Collectors.toList()))
+            .build();
+    return IpAccessList.builder()
+        .setName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME)
+        .setLines(
+            ExprAclLine.builder()
+                .setTraceElement(ALLOWED_ASSOCIATED_PRIVATE_IP_TRACE_ELEMENT)
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setSrcIps(validPrivateIpSpace).build()))
+                .setAction(LineAction.PERMIT)
+                .build(),
+            ExprAclLine.builder()
+                .setTraceElement(DENIED_UNASSOCIATED_PRIVATE_IP_TRACE)
+                .setMatchCondition(TrueExpr.INSTANCE)
+                .setAction(LineAction.DENY)
+                .build())
+        .build();
   }
 
   @VisibleForTesting

@@ -8,6 +8,7 @@ import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -171,12 +172,28 @@ public class AwsConfigurationPublicSubnetTest {
 
     // Test NAT behavior
     assertThat(
-        trace.getHops().get(2).getSteps().get(2),
-        equalTo(
+        trace.getHops().get(2).getSteps(),
+        hasItem(
             new TransformationStep(
                 new TransformationStepDetail(
                     TransformationType.SOURCE_NAT,
                     ImmutableSortedSet.of(flowDiff(SOURCE, _privateIp, _publicIp))),
                 StepAction.TRANSFORMED)));
+  }
+
+  /** Packets comes with a private IP for which we don't have a public IP association */
+  @Test
+  public void testToInternetInvalidPrivateIp() {
+    Ip dstIp = Ip.parse("8.8.8.8");
+    Flow flow =
+        builder().setIngressNode(_instance).setDstIp(dstIp).setSrcIp(Ip.parse("10.0.0.92")).build();
+    SortedMap<Flow, List<Trace>> traces =
+        _batfish
+            .getTracerouteEngine(_batfish.getSnapshot())
+            .computeTraces(ImmutableSet.of(flow), false);
+    Trace trace = getOnlyElement(traces.get(flow).iterator());
+
+    testTraceNodesAndDisposition(
+        trace, FlowDisposition.DENIED_IN, ImmutableList.of(_instance, _subnet, _igw));
   }
 }

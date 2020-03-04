@@ -10,6 +10,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
+import static org.batfish.common.util.CompletionMetadataUtils.interfaceDisplayString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -20,6 +21,8 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -32,6 +35,7 @@ import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -102,9 +106,9 @@ public final class CompletionMetadataUtilsTest {
     String int1 = "int1";
     String int2 = "int2";
 
-    String ip1 = "10.1.3.7";
-    String ip2 = "128.212.155.30";
-    String ip3 = "124.51.32.2";
+    Ip ip1 = Ip.parse("10.1.3.7");
+    Ip ip2 = Ip.parse("128.212.155.30");
+    Ip ip3 = Ip.parse("124.51.32.2");
 
     String address1 = ip1 + "/30";
     String address2 = ip2 + "/24";
@@ -117,18 +121,41 @@ public final class CompletionMetadataUtilsTest {
     Map<String, Configuration> configs = new HashMap<>();
     Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1, int2);
 
-    config
-        .getAllInterfaces()
-        .get(int1)
-        .setAllAddresses(ImmutableSet.of(interfaceAddress1, interfaceAddress2));
-    config
-        .getAllInterfaces()
-        .get(int2)
-        .setAllAddresses(ImmutableSet.of(interfaceAddress2, interfaceAddress3));
+    Interface iface1 = config.getAllInterfaces().get(int1);
+    iface1.setAllAddresses(ImmutableSet.of(interfaceAddress1, interfaceAddress2));
+
+    Interface iface2 = config.getAllInterfaces().get(int2);
+    iface2.setAllAddresses(ImmutableSet.of(interfaceAddress2, interfaceAddress3));
 
     configs.put(nodeName, config);
 
-    assertThat(getIps(configs), equalTo(ImmutableSet.of(ip1, ip2, ip3)));
+    assertThat(
+        getIps(configs),
+        equalTo(
+            ImmutableMap.of(
+                ip1,
+                new IpCompletionMetadata(
+                    new IpCompletionRelevance(
+                        interfaceDisplayString(config, iface1),
+                        config.getHostname(),
+                        iface1.getName())),
+                ip2,
+                new IpCompletionMetadata(
+                    ImmutableList.of(
+                        new IpCompletionRelevance(
+                            interfaceDisplayString(config, iface1),
+                            config.getHostname(),
+                            iface1.getName()),
+                        new IpCompletionRelevance(
+                            interfaceDisplayString(config, iface2),
+                            config.getHostname(),
+                            iface2.getName()))),
+                ip3,
+                new IpCompletionMetadata(
+                    new IpCompletionRelevance(
+                        interfaceDisplayString(config, iface2),
+                        config.getHostname(),
+                        iface2.getName())))));
   }
 
   @Test
@@ -158,7 +185,17 @@ public final class CompletionMetadataUtilsTest {
     configs.put("node", config);
 
     assertThat(
-        getIps(configs), equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4")));
+        getIps(configs),
+        equalTo(
+            ImmutableMap.of(
+                Ip.parse("1.1.1.1"),
+                new IpCompletionMetadata(),
+                Ip.parse("2.2.2.2"),
+                new IpCompletionMetadata(),
+                Ip.parse("3.3.3.3"),
+                new IpCompletionMetadata(),
+                Ip.parse("4.4.4.4"),
+                new IpCompletionMetadata())));
   }
 
   @Test

@@ -20,6 +20,7 @@ import static org.batfish.datamodel.Protocol.TELNET;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
@@ -31,6 +32,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.applications.Application;
+import org.batfish.datamodel.applications.TcpApplication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -124,6 +126,14 @@ public class PacketHeaderConstraintsTest {
         ImmutableSet.of(TCP),
         IntegerSpace.of(new SubRange(30, 40)),
         ImmutableSet.of(SSH.toApplication(), HTTP.toApplication()));
+  }
+
+  @Test
+  public void testAreProtocolsAndPortsCompatibleDstportOverlap() {
+    // No conflicts with unset values
+    assertTrue(
+        areProtocolsAndPortsCompatible(
+            null, IntegerSpace.of(22), ImmutableSet.of(TcpApplication.ALL)));
   }
 
   @Test

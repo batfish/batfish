@@ -8,6 +8,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class CompletionMetadataTest {
         CompletionMetadata.builder()
             .setFilterNames(ImmutableSet.of("filter"))
             .setInterfaces(ImmutableSet.of(NodeInterfacePair.of("node", "interface")))
-            .setIps(ImmutableSet.of("ip"))
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1")))
             .setMlagIds(ImmutableSet.of("mlag"))
             .setNodes(ImmutableSet.of("node"))
             .setPrefixes(ImmutableSet.of("prefix"))
@@ -37,7 +38,7 @@ public class CompletionMetadataTest {
         CompletionMetadata.builder()
             .setFilterNames(ImmutableSet.of("filter"))
             .setInterfaces(ImmutableSet.of(NodeInterfacePair.of("node", "interface")))
-            .setIps(ImmutableSet.of("ip"))
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1")))
             .setMlagIds(ImmutableSet.of("mlag"))
             .setNodes(ImmutableSet.of("node"))
             .setPrefixes(ImmutableSet.of("prefix"))
@@ -64,7 +65,7 @@ public class CompletionMetadataTest {
             builder
                 .setInterfaces(ImmutableSet.of(NodeInterfacePair.of("node", "interface")))
                 .build())
-        .addEqualityGroup(builder.setIps(ImmutableSet.of("ip")).build())
+        .addEqualityGroup(builder.setIps(ImmutableSet.of(Ip.parse("1.1.1.1"))).build())
         .addEqualityGroup(builder.setMlagIds(ImmutableSet.of("mlag")).build())
         .addEqualityGroup(builder.setNodes(ImmutableSet.of("node")).build())
         .addEqualityGroup(builder.setPrefixes(ImmutableSet.of("prefix")).build())
