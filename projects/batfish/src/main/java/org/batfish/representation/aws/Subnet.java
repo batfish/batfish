@@ -198,9 +198,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Ip instancesIfaceIp = computeInstancesIfaceIp();
     ConcreteInterfaceAddress instancesIfaceAddress =
         ConcreteInterfaceAddress.create(instancesIfaceIp, _cidrBlock.getPrefixLength());
-    Interface ifaceToInstances =
-        Utils.newInterface(
-            instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
+    Utils.newInterface(
+        instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
     // connect to the VPC
     Configuration vpcConfigNode =
