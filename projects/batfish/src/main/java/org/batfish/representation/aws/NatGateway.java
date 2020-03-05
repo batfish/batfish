@@ -6,11 +6,14 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.IpProtocol.UDP;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -223,6 +226,14 @@ final class NatGateway implements AwsVpcEntity, Serializable {
               null,
               egressAcl == null ? null : egressAcl.getName()));
     }
+
+    // Create LocationInfo the interface
+    cfgNode.setLocationInfo(
+        ImmutableMap.of(
+            interfaceLocation(ifaceToSubnet),
+            INFRASTRUCTURE_LOCATION_INFO,
+            interfaceLinkLocation(ifaceToSubnet),
+            INFRASTRUCTURE_LOCATION_INFO));
 
     return cfgNode;
   }
