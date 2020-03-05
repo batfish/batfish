@@ -39,7 +39,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
-import org.junit.Assert;
 import org.junit.Test;
 
 /** Tests for {@link NatGateway} */
@@ -174,7 +173,7 @@ public class NatGatewayTest {
                 null,
                 nacl.getEgressAcl().getName())));
 
-    Assert.assertThat(
+    assertThat(
         ngwConfig.getLocationInfo(),
         equalTo(
             ImmutableMap.of(
