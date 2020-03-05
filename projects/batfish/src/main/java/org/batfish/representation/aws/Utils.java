@@ -1,14 +1,16 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Comparator.naturalOrder;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +40,10 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -68,6 +74,38 @@ final class Utils {
 
   static String publicIpAddressGroupName(NetworkInterface iface) {
     return String.format("%s (%s)", iface.getDescription(), iface.getId());
+  }
+
+  /** Creates a generated reference book with the public IPs of the network interfaces */
+  static void createPublicIpsRefBook(
+      Collection<NetworkInterface> networkInterfaces, Configuration cfgNode) {
+    String publicIpBookName =
+        GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps);
+    checkArgument(
+        !cfgNode.getGeneratedReferenceBooks().containsKey(publicIpBookName),
+        "Generated reference book for public IPs already exists for node %s",
+        cfgNode.getHostname());
+    List<AddressGroup> publicIpAddressGroups =
+        networkInterfaces.stream()
+            .map(
+                iface ->
+                    new AddressGroup(
+                        iface.getPrivateIpAddresses().stream()
+                            .filter(privIp -> privIp.getPublicIp() != null)
+                            .map(privIp -> privIp.getPublicIp().toString())
+                            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())),
+                        publicIpAddressGroupName(iface)))
+            .filter(ag -> !ag.getAddresses().isEmpty())
+            .collect(ImmutableList.toImmutableList());
+    if (!publicIpAddressGroups.isEmpty()) {
+      cfgNode
+          .getGeneratedReferenceBooks()
+          .put(
+              publicIpBookName,
+              ReferenceBook.builder(publicIpBookName)
+                  .setAddressGroups(publicIpAddressGroups)
+                  .build());
+    }
   }
 
   /** Prefer variants that provide {@link DeviceModel}. */
@@ -374,7 +412,7 @@ final class Utils {
                           "Primary address not found for interface '%s'. Using lowest address as primary",
                           netInterface.getId()));
                   // get() is safe here: ifaceAddresses cannot be empty
-                  return ifaceAddresses.stream().min(Comparator.naturalOrder()).get();
+                  return ifaceAddresses.stream().min(naturalOrder()).get();
                 });
 
     Interface iface =
