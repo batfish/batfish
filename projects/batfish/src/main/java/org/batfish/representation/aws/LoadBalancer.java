@@ -2,9 +2,12 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -12,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Collections;
@@ -266,6 +270,14 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     cfgNode.getIpAccessLists().put(defaultFilter.getName(), defaultFilter);
 
     createPublicIpsRefBook(Collections.singleton(networkInterface.get()), cfgNode);
+
+    // Create LocationInfo the interface
+    cfgNode.setLocationInfo(
+        ImmutableMap.of(
+            interfaceLocation(viIface),
+            INFRASTRUCTURE_LOCATION_INFO,
+            interfaceLinkLocation(viIface),
+            INFRASTRUCTURE_LOCATION_INFO));
 
     return cfgNode;
   }

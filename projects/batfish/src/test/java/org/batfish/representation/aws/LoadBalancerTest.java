@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
 import static org.batfish.representation.aws.LoadBalancer.LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX;
 import static org.batfish.representation.aws.LoadBalancer.chainListenerTransformations;
@@ -12,6 +13,8 @@ import static org.batfish.representation.aws.LoadBalancer.computeTargetTransform
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
 import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasItem;
@@ -226,6 +229,15 @@ public class LoadBalancerTest {
             new AddressGroup(
                 ImmutableSortedSet.of(publicIp.toString()),
                 publicIpAddressGroupName(networkInterface))));
+
+    assertThat(
+        cfgNode.getLocationInfo(),
+        equalTo(
+            ImmutableMap.of(
+                interfaceLocation(viIface),
+                INFRASTRUCTURE_LOCATION_INFO,
+                interfaceLinkLocation(viIface),
+                INFRASTRUCTURE_LOCATION_INFO)));
   }
 
   @Test

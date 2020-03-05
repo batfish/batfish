@@ -6,12 +6,15 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.IpProtocol.UDP;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,6 +31,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
@@ -60,6 +65,13 @@ import org.batfish.datamodel.transformation.TransformationStep;
  * are in addition subnet-to-VPC links that exist to connect subnets to other subnets and gateways.
  * The VRF-based design helps isolate different flows at the VPC since different subnets send
  * different types of traffic to different gateways.
+ *
+ * <p>Packets to be NAT'd appear on the interface to the VPC, get transformed, and leave on the
+ * interface to the subnet. On the return path, packets arrive at the subnet-facing interface, and
+ * those that have a matching NAT session are forwarded to the VPC-facing interface.
+ *
+ * <p>The NAT does not provide service to instances within its own subnet. This limitation agrees
+ * with testing.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
@@ -71,11 +83,21 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
   static final List<IpProtocol> NAT_PROTOCOLS = ImmutableList.of(TCP, UDP, ICMP);
 
+  /** AclLine that drops unsupported NAT protocols */
+  static AclLine UNSUPPORTED_PROTOCOL_ACL_LINE =
+      ExprAclLine.rejecting(
+          TraceElement.of("Denied IP protocols NOT supported by the NAT gateway"),
+          new NotMatchExpr(
+              new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build())));
+
   /**
-   * Filter that drops all illegal packets. Includes packets belonging to unsupported protocols, and
-   * return traffic without a NAT session.
+   * Post transformation filter on the interface facing the subnet that drops all illegal packets
+   * (those from within the subnet and those without an active NAT session).
    */
   static final String ILLEGAL_PACKET_FILTER_NAME = "~ILLEGAL~PACKET~FILTER~";
+
+  /** Incoming filter on the interface facing the VPC */
+  static final String INCOMING_NAT_FILTER_NAME = "~INCOMING~NAT~FILTER~";
 
   @Nonnull private final List<NatGatewayAddress> _natGatewayAddresses;
 
@@ -151,11 +173,6 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
-    // configure the unsupported protocol filter on the node. we'll attach to interfaces later
-    IpAccessList postTransformationFilter =
-        computePostTransformationIllegalPacketFilter(getPrivateIp());
-    cfgNode.getIpAccessLists().put(ILLEGAL_PACKET_FILTER_NAME, postTransformationFilter);
-
     String networkInterfaceId = _natGatewayAddresses.get(0).getNetworkInterfaceId();
     NetworkInterface networkInterface = region.getNetworkInterfaces().get(networkInterfaceId);
     if (networkInterface == null) {
@@ -179,9 +196,11 @@ final class NatGateway implements AwsVpcEntity, Serializable {
         new FirewallSessionInterfaceInfo(
             false, ImmutableList.of(ifaceToSubnet.getName()), null, null));
 
-    // install the NAT on the interface facing the subnet as well for packets from within the subnet
-    Transformation natTransformation = computeOutgoingNatTransformation(getPrivateIp());
-    ifaceToSubnet.setIncomingTransformation(natTransformation);
+    // post transformation filter on the interface to the subnet
+    IpAccessList postTransformationFilter =
+        computePostTransformationIllegalPacketFilter(
+            getPrivateIp(), ifaceToSubnet.getPrimaryNetwork());
+    cfgNode.getIpAccessLists().put(postTransformationFilter.getName(), postTransformationFilter);
     ifaceToSubnet.setPostTransformationIncomingFilter(postTransformationFilter);
 
     Interface ifaceToVpc = connectToVpc(cfgNode, awsConfiguration, region, warnings);
@@ -194,9 +213,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       IpAccessList egressAcl = null;
       // we do not warn if network Acls are not found. toConfigurationNode in subnet will do that
       if (!networkAcls.isEmpty()) {
-        IpAccessList ingressAcl = networkAcls.get(0).getIngressAcl();
-        cfgNode.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
-        ifaceToVpc.setIncomingFilter(ingressAcl);
+        installIncomingFilter(cfgNode, ifaceToVpc, networkAcls.get(0).getIngressAcl());
 
         egressAcl = networkAcls.get(0).getEgressAcl();
         cfgNode.getIpAccessLists().put(egressAcl.getName(), egressAcl);
@@ -205,8 +222,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
         // interface, where it will hit all reverse traffic
       }
 
-      ifaceToVpc.setIncomingTransformation(natTransformation);
-      ifaceToVpc.setPostTransformationIncomingFilter(postTransformationFilter);
+      ifaceToVpc.setIncomingTransformation(computeOutgoingNatTransformation(getPrivateIp()));
       ifaceToVpc.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               false,
@@ -214,6 +230,14 @@ final class NatGateway implements AwsVpcEntity, Serializable {
               null,
               egressAcl == null ? null : egressAcl.getName()));
     }
+
+    // Create LocationInfo the interface
+    cfgNode.setLocationInfo(
+        ImmutableMap.of(
+            interfaceLocation(ifaceToSubnet),
+            INFRASTRUCTURE_LOCATION_INFO,
+            interfaceLinkLocation(ifaceToSubnet),
+            INFRASTRUCTURE_LOCATION_INFO));
 
     return cfgNode;
   }
@@ -288,15 +312,15 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   }
 
   @VisibleForTesting
-  static IpAccessList computePostTransformationIllegalPacketFilter(Ip privateIp) {
+  static IpAccessList computePostTransformationIllegalPacketFilter(
+      Ip privateIp, Prefix subnetPrefix) {
     return IpAccessList.builder()
         .setName(ILLEGAL_PACKET_FILTER_NAME)
         .setLines(
             ExprAclLine.rejecting(
-                TraceElement.of("Denied IP protocols NOT supported by the NAT gateway"),
-                new NotMatchExpr(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()))),
+                TraceElement.of("Denied packets from sources within the subnet"),
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(subnetPrefix.toIpSpace()).build())),
             ExprAclLine.rejecting(
                 TraceElement.of("Denied packets that did NOT match an active NAT session"),
                 new MatchHeaderSpace(
@@ -307,6 +331,26 @@ final class NatGateway implements AwsVpcEntity, Serializable {
                 TraceElement.of("Permitted packets transformed by the NAT gateway"),
                 TrueExpr.INSTANCE))
         .build();
+  }
+
+  /**
+   * Install an incoming filter on the interface to the VPC, where packets meant for NAT'ing first
+   * appear. This filter is a combination of dropping unsupported protocols followed by the ingress
+   * network ACL.
+   */
+  @VisibleForTesting
+  static void installIncomingFilter(
+      Configuration cfgNode, Interface ifaceToVpc, IpAccessList ingressAcl) {
+    IpAccessList filter =
+        IpAccessList.builder()
+            .setName(INCOMING_NAT_FILTER_NAME)
+            .setLines(
+                UNSUPPORTED_PROTOCOL_ACL_LINE,
+                new AclAclLine(ingressAcl.getName(), ingressAcl.getName()))
+            .build();
+    cfgNode.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
+    cfgNode.getIpAccessLists().put(filter.getName(), filter);
+    ifaceToVpc.setIncomingFilter(filter);
   }
 
   /**
