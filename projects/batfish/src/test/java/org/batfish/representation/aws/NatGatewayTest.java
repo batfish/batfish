@@ -2,11 +2,15 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAYS;
 import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
-import static org.batfish.representation.aws.NatGateway.computeOutgoingNatTransformation;
+import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
+import static org.batfish.representation.aws.NatGateway.installIncomingFilter;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -26,15 +30,19 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.junit.Test;
 
@@ -137,9 +145,6 @@ public class NatGatewayTest {
     // is the subnet interface properly configured?
     Interface ifaceToSubnet = ngwConfig.getAllInterfaces().get(netInterface.getId());
     assertThat(
-        ifaceToSubnet.getIncomingTransformation(),
-        equalTo(computeOutgoingNatTransformation(ngw.getPrivateIp())));
-    assertThat(
         ifaceToSubnet.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
@@ -157,10 +162,7 @@ public class NatGatewayTest {
 
     // is the interface to vpc properly configured?
     Interface ifaceToVpc = ngwConfig.getAllInterfaces().get(vpc.getId());
-    assertThat(ifaceToVpc.getIncomingFilter().getName(), equalTo(nacl.getIngressAcl().getName()));
-    assertThat(
-        ifaceToVpc.getPostTransformationIncomingFilter().getName(),
-        equalTo(ILLEGAL_PACKET_FILTER_NAME));
+    assertThat(ifaceToVpc.getIncomingFilter().getName(), equalTo(INCOMING_NAT_FILTER_NAME));
     assertThat(
         ifaceToVpc.getFirewallSessionInterfaceInfo(),
         equalTo(
@@ -169,6 +171,15 @@ public class NatGatewayTest {
                 ImmutableList.of(ifaceToVpc.getName()),
                 null,
                 nacl.getEgressAcl().getName())));
+
+    assertThat(
+        ngwConfig.getLocationInfo(),
+        equalTo(
+            ImmutableMap.of(
+                interfaceLocation(ifaceToSubnet),
+                INFRASTRUCTURE_LOCATION_INFO,
+                interfaceLinkLocation(ifaceToSubnet),
+                INFRASTRUCTURE_LOCATION_INFO)));
   }
 
   @Test
@@ -211,15 +222,20 @@ public class NatGatewayTest {
   @Test
   public void testComputePostTransformationIllegalPacketFilter() {
     Ip privateIp = Ip.parse("10.10.10.10");
-    IpAccessList filter = computePostTransformationIllegalPacketFilter(privateIp);
+    IpAccessList filter =
+        computePostTransformationIllegalPacketFilter(privateIp, Prefix.parse("10.10.10.0/24"));
 
-    // unsupported protocol
+    // is in the NAT's subnet
     assertThat(
         filter
             .filter(
                 Flow.builder()
                     .setIngressNode("a")
-                    .setIpProtocol(IpProtocol.ANY_0_HOP_PROTOCOL)
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcIp(Ip.parse("10.10.10.11"))
+                    .setSrcPort(345)
+                    .setDstIp(privateIp)
+                    .setDstPort(80)
                     .build(),
                 "a",
                 ImmutableMap.of(),
@@ -260,5 +276,83 @@ public class NatGatewayTest {
                 ImmutableMap.of())
             .getAction(),
         equalTo(LineAction.PERMIT));
+  }
+
+  @Test
+  public void testInstallIncomingFilter() {
+    Configuration cfg = new Configuration("cfg", ConfigurationFormat.AWS);
+    Interface iface = Interface.builder().setName("test").build();
+
+    Ip blockedIp = Ip.parse("8.8.8.8");
+    IpAccessList nacl =
+        IpAccessList.builder()
+            .setName("test")
+            .setLines(
+                ExprAclLine.rejecting(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(IpWildcard.create(blockedIp).toIpSpace())
+                            .build())))
+            .build();
+
+    installIncomingFilter(cfg, iface, nacl);
+
+    // filter was installed on the configuration node
+    assertThat(cfg.getIpAccessLists(), hasKey(INCOMING_NAT_FILTER_NAME));
+    IpAccessList filter = cfg.getIpAccessLists().get(INCOMING_NAT_FILTER_NAME);
+
+    // filter was configured on the interface
+    assertThat(iface.getIncomingFilter(), equalTo(filter));
+
+    // blocks unsupported protocols
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.AN)
+                    .setDstIp(Ip.parse("1.1.1.1."))
+                    .build(),
+                "a",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // consistent with nacl: blocks blocked IP
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcIp(blockedIp)
+                    .setSrcPort(345)
+                    .setDstIp(Ip.parse("1.1.1.1"))
+                    .setDstPort(80)
+                    .build(),
+                "a",
+                cfg.getIpAccessLists(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // consistent with nacl: allows other IPs
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcIp(Ip.parse("2.2.2.2"))
+                    .setSrcPort(345)
+                    .setDstIp(Ip.parse("1.1.1.1"))
+                    .setDstPort(80)
+                    .build(),
+                "a",
+                cfg.getIpAccessLists(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
   }
 }

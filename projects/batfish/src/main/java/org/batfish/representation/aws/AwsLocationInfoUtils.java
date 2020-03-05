@@ -45,4 +45,13 @@ public final class AwsLocationInfoUtils {
         // no external ARP replies
         EmptyIpSpace.INSTANCE);
   }
+
+  /**
+   * A LocationInfo object for interfaces in the middle of the infrastructure. Most such interfaces
+   * have link local IPs, so we do not need explicit location info for them, but some such as load
+   * balancers and NAT gateways have concrete addresses. We configure those interfaces such that
+   * they don't act as default sources or sinks.
+   */
+  static LocationInfo INFRASTRUCTURE_LOCATION_INFO =
+      new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
 }
