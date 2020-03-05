@@ -2,12 +2,15 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAYS;
 import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
 import static org.batfish.representation.aws.NatGateway.installIncomingFilter;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -168,6 +171,15 @@ public class NatGatewayTest {
                 ImmutableList.of(ifaceToVpc.getName()),
                 null,
                 nacl.getEgressAcl().getName())));
+
+    assertThat(
+        ngwConfig.getLocationInfo(),
+        equalTo(
+            ImmutableMap.of(
+                interfaceLocation(ifaceToSubnet),
+                INFRASTRUCTURE_LOCATION_INFO,
+                interfaceLinkLocation(ifaceToSubnet),
+                INFRASTRUCTURE_LOCATION_INFO)));
   }
 
   @Test
