@@ -43,6 +43,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.junit.Test;
 
@@ -171,6 +173,11 @@ public class NatGatewayTest {
                 ImmutableList.of(ifaceToVpc.getName()),
                 null,
                 nacl.getEgressAcl().getName())));
+
+    // test that the reference book was generated
+    assertThat(
+        ngwConfig.getGeneratedReferenceBooks(),
+        hasKey(GeneratedRefBookUtils.getName(ngwConfig.getHostname(), BookType.PublicIps)));
 
     assertThat(
         ngwConfig.getLocationInfo(),
