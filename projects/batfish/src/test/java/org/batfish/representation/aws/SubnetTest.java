@@ -19,6 +19,8 @@ import static org.batfish.representation.aws.Vpc.nodeName;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -832,11 +834,20 @@ public class SubnetTest {
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
 
+    // NACLs are installed on the configuration nodes
+    assertThat(subnetCfg.getIpAccessLists(), hasKey(getAclName(acl.getId(), false)));
+    assertThat(subnetCfg.getIpAccessLists(), hasKey(getAclName(acl.getId(), true)));
+
+    // NACLs are not installed on the instances-facing interface
     Interface instancesInterface =
         subnetCfg.getAllInterfaces().get(instancesInterfaceName(subnet.getId()));
+    assertThat(instancesInterface.getIncomingFilterName(), nullValue());
+    assertThat(instancesInterface.getOutgoingFilterName(), nullValue());
 
-    assertThat(instancesInterface.getIncomingFilterName(), equalTo(getAclName(acl.getId(), true)));
-    assertThat(instancesInterface.getOutgoingFilterName(), equalTo(getAclName(acl.getId(), false)));
+    // NACLs are installed on the vpc-facing interface
+    Interface ifaceToVpc = subnetCfg.getAllInterfaces().get(interfaceNameToRemote(vpcCfg));
+    assertThat(ifaceToVpc.getIncomingFilterName(), equalTo(getAclName(acl.getId(), false)));
+    assertThat(ifaceToVpc.getOutgoingFilterName(), equalTo(getAclName(acl.getId(), true)));
   }
 
   @Test
