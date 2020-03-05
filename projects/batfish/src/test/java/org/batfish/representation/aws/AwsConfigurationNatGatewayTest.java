@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 
 import com.google.common.collect.ImmutableList;
@@ -54,10 +56,13 @@ public class AwsConfigurationNatGatewayTest {
   private static String _natGateway = "nat-07ab4846da51f4612";
   private static String _subnetNat = "subnet-0428892a357fa1f94";
   private static Ip _publicIpNat = Ip.parse("3.135.127.225");
+  private static Ip _privateIpNat = Ip.parse("10.1.250.210");
   private static String _internetGateway = "igw-071753b9c23d8a9b2";
 
   private static String _instanceS1 = "i-0a128d26e59be60f3"; // private subnet
   private static String _subnetS1 = "subnet-06f469bcee42e408e";
+
+  private String _instanceNatSubnet = "i-0b31b509174d7f5de";
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -69,8 +74,7 @@ public class AwsConfigurationNatGatewayTest {
 
   @Test
   public void testInstanceToInternet_bidirectional() {
-    Flow flow =
-        AwsConfigurationTestUtils.getTcpFlow(_instanceS1, Ip.parse("8.8.8.8"), 80, _batfish);
+    Flow flow = getTcpFlow(_instanceS1, Ip.parse("8.8.8.8"), 80, _batfish);
     AwsConfigurationTestUtils.testBidirectionalTrace(
         flow,
         ImmutableList.of(
@@ -104,7 +108,7 @@ public class AwsConfigurationNatGatewayTest {
             .setDstIp(Ip.parse("8.8.8.8"))
             .setIpProtocol(IpProtocol.AN)
             .build();
-    AwsConfigurationTestUtils.testTrace(
+    testTrace(
         flow,
         FlowDisposition.DENIED_IN,
         ImmutableList.of(_instanceS1, _subnetS1, _vpc, _natGateway),
@@ -114,14 +118,23 @@ public class AwsConfigurationNatGatewayTest {
   /** Test that packets that come into the NAT without an installed session are dropped */
   @Test
   public void testNonSessionPacket() {
-    Flow flow =
-        AwsConfigurationTestUtils.getTcpFlow(
-            INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _publicIpNat, 80);
-    AwsConfigurationTestUtils.testTrace(
+    Flow flow = getTcpFlow(INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _publicIpNat, 80);
+    testTrace(
         flow,
         FlowDisposition.DENIED_IN,
         ImmutableList.of(
             INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME, _internetGateway, _subnetNat, _natGateway),
+        _batfish);
+  }
+
+  /** Test that packets that come into the NAT from within the subnet are dropped */
+  @Test
+  public void testIntraSubnetPacket() {
+    Flow flow = getTcpFlow(_instanceNatSubnet, _privateIpNat, 80, _batfish);
+    testTrace(
+        flow,
+        FlowDisposition.DENIED_IN,
+        ImmutableList.of(_instanceNatSubnet, _natGateway),
         _batfish);
   }
 }
