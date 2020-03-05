@@ -10,8 +10,6 @@ import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterf
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCES;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_RESERVATIONS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
-import static org.batfish.representation.aws.Instance.instanceHostname;
-import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.Matchers.allOf;
@@ -25,7 +23,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,10 +38,8 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
-import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.representation.aws.Instance.Status;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -182,87 +177,5 @@ public class InstanceTest {
             .getGeneratedReferenceBooks()
             .containsKey(
                 GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps)));
-  }
-
-  /** Tests that public Ip reference book is added */
-  @Test
-  public void testAddPublicIpRefBook() {
-    String instanceId = "instance";
-
-    NetworkInterface networkInterface =
-        new NetworkInterface(
-            "interface",
-            "subnet",
-            "vpc",
-            ImmutableList.of(),
-            ImmutableList.of(
-                new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("5.5.5.5"))),
-            "desc2",
-            null);
-
-    NetworkInterface networkInterface2 =
-        new NetworkInterface(
-            "interface2",
-            "subnet",
-            "vpc",
-            ImmutableList.of(),
-            ImmutableList.of(
-                new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("3.3.3.3")),
-                new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("4.4.4.4"))),
-            "desc",
-            null);
-
-    NetworkInterface networkInterface0 =
-        new NetworkInterface(
-            "interface0",
-            "subnet",
-            "vpc",
-            ImmutableList.of(),
-            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), null)),
-            "desc",
-            null);
-
-    Instance instance =
-        Instance.builder()
-            .setInstanceId(instanceId)
-            .setNetworkInterfaces(
-                ImmutableList.of(
-                    networkInterface.getNetworkInterfaceId(),
-                    networkInterface0.getNetworkInterfaceId(),
-                    networkInterface2.getNetworkInterfaceId()))
-            .build();
-
-    Region region =
-        Region.builder("test")
-            .setNetworkInterfaces(
-                ImmutableMap.of(
-                    networkInterface.getNetworkInterfaceId(),
-                    networkInterface,
-                    networkInterface0.getNetworkInterfaceId(),
-                    networkInterface0,
-                    networkInterface2.getId(),
-                    networkInterface2))
-            .build();
-
-    Configuration cfgNode =
-        new Configuration(instanceHostname(instanceId), ConfigurationFormat.AWS);
-
-    instance.addPublicIpRefBook(cfgNode, region);
-
-    String bookName = GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps);
-
-    assertThat(
-        cfgNode.getGeneratedReferenceBooks().get(bookName),
-        equalTo(
-            ReferenceBook.builder(bookName)
-                .setAddressGroups(
-                    ImmutableList.of(
-                        new AddressGroup(
-                            ImmutableSortedSet.of("5.5.5.5"),
-                            publicIpAddressGroupName(networkInterface)),
-                        new AddressGroup(
-                            ImmutableSortedSet.of("3.3.3.3", "4.4.4.4"),
-                            publicIpAddressGroupName(networkInterface2))))
-                .build()));
   }
 }

@@ -11,6 +11,7 @@ import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
+import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
@@ -22,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -180,6 +182,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
               networkInterfaceId, _natGatewayId));
       return cfgNode;
     }
+    createPublicIpsRefBook(Collections.singleton(networkInterface), cfgNode);
+
     Subnet subnet = region.getSubnets().get(_subnetId);
     if (subnet == null) {
       warnings.redFlag(
