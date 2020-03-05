@@ -189,6 +189,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Configuration cfgNode =
         Utils.newAwsConfiguration(
             nodeName(_subnetId), "aws", _tags, DeviceModel.AWS_SUBNET_PRIVATE);
+    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // add one interface that faces all instances (assumes a LAN)
     String instancesIfaceName = instancesInterfaceName(_subnetId);
@@ -198,30 +201,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Interface ifaceToInstances =
         Utils.newInterface(
             instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
-
-    // add network acls on the interface facing the instances
-    List<NetworkAcl> myNetworkAcls =
-        findSubnetNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
-    if (!myNetworkAcls.isEmpty()) {
-      if (myNetworkAcls.size() > 1) {
-        List<String> aclIds =
-            myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
-        warnings.redFlag(
-            String.format(
-                "Found multiple network ACLs %s for subnet %s. Using %s.",
-                aclIds, _subnetId, myNetworkAcls.get(0).getId()));
-      }
-      IpAccessList ingressAcl = myNetworkAcls.get(0).getIngressAcl();
-      IpAccessList egressAcl = myNetworkAcls.get(0).getEgressAcl();
-      cfgNode.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
-      cfgNode.getIpAccessLists().put(egressAcl.getName(), egressAcl);
-
-      // incoming filter is egress Acl. Traffic into this interface is egressing the subnet.
-      ifaceToInstances.setIncomingFilter(egressAcl);
-      ifaceToInstances.setOutgoingFilter(ingressAcl);
-    } else {
-      warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
-    }
 
     // connect to the VPC
     Configuration vpcConfigNode =
@@ -291,9 +270,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
               });
     }
 
-    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
-    cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
-    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+    installNetworkAcls(cfgNode, region, warnings);
 
     // create LocationInfo for each link location on the node.
     cfgNode.setLocationInfo(
@@ -308,6 +285,39 @@ public class Subnet implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;
+  }
+
+  /**
+   * Install network ACLs on all interfaces except the ones facing the instances. This method should
+   * be called after all interfaces expected to be on the subnet node have been created
+   */
+  private void installNetworkAcls(Configuration subnetCfg, Region region, Warnings warnings) {
+    List<NetworkAcl> myNetworkAcls =
+        findSubnetNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
+    if (!myNetworkAcls.isEmpty()) {
+      if (myNetworkAcls.size() > 1) {
+        List<String> aclIds =
+            myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
+        warnings.redFlag(
+            String.format(
+                "Found multiple network ACLs %s for subnet %s. Using %s.",
+                aclIds, _subnetId, myNetworkAcls.get(0).getId()));
+      }
+      IpAccessList ingressAcl = myNetworkAcls.get(0).getIngressAcl();
+      IpAccessList egressAcl = myNetworkAcls.get(0).getEgressAcl();
+      subnetCfg.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
+      subnetCfg.getIpAccessLists().put(egressAcl.getName(), egressAcl);
+
+      subnetCfg.getAllInterfaces().values().stream()
+          .filter(iface -> !iface.getName().equals(instancesInterfaceName(_subnetId)))
+          .forEach(
+              iface -> {
+                iface.setIncomingFilter(ingressAcl);
+                iface.setOutgoingFilter(egressAcl);
+              });
+    } else {
+      warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
+    }
   }
 
   /**
