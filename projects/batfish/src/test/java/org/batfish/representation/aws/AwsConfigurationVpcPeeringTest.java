@@ -1,21 +1,15 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.collect.Iterators.getOnlyElement;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
-import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.flow.Trace;
-import org.batfish.main.BatfishTestUtils;
-import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -49,10 +43,6 @@ public class AwsConfigurationVpcPeeringTest {
           "VpcPeeringConnections.json",
           "Vpcs.json");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
-
-  private static IBatfish _batfish;
-
   // various entities in the configs
   private static String _vpcA = "vpc-0404e08ceddf7f650";
   private static String _vpcB = "vpc-00a31ce9d0c06675c";
@@ -66,64 +56,32 @@ public class AwsConfigurationVpcPeeringTest {
   private static Ip _instanceAIp = Ip.parse("10.10.10.157");
   private static Ip _instanceBIp = Ip.parse("192.168.1.106");
 
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+
+  private static IBatfish _batfish;
+
   @BeforeClass
   public static void setup() throws IOException {
-    _batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
-    _batfish.computeDataPlane(_batfish.getSnapshot());
+    _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
-
-  private static void testTrace(
-      String ingressNode,
-      Ip dstIp,
-      FlowDisposition expectedDisposition,
-      List<String> expectedNodes) {
-    SortedMap<Flow, List<Trace>> traces = getTraces(ingressNode, dstIp);
-    Flow flow = getOnlyElement(traces.keySet().iterator());
-    Trace flowTrace = getOnlyElement(traces.get(flow).iterator());
-    testTrace(flowTrace, expectedDisposition, expectedNodes);
-  }
-
-  private static SortedMap<Flow, List<Trace>> getTraces(String ingressNode, Ip dstIp) {
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(ingressNode)
-            .setDstIp(dstIp) // this public IP does not exists in the network
-            .build();
-    return _batfish
-        .getTracerouteEngine(_batfish.getSnapshot())
-        .computeTraces(ImmutableSet.of(flow), false);
-  }
-
-  private static void testTrace(
-      Trace trace, FlowDisposition expectedDisposition, List<String> expectedNodes) {
-    assertThat(
-        trace.getHops().stream()
-            .map(h -> h.getNode().getName())
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(expectedNodes));
-    assertThat(trace.getDisposition(), equalTo(expectedDisposition));
-  }
-
   /** Test connectivity from A to B */
   @Test
   public void testFromAtoB() {
     testTrace(
-        _instanceA,
-        _instanceBIp,
+        getAnyFlow(_instanceA, _instanceBIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instanceA, _subnetA, _vpcA, _vpcB, _subnetB, _instanceB));
+        ImmutableList.of(_instanceA, _subnetA, _vpcA, _vpcB, _subnetB, _instanceB),
+        _batfish);
   }
 
   /** Test connectivity from B to A */
   @Test
   public void testFromBtoA() {
     testTrace(
-        _instanceB,
-        _instanceAIp,
+        getAnyFlow(_instanceB, _instanceAIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA, _subnetA, _instanceA));
+        ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA, _subnetA, _instanceA),
+        _batfish);
   }
 
   /**
@@ -133,10 +91,10 @@ public class AwsConfigurationVpcPeeringTest {
   @Test
   public void testFromAtoUnusedSubnet() {
     testTrace(
-        _instanceA,
-        Ip.parse("192.168.100.1"),
+        getAnyFlow(_instanceA, Ip.parse("192.168.100.1"), _batfish),
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_instanceA, _subnetA));
+        ImmutableList.of(_instanceA, _subnetA),
+        _batfish);
   }
 
   /**
@@ -146,10 +104,10 @@ public class AwsConfigurationVpcPeeringTest {
   @Test
   public void testFromBtoUnusedSubnet() {
     testTrace(
-        _instanceB,
-        Ip.parse("10.10.100.1"),
+        getAnyFlow(_instanceB, Ip.parse("10.10.100.1"), _batfish),
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA));
+        ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA),
+        _batfish);
   }
 
   /**
@@ -159,9 +117,9 @@ public class AwsConfigurationVpcPeeringTest {
   @Test
   public void testFromBtoUnusedIp() {
     testTrace(
-        _instanceB,
-        Ip.parse("10.10.10.11"),
+        getAnyFlow(_instanceB, Ip.parse("10.10.10.11"), _batfish),
         FlowDisposition.NEIGHBOR_UNREACHABLE,
-        ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA, _subnetA));
+        ImmutableList.of(_instanceB, _subnetB, _vpcB, _vpcA, _subnetA),
+        _batfish);
   }
 }

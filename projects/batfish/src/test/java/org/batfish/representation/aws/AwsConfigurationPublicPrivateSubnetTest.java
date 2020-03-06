@@ -1,25 +1,23 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTraces;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
-import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.IspModelingUtils;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.main.BatfishTestUtils;
-import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -55,10 +53,6 @@ public class AwsConfigurationPublicPrivateSubnetTest {
           "VpnConnections.json",
           "VpnGateways.json");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
-
-  private static IBatfish _batfish;
-
   // various entities in the configs
   private static String _vpc = "vpc-0b966fdeb36d5e43f";
   private static String _igw = "igw-0eac198308206c358";
@@ -75,58 +69,13 @@ public class AwsConfigurationPublicPrivateSubnetTest {
 
   private static Prefix _sitePrefix = Prefix.parse("19.168.0.0/16");
 
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+
+  private static IBatfish _batfish;
+
   @BeforeClass
   public static void setup() throws IOException {
-    _batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
-    _batfish.computeDataPlane(_batfish.getSnapshot());
-  }
-
-  private static void testTrace(
-      String ingressNode,
-      Ip dstIp,
-      FlowDisposition expectedDisposition,
-      List<String> expectedNodes) {
-    SortedMap<Flow, List<Trace>> traces = getTraces(ingressNode, dstIp);
-    Flow flow = getOnlyElement(traces.keySet().iterator());
-    Trace flowTrace = getOnlyElement(traces.get(flow).iterator());
-    testTrace(flowTrace, expectedDisposition, expectedNodes);
-  }
-
-  /** Returns an IP address of the node. */
-  private static Ip getFirstNodeIp(String nodeName) {
-    return _batfish
-        .loadConfigurations(_batfish.getSnapshot())
-        .get(nodeName)
-        .getAllInterfaces()
-        .values()
-        .iterator()
-        .next()
-        .getConcreteAddress()
-        .getIp();
-  }
-
-  private static SortedMap<Flow, List<Trace>> getTraces(String ingressNode, Ip dstIp) {
-    Flow flow =
-        Flow.builder()
-            .setIngressNode(ingressNode)
-            .setSrcIp(getFirstNodeIp(ingressNode))
-            .setDstIp(dstIp) // this public IP does not exists in the network
-            .build();
-    return _batfish
-        .getTracerouteEngine(_batfish.getSnapshot())
-        .computeTraces(ImmutableSet.of(flow), false);
-  }
-
-  private static void testTrace(
-      Trace trace, FlowDisposition expectedDisposition, List<String> expectedNodes) {
-    assertThat(
-        trace.getHops().stream()
-            .map(h -> h.getNode().getName())
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(expectedNodes));
-    assertThat(trace.getDisposition(), equalTo(expectedDisposition));
+    _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
@@ -134,82 +83,84 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     // to the public IP: should end at VGW and not go to the public instance. disposition should be
     // no route since the VGW does not know what to do with the packet
     testTrace(
-        _privateInstance,
-        _publicInstancePublicIp,
+        getAnyFlow(_privateInstance, _publicInstancePublicIp, _batfish),
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_privateInstance, _privateSubnet, _vgw));
+        ImmutableList.of(_privateInstance, _privateSubnet, _vgw),
+        _batfish);
 
     // to the private IP
     testTrace(
-        _privateInstance,
-        _publicInstancePrivateIp,
+        getAnyFlow(_privateInstance, _publicInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN, // by the default security settings
-        ImmutableList.of(_privateInstance, _privateSubnet, _vpc, _publicSubnet, _publicInstance));
+        ImmutableList.of(_privateInstance, _privateSubnet, _vpc, _publicSubnet, _publicInstance),
+        _batfish);
   }
 
   @Test
   public void testFromPublicToPrivateSubnet() {
     testTrace(
-        _publicInstance,
-        _privateInstancePrivateIp,
+        getAnyFlow(_publicInstance, _privateInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN, // by the default security settings
-        ImmutableList.of(_publicInstance, _publicSubnet, _vpc, _privateSubnet, _privateInstance));
+        ImmutableList.of(_publicInstance, _publicSubnet, _vpc, _privateSubnet, _privateInstance),
+        _batfish);
   }
 
   @Test
   public void testFromInternet() {
     testTrace(
-        IspModelingUtils.INTERNET_HOST_NAME,
-        _publicInstancePublicIp,
+        getAnyFlow(IspModelingUtils.INTERNET_HOST_NAME, _publicInstancePublicIp, _batfish),
         FlowDisposition.DENIED_IN, // be the default security setting
         ImmutableList.of(
             IspModelingUtils.INTERNET_HOST_NAME,
             AWS_BACKBONE_NODE_NAME,
             _igw,
             _publicSubnet,
-            _publicInstance));
+            _publicInstance),
+        _batfish);
 
     testTrace(
-        IspModelingUtils.INTERNET_HOST_NAME,
-        _publicInstancePrivateIp,
+        getAnyFlow(IspModelingUtils.INTERNET_HOST_NAME, _publicInstancePrivateIp, _batfish),
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME));
+        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME),
+        _batfish);
   }
 
   @Test
   public void testToInternet() {
     testTrace(
-        _publicInstance,
-        Ip.parse("8.8.8.8"),
+        getAnyFlow(_publicInstance, Ip.parse("8.8.8.8"), _batfish),
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
             _publicInstance,
             _publicSubnet,
             _igw,
             AWS_BACKBONE_NODE_NAME,
-            IspModelingUtils.INTERNET_HOST_NAME));
+            IspModelingUtils.INTERNET_HOST_NAME),
+        _batfish);
 
     testTrace(
-        _privateInstance,
-        Ip.parse("8.8.8.8"),
+        getAnyFlow(_privateInstance, Ip.parse("8.8.8.8"), _batfish),
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_privateInstance, _privateSubnet, _vgw));
+        ImmutableList.of(_privateInstance, _privateSubnet, _vgw),
+        _batfish);
   }
 
   @Test
   public void testToSite() {
     // public instance should send site traffic to Internet
     testTrace(
-        _publicInstance,
-        _sitePrefix.getStartIp(),
+        getAnyFlow(_publicInstance, _sitePrefix.getStartIp(), _batfish),
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
-            _publicInstance, _publicSubnet, _igw, AWS_BACKBONE_NODE_NAME, INTERNET_HOST_NAME));
+            _publicInstance, _publicSubnet, _igw, AWS_BACKBONE_NODE_NAME, INTERNET_HOST_NAME),
+        _batfish);
 
     // private instance should send site traffic to VGW
-    SortedMap<Flow, List<Trace>> traces = getTraces(_privateInstance, _sitePrefix.getStartIp());
-    Flow flow = getOnlyElement(traces.keySet().iterator());
-    List<Trace> flowTraces = traces.get(flow);
+    //    SortedMap<Flow, List<Trace>> traces = getTraces(_privateInstance,
+    // _sitePrefix.getStartIp());
+    //    Flow flow = getOnlyElement(traces.keySet().iterator());
+    List<Trace> flowTraces =
+        getTraces(getAnyFlow(_privateInstance, _sitePrefix.getStartIp(), _batfish), _batfish);
 
     assertThat(flowTraces.size(), equalTo(2)); // one per tunnel
     testTrace(
@@ -225,18 +176,22 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   @Test
   public void testFromVgw() {
     // public IP space should not be reachable
-    testTrace(_vgw, _publicInstancePublicIp, FlowDisposition.NO_ROUTE, ImmutableList.of(_vgw));
+    testTrace(
+        getAnyFlow(_vgw, _publicInstancePublicIp, _batfish),
+        FlowDisposition.NO_ROUTE,
+        ImmutableList.of(_vgw),
+        _batfish);
 
     testTrace(
-        _vgw,
-        _publicInstancePrivateIp,
+        getAnyFlow(_vgw, _publicInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_vgw, _publicSubnet, _publicInstance));
+        ImmutableList.of(_vgw, _publicSubnet, _publicInstance),
+        _batfish);
 
     testTrace(
-        _vgw,
-        _privateInstancePrivateIp,
+        getAnyFlow(_vgw, _privateInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_vgw, _privateSubnet, _privateInstance));
+        ImmutableList.of(_vgw, _privateSubnet, _privateInstance),
+        _batfish);
   }
 }
