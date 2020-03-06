@@ -64,6 +64,7 @@ public class AwsConfigurationVpcPeeringTest {
   public static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
+
   /** Test connectivity from A to B */
   @Test
   public void testFromAtoB() {
