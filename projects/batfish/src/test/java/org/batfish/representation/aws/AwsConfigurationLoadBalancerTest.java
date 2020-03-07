@@ -1,28 +1,21 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.collect.Iterators.getOnlyElement;
-import static org.hamcrest.Matchers.equalTo;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getOnlyNodeIp;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testBidirectionalTrace;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
-import org.batfish.main.BatfishTestUtils;
-import org.batfish.main.TestrigText;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
@@ -66,12 +59,6 @@ public class AwsConfigurationLoadBalancerTest {
           "TargetGroups.json",
           "Vpcs.json");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
-
-  private static IBatfish _batfish;
-
-  private static TracerouteEngine _tracerouteEngine;
-
   // various entities in the configs
   private static String _vpc = "vpc-015b20578b48c1349";
   private static String _instanceS1 = "i-055b0db7be365202c"; // first server
@@ -88,75 +75,13 @@ public class AwsConfigurationLoadBalancerTest {
 
   private static int _listenerPort = 80;
 
+  private static IBatfish _batfish;
+
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+
   @BeforeClass
   public static void setup() throws IOException {
-    _batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
-    _batfish.computeDataPlane(_batfish.getSnapshot());
-    _tracerouteEngine = _batfish.getTracerouteEngine(_batfish.getSnapshot());
-  }
-
-  /** Returns the IP address of the node. Assumes that the node has only one interface */
-  private static Ip getNodeIp(String nodeName) {
-    return getOnlyElement(
-            _batfish
-                .loadConfigurations(_batfish.getSnapshot())
-                .get(nodeName)
-                .getAllInterfaces()
-                .values()
-                .iterator())
-        .getConcreteAddress()
-        .getIp();
-  }
-
-  private static Flow getTcpFlow(String ingressNode, Ip dstIp, int dstPort) {
-    return Flow.builder()
-        .setIngressNode(ingressNode)
-        .setSrcIp(getNodeIp(ingressNode))
-        .setDstIp(dstIp)
-        .setIpProtocol(IpProtocol.TCP)
-        .setDstPort(dstPort)
-        .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-        .build();
-  }
-
-  private static List<String> getTraceHops(Trace trace) {
-    return trace.getHops().stream()
-        .map(h -> h.getNode().getName())
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  private static void testTrace(
-      Trace trace, FlowDisposition expectedDisposition, List<String> expectedNodes) {
-    assertThat(getTraceHops(trace), equalTo(expectedNodes));
-    assertThat(trace.getDisposition(), equalTo(expectedDisposition));
-  }
-
-  private static void testUnidirectionalTrace(
-      Flow flow, FlowDisposition expectedDisposition, List<String> expectedPath) {
-    List<Trace> traces = _tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
-    testTrace(getOnlyElement(traces.iterator()), expectedDisposition, expectedPath);
-  }
-
-  private static void testBidirectionalTrace(
-      Flow flow, List<String> expectedForwardPath, List<String> expectedReversePath) {
-    List<TraceAndReverseFlow> forwardTraces =
-        _tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
-
-    TraceAndReverseFlow forwardTrace = getOnlyElement(forwardTraces.iterator());
-    testTrace(forwardTrace.getTrace(), FlowDisposition.ACCEPTED, expectedForwardPath);
-
-    List<TraceAndReverseFlow> reverseTraces =
-        _tracerouteEngine
-            .computeTracesAndReverseFlows(
-                ImmutableSet.of(forwardTrace.getReverseFlow()),
-                forwardTrace.getNewFirewallSessions(),
-                false)
-            .get(forwardTrace.getReverseFlow());
-
-    Trace reverseTrace = getOnlyElement(reverseTraces.iterator()).getTrace();
-    testTrace(reverseTrace, FlowDisposition.ACCEPTED, expectedReversePath);
+    _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   /** Tests that startNode can reach endNode */
@@ -194,7 +119,11 @@ public class AwsConfigurationLoadBalancerTest {
     // traces could have gone to either server, but because of deterministic processing of
     // transformations server2 is hit. reachability test below tests that server1 can also be hit.
     testBidirectionalTrace(
-        getTcpFlow(_instanceClient, getNodeIp(_nodeLoadBalancer1), _listenerPort), // to first LB IP
+        getTcpFlow(
+            _instanceClient,
+            getOnlyNodeIp(_nodeLoadBalancer1, _batfish),
+            _listenerPort,
+            _batfish), // to first LB IP
         ImmutableList.of(
             _instanceClient,
             _subnetClient,
@@ -214,14 +143,19 @@ public class AwsConfigurationLoadBalancerTest {
             _subnetS1,
             _vpc,
             _subnetClient,
-            _instanceClient));
+            _instanceClient),
+        _batfish);
     testBidirectionalTrace(
         getTcpFlow(
-            _instanceClient, getNodeIp(_nodeLoadBalancer2), _listenerPort), // to second LB IP
+            _instanceClient,
+            getOnlyNodeIp(_nodeLoadBalancer2, _batfish),
+            _listenerPort,
+            _batfish), // to second LB IP
         ImmutableList.of(
             _instanceClient, _subnetClient, _vpc, _subnetS2, _nodeLoadBalancer2, _instanceS2),
         ImmutableList.of(
-            _instanceS2, _nodeLoadBalancer2, _subnetS2, _vpc, _subnetClient, _instanceClient));
+            _instanceS2, _nodeLoadBalancer2, _subnetS2, _vpc, _subnetClient, _instanceClient),
+        _batfish);
   }
 
   @Test
@@ -233,15 +167,23 @@ public class AwsConfigurationLoadBalancerTest {
   /** The client sends a packet to the load balancer on a non-listened port. */
   @Test
   public void testClientToLb_nonListenedPort() {
-    testUnidirectionalTrace(
+    testTrace(
         getTcpFlow(
-            _instanceClient, getNodeIp(_nodeLoadBalancer1), _listenerPort + 1), // to first LB IP
+            _instanceClient,
+            getOnlyNodeIp(_nodeLoadBalancer1, _batfish),
+            _listenerPort + 1,
+            _batfish), // to first LB IP
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instanceClient, _subnetClient, _vpc, _subnetS1, _nodeLoadBalancer1));
-    testUnidirectionalTrace(
+        ImmutableList.of(_instanceClient, _subnetClient, _vpc, _subnetS1, _nodeLoadBalancer1),
+        _batfish);
+    testTrace(
         getTcpFlow(
-            _instanceClient, getNodeIp(_nodeLoadBalancer2), _listenerPort + 1), // to second LB IP
+            _instanceClient,
+            getOnlyNodeIp(_nodeLoadBalancer2, _batfish),
+            _listenerPort + 1,
+            _batfish), // to second LB IP
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instanceClient, _subnetClient, _vpc, _subnetS2, _nodeLoadBalancer2));
+        ImmutableList.of(_instanceClient, _subnetClient, _vpc, _subnetS2, _nodeLoadBalancer2),
+        _batfish);
   }
 }
