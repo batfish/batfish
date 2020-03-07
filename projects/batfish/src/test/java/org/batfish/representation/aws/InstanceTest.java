@@ -14,6 +14,7 @@ import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -177,5 +178,104 @@ public class InstanceTest {
             .getGeneratedReferenceBooks()
             .containsKey(
                 GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps)));
+  }
+
+  @Test
+  public void testToConfigurationNode_multipleInterfaces() {
+    String vpcId = "vpc";
+
+    Subnet subnet =
+        new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId, "zone", ImmutableMap.of());
+    Subnet subnet2 =
+        new Subnet(Prefix.parse("10.10.20.10/24"), "subnet2", vpcId, "zone", ImmutableMap.of());
+
+    NetworkInterface networkInterface =
+        new NetworkInterface(
+            "interface",
+            subnet.getId(),
+            vpcId,
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), null)),
+            "desc",
+            null);
+
+    NetworkInterface networkInterface2_0 =
+        new NetworkInterface(
+            "interface2_0",
+            subnet2.getId(),
+            vpcId,
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.20.10"), null)),
+            "desc",
+            null);
+
+    NetworkInterface networkInterface2_1 =
+        new NetworkInterface(
+            "interface2_1",
+            subnet2.getId(),
+            vpcId,
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.20.11"), null)),
+            "desc",
+            null);
+
+    Instance instance =
+        Instance.builder()
+            .setInstanceId("instance")
+            .setNetworkInterfaces(
+                ImmutableList.of(
+                    networkInterface.getId(),
+                    networkInterface2_0.getId(),
+                    networkInterface2_1.getId()))
+            .build();
+
+    Region region =
+        Region.builder("test")
+            .setInstances(ImmutableMap.of(instance.getId(), instance))
+            .setNetworkInterfaces(
+                ImmutableMap.of(
+                    networkInterface.getId(),
+                    networkInterface,
+                    networkInterface2_0.getId(),
+                    networkInterface2_0,
+                    networkInterface2_1.getId(),
+                    networkInterface2_1))
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet, subnet2.getId(), subnet2))
+            .build();
+
+    Warnings warnings = new Warnings();
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+    Configuration configuration = instance.toConfigurationNode(awsConfiguration, region, warnings);
+
+    assertTrue(warnings.isEmpty());
+
+    assertThat(
+        configuration.getAllInterfaces().values().stream()
+            .map(Interface::getName)
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(
+            ImmutableSet.of(
+                networkInterface.getId(),
+                networkInterface2_0.getId(),
+                networkInterface2_1.getId())));
+
+    assertThat(
+        awsConfiguration.getLayer1Edges(),
+        hasItems(
+            new Layer1Edge(
+                instance.getId(),
+                networkInterface.getId(),
+                Subnet.nodeName(subnet.getId()),
+                Subnet.instancesInterfaceName(subnet.getId())),
+            new Layer1Edge(
+                instance.getId(),
+                networkInterface2_0.getId(),
+                Subnet.nodeName(subnet2.getId()),
+                Subnet.instancesInterfaceName(subnet2.getId())),
+            new Layer1Edge(
+                instance.getId(),
+                networkInterface2_1.getId(),
+                Subnet.nodeName(subnet2.getId()),
+                Subnet.instancesInterfaceName(subnet2.getId()))));
   }
 }
