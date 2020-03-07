@@ -199,7 +199,7 @@ public class InstanceTest {
             "desc",
             null);
 
-    NetworkInterface networkInterface2_0 =
+    NetworkInterface networkInterface20 =
         new NetworkInterface(
             "interface2_0",
             subnet2.getId(),
@@ -209,7 +209,7 @@ public class InstanceTest {
             "desc",
             null);
 
-    NetworkInterface networkInterface2_1 =
+    NetworkInterface networkInterface21 =
         new NetworkInterface(
             "interface2_1",
             subnet2.getId(),
@@ -225,8 +225,8 @@ public class InstanceTest {
             .setNetworkInterfaces(
                 ImmutableList.of(
                     networkInterface.getId(),
-                    networkInterface2_0.getId(),
-                    networkInterface2_1.getId()))
+                    networkInterface20.getId(),
+                    networkInterface21.getId()))
             .build();
 
     Region region =
@@ -236,10 +236,10 @@ public class InstanceTest {
                 ImmutableMap.of(
                     networkInterface.getId(),
                     networkInterface,
-                    networkInterface2_0.getId(),
-                    networkInterface2_0,
-                    networkInterface2_1.getId(),
-                    networkInterface2_1))
+                    networkInterface20.getId(),
+                    networkInterface20,
+                    networkInterface21.getId(),
+                    networkInterface21))
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet, subnet2.getId(), subnet2))
             .build();
 
@@ -255,9 +255,7 @@ public class InstanceTest {
             .collect(ImmutableSet.toImmutableSet()),
         equalTo(
             ImmutableSet.of(
-                networkInterface.getId(),
-                networkInterface2_0.getId(),
-                networkInterface2_1.getId())));
+                networkInterface.getId(), networkInterface20.getId(), networkInterface21.getId())));
 
     assertThat(
         awsConfiguration.getLayer1Edges(),
@@ -269,12 +267,12 @@ public class InstanceTest {
                 Subnet.instancesInterfaceName(subnet.getId())),
             new Layer1Edge(
                 instance.getId(),
-                networkInterface2_0.getId(),
+                networkInterface20.getId(),
                 Subnet.nodeName(subnet2.getId()),
                 Subnet.instancesInterfaceName(subnet2.getId())),
             new Layer1Edge(
                 instance.getId(),
-                networkInterface2_1.getId(),
+                networkInterface21.getId(),
                 Subnet.nodeName(subnet2.getId()),
                 Subnet.instancesInterfaceName(subnet2.getId()))));
   }
