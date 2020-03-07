@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
 
@@ -13,8 +14,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.main.BatfishTestUtils;
-import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -47,10 +46,6 @@ public class AwsConfigurationNatGatewayTest {
           "Subnets.json",
           "Vpcs.json");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
-
-  private static IBatfish _batfish;
-
   // various entities in the configs
   private static String _vpc = "vpc-0008a7b45e3ddf1dd";
   private static String _natGateway = "nat-07ab4846da51f4612";
@@ -64,12 +59,13 @@ public class AwsConfigurationNatGatewayTest {
 
   private String _instanceNatSubnet = "i-0b31b509174d7f5de";
 
+  private static IBatfish _batfish;
+
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+
   @BeforeClass
   public static void setup() throws IOException {
-    _batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setAwsText(TESTCONFIGS_DIR, fileNames).build(), _folder);
-    _batfish.computeDataPlane(_batfish.getSnapshot());
+    _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test

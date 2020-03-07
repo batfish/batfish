@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -17,9 +18,31 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
+import org.junit.rules.TemporaryFolder;
 
 /** Collection of utilities for AWS e2e tests */
 public final class AwsConfigurationTestUtils {
+
+  static IBatfish testSetup(String testconfigsDir, List<String> fileNames, TemporaryFolder folder)
+      throws IOException {
+    IBatfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setAwsText(testconfigsDir, fileNames).build(), folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    return batfish;
+  }
+
+  /** Returns some concrete IP address of the node. */
+  static Ip getAnyNodeIp(String nodeName, IBatfish batfish) {
+    return batfish.loadConfigurations(batfish.getSnapshot()).get(nodeName).getAllInterfaces()
+        .values().stream()
+        .findAny()
+        .get()
+        .getConcreteAddress()
+        .getIp();
+  }
 
   /** Returns the IP address of the node. Assumes that the node has only one interface */
   static Ip getOnlyNodeIp(String nodeName, IBatfish batfish) {
@@ -39,6 +62,18 @@ public final class AwsConfigurationTestUtils {
     return trace.getHops().stream()
         .map(h -> h.getNode().getName())
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a flow with the specified ingress node and dst Ip. Source ip is picked from one of the
+   * ingress node IPs
+   */
+  static Flow getAnyFlow(String ingressNode, Ip dstIp, IBatfish batfish) {
+    return Flow.builder()
+        .setIngressNode(ingressNode)
+        .setSrcIp(getAnyNodeIp(ingressNode, batfish))
+        .setDstIp(dstIp)
+        .build();
   }
 
   /**
@@ -71,6 +106,13 @@ public final class AwsConfigurationTestUtils {
         .build();
   }
 
+  static List<Trace> getTraces(Flow flow, IBatfish batfish) {
+    return batfish
+        .getTracerouteEngine(batfish.getSnapshot())
+        .computeTraces(ImmutableSet.of(flow), false)
+        .get(flow);
+  }
+
   /** Tests that the traces has the expected disposition and list of node names. */
   static void testTrace(
       Trace trace, FlowDisposition expectedDisposition, List<String> expectedNodes) {
@@ -78,18 +120,24 @@ public final class AwsConfigurationTestUtils {
     assertThat(trace.getDisposition(), equalTo(expectedDisposition));
   }
 
-  /** Tests that the flow has the expected disposition and list of node names. */
-  static void testTrace(
+  /**
+   * Tests that the flow has the expected disposition and list of node names. Assumes that there is
+   * only one trace expected and returns that trace
+   */
+  static Trace testTrace(
       Flow flow,
       FlowDisposition expectedDisposition,
       List<String> expectedNodes,
       IBatfish batfish) {
-    List<Trace> traces =
-        batfish
-            .getTracerouteEngine(batfish.getSnapshot())
-            .computeTraces(ImmutableSet.of(flow), false)
-            .get(flow);
-    testTrace(getOnlyElement(traces.iterator()), expectedDisposition, expectedNodes);
+    Trace trace =
+        getOnlyElement(
+            batfish
+                .getTracerouteEngine(batfish.getSnapshot())
+                .computeTraces(ImmutableSet.of(flow), false)
+                .get(flow)
+                .iterator());
+    testTrace(trace, expectedDisposition, expectedNodes);
+    return trace;
   }
 
   /**
