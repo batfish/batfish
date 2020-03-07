@@ -278,6 +278,9 @@ final class Instance implements AwsVpcEntity, Serializable {
         Utils.newAwsConfiguration(
             instanceHostname(_instanceId), "aws", _tags, DeviceModel.AWS_EC2_INSTANCE);
     cfgNode.setDeviceType(DeviceType.HOST);
+    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     for (String interfaceId : _networkInterfaces) {
 
@@ -292,10 +295,6 @@ final class Instance implements AwsVpcEntity, Serializable {
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
 
       addNodeToSubnet(cfgNode, netInterface, subnet, awsConfiguration, warnings);
-
-      cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
-      cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
-      cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     }
 
     addPublicIpsRefBook(cfgNode, region);
