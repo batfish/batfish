@@ -62,7 +62,7 @@ To analyze your network configurations, you also need [Pybatfish](https://www.gi
 
 To install Pybatfish run the following commands (in a virtual environment if applicable):
 
-    python -m pip install --upgrade git+https://github.com/batfish/pybatfish.git
+    python -m pip install --upgrade pybatfish
 
 #### 4. Develop your analysis 
 
