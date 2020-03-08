@@ -152,7 +152,8 @@ public class SecurityGroupsTest {
                             ImmutableList.of(
                                 new IpRange("Allowing single port", Prefix.parse("1.2.3.4/32"))),
                             ImmutableList.of(),
-                            ImmutableList.of()))))));
+                            ImmutableList.of())),
+                    "For test"))));
   }
 
   @Test

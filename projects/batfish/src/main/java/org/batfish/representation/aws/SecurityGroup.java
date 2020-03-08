@@ -27,6 +27,8 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 final class SecurityGroup implements AwsVpcEntity, Serializable {
 
+  @Nullable private final String _description;
+
   @Nonnull private final String _groupId;
 
   @Nonnull private final String _groupName;
@@ -40,6 +42,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static SecurityGroup create(
+      @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
       @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId,
       @Nullable @JsonProperty(JSON_KEY_GROUP_NAME) String groupName,
       @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS_EGRESS) List<IpPermissions> ipPermsEgress,
@@ -50,7 +53,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
         ipPermsEgress != null, "Egress IP permissions list cannot be null for security groups");
     checkArgument(
         ipPermsIngress != null, "Ingress IP permissions list cannot be null for security groups");
-    return new SecurityGroup(groupId, groupName, ipPermsEgress, ipPermsIngress);
+    return new SecurityGroup(groupId, groupName, ipPermsEgress, ipPermsIngress, description);
   }
 
   SecurityGroup(
@@ -58,11 +61,21 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
       String groupName,
       List<IpPermissions> ipPermsEgress,
       List<IpPermissions> ipPermsIngress) {
+    this(groupId, groupName, ipPermsEgress, ipPermsIngress, null);
+  }
+
+  SecurityGroup(
+      String groupId,
+      String groupName,
+      List<IpPermissions> ipPermsEgress,
+      List<IpPermissions> ipPermsIngress,
+      @Nullable String description) {
     _groupId = groupId;
     _groupName = groupName;
     _ipPermsEgress = ipPermsEgress;
     _ipPermsIngress = ipPermsIngress;
     _referrerIps = new HashMap<>();
+    _description = description;
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
@@ -81,6 +94,11 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
               warnings));
     }
     return aclLines.build();
+  }
+
+  @Nullable
+  public String getDescription() {
+    return _description;
   }
 
   @Nonnull
@@ -135,7 +153,8 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
       return false;
     }
     SecurityGroup that = (SecurityGroup) o;
-    return Objects.equals(_groupId, that._groupId)
+    return Objects.equals(_description, that._description)
+        && Objects.equals(_groupId, that._groupId)
         && Objects.equals(_groupName, that._groupName)
         && Objects.equals(_ipPermsEgress, that._ipPermsEgress)
         && Objects.equals(_ipPermsIngress, that._ipPermsIngress)
@@ -144,12 +163,14 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _referrerIps);
+    return Objects.hash(
+        _description, _groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _referrerIps);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
+        .add("_description", _description)
         .add("_groupId", _groupId)
         .add("_groupName", _groupName)
         .add("_ipPermsEgress", _ipPermsEgress)
