@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents a tag for a given instance */
+/** Represents a tag for an AWS resource */
 @ParametersAreNonnullByDefault
 public class Tag {
   private static final String PROP_KEY = "Key";
