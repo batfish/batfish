@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -40,20 +42,30 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
   /** IPs and instance names of the instances which refer to this security group */
   @Nonnull private final Map<Ip, String> _referrerIps;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @JsonCreator
   private static SecurityGroup create(
       @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
       @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId,
       @Nullable @JsonProperty(JSON_KEY_GROUP_NAME) String groupName,
       @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS_EGRESS) List<IpPermissions> ipPermsEgress,
-      @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS) List<IpPermissions> ipPermsIngress) {
+      @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS) List<IpPermissions> ipPermsIngress,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
     checkArgument(groupId != null, "Group id cannot be null for security groups");
     checkArgument(groupName != null, "Group name cannot be null for security groups");
     checkArgument(
         ipPermsEgress != null, "Egress IP permissions list cannot be null for security groups");
     checkArgument(
         ipPermsIngress != null, "Ingress IP permissions list cannot be null for security groups");
-    return new SecurityGroup(groupId, groupName, ipPermsEgress, ipPermsIngress, description);
+    return new SecurityGroup(
+        description,
+        groupId,
+        groupName,
+        ipPermsEgress,
+        ipPermsIngress,
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
   SecurityGroup(
@@ -61,21 +73,23 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
       String groupName,
       List<IpPermissions> ipPermsEgress,
       List<IpPermissions> ipPermsIngress) {
-    this(groupId, groupName, ipPermsEgress, ipPermsIngress, null);
+    this(null, groupId, groupName, ipPermsEgress, ipPermsIngress, ImmutableMap.of());
   }
 
   SecurityGroup(
+      @Nullable String description,
       String groupId,
       String groupName,
       List<IpPermissions> ipPermsEgress,
       List<IpPermissions> ipPermsIngress,
-      @Nullable String description) {
+      Map<String, String> tags) {
+    _description = description;
     _groupId = groupId;
     _groupName = groupName;
     _ipPermsEgress = ipPermsEgress;
     _ipPermsIngress = ipPermsIngress;
     _referrerIps = new HashMap<>();
-    _description = description;
+    _tags = tags;
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
@@ -130,6 +144,11 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _referrerIps;
   }
 
+  @Nonnull
+  public Map<String, String> getTags() {
+    return _tags;
+  }
+
   private static String humanReadableInstanceName(Configuration c) {
     if (c.getHumanName() == null) {
       return c.getHostname();
@@ -158,13 +177,14 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
         && Objects.equals(_groupName, that._groupName)
         && Objects.equals(_ipPermsEgress, that._ipPermsEgress)
         && Objects.equals(_ipPermsIngress, that._ipPermsIngress)
-        && Objects.equals(_referrerIps, that._referrerIps);
+        && Objects.equals(_referrerIps, that._referrerIps)
+        && Objects.equals(_tags, that._tags);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _description, _groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _referrerIps);
+        _description, _groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _referrerIps, _tags);
   }
 
   @Override
@@ -176,6 +196,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
         .add("_ipPermsEgress", _ipPermsEgress)
         .add("_ipPermsIngress", _ipPermsIngress)
         .add("_referrerIps", _referrerIps)
+        .add("_tags", _tags)
         .toString();
   }
 }
