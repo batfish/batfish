@@ -127,6 +127,7 @@ public class SecurityGroupsTest {
         Matchers.equalTo(
             ImmutableList.of(
                 new SecurityGroup(
+                    "For test",
                     "sg-01a88a2ecd621d9ba",
                     "Single port ",
                     ImmutableList.of(
@@ -152,7 +153,8 @@ public class SecurityGroupsTest {
                             ImmutableList.of(
                                 new IpRange("Allowing single port", Prefix.parse("1.2.3.4/32"))),
                             ImmutableList.of(),
-                            ImmutableList.of()))))));
+                            ImmutableList.of())),
+                    ImmutableMap.of("testKey", "testValue")))));
   }
 
   @Test

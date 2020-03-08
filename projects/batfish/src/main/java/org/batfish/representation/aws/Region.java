@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -744,8 +745,8 @@ final class Region implements Serializable {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
       List<AclLine> inAclAclLines = new ArrayList<>();
       List<AclLine> outAclAclLines = new ArrayList<>();
-      entry
-          .getValue()
+      entry.getValue().stream()
+          .sorted(Comparator.comparing(SecurityGroup::getId)) // for stable ordering of lines
           .forEach(
               securityGroup -> {
                 String sgName = String.format("Security Group %s", securityGroup.getGroupName());
