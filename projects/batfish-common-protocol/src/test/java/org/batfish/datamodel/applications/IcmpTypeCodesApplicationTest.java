@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
