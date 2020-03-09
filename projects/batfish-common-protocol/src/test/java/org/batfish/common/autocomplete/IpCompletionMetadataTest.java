@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -28,7 +27,7 @@ public class IpCompletionMetadataTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     IpCompletionMetadata metadata = new IpCompletionMetadata(new IpCompletionRelevance("a"));
     IpCompletionMetadata clone = BatfishObjectMapper.clone(metadata, IpCompletionMetadata.class);
     assertEquals(metadata, clone);

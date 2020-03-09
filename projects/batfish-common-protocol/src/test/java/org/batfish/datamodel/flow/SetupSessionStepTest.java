@@ -4,7 +4,6 @@ import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDiff;
@@ -40,7 +39,7 @@ public final class SetupSessionStepTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Set<String> incomingInterfaces = ImmutableSet.of("b");
     ForwardOutInterface forwardAction =
         new ForwardOutInterface("a", NodeInterfacePair.of("a", "b"));

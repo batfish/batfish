@@ -3,7 +3,6 @@ package org.batfish.datamodel.flow;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -12,7 +11,7 @@ import org.junit.Test;
 
 public class DeliveredStepTest {
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     DeliveredStep step =
         DeliveredStep.builder()
             .setAction(StepAction.DELIVERED_TO_SUBNET)

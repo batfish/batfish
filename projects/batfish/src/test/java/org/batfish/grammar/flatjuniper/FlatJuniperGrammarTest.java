@@ -5550,7 +5550,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRethConversion() throws IOException {
+  public void testRethConversion() {
     Configuration config = parseConfig("juniper-reth");
 
     assertThat(

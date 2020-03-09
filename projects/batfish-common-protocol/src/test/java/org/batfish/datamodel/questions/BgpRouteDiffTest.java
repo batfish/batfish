@@ -12,7 +12,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Ip;
@@ -26,7 +25,7 @@ import org.junit.Test;
 /** Tests of {@link BgpRouteDiff}. */
 public class BgpRouteDiffTest {
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     BgpRouteDiff diff = new BgpRouteDiff(PROP_AS_PATH, "A", "B");
     assertEquals(diff, BatfishObjectMapper.clone(diff, BgpRouteDiff.class));
   }

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public final class ValueEdgeTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     ValueEdge<Ip, String> edge = new ValueEdge<>(Ip.ZERO, Ip.ZERO, "a");
 
     assertEquals(

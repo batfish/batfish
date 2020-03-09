@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConnectedRouteMetadata.Builder;
@@ -36,7 +35,7 @@ public class ConnectedRouteMetadataTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     ConnectedRouteMetadata crm =
         ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoutes(true).setTag(1).build();
     assertThat(BatfishObjectMapper.clone(crm, ConnectedRouteMetadata.class), equalTo(crm));

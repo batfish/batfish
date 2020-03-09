@@ -18,7 +18,7 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before
-  public void initTestEnvironment() throws Exception {
+  public void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

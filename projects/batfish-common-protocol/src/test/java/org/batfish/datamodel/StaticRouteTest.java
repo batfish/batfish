@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
@@ -115,7 +114,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void checkJsonSerialization() throws IOException {
+  public void checkJsonSerialization() {
     StaticRoute sr =
         StaticRoute.builder()
             .setNextHopIp(Ip.parse("192.168.1.1"))

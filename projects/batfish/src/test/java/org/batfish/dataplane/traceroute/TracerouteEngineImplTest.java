@@ -172,11 +172,7 @@ public class TracerouteEngineImplTest {
             .getTracerouteEngine(snapshot)
             .computeTraces(ImmutableSet.of(flow), ignoreFilters)
             .get(flow);
-    try {
-      return BatfishObjectMapper.clone(traces, new TypeReference<List<Trace>>() {});
-    } catch (IOException e) {
-      throw new AssertionError("Could not clone traces", e);
-    }
+    return BatfishObjectMapper.clone(traces, new TypeReference<List<Trace>>() {});
   }
 
   /*

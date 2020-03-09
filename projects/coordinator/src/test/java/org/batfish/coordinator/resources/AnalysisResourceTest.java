@@ -36,7 +36,7 @@ public final class AnalysisResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void initTestEnvironment() throws Exception {
+  public void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

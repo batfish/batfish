@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -50,7 +49,7 @@ public class NodeInterfacePairTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     NodeInterfacePair nip = NodeInterfacePair.of("host", "iface");
     assertThat(BatfishObjectMapper.clone(nip, NodeInterfacePair.class), equalTo(nip));
   }

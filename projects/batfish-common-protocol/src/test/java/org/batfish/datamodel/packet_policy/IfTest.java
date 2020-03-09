@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -38,7 +37,7 @@ public class IfTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     If ifExpr = new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of());
     assertThat(BatfishObjectMapper.clone(ifExpr, If.class), equalTo(ifExpr));
   }

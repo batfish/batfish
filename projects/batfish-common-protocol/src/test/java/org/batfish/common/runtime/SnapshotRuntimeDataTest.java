@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -21,7 +20,7 @@ public class SnapshotRuntimeDataTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     SnapshotRuntimeData.Builder builder =
         SnapshotRuntimeData.builder()
             .setRuntimeData(ImmutableMap.of("hostname", RuntimeData.EMPTY_RUNTIME_DATA));
