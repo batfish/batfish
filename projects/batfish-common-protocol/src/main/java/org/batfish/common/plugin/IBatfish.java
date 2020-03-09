@@ -43,6 +43,7 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.vendor.VendorConfiguration;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -126,6 +127,9 @@ public interface IBatfish extends IPluginConsumer {
 
   /** Returns the configurations for given snapshot. */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
+
+  /** Returns the vendor configurations of a given snapshot */
+  Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot);
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
       NetworkSnapshot snapshot);
