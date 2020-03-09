@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -475,8 +476,10 @@ class FlowTracer {
     Ip dstIp = _currentFlow.getDstIp();
 
     // Accept if the flow is destined for this vrf on this host.
-    if (_tracerouteContext.acceptsIp(currentNodeName, _vrfName, dstIp)) {
-      buildAcceptTrace();
+    Optional<String> acceptingInterface =
+        _tracerouteContext.interfaceAcceptingIp(currentNodeName, _vrfName, dstIp);
+    if (acceptingInterface.isPresent()) {
+      buildAcceptTrace(acceptingInterface.get());
       return;
     }
 
@@ -603,8 +606,10 @@ class FlowTracer {
       private boolean isAcceptedAtCurrentVrf() {
         String currentNodeName = _currentNode.getName();
         Ip dstIp = result.getFinalFlow().getDstIp();
-        if (_tracerouteContext.acceptsIp(currentNodeName, _vrfName, dstIp)) {
-          buildAcceptTrace();
+        Optional<String> acceptingInterface =
+            _tracerouteContext.interfaceAcceptingIp(currentNodeName, _vrfName, dstIp);
+        if (acceptingInterface.isPresent()) {
+          buildAcceptTrace(acceptingInterface.get());
           return true;
         }
         return false;
@@ -813,8 +818,7 @@ class FlowTracer {
             new SessionActionVisitor<Void>() {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
-                // Accepted by VRF
-                buildAcceptTrace();
+                buildAcceptTrace(inputIfaceName); // ingressInterface, guaranteed nonnull.
                 return null;
               }
 
@@ -1070,9 +1074,9 @@ class FlowTracer {
         forwardFlow.getSrcPort());
   }
 
-  private void buildAcceptTrace() {
+  private void buildAcceptTrace(@Nonnull String acceptingInterface) {
     InboundStep inboundStep =
-        InboundStep.builder().setDetail(new InboundStepDetail(_ingressInterface)).build();
+        InboundStep.builder().setDetail(new InboundStepDetail(acceptingInterface)).build();
     _steps.add(inboundStep);
     _hops.add(new Hop(_currentNode, _steps));
     Trace trace = new Trace(FlowDisposition.ACCEPTED, _hops);
