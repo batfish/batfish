@@ -43,6 +43,10 @@ public final class IcmpType {
 
   public static final int TRACEROUTE = 0x1e;
 
+  public static final int REQUEST_EXTENDED_ECHO = 0x2a; // rfc 8335
+
+  public static final int REQUEST_EXTENDED_REPLY = 0x2b; // rfc 8335
+
   public static final int UNSET = 0xff;
 
   private IcmpType() {}
