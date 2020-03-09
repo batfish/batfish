@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class LocalRouteTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(BatfishObjectMapper.clone(lr, LocalRoute.class), equalTo(lr));
   }

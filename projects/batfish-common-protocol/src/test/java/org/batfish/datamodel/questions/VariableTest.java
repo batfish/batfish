@@ -30,12 +30,12 @@ public final class VariableTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static Variable clone(Variable variable) throws IOException {
+  private static Variable clone(Variable variable) {
     return BatfishObjectMapper.clone(variable, Variable.class);
   }
 
   @Test
-  public void testEquals() throws IOException {
+  public void testEquals() {
     Variable variable = new Variable();
     variable.setType(Type.INTEGER);
     Variable initialInstance = clone(variable);

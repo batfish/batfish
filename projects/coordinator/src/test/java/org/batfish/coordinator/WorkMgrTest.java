@@ -151,7 +151,7 @@ public final class WorkMgrTest {
   private IdManager _idManager;
 
   @Before
-  public void initManager() throws Exception {
+  public void initManager() {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
     _idManager = _manager.getIdManager();
@@ -1420,7 +1420,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswers() throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnalysisAnswers() throws JsonProcessingException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -1494,8 +1494,7 @@ public final class WorkMgrTest {
 
   /** Test that we return good answers when some questions are bad */
   @Test
-  public void testGetAnalysisAnswersAndMetadataPartial()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnalysisAnswersAndMetadataPartial() throws JsonProcessingException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -1608,8 +1607,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAnalysisSuccess()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnswerMetadataAnalysisSuccess() throws JsonProcessingException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
@@ -1652,8 +1650,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAnalysisMissingQuestion()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnswerMetadataAnalysisMissingQuestion() {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
@@ -1719,8 +1716,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAnalysisMissingAnalysis()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnswerMetadataAnalysisMissingAnalysis() {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
@@ -1740,8 +1736,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocSuccess()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnswerMetadataAdHocSuccess() throws JsonProcessingException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -1813,8 +1808,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocMissingQuestion()
-      throws JsonProcessingException, FileNotFoundException {
+  public void testGetAnswerMetadataAdHocMissingQuestion() throws JsonProcessingException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();

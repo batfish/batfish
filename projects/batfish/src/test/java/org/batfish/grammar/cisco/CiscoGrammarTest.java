@@ -3729,7 +3729,7 @@ public final class CiscoGrammarTest {
 
   /** Tests that we can append more BGP config at the bottom of a file. */
   @Test
-  public void testBgpReentrantVrf() throws IOException {
+  public void testBgpReentrantVrf() {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf", ConfigurationFormat.CISCO_IOS);
     // Simple test that default VRF was parsed
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
@@ -4309,7 +4309,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosMlagExtraction() throws IOException {
+  public void testEosMlagExtraction() {
     CiscoConfiguration c = parseCiscoConfig("eos-mlag", ConfigurationFormat.ARISTA);
     MlagConfiguration mlag = c.getEosMlagConfiguration();
     assertThat(mlag, notNullValue());

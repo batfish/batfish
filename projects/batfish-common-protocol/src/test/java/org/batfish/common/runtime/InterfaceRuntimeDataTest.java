@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -30,7 +29,7 @@ public class InterfaceRuntimeDataTest {
   }
 
   @Test
-  public void testInterfaceRuntimeDataJsonSerialization() throws IOException {
+  public void testInterfaceRuntimeDataJsonSerialization() {
     InterfaceRuntimeData.Builder irdBuilder =
         InterfaceRuntimeData.builder().setBandwidth(1d).setLineUp(true).setSpeed(2d);
     assertThat(

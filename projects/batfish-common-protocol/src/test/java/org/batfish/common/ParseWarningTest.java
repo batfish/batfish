@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -32,7 +31,7 @@ public class ParseWarningTest {
   }
 
   @Test
-  public void testParseWarningsJsonSerialization() throws IOException {
+  public void testParseWarningsJsonSerialization() {
     ParseWarning pw = new ParseWarning(1, "", "", null);
     assertThat(BatfishObjectMapper.clone(pw, ParseWarning.class), equalTo(pw));
   }

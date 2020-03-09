@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Prefix;
@@ -29,7 +28,7 @@ public class IspNodeInfoTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     IspNodeInfo ispNodeInfo =
         new IspNodeInfo(
             42, "n1", ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32"))));

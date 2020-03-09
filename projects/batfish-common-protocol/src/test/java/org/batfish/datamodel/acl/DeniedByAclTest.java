@@ -3,7 +3,6 @@ package org.batfish.datamodel.acl;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.TraceElement;
 import org.junit.Test;
@@ -24,7 +23,7 @@ public final class DeniedByAclTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     DeniedByAcl expected = new DeniedByAcl("name", "te");
     DeniedByAcl clone = (DeniedByAcl) BatfishObjectMapper.clone(expected, AclLineMatchExpr.class);
     assertEquals(expected, clone);

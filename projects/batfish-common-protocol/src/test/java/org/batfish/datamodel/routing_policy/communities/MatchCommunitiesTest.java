@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
@@ -24,7 +23,7 @@ public final class MatchCommunitiesTest {
           new CommunitySetExprReference("a"), new CommunitySetMatchExprReference("a"));
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(EXPR, MatchCommunities.class), equalTo(EXPR));
   }
 

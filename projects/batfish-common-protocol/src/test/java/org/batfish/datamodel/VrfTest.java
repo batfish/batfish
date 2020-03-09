@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -20,7 +19,7 @@ import org.junit.Test;
 public class VrfTest {
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Vrf vrf = new Vrf("vrf");
     vrf.setOspfProcesses(
         ImmutableSortedMap.of(

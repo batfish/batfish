@@ -117,7 +117,7 @@ public class HostInterfaceTest {
   }
 
   @Test
-  public void testEncapsulationVlan() throws IOException {
+  public void testEncapsulationVlan() {
     Integer encapsulationVlan = 5;
     HostInterface hi = new HostInterface("e0");
     hi.setEncapsulationVlan(encapsulationVlan);

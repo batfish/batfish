@@ -31,7 +31,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before
-  public void initContainer() throws Exception {
+  public void initContainer() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

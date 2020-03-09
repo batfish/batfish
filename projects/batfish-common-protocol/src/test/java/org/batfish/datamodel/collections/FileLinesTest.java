@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -23,7 +22,7 @@ public class FileLinesTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     FileLines f = new FileLines("a", ImmutableSortedSet.of(1));
     assertThat(f, equalTo(BatfishObjectMapper.clone(f, FileLines.class)));
   }

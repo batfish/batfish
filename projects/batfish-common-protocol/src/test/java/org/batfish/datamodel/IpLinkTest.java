@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -25,7 +24,7 @@ public final class IpLinkTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     IpLink link = new IpLink(Ip.ZERO, Ip.ZERO);
 
     assertEquals(link, BatfishObjectMapper.clone(link, IpLink.class));
