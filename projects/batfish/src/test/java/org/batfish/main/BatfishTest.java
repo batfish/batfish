@@ -75,8 +75,6 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
-import org.batfish.representation.aws.AwsConfiguration;
-import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -313,11 +311,7 @@ public class BatfishTest {
     Map<String, VendorConfiguration> vendorConfigurations =
         batfish.loadVendorConfigurations(batfish.getSnapshot());
 
-    assertThat(vendorConfigurations, hasKey(routerFile));
-    assertTrue(vendorConfigurations.get(routerFile) instanceof CiscoNxosConfiguration);
-
-    assertThat(vendorConfigurations, hasKey(RELPATH_AWS_CONFIGS_FILE));
-    assertTrue(vendorConfigurations.get(RELPATH_AWS_CONFIGS_FILE) instanceof AwsConfiguration);
+    assertThat(vendorConfigurations.keySet(), contains(routerFile, RELPATH_AWS_CONFIGS_FILE));
   }
 
   @Test
