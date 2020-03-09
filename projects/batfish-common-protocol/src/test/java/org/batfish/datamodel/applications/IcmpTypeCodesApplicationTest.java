@@ -1,8 +1,6 @@
 package org.batfish.datamodel.applications;
 
 import static org.batfish.datamodel.applications.IcmpTypeCodesApplication.ALL_CODES;
-import static org.batfish.datamodel.applications.IcmpTypeCodesApplication.isValidTypeCode;
-import static org.batfish.datamodel.applications.IcmpTypeCodesApplication.isValidTypeCode2;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -57,14 +55,5 @@ public class IcmpTypeCodesApplicationTest {
                 .setIcmpTypes(0)
                 .setIcmpCodes(ImmutableList.of(new SubRange(1, 10), new SubRange(20, 30)))
                 .build()));
-  }
-
-  @Test
-  public void testIsValidTypeCode2() {
-    for (int type = 0; type <= IcmpApplication.MAX_TYPE; type++) {
-      for (int code = 0; code <= IcmpApplication.MAX_TYPE_CODE; code++) {
-        assertThat(isValidTypeCode(type, code), equalTo(isValidTypeCode2(type, code)));
-      }
-    }
   }
 }
