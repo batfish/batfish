@@ -288,7 +288,7 @@ public class BatfishTest {
 
   @Test
   public void testLoadVendorConfigurations() throws IOException {
-    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations/";
+    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
     List<String> awsFiles =
         ImmutableList.of(
             "NetworkAcls.json",
