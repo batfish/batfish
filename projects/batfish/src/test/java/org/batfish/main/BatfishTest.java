@@ -311,9 +311,7 @@ public class BatfishTest {
     Map<String, VendorConfiguration> vendorConfigurations =
         batfish.loadVendorConfigurations(batfish.getSnapshot());
 
-    assertThat(
-        vendorConfigurations.keySet(),
-        equalTo(ImmutableSet.of(routerFile, RELPATH_AWS_CONFIGS_FILE)));
+    assertThat(vendorConfigurations.keySet(), contains(routerFile, RELPATH_AWS_CONFIGS_FILE));
   }
 
   @Test
