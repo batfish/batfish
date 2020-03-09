@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.TraceElement.Fragment;
@@ -24,7 +23,7 @@ public final class TraceElementTest {
   }
 
   @Test
-  public void testTextFragment_JsonSerialization() throws IOException {
+  public void testTextFragment_JsonSerialization() {
     TextFragment fragment = new TextFragment("asdf");
     TextFragment clone = (TextFragment) BatfishObjectMapper.clone(fragment, Fragment.class);
     assertEquals(fragment, clone);
@@ -46,7 +45,7 @@ public final class TraceElementTest {
   }
 
   @Test
-  public void testLinkFragment_JsonSerialization() throws IOException {
+  public void testLinkFragment_JsonSerialization() {
     LinkFragment fragment = new LinkFragment("asdf", new VendorStructureId("f", "t", "n"));
     LinkFragment clone = (LinkFragment) BatfishObjectMapper.clone(fragment, Fragment.class);
     assertEquals(fragment, clone);
@@ -63,7 +62,7 @@ public final class TraceElementTest {
   }
 
   @Test
-  public void testTraceElement_JsonSerialization() throws IOException {
+  public void testTraceElement_JsonSerialization() {
     TraceElement traceElement = new TraceElement(ImmutableList.of(new TextFragment("a")));
     TraceElement clone = BatfishObjectMapper.clone(traceElement, TraceElement.class);
     assertEquals(traceElement, clone);

@@ -37,7 +37,7 @@ public class SearchFiltersQuestionTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     SearchFiltersQuestion q =
         SearchFiltersQuestion.builder()
             .setAction("deny")
@@ -109,7 +109,7 @@ public class SearchFiltersQuestionTest {
   }
 
   @Test
-  public void testIpProtocols() throws IOException {
+  public void testIpProtocols() {
     ImmutableSortedSet<IpProtocol> ipProtocols =
         ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.ICMP);
     SearchFiltersQuestion question =

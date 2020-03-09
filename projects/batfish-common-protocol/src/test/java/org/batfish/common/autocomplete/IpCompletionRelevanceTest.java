@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
@@ -44,7 +43,7 @@ public class IpCompletionRelevanceTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     IpCompletionRelevance metadata = new IpCompletionRelevance("a", "b");
     IpCompletionRelevance clone = BatfishObjectMapper.clone(metadata, IpCompletionRelevance.class);
     assertEquals(metadata, clone);

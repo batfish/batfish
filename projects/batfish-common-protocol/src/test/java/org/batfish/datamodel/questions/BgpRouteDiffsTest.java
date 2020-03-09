@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public class BgpRouteDiffsTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     BgpRouteDiffs diffs =
         new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")));
     assertEquals(diffs, BatfishObjectMapper.clone(diffs, BgpRouteDiffs.class));

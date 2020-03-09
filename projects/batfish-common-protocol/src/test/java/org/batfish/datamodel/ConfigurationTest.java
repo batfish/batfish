@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -147,7 +146,7 @@ public final class ConfigurationTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     // TODO: other properties
     Map<String, CommunityMatchExpr> communityMatchExprs =
         ImmutableMap.of("cme", AllStandardCommunities.instance());

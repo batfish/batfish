@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
@@ -14,7 +13,7 @@ import org.junit.Test;
 public class FindMatchingFilterLinesQuestionTest {
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     // Default parameters
     FindMatchingFilterLinesQuestion q =
         new FindMatchingFilterLinesQuestion(null, null, null, null, null);

@@ -47,12 +47,12 @@ public class InstanceDataTest {
     assertThat(instanceData.getOrderedVariableNames(), equalTo(ImmutableList.of("r", "a", "d")));
   }
 
-  private static InstanceData clone(InstanceData instanceData) throws IOException {
+  private static InstanceData clone(InstanceData instanceData) {
     return BatfishObjectMapper.clone(instanceData, InstanceData.class);
   }
 
   @Test
-  public void testEquals() throws IOException {
+  public void testEquals() {
     InstanceData instanceData = new InstanceData();
     InstanceData initialInstance = clone(instanceData);
     EqualsTester equalsTester = new EqualsTester();
@@ -79,7 +79,7 @@ public class InstanceDataTest {
    * InstanceData object produces an object equal to the original instance
    */
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     InstanceData instanceData = new InstanceData();
     instanceData.setInstanceName("instanceName");
     instanceData.setDescription("The description");

@@ -41,7 +41,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

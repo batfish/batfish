@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -48,7 +47,7 @@ public class AsSetTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     AsSet set = AsSet.of(1);
     assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
     set = AsSet.confed(1);

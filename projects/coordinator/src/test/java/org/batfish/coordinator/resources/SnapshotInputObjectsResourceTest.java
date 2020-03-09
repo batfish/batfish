@@ -57,7 +57,7 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
   }
 
   @Before
-  public void initTestEnvironment() throws Exception {
+  public void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

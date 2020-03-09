@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -37,7 +36,7 @@ public class InputValidationNotesTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     InputValidationNotes validationNotes =
         new InputValidationNotes(
             VALID, "some description", 3, ImmutableList.of("expansion1", "expansion2"));

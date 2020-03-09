@@ -44,7 +44,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void initNetworkEnvironment() throws Exception {
+  public void initNetworkEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

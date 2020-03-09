@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -26,7 +25,7 @@ public final class ForwardOutInterfaceTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  public void testSerialization() {
     ForwardOutInterface f = new ForwardOutInterface("a", null);
     SessionAction clone = BatfishObjectMapper.clone(f, SessionAction.class);
     assertThat(clone, equalTo(f));
