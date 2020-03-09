@@ -465,6 +465,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
 
+  private final Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
+      _cachedVendorConfigurations;
+
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -490,6 +493,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
+      Cache<NetworkSnapshot, Map<String, VendorConfiguration>> cachedVendorConfigurations,
       @Nullable StorageProvider alternateStorageProvider,
       @Nullable IdResolver alternateIdResolver) {
     _settings = settings;
@@ -497,6 +501,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedConfigurations = cachedConfigurations;
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
+    _cachedVendorConfigurations = cachedVendorConfigurations;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     initLocalSettings(settings);
     _logger = _settings.getLogger();
@@ -1473,6 +1478,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException(
           "Version error repairing vendor configurations for parse configuration answer element");
+    }
+  }
+
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("Load vendor configurations").startActive()) {
+      assert span != null; // avoid unused warning
+      _logger.debugf("Loading vendor configurations for %s\n", snapshot);
+      // Do we already have configurations in the cache?
+      Map<String, VendorConfiguration> vendorConfigurations =
+          _cachedVendorConfigurations.getIfPresent(snapshot);
+      if (vendorConfigurations == null) {
+        _logger.debugf("Loading vendor configurations for %s, cache miss", snapshot);
+        loadParseVendorConfigurationAnswerElement(snapshot);
+        vendorConfigurations =
+            deserializeVendorConfigurations(getTestrigSettings(snapshot).getSerializeVendorPath());
+        _cachedVendorConfigurations.put(snapshot, vendorConfigurations);
+      }
+      return vendorConfigurations;
     }
   }
 

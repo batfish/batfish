@@ -51,6 +51,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.vendor.VendorConfiguration;
 import org.batfish.version.BatfishVersion;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -84,6 +85,9 @@ public class Driver {
   private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
+  private static final Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
+      CACHED_VENDOR_CONFIGURATIONS = buildVendorConfigurationCache();
+
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
 
   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30 secs
@@ -97,6 +101,8 @@ public class Driver {
   private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
 
   private static final int MAX_CACHED_TESTRIGS = 5;
+
+  private static final int MAX_CACHED_VENDOR_CONFIGURATIONS = 2;
 
   static Logger networkListenerLogger =
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
@@ -112,6 +118,14 @@ public class Driver {
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().softValues().maximumSize(MAX_CACHED_TESTRIGS).build();
+  }
+
+  private static Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
+      buildVendorConfigurationCache() {
+    return CacheBuilder.newBuilder()
+        .softValues()
+        .maximumSize(MAX_CACHED_VENDOR_CONFIGURATIONS)
+        .build();
   }
 
   private static synchronized boolean claimIdle() {
@@ -372,6 +386,7 @@ public class Driver {
               CACHED_TESTRIGS,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
+              CACHED_VENDOR_CONFIGURATIONS,
               null,
               null);
 

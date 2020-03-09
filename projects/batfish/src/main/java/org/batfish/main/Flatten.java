@@ -24,6 +24,6 @@ public final class Flatten {
     Settings settings = new Settings(new String[] {"-storagebase", "/"});
     settings.setLogger(new BatfishLogger(BatfishLogger.LEVELSTR_WARN, false, System.out));
 
-    new Batfish(settings, null, null, null, null, null).flatten(inputPath, outputPath);
+    new Batfish(settings, null, null, null, null, null, null).flatten(inputPath, outputPath);
   }
 }

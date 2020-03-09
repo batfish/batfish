@@ -31,6 +31,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Batfish.TestrigSettings;
 import org.batfish.storage.StorageProvider;
+import org.batfish.vendor.VendorConfiguration;
 import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
@@ -60,6 +61,11 @@ public class BatfishTestUtils {
     return CacheBuilder.newBuilder().softValues().maximumSize(2).build();
   }
 
+  private static Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
+      makeVendorConfigurationCache() {
+    return CacheBuilder.newBuilder().softValues().maximumSize(2).build();
+  }
+
   private static Batfish initBatfish(
       SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
       throws IOException {
@@ -80,6 +86,7 @@ public class BatfishTestUtils {
             testrigs,
             makeDataPlaneCache(),
             makeEnvBgpCache(),
+            makeVendorConfigurationCache(),
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
@@ -113,6 +120,7 @@ public class BatfishTestUtils {
             testrigs,
             makeDataPlaneCache(),
             makeEnvBgpCache(),
+            makeVendorConfigurationCache(),
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
@@ -172,6 +180,7 @@ public class BatfishTestUtils {
             makeTestrigCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
+            makeVendorConfigurationCache(),
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     TestrigSettings snapshotTr = batfish.getSnapshotTestrigSettings();
@@ -240,6 +249,7 @@ public class BatfishTestUtils {
             makeTestrigCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
+            makeVendorConfigurationCache(),
             storageProvider,
             idResolver);
     registerDataPlanePlugins(batfish);
