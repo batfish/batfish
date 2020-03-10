@@ -68,7 +68,7 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  SecurityGroup(
+  public SecurityGroup(
       String groupId,
       String groupName,
       List<IpPermissions> ipPermsEgress,
@@ -76,7 +76,7 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     this(null, groupId, groupName, ipPermsEgress, ipPermsIngress, ImmutableMap.of());
   }
 
-  SecurityGroup(
+  public SecurityGroup(
       @Nullable String description,
       String groupId,
       String groupName,
