@@ -270,9 +270,9 @@ public final class IpPermissions implements Serializable {
     _ipProtocol = ipProtocol;
     _fromPort = fromPort;
     _toPort = toPort;
-    _ipRanges = ipRanges;
-    _prefixList = prefixList;
-    _userIdGroupPairs = userIdGroupPairs;
+    _ipRanges = ImmutableList.copyOf(ipRanges);
+    _prefixList = ImmutableList.copyOf(prefixList);
+    _userIdGroupPairs = ImmutableList.copyOf(userIdGroupPairs);
   }
 
   /**
