@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
@@ -55,13 +57,14 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
-
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
   public static final String COL_FLOW = "Flow";
   public static final String COL_ACTION = "Action";
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
+
+  private static final String NO_MATCHING_FILTERS = "No matching filters";
 
   public static final List<ColumnMetadata> COLUMN_METADATA =
       ImmutableList.of(
@@ -103,6 +106,31 @@ public class TestFiltersAnswerer extends Answerer {
     TableAnswerElement answer = create(question);
     answer.postProcessAnswer(question, rows);
     return answer;
+  }
+
+  private TableAnswerElement tryAnswer(NetworkSnapshot snapshot) {
+    try {
+      return answer(snapshot);
+    } catch (BatfishException e) {
+      if (e.getMessage().equals(NO_MATCHING_FILTERS)) {
+        // just return an empty answer
+        TestFiltersQuestion question = (TestFiltersQuestion) _question;
+        TableAnswerElement answer = create(question);
+        answer.postProcessAnswer(question, ImmutableMultiset.of());
+        return answer;
+      }
+      throw e;
+    }
+  }
+
+  @Override
+  public TableAnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    TableAnswerElement rawTable =
+        TableDiff.diffTables(
+            tryAnswer(snapshot), tryAnswer(reference), _question.getIncludeOneTableKeys());
+    TableAnswerElement finalTable = new TableAnswerElement(rawTable.getMetadata());
+    finalTable.postProcessAnswer(_question, rawTable.getRows().getData());
+    return finalTable;
   }
 
   private SortedSet<Flow> getFlows(
@@ -274,7 +302,7 @@ public class TestFiltersAnswerer extends Answerer {
       }
     }
     if (!foundMatchingFilter) {
-      throw new BatfishException("No matching filters");
+      throw new BatfishException(NO_MATCHING_FILTERS);
     }
     checkArgument(
         rows.size() > 0,
