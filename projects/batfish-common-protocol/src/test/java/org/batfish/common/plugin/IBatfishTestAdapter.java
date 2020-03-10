@@ -206,6 +206,11 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public String getNetworkObject(NetworkId networkId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public String getSnapshotInputObject(NetworkSnapshot snapshot, String key) {
     throw new UnsupportedOperationException();
   }

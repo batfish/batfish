@@ -2196,6 +2196,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public String getNetworkObject(NetworkId networkId, String key) throws IOException {
+    try (InputStream inputObject = _storage.loadNetworkObject(networkId, key)) {
+      byte[] bytes = IOUtils.toByteArray(inputObject);
+      return new String(bytes, detectCharset(bytes));
+    }
+  }
+
+  @Override
   public String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
       throws FileNotFoundException, IOException {
     try (InputStream inputObject =
