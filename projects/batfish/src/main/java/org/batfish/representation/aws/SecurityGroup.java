@@ -27,7 +27,7 @@ import org.batfish.datamodel.Ip;
 /** Represents an AWS security group */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class SecurityGroup implements AwsVpcEntity, Serializable {
+public final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @Nullable private final String _description;
 
@@ -68,7 +68,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  SecurityGroup(
+  public SecurityGroup(
       String groupId,
       String groupName,
       List<IpPermissions> ipPermsEgress,
@@ -76,7 +76,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
     this(null, groupId, groupName, ipPermsEgress, ipPermsIngress, ImmutableMap.of());
   }
 
-  SecurityGroup(
+  public SecurityGroup(
       @Nullable String description,
       String groupId,
       String groupName,
@@ -116,12 +116,7 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  String getGroupId() {
-    return _groupId;
-  }
-
-  @Nonnull
-  String getGroupName() {
+  public String getGroupName() {
     return _groupName;
   }
 
@@ -131,12 +126,12 @@ final class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  List<IpPermissions> getIpPermsEgress() {
+  public List<IpPermissions> getIpPermsEgress() {
     return _ipPermsEgress;
   }
 
   @Nonnull
-  List<IpPermissions> getIpPermsIngress() {
+  public List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
   }
 

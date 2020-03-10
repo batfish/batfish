@@ -59,7 +59,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 /** IP packet permissions within AWS security groups */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class IpPermissions implements Serializable {
+public final class IpPermissions implements Serializable {
 
   /** Type of source/destination address */
   public enum AddressType {
@@ -81,7 +81,7 @@ final class IpPermissions implements Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class IpRange implements Serializable {
+  public static final class IpRange implements Serializable {
 
     @Nullable private final String _description;
     @Nonnull private final Prefix _prefix;
@@ -175,7 +175,7 @@ final class IpPermissions implements Serializable {
   @VisibleForTesting
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class UserIdGroupPair implements Serializable {
+  public static final class UserIdGroupPair implements Serializable {
 
     @Nullable private final String _description;
 
@@ -200,7 +200,7 @@ final class IpPermissions implements Serializable {
     }
 
     @Nonnull
-    String getGroupId() {
+    public String getGroupId() {
       return _groupId;
     }
 
@@ -260,7 +260,7 @@ final class IpPermissions implements Serializable {
         userIdGroupPairs);
   }
 
-  IpPermissions(
+  public IpPermissions(
       String ipProtocol,
       @Nullable Integer fromPort,
       @Nullable Integer toPort,
@@ -270,9 +270,9 @@ final class IpPermissions implements Serializable {
     _ipProtocol = ipProtocol;
     _fromPort = fromPort;
     _toPort = toPort;
-    _ipRanges = ipRanges;
-    _prefixList = prefixList;
-    _userIdGroupPairs = userIdGroupPairs;
+    _ipRanges = ImmutableList.copyOf(ipRanges);
+    _prefixList = ImmutableList.copyOf(prefixList);
+    _userIdGroupPairs = ImmutableList.copyOf(userIdGroupPairs);
   }
 
   /**
@@ -549,5 +549,35 @@ final class IpPermissions implements Serializable {
         .add("_userIdGroupPairs", _userIdGroupPairs)
         .add("_toPort", _toPort)
         .toString();
+  }
+
+  @Nullable
+  public Integer getFromPort() {
+    return _fromPort;
+  }
+
+  @Nonnull
+  public String getIpProtocol() {
+    return _ipProtocol;
+  }
+
+  @Nonnull
+  public List<IpRange> getIpRanges() {
+    return _ipRanges;
+  }
+
+  @Nonnull
+  public List<String> getPrefixList() {
+    return _prefixList;
+  }
+
+  @Nonnull
+  public List<UserIdGroupPair> getUserIdGroupPairs() {
+    return _userIdGroupPairs;
+  }
+
+  @Nullable
+  public Integer getToPort() {
+    return _toPort;
   }
 }

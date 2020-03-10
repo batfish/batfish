@@ -44,7 +44,7 @@ import org.batfish.representation.aws.Instance.Status;
 
 /** Represents an AWS region */
 @ParametersAreNonnullByDefault
-final class Region implements Serializable {
+public final class Region implements Serializable {
 
   private interface ThrowingConsumer<T, E extends Exception> {
     void accept(T t) throws E, IOException;
@@ -522,7 +522,7 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, Instance> getInstances() {
+  public Map<String, Instance> getInstances() {
     return _instances;
   }
 
@@ -552,7 +552,7 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  String getName() {
+  public String getName() {
     return _name;
   }
 
@@ -572,7 +572,7 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, NetworkInterface> getNetworkInterfaces() {
+  public Map<String, NetworkInterface> getNetworkInterfaces() {
     return _networkInterfaces;
   }
 
@@ -587,7 +587,7 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, SecurityGroup> getSecurityGroups() {
+  public Map<String, SecurityGroup> getSecurityGroups() {
     return _securityGroups;
   }
 
@@ -814,9 +814,7 @@ final class Region implements Serializable {
         .setName(
             String.format(
                 "~%s~SECURITY-GROUP~%s~%s~",
-                ingress ? INGRESS : EGRESS,
-                securityGroup.getGroupName(),
-                securityGroup.getGroupId()))
+                ingress ? INGRESS : EGRESS, securityGroup.getGroupName(), securityGroup.getId()))
         .setLines(aclLines)
         .setOwner(owner)
         .build();
