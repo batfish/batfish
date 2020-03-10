@@ -1,6 +1,5 @@
 package org.batfish.question.testfilters;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -277,8 +276,9 @@ public class TestFiltersAnswerer extends Answerer {
     // collect all errors while building flows; return this set when no valid flow is found
     ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
 
-    // keep track of whether any matching filters have been found; if none get found, throw error
-    boolean foundMatchingFilter = false;
+    // keep track of whether any matching flows (on any node) have been found; if none get found,
+    // throw error
+    boolean foundMatchingFlow = false;
 
     Set<Location> queryLocations = question.getStartLocationSpecifier().resolve(context);
 
@@ -292,22 +292,24 @@ public class TestFiltersAnswerer extends Answerer {
 
       Configuration c = configurations.get(node);
       SortedSet<Flow> flows = getFlows(queryLocations, context, c, allProblems);
+      if (flows.isEmpty()) {
+        continue;
+      }
+      foundMatchingFlow = true;
 
       // there should be another for loop for v6 filters when we add v6 support
       for (IpAccessList filter : filtersByName) {
-        foundMatchingFilter = true;
         for (Flow flow : flows) {
           rows.add(getRow(filter, flow, c));
         }
       }
     }
-    if (!foundMatchingFilter) {
-      throw new BatfishException(NO_MATCHING_FILTERS);
+    if (!foundMatchingFlow) {
+      throw new BatfishException(
+          String.format(
+              "No valid flow found for specified parameters. Potential problems: %s",
+              String.join(",", allProblems.build())));
     }
-    checkArgument(
-        rows.size() > 0,
-        "No valid flow found for specified parameters. Potential problems: %s",
-        String.join(",", allProblems.build()));
     return rows;
   }
 }
