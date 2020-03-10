@@ -466,7 +466,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  public void testSerialization() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(TCP, UDP))

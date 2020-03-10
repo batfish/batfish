@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.BgpSessionStatus;
@@ -15,7 +14,7 @@ import org.junit.Test;
 public class BgpSessionStatusQuestionTest {
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     BgpSessionStatusQuestion q =
         new BgpSessionStatusQuestion(
             "nodes",

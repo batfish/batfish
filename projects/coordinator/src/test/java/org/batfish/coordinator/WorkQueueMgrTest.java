@@ -135,7 +135,7 @@ public final class WorkQueueMgrTest {
   private IdManager _idManager;
 
   @Before
-  public void init() throws Exception {
+  public void init() {
     Main.mainInit(new String[0]);
     Main.setLogger(new BatfishLogger("debug", false));
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());

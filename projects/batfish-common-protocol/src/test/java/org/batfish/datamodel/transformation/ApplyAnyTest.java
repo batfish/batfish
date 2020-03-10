@@ -2,7 +2,6 @@ package org.batfish.datamodel.transformation;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -20,7 +19,7 @@ public final class ApplyAnyTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     ApplyAny applyAll = new ApplyAny(Noop.NOOP_DEST_NAT);
 
     assertEquals(applyAll, BatfishObjectMapper.clone(applyAll, ApplyAny.class));

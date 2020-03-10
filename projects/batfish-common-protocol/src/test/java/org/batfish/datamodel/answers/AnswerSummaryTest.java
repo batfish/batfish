@@ -33,7 +33,7 @@ public class AnswerSummaryTest {
   }
 
   @Test
-  public void serializationTest() throws IOException {
+  public void serializationTest() {
     AnswerSummary summary = new AnswerSummary("notes1", 21, 23, 42);
 
     // The summary should survive cloning through JSON.

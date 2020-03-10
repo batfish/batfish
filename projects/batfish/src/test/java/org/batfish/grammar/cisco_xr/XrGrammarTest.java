@@ -473,7 +473,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testExtcommunitySetRtConversion() throws IOException {
+  public void testExtcommunitySetRtConversion() {
     Configuration c = parseConfig("ios-xr-extcommunity-set-rt");
     CommunityContext ctx = CommunityContext.builder().build();
 

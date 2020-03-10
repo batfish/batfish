@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.apache.commons.lang3.SerializationUtils;
@@ -208,7 +207,7 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(IntegerSpace.PORTS, IntegerSpace.class),
         equalTo(IntegerSpace.PORTS));

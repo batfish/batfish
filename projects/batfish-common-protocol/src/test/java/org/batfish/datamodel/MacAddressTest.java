@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -46,7 +45,7 @@ public final class MacAddressTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     MacAddress macAddress = of(5L);
 
     assertThat(BatfishObjectMapper.clone(macAddress, MacAddress.class), equalTo(macAddress));

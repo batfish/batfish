@@ -6,7 +6,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -40,7 +39,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     ExtendedCommunity ec = ExtendedCommunity.of(1, 2L, 123L);
     assertThat(BatfishObjectMapper.clone(ec, ExtendedCommunity.class), equalTo(ec));
   }

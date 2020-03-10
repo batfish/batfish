@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Bgpv4Route.Builder;
@@ -32,7 +31,7 @@ public class Bgpv4RouteTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Bgpv4Route br =
         Bgpv4Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

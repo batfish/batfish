@@ -34,14 +34,14 @@ public class ParseVendorConfigurationJobTest {
   }
 
   @Test
-  public void testHost() throws Exception {
+  public void testHost() {
     ParseVendorConfigurationResult result = parseHost(HOST_TESTCONFIGS_PREFIX + "host.json");
     // Confirm a good host file results in no failure cause
     assertThat(result.getFailureCause(), equalTo(null));
   }
 
   @Test
-  public void testHostInvalid() throws Exception {
+  public void testHostInvalid() {
     ParseVendorConfigurationResult result = parseHost(HOST_TESTCONFIGS_PREFIX + "hostInvalid.json");
     // Confirm a bad host file does not cause a crash but results in failure cause
     assertThat(result.getFailureCause(), not(equalTo(null)));

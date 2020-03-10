@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
@@ -94,7 +93,7 @@ public final class BgpUnnumberedPeerConfigTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     BgpUnnumberedPeerConfig bgpUnnumberedPeerConfig =
         BgpUnnumberedPeerConfig.builder()
             .setAppliedRibGroup(

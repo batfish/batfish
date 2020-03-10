@@ -7,7 +7,6 @@ import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class AssignIpAddressFromPoolTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     AssignIpAddressFromPool assignIpAddressFromPool =
         new AssignIpAddressFromPool(
             DEST_NAT, DESTINATION, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));

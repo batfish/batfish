@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -44,7 +43,7 @@ public class RouteFilterLineTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     RouteFilterLine rfl =
         new RouteFilterLine(LineAction.PERMIT, IpWildcard.parse("1.1.1.1"), new SubRange(30, 32));
     assertThat(BatfishObjectMapper.clone(rfl, RouteFilterLine.class), equalTo(rfl));

@@ -1901,7 +1901,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testNatRulesAndReferences() throws IOException {
+  public void testNatRulesAndReferences() {
     String hostname = "rulebase-nat";
 
     // Check VS model
