@@ -47,6 +47,11 @@ public class AwsConfiguration extends VendorConfiguration {
     _regions = regions;
   }
 
+  @Nonnull
+  public Map<String, Region> getRegions() {
+    return _regions;
+  }
+
   /** Adds a config subtree */
   public void addConfigElement(
       String region,

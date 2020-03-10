@@ -39,7 +39,7 @@ import org.batfish.datamodel.Ip;
 /** Representation for an EC2 instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class Instance implements AwsVpcEntity, Serializable {
+public final class Instance implements AwsVpcEntity, Serializable {
 
   /** Represents the status of the instance */
   public enum Status {
@@ -238,11 +238,6 @@ final class Instance implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public String getInstanceId() {
-    return _instanceId;
-  }
-
-  @Nonnull
   public List<String> getNetworkInterfaces() {
     return _networkInterfaces;
   }
@@ -265,6 +260,11 @@ final class Instance implements AwsVpcEntity, Serializable {
   @Nullable
   public String getSubnetId() {
     return _subnetId;
+  }
+
+  @Nonnull
+  public Map<String, String> getTags() {
+    return _tags;
   }
 
   @Nullable

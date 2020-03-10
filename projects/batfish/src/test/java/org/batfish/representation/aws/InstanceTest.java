@@ -119,15 +119,14 @@ public class InstanceTest {
     Instance instance =
         Instance.builder()
             .setInstanceId("instance")
-            .setNetworkInterfaces(ImmutableList.of(networkInterface.getNetworkInterfaceId()))
+            .setNetworkInterfaces(ImmutableList.of(networkInterface.getId()))
             .setTags(ImmutableMap.of("MADEUPTAG", "noval", TAG_NAME, "UserVisibleName!"))
             .build();
 
     Region region =
         Region.builder("test")
             .setInstances(ImmutableMap.of(instance.getId(), instance))
-            .setNetworkInterfaces(
-                ImmutableMap.of(networkInterface.getNetworkInterfaceId(), networkInterface))
+            .setNetworkInterfaces(ImmutableMap.of(networkInterface.getId(), networkInterface))
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
             .build();
 
