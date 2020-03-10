@@ -59,7 +59,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 /** IP packet permissions within AWS security groups */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class IpPermissions implements Serializable {
+public final class IpPermissions implements Serializable {
 
   /** Type of source/destination address */
   public enum AddressType {

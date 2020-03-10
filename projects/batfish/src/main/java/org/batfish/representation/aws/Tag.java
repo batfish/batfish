@@ -26,7 +26,7 @@ public class Tag {
     return new Tag(key, value);
   }
 
-  private Tag(String key, String value) {
+  public Tag(String key, String value) {
     _key = key;
     _value = value;
   }
