@@ -84,6 +84,7 @@ java_library(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_errorprone_error_prone_annotations",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_google_re2j_re2j",
         "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_cli_commons_cli",
         "@maven//:commons_io_commons_io",

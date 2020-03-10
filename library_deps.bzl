@@ -13,6 +13,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.errorprone:error_prone_annotations:2.3.1",
     "com.google.guava:guava:28.1-jre",
     "com.google.guava:guava-testlib:28.1-jre",
+    "com.google.re2j:re2j:1.3",
     "com.ibm.icu:icu4j:63.1",
     "com.uber.jaeger:jaeger-core:0.21.0",
     "commons-beanutils:commons-beanutils:1.9.4",
