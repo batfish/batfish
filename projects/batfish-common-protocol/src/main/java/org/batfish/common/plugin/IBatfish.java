@@ -110,6 +110,16 @@ public interface IBatfish extends IPluginConsumer {
   ImmutableConfiguration getSettingsConfiguration();
 
   /**
+   * Get a network extended object for the given key
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  String getNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
    * Get a snapshot input object for the given key
    *
    * @throws FileNotFoundException if the object for the given key does not exist
