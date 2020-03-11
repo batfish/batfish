@@ -107,31 +107,6 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private TableAnswerElement tryAnswer(NetworkSnapshot snapshot) {
-    try {
-      return answer(snapshot);
-    } catch (BatfishException e) {
-      if (e.getMessage().equals(NO_MATCHING_FILTERS)) {
-        // just return an empty answer
-        TestFiltersQuestion question = (TestFiltersQuestion) _question;
-        TableAnswerElement answer = create(question);
-        answer.postProcessAnswer(question, ImmutableMultiset.of());
-        return answer;
-      }
-      throw e;
-    }
-  }
-
-  @Override
-  public TableAnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
-    TableAnswerElement rawTable =
-        TableDiff.diffTables(
-            tryAnswer(snapshot), tryAnswer(reference), _question.getIncludeOneTableKeys());
-    TableAnswerElement finalTable = new TableAnswerElement(rawTable.getMetadata());
-    finalTable.postProcessAnswer(_question, rawTable.getRows().getData());
-    return finalTable;
-  }
-
   private SortedSet<Flow> getFlows(
       Set<Location> queryLocations,
       SpecifierContext context,
