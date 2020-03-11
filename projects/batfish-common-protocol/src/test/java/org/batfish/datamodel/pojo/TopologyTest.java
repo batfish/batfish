@@ -1,6 +1,5 @@
 package org.batfish.datamodel.pojo;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
@@ -134,7 +133,11 @@ public class TopologyTest {
   @Test
   public void testAwsAggregateUsesNodes() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration c1 = nf.configurationBuilder().setHostname("vpc-1").setConfigurationFormat(ConfigurationFormat.AWS).build();
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname("vpc-1")
+            .setConfigurationFormat(ConfigurationFormat.AWS)
+            .build();
     VendorFamily vf = new VendorFamily();
     AwsFamily af = new AwsFamily();
     String regionName = "us-west-1";

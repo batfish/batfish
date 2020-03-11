@@ -103,12 +103,12 @@ public class Topology extends BfObject {
     return pojoTopology;
   }
 
-  private static void putInAwsAggregate(Topology pojoTopology, Configuration configuration, Node pojoNode) {
+  private static void putInAwsAggregate(
+      Topology pojoTopology, Configuration configuration, Node pojoNode) {
     VendorFamily vendorFamily = configuration.getVendorFamily();
     if (vendorFamily.getAws().getSubnetId() != null) {
       String subnetId = vendorFamily.getAws().getSubnetId();
-      Aggregate subnetAggregate =
-          pojoTopology.getOrCreateAggregate(subnetId, AggregateType.SUBNET);
+      Aggregate subnetAggregate = pojoTopology.getOrCreateAggregate(subnetId, AggregateType.SUBNET);
       subnetAggregate.getContents().add(pojoNode.getId());
 
       String vpcId = vendorFamily.getAws().getVpcId();
@@ -120,13 +120,11 @@ public class Topology extends BfObject {
       vpcAggregate.getContents().add(pojoNode.getId());
 
       String region = vendorFamily.getAws().getRegion();
-      Aggregate regionAggregate =
-          pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
+      Aggregate regionAggregate = pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
       regionAggregate.getContents().add(vpcAggregate.getId());
     } else if (vendorFamily.getAws().getRegion() != null) {
       String region = vendorFamily.getAws().getRegion();
-      Aggregate regionAggregate =
-          pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
+      Aggregate regionAggregate = pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
       regionAggregate.getContents().add(pojoNode.getId());
 
       Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
