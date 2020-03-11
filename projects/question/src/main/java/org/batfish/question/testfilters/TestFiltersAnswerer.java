@@ -1,6 +1,5 @@
 package org.batfish.question.testfilters;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -55,7 +54,6 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
-
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
   public static final String COL_FLOW = "Flow";
@@ -249,8 +247,8 @@ public class TestFiltersAnswerer extends Answerer {
     // collect all errors while building flows; return this set when no valid flow is found
     ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
 
-    // keep track of whether any matching filters have been found; if none get found, throw error
     boolean foundMatchingFilter = false;
+    boolean foundMatchingFlow = false;
 
     Set<Location> queryLocations = question.getStartLocationSpecifier().resolve(context);
 
@@ -261,25 +259,28 @@ public class TestFiltersAnswerer extends Answerer {
       if (filtersByName.isEmpty()) {
         continue;
       }
+      foundMatchingFilter = true;
 
       Configuration c = configurations.get(node);
       SortedSet<Flow> flows = getFlows(queryLocations, context, c, allProblems);
+      if (flows.isEmpty()) {
+        continue;
+      }
+      foundMatchingFlow = true;
 
       // there should be another for loop for v6 filters when we add v6 support
       for (IpAccessList filter : filtersByName) {
-        foundMatchingFilter = true;
         for (Flow flow : flows) {
           rows.add(getRow(filter, flow, c));
         }
       }
     }
-    if (!foundMatchingFilter) {
-      throw new BatfishException("No matching filters");
+    if (foundMatchingFilter && !foundMatchingFlow) {
+      throw new BatfishException(
+          String.format(
+              "No valid flow found for specified parameters. Potential problems: %s",
+              String.join(",", allProblems.build())));
     }
-    checkArgument(
-        rows.size() > 0,
-        "No valid flow found for specified parameters. Potential problems: %s",
-        String.join(",", allProblems.build()));
     return rows;
   }
 }

@@ -281,35 +281,32 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testErrorForNoMatchingNodes() {
+  public void testErrorForNoMatchingFlows() {
     Configuration c1 = _cb.setHostname("c1").build();
+    _nf.aclBuilder().setName("acl1").setOwner(c1).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
     IBatfish batfish =
         new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
 
-    // Test that exception is thrown if no nodes match
-    TestFiltersQuestion question = new TestFiltersQuestion("fake_node", null, null, null);
-    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+    // if no filters are matched, no error -- just an empty table
+    {
+      TestFiltersQuestion question =
+          new TestFiltersQuestion(c1.getHostname(), "acl2", null, "nonExistentLocation");
+      TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+      TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
+      assertThat(answer.getRows().getData(), empty());
+    }
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("No matching filters");
-    answerer.answer(batfish.getSnapshot());
-  }
+    // if filters are matched, but we can't find a flow, we get an error
+    {
+      // Test that exception is thrown if node is found, but no filters match
+      TestFiltersQuestion question =
+          new TestFiltersQuestion(c1.getHostname(), "acl1", null, "nonExistentLocation");
+      TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
 
-  @Test
-  public void testErrorForNoMatchingFilters() {
-    Configuration c1 = _cb.setHostname("c1").build();
-    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
-    IBatfish batfish =
-        new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
-
-    // Test that exception is thrown if node is found, but no filters match
-    TestFiltersQuestion question =
-        new TestFiltersQuestion(c1.getHostname(), "fake_filter", null, null);
-    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("No matching filters");
-    answerer.answer(batfish.getSnapshot());
+      _thrown.expect(BatfishException.class);
+      _thrown.expectMessage("No valid flow found");
+      answerer.answer(batfish.getSnapshot());
+    }
   }
 }
