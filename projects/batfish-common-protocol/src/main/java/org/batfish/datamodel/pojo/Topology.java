@@ -15,6 +15,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.batfish.datamodel.pojo.Link.LinkType;
+import org.batfish.datamodel.vendor_family.VendorFamily;
 
 public class Topology extends BfObject {
   private static final String PROP_TESTRIG_NAME = "testrigName";
@@ -83,41 +84,6 @@ public class Topology extends BfObject {
         pojoTopology.getInterfaces().add(pojoInterface);
         pojoTopology.getLinks().add(pojoLink);
       }
-
-      // add AWS aggregates; put node in the smallest container we can find for them,
-      // and then put that container in their container
-      if (configuration.getConfigurationFormat() == ConfigurationFormat.AWS) {
-        if (configuration.getVendorFamily().getAws().getSubnetId() != null) {
-          String subnetId = configuration.getVendorFamily().getAws().getSubnetId();
-          Aggregate subnetAggregate =
-              pojoTopology.getOrCreateAggregate(subnetId, AggregateType.SUBNET);
-          subnetAggregate.getContents().add(pojoNode.getId());
-
-          String vpcId = configuration.getVendorFamily().getAws().getVpcId();
-          Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
-          vpcAggregate.getContents().add(subnetAggregate.getId());
-        } else if (configuration.getVendorFamily().getAws().getVpcId() != null) {
-          String vpcId = configuration.getVendorFamily().getAws().getVpcId();
-          Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
-          vpcAggregate.getContents().add(pojoNode.getId());
-
-          String region = configuration.getVendorFamily().getAws().getRegion();
-          Aggregate regionAggregate =
-              pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
-          regionAggregate.getContents().add(vpcAggregate.getId());
-        } else if (configuration.getVendorFamily().getAws().getRegion() != null) {
-          String region = configuration.getVendorFamily().getAws().getRegion();
-          Aggregate regionAggregate =
-              pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
-          regionAggregate.getContents().add(pojoNode.getId());
-
-          Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
-          awsAggregate.getContents().add(regionAggregate.getId());
-        } else {
-          Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
-          awsAggregate.getContents().add(pojoNode.getId());
-        }
-      }
     }
 
     // add nodes that were not in Topology (because they have no Edges)
@@ -128,8 +94,47 @@ public class Topology extends BfObject {
               configuration.getDeviceModel(),
               configuration.getDeviceType());
       pojoTopology.getNodes().add(pojoNode);
+      // add AWS aggregates; put node in the smallest container we can find for them,
+      // and then put that container in their container
+      if (configuration.getConfigurationFormat() == ConfigurationFormat.AWS) {
+        putInAwsAggregate(pojoTopology, configuration, pojoNode);
+      }
     }
     return pojoTopology;
+  }
+
+  private static void putInAwsAggregate(Topology pojoTopology, Configuration configuration, Node pojoNode) {
+    VendorFamily vendorFamily = configuration.getVendorFamily();
+    if (vendorFamily.getAws().getSubnetId() != null) {
+      String subnetId = vendorFamily.getAws().getSubnetId();
+      Aggregate subnetAggregate =
+          pojoTopology.getOrCreateAggregate(subnetId, AggregateType.SUBNET);
+      subnetAggregate.getContents().add(pojoNode.getId());
+
+      String vpcId = vendorFamily.getAws().getVpcId();
+      Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
+      vpcAggregate.getContents().add(subnetAggregate.getId());
+    } else if (vendorFamily.getAws().getVpcId() != null) {
+      String vpcId = vendorFamily.getAws().getVpcId();
+      Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
+      vpcAggregate.getContents().add(pojoNode.getId());
+
+      String region = vendorFamily.getAws().getRegion();
+      Aggregate regionAggregate =
+          pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
+      regionAggregate.getContents().add(vpcAggregate.getId());
+    } else if (vendorFamily.getAws().getRegion() != null) {
+      String region = vendorFamily.getAws().getRegion();
+      Aggregate regionAggregate =
+          pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
+      regionAggregate.getContents().add(pojoNode.getId());
+
+      Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
+      awsAggregate.getContents().add(regionAggregate.getId());
+    } else {
+      Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
+      awsAggregate.getContents().add(pojoNode.getId());
+    }
   }
 
   public Topology(String testrigName) {
