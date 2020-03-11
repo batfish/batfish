@@ -276,8 +276,7 @@ public class TestFiltersAnswerer extends Answerer {
     // collect all errors while building flows; return this set when no valid flow is found
     ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
 
-    // keep track of whether any matching flows (on any node) have been found; if none get found,
-    // throw error
+    boolean foundMatchingFilter = false;
     boolean foundMatchingFlow = false;
 
     Set<Location> queryLocations = question.getStartLocationSpecifier().resolve(context);
@@ -289,6 +288,7 @@ public class TestFiltersAnswerer extends Answerer {
       if (filtersByName.isEmpty()) {
         continue;
       }
+      foundMatchingFilter = true;
 
       Configuration c = configurations.get(node);
       SortedSet<Flow> flows = getFlows(queryLocations, context, c, allProblems);
@@ -304,7 +304,7 @@ public class TestFiltersAnswerer extends Answerer {
         }
       }
     }
-    if (!foundMatchingFlow) {
+    if (foundMatchingFilter && !foundMatchingFlow) {
       throw new BatfishException(
           String.format(
               "No valid flow found for specified parameters. Potential problems: %s",
