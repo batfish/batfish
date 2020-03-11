@@ -44,6 +44,8 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Map<String, String> _tags;
 
+  @Nonnull private final String _vpcId;
+
   @JsonCreator
   private static SecurityGroup create(
       @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
@@ -51,13 +53,15 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_GROUP_NAME) String groupName,
       @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS_EGRESS) List<IpPermissions> ipPermsEgress,
       @Nullable @JsonProperty(JSON_KEY_IP_PERMISSIONS) List<IpPermissions> ipPermsIngress,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
+      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
     checkArgument(groupId != null, "Group id cannot be null for security groups");
     checkArgument(groupName != null, "Group name cannot be null for security groups");
     checkArgument(
         ipPermsEgress != null, "Egress IP permissions list cannot be null for security groups");
     checkArgument(
         ipPermsIngress != null, "Ingress IP permissions list cannot be null for security groups");
+    checkArgument(vpcId != null, "VPC Id cannot be null for security groups");
     return new SecurityGroup(
         description,
         groupId,
@@ -65,15 +69,17 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
         ipPermsEgress,
         ipPermsIngress,
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
-            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)),
+        vpcId);
   }
 
   public SecurityGroup(
       String groupId,
       String groupName,
       List<IpPermissions> ipPermsEgress,
-      List<IpPermissions> ipPermsIngress) {
-    this(null, groupId, groupName, ipPermsEgress, ipPermsIngress, ImmutableMap.of());
+      List<IpPermissions> ipPermsIngress,
+      String vpcId) {
+    this(null, groupId, groupName, ipPermsEgress, ipPermsIngress, ImmutableMap.of(), vpcId);
   }
 
   public SecurityGroup(
@@ -82,7 +88,8 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
       String groupName,
       List<IpPermissions> ipPermsEgress,
       List<IpPermissions> ipPermsIngress,
-      Map<String, String> tags) {
+      Map<String, String> tags,
+      String vpcId) {
     _description = description;
     _groupId = groupId;
     _groupName = groupName;
@@ -90,6 +97,7 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     _ipPermsIngress = ipPermsIngress;
     _referrerIps = new HashMap<>();
     _tags = tags;
+    _vpcId = vpcId;
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
@@ -144,6 +152,11 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _tags;
   }
 
+  @Nonnull
+  public String getVpcId() {
+    return _vpcId;
+  }
+
   private static String humanReadableInstanceName(Configuration c) {
     if (c.getHumanName() == null) {
       return c.getHostname();
@@ -173,25 +186,34 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
         && Objects.equals(_ipPermsEgress, that._ipPermsEgress)
         && Objects.equals(_ipPermsIngress, that._ipPermsIngress)
         && Objects.equals(_referrerIps, that._referrerIps)
-        && Objects.equals(_tags, that._tags);
+        && Objects.equals(_tags, that._tags)
+        && Objects.equals(_vpcId, that._vpcId);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _description, _groupId, _groupName, _ipPermsEgress, _ipPermsIngress, _referrerIps, _tags);
+        _description,
+        _groupId,
+        _groupName,
+        _ipPermsEgress,
+        _ipPermsIngress,
+        _referrerIps,
+        _tags,
+        _vpcId);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_description", _description)
-        .add("_groupId", _groupId)
-        .add("_groupName", _groupName)
-        .add("_ipPermsEgress", _ipPermsEgress)
-        .add("_ipPermsIngress", _ipPermsIngress)
-        .add("_referrerIps", _referrerIps)
-        .add("_tags", _tags)
+        .add("description", _description)
+        .add("groupId", _groupId)
+        .add("groupName", _groupName)
+        .add("ipPermsEgress", _ipPermsEgress)
+        .add("ipPermsIngress", _ipPermsIngress)
+        .add("referrerIps", _referrerIps)
+        .add("tags", _tags)
+        .add("vpcId", _vpcId)
         .toString();
   }
 }

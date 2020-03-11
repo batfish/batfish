@@ -115,7 +115,8 @@ public class RegionTest {
                     22,
                     ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
-                    ImmutableList.of()))));
+                    ImmutableList.of())),
+            "vpc"));
     region.updateConfigurationSecurityGroups(
         CONFIGURATION_NAME,
         new SecurityGroup(
@@ -129,7 +130,8 @@ public class RegionTest {
                     25,
                     ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
-                    ImmutableList.of()))));
+                    ImmutableList.of())),
+            "vpc"));
 
     return region;
   }
