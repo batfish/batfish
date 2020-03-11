@@ -154,7 +154,8 @@ public class SecurityGroupsTest {
                                 new IpRange("Allowing single port", Prefix.parse("1.2.3.4/32"))),
                             ImmutableList.of(),
                             ImmutableList.of())),
-                    ImmutableMap.of("testKey", "testValue")))));
+                    ImmutableMap.of("testKey", "testValue"),
+                    "vpc-6f6f8316"))));
   }
 
   @Test
@@ -340,7 +341,7 @@ public class SecurityGroupsTest {
             ImmutableList.of());
 
     SecurityGroup sg =
-        new SecurityGroup("test", "test", ImmutableList.of(perms), ImmutableList.of());
+        new SecurityGroup("test", "test", ImmutableList.of(perms), ImmutableList.of(), "vpc");
 
     List<AclLine> outboundRules =
         sg.toAclLines(
@@ -393,7 +394,8 @@ public class SecurityGroupsTest {
                     22,
                     ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
-                    ImmutableList.of())));
+                    ImmutableList.of())),
+            "vpc");
     List<AclLine> lines = sg.toAclLines(Region.builder("r").build(), true, new Warnings());
     assertThat(
         lines,
