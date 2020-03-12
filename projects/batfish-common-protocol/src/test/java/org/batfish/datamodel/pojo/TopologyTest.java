@@ -152,9 +152,9 @@ public class TopologyTest {
             new org.batfish.datamodel.Topology(ImmutableSortedSet.of()));
     Node topoNode = new Node(c1.getHostname());
 
-    Aggregate expected_agg = new Aggregate(regionName, AggregateType.REGION);
-    expected_agg.setContents(ImmutableSet.of(topoNode.getId()));
+    Aggregate expectedAgg = new Aggregate(regionName, AggregateType.REGION);
+    expectedAgg.setContents(ImmutableSet.of(topoNode.getId()));
 
-    assertThat(topo.getAggregates(), hasItem(expected_agg));
+    assertThat(topo.getAggregates(), hasItem(expectedAgg));
   }
 }
