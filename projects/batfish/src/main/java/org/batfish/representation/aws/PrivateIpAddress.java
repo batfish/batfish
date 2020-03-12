@@ -20,7 +20,7 @@ import org.batfish.datamodel.Ip;
 /** Represents a private address for {@link org.batfish.representation.aws.NetworkInterface} */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class PrivateIpAddress implements Serializable {
+public final class PrivateIpAddress implements Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -62,7 +62,7 @@ final class PrivateIpAddress implements Serializable {
         primary, privateIp, association == null ? null : association.getPublicIp());
   }
 
-  PrivateIpAddress(boolean primary, Ip privateIp, @Nullable Ip publicIp) {
+  public PrivateIpAddress(boolean primary, Ip privateIp, @Nullable Ip publicIp) {
     _primary = primary;
     _privateIp = privateIp;
     _publicIp = publicIp;
