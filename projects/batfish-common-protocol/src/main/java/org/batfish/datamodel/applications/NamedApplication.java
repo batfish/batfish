@@ -14,10 +14,11 @@ import org.batfish.datamodel.NamedPort;
 /** An enum for common application names */
 public enum NamedApplication {
   DNS("dns", new UdpApplication(NamedPort.DOMAIN.number())),
-  HTTP("http", new TcpApplication(NamedPort.HTTP.number())),
-  HTTPS("https", new TcpApplication(NamedPort.HTTPS.number())),
   ECHO_REPLY("echo-reply", new IcmpTypeCodesApplication(IcmpType.ECHO_REPLY, 0)),
   ECHO_REQUEST("echo-request", new IcmpTypeCodesApplication(IcmpType.ECHO_REQUEST, 0)),
+  HTTP("http", new TcpApplication(NamedPort.HTTP.number())),
+  HTTPS("https", new TcpApplication(NamedPort.HTTPS.number())),
+  MYSQL("mysql", new TcpApplication(NamedPort.MYSQL_SERVER.number())),
   SNMP("snmp", new UdpApplication(NamedPort.SNMP.number())),
   SSH("ssh", new TcpApplication(NamedPort.SSH.number())),
   TELNET("telnet", new TcpApplication(NamedPort.TELNET.number()));
