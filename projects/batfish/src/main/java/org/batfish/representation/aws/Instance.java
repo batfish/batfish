@@ -209,7 +209,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
     // interface
   }
 
-  Instance(
+  public Instance(
       String instanceId,
       @Nullable String vpcId,
       @Nullable String subnetId,

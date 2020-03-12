@@ -189,7 +189,7 @@ public final class IpPermissions implements Serializable {
       return new UserIdGroupPair(groupId, desription);
     }
 
-    UserIdGroupPair(String groupId, @Nullable String description) {
+    public UserIdGroupPair(String groupId, @Nullable String description) {
       _groupId = groupId;
       _description = description;
     }

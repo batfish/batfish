@@ -117,7 +117,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         attachment == null ? null : attachment.getInstanceId());
   }
 
-  NetworkInterface(
+  public NetworkInterface(
       String networkInterfaceId,
       String subnetId,
       String vpcId,
