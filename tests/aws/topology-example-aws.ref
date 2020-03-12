@@ -12,6 +12,14 @@
     },
     {
       "contents" : [
+        "node-vpc-815775e7"
+      ],
+      "id" : "aggregate-vpc-815775e7",
+      "name" : "vpc-815775e7",
+      "type" : "VNET"
+    },
+    {
+      "contents" : [
         "node-subnet-f73a8191"
       ],
       "id" : "aggregate-subnet-f73a8191",
@@ -91,10 +99,12 @@
       "contents" : [
         "node-igw-9b93ddfc",
         "aggregate-vpc-f8fad69d",
+        "aggregate-vpc-815775e7",
         "node-igw-068fee63",
         "aggregate-vpc-925131f4",
         "aggregate-vpc-b390fad5",
-        "node-igw-fac5839d"
+        "node-igw-fac5839d",
+        "node-vgw-81fd279f"
       ],
       "id" : "aggregate-us-west-2",
       "name" : "us-west-2",
