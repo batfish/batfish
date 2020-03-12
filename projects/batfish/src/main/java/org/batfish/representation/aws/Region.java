@@ -270,7 +270,7 @@ public final class Region implements Serializable {
     }
   }
 
-  static RegionBuilder builder(String name) {
+  public static RegionBuilder builder(String name) {
     return new RegionBuilder(name);
   }
 
@@ -930,7 +930,7 @@ public final class Region implements Serializable {
         .findFirst();
   }
 
-  static final class RegionBuilder {
+  public static final class RegionBuilder {
     private Map<String, Address> _addresses;
     private Map<String, Set<SecurityGroup>> _configurationSecurityGroups;
     private Map<String, CustomerGateway> _customerGateways;
