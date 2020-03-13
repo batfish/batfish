@@ -4651,6 +4651,7 @@ public final class CiscoNxosGrammarTest {
             "a_default_cost",
             "a_filter_list",
             "a_nssa",
+            "a_nssa_dio",
             "a_nssa_no_r",
             "a_nssa_no_s",
             "a_nssa_rm",
@@ -4703,6 +4704,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_nssa");
       assertThat(proc, hasArea(1L, hasNssa(notNullValue())));
     }
+    // TODO: convert and test "a_nssa_dio" - OSPF NSSA with default-information-originate
     {
       org.batfish.datamodel.ospf.OspfProcess proc =
           defaultVrf.getOspfProcesses().get("a_nssa_no_r");

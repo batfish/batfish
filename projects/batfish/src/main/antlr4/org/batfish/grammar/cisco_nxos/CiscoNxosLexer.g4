@@ -52,7 +52,7 @@ ACCESS_GROUP
 :
   'access-group'
   {
-    if (lastTokenType() == IP || lastTokenType() == PORT) {
+    if (lastTokenType() == IP || lastTokenType() == PORT || lastTokenType() == IGMP) {
       pushMode(M_Word);
     }
   }
@@ -1113,6 +1113,11 @@ DOD_NET_PROHIBITED
 DOMAIN
 :
   'domain'
+;
+
+DOMAIN_LIST
+:
+  'domain-list' -> pushMode(M_Word)
 ;
 
 DOMAIN_LOOKUP
@@ -3514,6 +3519,11 @@ RANGE
 RD
 :
   'rd'
+;
+
+REACHABILE_VIA
+:
+  'reachable-via'
 ;
 
 REACHABILITY

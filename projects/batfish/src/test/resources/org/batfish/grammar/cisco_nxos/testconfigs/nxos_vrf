@@ -76,6 +76,8 @@ vrf context vrf3
   shutdown
 
 vrf context management
+  domain-name test.example.com
+  domain-list exmaple.com
   ip pim bidir-rp-limit 6
   mdt mtu 1376
   mdt enforce-bgp-mdt-safi

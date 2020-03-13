@@ -79,7 +79,12 @@ vc_ip
 
 vc_ip_null
 :
-  PIM null_rest_of_line
+  (
+    DOMAIN_LIST
+    | DOMAIN_NAME
+    | PIM
+  )
+  null_rest_of_line
 ;
 
 vc_no

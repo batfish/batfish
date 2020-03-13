@@ -1059,6 +1059,7 @@ i_ospfv3
   OSPFV3
   (
     io3_bfd
+    | io3_cost
     | io3_dead_interval
     | io3_hello_interval
     | io3_network
@@ -1068,6 +1069,11 @@ i_ospfv3
 io3_bfd
 :
   BFD NEWLINE
+;
+
+io3_cost
+:
+  COST cost = interface_ospf_cost NEWLINE
 ;
 
 io3_dead_interval

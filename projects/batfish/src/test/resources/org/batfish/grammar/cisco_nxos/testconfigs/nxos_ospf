@@ -38,6 +38,8 @@ router ospf a_filter_list
 !!! All nssa options can be combined in any order
 router ospf a_nssa
   area 1 nssa
+router ospf a_nssa_dio
+  area 1 nssa default-information-originate
 router ospf a_nssa_no_r
   area 1 nssa no-redistribution
 router ospf a_nssa_no_s
