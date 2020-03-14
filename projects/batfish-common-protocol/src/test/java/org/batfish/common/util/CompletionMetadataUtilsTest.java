@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CompletionMetadataUtils.WELL_KNOWN_IPS;
 import static org.batfish.common.util.CompletionMetadataUtils.addressGroupDisplayString;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -14,6 +15,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.CompletionMetadataUtils.interfaceDisplayString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,6 +24,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
@@ -64,6 +67,16 @@ public final class CompletionMetadataUtilsTest {
           .put(interfaceName, Interface.builder().setName(interfaceName).setOwner(config).build());
     }
     return config;
+  }
+
+  private static Map<Ip, IpCompletionMetadata> createWellKnownIpCompletion(Map<Ip, String> ipMap) {
+    return ipMap.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e ->
+                    new IpCompletionMetadata(
+                        new IpCompletionRelevance(e.getValue(), e.getValue()))));
   }
 
   @Test
@@ -133,30 +146,35 @@ public final class CompletionMetadataUtilsTest {
     assertThat(
         getIps(configs),
         equalTo(
-            ImmutableMap.of(
-                ip1,
-                new IpCompletionMetadata(
-                    new IpCompletionRelevance(
-                        interfaceDisplayString(config, iface1),
-                        config.getHostname(),
-                        iface1.getName())),
-                ip2,
-                new IpCompletionMetadata(
-                    ImmutableList.of(
+            ImmutableMap.builder()
+                .put(
+                    ip1,
+                    new IpCompletionMetadata(
                         new IpCompletionRelevance(
                             interfaceDisplayString(config, iface1),
                             config.getHostname(),
-                            iface1.getName()),
+                            iface1.getName())))
+                .put(
+                    ip2,
+                    new IpCompletionMetadata(
+                        ImmutableList.of(
+                            new IpCompletionRelevance(
+                                interfaceDisplayString(config, iface1),
+                                config.getHostname(),
+                                iface1.getName()),
+                            new IpCompletionRelevance(
+                                interfaceDisplayString(config, iface2),
+                                config.getHostname(),
+                                iface2.getName()))))
+                .put(
+                    ip3,
+                    new IpCompletionMetadata(
                         new IpCompletionRelevance(
                             interfaceDisplayString(config, iface2),
                             config.getHostname(),
-                            iface2.getName()))),
-                ip3,
-                new IpCompletionMetadata(
-                    new IpCompletionRelevance(
-                        interfaceDisplayString(config, iface2),
-                        config.getHostname(),
-                        iface2.getName())))));
+                            iface2.getName())))
+                .putAll(createWellKnownIpCompletion(WELL_KNOWN_IPS))
+                .build()));
   }
 
   @Test
@@ -165,7 +183,7 @@ public final class CompletionMetadataUtilsTest {
         ReferenceBook.builder("book1")
             .setAddressGroups(
                 ImmutableList.of(
-                    new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "2.2.2.2"), "ag1"),
+                    new AddressGroup(ImmutableSortedSet.of("11.11.11.11", "2.2.2.2"), "ag1"),
                     new AddressGroup(
                         ImmutableSortedSet.of("3.3.3.3", "1.1.1.1/24", "1.1.1.1:0.0.0.8"), "ag2")))
             .build();
@@ -188,41 +206,85 @@ public final class CompletionMetadataUtilsTest {
     assertThat(
         getIps(configs),
         equalTo(
-            ImmutableMap.of(
-                Ip.parse("1.1.1.1"),
-                new IpCompletionMetadata(
-                    new IpCompletionRelevance(
-                        addressGroupDisplayString(config, book1.getName(), "ag1"),
-                        config.getHostname(),
-                        config.getHumanName(),
-                        "ag1")),
-                Ip.parse("2.2.2.2"),
-                new IpCompletionMetadata(
-                    new IpCompletionRelevance(
-                        addressGroupDisplayString(config, book1.getName(), "ag1"),
-                        config.getHostname(),
-                        config.getHumanName(),
-                        "ag1")),
-                Ip.parse("3.3.3.3"),
-                new IpCompletionMetadata(
-                    ImmutableList.of(
+            ImmutableMap.builder()
+                .put(
+                    Ip.parse("11.11.11.11"),
+                    new IpCompletionMetadata(
                         new IpCompletionRelevance(
-                            addressGroupDisplayString(config, book1.getName(), "ag2"),
+                            addressGroupDisplayString(config, book1.getName(), "ag1"),
                             config.getHostname(),
                             config.getHumanName(),
-                            "ag2"),
+                            "ag1")))
+                .put(
+                    Ip.parse("2.2.2.2"),
+                    new IpCompletionMetadata(
+                        new IpCompletionRelevance(
+                            addressGroupDisplayString(config, book1.getName(), "ag1"),
+                            config.getHostname(),
+                            config.getHumanName(),
+                            "ag1")))
+                .put(
+                    Ip.parse("3.3.3.3"),
+                    new IpCompletionMetadata(
+                        ImmutableList.of(
+                            new IpCompletionRelevance(
+                                addressGroupDisplayString(config, book1.getName(), "ag2"),
+                                config.getHostname(),
+                                config.getHumanName(),
+                                "ag2"),
+                            new IpCompletionRelevance(
+                                addressGroupDisplayString(config, book2.getName(), "ag1"),
+                                config.getHostname(),
+                                config.getHumanName(),
+                                "ag1"))))
+                .put(
+                    Ip.parse("4.4.4.4"),
+                    new IpCompletionMetadata(
                         new IpCompletionRelevance(
                             addressGroupDisplayString(config, book2.getName(), "ag1"),
                             config.getHostname(),
                             config.getHumanName(),
-                            "ag1"))),
-                Ip.parse("4.4.4.4"),
-                new IpCompletionMetadata(
-                    new IpCompletionRelevance(
-                        addressGroupDisplayString(config, book2.getName(), "ag1"),
-                        config.getHostname(),
-                        config.getHumanName(),
-                        "ag1")))));
+                            "ag1")))
+                .putAll(createWellKnownIpCompletion(WELL_KNOWN_IPS))
+                .build()));
+  }
+
+  /** Test that the well-known IPs are added only if they otherwise don't exist in the snapshot */
+  @Test
+  public void testGetIpsNoInterference() {
+    Ip ip1 = Ip.parse("8.8.8.8");
+    assertTrue("Test assumes that 8.8.8.8 is a well-known IP", WELL_KNOWN_IPS.containsKey(ip1));
+    String nodeName = "nodeName";
+    String int1 = "int1";
+    String address1 = ip1 + "/30";
+    InterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config = createTestConfiguration(nodeName, ConfigurationFormat.HOST, int1);
+
+    Interface iface1 = config.getAllInterfaces().get(int1);
+    iface1.setAllAddresses(ImmutableSet.of(interfaceAddress1));
+
+    configs.put(nodeName, config);
+
+    // we should get 8.8.8.8 from the config data and rest from well-known ips
+    assertThat(
+        getIps(configs),
+        equalTo(
+            ImmutableMap.builder()
+                .put(
+                    ip1,
+                    new IpCompletionMetadata(
+                        new IpCompletionRelevance(
+                            interfaceDisplayString(config, iface1),
+                            config.getHostname(),
+                            iface1.getName())))
+                .putAll(
+                    createWellKnownIpCompletion(
+                        WELL_KNOWN_IPS.entrySet().stream()
+                            .filter(e -> !e.getKey().equals(ip1))
+                            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue))))
+                .build()));
   }
 
   @Test
