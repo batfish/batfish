@@ -14754,8 +14754,8 @@
         "deviceModel" : "BATFISH_INTERNET",
         "deviceType" : "INTERNET",
         "interfaces" : {
-          "Internet_out_interface" : {
-            "name" : "Internet_out_interface",
+          "out" : {
+            "name" : "out",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14893,7 +14893,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "Internet_out_interface",
+                "nextHopInterface" : "out",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               },
