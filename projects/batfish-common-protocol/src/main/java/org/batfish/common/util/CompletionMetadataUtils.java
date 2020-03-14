@@ -23,6 +23,10 @@ public final class CompletionMetadataUtils {
 
   private CompletionMetadataUtils() {}
 
+  /** We will add these well-known IPs to assist with autocompletion */
+  public static Map<Ip, String> WELL_KNOWN_IPS =
+      ImmutableMap.of(Ip.parse("8.8.8.8"), "Google DNS", Ip.parse("1.1.1.1"), "Cloudflare DNS");
+
   public static Set<String> getFilterNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
     configurations
@@ -97,6 +101,13 @@ public final class CompletionMetadataUtils {
                                                       ips))));
             });
 
+    WELL_KNOWN_IPS.forEach(
+        (ip, description) -> {
+          if (!ips.containsKey(ip)) {
+            ips.put(
+                ip, new IpCompletionMetadata(new IpCompletionRelevance(description, description)));
+          }
+        });
     return ImmutableMap.copyOf(ips);
   }
 
