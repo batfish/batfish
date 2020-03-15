@@ -13974,8 +13974,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-1f315846" : {
-            "name" : "subnet-1f315846",
+          "vpc-f8fad69d" : {
+            "name" : "vpc-f8fad69d",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -13983,53 +13983,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-1f315846",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-9c8adceb" : {
-            "name" : "subnet-9c8adceb",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-9c8adceb",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-d9cafabc" : {
-            "name" : "subnet-d9cafabc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-d9cafabc",
+            "description" : "To vpc-f8fad69d",
             "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -14182,26 +14136,8 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "172.31.0.0/20",
-                "nextHopInterface" : "subnet-1f315846",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "172.31.16.0/20",
-                "nextHopInterface" : "subnet-d9cafabc",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "172.31.32.0/20",
-                "nextHopInterface" : "subnet-9c8adceb",
+                "network" : "172.31.0.0/16",
+                "nextHopInterface" : "vpc-f8fad69d",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
@@ -14244,8 +14180,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-073b8061" : {
-            "name" : "subnet-073b8061",
+          "vpc-b390fad5" : {
+            "name" : "vpc-b390fad5",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14253,99 +14189,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-073b8061",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-1641fa70" : {
-            "name" : "subnet-1641fa70",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-1641fa70",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-30398256" : {
-            "name" : "subnet-30398256",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-30398256",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-7044ff16" : {
-            "name" : "subnet-7044ff16",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-7044ff16",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "subnet-f73a8191" : {
-            "name" : "subnet-f73a8191",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-f73a8191",
+            "description" : "To vpc-b390fad5",
             "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -14498,44 +14342,8 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "192.168.1.0/24",
-                "nextHopInterface" : "subnet-1641fa70",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.0/28",
-                "nextHopInterface" : "subnet-7044ff16",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.16/28",
-                "nextHopInterface" : "subnet-073b8061",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.32/28",
-                "nextHopInterface" : "subnet-30398256",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.48/28",
-                "nextHopInterface" : "subnet-f73a8191",
+                "network" : "192.168.0.0/16",
+                "nextHopInterface" : "vpc-b390fad5",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
@@ -14577,8 +14385,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-62f14104" : {
-            "name" : "subnet-62f14104",
+          "vpc-925131f4" : {
+            "name" : "vpc-925131f4",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14586,7 +14394,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-62f14104",
+            "description" : "To vpc-925131f4",
             "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
@@ -14739,8 +14547,8 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "10.0.0.0/24",
-                "nextHopInterface" : "subnet-62f14104",
+                "network" : "10.0.0.0/16",
+                "nextHopInterface" : "vpc-925131f4",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
@@ -16527,30 +16335,6 @@
         "domainName" : "aws",
         "humanName" : "border_01-core_01",
         "interfaces" : {
-          "igw-9b93ddfc" : {
-            "name" : "igw-9b93ddfc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-9b93ddfc",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-073b8061" : {
             "name" : "subnet-073b8061",
             "active" : true,
@@ -16586,6 +16370,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
+            "incomingFilter" : "acl-7b78771d_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-7b78771d_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-b390fad5-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-b390fad5-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -16709,7 +16517,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -16736,30 +16544,6 @@
         "domainName" : "aws",
         "humanName" : "Management",
         "interfaces" : {
-          "igw-9b93ddfc" : {
-            "name" : "igw-9b93ddfc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-9b93ddfc",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-1641fa70" : {
             "name" : "subnet-1641fa70",
             "active" : true,
@@ -16795,6 +16579,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
+            "incomingFilter" : "acl-7b78771d_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-7b78771d_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-b390fad5-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-b390fad5-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -16918,7 +16726,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -16944,30 +16752,6 @@
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
-          "igw-068fee63" : {
-            "name" : "igw-068fee63",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-068fee63",
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-1f315846" : {
             "name" : "subnet-1f315846",
             "active" : true,
@@ -17003,6 +16787,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
+            "incomingFilter" : "acl-4db39c28_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-4db39c28_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-f8fad69d-igw-068fee63" : {
+            "name" : "vpc-f8fad69d-igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-f8fad69d-igw-068fee63",
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
@@ -17138,7 +16946,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-068fee63",
+                "nextHopInterface" : "vpc-f8fad69d-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17165,30 +16973,6 @@
         "domainName" : "aws",
         "humanName" : "border_02-core_02",
         "interfaces" : {
-          "igw-9b93ddfc" : {
-            "name" : "igw-9b93ddfc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-9b93ddfc",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-30398256" : {
             "name" : "subnet-30398256",
             "active" : true,
@@ -17224,6 +17008,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
+            "incomingFilter" : "acl-7b78771d_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-7b78771d_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-b390fad5-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-b390fad5-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -17347,7 +17155,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17374,30 +17182,6 @@
         "domainName" : "aws",
         "humanName" : "Public subnet",
         "interfaces" : {
-          "igw-fac5839d" : {
-            "name" : "igw-fac5839d",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-fac5839d",
-            "incomingFilter" : "acl-3d4f745b_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-3d4f745b_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-62f14104" : {
             "name" : "subnet-62f14104",
             "active" : true,
@@ -17433,6 +17217,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4",
+            "incomingFilter" : "acl-3d4f745b_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-3d4f745b_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-925131f4-igw-fac5839d" : {
+            "name" : "vpc-925131f4-igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-925131f4-igw-fac5839d",
             "incomingFilter" : "acl-3d4f745b_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
@@ -17556,7 +17364,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-fac5839d",
+                "nextHopInterface" : "vpc-925131f4-igw-fac5839d",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17583,30 +17391,6 @@
         "domainName" : "aws",
         "humanName" : "border_01-core_02",
         "interfaces" : {
-          "igw-9b93ddfc" : {
-            "name" : "igw-9b93ddfc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-9b93ddfc",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-7044ff16" : {
             "name" : "subnet-7044ff16",
             "active" : true,
@@ -17642,6 +17426,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
+            "incomingFilter" : "acl-7b78771d_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-7b78771d_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-b390fad5-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-b390fad5-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -17765,7 +17573,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17976,30 +17784,6 @@
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
-          "igw-068fee63" : {
-            "name" : "igw-068fee63",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-068fee63",
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-9c8adceb" : {
             "name" : "subnet-9c8adceb",
             "active" : true,
@@ -18035,6 +17819,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
+            "incomingFilter" : "acl-4db39c28_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-4db39c28_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-f8fad69d-igw-068fee63" : {
+            "name" : "vpc-f8fad69d-igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-f8fad69d-igw-068fee63",
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
@@ -18170,7 +17978,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-068fee63",
+                "nextHopInterface" : "vpc-f8fad69d-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -18196,30 +18004,6 @@
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
-          "igw-068fee63" : {
-            "name" : "igw-068fee63",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-068fee63",
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-d9cafabc" : {
             "name" : "subnet-d9cafabc",
             "active" : true,
@@ -18255,6 +18039,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-f8fad69d",
+            "incomingFilter" : "acl-4db39c28_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-4db39c28_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-f8fad69d-igw-068fee63" : {
+            "name" : "vpc-f8fad69d-igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-f8fad69d-igw-068fee63",
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
@@ -18390,7 +18198,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-068fee63",
+                "nextHopInterface" : "vpc-f8fad69d-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -18417,30 +18225,6 @@
         "domainName" : "aws",
         "humanName" : "border_02-core_01",
         "interfaces" : {
-          "igw-9b93ddfc" : {
-            "name" : "igw-9b93ddfc",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To igw-9b93ddfc",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "subnet-f73a8191" : {
             "name" : "subnet-f73a8191",
             "active" : true,
@@ -18476,6 +18260,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-b390fad5",
+            "incomingFilter" : "acl-7b78771d_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-7b78771d_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-b390fad5-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-b390fad5-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -18599,7 +18407,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -19270,6 +19078,28 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "vpc-815775e7" : {
+            "name" : "vpc-815775e7",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-815775e7",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "vpn-vpn-ba2e34a8-1" : {
             "name" : "vpn-vpn-ba2e34a8-1",
             "active" : true,
@@ -19522,8 +19352,8 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "10.100.0.0/16",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
+                "nextHopInterface" : "vpc-815775e7",
+                "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
             ]
@@ -19539,6 +19369,30 @@
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "humanName" : "GNS3-BGP-Test",
+        "interfaces" : {
+          "vgw-81fd279f" : {
+            "name" : "vgw-81fd279f",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vgw-81fd279f",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-vgw-81fd279f"
+          }
+        },
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -19549,6 +19403,29 @@
           "default" : {
             "name" : "default",
             "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.100.0.0/16",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              }
+            ]
+          },
+          "vrf-vgw-81fd279f" : {
+            "name" : "vrf-vgw-81fd279f",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "vgw-81fd279f",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
@@ -19572,6 +19449,28 @@
         "domainName" : "aws",
         "humanName" : "Demo-Test2",
         "interfaces" : {
+          "igw-fac5839d" : {
+            "name" : "igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To igw-fac5839d",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-fac5839d"
+          },
           "subnet-62f14104" : {
             "name" : "subnet-62f14104",
             "active" : true,
@@ -19593,6 +19492,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-62f14104-igw-fac5839d" : {
+            "name" : "subnet-62f14104-igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-62f14104-igw-fac5839d",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-fac5839d"
           },
           "subnet-8d0cbdeb" : {
             "name" : "subnet-8d0cbdeb",
@@ -19655,6 +19576,38 @@
                 "tag" : -1
               }
             ]
+          },
+          "vrf-igw-fac5839d" : {
+            "name" : "vrf-igw-fac5839d",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "igw-fac5839d",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.0.0/16",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.0.0/24",
+                "nextHopInterface" : "subnet-62f14104-igw-fac5839d",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
+            ]
           }
         }
       },
@@ -19668,6 +19621,28 @@
         "domainName" : "aws",
         "humanName" : "Arista Demo",
         "interfaces" : {
+          "igw-9b93ddfc" : {
+            "name" : "igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
+          },
           "subnet-073b8061" : {
             "name" : "subnet-073b8061",
             "active" : true,
@@ -19689,6 +19664,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-073b8061-igw-9b93ddfc" : {
+            "name" : "subnet-073b8061-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-073b8061-igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
           },
           "subnet-1641fa70" : {
             "name" : "subnet-1641fa70",
@@ -19712,6 +19709,28 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "subnet-1641fa70-igw-9b93ddfc" : {
+            "name" : "subnet-1641fa70-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-1641fa70-igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
+          },
           "subnet-30398256" : {
             "name" : "subnet-30398256",
             "active" : true,
@@ -19733,6 +19752,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-30398256-igw-9b93ddfc" : {
+            "name" : "subnet-30398256-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-30398256-igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
           },
           "subnet-7044ff16" : {
             "name" : "subnet-7044ff16",
@@ -19756,6 +19797,28 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "subnet-7044ff16-igw-9b93ddfc" : {
+            "name" : "subnet-7044ff16-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-7044ff16-igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
+          },
           "subnet-f73a8191" : {
             "name" : "subnet-f73a8191",
             "active" : true,
@@ -19777,6 +19840,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-f73a8191-igw-9b93ddfc" : {
+            "name" : "subnet-f73a8191-igw-9b93ddfc",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-f73a8191-igw-9b93ddfc",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-9b93ddfc"
           }
         },
         "vendorFamily" : {
@@ -19844,6 +19929,74 @@
                 "tag" : -1
               }
             ]
+          },
+          "vrf-igw-9b93ddfc" : {
+            "name" : "vrf-igw-9b93ddfc",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "igw-9b93ddfc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.0.0/16",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.1.0/24",
+                "nextHopInterface" : "subnet-1641fa70-igw-9b93ddfc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.0/28",
+                "nextHopInterface" : "subnet-7044ff16-igw-9b93ddfc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.16/28",
+                "nextHopInterface" : "subnet-073b8061-igw-9b93ddfc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.32/28",
+                "nextHopInterface" : "subnet-30398256-igw-9b93ddfc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.2.48/28",
+                "nextHopInterface" : "subnet-f73a8191-igw-9b93ddfc",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
+            ]
           }
         }
       },
@@ -19856,6 +20009,28 @@
         "deviceType" : "SWITCH",
         "domainName" : "aws",
         "interfaces" : {
+          "igw-068fee63" : {
+            "name" : "igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To igw-068fee63",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-068fee63"
+          },
           "subnet-1f315846" : {
             "name" : "subnet-1f315846",
             "active" : true,
@@ -19877,6 +20052,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-1f315846-igw-068fee63" : {
+            "name" : "subnet-1f315846-igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-1f315846-igw-068fee63",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-068fee63"
           },
           "subnet-9c8adceb" : {
             "name" : "subnet-9c8adceb",
@@ -19900,6 +20097,28 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "subnet-9c8adceb-igw-068fee63" : {
+            "name" : "subnet-9c8adceb-igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-9c8adceb-igw-068fee63",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-068fee63"
+          },
           "subnet-d9cafabc" : {
             "name" : "subnet-d9cafabc",
             "active" : true,
@@ -19921,6 +20140,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-d9cafabc-igw-068fee63" : {
+            "name" : "subnet-d9cafabc-igw-068fee63",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-d9cafabc-igw-068fee63",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-068fee63"
           }
         },
         "vendorFamily" : {
@@ -19966,6 +20207,56 @@
                 "metric" : 0,
                 "network" : "172.31.32.0/20",
                 "nextHopInterface" : "subnet-9c8adceb",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
+            ]
+          },
+          "vrf-igw-068fee63" : {
+            "name" : "vrf-igw-068fee63",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "igw-068fee63",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.0.0/16",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.0.0/20",
+                "nextHopInterface" : "subnet-1f315846-igw-068fee63",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.16.0/20",
+                "nextHopInterface" : "subnet-d9cafabc-igw-068fee63",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.32.0/20",
+                "nextHopInterface" : "subnet-9c8adceb-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }

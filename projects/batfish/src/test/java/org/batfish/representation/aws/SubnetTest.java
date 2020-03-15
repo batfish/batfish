@@ -7,9 +7,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
-import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
-import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
-import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
@@ -22,7 +19,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -180,139 +176,21 @@ public class SubnetTest {
                     Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())))));
   }
 
-  @Test
-  public void testToConfigurationNodePrivateVgw() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
-
-    VpnGateway vgw = new VpnGateway("igw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
-    Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
-
-    Ip privateIp = Ip.parse("10.10.10.10");
-    Prefix privatePrefix = Prefix.create(privateIp, 24);
-
-    NetworkInterface ni =
-        new NetworkInterface(
-            "ni",
-            "subnet",
-            vpc.getId(),
-            ImmutableList.of(),
-            ImmutableList.of(new PrivateIpAddress(true, privateIp, null)),
-            "desc",
-            null);
-
-    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
-
-    Region region =
-        Region.builder("region")
-            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
-            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
-            .setVpnGateways(ImmutableMap.of(vgw.getId(), vgw))
-            .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
-            .setNetworkAcls(
-                ImmutableMap.of(
-                    "acl",
-                    new NetworkAcl(
-                        "acl",
-                        vpc.getId(),
-                        ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
-                        ImmutableList.of(),
-                        true)))
-            .setRouteTables(
-                ImmutableMap.of(
-                    "rt1",
-                    new RouteTable(
-                        "rt1",
-                        vpc.getId(),
-                        ImmutableList.of(new Association(false, subnet.getId())),
-                        ImmutableList.of(
-                            new RouteV4(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
-                            new RouteV4(
-                                Prefix.parse("0.0.0.0/0"),
-                                State.ACTIVE,
-                                vgw.getId(),
-                                TargetType.Gateway)))))
-            .build();
-
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(
-            ImmutableMap.of(
-                vpcConfig.getHostname(), vpcConfig, vgwConfig.getHostname(), vgwConfig));
-
-    Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
-
-    // subnet should have interfaces to the instances, vpc, and vgw
-    assertThat(
-        subnetCfg.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
-            .collect(ImmutableSet.toImmutableSet()),
-        equalTo(ImmutableSet.of(subnet.getId(), vpc.getId(), vgw.getId())));
-
-    // the vgw should have gotten an interface pointed to the subnet
-    assertThat(
-        vgwConfig.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(ImmutableList.of(subnet.getId())));
-
-    // the vgw router should have a static route to the private prefix
-    assertThat(
-        vgwConfig.getDefaultVrf().getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    privatePrefix,
-                    interfaceNameToRemote(subnetCfg),
-                    Utils.getInterfaceLinkLocalIp(subnetCfg, vgw.getId())))));
-  }
-
+  /** Test that public subnets are labeled as such */
   @Test
   public void testToConfigurationNodePublic() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
-
+    Subnet subnet =
+        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
     InternetGateway igw =
         new InternetGateway("igw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
-    Configuration igwConfig = Utils.newAwsConfiguration(igw.getId(), "awstest");
-    igwConfig.setIpAccessLists(
-        ImmutableMap.of(
-            UNASSOCIATED_PRIVATE_IP_FILTER_NAME,
-            computeUnassociatedPrivateIpFilter(ImmutableSet.of())));
-
-    Ip privateIp = Ip.parse("10.10.10.10");
-    Prefix privatePrefix = Prefix.create(privateIp, 24);
-    Ip publicIp = Ip.parse("1.1.1.1");
-
-    NetworkInterface ni =
-        new NetworkInterface(
-            "ni",
-            "subnet",
-            vpc.getId(),
-            ImmutableList.of(),
-            ImmutableList.of(new PrivateIpAddress(true, privateIp, publicIp)),
-            "desc",
-            null);
-
-    Subnet subnet =
-        new Subnet(
-            privatePrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of(TAG_NAME, "subnet-name"));
 
     Region region =
         Region.builder("region")
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
             .setInternetGateways(ImmutableMap.of(igw.getId(), igw))
-            .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
-            .setNetworkAcls(
-                ImmutableMap.of(
-                    "acl",
-                    new NetworkAcl(
-                        "acl",
-                        vpc.getId(),
-                        ImmutableList.of(new NetworkAclAssociation(subnet.getId())),
-                        ImmutableList.of(),
-                        true)))
             .setRouteTables(
                 ImmutableMap.of(
                     "rt1",
@@ -321,120 +199,104 @@ public class SubnetTest {
                         vpc.getId(),
                         ImmutableList.of(new Association(false, subnet.getId())),
                         ImmutableList.of(
-                            new RouteV4(privatePrefix, State.ACTIVE, "local", TargetType.Gateway),
                             new RouteV4(
-                                Prefix.parse("0.0.0.0/0"),
-                                State.ACTIVE,
-                                igw.getId(),
-                                TargetType.Gateway)))))
+                                Prefix.ZERO, State.ACTIVE, igw.getId(), TargetType.Gateway)))))
             .build();
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(
-            ImmutableMap.of(
-                vpcConfig.getHostname(), vpcConfig, igwConfig.getHostname(), igwConfig));
+        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg.getHumanName(), equalTo("subnet-name"));
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC));
+  }
 
-    // subnet should have interfaces to the instances, vpc, and igw
-    assertThat(
-        subnetCfg.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
-            .collect(ImmutableSet.toImmutableSet()),
-        equalTo(ImmutableSet.of(subnet.getId(), vpc.getId(), igw.getId())));
+  private static void testProcessRouteHelper(
+      RouteV4 route,
+      String linkId,
+      Configuration vpcCfg,
+      Configuration subnetCfg,
+      Prefix subnetPrefix) {
+    // there should be a VRF on the VPC node
+    String vrfName = vrfNameForLink(linkId);
+    assertThat(vpcCfg, hasVrf(vrfName, any(Vrf.class)));
 
-    // the igw should have gotten an interface pointed to the subnet
-    assertThat(
-        igwConfig.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(ImmutableList.of(subnet.getId())));
+    // there should be an interface on the Subnet pointed to the VPC node
+    Interface subnetIface = Iterables.getOnlyElement(subnetCfg.getAllInterfaces().values());
+    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, linkId)));
 
-    // the igw router should have a static route to the private ip
-    assertThat(
-        igwConfig.getDefaultVrf().getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet.getCidrBlock(),
-                    interfaceNameToRemote(subnetCfg),
-                    Utils.getInterfaceLinkLocalIp(subnetCfg, igw.getId())))));
+    // there should be an interface on the VPC node
+    Interface vpcIface = Iterables.getOnlyElement(vpcCfg.getAllInterfaces().values());
+    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, linkId)));
+    assertThat(vpcIface, hasVrfName(vrfNameForLink(linkId)));
 
-    // igw's subnet facing interface should have the filter to block unassociated private IPs.
-    assertThat(
-        igwConfig
-            .getAllInterfaces()
-            .get(interfaceNameToRemote(subnetCfg))
-            .getIncomingFilter()
-            .getName(),
-        equalTo(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
-
-    // the subnet router should have routes from the table and to the public ip
+    // right static routes on both sides
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
-                    Prefix.ZERO,
-                    interfaceNameToRemote(igwConfig),
-                    Utils.getInterfaceLinkLocalIp(igwConfig, subnet.getId())),
+                    route.getDestinationCidrBlock(),
+                    Utils.interfaceNameToRemote(vpcCfg, linkId),
+                    vpcIface.getLinkLocalAddress().getIp()))));
+    assertThat(
+        vpcCfg.getVrfs().get(vrfName).getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
                 toStaticRoute(
-                    privatePrefix,
-                    interfaceNameToRemote(vpcConfig),
-                    Utils.getInterfaceLinkLocalIp(vpcConfig, subnet.getId())))));
+                    subnetPrefix,
+                    Utils.interfaceNameToRemote(subnetCfg, linkId),
+                    subnetIface.getLinkLocalAddress().getIp()))));
   }
 
-  /** Test that we do not create a link to the VPC's IGW if the subnet is private. */
+  /** Tests that we do the right thing when processing a route for an Internet gateway. */
   @Test
-  public void testToConfigurationNodePrivateIgw() {
+  public void testProcessRouteInternetGateway() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    Subnet subnet =
+        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
     InternetGateway igw =
         new InternetGateway("igw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
-    Configuration igwConfig = Utils.newAwsConfiguration(igw.getId(), "awstest");
+
+    Region region = Region.builder("region").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
+
+    RouteV4 route =
+        new RouteV4(Prefix.parse("192.168.0.0/16"), State.ACTIVE, igw.getId(), TargetType.Gateway);
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+
+    subnet.processRoute(
+        subnetCfg, region, route, vpcCfg, igw, null, awsConfiguration, new Warnings());
+
+    testProcessRouteHelper(route, igw.getId(), vpcCfg, subnetCfg, subnet.getCidrBlock());
+  }
+
+  /** Tests that we do the right thing when processing a route for an Internet gateway. */
+  @Test
+  public void testProcessRouteVpnGateway() {
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Subnet subnet =
-        new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
+        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
-    Region region =
-        Region.builder("region")
-            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
-            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
-            .setInternetGateways(ImmutableMap.of(igw.getId(), igw))
-            .setRouteTables(
-                ImmutableMap.of(
-                    "rt1",
-                    new RouteTable(
-                        "rt1",
-                        vpc.getId(),
-                        ImmutableList.of(new Association(false, subnet.getId())),
-                        ImmutableList.of(
-                            new RouteV4(
-                                Prefix.parse("1.1.1.1/32"),
-                                State.ACTIVE,
-                                "local",
-                                TargetType.Gateway)))))
-            .build();
+    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(
-            ImmutableMap.of(
-                vpcConfig.getHostname(), vpcConfig, igwConfig.getHostname(), igwConfig));
+    Region region = Region.builder("region").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
 
-    Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
-    assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
+    RouteV4 route =
+        new RouteV4(Prefix.parse("192.168.0.0/16"), State.ACTIVE, vgw.getId(), TargetType.Gateway);
 
-    // should have only two interfaces -- one toward instances and one toward the VPC router
-    assertThat(
-        subnetCfg.getAllInterfaces().keySet(),
-        equalTo(
-            ImmutableSet.of(instancesInterfaceName("subnet"), interfaceNameToRemote(vpcConfig))));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
-    // the internet gateway should have any interfaces
-    assertTrue(igwConfig.getAllInterfaces().isEmpty());
+    subnet.processRoute(
+        subnetCfg, region, route, vpcCfg, null, vgw, awsConfiguration, new Warnings());
+
+    testProcessRouteHelper(route, vgw.getId(), vpcCfg, subnetCfg, subnet.getCidrBlock());
   }
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
@@ -460,36 +322,7 @@ public class SubnetTest {
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
 
-    // there should be a VRF on the VPC node
-    String vrfName = vrfNameForLink(connectionId);
-    assertThat(vpcCfg, hasVrf(vrfName, any(Vrf.class)));
-
-    // there should be an interface on the Subnet pointed to the VPC node
-    Interface subnetIface = Iterables.getOnlyElement(subnetCfg.getAllInterfaces().values());
-    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, connectionId)));
-
-    // there should be an interface on the VPC node
-    Interface vpcIface = Iterables.getOnlyElement(vpcCfg.getAllInterfaces().values());
-    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, connectionId)));
-    assertThat(vpcIface, hasVrfName(vrfNameForLink(connectionId)));
-
-    // right static routes on both sides
-    assertThat(
-        subnetCfg.getDefaultVrf().getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    route.getDestinationCidrBlock(),
-                    Utils.interfaceNameToRemote(vpcCfg, connectionId),
-                    vpcIface.getLinkLocalAddress().getIp()))));
-    assertThat(
-        vpcCfg.getVrfs().get(vrfName).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnetCfg, connectionId),
-                    subnetIface.getLinkLocalAddress().getIp()))));
+    testProcessRouteHelper(route, connectionId, vpcCfg, subnetCfg, subnetPrefix);
   }
 
   /** Tests that we do the right thing when processing a route for transit gateway. */
@@ -526,36 +359,7 @@ public class SubnetTest {
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
 
-    // there should be a VRF on the VPC node
-    String vrfName = vrfNameForLink(linkId);
-    assertThat(vpcCfg, hasVrf(vrfName, any(Vrf.class)));
-
-    // there should be an interface on the Subnet pointed to the VPC node
-    Interface subnetIface = Iterables.getOnlyElement(subnetCfg.getAllInterfaces().values());
-    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, linkId)));
-
-    // there should be an interface on the VPC node
-    Interface vpcIface = Iterables.getOnlyElement(vpcCfg.getAllInterfaces().values());
-    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, linkId)));
-    assertThat(vpcIface, hasVrfName(vrfNameForLink(linkId)));
-
-    // right static routes on both sides
-    assertThat(
-        subnetCfg.getDefaultVrf().getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    route.getDestinationCidrBlock(),
-                    Utils.interfaceNameToRemote(vpcCfg, linkId),
-                    vpcIface.getLinkLocalAddress().getIp()))));
-    assertThat(
-        vpcCfg.getVrfs().get(vrfName).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnetCfg, linkId),
-                    subnetIface.getLinkLocalAddress().getIp()))));
+    testProcessRouteHelper(route, linkId, vpcCfg, subnetCfg, subnetPrefix);
   }
 
   /**
