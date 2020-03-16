@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 
@@ -307,6 +308,62 @@ final class Utils {
         cfgNode2,
         cfgNode2.getDefaultVrf().getName(),
         "");
+  }
+
+  /**
+   * Connects Internet or Vpn gateway to its VPC and adds static routes on both nodes.
+   *
+   * @retruns The Interface on the gateway for the new link or null if the VPC is not found.
+   */
+  @Nullable
+  static Interface connectGatewayToVpc(
+      String gatewayId,
+      Configuration gatewayCfg,
+      String vpcId,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+
+    Vpc vpc = region.getVpcs().get(vpcId);
+    if (vpc == null) {
+      warnings.redFlag(
+          String.format("VPC with id %s not found in region %s", vpcId, region.getName()));
+      return null;
+    }
+
+    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    if (vpcCfg == null) {
+      warnings.redFlag(String.format("Configuration for VPC with id %s not found", vpcId));
+      return null;
+    }
+
+    String vrfNameOnVpc = Vpc.vrfNameForLink(gatewayId);
+    if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
+      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
+      vpc.initializeVrf(vrf);
+    }
+
+    connect(awsConfiguration, gatewayCfg, DEFAULT_VRF_NAME, vpcCfg, vrfNameOnVpc, "");
+
+    addStaticRoute(
+        vpcCfg.getVrfs().get(vrfNameOnVpc),
+        toStaticRoute(
+            Prefix.ZERO,
+            Utils.interfaceNameToRemote(gatewayCfg),
+            Utils.getInterfaceLinkLocalIp(gatewayCfg, Utils.interfaceNameToRemote(vpcCfg))));
+
+    vpc.getCidrBlockAssociations()
+        .forEach(
+            prefix ->
+                addStaticRoute(
+                    gatewayCfg,
+                    toStaticRoute(
+                        prefix,
+                        Utils.interfaceNameToRemote(vpcCfg),
+                        Utils.getInterfaceLinkLocalIp(
+                            vpcCfg, Utils.interfaceNameToRemote(gatewayCfg)))));
+
+    return gatewayCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg));
   }
 
   static String interfaceNameToRemote(Configuration remoteCfg) {

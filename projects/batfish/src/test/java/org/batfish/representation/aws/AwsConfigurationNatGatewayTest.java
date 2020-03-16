@@ -79,6 +79,7 @@ public class AwsConfigurationNatGatewayTest {
             _vpc,
             _natGateway,
             _subnetNat,
+            _vpc,
             _internetGateway,
             AWS_BACKBONE_NODE_NAME,
             INTERNET_HOST_NAME),
@@ -86,6 +87,7 @@ public class AwsConfigurationNatGatewayTest {
             INTERNET_HOST_NAME,
             AWS_BACKBONE_NODE_NAME,
             _internetGateway,
+            _vpc,
             _subnetNat,
             _natGateway,
             _vpc,
@@ -119,7 +121,12 @@ public class AwsConfigurationNatGatewayTest {
         flow,
         FlowDisposition.DENIED_IN,
         ImmutableList.of(
-            INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME, _internetGateway, _subnetNat, _natGateway),
+            INTERNET_HOST_NAME,
+            AWS_BACKBONE_NODE_NAME,
+            _internetGateway,
+            _vpc,
+            _subnetNat,
+            _natGateway),
         _batfish);
   }
 

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -139,7 +141,8 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     return _attachmentVpcIds;
   }
 
-  Configuration toConfigurationNode(ConvertedConfiguration awsConfiguration, Region region) {
+  Configuration toConfigurationNode(
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode =
         Utils.newAwsConfiguration(
             _internetGatewayId, "aws", _tags, DeviceModel.AWS_INTERNET_GATEWAY);
@@ -171,6 +174,16 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     IpAccessList unassociatedIpFilter =
         computeUnassociatedPrivateIpFilter(privatePublicMap.keySet());
     cfgNode.getIpAccessLists().put(unassociatedIpFilter.getName(), unassociatedIpFilter);
+
+    _attachmentVpcIds.forEach(
+        vpcId -> {
+          Interface iface =
+              connectGatewayToVpc(
+                  _internetGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings);
+          if (iface != null) {
+            iface.setIncomingFilter(unassociatedIpFilter);
+          }
+        });
 
     BgpProcess bgpProcess =
         BgpProcess.builder()

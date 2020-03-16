@@ -85,7 +85,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     testTrace(
         getAnyFlow(_privateInstance, _publicInstancePublicIp, _batfish),
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_privateInstance, _privateSubnet, _vgw),
+        ImmutableList.of(_privateInstance, _privateSubnet, _vpc, _vgw),
         _batfish);
 
     // to the private IP
@@ -114,6 +114,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
             IspModelingUtils.INTERNET_HOST_NAME,
             AWS_BACKBONE_NODE_NAME,
             _igw,
+            _vpc,
             _publicSubnet,
             _publicInstance),
         _batfish);
@@ -133,6 +134,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         ImmutableList.of(
             _publicInstance,
             _publicSubnet,
+            _vpc,
             _igw,
             AWS_BACKBONE_NODE_NAME,
             IspModelingUtils.INTERNET_HOST_NAME),
@@ -141,7 +143,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     testTrace(
         getAnyFlow(_privateInstance, Ip.parse("8.8.8.8"), _batfish),
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_privateInstance, _privateSubnet, _vgw),
+        ImmutableList.of(_privateInstance, _privateSubnet, _vpc, _vgw),
         _batfish);
   }
 
@@ -152,7 +154,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         getAnyFlow(_publicInstance, _sitePrefix.getStartIp(), _batfish),
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
-            _publicInstance, _publicSubnet, _igw, AWS_BACKBONE_NODE_NAME, INTERNET_HOST_NAME),
+            _publicInstance, _publicSubnet, _vpc, _igw, AWS_BACKBONE_NODE_NAME, INTERNET_HOST_NAME),
         _batfish);
 
     // private instance should send site traffic to VGW
@@ -166,11 +168,11 @@ public class AwsConfigurationPublicPrivateSubnetTest {
     testTrace(
         flowTraces.get(0),
         FlowDisposition.EXITS_NETWORK, //  the other end is not in the snapshot
-        ImmutableList.of(_privateInstance, _privateSubnet, _vgw));
+        ImmutableList.of(_privateInstance, _privateSubnet, _vpc, _vgw));
     testTrace(
         flowTraces.get(1),
         FlowDisposition.EXITS_NETWORK,
-        ImmutableList.of(_privateInstance, _privateSubnet, _vgw));
+        ImmutableList.of(_privateInstance, _privateSubnet, _vpc, _vgw));
   }
 
   @Test
@@ -182,16 +184,18 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         ImmutableList.of(_vgw),
         _batfish);
 
+    // The private subnet does not point to the VGW, so its (private) address space is not available
+    // via the VGW
     testTrace(
         getAnyFlow(_vgw, _publicInstancePrivateIp, _batfish),
-        FlowDisposition.DENIED_IN,
-        ImmutableList.of(_vgw, _publicSubnet, _publicInstance),
+        FlowDisposition.NULL_ROUTED,
+        ImmutableList.of(_vgw, _vpc),
         _batfish);
 
     testTrace(
         getAnyFlow(_vgw, _privateInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_vgw, _privateSubnet, _privateInstance),
+        ImmutableList.of(_vgw, _vpc, _privateSubnet, _privateInstance),
         _batfish);
   }
 }
