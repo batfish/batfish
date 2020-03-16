@@ -684,7 +684,7 @@ public final class Region implements Serializable {
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
     }
 

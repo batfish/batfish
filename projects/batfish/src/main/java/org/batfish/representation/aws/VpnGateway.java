@@ -3,11 +3,9 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
-import static org.batfish.representation.aws.Utils.addStaticRoute;
-import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -113,6 +111,10 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
         Utils.newAwsConfiguration(_vpnGatewayId, "aws", _tags, DeviceModel.AWS_VPN_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
+    _attachmentVpcIds.forEach(
+        vpcId ->
+            connectGatewayToVpc(_vpnGatewayId, cfgNode, vpcId, awsConfiguration, region, warnings));
+
     // if this VGW has any BGP-based VPN connections, configure BGP on it
     boolean doBgp =
         region.getVpnConnections().values().stream()
@@ -135,11 +137,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
       PrefixSpace originationSpace = new PrefixSpace();
       _attachmentVpcIds.stream()
           .flatMap(vpcId -> region.getVpcs().get(vpcId).getCidrBlockAssociations().stream())
-          .forEach(
-              pfx -> {
-                originationSpace.addPrefix(pfx);
-                addStaticRoute(cfgNode, toStaticRoute(pfx, NULL_INTERFACE_NAME));
-              });
+          .forEach(originationSpace::addPrefix);
 
       installRoutingPolicyAdvertiseStatic(VGW_EXPORT_POLICY_NAME, cfgNode, originationSpace);
 

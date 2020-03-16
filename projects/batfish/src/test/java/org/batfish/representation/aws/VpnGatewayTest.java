@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
@@ -91,6 +90,11 @@ public class VpnGatewayTest {
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
     assertThat(vgwConfig.getHumanName(), equalTo("vgw-name"));
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), nullValue());
+
+    // ensure the connection to VPC
+    assertThat(
+        vgwConfig.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of(Utils.interfaceNameToRemote(vpcConfig))));
   }
 
   @Test
@@ -128,10 +132,18 @@ public class VpnGatewayTest {
 
     // the loopback interface, bgp process, and static route should exist
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), notNullValue());
-    assertThat(vgwConfig.getAllInterfaces().keySet(), equalTo(ImmutableSet.of("loopbackBgp")));
+    assertThat(
+        vgwConfig.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("loopbackBgp", Utils.interfaceNameToRemote(vpcConfig))));
     assertThat(
         vgwConfig.getDefaultVrf().getStaticRoutes(),
-        equalTo(ImmutableSortedSet.of(toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME))));
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    vpcPrefix,
+                    Utils.interfaceNameToRemote(vpcConfig),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcConfig, Utils.interfaceNameToRemote(vgwConfig))))));
 
     assertThat(
         vgwConfig.getRoutingPolicies(),

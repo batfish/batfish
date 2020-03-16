@@ -24,7 +24,6 @@ import static org.batfish.representation.aws.InternetGateway.configureNat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +37,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IspModelingUtils;
@@ -85,7 +85,6 @@ public class InternetGatewayTest {
 
   @Test
   public void testToConfiguration() {
-
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -116,7 +115,8 @@ public class InternetGatewayTest {
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
-    Configuration igwConfig = internetGateway.toConfigurationNode(awsConfiguration, region);
+    Configuration igwConfig =
+        internetGateway.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(igwConfig, hasDeviceModel(DeviceModel.AWS_INTERNET_GATEWAY));
     assertThat(igwConfig.getHumanName(), equalTo("igw-name"));
 
@@ -125,12 +125,11 @@ public class InternetGatewayTest {
         igwConfig.getAllInterfaces().values().stream()
             .map(i -> i.getName())
             .collect(ImmutableList.toImmutableList()),
-        equalTo(ImmutableList.of(BACKBONE_INTERFACE_NAME)));
+        equalTo(ImmutableList.of(BACKBONE_INTERFACE_NAME, Utils.interfaceNameToRemote(vpcConfig))));
 
     Interface bbInterface = igwConfig.getAllInterfaces().get(BACKBONE_INTERFACE_NAME);
     Prefix bbInterfacePrefix = bbInterface.getConcreteAddress().getPrefix();
 
-    assertThat(igwConfig.getAllInterfaces(), hasKey(BACKBONE_INTERFACE_NAME));
     assertThat(
         igwConfig.getDefaultVrf().getBgpProcess().getRouterId(),
         equalTo(bbInterfacePrefix.getStartIp()));
@@ -149,9 +148,15 @@ public class InternetGatewayTest {
                 .apply(TransformationStep.shiftDestinationIp(privateIp.toPrefix()))
                 .build()));
 
-    // Check that the filter to block unassociated private IPs is installed. Its behavior is  tested
-    // separately.
+    // Check that the filter to block unassociated private IPs is installed in the configuration and
+    // vpc-facing interface. The filter behavior is  tested separately.
     assertTrue(igwConfig.getIpAccessLists().containsKey(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
+    assertThat(
+        igwConfig
+            .getAllInterfaces()
+            .get(Utils.interfaceNameToRemote(vpcConfig))
+            .getIncomingFilterName(),
+        equalTo(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLocationInfo;
-import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
@@ -212,37 +211,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
         toStaticRoute(
             _cidrBlock, interfaceNameToRemote(cfgNode), getInterfaceLinkLocalIp(cfgNode, _vpcId)));
 
-    // 1. connect the vpn gateway to the subnet if one exists
-    // 2. create appropriate static routes
     Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);
-    if (optVpnGateway.isPresent()) {
-      Configuration vgwConfig =
-          awsConfiguration.getConfigurationNodes().get(optVpnGateway.get().getId());
-      connect(awsConfiguration, cfgNode, vgwConfig);
-      Ip nhipOnVgw = getInterfaceLinkLocalIp(cfgNode, vgwConfig.getHostname());
-      addStaticRoute(
-          vgwConfig, toStaticRoute(_cidrBlock, interfaceNameToRemote(cfgNode), nhipOnVgw));
-    }
-
-    // 1. connect the internet gateway if its a public subnet
-    // 2. create static routes on it for the subnet's prefix
-    // 3. install the filter on the created IGW interface that drops unassociated private IPs.
     Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
+
     if (optInternetGateway.isPresent()
         && routeTable.isPresent()
         && isPublicSubnet(optInternetGateway.get(), routeTable.get())) {
       cfgNode.setDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC);
-      Configuration igwConfig =
-          awsConfiguration.getConfigurationNodes().get(optInternetGateway.get().getId());
-      connect(awsConfiguration, cfgNode, igwConfig);
-
-      Interface ifaceIgw = igwConfig.getAllInterfaces().get(interfaceNameToRemote(cfgNode));
-      Ip nhipOnIgw = getInterfaceLinkLocalIp(cfgNode, igwConfig.getHostname());
-      addStaticRoute(igwConfig, toStaticRoute(_cidrBlock, ifaceIgw.getName(), nhipOnIgw));
-
-      ifaceIgw.setIncomingFilter(
-          igwConfig.getIpAccessLists().get(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
     }
 
     // process route tables to get outbound traffic going
@@ -375,22 +351,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
         }
         if (igw != null && route.getTarget().equals(igw.getId())) {
           // To IGW
-          Configuration igwConfig = awsConfiguration.getConfigurationNodes().get(igw.getId());
-          addStaticRoute(
-              cfgNode,
-              sr.setNextHopIp(getInterfaceLinkLocalIp(igwConfig, _subnetId))
-                  .setNextHopInterface(interfaceNameToRemote(igwConfig))
-                  .build());
+          initializeVpcLink(
+              cfgNode, vpcNode, region.getVpcs().get(_vpcId), igw.getId(), sr, awsConfiguration);
           return;
         }
         if (vgw != null && route.getTarget().equals(vgw.getId())) {
           // To VGW
-          Configuration vgwConfig = awsConfiguration.getConfigurationNodes().get(vgw.getId());
-          addStaticRoute(
-              cfgNode,
-              sr.setNextHopIp(getInterfaceLinkLocalIp(vgwConfig, _subnetId))
-                  .setNextHopInterface(interfaceNameToRemote(vgwConfig))
-                  .build());
+          initializeVpcLink(
+              cfgNode, vpcNode, region.getVpcs().get(_vpcId), vgw.getId(), sr, awsConfiguration);
           return;
         }
         warnings.redFlag(

@@ -60,6 +60,7 @@ public class AwsConfigurationPublicSubnetTest {
   // various entities in the configs
   private static String _instance = "i-06669a407b2ef3ae5";
   private static String _subnet = "subnet-0bb82ae8b3ea5dc78";
+  private static String _vpc = "vpc-0672bce73895d7252";
   private static String _igw = "igw-0a409e562d251f766";
   private static Ip _publicIp = Ip.parse("18.216.80.133");
   private static Ip _privateIp = Ip.parse("10.0.0.91");
@@ -83,6 +84,7 @@ public class AwsConfigurationPublicSubnetTest {
                 IspModelingUtils.INTERNET_HOST_NAME,
                 AWS_BACKBONE_NODE_NAME,
                 _igw,
+                _vpc,
                 _subnet,
                 _instance),
             _batfish);
@@ -133,6 +135,7 @@ public class AwsConfigurationPublicSubnetTest {
             ImmutableList.of(
                 _instance,
                 _subnet,
+                _vpc,
                 _igw,
                 AWS_BACKBONE_NODE_NAME,
                 IspModelingUtils.INTERNET_HOST_NAME),
@@ -140,7 +143,7 @@ public class AwsConfigurationPublicSubnetTest {
 
     // Test NAT behavior
     assertThat(
-        trace.getHops().get(2).getSteps(),
+        trace.getHops().get(3).getSteps(),
         hasItem(
             new TransformationStep(
                 new TransformationStepDetail(
@@ -155,7 +158,7 @@ public class AwsConfigurationPublicSubnetTest {
     testTrace(
         getTcpFlow(_instance, Ip.parse("10.0.0.92"), Ip.parse("8.8.8.8"), 80),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instance, _subnet, _igw),
+        ImmutableList.of(_instance, _subnet, _vpc, _igw),
         _batfish);
   }
 }

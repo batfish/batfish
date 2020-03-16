@@ -49,6 +49,7 @@ public class AwsConfigurationPrivateSubnetTest {
   // various entities in the configs
   private static String _instance = "i-099cf38911942421c";
   private static String _subnet = "subnet-0f263105946ad1a1d";
+  private static String _vpc = "vpc-0b966fdeb36d5e43f";
   private static String _vgw = "vgw-0c09bd7fadac961bf";
   private static Ip _privateIp = Ip.parse("10.0.1.204");
   private static String _onPremRouter = onPremRouterFile; // no hostname in the file, so name = file
@@ -74,21 +75,21 @@ public class AwsConfigurationPrivateSubnetTest {
     testTrace(
         getAnyFlow(_onPremRouter, _privateIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_onPremRouter, _vgw, _subnet, _instance),
+        ImmutableList.of(_onPremRouter, _vgw, _vpc, _subnet, _instance),
         _batfish);
 
     // to a private IP in the subnet
     testTrace(
         getAnyFlow(_onPremRouter, Ip.parse("10.0.1.205"), _batfish),
         FlowDisposition.NEIGHBOR_UNREACHABLE,
-        ImmutableList.of(_onPremRouter, _vgw, _subnet),
+        ImmutableList.of(_onPremRouter, _vgw, _vpc, _subnet),
         _batfish);
 
     // to a private IP outside the subnet
     testTrace(
         getAnyFlow(_onPremRouter, Ip.parse("10.0.2.1"), _batfish),
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_onPremRouter, _vgw),
+        ImmutableList.of(_onPremRouter, _vgw, _vpc),
         _batfish);
   }
 
@@ -97,7 +98,7 @@ public class AwsConfigurationPrivateSubnetTest {
     testTrace(
         getAnyFlow(_instance, Ip.parse("8.8.8.8"), _batfish), // On prem announces default
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_instance, _subnet, _vgw, _onPremRouter),
+        ImmutableList.of(_instance, _subnet, _vpc, _vgw, _onPremRouter),
         _batfish);
   }
 }
