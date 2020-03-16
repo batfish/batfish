@@ -90,7 +90,7 @@ public final class IspModelingUtils {
   static final long INTERNET_AS = 65537L;
   public static final String INTERNET_HOST_NAME = "internet";
   static final Ip INTERNET_OUT_ADDRESS = INTERNET_OUT_SUBNET.getFirstHostIp();
-  static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
+  static final String INTERNET_OUT_INTERFACE = "out";
   private static final int ISP_INTERNET_SUBNET = 31;
   // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
   // that use this space internally
