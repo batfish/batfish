@@ -3521,7 +3521,7 @@ RD
   'rd'
 ;
 
-REACHABILE_VIA
+REACHABLE_VIA
 :
   'reachable-via'
 ;

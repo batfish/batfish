@@ -2795,6 +2795,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                   _currentOspfArea.setTypeSettings(newNssa);
                   return newNssa;
                 });
+    if (ctx.default_information_originate != null) {
+      OspfDefaultOriginate defaultOriginate = _currentOspfProcess.getDefaultOriginate();
+      if (defaultOriginate == null) {
+        defaultOriginate = new OspfDefaultOriginate();
+        nssa.setDefaultOriginate(defaultOriginate);
+      }
+      if (routeMap != null) {
+        defaultOriginate.setRouteMap(routeMap);
+      }
+    }
     if (ctx.no_redistribution != null) {
       nssa.setNoRedistribution(true);
     }
