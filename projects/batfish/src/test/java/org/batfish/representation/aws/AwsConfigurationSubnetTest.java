@@ -4,8 +4,8 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
-import static org.batfish.representation.aws.Region.SG_EGRESS_ACL_NAME;
 import static org.batfish.representation.aws.Region.SG_INGRESS_ACL_NAME;
+import static org.batfish.representation.aws.Region.instanceEgressAclName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -46,6 +46,7 @@ public class AwsConfigurationSubnetTest {
 
   // various entities in the configs
   private static String _instance1 = "i-08ef86e76fceabd8d";
+  private static String _instance1Iface = "eni-010f649a7fc5c1e34";
   private static String _instance2 = "i-07519d6ba3f9497e4";
   private static Ip _instance2Ip = Ip.parse("10.10.1.44");
   private static String _subnet = "subnet-06c8307e34ffadb04";
@@ -81,7 +82,7 @@ public class AwsConfigurationSubnetTest {
             _batfish);
 
     // security group at instance1
-    assertFilterAtHop(trace, 0, SG_EGRESS_ACL_NAME);
+    assertFilterAtHop(trace, 0, instanceEgressAclName(_instance1Iface));
 
     // security group at instance2
     assertFilterAtHop(trace, 1, SG_INGRESS_ACL_NAME);

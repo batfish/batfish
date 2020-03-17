@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
@@ -14,8 +15,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -30,14 +31,18 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclLineEvaluator;
 import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.TraceEvent;
@@ -137,20 +142,21 @@ public class RegionTest {
   }
 
   @Test
-  public void testApplySecurityGroupAcls() {
+  public void testApplyInstanceInterfaceAcls() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname(CONFIGURATION_NAME)
             .build();
-    nf.interfaceBuilder()
-        .setOwner(c)
-        .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
-        .build();
+    Interface iface =
+        nf.interfaceBuilder()
+            .setOwner(c)
+            .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
+            .build();
     Map<String, Configuration> configurationMap = ImmutableMap.of(c.getHostname(), c);
     Region region = createTestRegion();
-    region.applySecurityGroupsAcls(configurationMap, new Warnings());
+    region.applyInstanceInterfaceAcls(configurationMap, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-1~sg-001~"));
@@ -174,7 +180,8 @@ public class RegionTest {
                     getTraceElementForSecurityGroup("sg-2")))));
 
     assertThat(
-        c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(), hasSize(0));
+        c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(),
+        equalTo(ImmutableList.of(computeAntiSpoofingFilter(iface))));
   }
 
   @Test
@@ -191,7 +198,7 @@ public class RegionTest {
         .build();
     Map<String, Configuration> configurationMap = ImmutableMap.of(c.getHostname(), c);
     Region region = createTestRegion();
-    region.applySecurityGroupsAcls(configurationMap, new Warnings());
+    region.applyInstanceInterfaceAcls(configurationMap, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
 
     Flow permittedFlow =
@@ -256,5 +263,32 @@ public class RegionTest {
             ImmutableMap.of(),
             ImmutableMap.of());
     assertThat(root, empty());
+  }
+
+  @Test
+  public void testComputeAntiSpoofingFilter() {
+    Ip validSourceIp = Ip.parse("10.10.10.10");
+    Interface iface =
+        Interface.builder()
+            .setName("test")
+            .setAddresses(ConcreteInterfaceAddress.create(validSourceIp, Prefix.MAX_PREFIX_LENGTH))
+            .build();
+    AclLine antiSpoofingLine = computeAntiSpoofingFilter(iface);
+    assertThat(
+        new AclLineEvaluator(
+                Flow.builder().setSrcIp(validSourceIp).setIngressNode("aa").build(),
+                "blah",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .visit(antiSpoofingLine),
+        nullValue()); // pass through
+    assertThat(
+        new AclLineEvaluator(
+                Flow.builder().setSrcIp(Ip.parse("6.6.6.6")).setIngressNode("aa").build(),
+                "blah",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .visit(antiSpoofingLine),
+        equalTo(LineAction.DENY));
   }
 }
