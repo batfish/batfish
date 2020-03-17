@@ -156,9 +156,11 @@ public class AwsConfigurationPublicSubnetTest {
   @Test
   public void testToInternetInvalidPrivateIp() {
     testTrace(
-        getTcpFlow(_instance, Ip.parse("10.0.0.92"), Ip.parse("8.8.8.8"), 80),
+        // start the flow at subnet -- otherwise the anti-spoofing filter at the instance will block
+        // and the packet won't make it to the igw
+        getTcpFlow(_subnet, Ip.parse("10.0.0.92"), Ip.parse("8.8.8.8"), 80),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_instance, _subnet, _vpc, _igw),
+        ImmutableList.of(_subnet, _vpc, _igw),
         _batfish);
   }
 }
