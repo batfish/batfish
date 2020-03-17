@@ -70,4 +70,12 @@ public class IpCompletionRelevanceTest {
     assertFalse(relevance.matches(new String[] {"b"}, testIp));
     assertFalse(relevance.matches(new String[] {"tag", "b"}, testIp));
   }
+
+  @Test
+  public void testMatches_caseInsensitive() {
+    IpCompletionRelevance relevance = new IpCompletionRelevance("a", "TAG");
+    Ip testIp = Ip.parse("1.1.1.1");
+
+    assertTrue(relevance.matches(new String[] {"tag"}, testIp));
+  }
 }
