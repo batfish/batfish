@@ -789,42 +789,6 @@ public final class Region implements Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
-  //  /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
-  //  @VisibleForTesting
-  //  void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
-  //    for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
-  //      Configuration cfgNode = cfgNodes.get(entry.getKey());
-  //      List<AclLine> inAclAclLines = new ArrayList<>();
-  //      List<AclLine> outAclAclLines = new ArrayList<>();
-  //      entry.getValue().stream()
-  //          .sorted(Comparator.comparing(SecurityGroup::getId)) // for stable ordering of lines
-  //          .forEach(
-  //              securityGroup -> {
-  //                String sgName = String.format("Security Group %s",
-  // securityGroup.getGroupName());
-  //                Optional.ofNullable(
-  //                        securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-  //                    .map(
-  //                        acl ->
-  //                            new AclAclLine(
-  //                                sgName,
-  //                                acl.getName(),
-  //                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
-  //                    .ifPresent(inAclAclLines::add);
-  //                Optional.ofNullable(
-  //                        securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-  //                    .map(
-  //                        acl ->
-  //                            new AclAclLine(
-  //                                sgName,
-  //                                acl.getName(),
-  //                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
-  //                    .ifPresent(outAclAclLines::add);
-  //              });
-  //      applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
-  //    }
-  //  }
-
   private static void applyAclLinesToInterfaces(
       List<AclLine> inSgAclLines, List<AclLine> outSgAclLines, Configuration configuration) {
     // ingress ACL is the combination of ingress SGs -- compute once
