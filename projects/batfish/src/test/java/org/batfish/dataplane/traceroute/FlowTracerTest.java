@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -825,5 +826,99 @@ public final class FlowTracerTest {
           equalTo(NodeInterfacePair.of(node, iface)));
       assertThat(dispositionStep.getDetail().getResolvedNexthopIp(), equalTo(ip));
     }
+  }
+
+  @Test
+  public void testForkTracerSameNode_transformation() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+
+    Ip dstIp1 = Ip.parse("1.1.1.1");
+    Flow flow =
+        Flow.builder()
+            .setDstIp(dstIp1)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .build();
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+    String node = c.getHostname();
+    Configuration currentConfig = ctxt.getConfigurations().get(node);
+    Stack<Breadcrumb> breadcrumbs = new Stack<>();
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            currentConfig,
+            null,
+            new Node(node),
+            traceAndReverseFlow -> {},
+            null,
+            new HashSet<>(),
+            flow,
+            vrf.getName(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            breadcrumbs,
+            flow);
+
+    Ip dstIp2 = Ip.parse("2.2.2.2");
+    flowTracer.applyTransformation(
+        Transformation.always().apply(assignDestinationIp(dstIp2)).build());
+
+    // must add a breadcrumb before forking
+    breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), flow));
+    FlowTracer flowTracer2 = flowTracer.forkTracerSameNode();
+
+    // only current flow is transformed
+    assertThat(flowTracer2.getOriginalFlow().getDstIp(), equalTo(dstIp1));
+    assertThat(flowTracer2.getCurrentFlow().getDstIp(), equalTo(dstIp2));
+  }
+
+  @Test
+  public void testForkTracerFollowEdge_transformation() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    Interface i1 = nf.interfaceBuilder().setOwner(c1).setVrf(v1).build();
+
+    Ip dstIp1 = Ip.parse("1.1.1.1");
+    Flow flow =
+        Flow.builder()
+            .setDstIp(dstIp1)
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(v1.getName())
+            .build();
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c1.getHostname(), c1)).build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+    FlowTracer flowTracer =
+        initialFlowTracer(ctxt, c1.getHostname(), null, flow, traceAndReverseFlow -> {});
+
+    Ip dstIp2 = Ip.parse("2.2.2.2");
+    flowTracer.applyTransformation(
+        Transformation.always().apply(assignDestinationIp(dstIp2)).build());
+
+    NodeInterfacePair nip = NodeInterfacePair.of(i1);
+    FlowTracer flowTracer2 = flowTracer.forkTracerFollowEdge(nip, nip);
+
+    // both original and current flows are transformed
+    assertThat(flowTracer2.getOriginalFlow().getDstIp(), equalTo(dstIp2));
+    assertThat(flowTracer2.getCurrentFlow().getDstIp(), equalTo(dstIp2));
   }
 }
