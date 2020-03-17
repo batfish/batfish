@@ -99,6 +99,7 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -304,6 +305,9 @@ class FlowTracer {
       List<Step<?>> steps,
       Stack<Breadcrumb> breadcrumbs,
       Flow currentFlow) {
+    assert originalFlow.equals(currentFlow)
+            || steps.stream().anyMatch(TransformationStep.class::isInstance)
+        : "Original flow and current flow must be equal unless there's a transformation step";
     _tracerouteContext = tracerouteContext;
     _currentConfig = currentConfig;
     _ingressInterface = ingressInterface;
@@ -323,8 +327,8 @@ class FlowTracer {
    * Return forked {@link FlowTracer} starting at {@code enterIface} having just come from {@code
    * exitIface} after a hop has been added.
    */
-  private FlowTracer forkTracerFollowEdge(
-      NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
+  @VisibleForTesting
+  FlowTracer forkTracerFollowEdge(NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
     checkState(
         _hops.size() == _breadcrumbs.size(), "Must have equal number of hops and breadcrumbs");
     // grab configuration-specific information from the node that owns enterIface
@@ -333,16 +337,28 @@ class FlowTracer {
     checkArgument(
         newConfig != null, "Node %s is not in the network, cannot perform traceroute", newHostname);
     String newIngressInterface = enterIface.getInterface();
-    return forkTracer(
+
+    // hops and sessions are per-trace.
+    return new FlowTracer(
+        _tracerouteContext,
         newConfig,
         newIngressInterface,
-        ImmutableList.of(),
+        new Node(newConfig.getHostname()),
+        _flowTraces,
         exitIface,
-        initVrfName(newIngressInterface, newConfig, _currentFlow));
+        new HashSet<>(_newSessions),
+        // the original flow of the next hop is the final (i.e. current) flow of this hop
+        _currentFlow,
+        initVrfName(newIngressInterface, newConfig, _currentFlow),
+        new ArrayList<>(_hops),
+        new ArrayList<>(ImmutableList.of()),
+        _breadcrumbs,
+        _currentFlow);
   }
 
   /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
-  private @Nonnull FlowTracer forkTracerSameNode() {
+  @VisibleForTesting
+  @Nonnull FlowTracer forkTracerSameNode() {
     return forkTracerSameNode(_vrfName);
   }
 
@@ -459,10 +475,7 @@ class FlowTracer {
         }
       }
 
-      TransformationResult transformationResult =
-          eval(incomingInterface.getIncomingTransformation());
-      _steps.addAll(transformationResult.getTraceSteps());
-      _currentFlow = transformationResult.getOutputFlow();
+      applyTransformation(incomingInterface.getIncomingTransformation());
 
       inputFilter = incomingInterface.getPostTransformationIncomingFilter();
       if (applyFilter(inputFilter, POST_TRANSFORMATION_INGRESS_FILTER) == DENIED) {
@@ -619,6 +632,14 @@ class FlowTracer {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), PERMITTED));
       }
     }.visit(result.getAction());
+  }
+
+  /** Apply the input {@link Transformation} to the current flow in the current context. */
+  @VisibleForTesting
+  void applyTransformation(Transformation transformation) {
+    TransformationResult transformationResult = eval(transformation);
+    _steps.addAll(transformationResult.getTraceSteps());
+    _currentFlow = transformationResult.getOutputFlow();
   }
 
   /** Evaluate the input {@link Transformation} against the current flow in the current context. */
@@ -958,10 +979,7 @@ class FlowTracer {
       return;
     }
 
-    // Apply outgoing transformation
-    TransformationResult transformationResult = eval(outgoingInterface.getOutgoingTransformation());
-    _steps.addAll(transformationResult.getTraceSteps());
-    _currentFlow = transformationResult.getOutputFlow();
+    applyTransformation(outgoingInterface.getOutgoingTransformation());
 
     // apply outgoing filter
     if (applyFilter(outgoingInterface.getOutgoingFilter(), EGRESS_FILTER) == DENIED) {
@@ -1234,5 +1252,15 @@ class FlowTracer {
         throw new BatfishException(
             "the disposition is must be insufficient info, neighbor unreachable, delivered to subnet or exits network.");
     }
+  }
+
+  @VisibleForTesting
+  Flow getCurrentFlow() {
+    return _currentFlow;
+  }
+
+  @VisibleForTesting
+  Flow getOriginalFlow() {
+    return _originalFlow;
   }
 }
