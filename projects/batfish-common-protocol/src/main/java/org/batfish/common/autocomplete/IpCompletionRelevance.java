@@ -50,10 +50,14 @@ public class IpCompletionRelevance implements Serializable {
         matchTags.stream()
             .filter(Objects::nonNull)
             .filter(tag -> !tag.isEmpty())
+            .map(String::toLowerCase)
             .collect(ImmutableList.toImmutableList());
   }
 
-  /** Returns true if each subQuery is a substring of at least one tag or of the ip */
+  /**
+   * Returns true if each subQuery is a substring of at least one tag or of the ip. Subqueries
+   * should already be lower case.
+   */
   public boolean matches(String[] subQueries, Ip ip) {
     return Arrays.stream(subQueries)
         .allMatch(
