@@ -9,7 +9,7 @@ import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchConditi
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
-import static org.batfish.representation.aws.Region.egressAclName;
+import static org.batfish.representation.aws.Region.instanceEgressAclName;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForInstance;
@@ -241,9 +241,10 @@ public class ElasticsearchDomainTest {
                     Utils.getTraceElementForSecurityGroup("Test Security Group")))));
     for (Interface iface : esDomain.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
-      assertThat(iface.getOutgoingFilter().getName(), equalTo(egressAclName(iface.getName())));
       assertThat(
-          esDomain.getIpAccessLists().get(egressAclName(iface.getName())).getLines(),
+          iface.getOutgoingFilter().getName(), equalTo(instanceEgressAclName(iface.getName())));
+      assertThat(
+          esDomain.getIpAccessLists().get(instanceEgressAclName(iface.getName())).getLines(),
           equalTo(
               ImmutableList.of(
                   computeAntiSpoofingFilter(iface),

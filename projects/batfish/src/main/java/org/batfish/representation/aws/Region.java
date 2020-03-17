@@ -64,7 +64,7 @@ public final class Region implements Serializable {
 
   static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
 
-  static String egressAclName(String interfaceName) {
+  static String instanceEgressAclName(String interfaceName) {
     return String.format("~EGRESS_ACL~%s", interfaceName);
   }
 
@@ -809,7 +809,7 @@ public final class Region implements Serializable {
               // egress ACL is spoofing protection plus egress SGs
               iface.setOutgoingFilter(
                   IpAccessList.builder()
-                      .setName(egressAclName(iface.getName()))
+                      .setName(instanceEgressAclName(iface.getName()))
                       .setLines(
                           ImmutableList.<AclLine>builder()
                               .add(computeAntiSpoofingFilter(iface))

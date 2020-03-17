@@ -5,7 +5,7 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Region.SG_INGRESS_ACL_NAME;
-import static org.batfish.representation.aws.Region.egressAclName;
+import static org.batfish.representation.aws.Region.instanceEgressAclName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -82,7 +82,7 @@ public class AwsConfigurationSubnetTest {
             _batfish);
 
     // security group at instance1
-    assertFilterAtHop(trace, 0, egressAclName(_instance1Iface));
+    assertFilterAtHop(trace, 0, instanceEgressAclName(_instance1Iface));
 
     // security group at instance2
     assertFilterAtHop(trace, 1, SG_INGRESS_ACL_NAME);
