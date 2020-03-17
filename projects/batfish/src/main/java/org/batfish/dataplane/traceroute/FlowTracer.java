@@ -306,8 +306,9 @@ class FlowTracer {
       Stack<Breadcrumb> breadcrumbs,
       Flow currentFlow) {
     assert originalFlow.equals(currentFlow)
-            || steps.stream().anyMatch(TransformationStep.class::isInstance)
-        : "Original flow and current flow must be equal unless there's a transformation step";
+            || steps.stream()
+                .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep)
+        : "Original flow and current flow must be equal unless there's a transformation step or a policy step";
     _tracerouteContext = tracerouteContext;
     _currentConfig = currentConfig;
     _ingressInterface = ingressInterface;
