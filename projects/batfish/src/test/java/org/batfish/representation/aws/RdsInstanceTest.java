@@ -8,6 +8,8 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchPorts;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchTcp;
+import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
+import static org.batfish.representation.aws.Region.instanceEgressAclName;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
@@ -197,17 +199,19 @@ public class RdsInstanceTest {
                     "Security Group Test Security Group",
                     "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
                     Utils.getTraceElementForSecurityGroup("Test Security Group")))));
-    assertThat(
-        testRds.getIpAccessLists().get("~SECURITY_GROUP_EGRESS_ACL~").getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine(
-                    "Security Group Test Security Group",
-                    "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
-                    Utils.getTraceElementForSecurityGroup("Test Security Group")))));
     for (Interface iface : testRds.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
-      assertThat(iface.getOutgoingFilter().getName(), equalTo("~SECURITY_GROUP_EGRESS_ACL~"));
+      assertThat(
+          iface.getOutgoingFilter().getName(), equalTo(instanceEgressAclName(iface.getName())));
+      assertThat(
+          testRds.getIpAccessLists().get(instanceEgressAclName(iface.getName())).getLines(),
+          equalTo(
+              ImmutableList.of(
+                  computeAntiSpoofingFilter(iface),
+                  new AclAclLine(
+                      "Security Group Test Security Group",
+                      "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
+                      Utils.getTraceElementForSecurityGroup("Test Security Group")))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(

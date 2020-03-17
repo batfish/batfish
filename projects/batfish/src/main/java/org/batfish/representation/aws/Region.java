@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,10 +35,18 @@ import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.aws.Instance.Status;
 
@@ -56,7 +64,12 @@ public final class Region implements Serializable {
 
   static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
 
-  static final String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
+  static String instanceEgressAclName(String interfaceName) {
+    return String.format("~EGRESS_ACL~%s", interfaceName);
+  }
+
+  static final TraceElement DENY_SPOOFED_SOURCE_IP_TRACE_ELEMENT =
+      TraceElement.of("Deny spoofed source IPs");
 
   @Nonnull private final Map<String, Address> _addresses;
 
@@ -728,7 +741,7 @@ public final class Region implements Serializable {
 
     // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
 
-    applySecurityGroupsAcls(awsConfiguration.getConfigurationNodes(), warnings);
+    applyInstanceInterfaceAcls(awsConfiguration.getConfigurationNodes(), warnings);
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : awsConfiguration.getConfigurationNodes().values()) {
@@ -740,52 +753,49 @@ public final class Region implements Serializable {
 
   /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
   @VisibleForTesting
-  void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
+  void applyInstanceInterfaceAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
-      List<AclLine> inAclAclLines = new ArrayList<>();
-      List<AclLine> outAclAclLines = new ArrayList<>();
-      entry.getValue().stream()
-          .sorted(Comparator.comparing(SecurityGroup::getId)) // for stable ordering of lines
-          .forEach(
-              securityGroup -> {
-                String sgName = String.format("Security Group %s", securityGroup.getGroupName());
-                Optional.ofNullable(
-                        securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(
-                        acl ->
-                            new AclAclLine(
-                                sgName,
-                                acl.getName(),
-                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
-                    .ifPresent(inAclAclLines::add);
-                Optional.ofNullable(
-                        securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(
-                        acl ->
-                            new AclAclLine(
-                                sgName,
-                                acl.getName(),
-                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
-                    .ifPresent(outAclAclLines::add);
-              });
+      List<AclLine> inAclAclLines =
+          computeSecurityGroupAclLines(entry.getValue(), true, cfgNode, warnings);
+      List<AclLine> outAclAclLines =
+          computeSecurityGroupAclLines(entry.getValue(), false, cfgNode, warnings);
+
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
   }
 
+  /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
+  @VisibleForTesting
+  List<AclLine> computeSecurityGroupAclLines(
+      Set<SecurityGroup> securityGroups,
+      boolean ingress,
+      Configuration cfgNode,
+      Warnings warnings) {
+    return securityGroups.stream()
+        .sorted(Comparator.comparing(SecurityGroup::getId)) // for stable ordering of lines
+        .map(
+            securityGroup ->
+                Optional.ofNullable(
+                        securityGroupToIpAccessList(securityGroup, ingress, cfgNode, warnings))
+                    .map(
+                        acl ->
+                            new AclAclLine(
+                                String.format("Security Group %s", securityGroup.getGroupName()),
+                                acl.getName(),
+                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
+                    .orElse(null))
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
+  }
+
   private static void applyAclLinesToInterfaces(
-      List<AclLine> inAclLines, List<AclLine> outAclLines, Configuration configuration) {
-    // create a combined in ACL and out ACL using the inputs
+      List<AclLine> inSgAclLines, List<AclLine> outSgAclLines, Configuration configuration) {
+    // ingress ACL is the combination of ingress SGs -- compute once
     IpAccessList inAcl =
         IpAccessList.builder()
             .setName(SG_INGRESS_ACL_NAME)
-            .setLines(inAclLines)
-            .setOwner(configuration)
-            .build();
-    IpAccessList outAcl =
-        IpAccessList.builder()
-            .setName(SG_EGRESS_ACL_NAME)
-            .setLines(outAclLines)
+            .setLines(inSgAclLines)
             .setOwner(configuration)
             .build();
 
@@ -796,11 +806,38 @@ public final class Region implements Serializable {
         .forEach(
             iface -> {
               iface.setIncomingFilter(inAcl);
-              iface.setOutgoingFilter(outAcl);
+              // egress ACL is spoofing protection plus egress SGs
+              iface.setOutgoingFilter(
+                  IpAccessList.builder()
+                      .setName(instanceEgressAclName(iface.getName()))
+                      .setLines(
+                          ImmutableList.<AclLine>builder()
+                              .add(computeAntiSpoofingFilter(iface))
+                              .addAll(outSgAclLines)
+                              .build())
+                      .setOwner(configuration)
+                      .build());
               iface.setFirewallSessionInterfaceInfo(
                   new FirewallSessionInterfaceInfo(
                       false, ImmutableList.of(iface.getName()), null, null));
             });
+  }
+
+  @VisibleForTesting
+  static AclLine computeAntiSpoofingFilter(Interface iface) {
+    IpSpace validSourceIpSpace =
+        IpWildcardSetIpSpace.builder()
+            .including(
+                iface.getAllConcreteAddresses().stream()
+                    .map(addr -> IpWildcard.create(addr.getIp()))
+                    .collect(Collectors.toList()))
+            .build();
+    return ExprAclLine.builder()
+        .setTraceElement(DENY_SPOOFED_SOURCE_IP_TRACE_ELEMENT)
+        .setMatchCondition(
+            not(new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(validSourceIpSpace).build())))
+        .setAction(LineAction.DENY)
+        .build();
   }
 
   @Nullable
