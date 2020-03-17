@@ -358,7 +358,8 @@ class FlowTracer {
 
   /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
   @VisibleForTesting
-  @Nonnull FlowTracer forkTracerSameNode() {
+  @Nonnull
+  FlowTracer forkTracerSameNode() {
     return forkTracerSameNode(_vrfName);
   }
 
