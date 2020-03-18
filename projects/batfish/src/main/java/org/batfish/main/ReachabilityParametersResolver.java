@@ -13,7 +13,6 @@ import java.util.SortedSet;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -29,22 +28,17 @@ import org.batfish.specifier.SpecifierContext;
 
 /**
  * Resolve a {@link ReachabilityParameters} and return a {@link ResolvedReachabilityParameters}
- * object. This involves getting the right configs and dataplane, and resolving Location, Node, and
- * IpSpace specifiers. All validation of user input is done here.
+ * object. This involves resolving Location, Node, and IpSpace specifiers. All validation of user
+ * input is done here.
  */
 public final class ReachabilityParametersResolver {
   private final SpecifierContext _context;
-
-  private final DataPlane _dataPlane;
-
   private final ReachabilityParameters _params;
-
   private final IpSpaceRepresentative _ipSpaceRepresentative;
 
   @VisibleForTesting
   ReachabilityParametersResolver(
       IBatfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
-    _dataPlane = batfish.loadDataPlane(snapshot);
     _params = params;
     _context = batfish.specifierContext(snapshot);
     _ipSpaceRepresentative = new IpSpaceRepresentative();
