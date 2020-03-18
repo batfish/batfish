@@ -80,8 +80,6 @@ public final class ReachabilityParametersResolver {
     }
     return ResolvedReachabilityParameters.builder()
         .setActions(actions)
-        .setConfigurations(resolver._context.getConfigs())
-        .setDataPlane(resolver._dataPlane)
         .setFinalNodes(finalNodes)
         .setForbiddenTransitNodes(forbiddenTransitNodes)
         .setHeaderSpace(resolver.resolveHeaderSpace())
