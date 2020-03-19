@@ -1,6 +1,28 @@
 {
   "NatGateways": [
     {
+      "CreateTime": "2020-03-18 18:10:57+00:00",
+      "DeleteTime": "2020-03-19 21:45:27+00:00",
+      "NatGatewayAddresses": [
+        {
+          "AllocationId": "eipalloc-01d07286fed78483f",
+          "NetworkInterfaceId": "eni-05c8acb075e0d75db",
+          "PrivateIp": "10.1.1.184",
+          "PublicIp": "54.209.129.142"
+        }
+      ],
+      "NatGatewayId": "nat-07de522fdf38aba9d",
+      "State": "deleted",
+      "SubnetId": "subnet-04132027d3844a90a",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "ngw-hr-east"
+        }
+      ],
+      "VpcId": "vpc-059651ded277301a8"
+    },
+    {
       "NatGatewayAddresses": [
         {
           "PublicIp": "198.11.222.33",

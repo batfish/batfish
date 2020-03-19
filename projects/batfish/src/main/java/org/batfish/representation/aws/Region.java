@@ -310,9 +310,12 @@ public final class Region implements Serializable {
         };
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
         return json -> {
-          CustomerGateway cGateway =
-              BatfishObjectMapper.mapper().convertValue(json, CustomerGateway.class);
-          _customerGateways.put(cGateway.getId(), cGateway);
+          String stateCode = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (stateCode.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            CustomerGateway cGateway =
+                BatfishObjectMapper.mapper().convertValue(json, CustomerGateway.class);
+            _customerGateways.put(cGateway.getId(), cGateway);
+          }
         };
       case AwsVpcEntity.JSON_KEY_DB_INSTANCES:
         return json -> {
@@ -368,8 +371,12 @@ public final class Region implements Serializable {
         };
       case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
         return json -> {
-          NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(json, NatGateway.class);
-          _natGateways.put(natGateway.getId(), natGateway);
+          String stateCode = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (stateCode.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            NatGateway natGateway =
+                BatfishObjectMapper.mapper().convertValue(json, NatGateway.class);
+            _natGateways.put(natGateway.getId(), natGateway);
+          }
         };
       case AwsVpcEntity.JSON_KEY_NETWORK_ACLS:
         return json -> {
@@ -487,7 +494,7 @@ public final class Region implements Serializable {
       case AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS:
         return json -> {
           String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
-          if (!state.equals(AwsVpcEntity.STATUS_DELETED)) {
+          if (state.equals(AwsVpcEntity.STATE_AVAILABLE)) {
             VpnConnection vpnConnection =
                 BatfishObjectMapper.mapper().convertValue(json, VpnConnection.class);
             _vpnConnections.put(vpnConnection.getId(), vpnConnection);
