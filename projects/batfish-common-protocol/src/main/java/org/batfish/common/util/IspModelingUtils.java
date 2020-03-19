@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -105,6 +107,37 @@ public final class IspModelingUtils {
 
   public static String getDefaultIspNodeName(Long asn) {
     return String.format("%s_%s", "isp", asn);
+  }
+
+  public static class ModeledNodes {
+
+    @Nonnull private final Map<String, Configuration> _configurations;
+
+    @Nonnull private final Set<Layer1Edge> _layer1Edgesdges;
+
+    ModeledNodes() {
+      _configurations = new HashMap<>();
+      _layer1Edgesdges = new HashSet<>();
+    }
+
+    void addConfiguration(Configuration configuration) {
+      _configurations.put(configuration.getHostname(), configuration);
+    }
+
+    void addLayer1Edge(String node1, String node1Iface, String node2, String node2Iface) {
+      _layer1Edgesdges.add(new Layer1Edge(node1, node1Iface, node2, node2Iface));
+      _layer1Edgesdges.add(new Layer1Edge(node2, node2Iface, node1, node1Iface));
+    }
+
+    @Nonnull
+    public Map<String, Configuration> getConfigurations() {
+      return ImmutableMap.copyOf(_configurations);
+    }
+
+    @Nonnull
+    public Set<Layer1Edge> getLayer1Edgesdges() {
+      return ImmutableSet.copyOf(_layer1Edgesdges);
+    }
   }
 
   private IspModelingUtils() {}
@@ -225,7 +258,7 @@ public final class IspModelingUtils {
    * @param warnings {@link Warnings} containing all the warnings logged during the ISP modeling
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
-  public static Map<String, Configuration> getInternetAndIspNodes(
+  public static ModeledNodes getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
       @Nonnull List<IspConfiguration> ispConfigurations,
       @Nonnull BatfishLogger logger,
@@ -240,7 +273,7 @@ public final class IspModelingUtils {
 
     if (!conflicts.isEmpty()) {
       conflicts.forEach(warnings::redFlag);
-      return ImmutableMap.of();
+      return new ModeledNodes();
     }
 
     return createInternetAndIspNodes(asnToIspInfos, nf, logger);
@@ -315,25 +348,25 @@ public final class IspModelingUtils {
     return asnToIspInfos;
   }
 
-  private static Map<String, Configuration> createInternetAndIspNodes(
+  private static ModeledNodes createInternetAndIspNodes(
       Map<Long, IspInfo> asnToIspInfos, NetworkFactory nf, BatfishLogger logger) {
-    Map<String, Configuration> ispConfigurations =
-        asnToIspInfos.entrySet().stream()
-            .map(asnIspInfo -> getIspConfigurationNode(asnIspInfo.getValue(), nf, logger))
-            .filter(Objects::nonNull)
-            .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
+    ModeledNodes modeledNodes = new ModeledNodes();
+
+    asnToIspInfos.entrySet().stream()
+        .map(asnIspInfo -> getIspConfigurationNode(asnIspInfo.getValue(), nf, logger))
+        .filter(Objects::nonNull)
+        .forEach(modeledNodes::addConfiguration);
+
     // not proceeding if no ISPs were created
-    if (ispConfigurations.isEmpty()) {
-      return ispConfigurations;
+    if (modeledNodes.getConfigurations().isEmpty()) {
+      return modeledNodes;
     }
 
-    Configuration internet = createInternetNode();
-    connectIspsToInternet(internet, ispConfigurations, nf);
+    modeledNodes.addConfiguration(createInternetNode());
 
-    return ImmutableMap.<String, Configuration>builder()
-        .putAll(ispConfigurations)
-        .put(internet.getHostname(), internet)
-        .build();
+    connectIspsToInternet(modeledNodes, nf);
+
+    return modeledNodes;
   }
 
   @VisibleForTesting
@@ -409,10 +442,13 @@ public final class IspModelingUtils {
    * both with connected edges. Also adds eBGP peers on both Internet and all the ISPs to peer with
    * each other using the created Interface pairs.
    */
-  private static void connectIspsToInternet(
-      Configuration internet, Map<String, Configuration> ispConfigurations, NetworkFactory nf) {
+  private static void connectIspsToInternet(ModeledNodes modeledNodes, NetworkFactory nf) {
+    Configuration internet = modeledNodes.getConfigurations().get(INTERNET_HOST_NAME);
     Ip internetInterfaceIp = FIRST_EVEN_INTERNET_IP;
-    for (Configuration ispConfiguration : ispConfigurations.values()) {
+    for (Configuration ispConfiguration : modeledNodes.getConfigurations().values()) {
+      if (ispConfiguration.getHostname().equals(INTERNET_HOST_NAME)) {
+        continue;
+      }
       long ispAs = getAsnOfIspNode(ispConfiguration);
       Ip ispInterfaceIp = Ip.create(internetInterfaceIp.asLong() + 1);
       nf.interfaceBuilder()

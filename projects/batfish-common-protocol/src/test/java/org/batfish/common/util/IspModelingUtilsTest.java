@@ -550,14 +550,15 @@ public class IspModelingUtilsTest {
 
     Map<String, Configuration> internetAndIsps =
         IspModelingUtils.getInternetAndIspNodes(
-            ImmutableMap.of(configuration.getHostname(), configuration),
-            ImmutableList.of(
-                new IspConfiguration(
-                    ImmutableList.of(
-                        new BorderInterfaceInfo(NodeInterfacePair.of("CoNf", "InTeRfAcE"))),
-                    IspFilter.ALLOW_ALL)),
-            new BatfishLogger("output", false),
-            new Warnings());
+                ImmutableMap.of(configuration.getHostname(), configuration),
+                ImmutableList.of(
+                    new IspConfiguration(
+                        ImmutableList.of(
+                            new BorderInterfaceInfo(NodeInterfacePair.of("CoNf", "InTeRfAcE"))),
+                        IspFilter.ALLOW_ALL)),
+                new BatfishLogger("output", false),
+                new Warnings())
+            .getConfigurations();
 
     // Isp and Internet nodes should be created irrespective of case used in Isp configuration
     assertThat(internetAndIsps, hasKey("isp_1"));
@@ -591,14 +592,15 @@ public class IspModelingUtilsTest {
 
     Map<String, Configuration> internetAndIsps =
         IspModelingUtils.getInternetAndIspNodes(
-            ImmutableMap.of(configuration.getHostname(), configuration),
-            ImmutableList.of(
-                new IspConfiguration(
-                    ImmutableList.of(
-                        new BorderInterfaceInfo(NodeInterfacePair.of("conf", "interface"))),
-                    IspFilter.ALLOW_ALL)),
-            new BatfishLogger("output", false),
-            new Warnings());
+                ImmutableMap.of(configuration.getHostname(), configuration),
+                ImmutableList.of(
+                    new IspConfiguration(
+                        ImmutableList.of(
+                            new BorderInterfaceInfo(NodeInterfacePair.of("conf", "interface"))),
+                        IspFilter.ALLOW_ALL)),
+                new BatfishLogger("output", false),
+                new Warnings())
+            .getConfigurations();
 
     assertThat(internetAndIsps, hasKey(IspModelingUtils.INTERNET_HOST_NAME));
     Configuration internetNode = internetAndIsps.get(IspModelingUtils.INTERNET_HOST_NAME);
@@ -806,19 +808,20 @@ public class IspModelingUtilsTest {
 
     Map<String, Configuration> internetAndIsps =
         IspModelingUtils.getInternetAndIspNodes(
-            ImmutableMap.of(
-                configuration1.getHostname(),
-                configuration1,
-                configuration2.getHostname(),
-                configuration2),
-            ImmutableList.of(
-                new IspConfiguration(
-                    ImmutableList.of(
-                        new BorderInterfaceInfo(NodeInterfacePair.of("conf1", "interface1")),
-                        new BorderInterfaceInfo(NodeInterfacePair.of("conf2", "interface2"))),
-                    IspFilter.ALLOW_ALL)),
-            new BatfishLogger("output", false),
-            new Warnings());
+                ImmutableMap.of(
+                    configuration1.getHostname(),
+                    configuration1,
+                    configuration2.getHostname(),
+                    configuration2),
+                ImmutableList.of(
+                    new IspConfiguration(
+                        ImmutableList.of(
+                            new BorderInterfaceInfo(NodeInterfacePair.of("conf1", "interface1")),
+                            new BorderInterfaceInfo(NodeInterfacePair.of("conf2", "interface2"))),
+                        IspFilter.ALLOW_ALL)),
+                new BatfishLogger("output", false),
+                new Warnings())
+            .getConfigurations();
 
     assertThat(internetAndIsps, hasKey("isp_1234"));
 
@@ -863,15 +866,16 @@ public class IspModelingUtilsTest {
     // passing non-existent border interfaces
     Map<String, Configuration> internetAndIsps =
         IspModelingUtils.getInternetAndIspNodes(
-            ImmutableMap.of(configuration1.getHostname(), configuration1),
-            ImmutableList.of(
-                new IspConfiguration(
-                    ImmutableList.of(
-                        new BorderInterfaceInfo(NodeInterfacePair.of("conf2", "interface2")),
-                        new BorderInterfaceInfo(NodeInterfacePair.of("conf2", "interface2"))),
-                    IspFilter.ALLOW_ALL)),
-            new BatfishLogger("output", false),
-            new Warnings());
+                ImmutableMap.of(configuration1.getHostname(), configuration1),
+                ImmutableList.of(
+                    new IspConfiguration(
+                        ImmutableList.of(
+                            new BorderInterfaceInfo(NodeInterfacePair.of("conf2", "interface2")),
+                            new BorderInterfaceInfo(NodeInterfacePair.of("conf2", "interface2"))),
+                        IspFilter.ALLOW_ALL)),
+                new BatfishLogger("output", false),
+                new Warnings())
+            .getConfigurations();
 
     // no ISPs and no Internet
     assertThat(internetAndIsps, anEmptyMap());

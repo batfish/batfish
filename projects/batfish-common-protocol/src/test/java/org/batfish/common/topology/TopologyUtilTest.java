@@ -1175,10 +1175,11 @@ public final class TopologyUtilTest {
             new IspFilter(ImmutableList.of(), ImmutableList.of()));
     Map<String, Configuration> ispConfigurations =
         IspModelingUtils.getInternetAndIspNodes(
-            explicitConfigurations,
-            ImmutableList.of(ispConfiguration),
-            new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false),
-            new Warnings());
+                explicitConfigurations,
+                ImmutableList.of(ispConfiguration),
+                new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false),
+                new Warnings())
+            .getConfigurations();
     Map<String, Configuration> configurations =
         ImmutableMap.<String, Configuration>builder()
             .putAll(explicitConfigurations)

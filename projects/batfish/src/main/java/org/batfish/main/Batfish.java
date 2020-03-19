@@ -120,6 +120,7 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -2537,9 +2538,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(Objects::nonNull)
         .forEach(ispConfigurations::add);
 
-    Map<String, Configuration> additionalConfigs =
+    ModeledNodes nodes =
         getInternetAndIspNodes(
             configurations, ispConfigurations.build(), _logger, internetWarnings);
+
+    Map<String, Configuration> additionalConfigs = nodes.getConfigurations();
 
     Set<String> commonNodes =
         Sets.intersection(configurations.keySet(), additionalConfigs.keySet());
