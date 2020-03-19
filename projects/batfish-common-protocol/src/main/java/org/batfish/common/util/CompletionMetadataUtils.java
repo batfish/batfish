@@ -127,7 +127,7 @@ public final class CompletionMetadataUtils {
     if (bookName.equals(
         GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps))) {
       return String.format(
-          "Public IP of %s",
+          "%s public IP",
           configuration.getHumanName() == null
               ? configuration.getHostname()
               : configuration.getHumanName());
