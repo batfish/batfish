@@ -91,6 +91,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGR
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_IGMP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST;
@@ -340,6 +341,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip6r_ospfv3Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip_port_access_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipi_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_dead_intervalContext;
@@ -1983,6 +1985,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _c.referenceStructure(
         ROUTER_OSPFV3, proc.get().getTag(), INTERFACE_IP_ROUTER_OSPF, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIipi_access_group(Iipi_access_groupContext ctx) {
+    toString(ctx, ctx.acl)
+        .ifPresent(
+            name ->
+                _c.referenceStructure(
+                IP_ACCESS_LIST, name, INTERFACE_IP_IGMP_ACCESS_GROUP, ctx.acl.getStart().getLine()));
   }
 
   @Override

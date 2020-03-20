@@ -383,6 +383,7 @@ i_ip
     | i_ip_authentication
     | i_ip_dhcp
     | i_ip_forward
+    | i_ip_igmp
     | i_ip_null
     | i_ip_ospf
     | i_ip_pim
@@ -462,13 +463,35 @@ i_ip_forward
   FORWARD NEWLINE
 ;
 
+i_ip_igmp
+:
+  IGMP
+  (
+    iipi_access_group
+    | iipi_null
+  )
+;
+
+iipi_access_group
+:
+  ACCESS_GROUP acl = ip_access_list_name NEWLINE
+;
+
+iipi_null
+:
+  (
+    QUERY_INTERVAL
+    | QUERY_MAX_RESPONSE_TIME
+    | VERSION
+  ) null_rest_of_line
+;
+
 i_ip_null
 :
   (
     ARP
     | DIRECTED_BROADCAST
     | FLOW
-    | IGMP
     | REDIRECTS
     | UNREACHABLES
     | VERIFY
