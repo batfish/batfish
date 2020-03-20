@@ -1993,7 +1993,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .ifPresent(
             name ->
                 _c.referenceStructure(
-                IP_ACCESS_LIST, name, INTERFACE_IP_IGMP_ACCESS_GROUP, ctx.acl.getStart().getLine()));
+                    IP_ACCESS_LIST,
+                    name,
+                    INTERFACE_IP_IGMP_ACCESS_GROUP,
+                    ctx.acl.getStart().getLine()));
   }
 
   @Override
