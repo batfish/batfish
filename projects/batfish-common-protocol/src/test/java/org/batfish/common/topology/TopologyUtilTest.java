@@ -43,6 +43,7 @@ import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.IspModelingUtils;
+import org.batfish.common.util.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1173,7 +1174,7 @@ public final class TopologyUtilTest {
                 new BorderInterfaceInfo(NodeInterfacePair.of(b1Name, i2Name)),
                 new BorderInterfaceInfo(NodeInterfacePair.of(b2Name, i2Name))),
             new IspFilter(ImmutableList.of(), ImmutableList.of()));
-    Map<String, Configuration> ispConfigurations =
+    ModeledNodes modeledNodes =
         IspModelingUtils.getInternetAndIspNodes(
             explicitConfigurations,
             ImmutableList.of(ispConfiguration),
@@ -1182,37 +1183,43 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations =
         ImmutableMap.<String, Configuration>builder()
             .putAll(explicitConfigurations)
-            .putAll(ispConfigurations)
+            .putAll(modeledNodes.getConfigurations())
             .build();
 
-    Layer1Topology layer1PhysicalTopology =
-        cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
-
-    // Layer-1 physical topology should include edges in each direction between each border router
+    // Layer-1 raw topology should include edges in each direction between each border router
     // and corresponding host
     assertThat(
-        layer1PhysicalTopology.getGraph().edges(),
+        cleanLayer1PhysicalTopology(rawLayer1Topology, configurations).getGraph().edges(),
         containsInAnyOrder(
             new Layer1Edge(l1B1, l1H1),
             new Layer1Edge(l1H1, l1B1),
             new Layer1Edge(l1B2, l1H2),
             new Layer1Edge(l1H2, l1B2)));
 
+    Layer1Topology layer1SynthesizedTopology = new Layer1Topology(modeledNodes.getLayer1Edges());
+
+    // merge the raw and synthesized layer1 topologies
+    Layer1Topology layer1PhysicalTopology =
+        unionLayer1PhysicalTopologies(
+                Optional.of(cleanLayer1PhysicalTopology(rawLayer1Topology, configurations)),
+                Optional.of(layer1SynthesizedTopology))
+            .get();
+
+    Layer1Topology layer1LogicalTopology =
+        computeLayer1LogicalTopology(layer1PhysicalTopology, configurations);
+
     Topology layer3Topology =
         computeRawLayer3Topology(
             rawLayer1Topology,
-            Layer1Topology.EMPTY,
-            computeLayer2Topology(
-                computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
-                VxlanTopology.EMPTY,
-                configurations),
+            layer1LogicalTopology,
+            computeLayer2Topology(layer1LogicalTopology, VxlanTopology.EMPTY, configurations),
             configurations);
 
     NodeInterfacePair l3B1 = NodeInterfacePair.of(b1Name, i2Name);
     NodeInterfacePair l3B2 = NodeInterfacePair.of(b2Name, i2Name);
 
     Set<String> explicitNodes = explicitConfigurations.keySet();
-    Set<String> ispNodes = ispConfigurations.keySet();
+    Set<String> ispNodes = modeledNodes.getConfigurations().keySet();
 
     // Layer-3 topology should include edges in each direction between each border router and
     // generated ISP node

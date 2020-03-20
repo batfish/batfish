@@ -560,7 +560,10 @@
         }
       }
     },
-    "version" : "0.36.0"
+    "version" : "0.36.0",
+    "warnings" : {
+      "internet" : { }
+    }
   },
   {
     "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
