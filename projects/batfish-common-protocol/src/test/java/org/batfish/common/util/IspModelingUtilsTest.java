@@ -19,6 +19,7 @@ import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToCustomers;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToInternet;
 import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
+import static org.batfish.common.util.IspModelingUtils.reversePeerBuilder;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -190,7 +191,8 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    BgpActivePeerConfig reversedPeer = IspModelingUtils.getBgpPeerOnIsp(bgpActivePeerConfig);
+    BgpActivePeerConfig reversedPeer =
+        (BgpActivePeerConfig) reversePeerBuilder(bgpActivePeerConfig, "iface").build();
     assertThat(reversedPeer.getPeerAddress(), equalTo(Ip.parse("2.2.2.2")));
     assertThat(reversedPeer.getLocalIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(reversedPeer, allOf(hasLocalAs(1L), hasRemoteAs(2L)));
@@ -208,7 +210,8 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
-    BgpActivePeerConfig reversedPeer = IspModelingUtils.getBgpPeerOnIsp(bgpActivePeerConfig);
+    BgpActivePeerConfig reversedPeer =
+        (BgpActivePeerConfig) reversePeerBuilder(bgpActivePeerConfig, "iface").build();
     assertThat(reversedPeer.getPeerAddress(), equalTo(Ip.parse("2.2.2.2")));
     assertThat(reversedPeer.getLocalIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(reversedPeer, allOf(hasLocalAs(1L), hasRemoteAs(1000L)));
@@ -379,18 +382,6 @@ public class IspModelingUtilsTest {
 
     IspModel ispInfo = inputMap.get(_remoteAsn);
 
-    BgpActivePeerConfig reversedPeer =
-        BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("1.1.1.1"))
-            .setLocalAs(_remoteAsn)
-            .setPeerAddress(Ip.parse("2.2.2.2"))
-            .setRemoteAs(_localAsn)
-            .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder()
-                    .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
-                    .build())
-            .build();
-
     assertThat(
         ispInfo,
         equalTo(
@@ -401,7 +392,8 @@ public class IspModelingUtilsTest {
                         remote.getHostname(),
                         getOnlyElement(remote.getAllInterfaces().keySet()),
                         ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24),
-                        reversedPeer)),
+                        getOnlyElement(
+                            remote.getDefaultVrf().getBgpProcess().getActiveNeighbors().values()))),
                 getDefaultIspNodeName(_remoteAsn))));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }

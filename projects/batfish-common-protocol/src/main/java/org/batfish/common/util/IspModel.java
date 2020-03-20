@@ -1,5 +1,7 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.IspModelingUtils.LINK_LOCAL_IP;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -10,7 +12,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
 /** Contains the information required to model one ISP node */
@@ -22,33 +26,43 @@ final class IspModel {
 
     private @Nonnull final String _remoteHostname;
     private @Nonnull final String _remoteIfaceName;
-    private @Nonnull final ConcreteInterfaceAddress _ispIfaceAddress;
-    private @Nonnull final BgpActivePeerConfig _remoteBgpActivePeerConfig;
+
+    private @Nonnull final InterfaceAddress _ispIfaceAdddress;
+    private @Nonnull final BgpPeerConfig _remoteBgpPeerConfig;
 
     Remote(
         String remoteHostname,
         String remoteIfaceName,
-        ConcreteInterfaceAddress ispIfaceAddress,
-        BgpActivePeerConfig remoteBgpActivePeerConfig) {
+        InterfaceAddress ispIfaceAdddress,
+        BgpPeerConfig remoteBgpPeerConfig) {
       _remoteHostname = remoteHostname;
       _remoteIfaceName = remoteIfaceName;
-      _ispIfaceAddress = ispIfaceAddress;
-      _remoteBgpActivePeerConfig = remoteBgpActivePeerConfig;
+      _ispIfaceAdddress = ispIfaceAdddress;
+      _remoteBgpPeerConfig = remoteBgpPeerConfig;
+    }
+
+    /** Returns what should be the Ip for the ISP interface that peers with this remote node */
+    public Ip getIspIfaceIp() {
+      if (_remoteBgpPeerConfig instanceof BgpActivePeerConfig) {
+        return ((BgpActivePeerConfig) _remoteBgpPeerConfig).getPeerAddress();
+      } else {
+        return LINK_LOCAL_IP;
+      }
     }
 
     @Nonnull
-    public ConcreteInterfaceAddress getIspIfaceAddress() {
-      return _ispIfaceAddress;
-    }
-
-    @Nonnull
-    public BgpActivePeerConfig getRemoteBgpActivePeerConfig() {
-      return _remoteBgpActivePeerConfig;
+    public BgpPeerConfig getRemoteBgpPeerConfig() {
+      return _remoteBgpPeerConfig;
     }
 
     @Nonnull
     public String getRemoteHostname() {
       return _remoteHostname;
+    }
+
+    @Nonnull
+    public InterfaceAddress getIspIfaceAdddress() {
+      return _ispIfaceAdddress;
     }
 
     @Nonnull
@@ -67,14 +81,14 @@ final class IspModel {
       Remote neighbor = (Remote) o;
       return _remoteHostname.equals(neighbor._remoteHostname)
           && _remoteIfaceName.equals(neighbor._remoteIfaceName)
-          && _ispIfaceAddress.equals(neighbor._ispIfaceAddress)
-          && _remoteBgpActivePeerConfig.equals(neighbor._remoteBgpActivePeerConfig);
+          && _ispIfaceAdddress.equals(neighbor._ispIfaceAdddress)
+          && _remoteBgpPeerConfig.equals(neighbor._remoteBgpPeerConfig);
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(
-          _remoteHostname, _remoteIfaceName, _ispIfaceAddress, _remoteBgpActivePeerConfig);
+          _remoteHostname, _remoteIfaceName, _ispIfaceAdddress, _remoteBgpPeerConfig);
     }
 
     @Override
@@ -82,8 +96,8 @@ final class IspModel {
       return MoreObjects.toStringHelper(this)
           .add("remoteHostname", _remoteHostname)
           .add("remoteIfaceName", _remoteIfaceName)
-          .add("ispIfaceAddress", _ispIfaceAddress)
-          .add("remoteBgpActivePeerConfig", _remoteBgpActivePeerConfig)
+          .add("ispInterfaceAddress", _ispIfaceAdddress)
+          .add("remoteBgpActivePeerConfig", _remoteBgpPeerConfig)
           .toString();
     }
   }

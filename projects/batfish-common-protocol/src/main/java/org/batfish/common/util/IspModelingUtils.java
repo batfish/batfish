@@ -30,6 +30,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.IspModel.Remote;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -38,6 +39,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
@@ -438,29 +440,26 @@ public final class IspModelingUtils {
                   ImmutableMap.toImmutableMap(
                       ConcreteInterfaceAddress::getIp, Function.identity()));
 
-      List<BgpActivePeerConfig> validRemoteBgpActivePeerConfigs =
+      List<BgpPeerConfig> validRemoteBgpPeerConfigs =
           remoteCfg.getVrfs().values().stream()
               .map(Vrf::getBgpProcess)
               .filter(Objects::nonNull)
               .flatMap(bgpProcess -> bgpProcess.getActiveNeighbors().values().stream())
               .filter(
-                  bgpActivePeerConfig ->
+                  bgpPeerConfig ->
                       isValidBgpPeerConfig(
-                          bgpActivePeerConfig,
-                          ipToInterfaceAddresses.keySet(),
-                          remoteIpsSet,
-                          remoteAsns))
+                          bgpPeerConfig, ipToInterfaceAddresses.keySet(), remoteIpsSet, remoteAsns))
               .collect(Collectors.toList());
 
-      if (validRemoteBgpActivePeerConfigs.isEmpty()) {
+      if (validRemoteBgpPeerConfigs.isEmpty()) {
         warnings.redFlag(
             String.format(
                 "ISP Modeling: Cannot find any valid eBGP configurations for interface %s on node %s",
                 remoteIfaceName, remoteCfg.getHostname()));
         continue;
       }
-      for (BgpActivePeerConfig bgpActivePeerConfig : validRemoteBgpActivePeerConfigs) {
-        Long asn = bgpActivePeerConfig.getRemoteAsns().least();
+      for (BgpPeerConfig bgpPeerConfig : validRemoteBgpPeerConfigs) {
+        Long asn = bgpPeerConfig.getRemoteAsns().least();
         // Pick the first name we find; else, use default
         String ispName =
             ispNodeInfos.stream()
@@ -477,17 +476,14 @@ public final class IspModelingUtils {
                 .collect(ImmutableSet.toImmutableSet());
         IspModel ispInfo =
             allIspModels.computeIfAbsent(asn, k -> new IspModel(asn, ispName, additionalPrefixes));
-        // merging ISP's interface addresses and eBGP confs from the current configuration
-        ConcreteInterfaceAddress interfaceAddress =
-            ConcreteInterfaceAddress.create(
-                bgpActivePeerConfig.getPeerAddress(),
-                ipToInterfaceAddresses.get(bgpActivePeerConfig.getLocalIp()).getNetworkBits());
+        InterfaceAddress interfaceAddress =
+            bgpPeerConfig instanceof BgpActivePeerConfig
+                ? ConcreteInterfaceAddress.create(
+                    ((BgpActivePeerConfig) bgpPeerConfig).getPeerAddress(),
+                    ipToInterfaceAddresses.get(bgpPeerConfig.getLocalIp()).getNetworkBits())
+                : LINK_LOCAL_ADDRESS;
         ispInfo.addNeighbor(
-            new Remote(
-                remoteCfg.getHostname(),
-                remoteIfaceName,
-                interfaceAddress,
-                getBgpPeerOnIsp(bgpActivePeerConfig)));
+            new Remote(remoteCfg.getHostname(), remoteIfaceName, interfaceAddress, bgpPeerConfig));
       }
     }
   }
@@ -538,29 +534,12 @@ public final class IspModelingUtils {
             EXPORT_POLICY_ON_ISP_TO_INTERNET,
             installRoutingPolicyForIspToInternet(ispConfiguration, prefixSpace)));
 
-    ispInfo
-        .getRemotes()
-        .forEach(
-            remote -> {
-              Interface ispInterface =
-                  nf.interfaceBuilder()
-                      .setOwner(ispConfiguration)
-                      .setVrf(defaultVrf)
-                      .setAddress(remote.getIspIfaceAddress())
-                      .build();
-              modeledNodes.addLayer1Edge(
-                  ispConfiguration.getHostname(),
-                  ispInterface.getName(),
-                  remote.getRemoteHostname(),
-                  remote.getRemoteIfaceName());
-            });
-
     // using the lowest IP among the InterfaceAddresses as the router ID
     BgpProcess bgpProcess =
         nf.bgpProcessBuilder()
             .setRouterId(
                 ispInfo.getRemotes().stream()
-                    .map(remote -> remote.getIspIfaceAddress().getIp())
+                    .map(Remote::getIspIfaceIp)
                     .min(Ip::compareTo)
                     .orElse(null))
             .setVrf(ispConfiguration.getDefaultVrf())
@@ -571,22 +550,22 @@ public final class IspModelingUtils {
     ispInfo
         .getRemotes()
         .forEach(
-            neighbor ->
-                BgpActivePeerConfig.builder()
-                    .setLocalIp(neighbor.getRemoteBgpActivePeerConfig().getLocalIp())
-                    .setLocalAs(neighbor.getRemoteBgpActivePeerConfig().getLocalAs())
-                    .setPeerAddress(neighbor.getRemoteBgpActivePeerConfig().getPeerAddress())
-                    .setRemoteAsns(neighbor.getRemoteBgpActivePeerConfig().getRemoteAsns())
-                    .setBgpProcess(bgpProcess)
-                    .setIpv4UnicastAddressFamily(
-                        Ipv4UnicastAddressFamily.builder()
-                            .setExportPolicy(
-                                neighbor
-                                    .getRemoteBgpActivePeerConfig()
-                                    .getIpv4UnicastAddressFamily()
-                                    .getExportPolicy())
-                            .build())
-                    .build());
+            remote -> {
+              Interface ispInterface =
+                  nf.interfaceBuilder()
+                      .setOwner(ispConfiguration)
+                      .setVrf(defaultVrf)
+                      .setAddress(remote.getIspIfaceAdddress())
+                      .build();
+              modeledNodes.addLayer1Edge(
+                  ispConfiguration.getHostname(),
+                  ispInterface.getName(),
+                  remote.getRemoteHostname(),
+                  remote.getRemoteIfaceName());
+              reversePeerBuilder(remote.getRemoteBgpPeerConfig(), ispInterface.getName())
+                  .setBgpProcess(bgpProcess)
+                  .build();
+            });
 
     modeledNodes.addConfiguration(ispConfiguration);
   }
@@ -692,22 +671,35 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Returns the {@link BgpActivePeerConfig} to be used on ISP by flipping the local and remote AS
-   * and IP for a given eBGP peer configuration. Also sets the export policy meant for the ISP
+   * Returns a BGP peering config builder whose settings have been initialized to match a remote
+   * peer's configs.
    */
-  @VisibleForTesting
-  static BgpActivePeerConfig getBgpPeerOnIsp(BgpActivePeerConfig bgpActivePeerConfig) {
-    return BgpActivePeerConfig.builder()
-        .setPeerAddress(bgpActivePeerConfig.getLocalIp())
+  static BgpPeerConfig.Builder<?, ?> reversePeerBuilder(
+      BgpPeerConfig remotePeerConfig, String localInterfaceName) {
+    BgpPeerConfig.Builder<?, ?> ispPeerConfig =
+        remotePeerConfig instanceof BgpActivePeerConfig
+            ? BgpActivePeerConfig.builder()
+            : BgpUnnumberedPeerConfig.builder();
+
+    ispPeerConfig
         .setRemoteAs(
-            firstNonNull(
-                bgpActivePeerConfig.getConfederationAsn(), bgpActivePeerConfig.getLocalAs()))
-        .setLocalIp(bgpActivePeerConfig.getPeerAddress())
-        .setLocalAs(bgpActivePeerConfig.getRemoteAsns().least())
+            firstNonNull(remotePeerConfig.getConfederationAsn(), remotePeerConfig.getLocalAs()))
+        .setLocalAs(remotePeerConfig.getRemoteAsns().least())
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
-                .build())
-        .build();
+                .build());
+
+    if (remotePeerConfig instanceof BgpActivePeerConfig) {
+      ((BgpActivePeerConfig.Builder) ispPeerConfig)
+          .setPeerAddress(remotePeerConfig.getLocalIp())
+          .setLocalIp(((BgpActivePeerConfig) remotePeerConfig).getPeerAddress());
+    } else {
+      ((BgpUnnumberedPeerConfig.Builder) ispPeerConfig)
+          .setPeerInterface(localInterfaceName)
+          .setLocalIp(LINK_LOCAL_IP);
+    }
+
+    return ispPeerConfig;
   }
 }
