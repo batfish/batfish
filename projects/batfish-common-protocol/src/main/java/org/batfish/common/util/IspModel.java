@@ -65,13 +65,16 @@ final class IspModel {
         return false;
       }
       Remote neighbor = (Remote) o;
-      return _ispIfaceAddress.equals(neighbor._ispIfaceAddress)
+      return _remoteHostname.equals(neighbor._remoteHostname)
+          && _remoteIfaceName.equals(neighbor._remoteIfaceName)
+          && _ispIfaceAddress.equals(neighbor._ispIfaceAddress)
           && _remoteBgpActivePeerConfig.equals(neighbor._remoteBgpActivePeerConfig);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_ispIfaceAddress, _remoteBgpActivePeerConfig);
+      return Objects.hash(
+          _remoteHostname, _remoteIfaceName, _ispIfaceAddress, _remoteBgpActivePeerConfig);
     }
   }
 
