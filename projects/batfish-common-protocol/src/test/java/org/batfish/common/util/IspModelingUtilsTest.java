@@ -305,18 +305,6 @@ public class IspModelingUtilsTest {
 
   @Test
   public void testGetIspConfigurationNodeInvalid() {
-    ConcreteInterfaceAddress interfaceAddress =
-        ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
-    ConcreteInterfaceAddress interfaceAddress2 =
-        ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 30);
-    BgpActivePeerConfig peer =
-        BgpActivePeerConfig.builder()
-            .setPeerAddress(Ip.parse("1.1.1.1"))
-            .setRemoteAs(1L)
-            .setLocalIp(Ip.parse("2.2.2.2"))
-            .setLocalAs(2L)
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
-            .build();
     long asn = 2L;
     IspModel ispInfo = new IspModel(asn, ImmutableList.of(), getDefaultIspNodeName(asn));
     BatfishLogger logger = new BatfishLogger("debug", false);
