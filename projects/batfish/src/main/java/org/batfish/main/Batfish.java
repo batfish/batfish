@@ -2505,7 +2505,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               vendorConfigs.values().stream()
                   .flatMap(vc -> vc.getLayer1Edges().stream())
                   .collect(Collectors.toSet()),
-              modeledNodes.getLayer1Edgesdges());
+              modeledNodes.getLayer1Edges());
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {

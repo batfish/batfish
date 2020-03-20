@@ -135,7 +135,7 @@ public final class IspModelingUtils {
     }
 
     @Nonnull
-    public Set<Layer1Edge> getLayer1Edgesdges() {
+    public Set<Layer1Edge> getLayer1Edges() {
       return ImmutableSet.copyOf(_layer1Edgesdges);
     }
   }
