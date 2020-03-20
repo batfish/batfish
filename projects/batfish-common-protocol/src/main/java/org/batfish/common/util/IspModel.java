@@ -76,6 +76,16 @@ final class IspModel {
       return Objects.hash(
           _remoteHostname, _remoteIfaceName, _ispIfaceAddress, _remoteBgpActivePeerConfig);
     }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("remoteHostname", _remoteHostname)
+          .add("remoteIfaceName", _remoteIfaceName)
+          .add("ispIfaceAddress", _ispIfaceAddress)
+          .add("remoteBgpActivePeerConfig", _remoteBgpActivePeerConfig)
+          .toString();
+    }
   }
 
   private long _asn;

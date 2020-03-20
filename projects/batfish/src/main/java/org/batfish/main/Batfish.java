@@ -2480,32 +2480,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations = getConfigurations(vendorConfigs, runtimeData, answerElement);
       }
 
-      ModeledNodes modeledNodes =
-          getInternetAndIspNodes(
-              snapshot, configurations, vendorConfigs, answerElement.getWarnings());
-
-      Map<String, Configuration> additionalConfigs = modeledNodes.getConfigurations();
-
-      Set<String> commonNodes =
-          Sets.intersection(configurations.keySet(), additionalConfigs.keySet());
-      if (!commonNodes.isEmpty()) {
-        answerElement
-            .getWarnings()
-            .get(INTERNET_HOST_NAME)
-            .redFlag(
-                String.format(
-                    "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
-                    commonNodes));
-      } else {
-        configurations.putAll(additionalConfigs);
-      }
-
       Set<Layer1Edge> layer1Edges =
-          Sets.union(
-              vendorConfigs.values().stream()
-                  .flatMap(vc -> vc.getLayer1Edges().stream())
-                  .collect(Collectors.toSet()),
-              modeledNodes.getLayer1Edges());
+          vendorConfigs.values().stream()
+              .flatMap(vc -> vc.getLayer1Edges().stream())
+              .collect(Collectors.toSet());
+
+      Warnings internetWarnings =
+          answerElement
+              .getWarnings()
+              .computeIfAbsent(INTERNET_HOST_NAME, i -> buildWarnings(_settings));
+
+      ModeledNodes modeledNodes =
+          getInternetAndIspNodes(snapshot, configurations, vendorConfigs, internetWarnings);
+
+      mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2533,22 +2521,47 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  /** Creates and returns ISP and Internet nodes */
+  /**
+   * Merges modeled nodes into {@code configurations} and {@code layer1Edges}. Nothing is done if
+   * the input configurations have a node in common with modeled nodes.
+   */
+  @VisibleForTesting
+  static void mergeInternetAndIspNodes(
+      ModeledNodes modeledNodes,
+      Map<String, Configuration> configurations,
+      Set<Layer1Edge> layer1Edges,
+      Warnings internetWarnings) {
+    Map<String, Configuration> modeledConfigs = modeledNodes.getConfigurations();
+    Set<String> commonNodes = Sets.intersection(configurations.keySet(), modeledConfigs.keySet());
+    if (!commonNodes.isEmpty()) {
+      internetWarnings.redFlag(
+          String.format(
+              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              commonNodes));
+      return;
+    }
+    configurations.putAll(modeledConfigs);
+    layer1Edges.addAll(modeledNodes.getLayer1Edges());
+  }
+
+  /**
+   * Creates and returns ISP and Internet nodes.
+   *
+   * <p>If a node named 'internet' already exists in input {@code configurations} an empty {@link
+   * ModeledNodes} object is returned.
+   */
   @Nonnull
   private ModeledNodes getInternetAndIspNodes(
       NetworkSnapshot snapshot,
       Map<String, Configuration> configurations,
       Map<String, VendorConfiguration> vendorConfigs,
-      SortedMap<String, Warnings> warnings) {
+      Warnings internetWarnings) {
     if (configurations.containsKey(INTERNET_HOST_NAME)) {
-      warnings
-          .getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings))
-          .redFlag("Cannot add internet because a node with the name 'internet' already exists");
+      internetWarnings.redFlag(
+          "Cannot model internet because a node with the name 'internet' already exists");
       return new ModeledNodes();
     }
 
-    Warnings internetWarnings =
-        warnings.computeIfAbsent(INTERNET_HOST_NAME, i -> buildWarnings(_settings));
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
     IspConfiguration ispConfiguration =

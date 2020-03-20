@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
 import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
@@ -8,6 +9,7 @@ import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.common.util.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import static org.batfish.common.util.IspModelingUtils.LINK_LOCAL_IP;
 import static org.batfish.common.util.IspModelingUtils.createInternetNode;
 import static org.batfish.common.util.IspModelingUtils.createIspNode;
@@ -50,7 +52,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.Comparator;
@@ -72,7 +73,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -365,8 +365,9 @@ public class IspModelingUtilsTest {
   @Test
   public void testPopulateIspInfos() {
     Map<Long, IspModel> inputMap = Maps.newHashMap();
+    Configuration remote = configurationWithOnePeer();
     IspModelingUtils.populateIspModels(
-        configurationWithOnePeer(),
+        remote,
         ImmutableSet.of("interface"),
         ImmutableList.of(),
         ImmutableList.of(),
@@ -397,8 +398,8 @@ public class IspModelingUtilsTest {
                 _remoteAsn,
                 ImmutableList.of(
                     new Remote(
-                        "test",
-                        "test",
+                        remote.getHostname(),
+                        getOnlyElement(remote.getAllInterfaces().keySet()),
                         ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24),
                         reversedPeer)),
                 getDefaultIspNodeName(_remoteAsn))));
@@ -626,8 +627,7 @@ public class IspModelingUtilsTest {
         allOf(
             hasHostname(IspModelingUtils.INTERNET_HOST_NAME),
             hasInterface(
-                "~Interface_1~",
-                hasAllAddresses(equalTo(ImmutableSet.of(LinkLocalAddress.of(LINK_LOCAL_IP))))),
+                "~Interface_1~", hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS)))),
             hasVrf(
                 DEFAULT_VRF_NAME,
                 hasBgpProcess(
@@ -658,8 +658,7 @@ public class IspModelingUtilsTest {
         interfaceAddresses,
         equalTo(
             ImmutableSet.of(
-                LinkLocalAddress.of(LINK_LOCAL_IP),
-                ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))));
+                LINK_LOCAL_ADDRESS, ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))));
 
     assertThat(
         ispNode,
@@ -988,8 +987,8 @@ public class IspModelingUtilsTest {
                     remoteAsn,
                     ImmutableList.of(
                         new Remote(
-                            "test",
-                            "test",
+                            c1.getHostname(),
+                            getOnlyElement(c1.getAllInterfaces().keySet()),
                             ConcreteInterfaceAddress.create(remoteBgpIp1, 24),
                             BgpActivePeerConfig.builder()
                                 .setLocalAs(remoteAsn)
@@ -1002,8 +1001,8 @@ public class IspModelingUtilsTest {
                                         .build())
                                 .build()),
                         new Remote(
-                            "test",
-                            "test",
+                            c2.getHostname(),
+                            getOnlyElement(c2.getAllInterfaces().keySet()),
                             ConcreteInterfaceAddress.create(remoteBgpIp2, 24),
                             BgpActivePeerConfig.builder()
                                 .setLocalAs(remoteAsn)
@@ -1038,7 +1037,7 @@ public class IspModelingUtilsTest {
         ImmutableMap.of(1L, new IspModel(1, "isp1"), 2L, new IspModel(2, "isp1"));
     Map<String, Configuration> configurations = ImmutableMap.of();
 
-    String message = Iterables.getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    String message = getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
     assertThat(message, containsString("ASN 1"));
   }
 
@@ -1054,7 +1053,7 @@ public class IspModelingUtilsTest {
                 .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
                 .build());
 
-    String message = Iterables.getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    String message = getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
     assertThat(message, containsString("ASN 1"));
   }
 }

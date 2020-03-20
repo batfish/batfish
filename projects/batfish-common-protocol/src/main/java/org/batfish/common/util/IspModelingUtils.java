@@ -92,6 +92,7 @@ public final class IspModelingUtils {
   static final Ip INTERNET_OUT_ADDRESS = INTERNET_OUT_SUBNET.getFirstHostIp();
   static final String INTERNET_OUT_INTERFACE = "out";
   static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
+  static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(LINK_LOCAL_IP);
 
   // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
   // that use this space internally
@@ -119,13 +120,18 @@ public final class IspModelingUtils {
       _layer1Edgesdges = new HashSet<>();
     }
 
-    void addConfiguration(Configuration configuration) {
+    public void addConfiguration(Configuration configuration) {
       _configurations.put(configuration.getHostname(), configuration);
     }
 
-    void addLayer1Edge(String node1, String node1Iface, String node2, String node2Iface) {
-      _layer1Edgesdges.add(new Layer1Edge(node1, node1Iface, node2, node2Iface));
-      _layer1Edgesdges.add(new Layer1Edge(node2, node2Iface, node1, node1Iface));
+    /** Add both directions of the node/interface pairs as layer 1 edges */
+    public void addLayer1Edge(String node1, String node1Iface, String node2, String node2Iface) {
+      addLayer1Edge(new Layer1Edge(node1, node1Iface, node2, node2Iface));
+      addLayer1Edge(new Layer1Edge(node2, node2Iface, node1, node1Iface));
+    }
+
+    public void addLayer1Edge(Layer1Edge edge) {
+      _layer1Edgesdges.add(edge);
     }
 
     @Nonnull
@@ -344,13 +350,13 @@ public final class IspModelingUtils {
           nf.interfaceBuilder()
               .setOwner(internet)
               .setVrf(internet.getDefaultVrf())
-              .setAddress(LinkLocalAddress.of(LINK_LOCAL_IP))
+              .setAddress(LINK_LOCAL_ADDRESS)
               .build();
       Interface ispIface =
           nf.interfaceBuilder()
               .setOwner(ispConfiguration)
               .setVrf(ispConfiguration.getDefaultVrf())
-              .setAddress(LinkLocalAddress.of(LINK_LOCAL_IP))
+              .setAddress(LINK_LOCAL_ADDRESS)
               .build();
 
       BgpUnnumberedPeerConfig.builder()
