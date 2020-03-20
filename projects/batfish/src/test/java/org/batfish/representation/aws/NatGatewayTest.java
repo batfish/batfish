@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
-import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAYS;
 import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
@@ -17,13 +16,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -56,17 +52,17 @@ public class NatGatewayTest {
     String text = CommonUtil.readResource("org/batfish/representation/aws/NatGatewayTest.json");
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
-    ArrayNode array = (ArrayNode) json.get(JSON_KEY_NAT_GATEWAYS);
-    List<NatGateway> gateways = new LinkedList<>();
+    Region region = new Region("r1");
+    region.addConfigElement(json, null, null);
 
-    for (int index = 0; index < array.size(); index++) {
-      gateways.add(BatfishObjectMapper.mapper().convertValue(array.get(index), NatGateway.class));
-    }
-
+    /*
+     * Only the available gateway should show up.
+     */
     assertThat(
-        gateways,
+        region.getNatGateways(),
         equalTo(
-            ImmutableList.of(
+            ImmutableMap.of(
+                "nat-05dba92075d71c408",
                 new NatGateway(
                     "nat-05dba92075d71c408",
                     "subnet-847e4dc2",

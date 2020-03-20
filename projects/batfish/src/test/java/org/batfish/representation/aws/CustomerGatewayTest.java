@@ -1,15 +1,11 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
@@ -24,19 +20,17 @@ public class CustomerGatewayTest {
         CommonUtil.readResource("org/batfish/representation/aws/CustomerGatewayTest.json");
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
-    ArrayNode gatewaysArray = (ArrayNode) json.get(JSON_KEY_CUSTOMER_GATEWAYS);
-    List<CustomerGateway> gateways = new LinkedList<>();
+    Region region = new Region("r1");
+    region.addConfigElement(json, null, null);
 
-    for (int index = 0; index < gatewaysArray.size(); index++) {
-      gateways.add(
-          BatfishObjectMapper.mapper()
-              .convertValue(gatewaysArray.get(index), CustomerGateway.class));
-    }
-
+    /*
+     * Only the available gateway should show up.
+     */
     assertThat(
-        gateways,
+        region.getCustomerGateways(),
         equalTo(
-            ImmutableList.of(
+            ImmutableMap.of(
+                "cgw-fb76ace5",
                 new CustomerGateway(
                     "cgw-fb76ace5", Ip.parse("147.75.69.27"), "ipsec.1", "65301"))));
   }

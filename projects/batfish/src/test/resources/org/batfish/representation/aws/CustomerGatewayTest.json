@@ -12,6 +12,14 @@
         }
       ],
       "Type": "ipsec.1"
+    },
+    {
+      "BgpAsn": "65301",
+      "CustomerGatewayId": "cgw-fxxyyu",
+      "IpAddress": "147.75.69.27",
+      "State": "deleted",
+      "Tags": [],
+      "Type": "ipsec.1"
     }
   ]
 }
