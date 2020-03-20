@@ -94,6 +94,7 @@ interface Ethernet100/100
   ip arp gratuitous request
   ip directed-broadcast
   ip port access-group AG in
+  ip verify unicast source reachable-via any
   ipv6 mld version 2
   ipv6 mld robustness-variable 2
   ipv6 mld query-interval 125

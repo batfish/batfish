@@ -191,6 +191,7 @@ ip_null
 :
   (
     ARP
+    | DOMAIN_LIST
     | DOMAIN_LOOKUP
   ) null_rest_of_line
 ;
