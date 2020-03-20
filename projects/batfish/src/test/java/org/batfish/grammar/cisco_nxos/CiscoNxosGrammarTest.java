@@ -4705,11 +4705,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_nssa");
       assertThat(proc, hasArea(1L, hasNssa(notNullValue())));
     }
-    {
-      org.batfish.datamodel.ospf.OspfProcess proc =
-          defaultVrf.getOspfProcesses().get("a_nssa_dio");
-      assertThat(proc, hasArea(1L, hasNssa(hasDefaultOriginateType(notNullValue()))));
-    }
+    // TODO: convert and test "a_nssa_dio" - OSPF NSSA default-information-originate
     {
       org.batfish.datamodel.ospf.OspfProcess proc =
           defaultVrf.getOspfProcesses().get("a_nssa_no_r");
@@ -5072,46 +5068,50 @@ public final class CiscoNxosGrammarTest {
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertFalse(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_dio");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
-      assertThat(nssa.getDefaultOriginate(), notNullValue());
+      assertTrue(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_no_r");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertFalse(nssa.getDefaultInformationOriginate());
       assertTrue(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_no_s");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertFalse(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertTrue(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_rm");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertTrue(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), equalTo("rm1"));
+      assertThat(nssa.getDefaultInformationOriginateMap(), equalTo("rm1"));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_r");

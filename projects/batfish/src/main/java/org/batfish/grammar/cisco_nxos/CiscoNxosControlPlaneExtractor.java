@@ -2796,13 +2796,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                   return newNssa;
                 });
     if (ctx.default_information_originate != null) {
-      OspfDefaultOriginate defaultOriginate = _currentOspfProcess.getDefaultOriginate();
-      if (defaultOriginate == null) {
-        defaultOriginate = new OspfDefaultOriginate();
-        nssa.setDefaultOriginate(defaultOriginate);
-      }
+      nssa.setDefaultInformationOriginate(true);
       if (routeMap != null) {
-        defaultOriginate.setRouteMap(routeMap);
+        nssa.setDefaultInformationOriginateMap(routeMap);
       }
     }
     if (ctx.no_redistribution != null) {
@@ -2810,9 +2806,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     if (ctx.no_summary != null) {
       nssa.setNoSummary(true);
-    }
-    if (routeMap != null) {
-      nssa.setRouteMap(routeMap);
     }
   }
 

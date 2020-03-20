@@ -72,10 +72,14 @@ roa_nssa
 // non-zero area only
   NSSA
   (
-    default_information_originate = DEFAULT_INFORMATION_ORIGINATE
+    (
+      default_information_originate = DEFAULT_INFORMATION_ORIGINATE
+      (
+        ROUTE_MAP rm = route_map_name
+      )?
+    )
     | no_redistribution = NO_REDISTRIBUTION
     | no_summary = NO_SUMMARY
-    | ROUTE_MAP rm = route_map_name
   )* NEWLINE
 ;
 

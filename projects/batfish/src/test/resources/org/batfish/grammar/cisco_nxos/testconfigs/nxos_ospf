@@ -45,7 +45,7 @@ router ospf a_nssa_no_r
 router ospf a_nssa_no_s
   area 1 nssa no-summary
 router ospf a_nssa_rm
-  area 1 nssa route-map rm1
+  area 1 nssa default-information-originate route-map rm1
 
 !!! area range
 !!! cost and not-advertise can appear in any order
