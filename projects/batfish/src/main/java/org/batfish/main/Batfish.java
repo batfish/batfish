@@ -21,7 +21,6 @@ import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
-import static org.batfish.common.util.IspModelingUtils.getInternetAndIspNodes;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
@@ -77,6 +76,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -120,6 +120,8 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IspModelingUtils;
+import org.batfish.common.util.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -2481,9 +2483,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Set<Layer1Edge> layer1Edges =
           vendorConfigs.values().stream()
               .flatMap(vc -> vc.getLayer1Edges().stream())
-              .collect(ImmutableSet.toImmutableSet());
+              .collect(Collectors.toSet());
 
-      addInternetAndIspNodes(snapshot, configurations, vendorConfigs, answerElement.getWarnings());
+      Warnings internetWarnings =
+          answerElement
+              .getWarnings()
+              .computeIfAbsent(INTERNET_HOST_NAME, i -> buildWarnings(_settings));
+
+      ModeledNodes modeledNodes =
+          getInternetAndIspNodes(snapshot, configurations, vendorConfigs, internetWarnings);
+
+      mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2511,19 +2521,47 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void addInternetAndIspNodes(
+  /**
+   * Merges modeled nodes into {@code configurations} and {@code layer1Edges}. Nothing is done if
+   * the input configurations have a node in common with modeled nodes.
+   */
+  @VisibleForTesting
+  static void mergeInternetAndIspNodes(
+      ModeledNodes modeledNodes,
+      Map<String, Configuration> configurations,
+      Set<Layer1Edge> layer1Edges,
+      Warnings internetWarnings) {
+    Map<String, Configuration> modeledConfigs = modeledNodes.getConfigurations();
+    Set<String> commonNodes = Sets.intersection(configurations.keySet(), modeledConfigs.keySet());
+    if (!commonNodes.isEmpty()) {
+      internetWarnings.redFlag(
+          String.format(
+              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              commonNodes));
+      return;
+    }
+    configurations.putAll(modeledConfigs);
+    layer1Edges.addAll(modeledNodes.getLayer1Edges());
+  }
+
+  /**
+   * Creates and returns ISP and Internet nodes.
+   *
+   * <p>If a node named 'internet' already exists in input {@code configurations} an empty {@link
+   * ModeledNodes} object is returned.
+   */
+  @Nonnull
+  private ModeledNodes getInternetAndIspNodes(
       NetworkSnapshot snapshot,
       Map<String, Configuration> configurations,
       Map<String, VendorConfiguration> vendorConfigs,
-      SortedMap<String, Warnings> warnings) {
+      Warnings internetWarnings) {
     if (configurations.containsKey(INTERNET_HOST_NAME)) {
-      warnings
-          .getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings))
-          .redFlag("Cannot add internet because a node with the name 'internet' already exists");
-      return;
+      internetWarnings.redFlag(
+          "Cannot model internet because a node with the name 'internet' already exists");
+      return new ModeledNodes();
     }
 
-    Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
     IspConfiguration ispConfiguration =
@@ -2537,20 +2575,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(Objects::nonNull)
         .forEach(ispConfigurations::add);
 
-    Map<String, Configuration> additionalConfigs =
-        getInternetAndIspNodes(
-            configurations, ispConfigurations.build(), _logger, internetWarnings);
-
-    Set<String> commonNodes =
-        Sets.intersection(configurations.keySet(), additionalConfigs.keySet());
-    if (!commonNodes.isEmpty()) {
-      internetWarnings.redFlag(
-          String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
-              commonNodes));
-    } else {
-      configurations.putAll(additionalConfigs);
-    }
+    return IspModelingUtils.getInternetAndIspNodes(
+        configurations, ispConfigurations.build(), _logger, internetWarnings);
   }
 
   private void updateSnapshotNodeRoles(NetworkSnapshot snapshot) {
