@@ -59,6 +59,8 @@ import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.util.IspModel.Remote;
 import org.batfish.common.util.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -241,7 +243,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetIspConfigurationNode() {
+  public void testCreateIspConfigurationNode() {
     ConcreteInterfaceAddress interfaceAddress =
         ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30);
     BgpActivePeerConfig peer =
@@ -253,20 +255,21 @@ public class IspModelingUtilsTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
     long asn = 2L;
+    String ispName = getDefaultIspNodeName(asn);
     IspModel ispInfo =
         new IspModel(
             asn,
-            ImmutableList.of(new Remote("test", "test", interfaceAddress, peer)),
-            getDefaultIspNodeName(asn));
+            ImmutableList.of(new Remote("testNode", "testIface", interfaceAddress, peer)),
+            ispName);
 
-    Configuration ispConfiguration =
-        createIspNode(
-            new ModeledNodes(), ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
+    ModeledNodes modeledNodes = new ModeledNodes();
+    createIspNode(modeledNodes, ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
+    Configuration ispConfiguration = modeledNodes.getConfigurations().get(ispName);
 
     assertThat(
         ispConfiguration,
         allOf(
-            hasHostname("isp_2"),
+            hasHostname(ispName),
             hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
                 "~Interface_0~", hasAllAddresses(equalTo(ImmutableSet.of(interfaceAddress)))),
@@ -289,7 +292,15 @@ public class IspModelingUtilsTest {
             .iterator()
             .next(),
         equalTo(peer));
+
     assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS));
+
+    assertThat(
+        modeledNodes.getLayer1Edges(),
+        equalTo(
+            ImmutableSet.of(
+                new Layer1Edge("testNode", "testIface", ispName, "~Interface_0~"),
+                new Layer1Edge(ispName, "~Interface_0~", "testNode", "testIface"))));
   }
 
   @Test
@@ -309,8 +320,9 @@ public class IspModelingUtilsTest {
     long asn = 2L;
     IspModel ispInfo = new IspModel(asn, ImmutableList.of(), getDefaultIspNodeName(asn));
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Configuration ispConfiguration =
-        createIspNode(new ModeledNodes(), ispInfo, new NetworkFactory(), logger);
+    ModeledNodes modeledNodes = new ModeledNodes();
+    createIspNode(modeledNodes, ispInfo, new NetworkFactory(), logger);
+    Configuration ispConfiguration = modeledNodes.getConfigurations().get(ispInfo.getName());
 
     assertThat(ispConfiguration, nullValue());
 
@@ -343,9 +355,9 @@ public class IspModelingUtilsTest {
                     peer)),
             getDefaultIspNodeName(2L),
             additionalPrefixes);
-    Configuration ispConfiguration =
-        createIspNode(
-            new ModeledNodes(), ispInfo, new NetworkFactory(), new BatfishLogger("debug", false));
+    ModeledNodes modeledNodes = new ModeledNodes();
+    createIspNode(modeledNodes, ispInfo, new NetworkFactory(), new BatfishLogger("debug", false));
+    Configuration ispConfiguration = modeledNodes.getConfigurations().get(ispInfo.getName());
 
     assertThat(
         ispConfiguration.getDefaultVrf().getStaticRoutes(),
@@ -606,20 +618,20 @@ public class IspModelingUtilsTest {
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
-    Map<String, Configuration> internetAndIsps =
+    ModeledNodes modeledNodes =
         IspModelingUtils.getInternetAndIspNodes(
-                ImmutableMap.of(configuration.getHostname(), configuration),
-                ImmutableList.of(
-                    new IspConfiguration(
-                        ImmutableList.of(
-                            new BorderInterfaceInfo(NodeInterfacePair.of("conf", "interface"))),
-                        IspFilter.ALLOW_ALL)),
-                new BatfishLogger("output", false),
-                new Warnings())
-            .getConfigurations();
+            ImmutableMap.of(configuration.getHostname(), configuration),
+            ImmutableList.of(
+                new IspConfiguration(
+                    ImmutableList.of(
+                        new BorderInterfaceInfo(NodeInterfacePair.of("conf", "interface"))),
+                    IspFilter.ALLOW_ALL)),
+            new BatfishLogger("output", false),
+            new Warnings());
+    Map<String, Configuration> configurations = modeledNodes.getConfigurations();
 
-    assertThat(internetAndIsps, hasKey(IspModelingUtils.INTERNET_HOST_NAME));
-    Configuration internetNode = internetAndIsps.get(IspModelingUtils.INTERNET_HOST_NAME);
+    assertThat(configurations, hasKey(IspModelingUtils.INTERNET_HOST_NAME));
+    Configuration internetNode = configurations.get(IspModelingUtils.INTERNET_HOST_NAME);
 
     assertThat(
         internetNode,
@@ -647,8 +659,8 @@ public class IspModelingUtilsTest {
                                             .build())
                                     .build())))))));
 
-    assertThat(internetAndIsps, hasKey("isp_1"));
-    Configuration ispNode = internetAndIsps.get("isp_1");
+    assertThat(configurations, hasKey("isp_1"));
+    Configuration ispNode = configurations.get("isp_1");
 
     ImmutableSet<InterfaceAddress> interfaceAddresses =
         ispNode.getAllInterfaces().values().stream()
@@ -695,6 +707,20 @@ public class IspModelingUtilsTest {
                                             .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_INTERNET)
                                             .build())
                                     .build())))))));
+
+    Layer1Node internetLayer1 = new Layer1Node(INTERNET_HOST_NAME, "~Interface_1~");
+    Layer1Node ispLayer1Iface0 = new Layer1Node(ispNode.getHostname(), "~Interface_0~");
+    Layer1Node ispLayer1Iface2 = new Layer1Node(ispNode.getHostname(), "~Interface_2~");
+    Layer1Node borderLayer1 = new Layer1Node("conf", "interface");
+
+    assertThat(
+        modeledNodes.getLayer1Edges(),
+        equalTo(
+            ImmutableSet.of(
+                new Layer1Edge(borderLayer1, ispLayer1Iface0),
+                new Layer1Edge(ispLayer1Iface0, borderLayer1),
+                new Layer1Edge(internetLayer1, ispLayer1Iface2),
+                new Layer1Edge(ispLayer1Iface2, internetLayer1))));
   }
 
   @Test

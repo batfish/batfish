@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -259,6 +258,7 @@ public final class IspModelingUtils {
     return modeledNodes;
   }
 
+  /** Creates the modeled Internet node and inserts it into {@code modeledNodes} */
   @VisibleForTesting
   static void createInternetNode(ModeledNodes modeledNodes) {
     Configuration.Builder cb = Configuration.builder();
@@ -487,16 +487,15 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Creates and returns the {@link Configuration} for the ISP node given an ASN and {@link
-   * IspModel}
+   * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel}. Inserts
+   * that node and its layer1 edges to the Internet into {@code modeledNodes}.
    */
   @VisibleForTesting
-  @Nullable
-  static Configuration createIspNode(
+  static void createIspNode(
       ModeledNodes modeledNodes, IspModel ispInfo, NetworkFactory nf, BatfishLogger logger) {
     if (ispInfo.getRemotes().isEmpty()) {
       logger.warnf("ISP information for ASN '%s' is not correct", ispInfo.getAsn());
-      return null;
+      return;
     }
 
     Configuration ispConfiguration =
@@ -584,8 +583,6 @@ public final class IspModelingUtils {
                     .build());
 
     modeledNodes.addConfiguration(ispConfiguration);
-
-    return ispConfiguration;
   }
 
   /**
