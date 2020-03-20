@@ -41,18 +41,17 @@ public class VpnConnectionTest {
     String text = CommonUtil.readResource("org/batfish/representation/aws/VpnConnectionTest.json");
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
-    ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPN_CONNECTIONS);
-    List<VpnConnection> vpnConnections = new LinkedList<>();
+    Region region = new Region("r1");
+    region.addConfigElement(json, null, null);
 
-    for (int index = 0; index < array.size(); index++) {
-      vpnConnections.add(
-          BatfishObjectMapper.mapper().convertValue(array.get(index), VpnConnection.class));
-    }
-
+    /*
+     * Only the available connections should show up.
+     */
     assertThat(
-        vpnConnections,
+        region.getVpnConnections(),
         equalTo(
-            ImmutableList.of(
+            ImmutableMap.of(
+                "vpn-ba2e34a8",
                 new VpnConnection(
                     true,
                     "vpn-ba2e34a8",
