@@ -52,6 +52,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   INTERFACE_CHANNEL_GROUP("interface channel-group"),
   INTERFACE_IP_ACCESS_GROUP_IN("interface ip access-group in"),
   INTERFACE_IP_ACCESS_GROUP_OUT("interface ip access-group out"),
+  INTERFACE_IP_IGMP_ACCESS_GROUP("interface ip igmp access-group"),
   INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST("interface ip pim jp-policy prefix-list"),
   INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP("interface ip pim jp-policy"),
   INTERFACE_IP_PIM_NEIGHBOR_POLICY_PREFIX_LIST("interface ip pim neighbor-policy prefix-list"),
