@@ -49,12 +49,11 @@ public final class CompletionMetadataUtils {
 
   @VisibleForTesting
   static String interfaceDisplayString(Configuration configuration, Interface iface) {
-    return String.format(
-        "%s[%s]",
+    String suffix =
         configuration.getHumanName() == null
-            ? configuration.getHostname()
-            : configuration.getHumanName(),
-        iface.getName());
+            ? ""
+            : String.format(" (%s)", configuration.getHumanName());
+    return String.format("%s[%s]%s", configuration.getHostname(), iface.getName(), suffix);
   }
 
   public static Map<Ip, IpCompletionMetadata> getIps(Map<String, Configuration> configurations) {
@@ -114,26 +113,27 @@ public final class CompletionMetadataUtils {
   @VisibleForTesting
   static String addressGroupDisplayString(
       Configuration configuration, String bookName, String groupName) {
+    String suffix =
+        configuration.getHumanName() == null
+            ? ""
+            : String.format(" (%s)", configuration.getHumanName());
     if (bookName.equals(
         GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PoolAddresses))) {
-      // include only group name (no hostname), which should be enough of a distinguisher
-      return String.format("Pool address %s", groupName);
+      return String.format(
+          "Pool address %s on %s%s", groupName, configuration.getHostname(), suffix);
     }
     if (bookName.equals(
         GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.VirtualAddresses))) {
-      // include only group name (no hostname), which should be enough of a distinguisher
-      return String.format("Virtual address %s", groupName);
+      return String.format(
+          "Virtual address %s on %s%s", groupName, configuration.getHostname(), suffix);
     }
     if (bookName.equals(
         GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps))) {
-      return String.format(
-          "%s public IP",
-          configuration.getHumanName() == null
-              ? configuration.getHostname()
-              : configuration.getHumanName());
+      return String.format("%s public IP%s", configuration.getHostname(), suffix);
     }
     // Don't know what type of address this is; use default value.
-    return String.format("%s in %s", groupName, bookName);
+    return String.format(
+        "%s in %s on %s%s", groupName, bookName, configuration.getHostname(), suffix);
   }
 
   private static void addGeneratedRefBookAddress(
