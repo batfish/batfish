@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Streams;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -444,7 +445,11 @@ public final class IspModelingUtils {
           remoteCfg.getVrfs().values().stream()
               .map(Vrf::getBgpProcess)
               .filter(Objects::nonNull)
-              .flatMap(bgpProcess -> bgpProcess.getActiveNeighbors().values().stream())
+              .flatMap(
+                  bgpProcess ->
+                      Streams.concat(
+                          bgpProcess.getActiveNeighbors().values().stream(),
+                          bgpProcess.getInterfaceNeighbors().values().stream()))
               .filter(
                   bgpPeerConfig ->
                       isValidBgpPeerConfig(
@@ -562,7 +567,7 @@ public final class IspModelingUtils {
                   ispInterface.getName(),
                   remote.getRemoteHostname(),
                   remote.getRemoteIfaceName());
-              reversePeerBuilder(remote.getRemoteBgpPeerConfig(), ispInterface.getName())
+              getBgpPeerOnIsp(remote.getRemoteBgpPeerConfig(), ispInterface.getName())
                   .setBgpProcess(bgpProcess)
                   .build();
             });
@@ -655,31 +660,47 @@ public final class IspModelingUtils {
 
   @VisibleForTesting
   static boolean isValidBgpPeerConfig(
-      @Nonnull BgpActivePeerConfig bgpActivePeerConfig,
+      @Nonnull BgpPeerConfig bgpPeerConfig,
       @Nonnull Set<Ip> localIps,
       @Nonnull Set<Ip> remoteIps,
       @Nonnull LongSpace remoteAsns) {
-    return Objects.nonNull(bgpActivePeerConfig.getLocalIp())
-        && Objects.nonNull(bgpActivePeerConfig.getLocalAs())
-        && Objects.nonNull(bgpActivePeerConfig.getPeerAddress())
-        && !bgpActivePeerConfig
-            .getRemoteAsns()
-            .equals(LongSpace.of(bgpActivePeerConfig.getLocalAs()))
-        && localIps.contains(bgpActivePeerConfig.getLocalIp())
-        && (remoteIps.isEmpty() || remoteIps.contains(bgpActivePeerConfig.getPeerAddress()))
-        && !remoteAsns.intersection(bgpActivePeerConfig.getRemoteAsns()).isEmpty();
+    boolean commonCriteria =
+        Objects.nonNull(bgpPeerConfig.getLocalIp())
+            && Objects.nonNull(bgpPeerConfig.getLocalAs())
+            && !bgpPeerConfig.getRemoteAsns().equals(LongSpace.of(bgpPeerConfig.getLocalAs()))
+            && localIps.contains(bgpPeerConfig.getLocalIp())
+            && !remoteAsns.intersection(bgpPeerConfig.getRemoteAsns()).isEmpty();
+    if (!commonCriteria) {
+      return false;
+    }
+    if (bgpPeerConfig instanceof BgpActivePeerConfig) {
+      BgpActivePeerConfig activePeerConfig = (BgpActivePeerConfig) bgpPeerConfig;
+      return Objects.nonNull(activePeerConfig.getPeerAddress())
+          && (remoteIps.isEmpty() || remoteIps.contains(activePeerConfig.getPeerAddress()));
+    } else if (bgpPeerConfig instanceof BgpUnnumberedPeerConfig) {
+      // peer interface is always non-null, so need to check
+      return true;
+    } else {
+      // passive peers, in case passed into this function, are declared invalid
+      return false;
+    }
   }
 
   /**
-   * Returns a BGP peering config builder whose settings have been initialized to match a remote
-   * peer's configs.
+   * Returns the {@link BgpActivePeerConfig} to be used on ISP by flipping the local and remote AS
+   * and IP for a given eBGP peer configuration. Also sets the export policy meant for the ISP.
    */
-  static BgpPeerConfig.Builder<?, ?> reversePeerBuilder(
+  @VisibleForTesting
+  static BgpPeerConfig.Builder<?, ?> getBgpPeerOnIsp(
       BgpPeerConfig remotePeerConfig, String localInterfaceName) {
     BgpPeerConfig.Builder<?, ?> ispPeerConfig =
         remotePeerConfig instanceof BgpActivePeerConfig
             ? BgpActivePeerConfig.builder()
-            : BgpUnnumberedPeerConfig.builder();
+                .setPeerAddress(remotePeerConfig.getLocalIp())
+                .setLocalIp(((BgpActivePeerConfig) remotePeerConfig).getPeerAddress())
+            : BgpUnnumberedPeerConfig.builder()
+                .setPeerInterface(localInterfaceName)
+                .setLocalIp(LINK_LOCAL_IP);
 
     ispPeerConfig
         .setRemoteAs(
@@ -689,16 +710,6 @@ public final class IspModelingUtils {
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
                 .build());
-
-    if (remotePeerConfig instanceof BgpActivePeerConfig) {
-      ((BgpActivePeerConfig.Builder) ispPeerConfig)
-          .setPeerAddress(remotePeerConfig.getLocalIp())
-          .setLocalIp(((BgpActivePeerConfig) remotePeerConfig).getPeerAddress());
-    } else {
-      ((BgpUnnumberedPeerConfig.Builder) ispPeerConfig)
-          .setPeerInterface(localInterfaceName)
-          .setLocalIp(LINK_LOCAL_IP);
-    }
 
     return ispPeerConfig;
   }
