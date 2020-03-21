@@ -114,13 +114,15 @@ public class ElasticsearchDomainTest {
         topology.getEdges(),
         hasItem(
             new Edge(
-                NodeInterfacePair.of("subnet-073b8061", "subnet-073b8061"),
+                NodeInterfacePair.of(
+                    "subnet-073b8061", Subnet.instancesInterfaceName("subnet-073b8061")),
                 NodeInterfacePair.of("es-domain", "es-domain-subnet-073b8061"))));
     assertThat(
         topology.getEdges(),
         hasItem(
             new Edge(
-                NodeInterfacePair.of("subnet-1f315846", "subnet-1f315846"),
+                NodeInterfacePair.of(
+                    "subnet-1f315846", Subnet.instancesInterfaceName("subnet-1f315846")),
                 NodeInterfacePair.of("es-domain", "es-domain-subnet-1f315846"))));
   }
 

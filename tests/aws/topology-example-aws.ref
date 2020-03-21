@@ -230,6 +230,12 @@
       "type" : "PHYSICAL"
     },
     {
+      "id" : "interface-node-subnet-1641fa70-to-instances",
+      "name" : "to-instances",
+      "nodeId" : "node-subnet-1641fa70",
+      "type" : "PHYSICAL"
+    },
+    {
       "id" : "interface-node-igw-fac5839d-vpc-925131f4",
       "name" : "vpc-925131f4",
       "nodeId" : "node-igw-fac5839d",
@@ -320,6 +326,12 @@
       "type" : "PHYSICAL"
     },
     {
+      "id" : "interface-node-subnet-7044ff16-to-instances",
+      "name" : "to-instances",
+      "nodeId" : "node-subnet-7044ff16",
+      "type" : "PHYSICAL"
+    },
+    {
       "id" : "interface-node-subnet-1f315846-vpc-f8fad69d-igw-068fee63",
       "name" : "vpc-f8fad69d-igw-068fee63",
       "nodeId" : "node-subnet-1f315846",
@@ -329,12 +341,6 @@
       "id" : "interface-node-vpc-f8fad69d-subnet-9c8adceb-igw-068fee63",
       "name" : "subnet-9c8adceb-igw-068fee63",
       "nodeId" : "node-vpc-f8fad69d",
-      "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "name" : "subnet-1641fa70",
-      "nodeId" : "node-subnet-1641fa70",
       "type" : "PHYSICAL"
     },
     {
@@ -414,12 +420,6 @@
       "name" : "~Interface_4~",
       "nodeId" : "node-aws-backbone",
       "type" : "UNKNOWN"
-    },
-    {
-      "id" : "interface-node-subnet-7044ff16-subnet-7044ff16",
-      "name" : "subnet-7044ff16",
-      "nodeId" : "node-subnet-7044ff16",
-      "type" : "PHYSICAL"
     },
     {
       "id" : "interface-node-subnet-30398256-vpc-b390fad5-igw-9b93ddfc",
@@ -514,6 +514,18 @@
       "type" : "PHYSICAL"
     },
     {
+      "dstId" : "interface-node-subnet-7044ff16-to-instances",
+      "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-to-instances",
+      "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "type" : "PHYSICAL"
+    },
+    {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "id" : "link-interface-node-subnet-7044ff16-to-instances-interface-node-es-domain-es-domain-subnet-7044ff16",
+      "srcId" : "interface-node-subnet-7044ff16-to-instances",
+      "type" : "PHYSICAL"
+    },
+    {
       "dstId" : "interface-node-aws-backbone-~Interface_2~",
       "id" : "link-interface-node-igw-9b93ddfc-backbone-interface-node-aws-backbone-~Interface_2~",
       "srcId" : "interface-node-igw-9b93ddfc-backbone",
@@ -568,12 +580,6 @@
       "type" : "PHYSICAL"
     },
     {
-      "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "id" : "link-interface-node-subnet-7044ff16-subnet-7044ff16-interface-node-es-domain-es-domain-subnet-7044ff16",
-      "srcId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
-      "type" : "PHYSICAL"
-    },
-    {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-1f315846",
       "id" : "link-interface-node-subnet-1f315846-vpc-f8fad69d-interface-node-vpc-f8fad69d-subnet-1f315846",
       "srcId" : "interface-node-subnet-1f315846-vpc-f8fad69d",
@@ -604,6 +610,12 @@
       "type" : "PHYSICAL"
     },
     {
+      "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
+      "id" : "link-interface-node-subnet-1641fa70-to-instances-interface-node-test-rds-test-rds-subnet-1641fa70",
+      "srcId" : "interface-node-subnet-1641fa70-to-instances",
+      "type" : "PHYSICAL"
+    },
+    {
       "dstId" : "interface-node-vpc-b390fad5-subnet-f73a8191",
       "id" : "link-interface-node-subnet-f73a8191-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-f73a8191",
       "srcId" : "interface-node-subnet-f73a8191-vpc-b390fad5",
@@ -631,18 +643,6 @@
       "dstId" : "interface-node-subnet-1641fa70-vpc-b390fad5-igw-9b93ddfc",
       "id" : "link-interface-node-vpc-b390fad5-subnet-1641fa70-igw-9b93ddfc-interface-node-subnet-1641fa70-vpc-b390fad5-igw-9b93ddfc",
       "srcId" : "interface-node-vpc-b390fad5-subnet-1641fa70-igw-9b93ddfc",
-      "type" : "PHYSICAL"
-    },
-    {
-      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "id" : "link-interface-node-subnet-1641fa70-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
-      "srcId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "type" : "PHYSICAL"
-    },
-    {
-      "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
-      "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "type" : "PHYSICAL"
     },
     {
@@ -748,15 +748,15 @@
       "type" : "PHYSICAL"
     },
     {
-      "dstId" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "id" : "link-interface-node-vgw-81fd279f-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
-      "srcId" : "interface-node-vgw-81fd279f-vpc-815775e7",
+      "dstId" : "interface-node-subnet-1641fa70-to-instances",
+      "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-subnet-1641fa70-to-instances",
+      "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "type" : "PHYSICAL"
     },
     {
-      "dstId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
-      "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-subnet-7044ff16",
-      "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "dstId" : "interface-node-vpc-815775e7-vgw-81fd279f",
+      "id" : "link-interface-node-vgw-81fd279f-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
+      "srcId" : "interface-node-vgw-81fd279f-vpc-815775e7",
       "type" : "PHYSICAL"
     },
     {
@@ -769,6 +769,18 @@
       "dstId" : "interface-node-subnet-1f315846-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-1f315846-interface-node-subnet-1f315846-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-1f315846",
+      "type" : "PHYSICAL"
+    },
+    {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "id" : "link-interface-node-subnet-1641fa70-to-instances-interface-node-es-domain-es-domain-subnet-1641fa70",
+      "srcId" : "interface-node-subnet-1641fa70-to-instances",
+      "type" : "PHYSICAL"
+    },
+    {
+      "dstId" : "interface-node-subnet-1641fa70-to-instances",
+      "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-subnet-1641fa70-to-instances",
+      "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "PHYSICAL"
     },
     {
@@ -833,12 +845,6 @@
     },
     {
       "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
-      "id" : "link-interface-node-subnet-1641fa70-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
-      "srcId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "type" : "PHYSICAL"
-    },
-    {
-      "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
       "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "PHYSICAL"
@@ -853,12 +859,6 @@
       "dstId" : "interface-node-subnet-d9cafabc-vpc-f8fad69d-igw-068fee63",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-d9cafabc-igw-068fee63-interface-node-subnet-d9cafabc-vpc-f8fad69d-igw-068fee63",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-d9cafabc-igw-068fee63",
-      "type" : "PHYSICAL"
-    },
-    {
-      "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
-      "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "PHYSICAL"
     },
     {
