@@ -26,18 +26,17 @@ final class IspModel {
 
     private @Nonnull final String _remoteHostname;
     private @Nonnull final String _remoteIfaceName;
-
-    private @Nonnull final InterfaceAddress _ispIfaceAdddress;
+    private @Nonnull final InterfaceAddress _ispIfaceAddress;
     private @Nonnull final BgpPeerConfig _remoteBgpPeerConfig;
 
     Remote(
         String remoteHostname,
         String remoteIfaceName,
-        InterfaceAddress ispIfaceAdddress,
+        InterfaceAddress ispIfaceAddress,
         BgpPeerConfig remoteBgpPeerConfig) {
       _remoteHostname = remoteHostname;
       _remoteIfaceName = remoteIfaceName;
-      _ispIfaceAdddress = ispIfaceAdddress;
+      _ispIfaceAddress = ispIfaceAddress;
       _remoteBgpPeerConfig = remoteBgpPeerConfig;
     }
 
@@ -51,23 +50,23 @@ final class IspModel {
     }
 
     @Nonnull
-    public BgpPeerConfig getRemoteBgpPeerConfig() {
-      return _remoteBgpPeerConfig;
-    }
-
-    @Nonnull
     public String getRemoteHostname() {
       return _remoteHostname;
     }
 
     @Nonnull
-    public InterfaceAddress getIspIfaceAdddress() {
-      return _ispIfaceAdddress;
+    public String getRemoteIfaceName() {
+      return _remoteIfaceName;
     }
 
     @Nonnull
-    public String getRemoteIfaceName() {
-      return _remoteIfaceName;
+    public InterfaceAddress getIspIfaceAddress() {
+      return _ispIfaceAddress;
+    }
+
+    @Nonnull
+    public BgpPeerConfig getRemoteBgpPeerConfig() {
+      return _remoteBgpPeerConfig;
     }
 
     @Override
@@ -81,14 +80,14 @@ final class IspModel {
       Remote neighbor = (Remote) o;
       return _remoteHostname.equals(neighbor._remoteHostname)
           && _remoteIfaceName.equals(neighbor._remoteIfaceName)
-          && _ispIfaceAdddress.equals(neighbor._ispIfaceAdddress)
+          && _ispIfaceAddress.equals(neighbor._ispIfaceAddress)
           && _remoteBgpPeerConfig.equals(neighbor._remoteBgpPeerConfig);
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(
-          _remoteHostname, _remoteIfaceName, _ispIfaceAdddress, _remoteBgpPeerConfig);
+          _remoteHostname, _remoteIfaceName, _ispIfaceAddress, _remoteBgpPeerConfig);
     }
 
     @Override
@@ -96,7 +95,7 @@ final class IspModel {
       return MoreObjects.toStringHelper(this)
           .add("remoteHostname", _remoteHostname)
           .add("remoteIfaceName", _remoteIfaceName)
-          .add("ispInterfaceAddress", _ispIfaceAdddress)
+          .add("ispInterfaceAddress", _ispIfaceAddress)
           .add("remoteBgpActivePeerConfig", _remoteBgpPeerConfig)
           .toString();
     }

@@ -566,16 +566,14 @@ public final class IspModelingUtils {
                   nf.interfaceBuilder()
                       .setOwner(ispConfiguration)
                       .setVrf(defaultVrf)
-                      .setAddress(remote.getIspIfaceAdddress())
+                      .setAddress(remote.getIspIfaceAddress())
                       .build();
               modeledNodes.addLayer1Edge(
                   ispConfiguration.getHostname(),
                   ispInterface.getName(),
                   remote.getRemoteHostname(),
                   remote.getRemoteIfaceName());
-              getBgpPeerOnIsp(remote.getRemoteBgpPeerConfig(), ispInterface.getName())
-                  .setBgpProcess(bgpProcess)
-                  .build();
+              addBgpPeerToIsp(remote.getRemoteBgpPeerConfig(), ispInterface.getName(), bgpProcess);
             });
 
     modeledNodes.addConfiguration(ispConfiguration);
@@ -694,12 +692,12 @@ public final class IspModelingUtils {
   }
 
   /**
-   * Returns the {@link BgpActivePeerConfig} to be used on ISP by flipping the local and remote AS
-   * and IP for a given eBGP peer configuration. Also sets the export policy meant for the ISP.
+   * Computes the mirror of the {@code remotePeerConfig} and adds it to {@code bgpProcess}. Also
+   * sets the export policy meant for the ISP.
    */
   @VisibleForTesting
-  static BgpPeerConfig.Builder<?, ?> getBgpPeerOnIsp(
-      BgpPeerConfig remotePeerConfig, String localInterfaceName) {
+  static void addBgpPeerToIsp(
+      BgpPeerConfig remotePeerConfig, String localInterfaceName, BgpProcess bgpProcess) {
     BgpPeerConfig.Builder<?, ?> ispPeerConfig =
         remotePeerConfig instanceof BgpActivePeerConfig
             ? BgpActivePeerConfig.builder()
@@ -716,8 +714,8 @@ public final class IspModelingUtils {
         .setIpv4UnicastAddressFamily(
             Ipv4UnicastAddressFamily.builder()
                 .setExportPolicy(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS)
-                .build());
-
-    return ispPeerConfig;
+                .build())
+        .setBgpProcess(bgpProcess)
+        .build();
   }
 }
