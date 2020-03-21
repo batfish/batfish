@@ -513,6 +513,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   public static String instancesInterfaceName(String subnetId) {
-    return subnetId;
+    // since there is only one such interface per subnet node, we can keep it simple
+    return "to-instances";
   }
 }

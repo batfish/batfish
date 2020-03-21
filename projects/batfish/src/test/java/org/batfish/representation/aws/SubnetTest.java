@@ -141,7 +141,7 @@ public class SubnetTest {
         subnetCfg.getAllInterfaces().values().stream()
             .map(i -> i.getName())
             .collect(ImmutableSet.toImmutableSet()),
-        equalTo(ImmutableSet.of(subnet.getId(), vpc.getId())));
+        equalTo(ImmutableSet.of(instancesInterfaceName(subnet.getId()), vpc.getId())));
 
     // the vpc should have gotten an interface pointed to the subnet
     assertThat(
@@ -152,7 +152,11 @@ public class SubnetTest {
 
     // instance facing interface should have the right address
     assertThat(
-        subnetCfg.getAllInterfaces().get(subnet.getId()).getConcreteAddress().getPrefix(),
+        subnetCfg
+            .getAllInterfaces()
+            .get(instancesInterfaceName(subnet.getId()))
+            .getConcreteAddress()
+            .getPrefix(),
         equalTo(privatePrefix));
 
     // the vpc router should have a static route to the private prefix of the subnet
