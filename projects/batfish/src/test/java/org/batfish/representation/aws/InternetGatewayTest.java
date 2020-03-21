@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
@@ -41,7 +42,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IspModelingUtils;
-import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Flow;
@@ -49,7 +50,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -128,11 +128,8 @@ public class InternetGatewayTest {
         equalTo(ImmutableList.of(BACKBONE_INTERFACE_NAME, Utils.interfaceNameToRemote(vpcConfig))));
 
     Interface bbInterface = igwConfig.getAllInterfaces().get(BACKBONE_INTERFACE_NAME);
-    Prefix bbInterfacePrefix = bbInterface.getConcreteAddress().getPrefix();
 
-    assertThat(
-        igwConfig.getDefaultVrf().getBgpProcess().getRouterId(),
-        equalTo(bbInterfacePrefix.getStartIp()));
+    assertThat(igwConfig.getDefaultVrf().getBgpProcess().getRouterId(), equalTo(LINK_LOCAL_IP));
 
     // check NAT configuration
     assertThat(
@@ -176,16 +173,16 @@ public class InternetGatewayTest {
                         hasNextHopInterface(NULL_INTERFACE_NAME),
                         isNonForwarding(true))))));
 
-    BgpActivePeerConfig nbr =
-        getOnlyElement(igwConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
+    BgpUnnumberedPeerConfig nbr =
+        getOnlyElement(igwConfig.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().values());
     assertThat(
         nbr,
         equalTo(
-            BgpActivePeerConfig.builder()
-                .setLocalIp(bbInterfacePrefix.getStartIp())
+            BgpUnnumberedPeerConfig.builder()
+                .setLocalIp(LINK_LOCAL_IP)
                 .setLocalAs(AWS_INTERNET_GATEWAY_AS)
                 .setRemoteAs(AWS_BACKBONE_ASN)
-                .setPeerAddress(bbInterfacePrefix.getEndIp())
+                .setPeerInterface(bbInterface.getName())
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()
                         .setExportPolicy(BACKBONE_EXPORT_POLICY_NAME)
