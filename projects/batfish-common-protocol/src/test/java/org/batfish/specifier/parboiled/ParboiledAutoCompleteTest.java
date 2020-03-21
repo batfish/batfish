@@ -17,6 +17,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADD
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
+import static org.batfish.specifier.parboiled.ParboiledAutoComplete.updateSuggestions;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,6 +33,8 @@ import java.util.Optional;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -508,7 +511,9 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query, metadata).run(),
         allOf(
-            hasItem(new ParboiledAutoCompleteSuggestion(node1, node1HumanName, 0, NODE_NAME)),
+            hasItem(
+                new ParboiledAutoCompleteSuggestion(
+                    node1, NODE_NAME.getHint(), 0, NODE_NAME, node1HumanName)),
             hasItem(
                 new ParboiledAutoCompleteSuggestion(node2, NODE_NAME.getHint(), 0, NODE_NAME))));
   }
@@ -531,6 +536,23 @@ public class ParboiledAutoCompleteTest {
             .build();
     assertThat(
         getTestPAC(query, metadata).run(),
-        allOf(hasItem(new ParboiledAutoCompleteSuggestion(node1, node1HumanName, 0, NODE_NAME))));
+        allOf(
+            hasItem(
+                new ParboiledAutoCompleteSuggestion(node1, null, 0, NODE_NAME, node1HumanName))));
+  }
+
+  /**
+   * Tests that relevants fields are preserved when we covert {@link AutocompleteSuggestion} to
+   * {@link ParboiledAutoCompleteSuggestion}.
+   */
+  @Test
+  public void testUpdateSuggestions() {
+    AutocompleteSuggestion autocompleteSuggestion =
+        new AutocompleteSuggestion("text", SuggestionType.UNKNOWN, true, "desc", 42, 3, "hint");
+    assertThat(
+        updateSuggestions(ImmutableList.of(autocompleteSuggestion), false, NODE_NAME, 0),
+        equalTo(
+            ImmutableSet.of(
+                new ParboiledAutoCompleteSuggestion("text", "hint", 0, NODE_NAME, "desc"))));
   }
 }
