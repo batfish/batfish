@@ -435,11 +435,15 @@ public final class IspModelingUtils {
         continue;
       }
       // collecting InterfaceAddresses for interfaces
-      Map<Ip, ConcreteInterfaceAddress> ipToInterfaceAddresses =
-          remoteIface.getAllConcreteAddresses().stream()
+      Map<Ip, InterfaceAddress> ipToInterfaceAddresses =
+          remoteIface.getAllAddresses().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
-                      ConcreteInterfaceAddress::getIp, Function.identity()));
+                      addr ->
+                          addr instanceof ConcreteInterfaceAddress
+                              ? ((ConcreteInterfaceAddress) addr).getIp()
+                              : ((LinkLocalAddress) addr).getIp(),
+                      Function.identity()));
 
       List<BgpPeerConfig> validRemoteBgpPeerConfigs =
           remoteCfg.getVrfs().values().stream()
@@ -485,7 +489,9 @@ public final class IspModelingUtils {
             bgpPeerConfig instanceof BgpActivePeerConfig
                 ? ConcreteInterfaceAddress.create(
                     ((BgpActivePeerConfig) bgpPeerConfig).getPeerAddress(),
-                    ipToInterfaceAddresses.get(bgpPeerConfig.getLocalIp()).getNetworkBits())
+                    ((ConcreteInterfaceAddress)
+                            ipToInterfaceAddresses.get(bgpPeerConfig.getLocalIp()))
+                        .getNetworkBits())
                 : LINK_LOCAL_ADDRESS;
         ispInfo.addNeighbor(
             new Remote(remoteCfg.getHostname(), remoteIfaceName, interfaceAddress, bgpPeerConfig));
@@ -587,15 +593,16 @@ public final class IspModelingUtils {
     checkState(
         Objects.nonNull(ispConfiguration.getDefaultVrf().getBgpProcess()),
         "default VRF should have a BGP process");
+    BgpProcess bgpProcess = ispConfiguration.getDefaultVrf().getBgpProcess();
     checkState(
-        !ispConfiguration.getDefaultVrf().getBgpProcess().getActiveNeighbors().isEmpty(),
+        !(bgpProcess.getActiveNeighbors().isEmpty()
+            && bgpProcess.getInterfaceNeighbors().isEmpty()),
         "ISP should have greater than 0 BGP peers");
     Long localAs =
         ispConfiguration
             .getDefaultVrf()
             .getBgpProcess()
-            .getActiveNeighbors()
-            .values()
+            .getAllPeerConfigs()
             .iterator()
             .next()
             .getLocalAs();
