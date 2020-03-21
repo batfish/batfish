@@ -671,8 +671,9 @@ public final class ParboiledAutoComplete {
    * Update suggestions obtained through {@link AutoCompleteUtils} to escape names if needed and
    * assign start index
    */
+  @VisibleForTesting
   @Nonnull
-  private static Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
+  static Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
       List<AutocompleteSuggestion> suggestions,
       boolean escape,
       Anchor.Type anchorType,
@@ -686,7 +687,8 @@ public final class ParboiledAutoComplete {
                         : s.getText(),
                     Optional.ofNullable(s.getHint()).orElseGet(anchorType::getHint),
                     startIndex,
-                    anchorType))
+                    anchorType,
+                    Optional.ofNullable(s.getDescription()).orElse(null)))
         .collect(ImmutableSet.toImmutableSet());
   }
 

@@ -9,7 +9,6 @@ import static org.batfish.datamodel.Protocol.SSH;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.ipStringAutoComplete;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.orderSuggestions;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
-import static org.batfish.datamodel.answers.AutoCompleteUtils.toHint;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
@@ -1398,7 +1397,8 @@ public class AutoCompleteUtilsTest {
         equalTo(
             ImmutableList.of(
                 new AutocompleteSuggestion("2.2.2.2", false),
-                new AutocompleteSuggestion("1.1.1.1", toHint(relevances2), false))));
+                new AutocompleteSuggestion(
+                    "1.1.1.1", false, AutoCompleteUtils.toDescription(relevances2)))));
   }
 
   @Test
@@ -1412,7 +1412,7 @@ public class AutoCompleteUtilsTest {
             ImmutableMap.of(
                 Ip.parse("1.1.1.1"), new IpCompletionMetadata(ImmutableList.of(match, other)))),
         equalTo(
-            ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", match.getDisplay(), false))));
+            ImmutableList.of(new AutocompleteSuggestion("1.1.1.1", false, match.getDisplay()))));
   }
 
   /** Test that multiword queries match relevant IPs */
@@ -1433,7 +1433,7 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testToHint_shortenRelevances() {
     String hint =
-        toHint(
+        AutoCompleteUtils.toDescription(
             ImmutableList.of(
                 new IpCompletionRelevance("match1", "match1"),
                 new IpCompletionRelevance("match2", "match2")));

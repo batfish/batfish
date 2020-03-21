@@ -54,8 +54,8 @@ public final class AutocompleteSuggestion {
 
   @ParametersAreNonnullByDefault
   public static final class Builder {
-    private String _description;
-    private String _hint;
+    @Nullable private String _description;
+    @Nullable private String _hint;
     private int _insertionIndex;
     private boolean _isPartial;
     private int _rank;
@@ -73,12 +73,12 @@ public final class AutocompleteSuggestion {
       _text = suggestion.getText();
     }
 
-    public Builder setDescription(String description) {
+    public Builder setDescription(@Nullable String description) {
       _description = description;
       return this;
     }
 
-    public Builder setHint(String hint) {
+    public Builder setHint(@Nullable String hint) {
       _hint = hint;
       return this;
     }
@@ -172,10 +172,6 @@ public final class AutocompleteSuggestion {
 
   public AutocompleteSuggestion(String text, boolean isPartial) {
     this(text, isPartial, null, DEFAULT_RANK);
-  }
-
-  public AutocompleteSuggestion(String text, @Nullable String hint, boolean isPartial) {
-    this(text, SuggestionType.UNKNOWN, isPartial, null, DEFAULT_RANK, 0, hint);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, @Nullable String description) {

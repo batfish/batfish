@@ -463,6 +463,7 @@ public final class AutoCompleteUtils {
           }
         case IP_SPACE_SPEC:
           {
+            checkCompletionMetadata(completionMetadata, network, snapshot);
             // first, get the suggestions based on IP metadata
             List<AutocompleteSuggestion> metadataSuggestions =
                 ipStringAutoComplete(query, completionMetadata.getIps());
@@ -557,12 +558,12 @@ public final class AutoCompleteUtils {
         case NODE_NAME:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
-            Map<String, Optional<String>> nodesWithHints =
+            Map<String, Optional<String>> nodesWithDescriptions =
                 toImmutableMap(
                     completionMetadata.getNodes(),
                     Entry::getKey,
                     entry -> Optional.ofNullable(entry.getValue().getHumanName()));
-            suggestions = stringAutoComplete(query, nodesWithHints);
+            suggestions = stringAutoComplete(query, nodesWithDescriptions);
             break;
           }
         case NODE_PROPERTY_SPEC:
@@ -799,18 +800,18 @@ public final class AutoCompleteUtils {
    */
   @Nonnull
   public static List<AutocompleteSuggestion> stringAutoComplete(
-      @Nullable String query, Map<String, Optional<String>> stringsWithHints) {
+      @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
-    return stringsWithHints.entrySet().stream()
+    return stringsWithDescriptions.entrySet().stream()
         .filter(
             s ->
                 s.getKey().toLowerCase().contains(testQuery)
                     || s.getValue()
                         .map(hint -> hint.toLowerCase().contains(testQuery))
                         .orElse(false))
-        .map(s -> new AutocompleteSuggestion(s.getKey(), s.getValue().orElse(null), false))
+        .map(s -> new AutocompleteSuggestion(s.getKey(), false, s.getValue().orElse(null)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -853,7 +854,7 @@ public final class AutoCompleteUtils {
                 e ->
                     AutocompleteSuggestion.builder()
                         .setText(e.getKey().toString())
-                        .setHint(toHint(e.getValue()))
+                        .setDescription(toDescription(e.getValue()))
                         .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
                         .build())
             .collect(ImmutableList.toImmutableList());
@@ -865,7 +866,7 @@ public final class AutoCompleteUtils {
                     ip ->
                         AutocompleteSuggestion.builder()
                             .setText(ip.toString())
-                            .setHint(toHint(ips.get(ip)))
+                            .setDescription(toDescription(ips.get(ip)))
                             .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
                             .build())
                 .collect(ImmutableList.toImmutableList()))
@@ -875,13 +876,13 @@ public final class AutoCompleteUtils {
 
   @Nullable
   @VisibleForTesting
-  static String toHint(IpCompletionMetadata ipCompletionMetadata) {
-    return toHint(ipCompletionMetadata.getRelevances());
+  static String toDescription(IpCompletionMetadata ipCompletionMetadata) {
+    return toDescription(ipCompletionMetadata.getRelevances());
   }
 
   @Nullable
   @VisibleForTesting
-  static String toHint(List<IpCompletionRelevance> relevances) {
+  static String toDescription(List<IpCompletionRelevance> relevances) {
     if (relevances.isEmpty()) {
       return null;
     }
