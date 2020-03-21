@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -24,9 +25,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
@@ -39,7 +39,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -148,13 +148,12 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
             _internetGatewayId, "aws", _tags, DeviceModel.AWS_INTERNET_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
-    // Create an interface facing the backbone and run a BGP process that advertises static routes
-    Prefix bbInterfaceSubnet = awsConfiguration.getNextGeneratedLinkSubnet();
-    ConcreteInterfaceAddress bbInterfaceAddress =
-        ConcreteInterfaceAddress.create(
-            bbInterfaceSubnet.getStartIp(), bbInterfaceSubnet.getPrefixLength());
     Interface bbInterface =
-        Utils.newInterface(BACKBONE_INTERFACE_NAME, cfgNode, bbInterfaceAddress, "To AWS backbone");
+        Utils.newInterface(
+            BACKBONE_INTERFACE_NAME,
+            cfgNode,
+            LinkLocalAddress.of(LINK_LOCAL_IP),
+            "To AWS backbone");
 
     // Map from private to public IPs that will be used for the NAT
     Map<Ip, Ip> privatePublicMap =
@@ -187,7 +186,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
     BgpProcess bgpProcess =
         BgpProcess.builder()
-            .setRouterId(bbInterfaceAddress.getIp())
+            .setRouterId(LINK_LOCAL_IP)
             .setVrf(cfgNode.getDefaultVrf())
             .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
             .build();
@@ -208,10 +207,10 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
     installRoutingPolicyAdvertiseStatic(BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace);
 
-    BgpActivePeerConfig.builder()
-        .setPeerAddress(bbInterfaceSubnet.getEndIp())
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(BACKBONE_INTERFACE_NAME)
         .setRemoteAs(AWS_BACKBONE_ASN)
-        .setLocalIp(bbInterfaceAddress.getIp())
+        .setLocalIp(LINK_LOCAL_IP)
         .setLocalAs(AWS_INTERNET_GATEWAY_AS)
         .setBgpProcess(bgpProcess)
         .setIpv4UnicastAddressFamily(

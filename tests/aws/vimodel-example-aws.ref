@@ -14,13 +14,10 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "240.0.0.1/31"
-            ],
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "prefix" : "240.0.0.1/31",
+            "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -37,13 +34,10 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "240.0.0.3/31"
-            ],
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "prefix" : "240.0.0.3/31",
+            "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -60,13 +54,10 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "240.0.0.5/31"
-            ],
             "allowedVlans" : "",
             "autostate" : true,
             "mtu" : 1500,
-            "prefix" : "240.0.0.5/31",
+            "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -1526,8 +1517,83 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "routerId" : "240.0.0.1",
+              "routerId" : "169.254.0.1",
               "interfaceNeighbors" : {
+                "~Interface_0~" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIspToCustomers",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "~Interface_0~",
+                  "remoteAsns" : "65534"
+                },
+                "~Interface_1~" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIspToCustomers",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "~Interface_1~",
+                  "remoteAsns" : "65534"
+                },
+                "~Interface_2~" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIspToCustomers",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "~Interface_2~",
+                  "remoteAsns" : "65534"
+                },
                 "~Interface_4~" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
@@ -1556,83 +1622,6 @@
               },
               "multipathEbgp" : true,
               "multipathIbgp" : false,
-              "neighbors" : {
-                "240.0.0.0/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIspToCustomers",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.0.0.1",
-                  "peerAddress" : "240.0.0.0",
-                  "remoteAsns" : "65534"
-                },
-                "240.0.0.2/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIspToCustomers",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.0.0.3",
-                  "peerAddress" : "240.0.0.2",
-                  "remoteAsns" : "65534"
-                },
-                "240.0.0.4/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnIspToCustomers",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 16509,
-                  "localIp" : "240.0.0.5",
-                  "peerAddress" : "240.0.0.4",
-                  "remoteAsns" : "65534"
-                }
-              },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
             "staticRoutes" : [
@@ -14026,15 +14015,12 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "240.0.0.2/31"
-            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "mtu" : 1500,
-            "prefix" : "240.0.0.2/31",
+            "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -14167,12 +14153,10 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "routerId" : "240.0.0.2",
-              "multipathEbgp" : false,
-              "multipathIbgp" : false,
-              "neighbors" : {
-                "240.0.0.3/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
@@ -14195,11 +14179,13 @@
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
-                  "localIp" : "240.0.0.2",
-                  "peerAddress" : "240.0.0.3",
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
                   "remoteAsns" : "16509"
                 }
               },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
             "staticRoutes" : [
@@ -14232,15 +14218,12 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "240.0.0.4/31"
-            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "mtu" : 1500,
-            "prefix" : "240.0.0.4/31",
+            "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -14373,12 +14356,10 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "routerId" : "240.0.0.4",
-              "multipathEbgp" : false,
-              "multipathIbgp" : false,
-              "neighbors" : {
-                "240.0.0.5/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
@@ -14401,11 +14382,13 @@
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
-                  "localIp" : "240.0.0.4",
-                  "peerAddress" : "240.0.0.5",
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
                   "remoteAsns" : "16509"
                 }
               },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
             "staticRoutes" : [
@@ -14437,15 +14420,12 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "240.0.0.0/31"
-            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "mtu" : 1500,
-            "prefix" : "240.0.0.0/31",
+            "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -14578,12 +14558,10 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "routerId" : "240.0.0.0",
-              "multipathEbgp" : false,
-              "multipathIbgp" : false,
-              "neighbors" : {
-                "240.0.0.1/32" : {
-                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
@@ -14606,11 +14584,13 @@
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
-                  "localIp" : "240.0.0.0",
-                  "peerAddress" : "240.0.0.1",
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
                   "remoteAsns" : "16509"
                 }
               },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
             "staticRoutes" : [
