@@ -53,6 +53,8 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Test;
 
@@ -77,6 +79,29 @@ public final class CompletionMetadataUtilsTest {
                 e ->
                     new IpCompletionMetadata(
                         new IpCompletionRelevance(e.getValue(), e.getValue()))));
+  }
+
+  @Test
+  public void testAddressGroupDisplayString() {
+    Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
+    Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
+    cfgHuman.setHumanName("human");
+
+    String bookName = GeneratedRefBookUtils.getName(cfg.getHostname(), BookType.PublicIps);
+    assertThat(addressGroupDisplayString(cfg, bookName, "group"), equalTo("host public IP"));
+    assertThat(
+        addressGroupDisplayString(cfgHuman, bookName, "group"), equalTo("host public IP (human)"));
+  }
+
+  @Test
+  public void testInterfaceDisplayString() {
+    Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
+    Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
+    cfgHuman.setHumanName("human");
+    Interface iface = Interface.builder().setName("iface").build();
+
+    assertThat(interfaceDisplayString(cfg, iface), equalTo("host[iface]"));
+    assertThat(interfaceDisplayString(cfgHuman, iface), equalTo("host[iface] (human)"));
   }
 
   @Test
