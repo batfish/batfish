@@ -35,6 +35,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.applications.Application;
 import org.batfish.datamodel.applications.IcmpTypesApplication;
 import org.batfish.datamodel.applications.TcpApplication;
+import org.batfish.datamodel.applications.UdpApplication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -189,6 +190,17 @@ public class PacketHeaderConstraintsTest {
         null,
         null,
         null,
+        ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG));
+  }
+
+  @Test
+  public void testResolveIpProtocolsTcpFlagsAndDns() {
+    thrown.expect(IllegalArgumentException.class);
+    resolveIpProtocols(
+        null,
+        null,
+        null,
+        ImmutableSet.of(new UdpApplication(53)),
         ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG));
   }
 
