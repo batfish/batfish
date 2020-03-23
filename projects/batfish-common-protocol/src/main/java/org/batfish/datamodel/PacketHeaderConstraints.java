@@ -338,7 +338,13 @@ public class PacketHeaderConstraints {
   @Nullable
   public Set<IpProtocol> resolveIpProtocols() {
     return resolveIpProtocols(
-        getIpProtocols(), getSrcPorts(), getDstPorts(), getApplications(), getTcpFlags());
+        getIpProtocols(),
+        getSrcPorts(),
+        getDstPorts(),
+        getApplications(),
+        getTcpFlags(),
+        getIcmpTypes(),
+        getIcmpCodes());
   }
 
   /** Return the set of allowed destination port values */
@@ -510,7 +516,9 @@ public class PacketHeaderConstraints {
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts,
       @Nullable Set<Application> applications,
-      @Nullable Set<TcpFlagsMatchConditions> tcpFlags)
+      @Nullable Set<TcpFlagsMatchConditions> tcpFlags,
+      @Nullable IntegerSpace icmpTypes,
+      @Nullable IntegerSpace icmpCodes)
       throws IllegalArgumentException {
     @Nullable
 
@@ -536,6 +544,10 @@ public class PacketHeaderConstraints {
 
     if (tcpFlags != null) {
       constraints.add(ImmutableSet.of(IpProtocol.TCP));
+    }
+
+    if (icmpTypes != null || icmpCodes != null) {
+      constraints.add(ImmutableSet.of(IpProtocol.ICMP));
     }
 
     Set<IpProtocol> resolvedIpProtocols =
