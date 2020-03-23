@@ -11,7 +11,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -337,7 +338,13 @@ public class PacketHeaderConstraints {
   @Nullable
   public Set<IpProtocol> resolveIpProtocols() {
     return resolveIpProtocols(
-        getIpProtocols(), getSrcPorts(), getDstPorts(), getApplications(), getTcpFlags());
+        getIpProtocols(),
+        getSrcPorts(),
+        getDstPorts(),
+        getApplications(),
+        getTcpFlags(),
+        getIcmpTypes(),
+        getIcmpCodes());
   }
 
   /** Return the set of allowed destination port values */
@@ -509,41 +516,42 @@ public class PacketHeaderConstraints {
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts,
       @Nullable Set<Application> applications,
-      @Nullable Set<TcpFlagsMatchConditions> tcpFlags)
+      @Nullable Set<TcpFlagsMatchConditions> tcpFlags,
+      @Nullable IntegerSpace icmpTypes,
+      @Nullable IntegerSpace icmpCodes)
       throws IllegalArgumentException {
     @Nullable
-    Set<IpProtocol> resolvedIpProtocols = ipProtocols; // either already defined or we don't care
+
+    /* The PHC imposes constraints on the IpProtocol in different ways. collect these constraints
+     * and intersect them at the end.
+     */
+    List<Set<IpProtocol>> constraints = new ArrayList<>();
+
+    if (ipProtocols != null) {
+      constraints.add(ipProtocols);
+    }
 
     if (srcPorts != null || dstPorts != null) {
-      if (ipProtocols != null) {
-        resolvedIpProtocols =
-            Sets.intersection(IpProtocol.IP_PROTOCOLS_WITH_PORTS, resolvedIpProtocols);
-      } else {
-        resolvedIpProtocols = IpProtocol.IP_PROTOCOLS_WITH_PORTS;
-      }
+      constraints.add(IpProtocol.IP_PROTOCOLS_WITH_PORTS);
     }
 
     if (applications != null) {
-      Set<IpProtocol> collected =
+      constraints.add(
           applications.stream()
               .map(Application::getIpProtocol)
-              .collect(ImmutableSet.toImmutableSet());
-      if (resolvedIpProtocols == null) {
-        resolvedIpProtocols = collected;
-      } else {
-        resolvedIpProtocols = Sets.intersection(resolvedIpProtocols, collected);
-      }
+              .collect(ImmutableSet.toImmutableSet()));
     }
 
     if (tcpFlags != null) {
-      if (ipProtocols != null) {
-        resolvedIpProtocols =
-            Sets.intersection(resolvedIpProtocols, Collections.singleton(IpProtocol.TCP));
-      } else {
-        resolvedIpProtocols = Collections.singleton(IpProtocol.TCP);
-      }
+      constraints.add(ImmutableSet.of(IpProtocol.TCP));
     }
 
+    if (icmpTypes != null || icmpCodes != null) {
+      constraints.add(ImmutableSet.of(IpProtocol.ICMP));
+    }
+
+    Set<IpProtocol> resolvedIpProtocols =
+        constraints.stream().reduce(Sets::intersection).orElse(null);
     if (resolvedIpProtocols == null) {
       return null;
     }
