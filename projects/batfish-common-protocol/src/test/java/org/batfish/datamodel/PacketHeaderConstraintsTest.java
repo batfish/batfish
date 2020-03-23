@@ -246,7 +246,7 @@ public class PacketHeaderConstraintsTest {
         ImmutableSet.of(new UdpApplication(53)),
         ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
         null,
-        IntegerSpace.of(1) );
+        IntegerSpace.of(1));
   }
 
   @Test
