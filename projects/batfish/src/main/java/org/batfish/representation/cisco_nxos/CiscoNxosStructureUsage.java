@@ -49,6 +49,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   CONTROL_PLANE_SERVICE_POLICY("control-plane service-policy"),
   EIGRP_REDISTRIBUTE_INSTANCE("eigrp address-family redistribute"),
   EIGRP_REDISTRIBUTE_ROUTE_MAP("eigrp address-family redistribute route-map"),
+  FLOW_EXPORTER_SOURCE("flow exporter source"),
   FLOW_MONITOR_EXPORTER("flow monitor exporter"),
   FLOW_MONITOR_RECORD("flow monitor record"),
   INTERFACE_CHANNEL_GROUP("interface channel-group"),

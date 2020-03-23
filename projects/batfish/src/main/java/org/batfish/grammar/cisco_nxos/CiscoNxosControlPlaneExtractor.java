@@ -91,6 +91,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLAS
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_EXPORTER_SOURCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_MONITOR_EXPORTER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_MONITOR_RECORD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
@@ -295,6 +296,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ev_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fe_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fe_sourceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_exporterContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_monitorContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_recordContext;
@@ -1516,6 +1518,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitEv_vni(Ev_vniContext ctx) {
     _currentEvpnVni = null;
+  }
+
+  @Override
+  public void exitFe_source(Fe_sourceContext ctx) {
+    toString(ctx, ctx.iface)
+        .ifPresent(
+            name ->
+                _c.referenceStructure(
+                    INTERFACE, name, FLOW_EXPORTER_SOURCE, ctx.iface.getStart().getLine()));
   }
 
   @Override

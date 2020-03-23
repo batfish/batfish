@@ -21,6 +21,7 @@ flow_exporter
   EXPORTER name = fe_name NEWLINE 
   (
     fe_null
+    | fe_source
   )*
 ;
 
@@ -34,10 +35,14 @@ fe_null
   (
     DESCRIPTION
     | DESTINATION
-    | SOURCE
     | TRANSPORT
     | VERSION
   ) null_rest_of_line
+;
+
+fe_source
+:
+  SOURCE iface = interface_name NEWLINE
 ;
 
 flow_monitor
