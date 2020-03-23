@@ -1404,6 +1404,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testFlowExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_flow"), notNullValue());
+  }
+
+  @Test
   public void testHostnameConversion() throws IOException {
     String hostname = "nxos_hostname";
     Configuration c = parseConfig(hostname);

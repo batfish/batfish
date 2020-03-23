@@ -9,6 +9,7 @@ import
   CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_fex,
+  CiscoNxos_flow,
   CiscoNxos_interface,
   CiscoNxos_ip_access_list,
   CiscoNxos_ip_as_path_access_list,
@@ -53,6 +54,7 @@ statement
   | s_crypto
   | s_evpn
   | s_fex
+  | s_flow
   | s_hostname
   | s_interface
   | s_ip

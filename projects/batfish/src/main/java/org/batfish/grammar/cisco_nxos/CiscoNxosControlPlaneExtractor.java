@@ -16,6 +16,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_NETWORK_QOS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_QOS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.CLASS_MAP_QUEUING;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.FLOW_EXPORTER;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.FLOW_MONITOR;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.FLOW_RECORD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IPV6_PREFIX_LIST;
@@ -88,6 +91,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLAS
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_MONITOR_EXPORTER;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_MONITOR_RECORD;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
@@ -289,6 +294,14 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Eigrp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ev_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_rdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Evv_route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fe_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_exporterContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_monitorContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Flow_recordContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fm_exporterContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fm_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fm_recordContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Fr_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Generic_access_list_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_bandwidthContext;
@@ -812,6 +825,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace EIGRP_PROCESS_TAG_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace FLOW_EXPORTER_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace FLOW_MONITOR_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
+  private static final IntegerSpace FLOW_RECORD_NAME_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace GENERIC_ACCESS_LIST_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 64));
   private static final IntegerSpace HSRP_DELAY_RELOAD_S_RANGE =
@@ -1497,6 +1516,60 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitEv_vni(Ev_vniContext ctx) {
     _currentEvpnVni = null;
+  }
+
+  @Override
+  public void enterFlow_exporter(Flow_exporterContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _c.defineStructure(FLOW_EXPORTER, name, ctx);
+  }
+
+  @Override
+  public void enterFlow_monitor(Flow_monitorContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _c.defineStructure(FLOW_MONITOR, name, ctx);
+  }
+
+  @Override
+  public void exitFm_exporter(Fm_exporterContext ctx) {
+    toString(ctx, ctx.exporter)
+        .ifPresent(
+            name ->
+                _c.referenceStructure(
+                    FLOW_EXPORTER, 
+                    name,
+                    FLOW_MONITOR_EXPORTER,
+                    ctx.exporter.getStart().getLine()));
+  }
+
+  @Override
+  public void exitFm_record(Fm_recordContext ctx) {
+    toString(ctx, ctx.record)
+        .ifPresent(
+            name ->
+                _c.referenceStructure(
+                    FLOW_RECORD, 
+                    name,
+                    FLOW_MONITOR_RECORD,
+                    ctx.record.getStart().getLine()));
+  }
+
+  @Override
+  public void enterFlow_record(Flow_recordContext ctx) {
+    Optional<String> nameOrError = toString(ctx, ctx.name);
+    if (!nameOrError.isPresent()) {
+      return;
+    }
+    String name = nameOrError.get();
+    _c.defineStructure(FLOW_RECORD, name, ctx);
   }
 
   @Override
@@ -6638,6 +6711,24 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     return toStringWithLengthInSpace(
             messageCtx, ctx, CLASS_MAP_QUEUING_NAME_LENGTH_RANGE, "class-map type queuing name")
         .map(name -> getPreferredName(name, CLASS_MAP_QUEUING));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Fe_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, FLOW_EXPORTER_NAME_LENGTH_RANGE, "flow exporter name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Fm_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, FLOW_MONITOR_NAME_LENGTH_RANGE, "flow monitor name");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Fr_nameContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, FLOW_RECORD_NAME_LENGTH_RANGE, "flow record name");
   }
 
   private @Nonnull Optional<String> toString(
