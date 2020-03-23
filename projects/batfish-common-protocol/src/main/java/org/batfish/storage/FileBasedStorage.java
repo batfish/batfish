@@ -1221,8 +1221,7 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private void writeFile(Path file, CharSequence data, Charset charset)
-      throws IOException {
+  private void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
     Lock lock = LOCKS.get(file).writeLock();
     lock.lock();
     try {
@@ -1242,8 +1241,7 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private void writeStringToFile(Path file, String data, Charset charset)
-      throws IOException {
+  private void writeStringToFile(Path file, String data, Charset charset) throws IOException {
     Lock lock = LOCKS.get(file).writeLock();
     lock.lock();
     try {
