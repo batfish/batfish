@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_flow
+!
+flow exporter Netflow-Exporter-1
+  description Test-Exporter
+  destination 10.0.0.1
+  source Ethernet1/1
+  version 9
+!
+flow record Netflow-Record-1
+ description Test-Record
+  match ipv4 source address
+  match ipv4 destination address
+  match ip protocol
+  match transport source-port
+  match transport destination-port
+  collect counter bytes
+  collect counter packets
+!
+flow monitor Netflow-Monitor-1
+  description Test-Monitor
+  record Netflow-Record-1
+  exporter Netflow-Exporter-1
+!

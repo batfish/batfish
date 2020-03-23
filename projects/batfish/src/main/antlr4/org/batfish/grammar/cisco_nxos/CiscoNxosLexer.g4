@@ -670,6 +670,11 @@ CMD
   'cmd'
 ;
 
+COLLECT
+:
+  'collect'
+;
+
 COMMAND
 :
   'command'
@@ -1384,6 +1389,11 @@ EXPLICIT_TRACKING
 EXPORT
 :
   'export'
+;
+
+EXPORTER
+:
+  'exporter' -> pushMode(M_Word)
 ;
 
 EXTENDED
@@ -3559,6 +3569,11 @@ RECEIVE
 RECONNECT_INTERVAL
 :
   'reconnect-interval'
+;
+
+RECORD
+:
+  'record' -> pushMode(M_Word)
 ;
 
 RECOVERY
