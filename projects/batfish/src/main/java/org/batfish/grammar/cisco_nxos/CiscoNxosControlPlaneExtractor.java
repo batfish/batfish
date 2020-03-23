@@ -1544,10 +1544,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .ifPresent(
             name ->
                 _c.referenceStructure(
-                    FLOW_EXPORTER, 
-                    name,
-                    FLOW_MONITOR_EXPORTER,
-                    ctx.exporter.getStart().getLine()));
+                    FLOW_EXPORTER, name, FLOW_MONITOR_EXPORTER, ctx.exporter.getStart().getLine()));
   }
 
   @Override
@@ -1556,10 +1553,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .ifPresent(
             name ->
                 _c.referenceStructure(
-                    FLOW_RECORD, 
-                    name,
-                    FLOW_MONITOR_RECORD,
-                    ctx.record.getStart().getLine()));
+                    FLOW_RECORD, name, FLOW_MONITOR_RECORD, ctx.record.getStart().getLine()));
   }
 
   @Override
@@ -6713,20 +6707,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .map(name -> getPreferredName(name, CLASS_MAP_QUEUING));
   }
 
-  private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, Fe_nameContext ctx) {
+  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Fe_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, FLOW_EXPORTER_NAME_LENGTH_RANGE, "flow exporter name");
   }
 
-  private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, Fm_nameContext ctx) {
+  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Fm_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, FLOW_MONITOR_NAME_LENGTH_RANGE, "flow monitor name");
   }
 
-  private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, Fr_nameContext ctx) {
+  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Fr_nameContext ctx) {
     return toStringWithLengthInSpace(
         messageCtx, ctx, FLOW_RECORD_NAME_LENGTH_RANGE, "flow record name");
   }
