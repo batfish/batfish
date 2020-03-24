@@ -2168,14 +2168,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
     EigrpTopologyUtils.initNeighborConfigs(nc);
-    computeAndStoreCompletionMetadata(snapshot, configurations);
   }
 
   private void computeAndStoreCompletionMetadata(
       NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
-          computeCompletionMetadata(configurations),
+          computeCompletionMetadata(snapshot, configurations),
           _settings.getContainer(),
           snapshot.getSnapshot());
     } catch (IOException e) {
@@ -2183,11 +2182,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+  private CompletionMetadata computeCompletionMetadata(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     return new CompletionMetadata(
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        getLocationInfo(snapshot),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
@@ -2516,6 +2517,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
         assert ppSpan != null; // avoid unused warning
         postProcessSnapshot(snapshot, configurations);
+      }
+
+      try (ActiveSpan metadataSpan =
+          GlobalTracer.get().buildSpan("Compute and store completion metadata").startActive()) {
+        assert metadataSpan != null; // avoid unused warning
+        computeAndStoreCompletionMetadata(snapshot, configurations);
       }
       return answer;
     }
