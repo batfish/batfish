@@ -3,12 +3,16 @@ package org.batfish.common;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
 public class CompletionMetadataTest {
@@ -20,6 +24,10 @@ public class CompletionMetadataTest {
             .setFilterNames(ImmutableSet.of("filter"))
             .setInterfaces(ImmutableSet.of(NodeInterfacePair.of("node", "interface")))
             .setIps(ImmutableSet.of(Ip.parse("1.1.1.1")))
+            .setLocationInfo(
+                ImmutableMap.of(
+                    new InterfaceLocation("node", "interface"),
+                    new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE)))
             .setMlagIds(ImmutableSet.of("mlag"))
             .setNodes(ImmutableSet.of("node"))
             .setPrefixes(ImmutableSet.of("prefix"))
@@ -38,6 +46,10 @@ public class CompletionMetadataTest {
             .setFilterNames(ImmutableSet.of("filter"))
             .setInterfaces(ImmutableSet.of(NodeInterfacePair.of("node", "interface")))
             .setIps(ImmutableSet.of(Ip.parse("1.1.1.1")))
+            .setLocationInfo(
+                ImmutableMap.of(
+                    new InterfaceLocation("node", "interface"),
+                    new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE)))
             .setMlagIds(ImmutableSet.of("mlag"))
             .setNodes(ImmutableSet.of("node"))
             .setPrefixes(ImmutableSet.of("prefix"))
@@ -65,6 +77,13 @@ public class CompletionMetadataTest {
                 .setInterfaces(ImmutableSet.of(NodeInterfacePair.of("node", "interface")))
                 .build())
         .addEqualityGroup(builder.setIps(ImmutableSet.of(Ip.parse("1.1.1.1"))).build())
+        .addEqualityGroup(
+            builder
+                .setLocationInfo(
+                    ImmutableMap.of(
+                        new InterfaceLocation("node", "interface"),
+                        new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE)))
+                .build())
         .addEqualityGroup(builder.setMlagIds(ImmutableSet.of("mlag")).build())
         .addEqualityGroup(builder.setNodes(ImmutableSet.of("node")).build())
         .addEqualityGroup(builder.setPrefixes(ImmutableSet.of("prefix")).build())
