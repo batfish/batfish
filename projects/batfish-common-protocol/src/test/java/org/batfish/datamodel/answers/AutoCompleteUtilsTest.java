@@ -57,7 +57,6 @@ import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
@@ -75,7 +74,6 @@ import org.batfish.role.RoleMapping;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationInfo;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1295,20 +1293,12 @@ public class AutoCompleteUtilsTest {
         ImmutableMap.of(
             "n1", new NodeCompletionMetadata("human"), "n2", new NodeCompletionMetadata(null));
 
-    Map<Location, LocationInfo> locationInfo =
-        ImmutableMap.of(
-            // interface source
-            new InterfaceLocation("n1", "iface"),
-            new LocationInfo(true, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
-            // link source
-            new InterfaceLinkLocation("n2", "link"),
-            new LocationInfo(true, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
-            // non-source
-            new InterfaceLocation("n1", "foo"),
-            new LocationInfo(false, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE));
+    Set<Location> sourceLocations =
+        ImmutableSet.of(
+            new InterfaceLocation("n1", "iface"), new InterfaceLinkLocation("n2", "link"));
 
     CompletionMetadata metadata =
-        CompletionMetadata.builder().setNodes(nodes).setLocationInfo(locationInfo).build();
+        CompletionMetadata.builder().setNodes(nodes).setSourceLocations(sourceLocations).build();
 
     // list all sources
     {

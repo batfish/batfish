@@ -460,9 +460,8 @@ public final class FileBasedStorageTest {
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
             ImmutableMap.of(Ip.parse("1.1.1.1"), new IpCompletionMetadata()),
-            ImmutableMap.of(
-                new InterfaceLocation("node", "iface"),
-                new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE)),
+            ImmutableSet.of(
+                new InterfaceLocation("node", "iface")),
             ImmutableSet.of("mlag"),
             ImmutableMap.of("node", new NodeCompletionMetadata(null)),
             ImmutableSet.of("1.1.1.1/30"),
