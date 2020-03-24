@@ -2,10 +2,12 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.google.re2j.Pattern;
@@ -41,6 +43,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.ToSpecifierString;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
@@ -717,6 +720,27 @@ public final class AutoCompleteUtils {
                     completionMetadata,
                     nodeRolesData,
                     referenceLibrary);
+            break;
+          }
+        case SOURCE_LOCATION:
+          {
+            checkNotNull(
+                completionMetadata.getLocationInfo(),
+                "cannot autocomplete source locations without LocationInfo");
+            Map<String, Optional<String>> locationsAndHumanNames =
+                completionMetadata.getLocationInfo().entrySet().stream()
+                    .filter(entry -> entry.getValue().isSource())
+                    .map(Entry::getKey)
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            ToSpecifierString::toSpecifierString,
+                            location ->
+                                Optional.ofNullable(
+                                    completionMetadata
+                                        .getNodes()
+                                        .get(location.getNodeName())
+                                        .getHumanName())));
+            suggestions = stringAutoComplete(query, locationsAndHumanNames);
             break;
           }
         case STRUCTURE_NAME:
