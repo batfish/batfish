@@ -36,6 +36,7 @@ import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_I
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS;
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -53,8 +54,10 @@ import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
@@ -69,6 +72,10 @@ import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
 import org.batfish.role.RoleMapping;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1280,6 +1287,94 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(HTTP.toString(), HTTPS.toString(), SSH.toString())));
+  }
+
+  @Test
+  public void testSourceLocationAutocomplete() {
+    Map<String, NodeCompletionMetadata> nodes =
+        ImmutableMap.of(
+            "n1", new NodeCompletionMetadata("human"), "n2", new NodeCompletionMetadata(null));
+
+    Map<Location, LocationInfo> locationInfo =
+        ImmutableMap.of(
+            // interface source
+            new InterfaceLocation("n1", "iface"),
+            new LocationInfo(true, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
+            // link source
+            new InterfaceLinkLocation("n2", "link"),
+            new LocationInfo(true, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
+            // non-source
+            new InterfaceLocation("n1", "foo"),
+            new LocationInfo(false, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE));
+
+    CompletionMetadata metadata =
+        CompletionMetadata.builder().setNodes(nodes).setLocationInfo(locationInfo).build();
+
+    // list all sources
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network", "snapshot", Type.SOURCE_LOCATION, "", 5, metadata, null, null)
+              .stream()
+              .map(AutocompleteSuggestion::getText)
+              .collect(Collectors.toSet()),
+          equalTo(ImmutableSet.of("n1[iface]", "@enter(n2[link])")));
+    }
+
+    // can match on node
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network", "snapshot", Type.SOURCE_LOCATION, "n1", 5, metadata, null, null)
+              .stream()
+              .map(AutocompleteSuggestion::getText)
+              .collect(Collectors.toSet()),
+          equalTo(ImmutableSet.of("n1[iface]")));
+    }
+
+    // can match on interface
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network", "snapshot", Type.SOURCE_LOCATION, "iface", 5, metadata, null, null)
+              .stream()
+              .map(AutocompleteSuggestion::getText)
+              .collect(Collectors.toSet()),
+          equalTo(ImmutableSet.of("n1[iface]")));
+    }
+
+    // can match on @enter
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network", "snapshot", Type.SOURCE_LOCATION, "enter", 5, metadata, null, null)
+              .stream()
+              .map(AutocompleteSuggestion::getText)
+              .collect(Collectors.toSet()),
+          equalTo(ImmutableSet.of("@enter(n2[link])")));
+    }
+
+    // can match on human name
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network", "snapshot", Type.SOURCE_LOCATION, "human", 5, metadata, null, null)
+              .stream()
+              .map(AutocompleteSuggestion::getText)
+              .collect(Collectors.toSet()),
+          equalTo(ImmutableSet.of("n1[iface]")));
+    }
+
+    // description is human name
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network", "snapshot", Type.SOURCE_LOCATION, "", 5, metadata, null, null)
+              .stream()
+              .map(AutocompleteSuggestion::getDescription)
+              .collect(Collectors.toSet()),
+          containsInAnyOrder("human", null));
+    }
   }
 
   @Test
