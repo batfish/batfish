@@ -4,8 +4,10 @@ import static com.google.common.base.Functions.constant;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.function.Function.identity;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -20,6 +22,9 @@ import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
+import org.batfish.specifier.LocationInfoEntry;
 
 /** Grouping of various snapshot properties used for autocomplete */
 @ParametersAreNonnullByDefault
@@ -33,6 +38,8 @@ public final class CompletionMetadata implements Serializable {
     private Set<NodeInterfacePair> _interfaces;
 
     private Map<Ip, IpCompletionMetadata> _ips;
+
+    private Map<Location, LocationInfo> _locationInfo;
 
     private Set<String> _mlagIds;
 
@@ -52,19 +59,18 @@ public final class CompletionMetadata implements Serializable {
     private Builder() {}
 
     public @Nonnull CompletionMetadata build() {
-      return CompletionMetadata.create(
-          null,
-          null,
-          _filterNames,
-          _interfaces,
-          _ips,
-          _mlagIds,
-          _nodes,
-          _prefixes,
-          _routingPolicyNames,
-          _structureNames,
-          _vrfs,
-          _zones);
+      return new CompletionMetadata(
+          firstNonNull(_filterNames, ImmutableSet.of()),
+          firstNonNull(_interfaces, ImmutableSet.of()),
+          firstNonNull(_ips, ImmutableMap.of()),
+          firstNonNull(_locationInfo, ImmutableMap.of()),
+          firstNonNull(_mlagIds, ImmutableSet.of()),
+          firstNonNull(_nodes, ImmutableMap.of()),
+          firstNonNull(_prefixes, ImmutableSet.of()),
+          firstNonNull(_routingPolicyNames, ImmutableSet.of()),
+          firstNonNull(_structureNames, ImmutableSet.of()),
+          firstNonNull(_vrfs, ImmutableSet.of()),
+          firstNonNull(_zones, ImmutableSet.of()));
     }
 
     public @Nonnull Builder setFilterNames(Set<String> filterNames) {
@@ -86,6 +92,11 @@ public final class CompletionMetadata implements Serializable {
 
     public @Nonnull Builder setIps(Map<Ip, IpCompletionMetadata> ips) {
       _ips = ImmutableMap.copyOf(ips);
+      return this;
+    }
+
+    public @Nonnull Builder setLocationInfo(Map<Location, LocationInfo> locationInfo) {
+      _locationInfo = ImmutableMap.copyOf(locationInfo);
       return this;
     }
 
@@ -143,6 +154,7 @@ public final class CompletionMetadata implements Serializable {
   private static final String PROP_FILTER_NAMES = "filterNames";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_IPS = "ips";
+  private static final String PROP_LOCATION_INFO = "locationInfo";
   private static final String PROP_MLAG_IDS = "mlagIds";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PREFIXES = "prefixes";
@@ -156,6 +168,8 @@ public final class CompletionMetadata implements Serializable {
   private final Set<NodeInterfacePair> _interfaces;
 
   private final Map<Ip, IpCompletionMetadata> _ips;
+
+  private final Map<Location, LocationInfo> _locationInfo;
 
   private final Set<String> _mlagIds;
 
@@ -178,12 +192,13 @@ public final class CompletionMetadata implements Serializable {
   public static final CompletionMetadata EMPTY = builder().build();
 
   @JsonCreator
-  private static @Nonnull CompletionMetadata create(
+  private static @Nonnull CompletionMetadata jsonCreator(
       @Nullable @JsonProperty(PROP_ADDRESS_BOOKS) Set<String> addressBooks,
       @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) Set<String> addressGroups,
       @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
       @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
       @Nullable @JsonProperty(PROP_IPS) Map<Ip, IpCompletionMetadata> ips,
+      @Nullable @JsonProperty(PROP_LOCATION_INFO) Set<LocationInfoEntry> locationInfo,
       @Nullable @JsonProperty(PROP_MLAG_IDS) Set<String> mlagIds,
       @Nullable @JsonProperty(PROP_NODES) Map<String, NodeCompletionMetadata> nodes,
       @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
@@ -195,6 +210,10 @@ public final class CompletionMetadata implements Serializable {
         firstNonNull(filterNames, ImmutableSet.of()),
         firstNonNull(interfaces, ImmutableSet.of()),
         firstNonNull(ips, ImmutableMap.of()),
+        locationInfo == null
+            ? ImmutableMap.of()
+            : toImmutableMap(
+                locationInfo, LocationInfoEntry::getLocation, LocationInfoEntry::getLocationInfo),
         firstNonNull(mlagIds, ImmutableSet.of()),
         firstNonNull(nodes, ImmutableMap.of()),
         firstNonNull(prefixes, ImmutableSet.of()),
@@ -208,6 +227,7 @@ public final class CompletionMetadata implements Serializable {
       Set<String> filterNames,
       Set<NodeInterfacePair> interfaces,
       Map<Ip, IpCompletionMetadata> ips,
+      Map<Location, LocationInfo> locationInfo,
       Set<String> mlagIds,
       Map<String, NodeCompletionMetadata> nodes,
       Set<String> prefixes,
@@ -218,6 +238,7 @@ public final class CompletionMetadata implements Serializable {
     _filterNames = filterNames;
     _interfaces = interfaces;
     _ips = ips;
+    _locationInfo = locationInfo;
     _mlagIds = mlagIds;
     _nodes = nodes;
     _prefixes = prefixes;
@@ -243,6 +264,20 @@ public final class CompletionMetadata implements Serializable {
   @Nonnull
   public Map<Ip, IpCompletionMetadata> getIps() {
     return _ips;
+  }
+
+  @JsonProperty(PROP_LOCATION_INFO)
+  @Nonnull
+  private Set<LocationInfoEntry> getLocationInfoEntries() {
+    return _locationInfo.entrySet().stream()
+        .map(entry -> new LocationInfoEntry(entry.getKey(), entry.getValue()))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @JsonIgnore
+  @Nonnull
+  public Map<Location, LocationInfo> getLocationInfo() {
+    return _locationInfo;
   }
 
   /** Returns the full set of MLAG domain ids in the snapshot */
@@ -300,6 +335,7 @@ public final class CompletionMetadata implements Serializable {
     return _filterNames.equals(rhs._filterNames)
         && _interfaces.equals(rhs._interfaces)
         && _ips.equals(rhs._ips)
+        && _locationInfo.equals(rhs._locationInfo)
         && _mlagIds.equals(rhs._mlagIds)
         && _nodes.equals(rhs._nodes)
         && _prefixes.equals(rhs._prefixes)
@@ -315,6 +351,7 @@ public final class CompletionMetadata implements Serializable {
         _filterNames,
         _interfaces,
         _ips,
+        _locationInfo,
         _mlagIds,
         _nodes,
         _prefixes,
@@ -330,6 +367,7 @@ public final class CompletionMetadata implements Serializable {
         .add(PROP_FILTER_NAMES, _filterNames)
         .add(PROP_INTERFACES, _interfaces)
         .add(PROP_IPS, _ips)
+        .add(PROP_LOCATION_INFO, _locationInfo)
         .add(PROP_MLAG_IDS, _mlagIds)
         .add(PROP_NODES, _nodes)
         .add(PROP_PREFIXES, _prefixes)

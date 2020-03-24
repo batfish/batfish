@@ -2175,7 +2175,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
-          computeCompletionMetadata(configurations),
+          computeCompletionMetadata(snapshot, configurations),
           _settings.getContainer(),
           snapshot.getSnapshot());
     } catch (IOException e) {
@@ -2183,11 +2183,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+  private CompletionMetadata computeCompletionMetadata(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     return new CompletionMetadata(
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        getLocationInfo(snapshot),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
