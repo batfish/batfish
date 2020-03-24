@@ -40,6 +40,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -102,6 +103,7 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_VXLAN_TOPOLOGY = "vxlan_topology.json";
 
   // TODO: investigate different minimum numbers of lock stripes
+  // NOTE: every lock is reentrant according to spec
   private static final Striped<ReadWriteLock> LOCKS = lazyWeakReadWriteLock(1);
 
   private final BatfishLogger _logger;
@@ -221,8 +223,8 @@ public final class FileBasedStorage implements StorageProvider {
       return null;
     }
 
-    String fileText = readFileUnchecked(path.get());
     try {
+      String fileText = readFileToString(path.get(), UTF_8);
       return BatfishObjectMapper.mapper()
           .readValue(fileText, new TypeReference<SortedSet<NodeInterfacePair>>() {});
     } catch (IOException e) {
@@ -245,8 +247,8 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(path)) {
       return null;
     }
-    String fileText = readFileUnchecked(path);
     try {
+      String fileText = readFileToString(path, UTF_8);
       return BatfishObjectMapper.mapper()
           .readValue(fileText, new TypeReference<IspConfiguration>() {});
     } catch (IOException e) {
@@ -276,8 +278,8 @@ public final class FileBasedStorage implements StorageProvider {
       return null;
     }
 
-    String fileText = readFileUnchecked(path.get());
     try {
+      String fileText = readFileToString(path.get(), UTF_8);
       return BatfishObjectMapper.mapper()
           .readValue(fileText, new TypeReference<SortedSet<String>>() {});
     } catch (IOException e) {
@@ -309,8 +311,8 @@ public final class FileBasedStorage implements StorageProvider {
     }
 
     AtomicInteger counter = _newBatch.apply("Reading layer-1 topology", 1);
-    String topologyFileText = readFileUnchecked(path.get());
     try {
+      String topologyFileText = readFileToString(path.get(), UTF_8);
       return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);
     } catch (IOException e) {
       _logger.warnf(
@@ -343,13 +345,12 @@ public final class FileBasedStorage implements StorageProvider {
       return null;
     }
 
-    String majorIssueFileText = readFileUnchecked(path);
-
     try {
+      String majorIssueFileText = readFileToString(path, UTF_8);
       return BatfishObjectMapper.mapper().readValue(majorIssueFileText, MajorIssueConfig.class);
     } catch (IOException e) {
       _logger.errorf(
-          "ERROR: Could not cast file for major issue settings with ID %s in network %s to MajorIssueConfig: %s",
+          "ERROR: Could not cast read file for major issue settings with ID %s in network %s: %s",
           majorIssueType, network, Throwables.getStackTraceAsString(e));
       return null;
     }
@@ -365,7 +366,8 @@ public final class FileBasedStorage implements StorageProvider {
       Files.createDirectories(path.getParent());
     }
 
-    writeFileUnchecked(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
+    writeStringToFile(
+        path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig), UTF_8);
   }
 
   private @Nonnull Path getQuestionSettingsPath(
@@ -395,8 +397,8 @@ public final class FileBasedStorage implements StorageProvider {
     }
 
     AtomicInteger counter = _newBatch.apply("Reading runtime data", 1);
-    String runtimeDataFileText = readFileUnchecked(path.get());
     try {
+      String runtimeDataFileText = readFileToString(path.get(), UTF_8);
       return BatfishObjectMapper.mapper().readValue(runtimeDataFileText, SnapshotRuntimeData.class);
     } catch (IOException e) {
       _logger.warnf(
@@ -475,14 +477,15 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeAnswer(String answerStr, AnswerId answerId) {
+  public void storeAnswer(String answerStr, AnswerId answerId) throws IOException {
     Path answerPath = getAnswerPath(answerId);
     mkdirs(answerPath.getParent());
-    writeFileUnchecked(answerPath, answerStr);
+    writeStringToFile(answerPath, answerStr, UTF_8);
   }
 
   @Override
-  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) {
+  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId)
+      throws IOException {
     String metricsStr;
     try {
       metricsStr = BatfishObjectMapper.writeString(answerMetadata);
@@ -491,7 +494,7 @@ public final class FileBasedStorage implements StorageProvider {
     }
     Path answerMetadataPath = getAnswerMetadataPath(answerId);
     mkdirs(answerMetadataPath.getParent());
-    writeFileUnchecked(answerMetadataPath, metricsStr);
+    writeStringToFile(answerMetadataPath, metricsStr, UTF_8);
   }
 
   /**
@@ -585,8 +588,8 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nonnull String loadQuestion(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
-    return readFileUnchecked(getQuestionPath(network, question, analysis));
+      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) throws IOException {
+    return readFileToString(getQuestionPath(network, question, analysis), UTF_8);
   }
 
   @Override
@@ -632,10 +635,11 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
+      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+      throws IOException {
     Path questionPath = getQuestionPath(network, question, analysis);
     mkdirs(questionPath.getParent());
-    writeFileUnchecked(questionPath, questionStr);
+    writeStringToFile(questionPath, questionStr, UTF_8);
   }
 
   @Override
@@ -667,7 +671,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
     return Question.parseQuestion(loadQuestion(networkId, questionId, analysisId)).getName();
   }
 
@@ -1072,14 +1076,15 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nonnull BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(readFileUnchecked(getBgpTopologyPath(networkSnapshot)), BgpTopology.class);
+        .readValue(readFileToString(getBgpTopologyPath(networkSnapshot), UTF_8), BgpTopology.class);
   }
 
   @Override
   public @Nonnull EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(readFileUnchecked(getEigrpTopologyPath(networkSnapshot)), EigrpTopology.class);
+        .readValue(
+            readFileToString(getEigrpTopologyPath(networkSnapshot), UTF_8), EigrpTopology.class);
   }
 
   @Nonnull
@@ -1092,7 +1097,8 @@ public final class FileBasedStorage implements StorageProvider {
       return Optional.empty();
     }
     return Optional.ofNullable(
-        BatfishObjectMapper.mapper().readValue(readFileUnchecked(sl1tPath), Layer1Topology.class));
+        BatfishObjectMapper.mapper()
+            .readValue(readFileToString(sl1tPath, UTF_8), Layer1Topology.class));
   }
 
   @Override
@@ -1101,27 +1107,30 @@ public final class FileBasedStorage implements StorageProvider {
     return Optional.ofNullable(
         BatfishObjectMapper.mapper()
             .readValue(
-                readFileUnchecked(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class));
+                readFileToString(getLayer2TopologyPath(networkSnapshot), UTF_8),
+                Layer2Topology.class));
   }
 
   @Override
   public @Nonnull Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(readFileUnchecked(getLayer3TopologyPath(networkSnapshot)), Topology.class);
+        .readValue(readFileToString(getLayer3TopologyPath(networkSnapshot), UTF_8), Topology.class);
   }
 
   @Override
   public @Nonnull OspfTopology loadOspfTopology(NetworkSnapshot networkSnapshot)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(readFileUnchecked(getOspfTopologyPath(networkSnapshot)), OspfTopology.class);
+        .readValue(
+            readFileToString(getOspfTopologyPath(networkSnapshot), UTF_8), OspfTopology.class);
   }
 
   @Override
   public @Nonnull VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(readFileUnchecked(getVxlanTopologyPath(networkSnapshot)), VxlanTopology.class);
+        .readValue(
+            readFileToString(getVxlanTopologyPath(networkSnapshot), UTF_8), VxlanTopology.class);
   }
 
   @Override
@@ -1201,19 +1210,11 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private @Nonnull String readFileUnchecked(Path file) throws BatfishException {
-    Lock lock = LOCKS.get(file).readLock();
-    lock.lock();
-    try {
-      return CommonUtil.readFile(file);
-    } finally {
-      lock.unlock();
-    }
-  }
-
   private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
-    Lock lock = LOCKS.get(file).readLock();
-    lock.lock();
+    ReentrantReadWriteLock.ReadLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).readLock();
+    if (!lock.tryLock()) {
+      throw new FileNotFoundException(String.format("File: %s not available for reading"));
+    }
     try {
       return FileUtils.readFileToString(file.toFile(), charset);
     } finally {
@@ -1222,8 +1223,10 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
-    Lock lock = LOCKS.get(file).writeLock();
-    lock.lock();
+    ReentrantReadWriteLock.WriteLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).writeLock();
+    if (!lock.tryLock()) {
+      throw new IOException(String.format("File: %s not available for writing", file));
+    }
     try {
       FileUtils.write(file.toFile(), data, charset);
     } finally {
@@ -1231,19 +1234,11 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private void writeFileUnchecked(Path file, String data) throws BatfishException {
-    Lock lock = LOCKS.get(file).writeLock();
-    lock.lock();
-    try {
-      CommonUtil.writeFile(file, data);
-    } finally {
-      lock.unlock();
-    }
-  }
-
   private void writeStringToFile(Path file, String data, Charset charset) throws IOException {
-    Lock lock = LOCKS.get(file).writeLock();
-    lock.lock();
+    ReentrantReadWriteLock.WriteLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).writeLock();
+    if (!lock.tryLock()) {
+      throw new IOException(String.format("File: %s not available for writing", file));
+    }
     try {
       FileUtils.writeStringToFile(file.toFile(), data, charset);
     } finally {
