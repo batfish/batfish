@@ -8,7 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Used for json serialization of a Map<Location,LocationInfo>. */
+/** Used for json serialization of a {@code Map<Location,LocationInfo>}. */
 @ParametersAreNonnullByDefault
 public final class LocationInfoEntry {
   private static final String PROP_LOCATION = "location";
