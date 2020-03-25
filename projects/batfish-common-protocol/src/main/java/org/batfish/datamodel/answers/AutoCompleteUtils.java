@@ -728,8 +728,7 @@ public final class AutoCompleteUtils {
                 completionMetadata.getSourceLocations(),
                 "cannot autocomplete source locations without LocationInfo");
             Map<String, Optional<String>> locationsAndHumanNames =
-                completionMetadata.getSourceLocations()
-                    .stream()
+                completionMetadata.getSourceLocations().stream()
                     .collect(
                         ImmutableMap.toImmutableMap(
                             ToSpecifierString::toSpecifierString,
