@@ -13,6 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.testing.EqualsTester;
 import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -23,10 +24,23 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.junit.Test;
 
 public class LocationInfoUtilsTest {
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),
+            new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE))
+        .addEqualityGroup(new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE))
+        .addEqualityGroup(new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE))
+        .addEqualityGroup(new LocationInfo(true, EmptyIpSpace.INSTANCE, UniverseIpSpace.INSTANCE))
+        .testEquals();
+  }
+
   @Test
   public void testComputeLocationInfo_default() {
     NetworkFactory nf = new NetworkFactory();
