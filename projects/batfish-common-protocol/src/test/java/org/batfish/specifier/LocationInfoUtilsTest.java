@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.util.Map;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -40,14 +39,6 @@ public class LocationInfoUtilsTest {
         .addEqualityGroup(new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE))
         .addEqualityGroup(new LocationInfo(true, EmptyIpSpace.INSTANCE, UniverseIpSpace.INSTANCE))
         .testEquals();
-  }
-
-  @Test
-  public void testJsonSerialization() {
-    LocationInfo locationInfo =
-        new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
-    LocationInfo clone = BatfishObjectMapper.clone(locationInfo, LocationInfo.class);
-    assertEquals(locationInfo, clone);
   }
 
   @Test

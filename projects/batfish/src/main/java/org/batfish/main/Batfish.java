@@ -2188,7 +2188,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
-        getLocationInfo(snapshot),
+        getLocationInfo(snapshot).entrySet().stream()
+            .filter(entry -> entry.getValue().isSource())
+            .map(Entry::getKey)
+            .collect(ImmutableSet.toImmutableSet()),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
