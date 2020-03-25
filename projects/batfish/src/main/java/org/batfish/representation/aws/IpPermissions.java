@@ -466,6 +466,7 @@ public final class IpPermissions implements Serializable {
             new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement));
       }
     }
+    // See note about naming on SecurityGroup#getGroupName.
     return new OrMatchExpr(
         matchExprBuilder.build(),
         traceTextForAddress(
