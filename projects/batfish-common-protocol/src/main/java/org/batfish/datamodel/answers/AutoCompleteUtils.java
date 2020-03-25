@@ -725,12 +725,10 @@ public final class AutoCompleteUtils {
         case SOURCE_LOCATION:
           {
             checkNotNull(
-                completionMetadata.getLocationInfo(),
+                completionMetadata.getSourceLocations(),
                 "cannot autocomplete source locations without LocationInfo");
             Map<String, Optional<String>> locationsAndHumanNames =
-                completionMetadata.getLocationInfo().entrySet().stream()
-                    .filter(entry -> entry.getValue().isSource())
-                    .map(Entry::getKey)
+                completionMetadata.getSourceLocations().stream()
                     .collect(
                         ImmutableMap.toImmutableMap(
                             ToSpecifierString::toSpecifierString,

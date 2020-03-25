@@ -1,9 +1,5 @@
 package org.batfish.specifier;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -11,10 +7,6 @@ import org.batfish.datamodel.IpSpace;
 
 /** Information about whether/how to treat a location as a source or sink of traffic. */
 public final class LocationInfo implements Serializable {
-  private static final String PROP_IS_SOURCE = "isSource";
-  private static final String PROP_SOURCE_IPS = "sourceIps";
-  private static final String PROP_ARP_IPS = "arpIps";
-
   private final boolean _isSource;
   private final IpSpace _sourceIps;
   private final IpSpace _arpIps;
@@ -23,17 +15,6 @@ public final class LocationInfo implements Serializable {
     _isSource = isSource;
     _sourceIps = sourceIps;
     _arpIps = arpIps;
-  }
-
-  @JsonCreator
-  private static LocationInfo jsonCreator(
-      @Nullable @JsonProperty(PROP_IS_SOURCE) Boolean isSource,
-      @Nullable @JsonProperty(PROP_SOURCE_IPS) IpSpace sourceIps,
-      @Nullable @JsonProperty(PROP_ARP_IPS) IpSpace arpIps) {
-    checkNotNull(isSource, "%s cannot be null", isSource);
-    checkNotNull(sourceIps, "%s cannot be null", sourceIps);
-    checkNotNull(arpIps, "%s cannot be null", arpIps);
-    return new LocationInfo(isSource, sourceIps, arpIps);
   }
 
   @Override
@@ -63,7 +44,6 @@ public final class LocationInfo implements Serializable {
    * user wants to analyze end-to-end network behavior. However, they can still explicitly source
    * traffic from that location, which can be useful for debugging in some cases.
    */
-  @JsonProperty(PROP_IS_SOURCE)
   public boolean isSource() {
     return _isSource;
   }
@@ -74,7 +54,6 @@ public final class LocationInfo implements Serializable {
    * parameters. For non-sources, these IPs will be used when the user explicitly specifies to use
    * the location as a source but does not explicitly specify the source IPs to use.
    */
-  @JsonProperty(PROP_SOURCE_IPS)
   public IpSpace getSourceIps() {
     return _sourceIps;
   }
@@ -85,7 +64,6 @@ public final class LocationInfo implements Serializable {
    * as if ARP resolution indicates the presence of a device listening on that address at that
    * location, without modeling the device itself.
    */
-  @JsonProperty(PROP_ARP_IPS)
   public IpSpace getArpIps() {
     return _arpIps;
   }

@@ -49,7 +49,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
@@ -63,7 +62,6 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
-import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -460,9 +458,7 @@ public final class FileBasedStorageTest {
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
             ImmutableMap.of(Ip.parse("1.1.1.1"), new IpCompletionMetadata()),
-            ImmutableMap.of(
-                new InterfaceLocation("node", "iface"),
-                new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE)),
+            ImmutableSet.of(new InterfaceLocation("node", "iface")),
             ImmutableSet.of("mlag"),
             ImmutableMap.of("node", new NodeCompletionMetadata(null)),
             ImmutableSet.of("1.1.1.1/30"),
