@@ -119,6 +119,11 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   @Nullable
+  public String getName() {
+    return _tags.getOrDefault(TAG_NAME, null);
+  }
+
+  @Nullable
   public String getDescription() {
     return _description;
   }

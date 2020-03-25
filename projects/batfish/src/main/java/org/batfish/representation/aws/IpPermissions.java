@@ -469,7 +469,9 @@ public final class IpPermissions implements Serializable {
     return new OrMatchExpr(
         matchExprBuilder.build(),
         traceTextForAddress(
-            ingress ? "source" : "destination", sg.getGroupName(), AddressType.SECURITY_GROUP));
+            ingress ? "source" : "destination",
+            firstNonNull(sg.getName(), sg.getId()),
+            AddressType.SECURITY_GROUP));
   }
 
   private ExprAclLine createAclLineForSg(

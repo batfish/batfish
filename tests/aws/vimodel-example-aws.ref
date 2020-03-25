@@ -13806,13 +13806,13 @@
               },
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default",
+                "aclName" : "~EGRESS~SECURITY-GROUP~sg-3dfb3140~",
+                "name" : "Security Group sg-3dfb3140",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
+                      "text" : "Matched security group sg-3dfb3140"
                     }
                   ]
                 }
@@ -13851,13 +13851,13 @@
               },
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default",
+                "aclName" : "~EGRESS~SECURITY-GROUP~sg-3dfb3140~",
+                "name" : "Security Group sg-3dfb3140",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
+                      "text" : "Matched security group sg-3dfb3140"
                     }
                   ]
                 }
@@ -13865,7 +13865,7 @@
             ],
             "name" : "~EGRESS_ACL~es-domain-subnet-7044ff16"
           },
-          "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
+          "~EGRESS~SECURITY-GROUP~sg-3dfb3140~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -13898,9 +13898,9 @@
                 }
               }
             ],
-            "name" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
+            "name" : "~EGRESS~SECURITY-GROUP~sg-3dfb3140~"
           },
-          "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
+          "~INGRESS~SECURITY-GROUP~sg-3dfb3140~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -13931,7 +13931,7 @@
                     "fragments" : [
                       {
                         "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Matched source address Security Group default"
+                        "text" : "Matched source address Security Group Default+RDS-sg"
                       }
                     ]
                   }
@@ -13947,19 +13947,19 @@
                 }
               }
             ],
-            "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
+            "name" : "~INGRESS~SECURITY-GROUP~sg-3dfb3140~"
           },
           "~SECURITY_GROUP_INGRESS_ACL~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default",
+                "aclName" : "~INGRESS~SECURITY-GROUP~sg-3dfb3140~",
+                "name" : "Security Group sg-3dfb3140",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
+                      "text" : "Matched security group sg-3dfb3140"
                     }
                   ]
                 }
@@ -18547,13 +18547,13 @@
               },
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-55510831~",
-                "name" : "Security Group default",
+                "aclName" : "~EGRESS~SECURITY-GROUP~Default+RDS-sg~sg-55510831~",
+                "name" : "Security Group Default+RDS-sg",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
+                      "text" : "Matched security group Default+RDS-sg"
                     }
                   ]
                 }
@@ -18561,7 +18561,7 @@
             ],
             "name" : "~EGRESS_ACL~test-rds-subnet-1641fa70"
           },
-          "~EGRESS~SECURITY-GROUP~default~sg-55510831~" : {
+          "~EGRESS~SECURITY-GROUP~Default+RDS-sg~sg-55510831~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18594,9 +18594,9 @@
                 }
               }
             ],
-            "name" : "~EGRESS~SECURITY-GROUP~default~sg-55510831~"
+            "name" : "~EGRESS~SECURITY-GROUP~Default+RDS-sg~sg-55510831~"
           },
-          "~INGRESS~SECURITY-GROUP~default~sg-55510831~" : {
+          "~INGRESS~SECURITY-GROUP~Default+RDS-sg~sg-55510831~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
@@ -18949,19 +18949,19 @@
                 }
               }
             ],
-            "name" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~"
+            "name" : "~INGRESS~SECURITY-GROUP~Default+RDS-sg~sg-55510831~"
           },
           "~SECURITY_GROUP_INGRESS_ACL~" : {
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~",
-                "name" : "Security Group default",
+                "aclName" : "~INGRESS~SECURITY-GROUP~Default+RDS-sg~sg-55510831~",
+                "name" : "Security Group Default+RDS-sg",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
+                      "text" : "Matched security group Default+RDS-sg"
                     }
                   ]
                 }

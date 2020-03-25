@@ -788,9 +788,12 @@ public final class Region implements Serializable {
                     .map(
                         acl ->
                             new AclAclLine(
-                                String.format("Security Group %s", securityGroup.getGroupName()),
+                                String.format(
+                                    "Security Group %s",
+                                    firstNonNull(securityGroup.getName(), securityGroup.getId())),
                                 acl.getName(),
-                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
+                                getTraceElementForSecurityGroup(
+                                    firstNonNull(securityGroup.getName(), securityGroup.getId()))))
                     .orElse(null))
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
@@ -854,11 +857,14 @@ public final class Region implements Serializable {
     if (aclLines.isEmpty()) {
       return null;
     }
+    String direction = ingress ? INGRESS : EGRESS;
     return IpAccessList.builder()
         .setName(
-            String.format(
-                "~%s~SECURITY-GROUP~%s~%s~",
-                ingress ? INGRESS : EGRESS, securityGroup.getGroupName(), securityGroup.getId()))
+            securityGroup.getName() == null
+                ? String.format("~%s~SECURITY-GROUP~%s~", direction, securityGroup.getId())
+                : String.format(
+                    "~%s~SECURITY-GROUP~%s~%s~",
+                    direction, securityGroup.getName(), securityGroup.getId()))
         .setLines(aclLines)
         .setOwner(owner)
         .build();
