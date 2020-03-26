@@ -9,10 +9,12 @@ import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getSourceLocationsWithSrcIps;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.CompletionMetadataUtils.interfaceDisplayString;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +27,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
@@ -34,6 +37,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -48,6 +52,7 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -56,6 +61,9 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
 public final class CompletionMetadataUtilsTest {
@@ -553,5 +561,25 @@ public final class CompletionMetadataUtilsTest {
     configs.put("config1", config);
 
     assertThat(getZones(configs), equalTo(ImmutableSet.of(zone1, zone2)));
+  }
+
+  @Test
+  public void testGetSourceLocationsWithSourceIps() {
+    // included
+    Location loc1 = new InterfaceLocation("n1", "i1");
+    LocationInfo info1 = new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
+
+    // excluded: not a source
+    Location loc2 = new InterfaceLocation("n2", "i2");
+    LocationInfo info2 =
+        new LocationInfo(false, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
+
+    // excluded: no source IP
+    Location loc3 = new InterfaceLocation("n3", "i3");
+    LocationInfo info3 = new LocationInfo(true, EmptyIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
+
+    Set<Location> sourcesWithSourceIps =
+        getSourceLocationsWithSrcIps(ImmutableMap.of(loc1, info1, loc2, info2, loc3, info3));
+    assertThat(sourcesWithSourceIps, contains(loc1));
   }
 }
