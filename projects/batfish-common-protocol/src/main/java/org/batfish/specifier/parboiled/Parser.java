@@ -43,7 +43,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
-import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_INTERNET;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_NAME;
@@ -1055,7 +1054,6 @@ public class Parser extends CommonParser {
         LocationParens());
   }
 
-  @Anchor(LOCATION_INTERNET)
   public Rule LocationInternet() {
     return Sequence(
         IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME), push(InternetLocationAstNode.INSTANCE));

@@ -5,16 +5,20 @@ import static org.batfish.specifier.parboiled.InternetLocationAstNode.INTERNET_L
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.InterfaceSpecifierInterfaceLocationSpecifier;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.NameNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierInterfaceLocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
@@ -73,7 +77,22 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
 
     @Override
     public Set<Location> visitInternetLocationAstNode() {
-      return ImmutableSet.of(INTERNET_LOCATION);
+      Map<String, Configuration> configs = _ctxt.getConfigs();
+      Configuration internetConfig = configs.get(INTERNET_LOCATION.getNodeName());
+      if (internetConfig == null) {
+        // no device with hostname "internet" exists
+        return ImmutableSet.of();
+      }
+      if (internetConfig.getDeviceModel() == DeviceModel.BATFISH_INTERNET) {
+        assert internetConfig.getAllInterfaces().containsKey(INTERNET_LOCATION.getInterfaceName());
+        return ImmutableSet.of(INTERNET_LOCATION);
+      }
+      // a device with hostname "internet" exists, but it's not batfish's internet device.
+      // Interpret the way a hostname is usually interpreted as a location specifier: resolve to all
+      // the interface locations on the device.
+      return new NodeSpecifierInterfaceLocationSpecifier(
+              new NameNodeSpecifier(INTERNET_LOCATION.getNodeName()))
+          .resolve(_ctxt);
     }
 
     @Nonnull

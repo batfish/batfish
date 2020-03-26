@@ -14,7 +14,8 @@ public final class ToSpecifierString implements LocationVisitor<String> {
 
   @Override
   public String visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
-    // special-case for traffic originating from the internet
+    // special-case for traffic originating from the internet.
+    // TODO check the device type to be completely consistent with the location specifier
     if (interfaceLinkLocation.getNodeName().equals(IspModelingUtils.INTERNET_HOST_NAME)
         && interfaceLinkLocation
             .getInterfaceName()
