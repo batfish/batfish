@@ -1,7 +1,9 @@
 package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.specifier.parboiled.InternetLocationAstNode.INTERNET_LOCATION;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Objects;
 import java.util.Set;
@@ -67,6 +69,11 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
       return new IntersectionLocationSpecifier(
               new NodeSpecifierInterfaceLocationSpecifier(nodes), interfaceLocations)
           .resolve(_ctxt);
+    }
+
+    @Override
+    public Set<Location> visitInternetLocationAstNode() {
+      return ImmutableSet.of(INTERNET_LOCATION);
     }
 
     @Nonnull

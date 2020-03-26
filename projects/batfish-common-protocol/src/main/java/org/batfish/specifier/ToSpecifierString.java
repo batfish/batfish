@@ -1,5 +1,7 @@
 package org.batfish.specifier;
 
+import org.batfish.common.util.IspModelingUtils;
+
 /** Converts a {@link Location} to its specifier string */
 public final class ToSpecifierString implements LocationVisitor<String> {
   private static final ToSpecifierString INSTANCE = new ToSpecifierString();
@@ -12,6 +14,13 @@ public final class ToSpecifierString implements LocationVisitor<String> {
 
   @Override
   public String visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+    // special-case for traffic originating from the internet
+    if (interfaceLinkLocation.getNodeName().equals(IspModelingUtils.INTERNET_HOST_NAME)
+        && interfaceLinkLocation
+            .getInterfaceName()
+            .equals(IspModelingUtils.INTERNET_OUT_INTERFACE)) {
+      return IspModelingUtils.INTERNET_HOST_NAME;
+    }
     return String.format(
         "@enter(%s[%s])",
         interfaceLinkLocation.getNodeName(), interfaceLinkLocation.getInterfaceName());

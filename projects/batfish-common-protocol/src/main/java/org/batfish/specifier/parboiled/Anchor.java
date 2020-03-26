@@ -163,6 +163,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "Packets entering interface",
         "locationInterface)",
         SuggestionType.FUNCTION),
+    LOCATION_INTERNET("LOCATION_INTERNET", "The Internet", null, SuggestionType.NAME_LITERAL),
     /** For a rule that denotes locationSpec can be parenthetical */
     LOCATION_PARENS(
         "LOCATION_PARENS", "Location specifier", "locationSpec)", SuggestionType.OPEN_PARENS),

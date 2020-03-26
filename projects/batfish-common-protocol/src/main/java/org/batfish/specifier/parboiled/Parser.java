@@ -43,6 +43,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_INTERNET;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NAME_SET_NAME;
@@ -76,6 +77,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
 import org.parboiled.Parboiled;
@@ -1045,11 +1047,18 @@ public class Parser extends CommonParser {
 
   public Rule LocationTerm() {
     return FirstOf(
+        LocationInternet(),
         LocationEnterDeprecated(),
         LocationEnter(),
         LocationInterfaceDeprecated(),
         LocationInterface(),
         LocationParens());
+  }
+
+  @Anchor(LOCATION_INTERNET)
+  public Rule LocationInternet() {
+    return Sequence(
+        IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME), push(InternetLocationAstNode.INSTANCE));
   }
 
   @Anchor(LOCATION_ENTER)
