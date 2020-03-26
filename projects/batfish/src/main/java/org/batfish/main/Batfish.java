@@ -120,6 +120,7 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CompletionMetadataUtils;
 import org.batfish.common.util.IspModelingUtils;
 import org.batfish.common.util.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
@@ -2188,10 +2189,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
-        getLocationInfo(snapshot).entrySet().stream()
-            .filter(entry -> entry.getValue().isSource())
-            .map(Entry::getKey)
-            .collect(ImmutableSet.toImmutableSet()),
+        CompletionMetadataUtils.getSourceLocationsWithSrcIps(getLocationInfo(snapshot)),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
