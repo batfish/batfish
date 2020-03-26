@@ -96,6 +96,11 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
      */
     FILTER_SET_OP("FILTER_SET_OP", " of filters", "filterSpec", SuggestionType.SET_OPERATOR),
+    /**
+     * Rules tagged as HIDDEN and their children will not be used for autocompletion. The behavior
+     * is similar to DEPRECATED rules, but HIDDEN rules are still supported.
+     */
+    HIDDEN("HIDDEN", null, null, SuggestionType.UNKNOWN),
     /** Rules tagged as IGNORE and their children will not be used for autocompletion */
     IGNORE("IGNORE", null, null, SuggestionType.UNKNOWN),
     /** connectedTo() function for interfaces */

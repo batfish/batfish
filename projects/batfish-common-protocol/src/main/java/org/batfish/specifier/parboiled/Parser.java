@@ -22,6 +22,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.HIDDEN;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
@@ -1054,6 +1055,7 @@ public class Parser extends CommonParser {
         LocationParens());
   }
 
+  @Anchor(HIDDEN)
   public Rule LocationInternet() {
     return Sequence(
         IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME), push(InternetLocationAstNode.INSTANCE));
