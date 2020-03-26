@@ -173,7 +173,7 @@ public interface StorageProvider {
    * @param question The name of the question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
-   * @throws IOException if there is an error
+   * @throws IOException if there is some other error
    */
   @Nonnull
   String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis)

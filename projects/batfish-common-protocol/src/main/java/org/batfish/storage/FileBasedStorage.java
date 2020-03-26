@@ -1213,7 +1213,7 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
     ReentrantReadWriteLock.ReadLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).readLock();
     if (!lock.tryLock()) {
-      throw new FileNotFoundException(String.format("File: %s not available for reading"));
+      throw new FileNotFoundException(String.format("File: %s not available for reading", file));
     }
     try {
       return FileUtils.readFileToString(file.toFile(), charset);
