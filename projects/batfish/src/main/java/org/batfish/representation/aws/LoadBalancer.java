@@ -93,8 +93,8 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   /** Name for the filter that permits only packets that will match a listener */
   static final String LISTENER_FILTER_NAME = "~LISTENER~FILTER~";
 
-  /** Name for the filter that drops all packets that are not transformed */
-  static final String UNTRANSFORMED_PACKETS_FILTER_NAME = "~UNTRANSFORMED~PACKET~FILTER~";
+  /** Name for the filter that drops all packets that the load balancer could not forward */
+  static final String FORWARDED_PACKETS_FILTER_NAME = "~FORWARDED~PACKET~FILTER~";
 
   /** We end the transformation chain with this */
   static final Transformation FINAL_TRANSFORMATION = null;
@@ -290,7 +290,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
         warnings);
 
     IpAccessList defaultFilter =
-        computeUntransformedFilter(networkInterface.get().getPrivateIpAddresses());
+        computeNotForwardedFilter(networkInterface.get().getPrivateIpAddresses());
     viIface.setPostTransformationIncomingFilter(defaultFilter);
     cfgNode.getIpAccessLists().put(defaultFilter.getName(), defaultFilter);
 
@@ -562,19 +562,20 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   /**
    * The computed filter rejects all packets that match the network interface's addresses. The idea
    * is that all packets addressed to the load balancer (whose interface is provided as an argument)
-   * are dropped if they were not transformed. We are relying on the fact that all transformed
-   * packets have an IP address different from that of the load balancer.
+   * are dropped if they were not transformed and thus not forwarded. We are relying on the fact
+   * that all successfully transformed packets have an IP address different from that of the load
+   * balancer.
    */
   @VisibleForTesting
-  static IpAccessList computeUntransformedFilter(
+  static IpAccessList computeNotForwardedFilter(
       List<PrivateIpAddress> loadBalancerInterfaceAddresses) {
     return IpAccessList.builder()
-        .setName(UNTRANSFORMED_PACKETS_FILTER_NAME)
+        .setName(FORWARDED_PACKETS_FILTER_NAME)
         .setLines(
             ExprAclLine.builder()
                 // since we have a filter that permits only packets for valid listeners, all
                 // untransformed packets are those for which we didn't find a valid target
-                .setTraceElement(getTraceElementForUntransformedPackets())
+                .setTraceElement(getTraceElementForNotForwardedPackets())
                 .setMatchCondition(
                     new MatchHeaderSpace(
                         HeaderSpace.builder()
@@ -584,24 +585,24 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
                                     .collect(ImmutableList.toImmutableList()))
                             .build()))
                 .setAction(LineAction.DENY)
-                .setName("Deny untransformed packets")
+                .setName("Deny packets without a valid target")
                 .build(),
             ExprAclLine.builder()
-                .setTraceElement(getTraceElementForTransformedPackets())
+                .setTraceElement(getTraceElementForForwardedPackets())
                 .setMatchCondition(TrueExpr.INSTANCE)
                 .setAction(LineAction.PERMIT)
-                .setName("Default permit")
+                .setName("Permit packets with valid targets")
                 .build())
         .build();
   }
 
   @VisibleForTesting
-  static TraceElement getTraceElementForTransformedPackets() {
+  static TraceElement getTraceElementForForwardedPackets() {
     return TraceElement.of("Forwarded to a target");
   }
 
   @VisibleForTesting
-  static TraceElement getTraceElementForUntransformedPackets() {
+  static TraceElement getTraceElementForNotForwardedPackets() {
     return TraceElement.of("No valid (healthy, within availability zone) target found");
   }
 
