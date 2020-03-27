@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.autoCompleteSourceLocation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -172,6 +173,12 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case SOURCE_LOCATION:
+        Validity validity = autoCompleteSourceLocation(query, completionMetadata).stream()
+            .anyMatch(suggestion -> suggestion.getText().equals(query))
+            ? Validity.VALID
+            : Validity.INVALID;
+        return new InputValidationNotes(validity,ImmutableList.of());
       case VXLAN_VNI_PROPERTY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
