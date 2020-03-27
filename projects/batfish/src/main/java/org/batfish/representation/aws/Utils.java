@@ -541,14 +541,14 @@ final class Utils {
     return TraceElement.of(String.format("Matched instance %s", instanceName));
   }
 
-  static TraceElement traceElementForIcmp(int type, int code) {
+  static TraceElement traceElementForIcmpType(int type) {
     assert type != -1;
-    TraceElement.Builder treBuilder =
-        TraceElement.builder().add(String.format("Matched ICMP type %s", type));
-    if (code != -1) {
-      treBuilder.add(String.format("Matched ICMP code %s", code));
-    }
-    return treBuilder.build();
+    return TraceElement.of(String.format("Matched ICMP type %s", type));
+  }
+
+  static TraceElement traceElementForIcmpCode(int code) {
+    assert code != -1;
+    return TraceElement.of(String.format("Matched ICMP code %s", code));
   }
 
   private Utils() {}
