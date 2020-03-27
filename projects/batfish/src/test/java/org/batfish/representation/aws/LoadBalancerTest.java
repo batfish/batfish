@@ -5,11 +5,13 @@ import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
+import static org.batfish.representation.aws.LoadBalancer.LISTENER_FILTER_NAME;
 import static org.batfish.representation.aws.LoadBalancer.LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX;
 import static org.batfish.representation.aws.LoadBalancer.chainListenerTransformations;
-import static org.batfish.representation.aws.LoadBalancer.computeDefaultFilter;
+import static org.batfish.representation.aws.LoadBalancer.computeListenerFilter;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetTransformationStep;
+import static org.batfish.representation.aws.LoadBalancer.computeUntransformedFilter;
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
 import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
@@ -213,11 +215,12 @@ public class LoadBalancerTest {
         viIface.getConcreteAddress(),
         equalTo(ConcreteInterfaceAddress.create(_loadBalancerIp, 24)));
 
+    assertThat(viIface.getIncomingFilter().getName(), equalTo(LISTENER_FILTER_NAME));
     assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getPostTransformationIncomingFilter(),
         equalTo(
-            computeDefaultFilter(
+            computeUntransformedFilter(
                 ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, null)))));
 
     assertThat(
@@ -260,24 +263,21 @@ public class LoadBalancerTest {
             new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
             new TargetHealth(HealthState.HEALTHY));
 
-    LoadBalancerListener loadBalancerListener =
-        new LoadBalancerListener(
-            _loadBalancerArn,
-            ImmutableList.of(
-                new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80),
-                new Listener("listener2Arn", ImmutableList.of(action), Protocol.TCP, 82)));
+    List<Listener> listeners =
+        ImmutableList.of(
+            new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80),
+            new Listener("listener2Arn", ImmutableList.of(action), Protocol.TCP, 82));
 
     Region region =
         Region.builder("r1")
-            .setLoadBalancerListeners(
-                ImmutableMap.of(loadBalancerListener.getId(), loadBalancerListener))
             .setTargetGroups(ImmutableMap.of(targetGroup.getId(), targetGroup))
             .setLoadBalancerTargetHealths(
                 ImmutableMap.of(
                     "tgArn", new LoadBalancerTargetHealth("tgArn", ImmutableList.of(target))))
             .build();
 
-    _loadBalancer.installTransformations(viIface, "zone1", true, region, new Warnings());
+    _loadBalancer.installTransformations(viIface, "zone1", true, listeners, region, new Warnings());
+
     assertThat(
         viIface.getIncomingTransformation(),
         equalTo(
@@ -285,7 +285,7 @@ public class LoadBalancerTest {
                 ImmutableList.of(
                     Objects.requireNonNull(
                         _loadBalancer.computeListenerTransformation(
-                            loadBalancerListener.getListeners().get(0),
+                            listeners.get(0),
                             "zone1",
                             _loadBalancerIp,
                             true,
@@ -293,7 +293,7 @@ public class LoadBalancerTest {
                             new Warnings())),
                     Objects.requireNonNull(
                         _loadBalancer.computeListenerTransformation(
-                            loadBalancerListener.getListeners().get(1),
+                            listeners.get(1),
                             "zone1",
                             _loadBalancerIp,
                             true,
@@ -310,7 +310,8 @@ public class LoadBalancerTest {
   public void testInstallTransformation_noListener() {
     Interface viIface = Interface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
-    _loadBalancer.installTransformations(viIface, "zone1", true, region, new Warnings());
+    _loadBalancer.installTransformations(
+        viIface, "zone1", true, ImmutableList.of(), region, new Warnings());
     assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getFirewallSessionInterfaceInfo(),
@@ -688,10 +689,59 @@ public class LoadBalancerTest {
   }
 
   @Test
+  public void testComputeListenerFilter() {
+    DefaultAction action = new DefaultAction(1, "tgArn", ActionType.FORWARD);
+    List<Listener> listeners =
+        ImmutableList.of(new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80));
+
+    IpAccessList ipAccessList = computeListenerFilter(listeners);
+
+    // TCP tp port 80 -- allowed
+    assertThat(
+        ipAccessList
+            .filter(getTcpFlow(Ip.parse("1.1.1.1")), null, ImmutableMap.of(), ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.PERMIT));
+
+    // TCP to port 81 -- dropped
+    assertThat(
+        ipAccessList
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setSrcPort(89)
+                    .setDstPort(81)
+                    .setIpProtocol(IpProtocol.TCP)
+                    .build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // UDP to port 80 -- dropped
+    assertThat(
+        ipAccessList
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setSrcPort(89)
+                    .setDstPort(80)
+                    .setIpProtocol(IpProtocol.UDP)
+                    .build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+  }
+
+  @Test
   public void testComputeDefaultFilter() {
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
     IpAccessList ipAccessList =
-        computeDefaultFilter(ImmutableList.of(new PrivateIpAddress(true, loadBalancerIp, null)));
+        computeUntransformedFilter(
+            ImmutableList.of(new PrivateIpAddress(true, loadBalancerIp, null)));
 
     // not transformed
     assertThat(

@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
@@ -40,6 +41,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.transformation.ApplyAll;
@@ -48,6 +50,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
 import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
+import org.batfish.representation.aws.LoadBalancerListener.Listener;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
 
@@ -81,13 +84,16 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   /** Regex for load balancer ARN. Used to find the interface in {@link #findMyInterface}. */
   static final Pattern LOAD_BALANCER_ARN_PATTERN =
-      Pattern.compile("^arn:aws:elasticloadbalancing:[^:]+:[0-9]+:loadbalancer\\/(.+)$");
+      Pattern.compile("^arn:aws:elasticloadbalancing:[^:]+:[0-9]+:loadbalancer/(.+)$");
 
   /** The prefix is that used for interfaces that belong to load balancer */
   static final String LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX = "ELB ";
 
+  /** Name for the filter that permits only packets that will match a listener */
+  static final String LISTENER_FILTER_NAME = "~LISTENER~FILTER~";
+
   /** Name for the filter that drops all packets that are not transformed */
-  static final String DEFAULT_FILTER_NAME = "~DENY~UNMATCHED~PACKETS~";
+  static final String UNTRANSFORMED_PACKETS_FILTER_NAME = "~UNTRANSFORMED~PACKET~FILTER~";
 
   /** We end the transformation chain with this */
   static final Transformation FINAL_TRANSFORMATION = null;
@@ -261,11 +267,29 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     boolean crossZoneLoadBalancing =
         loadBalancerAttributes != null && loadBalancerAttributes.getCrossZoneLoadBalancing();
 
+    List<Listener> listeners;
+    if (region.getLoadBalancerListeners().containsKey(_arn)) {
+      listeners = region.getLoadBalancerListeners().get(_arn).getListeners();
+    } else {
+      warnings.redFlag(
+          String.format("Listeners not found for load balancer %s (%s).", _name, _arn));
+      listeners = ImmutableList.of();
+    }
+
+    IpAccessList incomingFilter = computeListenerFilter(listeners);
+    viIface.setIncomingFilter(incomingFilter);
+    cfgNode.getIpAccessLists().put(incomingFilter.getName(), incomingFilter);
+
     installTransformations(
-        viIface, availabilityZone.getZoneName(), crossZoneLoadBalancing, region, warnings);
+        viIface,
+        availabilityZone.getZoneName(),
+        crossZoneLoadBalancing,
+        listeners,
+        region,
+        warnings);
 
     IpAccessList defaultFilter =
-        computeDefaultFilter(networkInterface.get().getPrivateIpAddresses());
+        computeUntransformedFilter(networkInterface.get().getPrivateIpAddresses());
     viIface.setPostTransformationIncomingFilter(defaultFilter);
     cfgNode.getIpAccessLists().put(defaultFilter.getName(), defaultFilter);
 
@@ -287,29 +311,22 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       Interface viIface,
       String lbAvailabilityZoneName,
       boolean crossZoneLoadBalancing,
+      List<Listener> listeners,
       Region region,
       Warnings warnings) {
-    List<LoadBalancerTransformation> listenerTransformations;
-    LoadBalancerListener loadBalancerListener = region.getLoadBalancerListeners().get(_arn);
-    if (loadBalancerListener == null) {
-      warnings.redFlag(
-          String.format("Listeners not found for load balancer %s (%s).", _name, _arn));
-      listenerTransformations = ImmutableList.of();
-    } else {
-      listenerTransformations =
-          loadBalancerListener.getListeners().stream()
-              .map(
-                  listener ->
-                      computeListenerTransformation(
-                          listener,
-                          lbAvailabilityZoneName,
-                          viIface.getConcreteAddress().getIp(),
-                          crossZoneLoadBalancing,
-                          region,
-                          warnings))
-              .filter(Objects::nonNull)
-              .collect(ImmutableList.toImmutableList());
-    }
+    List<LoadBalancerTransformation> listenerTransformations =
+        listeners.stream()
+            .map(
+                listener ->
+                    computeListenerTransformation(
+                        listener,
+                        lbAvailabilityZoneName,
+                        viIface.getConcreteAddress().getIp(),
+                        crossZoneLoadBalancing,
+                        region,
+                        warnings))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
 
     viIface.setIncomingTransformation(chainListenerTransformations(listenerTransformations));
     viIface.setFirewallSessionInterfaceInfo(
@@ -494,18 +511,53 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
+   * Returns a filter that permits packets for listeners with a forwarding action and denies all
+   * packets that do not match a listener or match a non-forwarding listener
+   */
+  @VisibleForTesting
+  static IpAccessList computeListenerFilter(List<Listener> listeners) {
+    List<AclLine> aclLines =
+        listeners.stream()
+            // consider only listeners with a forwarding action
+            .filter(
+                listener ->
+                    listener.getDefaultActions().stream()
+                        .anyMatch(action -> action.getType() == ActionType.FORWARD))
+            .map(
+                listener ->
+                    ExprAclLine.accepting(
+                        TraceElement.of("Matched listener " + listener.getId()),
+                        new MatchHeaderSpace(listener.getMatchingHeaderSpace())))
+            .collect(ImmutableList.toImmutableList());
+    return IpAccessList.builder()
+        .setName(LISTENER_FILTER_NAME)
+        .setLines(
+            new ImmutableList.Builder<AclLine>()
+                .addAll(aclLines)
+                .add(
+                    ExprAclLine.rejecting(
+                        TraceElement.of("Did not match any forwarding listeners"),
+                        TrueExpr.INSTANCE))
+                .build())
+        .build();
+  }
+
+  /**
    * The computed filter rejects all packets that match the network interface's addresses. The idea
    * is that all packets addressed to the load balancer (whose interface is provided as an argument)
    * are dropped if they were not transformed. We are relying on the fact that all transformed
    * packets have an IP address different from that of the load balancer.
    */
   @VisibleForTesting
-  static IpAccessList computeDefaultFilter(List<PrivateIpAddress> loadBalancerInterfaceAddresses) {
+  static IpAccessList computeUntransformedFilter(
+      List<PrivateIpAddress> loadBalancerInterfaceAddresses) {
     return IpAccessList.builder()
-        .setName(DEFAULT_FILTER_NAME)
+        .setName(UNTRANSFORMED_PACKETS_FILTER_NAME)
         .setLines(
             ExprAclLine.rejecting(
-                "Deny untransformed packets",
+                // since we have a filter that permits only packets for valid listeners, all
+                // untransformed packets are those for which we didn't find a valid target
+                TraceElement.of("No valid (healthy, within availability zone) target found"),
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
                         .setDstIps(
@@ -513,7 +565,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
                                 .map(privateIp -> IpWildcard.create(privateIp.getPrivateIp()))
                                 .collect(ImmutableList.toImmutableList()))
                         .build())),
-            ExprAclLine.accepting("Permit transformed packets", TrueExpr.INSTANCE))
+            ExprAclLine.accepting(TraceElement.of("Forwarded to a target"), TrueExpr.INSTANCE))
         .build();
   }
 
