@@ -10,14 +10,14 @@ import static org.batfish.representation.aws.LoadBalancer.LISTENER_FILTER_NAME;
 import static org.batfish.representation.aws.LoadBalancer.LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX;
 import static org.batfish.representation.aws.LoadBalancer.chainListenerTransformations;
 import static org.batfish.representation.aws.LoadBalancer.computeListenerFilter;
+import static org.batfish.representation.aws.LoadBalancer.computeNotForwardedFilter;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetTransformationStep;
-import static org.batfish.representation.aws.LoadBalancer.computeUntransformedFilter;
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
+import static org.batfish.representation.aws.LoadBalancer.getTraceElementForForwardedPackets;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNoMatchedListener;
-import static org.batfish.representation.aws.LoadBalancer.getTraceElementForTransformedPackets;
-import static org.batfish.representation.aws.LoadBalancer.getTraceElementForUntransformedPackets;
+import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNotForwardedPackets;
 import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
@@ -227,7 +227,7 @@ public class LoadBalancerTest {
     assertThat(
         viIface.getPostTransformationIncomingFilter(),
         equalTo(
-            computeUntransformedFilter(
+            computeNotForwardedFilter(
                 ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, null)))));
 
     assertThat(
@@ -757,10 +757,10 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeDefaultFilter() {
+  public void testComputeNotForwardedFilter() {
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
     IpAccessList ipAccessList =
-        computeUntransformedFilter(
+        computeNotForwardedFilter(
             ImmutableList.of(new PrivateIpAddress(true, loadBalancerIp, null)));
 
     // not transformed
@@ -776,7 +776,7 @@ public class LoadBalancerTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of()),
-        contains(hasTraceElement(getTraceElementForUntransformedPackets())));
+        contains(hasTraceElement(getTraceElementForNotForwardedPackets())));
 
     // transformed
     Flow allowedFlow = getTcpFlow(Ip.parse("1.1.1.1"));
@@ -791,6 +791,6 @@ public class LoadBalancerTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of()),
-        contains(hasTraceElement(getTraceElementForTransformedPackets())));
+        contains(hasTraceElement(getTraceElementForForwardedPackets())));
   }
 }
