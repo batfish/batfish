@@ -137,7 +137,7 @@ public class HeaderSpaceToFlowTest {
     assertTrue(flowBuilder.isPresent());
     assertThat(flowBuilder.get().getDstIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(flowBuilder.get().getIpProtocol(), equalTo(IpProtocol.UDP));
-    assertThat(flowBuilder.get().getDstPort(), equalTo(NamedPort.HTTP.number()));
+    assertThat(flowBuilder.get().getDstPort(), equalTo(NamedPort.EPHEMERAL_LOWEST.number()));
     assertThat(flowBuilder.get().getSrcPort(), equalTo(2));
     assertThat(flowBuilder.get().getPacketLength(), equalTo(DEFAULT_PACKET_LENGTH));
   }

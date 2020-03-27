@@ -239,13 +239,18 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
+    if (bdd.isZero()) {
+      return Optional.empty();
+    }
     BDD representativeBDD =
         BDDRepresentativePicker.pickRepresentative(
             bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
 
     if (representativeBDD.isZero()) {
+      // Should not be possible if the preference is well-formed.
       return Optional.empty();
     }
+
     return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
