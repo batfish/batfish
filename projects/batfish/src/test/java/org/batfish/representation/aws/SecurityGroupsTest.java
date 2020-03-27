@@ -9,7 +9,8 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROU
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
-import static org.batfish.representation.aws.Utils.traceElementForIcmp;
+import static org.batfish.representation.aws.Utils.traceElementForIcmpCode;
+import static org.batfish.representation.aws.Utils.traceElementForIcmpType;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -81,15 +82,6 @@ public class SecurityGroupsTest {
     return new MatchHeaderSpace(
         HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
         traceElementForDstPorts(fromPort, toPort));
-  }
-
-  private static MatchHeaderSpace matchIcmpTypeCode(int type, int code) {
-    HeaderSpace.Builder hsBuilder = HeaderSpace.builder();
-    hsBuilder.setIcmpTypes(type);
-    if (code != -1) {
-      hsBuilder.setIcmpCodes(code);
-    }
-    return new MatchHeaderSpace(hsBuilder.build(), traceElementForIcmp(type, code));
   }
 
   @Before
@@ -197,7 +189,12 @@ public class SecurityGroupsTest {
     assertThat(
         line,
         isExprAclLineThat(
-            hasMatchCondition(and(matchIcmp, matchIcmpTypeCode(8, -1), matchUniverse))));
+            hasMatchCondition(
+                and(
+                    matchIcmp,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIcmpTypes(8).build(), traceElementForIcmpType(8)),
+                    matchUniverse))));
   }
 
   @Test
@@ -207,7 +204,14 @@ public class SecurityGroupsTest {
     assertThat(
         line,
         isExprAclLineThat(
-            hasMatchCondition(and(matchIcmp, matchIcmpTypeCode(8, 9), matchUniverse))));
+            hasMatchCondition(
+                and(
+                    matchIcmp,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIcmpTypes(8).build(), traceElementForIcmpType(8)),
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIcmpCodes(9).build(), traceElementForIcmpCode(9)),
+                    matchUniverse))));
   }
 
   @Test
