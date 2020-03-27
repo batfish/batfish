@@ -84,7 +84,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   /** Regex for load balancer ARN. Used to find the interface in {@link #findMyInterface}. */
   static final Pattern LOAD_BALANCER_ARN_PATTERN =
-      Pattern.compile("^arn:aws:elasticloadbalancing:[^:]+:[0-9]+:loadbalancer/(.+)$");
+      Pattern.compile("^arn:aws:elasticloadbalancing:[^:]+:[0-9]+:loadbalancer\\/(.+)$");
 
   /** The prefix is that used for interfaces that belong to load balancer */
   static final String LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX = "ELB ";
@@ -267,13 +267,13 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     boolean crossZoneLoadBalancing =
         loadBalancerAttributes != null && loadBalancerAttributes.getCrossZoneLoadBalancing();
 
-    List<Listener> listeners;
-    if (region.getLoadBalancerListeners().containsKey(_arn)) {
-      listeners = region.getLoadBalancerListeners().get(_arn).getListeners();
+    List<Listener> listeners = ImmutableList.of();
+    LoadBalancerListener lbListener = region.getLoadBalancerListeners().get(_arn);
+    if (lbListener != null) {
+      listeners = lbListener.getListeners();
     } else {
       warnings.redFlag(
           String.format("Listeners not found for load balancer %s (%s).", _name, _arn));
-      listeners = ImmutableList.of();
     }
 
     IpAccessList incomingFilter = computeListenerFilter(listeners);
