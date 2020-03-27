@@ -756,7 +756,7 @@ public final class AutoCompleteUtils {
   }
 
   @Nonnull
-   static List<AutocompleteSuggestion> autoCompleteSourceLocation(
+  static List<AutocompleteSuggestion> autoCompleteSourceLocation(
       String query, @Nullable CompletionMetadata completionMetadata) {
     List<AutocompleteSuggestion> suggestions;
     checkNotNull(
