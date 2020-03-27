@@ -41,6 +41,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -525,9 +526,12 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
                         .anyMatch(action -> action.getType() == ActionType.FORWARD))
             .map(
                 listener ->
-                    ExprAclLine.accepting(
-                        TraceElement.of("Matched listener " + listener.getId()),
-                        new MatchHeaderSpace(listener.getMatchingHeaderSpace())))
+                    ExprAclLine.builder()
+                        .setTraceElement(getTraceElementForMatchedListener(listener.getId()))
+                        .setMatchCondition(new MatchHeaderSpace(listener.getMatchingHeaderSpace()))
+                        .setAction(LineAction.PERMIT)
+                        .setName("Listener " + listener.getId())
+                        .build())
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(LISTENER_FILTER_NAME)
@@ -535,11 +539,24 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
             new ImmutableList.Builder<AclLine>()
                 .addAll(aclLines)
                 .add(
-                    ExprAclLine.rejecting(
-                        TraceElement.of("Did not match any forwarding listeners"),
-                        TrueExpr.INSTANCE))
+                    ExprAclLine.builder()
+                        .setTraceElement(getTraceElementForNoMatchedListener())
+                        .setMatchCondition(TrueExpr.INSTANCE)
+                        .setAction(LineAction.DENY)
+                        .setName("Default deny")
+                        .build())
                 .build())
         .build();
+  }
+
+  @VisibleForTesting
+  static TraceElement getTraceElementForMatchedListener(String listenerArn) {
+    return TraceElement.of("Matched listener " + listenerArn);
+  }
+
+  @VisibleForTesting
+  static TraceElement getTraceElementForNoMatchedListener() {
+    return TraceElement.of("Did not match any forwarding listeners");
   }
 
   /**
@@ -554,19 +571,38 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     return IpAccessList.builder()
         .setName(UNTRANSFORMED_PACKETS_FILTER_NAME)
         .setLines(
-            ExprAclLine.rejecting(
+            ExprAclLine.builder()
                 // since we have a filter that permits only packets for valid listeners, all
                 // untransformed packets are those for which we didn't find a valid target
-                TraceElement.of("No valid (healthy, within availability zone) target found"),
-                new MatchHeaderSpace(
-                    HeaderSpace.builder()
-                        .setDstIps(
-                            loadBalancerInterfaceAddresses.stream()
-                                .map(privateIp -> IpWildcard.create(privateIp.getPrivateIp()))
-                                .collect(ImmutableList.toImmutableList()))
-                        .build())),
-            ExprAclLine.accepting(TraceElement.of("Forwarded to a target"), TrueExpr.INSTANCE))
+                .setTraceElement(getTraceElementForUntransformedPackets())
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setDstIps(
+                                loadBalancerInterfaceAddresses.stream()
+                                    .map(privateIp -> IpWildcard.create(privateIp.getPrivateIp()))
+                                    .collect(ImmutableList.toImmutableList()))
+                            .build()))
+                .setAction(LineAction.DENY)
+                .setName("Deny untransformed packets")
+                .build(),
+            ExprAclLine.builder()
+                .setTraceElement(getTraceElementForTransformedPackets())
+                .setMatchCondition(TrueExpr.INSTANCE)
+                .setAction(LineAction.PERMIT)
+                .setName("Default permit")
+                .build())
         .build();
+  }
+
+  @VisibleForTesting
+  static TraceElement getTraceElementForTransformedPackets() {
+    return TraceElement.of("Forwarded to a target");
+  }
+
+  @VisibleForTesting
+  static TraceElement getTraceElementForUntransformedPackets() {
+    return TraceElement.of("No valid (healthy, within availability zone) target found");
   }
 
   /**
