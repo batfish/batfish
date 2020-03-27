@@ -17,7 +17,8 @@ import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
-import static org.batfish.representation.aws.Utils.traceElementForIcmp;
+import static org.batfish.representation.aws.Utils.traceElementForIcmpCode;
+import static org.batfish.representation.aws.Utils.traceElementForIcmpType;
 import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
@@ -37,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -326,7 +328,7 @@ public final class IpPermissions implements Serializable {
                 aclLineName, _fromPort, _toPort));
         return null;
       }
-      Optional.ofNullable(exprForIcmpTypeAndCode(type, code)).ifPresent(matchesBuilder::add);
+      exprForIcmpTypeAndCode(type, code).forEach(matchesBuilder::add);
     } else if (_fromPort != null || _toPort != null) {
       // if protocols not from the above then fromPort and toPort should be null
       warnings.redFlag(
@@ -369,18 +371,22 @@ public final class IpPermissions implements Serializable {
    * Returns a MatchHeaderSpace to match the ICMP type and code. This method should be called only
    * after the protocol is determined to be ICMP
    */
-  @Nullable
-  private static MatchHeaderSpace exprForIcmpTypeAndCode(int type, int code) {
-    HeaderSpace.Builder hsBuilder = HeaderSpace.builder();
-    if (type != -1) {
-      hsBuilder.setIcmpTypes(type);
-      if (code != -1) {
-        hsBuilder.setIcmpCodes(code);
-      }
-      return new MatchHeaderSpace(hsBuilder.build(), traceElementForIcmp(type, code));
+  private static @Nonnull Stream<AclLineMatchExpr> exprForIcmpTypeAndCode(int type, int code) {
+    if (type == -1) {
+      return Stream.of();
     }
-    // type == -1 and code == -1
-    return null;
+
+    MatchHeaderSpace matchType =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setIcmpTypes(type).build(), traceElementForIcmpType(type));
+    if (code == -1) {
+      return Stream.of(matchType);
+    }
+
+    MatchHeaderSpace matchCode =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setIcmpCodes(code).build(), traceElementForIcmpCode(code));
+    return Stream.of(matchType, matchCode);
   }
 
   /**
