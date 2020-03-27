@@ -724,21 +724,7 @@ public final class AutoCompleteUtils {
           }
         case SOURCE_LOCATION:
           {
-            checkNotNull(
-                completionMetadata.getSourceLocations(),
-                "cannot autocomplete source locations without LocationInfo");
-            Map<String, Optional<String>> locationsAndHumanNames =
-                completionMetadata.getSourceLocations().stream()
-                    .collect(
-                        ImmutableMap.toImmutableMap(
-                            ToSpecifierString::toSpecifierString,
-                            location ->
-                                Optional.ofNullable(
-                                    completionMetadata
-                                        .getNodes()
-                                        .get(location.getNodeName())
-                                        .getHumanName())));
-            suggestions = stringAutoComplete(query, locationsAndHumanNames);
+            suggestions = autoCompleteSourceLocation(query, completionMetadata);
             break;
           }
         case STRUCTURE_NAME:
@@ -766,6 +752,28 @@ public final class AutoCompleteUtils {
       // if any error occurs, just return an empty list
       return ImmutableList.of();
     }
+    return suggestions;
+  }
+
+  @Nonnull
+  static List<AutocompleteSuggestion> autoCompleteSourceLocation(
+      String query, @Nullable CompletionMetadata completionMetadata) {
+    List<AutocompleteSuggestion> suggestions;
+    checkNotNull(
+        completionMetadata.getSourceLocations(),
+        "cannot autocomplete source locations without LocationInfo");
+    Map<String, Optional<String>> locationsAndHumanNames =
+        completionMetadata.getSourceLocations().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    ToSpecifierString::toSpecifierString,
+                    location ->
+                        Optional.ofNullable(
+                            completionMetadata
+                                .getNodes()
+                                .get(location.getNodeName())
+                                .getHumanName())));
+    suggestions = stringAutoComplete(query, locationsAndHumanNames);
     return suggestions;
   }
 
