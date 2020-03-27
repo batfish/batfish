@@ -125,6 +125,8 @@ interface AstNodeVisitor<T> {
 
   T visitIcmpAllAppAstNode(IcmpAllAppAstNode icmpAllAppAstNode);
 
+  T visitInternetLocationAstNode();
+
   T visitNameAppAstNode(NameAppAstNode nameAppAstNode);
 
   T visitTcpAppAstNode(PortAppAstNode tcpAppAstNode);

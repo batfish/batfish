@@ -51,6 +51,10 @@ public class MatchHeaderSpace extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add(PROP_HEADER_SPACE, _headerSpace).toString();
+    return MoreObjects.toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_HEADER_SPACE, _headerSpace)
+        .add(PROP_TRACE_ELEMENT, getTraceElement())
+        .toString();
   }
 }
