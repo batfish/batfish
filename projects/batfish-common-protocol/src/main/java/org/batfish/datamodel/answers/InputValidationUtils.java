@@ -174,11 +174,7 @@ public final class InputValidationUtils {
             nodeRolesData,
             referenceLibrary);
       case SOURCE_LOCATION:
-        Validity validity = autoCompleteSourceLocation(query, completionMetadata).stream()
-            .anyMatch(suggestion -> suggestion.getText().equals(query))
-            ? Validity.VALID
-            : Validity.INVALID;
-        return new InputValidationNotes(validity,ImmutableList.of());
+        return validateSourceLocation(query, completionMetadata);
       case VXLAN_VNI_PROPERTY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
@@ -189,6 +185,18 @@ public final class InputValidationUtils {
       default:
         return new InputValidationNotes(Validity.VALID, ImmutableList.of());
     }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  static InputValidationNotes validateSourceLocation(
+      String query, CompletionMetadata completionMetadata) {
+    Validity validity =
+        autoCompleteSourceLocation(query, completionMetadata).stream()
+                .anyMatch(suggestion -> suggestion.getText().equals(query))
+            ? Validity.VALID
+            : Validity.INVALID;
+    return new InputValidationNotes(validity, ImmutableList.of());
   }
 
   public static String getErrorMessage(String grammarName, int startIndex) {
