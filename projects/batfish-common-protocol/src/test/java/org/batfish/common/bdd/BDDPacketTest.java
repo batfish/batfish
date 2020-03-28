@@ -237,7 +237,7 @@ public class BDDPacketTest {
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.TCP));
-    assertThat(flow, hasDstPort(1));
+    assertThat(flow, hasDstPort(80));
     assertThat(flow, hasSrcPort(NamedPort.EPHEMERAL_LOWEST.number()));
   }
 
@@ -252,7 +252,7 @@ public class BDDPacketTest {
     assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
-    assertThat(flow, hasDstIp(Ip.parse("8.8.8.8")));
+    assertThat(flow, hasDstIp(Ip.parse("10.0.0.0")));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.TCP));
     assertThat(flow, hasDstPort(80));
