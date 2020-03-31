@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 
 /** This class generates common useful flow constraints as BDDs. */
 public final class BDDFlowConstraintGenerator {
@@ -27,6 +29,12 @@ public final class BDDFlowConstraintGenerator {
      */
     TESTFILTER
   }
+
+  @VisibleForTesting static final Prefix PRIVATE_SUBNET_10 = Prefix.parse("10.0.0.0/8");
+
+  @VisibleForTesting static final Prefix PRIVATE_SUBNET_172 = Prefix.parse("172.16.0.0/12");
+
+  @VisibleForTesting static final Prefix PRIVATE_SUBNET_192 = Prefix.parse("192.168.0.0/16");
 
   private final BDDPacket _bddPacket;
   private final BDDOps _bddOps;
@@ -132,14 +140,13 @@ public final class BDDFlowConstraintGenerator {
         .build();
   }
 
-  private BDD isPrivateIp(BDDInteger ipInteger) {
-    return _bddOps.or(
-        ipInteger.range(Ip.parse("10.0.0.0").asLong(), Ip.parse("10.255.255.255").asLong()),
-        ipInteger.range(Ip.parse("172.16.0.0").asLong(), Ip.parse("172.255.255.255").asLong()),
-        ipInteger.range(Ip.parse("192.168.0.0").asLong(), Ip.parse("192.168.255.255").asLong()));
+  @VisibleForTesting
+  static BDD isPrivateIp(IpSpaceToBDD ip) {
+    return BDDOps.orNull(
+        ip.toBDD(PRIVATE_SUBNET_10), ip.toBDD(PRIVATE_SUBNET_172), ip.toBDD(PRIVATE_SUBNET_192));
   }
 
-  private List<BDD> ipPreferences(BDDInteger ipInteger) {
+  private static List<BDD> ipPreferences(BDDInteger ipInteger) {
     return ImmutableList.of(
         // First, one of the special IPs.
         ipInteger.value(Ip.parse("8.8.8.8").asLong()),
@@ -151,10 +158,8 @@ public final class BDDFlowConstraintGenerator {
   }
 
   private List<BDD> computeIpConstraints() {
-    BDDInteger srcIp = _bddPacket.getSrcIp();
-    BDDInteger dstIp = _bddPacket.getDstIp();
-    BDD srcIpPrivate = isPrivateIp(srcIp);
-    BDD dstIpPrivate = isPrivateIp(dstIp);
+    BDD srcIpPrivate = isPrivateIp(_bddPacket.getSrcIpSpaceToBDD());
+    BDD dstIpPrivate = isPrivateIp(_bddPacket.getDstIpSpaceToBDD());
 
     return ImmutableList.<BDD>builder()
         // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
@@ -162,8 +167,8 @@ public final class BDDFlowConstraintGenerator {
         .add(_bddOps.and(srcIpPrivate, dstIpPrivate.not()))
         .add(_bddOps.and(srcIpPrivate.not(), dstIpPrivate))
         // Next, execute IP preferences
-        .addAll(ipPreferences(srcIp))
-        .addAll(ipPreferences(dstIp))
+        .addAll(ipPreferences(_bddPacket.getSrcIp()))
+        .addAll(ipPreferences(_bddPacket.getDstIp()))
         .build();
   }
 
