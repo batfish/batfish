@@ -8,9 +8,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-// TODO; There is some relationship between this class and Schema, which we can consider
-// reconciling.
-
 /** A shared interface for things we pack in as attribute differences */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
