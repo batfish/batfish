@@ -1,5 +1,6 @@
 package org.batfish.common.util.isp;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
@@ -25,18 +26,12 @@ public final class BlockReservedAddressesAtInternet implements IspTrafficFilteri
 
   @Override
   public @Nullable IpAccessList filterTrafficFromInternet() {
-    return IpAccessList.builder()
-        .setName("Block incoming traffic using reserved addresses")
-        .setLines(LINES)
-        .build();
+    return IpAccessList.builder().setName(FROM_INTERNET_ACL_NAME).setLines(LINES).build();
   }
 
   @Override
   public @Nullable IpAccessList filterTrafficToInternet() {
-    return IpAccessList.builder()
-        .setName("Block outgoing traffic using reserved addresses")
-        .setLines(LINES)
-        .build();
+    return IpAccessList.builder().setName(TO_INTERNET_ACL_NAME).setLines(LINES).build();
   }
 
   @Override
@@ -71,6 +66,12 @@ public final class BlockReservedAddressesAtInternet implements IspTrafficFilteri
    * .put("198.18.0.0/15", "Benchmarking")
    * .put("192.88.99.0/24", "Former 6-to-4")
    */
+
+  @VisibleForTesting
+  static final String TO_INTERNET_ACL_NAME = "Block outgoing traffic using reserved addresses";
+
+  @VisibleForTesting
+  static final String FROM_INTERNET_ACL_NAME = "Block incoming traffic using reserved addresses";
 
   private static final List<AclLine> LINES =
       Stream.concat(

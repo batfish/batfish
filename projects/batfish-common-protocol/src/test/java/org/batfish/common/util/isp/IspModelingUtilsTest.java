@@ -2,6 +2,8 @@ package org.batfish.common.util.isp;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.FROM_INTERNET_ACL_NAME;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.TO_INTERNET_ACL_NAME;
 import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
 import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
 import static org.batfish.common.util.isp.IspModelingUtils.HIGH_ADMINISTRATIVE_COST;
@@ -31,17 +33,20 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -71,8 +76,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -357,6 +364,7 @@ public class IspModelingUtilsTest {
             .setAsn(asn)
             .setName(ispName)
             .setRemotes(new Remote("testNode", "testIface", ispIfaceAddress, remotePeerConfig))
+            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
             .build();
 
     ModeledNodes modeledNodes = new ModeledNodes();
@@ -370,7 +378,15 @@ public class IspModelingUtilsTest {
             hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
                 "~Interface_0~", hasAllAddresses(equalTo(ImmutableSet.of(ispIfaceAddress)))),
+            hasIpAccessList(FROM_INTERNET_ACL_NAME, any(IpAccessList.class)),
+            hasIpAccessList(TO_INTERNET_ACL_NAME, any(IpAccessList.class)),
+            hasInterface(ISP_TO_INTERNET_INTERFACE_NAME, any(Interface.class)),
             hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
+    Interface toInternet = ispConfiguration.getAllInterfaces().get(ISP_TO_INTERNET_INTERFACE_NAME);
+    assertThat(toInternet.getIncomingFilter(), notNullValue());
+    assertThat(toInternet.getIncomingFilter().getName(), equalTo(FROM_INTERNET_ACL_NAME));
+    assertThat(toInternet.getOutgoingFilter(), notNullValue());
+    assertThat(toInternet.getOutgoingFilter().getName(), equalTo(TO_INTERNET_ACL_NAME));
 
     // compute the reverse config
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
