@@ -1,7 +1,5 @@
 package org.batfish.common.util;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.IspModel.Remote;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -15,24 +13,27 @@ public class IspModelTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new IspModel(1L, ImmutableList.of(), "name", ImmutableSet.of()),
-            new IspModel(1L, ImmutableList.of(), "name", ImmutableSet.of()))
-        .addEqualityGroup(new IspModel(2L, ImmutableList.of(), "name", ImmutableSet.of()))
+            IspModel.builder().setAsn(1L).setName("name").build(),
+            IspModel.builder().setAsn(1L).setName("name").build())
+        .addEqualityGroup(IspModel.builder().setAsn(2L).setName("name").build())
         .addEqualityGroup(
-            new IspModel(
-                1L,
-                ImmutableList.of(
+            IspModel.builder()
+                .setAsn(1L)
+                .setName("name")
+                .setRemotes(
                     new Remote(
                         "a",
                         "b",
                         ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                        BgpActivePeerConfig.builder().build())),
-                "name",
-                ImmutableSet.of()))
-        .addEqualityGroup(new IspModel(1L, ImmutableList.of(), "other", ImmutableSet.of()))
+                        BgpActivePeerConfig.builder().build()))
+                .build())
+        .addEqualityGroup(IspModel.builder().setAsn(1L).setName("other").build())
         .addEqualityGroup(
-            new IspModel(
-                1L, ImmutableList.of(), "name", ImmutableSet.of(Prefix.parse("1.1.1.1/32"))))
+            IspModel.builder()
+                .setAsn(1L)
+                .setName("name")
+                .setAdditionalPrefixesToInternet(Prefix.parse("1.1.1.1/32"))
+                .build())
         .testEquals();
   }
 
