@@ -484,7 +484,14 @@ public final class IspModelingUtils {
                     i -> i.getAdditionalAnnouncements().stream().map(IspAnnouncement::getPrefix))
                 .collect(ImmutableSet.toImmutableSet());
         IspModel ispInfo =
-            allIspModels.computeIfAbsent(asn, k -> new IspModel(asn, ispName, additionalPrefixes));
+            allIspModels.computeIfAbsent(
+                asn,
+                k ->
+                    IspModel.builder()
+                        .setAsn(asn)
+                        .setName(ispName)
+                        .setAdditionalPrefixesToInternet(additionalPrefixes)
+                        .build());
         InterfaceAddress interfaceAddress =
             bgpPeerConfig instanceof BgpActivePeerConfig
                 ? ConcreteInterfaceAddress.create(

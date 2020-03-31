@@ -351,11 +351,11 @@ public class IspModelingUtilsTest {
     long asn = 2L;
     String ispName = getDefaultIspNodeName(asn);
     IspModel ispModel =
-        new IspModel(
-            asn,
-            ImmutableList.of(
-                new Remote("testNode", "testIface", ispIfaceAddress, remotePeerConfig)),
-            ispName);
+        IspModel.builder()
+            .setAsn(asn)
+            .setName(ispName)
+            .setRemotes(new Remote("testNode", "testIface", ispIfaceAddress, remotePeerConfig))
+            .build();
 
     ModeledNodes modeledNodes = new ModeledNodes();
     createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
@@ -409,11 +409,11 @@ public class IspModelingUtilsTest {
     long asn = 2L;
     String ispName = getDefaultIspNodeName(asn);
     IspModel ispModel =
-        new IspModel(
-            asn,
-            ImmutableList.of(
-                new Remote("testNode", "remoteIface", LINK_LOCAL_ADDRESS, remotePeerConfig)),
-            ispName);
+        IspModel.builder()
+            .setAsn(asn)
+            .setName(ispName)
+            .setRemotes(new Remote("testNode", "remoteIface", LINK_LOCAL_ADDRESS, remotePeerConfig))
+            .build();
 
     ModeledNodes modeledNodes = new ModeledNodes();
     createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
@@ -457,7 +457,7 @@ public class IspModelingUtilsTest {
   @Test
   public void testGetIspConfigurationNodeInvalid() {
     long asn = 2L;
-    IspModel ispInfo = new IspModel(asn, ImmutableList.of(), getDefaultIspNodeName(asn));
+    IspModel ispInfo = IspModel.builder().setAsn(asn).setName(getDefaultIspNodeName(asn)).build();
     BatfishLogger logger = new BatfishLogger("debug", false);
     ModeledNodes modeledNodes = new ModeledNodes();
     createIspNode(modeledNodes, ispInfo, new NetworkFactory(), logger);
@@ -484,16 +484,14 @@ public class IspModelingUtilsTest {
     Set<Prefix> additionalPrefixes =
         ImmutableSet.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"));
     IspModel ispInfo =
-        new IspModel(
-            2L,
-            ImmutableList.of(
+        IspModel.builder()
+            .setAsn(2L)
+            .setName(getDefaultIspNodeName(2L))
+            .setRemotes(
                 new Remote(
-                    "test",
-                    "test",
-                    ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30),
-                    peer)),
-            getDefaultIspNodeName(2L),
-            additionalPrefixes);
+                    "test", "test", ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 30), peer))
+            .setAdditionalPrefixesToInternet(additionalPrefixes)
+            .build();
     ModeledNodes modeledNodes = new ModeledNodes();
     createIspNode(modeledNodes, ispInfo, new NetworkFactory(), new BatfishLogger("debug", false));
     Configuration ispConfiguration = modeledNodes.getConfigurations().get(ispInfo.getName());
@@ -533,16 +531,17 @@ public class IspModelingUtilsTest {
     assertThat(
         ispInfo,
         equalTo(
-            new IspModel(
-                _remoteAsn,
-                ImmutableList.of(
+            IspModel.builder()
+                .setAsn(_remoteAsn)
+                .setName(getDefaultIspNodeName(_remoteAsn))
+                .setRemotes(
                     new Remote(
                         remote.getHostname(),
                         getOnlyElement(remote.getAllInterfaces().keySet()),
                         ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24),
                         getOnlyElement(
-                            remote.getDefaultVrf().getBgpProcess().getActiveNeighbors().values()))),
-                getDefaultIspNodeName(_remoteAsn))));
+                            remote.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
+                .build()));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }
 
@@ -566,9 +565,10 @@ public class IspModelingUtilsTest {
     assertThat(
         ispInfo,
         equalTo(
-            new IspModel(
-                _remoteAsn,
-                ImmutableList.of(
+            IspModel.builder()
+                .setAsn(_remoteAsn)
+                .setName(getDefaultIspNodeName(_remoteAsn))
+                .setRemotes(
                     new Remote(
                         remote.getHostname(),
                         getOnlyElement(remote.getAllInterfaces().keySet()),
@@ -578,8 +578,8 @@ public class IspModelingUtilsTest {
                                 .getDefaultVrf()
                                 .getBgpProcess()
                                 .getInterfaceNeighbors()
-                                .values()))),
-                getDefaultIspNodeName(_remoteAsn))));
+                                .values())))
+                .build()));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }
 
@@ -1160,9 +1160,10 @@ public class IspModelingUtilsTest {
         equalTo(
             ImmutableMap.of(
                 remoteAsn,
-                new IspModel(
-                    remoteAsn,
-                    ImmutableList.of(
+                IspModel.builder()
+                    .setAsn(remoteAsn)
+                    .setName(getDefaultIspNodeName(remoteAsn))
+                    .setRemotes(
                         new Remote(
                             c1.getHostname(),
                             getOnlyElement(c1.getAllInterfaces().keySet()),
@@ -1174,14 +1175,18 @@ public class IspModelingUtilsTest {
                             getOnlyElement(c2.getAllInterfaces().keySet()),
                             ConcreteInterfaceAddress.create(remoteBgpIp2, 24),
                             getOnlyElement(
-                                c2.getDefaultVrf().getBgpProcess().getActiveNeighbors().values()))),
-                    getDefaultIspNodeName(remoteAsn)))));
+                                c2.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
+                    .build())));
   }
 
   @Test
   public void testIspNameConflictsGoodCase() {
     Map<Long, IspModel> ispInfoMap =
-        ImmutableMap.of(1L, new IspModel(1, "isp1"), 2L, new IspModel(2, "isp2"));
+        ImmutableMap.of(
+            1L,
+            IspModel.builder().setAsn(1).setName("isp1").build(),
+            2L,
+            IspModel.builder().setAsn(2).setName("isp2").build());
     Map<String, Configuration> configurations =
         ImmutableMap.of(
             "node",
@@ -1195,7 +1200,11 @@ public class IspModelingUtilsTest {
   @Test
   public void testIspNameConflictsIspConflict() {
     Map<Long, IspModel> ispInfoMap =
-        ImmutableMap.of(1L, new IspModel(1, "isp1"), 2L, new IspModel(2, "isp1"));
+        ImmutableMap.of(
+            1L,
+            IspModel.builder().setAsn(1).setName("isp1").build(),
+            2L,
+            IspModel.builder().setAsn(2).setName("isp1").build());
     Map<String, Configuration> configurations = ImmutableMap.of();
 
     String message = getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
@@ -1205,7 +1214,11 @@ public class IspModelingUtilsTest {
   @Test
   public void testIspNameConflictsNodeConflict() {
     Map<Long, IspModel> ispInfoMap =
-        ImmutableMap.of(1L, new IspModel(1, "isp1"), 2L, new IspModel(2, "isp2"));
+        ImmutableMap.of(
+            1L,
+            IspModel.builder().setAsn(1).setName("isp1").build(),
+            2L,
+            IspModel.builder().setAsn(2).setName("isp2").build());
     Map<String, Configuration> configurations =
         ImmutableMap.of(
             "isp1",
