@@ -14,9 +14,9 @@ public class BDDFlowConstraintGeneratorTest {
 
   @Test
   public void testIsPrivateIp() {
-    BDD isPrivateIp = isPrivateIp(PKT.getDstIp());
+    BDD isPrivateIp = isPrivateIp(PKT.getDstIpSpaceToBDD());
 
-    IpSpaceToBDD dstIp = new IpSpaceToBDD(PKT.getDstIp());
+    IpSpaceToBDD dstIp = PKT.getDstIpSpaceToBDD();
     BDD privateSubnet10 = dstIp.toBDD(PRIVATE_SUBNET_10);
     BDD privateSubnet172 = dstIp.toBDD(PRIVATE_SUBNET_172);
     BDD privateSubnet192 = dstIp.toBDD(PRIVATE_SUBNET_192);

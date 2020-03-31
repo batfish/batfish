@@ -141,12 +141,9 @@ public final class BDDFlowConstraintGenerator {
   }
 
   @VisibleForTesting
-  static BDD isPrivateIp(BDDInteger ipInteger) {
-    IpSpaceToBDD toBdd = new IpSpaceToBDD(ipInteger);
+  static BDD isPrivateIp(IpSpaceToBDD ip) {
     return BDDOps.orNull(
-        toBdd.toBDD(PRIVATE_SUBNET_10),
-        toBdd.toBDD(PRIVATE_SUBNET_172),
-        toBdd.toBDD(PRIVATE_SUBNET_192));
+        ip.toBDD(PRIVATE_SUBNET_10), ip.toBDD(PRIVATE_SUBNET_172), ip.toBDD(PRIVATE_SUBNET_192));
   }
 
   private static List<BDD> ipPreferences(BDDInteger ipInteger) {
@@ -161,10 +158,8 @@ public final class BDDFlowConstraintGenerator {
   }
 
   private List<BDD> computeIpConstraints() {
-    BDDInteger srcIp = _bddPacket.getSrcIp();
-    BDDInteger dstIp = _bddPacket.getDstIp();
-    BDD srcIpPrivate = isPrivateIp(srcIp);
-    BDD dstIpPrivate = isPrivateIp(dstIp);
+    BDD srcIpPrivate = isPrivateIp(_bddPacket.getSrcIpSpaceToBDD());
+    BDD dstIpPrivate = isPrivateIp(_bddPacket.getDstIpSpaceToBDD());
 
     return ImmutableList.<BDD>builder()
         // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
@@ -172,8 +167,8 @@ public final class BDDFlowConstraintGenerator {
         .add(_bddOps.and(srcIpPrivate, dstIpPrivate.not()))
         .add(_bddOps.and(srcIpPrivate.not(), dstIpPrivate))
         // Next, execute IP preferences
-        .addAll(ipPreferences(srcIp))
-        .addAll(ipPreferences(dstIp))
+        .addAll(ipPreferences(_bddPacket.getSrcIp()))
+        .addAll(ipPreferences(_bddPacket.getDstIp()))
         .build();
   }
 
