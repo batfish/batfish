@@ -22,11 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
@@ -469,20 +467,28 @@ public final class IspModelingUtils {
       }
       for (BgpPeerConfig bgpPeerConfig : validRemoteBgpPeerConfigs) {
         long asn = bgpPeerConfig.getRemoteAsns().least();
-        // Pick the first IspInfo we find.
-        Optional<IspNodeInfo> isp =
-            ispNodeInfos.stream().filter(i -> i.getAsn() == asn).findFirst();
-        String ispName = isp.map(IspNodeInfo::getName).orElse(getDefaultIspNodeName(asn));
+        List<IspNodeInfo> matchingInfos =
+            ispNodeInfos.stream().filter(i -> i.getAsn() == asn).collect(Collectors.toList());
+
+        // For properties that can't be merged, pick the first one.
+        String ispName =
+            matchingInfos.stream()
+                .map(IspNodeInfo::getName)
+                .findFirst()
+                .orElse(getDefaultIspNodeName(asn));
+        IspTrafficFiltering filtering =
+            matchingInfos.stream()
+                .map(IspNodeInfo::getIspTrafficFiltering)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(IspTrafficFiltering.blockReservedAddressesAtInternet());
+
         // Merge the sets of additional announcements to internet is merging their prefixes
         Set<Prefix> additionalPrefixes =
-            isp.map(IspNodeInfo::getAdditionalAnnouncements)
-                .map(List::stream)
-                .orElse(Stream.empty())
-                .map(IspAnnouncement::getPrefix)
+            matchingInfos.stream()
+                .flatMap(
+                    i -> i.getAdditionalAnnouncements().stream().map(IspAnnouncement::getPrefix))
                 .collect(ImmutableSet.toImmutableSet());
-        IspTrafficFiltering trafficFiltering =
-            isp.map(IspNodeInfo::getIspTrafficFiltering)
-                .orElse(IspTrafficFiltering.blockReservedAddressesAtInternet());
         IspModel ispInfo =
             allIspModels.computeIfAbsent(
                 asn,
@@ -491,7 +497,7 @@ public final class IspModelingUtils {
                         .setAsn(asn)
                         .setName(ispName)
                         .setAdditionalPrefixesToInternet(additionalPrefixes)
-                        .setTrafficFiltering(trafficFiltering)
+                        .setTrafficFiltering(filtering)
                         .build());
         InterfaceAddress interfaceAddress =
             bgpPeerConfig instanceof BgpActivePeerConfig

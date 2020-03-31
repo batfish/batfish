@@ -26,7 +26,7 @@ public class IspNodeInfo {
   private final long _asn;
   @Nonnull private final String _name;
   @Nonnull private final List<IspAnnouncement> _additionalAnnouncement;
-  @Nonnull private final IspTrafficFiltering _trafficFiltering;
+  @Nullable private final IspTrafficFiltering _trafficFiltering;
 
   public IspNodeInfo(long asn, String name) {
     this(asn, name, ImmutableList.of(), null);
@@ -44,8 +44,7 @@ public class IspNodeInfo {
     _asn = asn;
     _name = name;
     _additionalAnnouncement = additionalAnnouncements;
-    _trafficFiltering =
-        firstNonNull(trafficFiltering, IspTrafficFiltering.blockReservedAddressesAtInternet());
+    _trafficFiltering = trafficFiltering;
   }
 
   @Override
@@ -60,7 +59,7 @@ public class IspNodeInfo {
     return _asn == that._asn
         && _name.equals(that._name)
         && _additionalAnnouncement.equals(that._additionalAnnouncement)
-        && _trafficFiltering.equals(that._trafficFiltering);
+        && Objects.equals(_trafficFiltering, that._trafficFiltering);
   }
 
   @Override
@@ -101,7 +100,7 @@ public class IspNodeInfo {
   }
 
   @JsonProperty(PROP_TRAFFIC_FILTERING)
-  public @Nonnull IspTrafficFiltering getIspTrafficFiltering() {
+  public @Nullable IspTrafficFiltering getIspTrafficFiltering() {
     return _trafficFiltering;
   }
 }

@@ -88,6 +88,7 @@ import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -542,6 +543,7 @@ public class IspModelingUtilsTest {
                         ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24),
                         getOnlyElement(
                             remote.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
+                .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                 .build()));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }
@@ -580,6 +582,7 @@ public class IspModelingUtilsTest {
                                 .getBgpProcess()
                                 .getInterfaceNeighbors()
                                 .values())))
+                .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                 .build()));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }
@@ -1178,6 +1181,7 @@ public class IspModelingUtilsTest {
                             ConcreteInterfaceAddress.create(remoteBgpIp2, 24),
                             getOnlyElement(
                                 c2.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
+                    .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                     .build())));
   }
 
