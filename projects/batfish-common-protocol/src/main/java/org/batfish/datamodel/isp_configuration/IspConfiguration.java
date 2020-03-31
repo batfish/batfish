@@ -74,7 +74,7 @@ public class IspConfiguration {
 
   @JsonProperty(PROP_FILTER)
   @Nonnull
-  public IspFilter getfilter() {
+  public IspFilter getFilter() {
     return _filter;
   }
 

@@ -238,8 +238,8 @@ public final class IspModelingUtils {
         populateIspModels(
             remoteCfg,
             remoteNodeAndInterfaces.getValue(),
-            ispConfiguration.getfilter().getOnlyRemoteIps(),
-            ispConfiguration.getfilter().getOnlyRemoteAsns(),
+            ispConfiguration.getFilter().getOnlyRemoteIps(),
+            ispConfiguration.getFilter().getOnlyRemoteAsns(),
             ispConfiguration.getIspNodeInfos(),
             asnToIspInfos,
             warnings);
