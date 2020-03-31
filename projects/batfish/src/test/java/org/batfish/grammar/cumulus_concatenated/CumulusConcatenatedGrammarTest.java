@@ -506,6 +506,7 @@ public class CumulusConcatenatedGrammarTest {
     }
   }
 
+  @Test
   public void testCommSetMatchExpr() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
