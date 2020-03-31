@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -14,10 +14,16 @@ import org.batfish.representation.juniper.FwTerm.Field;
 /** Class for firewall filter from destination-address */
 public final class FwFromDestinationAddress implements FwFrom {
 
-  @Nullable private final IpWildcard _ipWildcard;
+  @Nonnull private final String _description;
+  @Nonnull private final IpWildcard _ipWildcard;
 
-  public FwFromDestinationAddress(IpWildcard ipWildcard) {
+  /**
+   * Creates a new {@link FwFromDestinationAddress}, matching the given {@link IpWildcard} and using
+   * the given {@code description} for the {@link TraceElement}.
+   */
+  public FwFromDestinationAddress(@Nonnull IpWildcard ipWildcard, @Nonnull String description) {
     _ipWildcard = ipWildcard;
+    _description = description;
   }
 
   public IpWildcard getIpWildcard() {
@@ -35,7 +41,7 @@ public final class FwFromDestinationAddress implements FwFrom {
   }
 
   private TraceElement getTraceElement() {
-    return TraceElement.of(String.format("Matched destination-address %s", _ipWildcard.toString()));
+    return TraceElement.of(String.format("Matched destination-address %s", _description));
   }
 
   @VisibleForTesting

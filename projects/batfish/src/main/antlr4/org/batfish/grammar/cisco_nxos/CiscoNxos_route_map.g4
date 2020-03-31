@@ -54,6 +54,7 @@ rm_match
     | rmm_ip
     | rmm_ipv6
     | rmm_metric
+    | rmm_route_type
     | rmm_source_protocol
     | rmm_tag
     | rmm_vlan
@@ -126,6 +127,20 @@ rmmip6a_prefix_list
 rmm_metric
 :
   METRIC metric = uint32 NEWLINE
+;
+
+rmm_route_type
+:
+  ROUTE_TYPE
+  (
+    external = EXTERNAL
+    | internal = INTERNAL
+    | local = LOCAL
+    | nssa_external = NSSA_EXTERNAL
+    | type_1 = TYPE_1
+    | type_2 = TYPE_2
+  )+
+  NEWLINE
 ;
 
 rmm_source_protocol

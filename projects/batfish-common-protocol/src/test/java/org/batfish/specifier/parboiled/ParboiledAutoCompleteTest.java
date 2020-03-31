@@ -17,16 +17,24 @@ import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADD
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
+import static org.batfish.specifier.parboiled.ParboiledAutoComplete.updateSuggestions;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Optional;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -139,7 +147,9 @@ public class ParboiledAutoCompleteTest {
     String query = "1.1.1";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "2.2.2.2")).build();
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")))
+            .build();
 
     // 1.1.1.1 matches, but 2.2.2.2 does not
     assertThat(
@@ -156,7 +166,9 @@ public class ParboiledAutoCompleteTest {
     String query = "1.1.1.1";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "1.1.1.10")).build();
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.10")))
+            .build();
 
     // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(
@@ -478,5 +490,69 @@ public class ParboiledAutoCompleteTest {
         ParboiledAutoComplete.findPrecedingInput(
             pm, query, NODE_AND_INTERFACE, NODE_AND_INTERFACE_TAIL),
         Matchers.equalTo(Optional.of("n1a")));
+  }
+
+  @Test
+  public void testCompleteNodeNameWithHumanNameHint() {
+    String query = "node";
+    // these should be the same as empty input ones
+    String node1 = "node1";
+    String node1HumanName = "humanName";
+    String node2 = "node2";
+    CompletionMetadata metadata =
+        CompletionMetadata.builder()
+            .setNodes(
+                ImmutableMap.of(
+                    node1,
+                    new NodeCompletionMetadata(node1HumanName),
+                    node2,
+                    new NodeCompletionMetadata(null)))
+            .build();
+    assertThat(
+        getTestPAC(query, metadata).run(),
+        allOf(
+            hasItem(
+                new ParboiledAutoCompleteSuggestion(
+                    node1, NODE_NAME.getHint(), 0, NODE_NAME, node1HumanName)),
+            hasItem(
+                new ParboiledAutoCompleteSuggestion(node2, NODE_NAME.getHint(), 0, NODE_NAME))));
+  }
+
+  @Test
+  public void testCompleteHumanName() {
+    String query = "human";
+    // these should be the same as empty input ones
+    String node1 = "node1";
+    String node1HumanName = "humanName1";
+    String node2 = "node2";
+    CompletionMetadata metadata =
+        CompletionMetadata.builder()
+            .setNodes(
+                ImmutableMap.of(
+                    node1,
+                    new NodeCompletionMetadata(node1HumanName),
+                    node2,
+                    new NodeCompletionMetadata(null)))
+            .build();
+    assertThat(
+        getTestPAC(query, metadata).run(),
+        allOf(
+            hasItem(
+                new ParboiledAutoCompleteSuggestion(node1, null, 0, NODE_NAME, node1HumanName))));
+  }
+
+  /**
+   * Tests that relevants fields are preserved when we covert {@link AutocompleteSuggestion} to
+   * {@link ParboiledAutoCompleteSuggestion}.
+   */
+  @Test
+  public void testUpdateSuggestions() {
+    AutocompleteSuggestion autocompleteSuggestion =
+        new AutocompleteSuggestion("text", SuggestionType.UNKNOWN, true, "desc", 42, 3, "hint");
+    assertThat(
+        updateSuggestions(ImmutableList.of(autocompleteSuggestion), false, NODE_NAME, 0),
+        equalTo(
+            ImmutableSet.of(
+                new ParboiledAutoCompleteSuggestion("text", "hint", 0, NODE_NAME, "desc"))));
   }
 }

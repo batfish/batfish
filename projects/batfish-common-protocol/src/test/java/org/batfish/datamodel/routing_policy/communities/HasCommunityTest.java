@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -15,7 +14,7 @@ public final class HasCommunityTest {
   private static final HasCommunity EXPR = new HasCommunity(AllStandardCommunities.instance());
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(EXPR, HasCommunity.class), equalTo(EXPR));
   }
 

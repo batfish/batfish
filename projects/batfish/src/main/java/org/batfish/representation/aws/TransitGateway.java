@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
@@ -14,9 +15,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -212,26 +216,35 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
   @Nonnull private final TransitGatewayOptions _options;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @JsonCreator
   private static TransitGateway create(
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String gatewayId,
-      @Nullable @JsonProperty(JSON_KEY_OPTIONS) TransitGatewayOptions options) {
+      @Nullable @JsonProperty(JSON_KEY_OPTIONS) TransitGatewayOptions options,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
     checkArgument(gatewayId != null, "Transit Gateway Id cannot be null");
     checkArgument(options != null, "Transit Gateway Options cannot be null");
 
-    return new TransitGateway(gatewayId, options);
+    return new TransitGateway(
+        gatewayId,
+        options,
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  public TransitGateway(String gatewayId, TransitGatewayOptions options) {
+  public TransitGateway(String gatewayId, TransitGatewayOptions options, Map<String, String> tags) {
     _gatewayId = gatewayId;
     _options = options;
+    _tags = tags;
   }
 
   /** Creates a node for the transit gateway. */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(nodeName(_gatewayId), "aws", DeviceModel.AWS_TRANSIT_GATEWAY);
+        Utils.newAwsConfiguration(
+            nodeName(_gatewayId), "aws", _tags, DeviceModel.AWS_TRANSIT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // make connections to the attachments
@@ -672,11 +685,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return false;
     }
     TransitGateway that = (TransitGateway) o;
-    return Objects.equals(_gatewayId, that._gatewayId) && Objects.equals(_options, that._options);
+    return Objects.equals(_gatewayId, that._gatewayId)
+        && Objects.equals(_options, that._options)
+        && Objects.equals(_tags, that._tags);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_gatewayId, _options);
+    return Objects.hash(_gatewayId, _options, _tags);
   }
 }

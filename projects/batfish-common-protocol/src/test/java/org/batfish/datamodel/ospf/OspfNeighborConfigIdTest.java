@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -48,7 +47,7 @@ public class OspfNeighborConfigIdTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     OspfNeighborConfigId cid =
         new OspfNeighborConfigId(
             "h", "v", "p", "i", ConcreteInterfaceAddress.parse("192.0.2.2/31"));

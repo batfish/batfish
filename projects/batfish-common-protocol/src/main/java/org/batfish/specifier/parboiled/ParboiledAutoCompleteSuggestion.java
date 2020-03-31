@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
@@ -34,10 +35,32 @@ final class ParboiledAutoCompleteSuggestion {
   /** Actual text of the suggestion */
   @Nonnull private final String _text;
 
+  /** Short text to show the user how to complete a partial suggestion. */
+  @Nullable private final String _hint;
+
+  /** Some helpful text about what the suggestion specifies */
+  @Nullable private final String _description;
+
   ParboiledAutoCompleteSuggestion(String text, int insertionIndex, Anchor.Type anchorType) {
+    this(text, anchorType.getHint(), insertionIndex, anchorType);
+  }
+
+  ParboiledAutoCompleteSuggestion(
+      String text, @Nullable String hint, int insertionIndex, Anchor.Type anchorType) {
+    this(text, hint, insertionIndex, anchorType, null);
+  }
+
+  ParboiledAutoCompleteSuggestion(
+      String text,
+      @Nullable String hint,
+      int insertionIndex,
+      Anchor.Type anchorType,
+      @Nullable String description) {
     _text = text;
+    _hint = hint;
     _insertionIndex = insertionIndex;
     _anchorType = anchorType;
+    _description = description;
   }
 
   @Override
@@ -46,6 +69,8 @@ final class ParboiledAutoCompleteSuggestion {
       return false;
     }
     return Objects.equals(_anchorType, ((ParboiledAutoCompleteSuggestion) o)._anchorType)
+        && Objects.equals(_description, ((ParboiledAutoCompleteSuggestion) o)._description)
+        && Objects.equals(_hint, ((ParboiledAutoCompleteSuggestion) o)._hint)
         && Objects.equals(_insertionIndex, ((ParboiledAutoCompleteSuggestion) o)._insertionIndex)
         && Objects.equals(_text, ((ParboiledAutoCompleteSuggestion) o)._text);
   }
@@ -53,6 +78,11 @@ final class ParboiledAutoCompleteSuggestion {
   @Nonnull
   public Anchor.Type getAnchorType() {
     return _anchorType;
+  }
+
+  @Nullable
+  public String getDescription() {
+    return _description;
   }
 
   public int getInsertionIndex() {
@@ -66,7 +96,7 @@ final class ParboiledAutoCompleteSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_anchorType, _insertionIndex, _text);
+    return Objects.hash(_anchorType, _description, _hint, _insertionIndex, _text);
   }
 
   static AutocompleteSuggestion toAutoCompleteSuggestion(
@@ -74,8 +104,11 @@ final class ParboiledAutoCompleteSuggestion {
     return AutocompleteSuggestion.builder()
         .setText(suggestion._text)
         .setInsertionIndex(suggestion._insertionIndex)
-        .setDescription(completeDescriptionIfNeeded(suggestion))
-        .setHint(suggestion._anchorType.getHint())
+        .setDescription(
+            suggestion._description != null
+                ? suggestion._description
+                : completeDescriptionIfNeeded(suggestion))
+        .setHint(suggestion._hint != null ? suggestion._hint : suggestion._anchorType.getHint())
         .setSuggestionType(suggestion._anchorType.getSuggestionType())
         .build();
   }

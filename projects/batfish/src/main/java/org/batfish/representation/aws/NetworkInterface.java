@@ -21,7 +21,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class NetworkInterface implements AwsVpcEntity, Serializable {
+public final class NetworkInterface implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -117,7 +117,7 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
         attachment == null ? null : attachment.getInstanceId());
   }
 
-  NetworkInterface(
+  public NetworkInterface(
       String networkInterfaceId,
       String subnetId,
       String vpcId,
@@ -138,7 +138,7 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  PrivateIpAddress getPrimaryPrivateIp() {
+  public PrivateIpAddress getPrimaryPrivateIp() {
     return _privateIpAddresses.stream()
         .filter(PrivateIpAddress::isPrimary)
         .findFirst()
@@ -146,17 +146,17 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
   }
 
   @Nullable
-  String getAttachmentInstanceId() {
+  public String getAttachmentInstanceId() {
     return _attachmentInstanceId;
   }
 
   @Nonnull
-  String getDescription() {
+  public String getDescription() {
     return _description;
   }
 
   @Nonnull
-  List<String> getGroups() {
+  public List<String> getGroups() {
     return _groups;
   }
 
@@ -166,22 +166,17 @@ final class NetworkInterface implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  List<PrivateIpAddress> getPrivateIpAddresses() {
+  public List<PrivateIpAddress> getPrivateIpAddresses() {
     return _privateIpAddresses;
   }
 
   @Nonnull
-  String getNetworkInterfaceId() {
-    return _networkInterfaceId;
-  }
-
-  @Nonnull
-  String getSubnetId() {
+  public String getSubnetId() {
     return _subnetId;
   }
 
   @Nonnull
-  String getVpcId() {
+  public String getVpcId() {
     return _vpcId;
   }
 

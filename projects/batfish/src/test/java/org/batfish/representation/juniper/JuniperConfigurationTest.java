@@ -97,7 +97,7 @@ public class JuniperConfigurationTest {
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
-    term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix)));
+    term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix), ipAddrPrefix));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.filterToIpAccessList(filter);
@@ -137,7 +137,7 @@ public class JuniperConfigurationTest {
 
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
-    term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix)));
+    term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix), ipAddrPrefix));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
 

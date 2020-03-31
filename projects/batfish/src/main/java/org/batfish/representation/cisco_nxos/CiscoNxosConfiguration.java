@@ -57,6 +57,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -2743,6 +2744,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public BoolExpr visitRouteMapMatchRouteType(
+              RouteMapMatchRouteType routeMapMatchRouteType) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchSourceProtocol(
               RouteMapMatchSourceProtocol routeMapMatchSourceProtocol) {
             // Not applicable to PBR
@@ -2978,6 +2986,47 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           public BooleanExpr visitRouteMapMatchMetric(RouteMapMatchMetric routeMapMatchMetric) {
             return new MatchMetric(
                 IntComparator.EQ, new LiteralLong(routeMapMatchMetric.getMetric()));
+          }
+
+          @Override
+          public BooleanExpr visitRouteMapMatchRouteType(
+              RouteMapMatchRouteType routeMapMatchRouteType) {
+            AtomicBoolean unsupported = new AtomicBoolean(false);
+            Set<RoutingProtocol> protocols =
+                routeMapMatchRouteType.getTypes().stream()
+                    .flatMap(
+                        t -> {
+                          // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/bgp/match-route-type.html
+                          switch (t) {
+                            case EXTERNAL:
+                              return Stream.of(
+                                  RoutingProtocol.BGP,
+                                  RoutingProtocol.EIGRP,
+                                  RoutingProtocol.OSPF_E1,
+                                  RoutingProtocol.OSPF_E2);
+                            case INTERNAL:
+                              return Stream.of(
+                                  RoutingProtocol.IBGP,
+                                  RoutingProtocol.OSPF,
+                                  RoutingProtocol.OSPF_IA);
+                            case LOCAL:
+                              return Stream.of(RoutingProtocol.LOCAL);
+                            case TYPE_1:
+                              return Stream.of(RoutingProtocol.OSPF_E1);
+                            case TYPE_2:
+                              return Stream.of(RoutingProtocol.OSPF_E2);
+                            case NSSA_EXTERNAL:
+                            default:
+                              unsupported.set(true);
+                              return Stream.of(/* TODO */ );
+                          }
+                        })
+                    .collect(ImmutableSet.toImmutableSet());
+            if (unsupported.get()) {
+              return BooleanExprs.FALSE;
+            }
+            assert !protocols.isEmpty();
+            return new MatchProtocol(protocols);
           }
 
           @Override

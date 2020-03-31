@@ -3,7 +3,6 @@ package org.batfish.question.bgpproperties;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.junit.Test;
@@ -12,7 +11,7 @@ import org.junit.Test;
 public class BgpProcessConfigurationQuestionTest {
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     BgpProcessConfigurationQuestion q =
         new BgpProcessConfigurationQuestion("nodes", BgpProcessPropertySpecifier.MULTIPATH_EBGP);
     assertThat(BatfishObjectMapper.clone(q, BgpProcessConfigurationQuestion.class), equalTo(q));

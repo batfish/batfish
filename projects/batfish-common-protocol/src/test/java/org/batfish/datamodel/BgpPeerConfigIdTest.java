@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -29,7 +28,7 @@ public class BgpPeerConfigIdTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     BgpPeerConfigId id = new BgpPeerConfigId("c1", "vrf1", Prefix.ZERO, false);
     assertThat(BatfishObjectMapper.clone(id, BgpPeerConfigId.class), equalTo(id));
   }

@@ -1,0 +1,72 @@
+comm_set_match_expr_test
+# This file describes the network interfaces
+
+iface lo inet loopback
+ address 1.1.1.3/32
+
+iface eth0
+ address 10.20.31.1/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+agentx
+!
+ip community-list standard standard_Comm1 permit 1:1
+ip community-list standard standard_Comm2 permit 1:1 2:2
+ip community-list standard standard_Comm3 deny 1:1
+ip community-list standard standard_Comm3 permit 2:2
+ip community-list expanded expanded_Comm1 permit "1:.*"
+ip community-list expanded expanded_Comm2 permit "1:.* 2:.*"
+ip community-list expanded expanded_Comm3 deny "1:.*"
+ip community-list expanded expanded_Comm3 permit "2:.*"
+!
+router bgp 2
+ bgp router-id 1.1.1.3
+ neighbor xy peer-group
+ neighbor xy remote-as 2
+ neighbor xy description blah
+ neighbor xy update-source 10.20.31.1
+ neighbor 10.20.31.0 peer-group xy
+!
+ address-family ipv4 unicast
+  network 1.1.1.3/32
+  neighbor xy route-map RM1 out
+ exit-address-family
+!
+!
+!
+route-map Standard_RM1 permit 10
+ match community standard_Comm1
+ set metric 1
+!
+route-map Standard_RM2 permit 20
+ match community standard_Comm2
+ set metric 2
+!
+!
+route-map Standard_RM3 permit 20
+ match community standard_Comm3
+ set metric 3
+!
+!
+route-map Expanded_RM1 permit 10
+ match community expanded_Comm1
+ set metric 1
+!
+route-map Expanded_RM2 permit 20
+ match community expanded_Comm2
+ set metric 2
+!
+!
+route-map Expanded_RM3 permit 20
+ match community expanded_Comm3
+ set metric 3
+!
+!
+line vty
+!
+!### end frr.conf

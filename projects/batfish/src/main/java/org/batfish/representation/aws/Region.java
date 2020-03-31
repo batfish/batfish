@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,16 +35,24 @@ import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.aws.Instance.Status;
 
 /** Represents an AWS region */
 @ParametersAreNonnullByDefault
-final class Region implements Serializable {
+public final class Region implements Serializable {
 
   private interface ThrowingConsumer<T, E extends Exception> {
     void accept(T t) throws E, IOException;
@@ -55,7 +64,12 @@ final class Region implements Serializable {
 
   static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
 
-  static final String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
+  static String instanceEgressAclName(String interfaceName) {
+    return String.format("~EGRESS_ACL~%s", interfaceName);
+  }
+
+  static final TraceElement DENY_SPOOFED_SOURCE_IP_TRACE_ELEMENT =
+      TraceElement.of("Deny spoofed source IPs");
 
   @Nonnull private final Map<String, Address> _addresses;
 
@@ -68,6 +82,14 @@ final class Region implements Serializable {
   @Nonnull private final Map<String, Instance> _instances;
 
   @Nonnull private final Map<String, InternetGateway> _internetGateways;
+
+  @Nonnull private final Map<String, LoadBalancer> _loadBalancers;
+
+  @Nonnull private final Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
+
+  @Nonnull private final Map<String, LoadBalancerListener> _loadBalancerListeners;
+
+  @Nonnull private final Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
 
   @Nonnull private final String _name;
 
@@ -86,6 +108,8 @@ final class Region implements Serializable {
   @Nonnull private final Map<String, SecurityGroup> _securityGroups;
 
   @Nonnull private final Map<String, Subnet> _subnets;
+
+  @Nonnull private final Map<String, TargetGroup> _targetGroups;
 
   @Nonnull private final Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
 
@@ -133,6 +157,11 @@ final class Region implements Serializable {
         new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
+        new HashMap<>(),
         new HashMap<>());
   }
 
@@ -144,6 +173,10 @@ final class Region implements Serializable {
       Map<String, ElasticsearchDomain> elasticsearchDomains,
       Map<String, Instance> instances,
       Map<String, InternetGateway> internetGateways,
+      Map<String, LoadBalancer> loadBalancers,
+      Map<String, LoadBalancerAttributes> loadBalancerAttributes,
+      Map<String, LoadBalancerListener> loadBalancerListeners,
+      Map<String, LoadBalancerTargetHealth> loadBalancerTargetHealths,
       Map<String, NatGateway> natGateways,
       Map<String, NetworkAcl> networkAcls,
       Map<String, NetworkInterface> networkInterfaces,
@@ -152,6 +185,7 @@ final class Region implements Serializable {
       Map<String, RouteTable> routeTables,
       Map<String, SecurityGroup> securityGroups,
       Map<String, Subnet> subnets,
+      Map<String, TargetGroup> targetGroups,
       Map<String, TransitGatewayAttachment> transitGatewayAttachments,
       Map<String, TransitGatewayPropagations> transitGatewayPropagations,
       Map<String, TransitGatewayRouteTable> transitGatewayRouteTables,
@@ -169,6 +203,10 @@ final class Region implements Serializable {
     _elasticsearchDomains = elasticsearchDomains;
     _instances = instances;
     _internetGateways = internetGateways;
+    _loadBalancers = loadBalancers;
+    _loadBalancerAttributes = loadBalancerAttributes;
+    _loadBalancerListeners = loadBalancerListeners;
+    _loadBalancerTargetHealths = loadBalancerTargetHealths;
     _natGateways = natGateways;
     _networkAcls = networkAcls;
     _networkInterfaces = networkInterfaces;
@@ -177,6 +215,7 @@ final class Region implements Serializable {
     _routeTables = routeTables;
     _securityGroups = securityGroups;
     _subnets = subnets;
+    _targetGroups = targetGroups;
     _transitGatewayAttachments = transitGatewayAttachments;
     _transitGatewayPropagations = transitGatewayPropagations;
     _transitGatewayRouteTables = transitGatewayRouteTables;
@@ -244,7 +283,7 @@ final class Region implements Serializable {
     }
   }
 
-  static RegionBuilder builder(String name) {
+  public static RegionBuilder builder(String name) {
     return new RegionBuilder(name);
   }
 
@@ -271,9 +310,12 @@ final class Region implements Serializable {
         };
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
         return json -> {
-          CustomerGateway cGateway =
-              BatfishObjectMapper.mapper().convertValue(json, CustomerGateway.class);
-          _customerGateways.put(cGateway.getId(), cGateway);
+          String stateCode = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (stateCode.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            CustomerGateway cGateway =
+                BatfishObjectMapper.mapper().convertValue(json, CustomerGateway.class);
+            _customerGateways.put(cGateway.getId(), cGateway);
+          }
         };
       case AwsVpcEntity.JSON_KEY_DB_INSTANCES:
         return json -> {
@@ -298,10 +340,43 @@ final class Region implements Serializable {
               BatfishObjectMapper.mapper().convertValue(json, InternetGateway.class);
           _internetGateways.put(iGateway.getId(), iGateway);
         };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_ATTRIBUTES:
+        return json -> {
+          LoadBalancerAttributes loadBalancerAttributes =
+              BatfishObjectMapper.mapper().convertValue(json, LoadBalancerAttributes.class);
+          _loadBalancerAttributes.put(loadBalancerAttributes.getId(), loadBalancerAttributes);
+        };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_LISTENERS:
+        return json -> {
+          LoadBalancerListener loadBalancerListener =
+              BatfishObjectMapper.mapper().convertValue(json, LoadBalancerListener.class);
+          _loadBalancerListeners.put(loadBalancerListener.getId(), loadBalancerListener);
+        };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCER_TARGET_HEALTH:
+        return json -> {
+          LoadBalancerTargetHealth loadBalancerTargetHealth =
+              BatfishObjectMapper.mapper().convertValue(json, LoadBalancerTargetHealth.class);
+          _loadBalancerTargetHealths.put(
+              loadBalancerTargetHealth.getId(), loadBalancerTargetHealth);
+        };
+      case AwsVpcEntity.JSON_KEY_LOAD_BALANCERS:
+        return json -> {
+          String stateCode =
+              json.get(AwsVpcEntity.JSON_KEY_STATE).get(AwsVpcEntity.JSON_KEY_CODE).textValue();
+          if (stateCode.equals(AwsVpcEntity.STATUS_ACTIVE)) {
+            LoadBalancer loadBalancer =
+                BatfishObjectMapper.mapper().convertValue(json, LoadBalancer.class);
+            _loadBalancers.put(loadBalancer.getId(), loadBalancer);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
         return json -> {
-          NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(json, NatGateway.class);
-          _natGateways.put(natGateway.getId(), natGateway);
+          String stateCode = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (stateCode.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            NatGateway natGateway =
+                BatfishObjectMapper.mapper().convertValue(json, NatGateway.class);
+            _natGateways.put(natGateway.getId(), natGateway);
+          }
         };
       case AwsVpcEntity.JSON_KEY_NETWORK_ACLS:
         return json -> {
@@ -344,6 +419,12 @@ final class Region implements Serializable {
         return json -> {
           Subnet subnet = BatfishObjectMapper.mapper().convertValue(json, Subnet.class);
           _subnets.put(subnet.getId(), subnet);
+        };
+      case AwsVpcEntity.JSON_KEY_TARGET_GROUPS:
+        return json -> {
+          TargetGroup targetGroup =
+              BatfishObjectMapper.mapper().convertValue(json, TargetGroup.class);
+          _targetGroups.put(targetGroup.getId(), targetGroup);
         };
       case AwsVpcEntity.JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS:
         return json -> {
@@ -413,7 +494,7 @@ final class Region implements Serializable {
       case AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS:
         return json -> {
           String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
-          if (!state.equals(AwsVpcEntity.STATUS_DELETED)) {
+          if (state.equals(AwsVpcEntity.STATE_AVAILABLE)) {
             VpnConnection vpnConnection =
                 BatfishObjectMapper.mapper().convertValue(json, VpnConnection.class);
             _vpnConnections.put(vpnConnection.getId(), vpnConnection);
@@ -461,7 +542,7 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, Instance> getInstances() {
+  public Map<String, Instance> getInstances() {
     return _instances;
   }
 
@@ -471,7 +552,27 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  String getName() {
+  Map<String, LoadBalancer> getLoadBalancers() {
+    return _loadBalancers;
+  }
+
+  @Nonnull
+  Map<String, LoadBalancerAttributes> getLoadBalancerAttributes() {
+    return _loadBalancerAttributes;
+  }
+
+  @Nonnull
+  Map<String, LoadBalancerListener> getLoadBalancerListeners() {
+    return _loadBalancerListeners;
+  }
+
+  @Nonnull
+  Map<String, LoadBalancerTargetHealth> getLoadBalancerTargetHealths() {
+    return _loadBalancerTargetHealths;
+  }
+
+  @Nonnull
+  public String getName() {
     return _name;
   }
 
@@ -491,7 +592,7 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, NetworkInterface> getNetworkInterfaces() {
+  public Map<String, NetworkInterface> getNetworkInterfaces() {
     return _networkInterfaces;
   }
 
@@ -506,13 +607,18 @@ final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, SecurityGroup> getSecurityGroups() {
+  public Map<String, SecurityGroup> getSecurityGroups() {
     return _securityGroups;
   }
 
   @Nonnull
   Map<String, Subnet> getSubnets() {
     return _subnets;
+  }
+
+  @Nonnull
+  Map<String, TargetGroup> getTargetGroups() {
+    return _targetGroups;
   }
 
   @Nonnull
@@ -598,12 +704,11 @@ final class Region implements Serializable {
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
-      warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
       Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
     }
@@ -625,6 +730,12 @@ final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
+    for (LoadBalancer loadBalancer : getLoadBalancers().values()) {
+      List<Configuration> cfgNodes =
+          loadBalancer.toConfigurationNodes(awsConfiguration, this, warnings);
+      cfgNodes.forEach(cfgNode -> awsConfiguration.addNode(cfgNode));
+    }
+
     for (Subnet subnet : getSubnets().values()) {
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
@@ -637,7 +748,7 @@ final class Region implements Serializable {
 
     // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
 
-    applySecurityGroupsAcls(awsConfiguration.getConfigurationNodes(), warnings);
+    applyInstanceInterfaceAcls(awsConfiguration.getConfigurationNodes(), warnings);
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : awsConfiguration.getConfigurationNodes().values()) {
@@ -649,52 +760,50 @@ final class Region implements Serializable {
 
   /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
   @VisibleForTesting
-  void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
+  void applyInstanceInterfaceAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
       Configuration cfgNode = cfgNodes.get(entry.getKey());
-      List<AclLine> inAclAclLines = new ArrayList<>();
-      List<AclLine> outAclAclLines = new ArrayList<>();
-      entry
-          .getValue()
-          .forEach(
-              securityGroup -> {
-                String sgName = String.format("Security Group %s", securityGroup.getGroupName());
-                Optional.ofNullable(
-                        securityGroupToIpAccessList(securityGroup, true, cfgNode, warnings))
-                    .map(
-                        acl ->
-                            new AclAclLine(
-                                sgName,
-                                acl.getName(),
-                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
-                    .ifPresent(inAclAclLines::add);
-                Optional.ofNullable(
-                        securityGroupToIpAccessList(securityGroup, false, cfgNode, warnings))
-                    .map(
-                        acl ->
-                            new AclAclLine(
-                                sgName,
-                                acl.getName(),
-                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
-                    .ifPresent(outAclAclLines::add);
-              });
+      List<AclLine> inAclAclLines =
+          computeSecurityGroupAclLines(entry.getValue(), true, cfgNode, warnings);
+      List<AclLine> outAclAclLines =
+          computeSecurityGroupAclLines(entry.getValue(), false, cfgNode, warnings);
+
       applyAclLinesToInterfaces(inAclAclLines, outAclAclLines, cfgNode);
     }
   }
 
+  /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
+  @VisibleForTesting
+  List<AclLine> computeSecurityGroupAclLines(
+      Set<SecurityGroup> securityGroups,
+      boolean ingress,
+      Configuration cfgNode,
+      Warnings warnings) {
+    return securityGroups.stream()
+        .sorted(Comparator.comparing(SecurityGroup::getId)) // for stable ordering of lines
+        .map(
+            securityGroup ->
+                Optional.ofNullable(
+                        securityGroupToIpAccessList(securityGroup, ingress, cfgNode, warnings))
+                    .map(
+                        acl ->
+                            // See note about naming on SecurityGroup#getGroupName.
+                            new AclAclLine(
+                                String.format("Security Group %s", securityGroup.getGroupName()),
+                                acl.getName(),
+                                getTraceElementForSecurityGroup(securityGroup.getGroupName())))
+                    .orElse(null))
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
+  }
+
   private static void applyAclLinesToInterfaces(
-      List<AclLine> inAclLines, List<AclLine> outAclLines, Configuration configuration) {
-    // create a combined in ACL and out ACL using the inputs
+      List<AclLine> inSgAclLines, List<AclLine> outSgAclLines, Configuration configuration) {
+    // ingress ACL is the combination of ingress SGs -- compute once
     IpAccessList inAcl =
         IpAccessList.builder()
             .setName(SG_INGRESS_ACL_NAME)
-            .setLines(inAclLines)
-            .setOwner(configuration)
-            .build();
-    IpAccessList outAcl =
-        IpAccessList.builder()
-            .setName(SG_EGRESS_ACL_NAME)
-            .setLines(outAclLines)
+            .setLines(inSgAclLines)
             .setOwner(configuration)
             .build();
 
@@ -705,11 +814,38 @@ final class Region implements Serializable {
         .forEach(
             iface -> {
               iface.setIncomingFilter(inAcl);
-              iface.setOutgoingFilter(outAcl);
+              // egress ACL is spoofing protection plus egress SGs
+              iface.setOutgoingFilter(
+                  IpAccessList.builder()
+                      .setName(instanceEgressAclName(iface.getName()))
+                      .setLines(
+                          ImmutableList.<AclLine>builder()
+                              .add(computeAntiSpoofingFilter(iface))
+                              .addAll(outSgAclLines)
+                              .build())
+                      .setOwner(configuration)
+                      .build());
               iface.setFirewallSessionInterfaceInfo(
                   new FirewallSessionInterfaceInfo(
                       false, ImmutableList.of(iface.getName()), null, null));
             });
+  }
+
+  @VisibleForTesting
+  static AclLine computeAntiSpoofingFilter(Interface iface) {
+    IpSpace validSourceIpSpace =
+        IpWildcardSetIpSpace.builder()
+            .including(
+                iface.getAllConcreteAddresses().stream()
+                    .map(addr -> IpWildcard.create(addr.getIp()))
+                    .collect(Collectors.toList()))
+            .build();
+    return ExprAclLine.builder()
+        .setTraceElement(DENY_SPOOFED_SOURCE_IP_TRACE_ELEMENT)
+        .setMatchCondition(
+            not(new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(validSourceIpSpace).build())))
+        .setAction(LineAction.DENY)
+        .build();
   }
 
   @Nullable
@@ -719,13 +855,12 @@ final class Region implements Serializable {
     if (aclLines.isEmpty()) {
       return null;
     }
+    // See note about naming on SecurityGroup#getGroupName.
     return IpAccessList.builder()
         .setName(
             String.format(
                 "~%s~SECURITY-GROUP~%s~%s~",
-                ingress ? INGRESS : EGRESS,
-                securityGroup.getGroupName(),
-                securityGroup.getGroupId()))
+                ingress ? INGRESS : EGRESS, securityGroup.getGroupName(), securityGroup.getId()))
         .setLines(aclLines)
         .setOwner(owner)
         .build();
@@ -758,6 +893,7 @@ final class Region implements Serializable {
    * <p>AWS limits VPCs to one gateway. If more are present, return the first one found.
    */
   Optional<InternetGateway> findInternetGateway(String vpcId) {
+    // AWS does not allow multiple internet gateways to be attached to a VPC
     return _internetGateways.values().stream()
         .filter(igw -> igw.getAttachmentVpcIds().contains(vpcId))
         .findFirst();
@@ -840,13 +976,17 @@ final class Region implements Serializable {
         .findFirst();
   }
 
-  static final class RegionBuilder {
+  public static final class RegionBuilder {
     private Map<String, Address> _addresses;
     private Map<String, Set<SecurityGroup>> _configurationSecurityGroups;
     private Map<String, CustomerGateway> _customerGateways;
     private Map<String, ElasticsearchDomain> _elasticsearchDomains;
     private Map<String, Instance> _instances;
     private Map<String, InternetGateway> _internetGateways;
+    private Map<String, LoadBalancer> _loadBalancers;
+    private Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
+    private Map<String, LoadBalancerListener> _loadBalancerListeners;
+    private Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
     private String _name;
     private Map<String, NatGateway> _natGateways;
     private Map<String, NetworkAcl> _networkAcls;
@@ -856,6 +996,7 @@ final class Region implements Serializable {
     private Map<String, RouteTable> _routeTables;
     private Map<String, SecurityGroup> _securityGroups;
     private Map<String, Subnet> _subnets;
+    private Map<String, TargetGroup> _targetGroups;
     private Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
     private Map<String, TransitGatewayPropagations> _transitGatewayPropagations;
     private Map<String, TransitGatewayRouteTable> _transitGatewayRouteTables;
@@ -903,6 +1044,29 @@ final class Region implements Serializable {
       return this;
     }
 
+    public RegionBuilder setLoadBalancers(Map<String, LoadBalancer> loadBalancers) {
+      _loadBalancers = loadBalancers;
+      return this;
+    }
+
+    public RegionBuilder setLoadBalancerAttributes(
+        Map<String, LoadBalancerAttributes> loadBalancerAttributes) {
+      _loadBalancerAttributes = loadBalancerAttributes;
+      return this;
+    }
+
+    public RegionBuilder setLoadBalancerListeners(
+        Map<String, LoadBalancerListener> loadBalancerListeners) {
+      _loadBalancerListeners = loadBalancerListeners;
+      return this;
+    }
+
+    public RegionBuilder setLoadBalancerTargetHealths(
+        Map<String, LoadBalancerTargetHealth> loadBalancerTargetHealths) {
+      _loadBalancerTargetHealths = loadBalancerTargetHealths;
+      return this;
+    }
+
     public RegionBuilder setName(String name) {
       _name = name;
       return this;
@@ -945,6 +1109,11 @@ final class Region implements Serializable {
 
     public RegionBuilder setSubnets(Map<String, Subnet> subnets) {
       _subnets = subnets;
+      return this;
+    }
+
+    public RegionBuilder setTargetGroups(Map<String, TargetGroup> targetGroups) {
+      _targetGroups = targetGroups;
       return this;
     }
 
@@ -1013,6 +1182,10 @@ final class Region implements Serializable {
           firstNonNull(_elasticsearchDomains, ImmutableMap.of()),
           firstNonNull(_instances, ImmutableMap.of()),
           firstNonNull(_internetGateways, ImmutableMap.of()),
+          firstNonNull(_loadBalancers, ImmutableMap.of()),
+          firstNonNull(_loadBalancerAttributes, ImmutableMap.of()),
+          firstNonNull(_loadBalancerListeners, ImmutableMap.of()),
+          firstNonNull(_loadBalancerTargetHealths, ImmutableMap.of()),
           firstNonNull(_natGateways, ImmutableMap.of()),
           firstNonNull(_networkAcls, ImmutableMap.of()),
           firstNonNull(_networkInterfaces, ImmutableMap.of()),
@@ -1021,6 +1194,7 @@ final class Region implements Serializable {
           firstNonNull(_routeTables, ImmutableMap.of()),
           firstNonNull(_securityGroups, ImmutableMap.of()),
           firstNonNull(_subnets, ImmutableMap.of()),
+          firstNonNull(_targetGroups, ImmutableMap.of()),
           firstNonNull(_transitGatewayAttachments, ImmutableMap.of()),
           firstNonNull(_transitGatewayPropagations, ImmutableMap.of()),
           firstNonNull(_transitGatewayRouteTables, ImmutableMap.of()),

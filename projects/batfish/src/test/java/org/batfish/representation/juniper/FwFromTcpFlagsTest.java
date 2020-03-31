@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.TraceElement;
@@ -20,6 +21,7 @@ public class FwFromTcpFlagsTest {
         FwFromTcpFlags.TCP_ESTABLISHED.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
             HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
                 .setTcpFlags(
                     ImmutableList.of(
                         TcpFlagsMatchConditions.builder()
@@ -40,6 +42,7 @@ public class FwFromTcpFlagsTest {
         FwFromTcpFlags.TCP_INITIAL.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
             HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
                 .setTcpFlags(
                     ImmutableList.of(
                         TcpFlagsMatchConditions.builder()
@@ -61,7 +64,7 @@ public class FwFromTcpFlagsTest {
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
-            HeaderSpace.builder().setTcpFlags(tcpFlags).build(),
+            HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).setTcpFlags(tcpFlags).build(),
             TraceElement.of(
                 String.format(
                     "Matched tcp-flags %s %s",

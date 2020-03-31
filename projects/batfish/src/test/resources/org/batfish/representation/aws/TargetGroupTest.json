@@ -1,0 +1,22 @@
+{
+  "TargetGroups": [
+    {
+      "HealthCheckEnabled": true,
+      "HealthCheckIntervalSeconds": 30,
+      "HealthCheckPort": "traffic-port",
+      "HealthCheckProtocol": "TCP",
+      "HealthCheckTimeoutSeconds": 10,
+      "HealthyThresholdCount": 3,
+      "LoadBalancerArns": [
+        "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1"
+      ],
+      "Port": 80,
+      "Protocol": "TCP",
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/target1/10b6be82e58c40a8",
+      "TargetGroupName": "target1",
+      "TargetType": "ip",
+      "UnhealthyThresholdCount": 3,
+      "VpcId": "vpc-08afc01f5013ddc43"
+    }
+  ]
+}

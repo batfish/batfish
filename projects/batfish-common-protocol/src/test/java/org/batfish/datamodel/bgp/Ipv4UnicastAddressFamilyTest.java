@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
@@ -46,7 +45,7 @@ public class Ipv4UnicastAddressFamilyTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
             .setExportPolicy("export")

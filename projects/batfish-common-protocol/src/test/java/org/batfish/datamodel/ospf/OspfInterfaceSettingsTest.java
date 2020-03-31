@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
@@ -13,7 +12,7 @@ import org.junit.Test;
 
 public class OspfInterfaceSettingsTest {
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     OspfInterfaceSettings s =
         OspfInterfaceSettings.builder()
             .setProcess("proc")

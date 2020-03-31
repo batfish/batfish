@@ -416,6 +416,7 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
@@ -3728,7 +3729,7 @@ public final class CiscoGrammarTest {
 
   /** Tests that we can append more BGP config at the bottom of a file. */
   @Test
-  public void testBgpReentrantVrf() throws IOException {
+  public void testBgpReentrantVrf() {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf", ConfigurationFormat.CISCO_IOS);
     // Simple test that default VRF was parsed
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
@@ -4308,11 +4309,20 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosMlagConfig() throws IOException {
-    String hostname = "eos-mlag";
+  public void testEosMlagExtraction() {
+    CiscoConfiguration c = parseCiscoConfig("eos-mlag", ConfigurationFormat.ARISTA);
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
+    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
+    assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
+    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
+    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
+  }
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+  @Test
+  public void testEosMlagConversion() throws IOException {
+    Configuration c = parseConfig("eos-mlag");
 
     final String mlagName = "MLAG_DOMAIN_ID";
     assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));

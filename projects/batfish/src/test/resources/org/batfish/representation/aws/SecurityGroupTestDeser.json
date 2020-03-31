@@ -45,6 +45,12 @@
         }
       ],
       "OwnerId": "118292266645",
+      "Tags": [
+        {
+          "Key": "testKey",
+          "Value": "testValue"
+        }
+      ],
       "VpcId": "vpc-6f6f8316"
     }
   ]

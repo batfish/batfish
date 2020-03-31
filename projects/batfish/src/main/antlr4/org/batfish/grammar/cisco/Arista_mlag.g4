@@ -19,7 +19,7 @@ eos_mlag_local_interface
 
 eos_mlag_peer_address
 :
-   PEER_ADDRESS ip = IP_ADDRESS NEWLINE
+   PEER_ADDRESS HEARTBEAT? ip = IP_ADDRESS NEWLINE
 ;
 
 eos_mlag_peer_link

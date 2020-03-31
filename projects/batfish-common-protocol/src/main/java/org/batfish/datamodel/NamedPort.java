@@ -204,6 +204,7 @@ public enum NamedPort {
   /** Message Send Protocol. */
   MSP(18),
   MSRPC(135),
+  MYSQL_SERVER(3306),
   /** Netnews Administration System. */
   NAS(991),
   /** NAT Sync Protocol. */

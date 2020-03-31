@@ -1,25 +1,28 @@
 package org.batfish.datamodel.pojo;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.pojo.Aggregate.AggregateType;
+import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.junit.Test;
 
 /** Tests of {@link Topology}. */
 public class TopologyTest {
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Node node = new Node("node");
     Link link = new Link("src", "dst");
     Interface iface = new Interface(node.getId(), "iface");
@@ -125,5 +128,33 @@ public class TopologyTest {
             ImmutableSet.of(
                 new Interface("node-c1", "to-c2", InterfaceType.VPN),
                 new Interface("node-c2", "to-c1", InterfaceType.TUNNEL))));
+  }
+
+  @Test
+  public void testAwsAggregateUsesNodes() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname("vpc-1")
+            .setConfigurationFormat(ConfigurationFormat.AWS)
+            .build();
+    VendorFamily vf = new VendorFamily();
+    AwsFamily af = new AwsFamily();
+    String regionName = "us-west-1";
+    af.setRegion(regionName);
+    vf.setAws(af);
+    c1.setVendorFamily(vf);
+
+    Topology topo =
+        Topology.create(
+            "ss",
+            ImmutableMap.of(c1.getHostname(), c1),
+            new org.batfish.datamodel.Topology(ImmutableSortedSet.of()));
+    Node topoNode = new Node(c1.getHostname());
+
+    Aggregate expectedAgg = new Aggregate(regionName, AggregateType.REGION);
+    expectedAgg.setContents(ImmutableSet.of(topoNode.getId()));
+
+    assertThat(topo.getAggregates(), hasItem(expectedAgg));
   }
 }

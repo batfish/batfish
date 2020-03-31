@@ -58,17 +58,17 @@ Jupyter will show you the list of available notebooks. "Getting Started with Bat
 
 #### 3. Install Pybatfish
 
-To analyze your network configurations, you also need [Pybatfish](https://www.github.com/batfish/pybatfish), a Python SDK to interact with the Batfish service. Though not strictly necessary, we recommend that you install Pybatfish in a [Python 3 virtual environment](https://docs.python.org/3/library/venv.html). 
+To analyze your network configurations, you also need [Pybatfish](https://www.github.com/batfish/pybatfish), a Python 3 SDK to interact with the Batfish service. Though not strictly necessary, we recommend that you install Pybatfish in a [virtual environment](https://docs.python.org/3/library/venv.html). 
 
 To install Pybatfish run the following commands (in a virtual environment if applicable):
 
-    python -m pip install --upgrade git+https://github.com/batfish/pybatfish.git
+    python3 -m pip install --upgrade pybatfish
 
 #### 4. Develop your analysis 
 
 Afer installing Pybatfish, use your Python environment of choice (e.g., PyCharm, interactive Python shell, Jupyter, ..) to interact with Batfish. The [notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) provide examples of such scripts. 
 
-See complete documentation of Pybatfish on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html).
+See complete documentation of Pybatfish on [readthedocs](https://pybatfish.readthedocs.io/en/latest/).
 
 
 ## System Requirements for running Batfish

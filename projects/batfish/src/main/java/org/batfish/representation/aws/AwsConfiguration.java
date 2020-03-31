@@ -23,6 +23,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
@@ -44,6 +45,11 @@ public class AwsConfiguration extends VendorConfiguration {
 
   public AwsConfiguration(Map<String, Region> regions) {
     _regions = regions;
+  }
+
+  @Nonnull
+  public Map<String, Region> getRegions() {
+    return _regions;
   }
 
   /** Adds a config subtree */
@@ -97,7 +103,13 @@ public class AwsConfiguration extends VendorConfiguration {
     return new IspConfiguration(
         borderInterfaces,
         IspFilter.ALLOW_ALL,
-        ImmutableList.of(new IspNodeInfo(AWS_BACKBONE_ASN, AWS_BACKBONE_NODE_NAME)));
+        ImmutableList.of(
+            new IspNodeInfo(
+                AWS_BACKBONE_ASN,
+                AWS_BACKBONE_NODE_NAME,
+                AwsPrefixes.getPrefixes().stream()
+                    .map(IspAnnouncement::new)
+                    .collect(ImmutableList.toImmutableList()))));
   }
 
   @Override

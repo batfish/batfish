@@ -36,7 +36,8 @@
               "Text" : "net add vxlan vni4294967295-4294967296 vxlan local-tunnelip 1.1.1.1"
             }
           ]
-        }
+        },
+        "internet" : { }
       }
     }
   ],

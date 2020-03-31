@@ -22,6 +22,7 @@ java_library(
     ],
     resources = [
         "src/main/resources/org/batfish/config/batfish.properties",
+        "src/main/resources/org/batfish/representation/aws/ip-ranges.json",
     ],
     runtime_deps = [
         "//projects/question",

@@ -9,6 +9,22 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     return visitor.visitOspfAreaNssa(this);
   }
 
+  public boolean getDefaultInformationOriginate() {
+    return _defaultInformationOriginate;
+  }
+
+  public void setDefaultInformationOriginate(boolean defaultInformationOriginate) {
+    _defaultInformationOriginate = defaultInformationOriginate;
+  }
+
+  public @Nullable String getDefaultInformationOriginateMap() {
+    return _defaultInformationOriginateMap;
+  }
+
+  public void setDefaultInformationOriginateMap(@Nullable String defaultInformationOriginateMap) {
+    _defaultInformationOriginateMap = defaultInformationOriginateMap;
+  }
+
   public boolean getNoRedistribution() {
     return _noRedistribution;
   }
@@ -25,19 +41,12 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     _noSummary = noSummary;
   }
 
-  public @Nullable String getRouteMap() {
-    return _routeMap;
-  }
-
-  public void setRouteMap(@Nullable String routeMap) {
-    _routeMap = routeMap;
-  }
-
   //////////////////////////////////////////
   ///// Private implementation details /////
   //////////////////////////////////////////
 
+  private boolean _defaultInformationOriginate;
+  private @Nullable String _defaultInformationOriginateMap;
   private boolean _noRedistribution;
   private boolean _noSummary;
-  private @Nullable String _routeMap;
 }

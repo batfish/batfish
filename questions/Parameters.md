@@ -135,7 +135,7 @@ portTerm :=
 
 </pre>
 
-Application name is one of `DNS` (means udp/53), `ECHO-REPLY` (icmp/0/0), `ECHO-REQUEST` (icmp/8/0), `HTTP` (tcp/80), `HTTPS` (tcp/443), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
+Application name is one of `DNS` (means udp/53), `ECHO-REPLY` (icmp/0/0), `ECHO-REQUEST` (icmp/8/0), `HTTP` (tcp/80), `HTTPS` (tcp/443), `MYSQL` (tcp/3306), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
 
 ### BGP Peer Property Specifier
 

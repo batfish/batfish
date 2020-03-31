@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -23,7 +22,7 @@ public class AsnValueTest {
   }
 
   @Test
-  public void testEquals() throws IOException {
+  public void testEquals() {
     AsnValue tester = AsnValue.of(RemoteAs.instance());
     new EqualsTester()
         .addEqualityGroup(

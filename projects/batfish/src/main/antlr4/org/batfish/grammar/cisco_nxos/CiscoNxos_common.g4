@@ -273,6 +273,12 @@ ospf_on_startup_wait_period
   uint32
 ;
 
+ospf_priority
+:
+// 0-255
+  uint8
+;
+
 ospf_ref_bw_gbps
 :
 // 1-4000

@@ -9,5 +9,7 @@ interface LocationAstNodeVisitor<T> {
 
   T visitInterfaceLocationAstNode(InterfaceLocationAstNode interfaceLocationAstNode);
 
+  T visitInternetLocationAstNode();
+
   T visitEnterLocationAstNode(EnterLocationAstNode enterLocationAstNode);
 }

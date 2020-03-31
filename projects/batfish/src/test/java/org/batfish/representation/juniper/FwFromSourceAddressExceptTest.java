@@ -14,7 +14,8 @@ public class FwFromSourceAddressExceptTest {
   @Test
   public void testToAclLineMatchExpr() {
     IpWildcard ipWildcard = IpWildcard.parse("1.1.1.0/24");
-    FwFromSourceAddressExcept from = new FwFromSourceAddressExcept(ipWildcard);
+    FwFromSourceAddressExcept from =
+        new FwFromSourceAddressExcept(ipWildcard, ipWildcard.toString());
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(

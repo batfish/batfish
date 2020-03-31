@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.Ip;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -70,7 +71,7 @@ public class ParserIpSpaceTest {
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
-            .setIps(ImmutableSet.of("1.1.1.1", "1.1.1.10"))
+            .setIps(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.10")))
             .setPrefixes(ImmutableSet.of("1.1.1.1/22"))
             .build();
 

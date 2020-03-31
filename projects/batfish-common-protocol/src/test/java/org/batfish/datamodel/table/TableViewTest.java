@@ -3,11 +3,8 @@ package org.batfish.datamodel.table;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
@@ -23,7 +20,7 @@ public final class TableViewTest {
       new TableMetadata(ImmutableList.of(new ColumnMetadata("c1", Schema.STRING, "desc")));
 
   @Test
-  public void testSerialization() throws JsonParseException, JsonMappingException, IOException {
+  public void testSerialization() {
     Row row1 = Row.builder().put("key1", "v1").build();
     Row row2 = Row.builder().put("key1", "v2").build();
     TableView tableView =

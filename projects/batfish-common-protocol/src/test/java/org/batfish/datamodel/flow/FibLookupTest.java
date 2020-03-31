@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public final class FibLookupTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  public void testSerialization() {
     SessionAction clone = BatfishObjectMapper.clone(FibLookup.INSTANCE, SessionAction.class);
     assertThat(clone, equalTo(FibLookup.INSTANCE));
   }

@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -34,7 +33,7 @@ public final class SetCommunitiesTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, SetCommunities.class), equalTo(OBJ));
   }
 

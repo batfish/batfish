@@ -5403,6 +5403,11 @@ HEADER_PASSING
    'header-passing'
 ;
 
+HEARTBEAT
+:
+   'heartbeat'
+;
+
 HEARTBEAT_INTERVAL
 :
    'heartbeat-interval'
@@ -10703,6 +10708,11 @@ REPCMD
 REPLACE_AS
 :
    'replace-as'
+;
+
+REPLY
+:
+   'reply'
 ;
 
 REPLY_TO

@@ -324,7 +324,7 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(LONGSPACE1, LongSpace.class), equalTo(LONGSPACE1));
   }
 

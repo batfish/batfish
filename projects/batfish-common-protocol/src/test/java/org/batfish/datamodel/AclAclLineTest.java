@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -92,7 +91,7 @@ public class AclAclLineTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     {
       AclAclLine aclAclLine = new AclAclLine("lineName", "aclName");
       AclAclLine clone = (AclAclLine) BatfishObjectMapper.clone(aclAclLine, AclLine.class);

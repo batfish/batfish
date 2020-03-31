@@ -18150,11 +18150,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_imish_malformed" : {
-            "name" : "pools~on~f5_bigip_imish_malformed"
+          "PoolAddresses~on~f5_bigip_imish_malformed" : {
+            "name" : "PoolAddresses~on~f5_bigip_imish_malformed"
           },
-          "virtualAddresses~on~f5_bigip_imish_malformed" : {
-            "name" : "virtualAddresses~on~f5_bigip_imish_malformed"
+          "VirtualAddresses~on~f5_bigip_imish_malformed" : {
+            "name" : "VirtualAddresses~on~f5_bigip_imish_malformed"
           }
         },
         "routeFilterLists" : {
@@ -18270,11 +18270,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_cm" : {
-            "name" : "pools~on~f5_bigip_structured_cm"
+          "PoolAddresses~on~f5_bigip_structured_cm" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_cm"
           },
-          "virtualAddresses~on~f5_bigip_structured_cm" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_cm"
+          "VirtualAddresses~on~f5_bigip_structured_cm" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_cm"
           }
         },
         "vendorFamily" : { },
@@ -18291,7 +18291,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_ltm" : {
+          "PoolAddresses~on~f5_bigip_structured_ltm" : {
             "addressGroups" : [
               {
                 "addresses" : [
@@ -18301,9 +18301,9 @@
                 "name" : "/Common/SOME_LTM_POOL"
               }
             ],
-            "name" : "pools~on~f5_bigip_structured_ltm"
+            "name" : "PoolAddresses~on~f5_bigip_structured_ltm"
           },
-          "virtualAddresses~on~f5_bigip_structured_ltm" : {
+          "VirtualAddresses~on~f5_bigip_structured_ltm" : {
             "addressGroups" : [
               {
                 "addresses" : [
@@ -18313,7 +18313,7 @@
                 "name" : "/Common/192.0.2.8"
               }
             ],
-            "name" : "virtualAddresses~on~f5_bigip_structured_ltm"
+            "name" : "VirtualAddresses~on~f5_bigip_structured_ltm"
           }
         },
         "vendorFamily" : { },
@@ -18338,11 +18338,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_malformed" : {
-            "name" : "pools~on~f5_bigip_structured_malformed"
+          "PoolAddresses~on~f5_bigip_structured_malformed" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_malformed"
           },
-          "virtualAddresses~on~f5_bigip_structured_malformed" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_malformed"
+          "VirtualAddresses~on~f5_bigip_structured_malformed" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_malformed"
           }
         },
         "vendorFamily" : { },
@@ -18370,11 +18370,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_net" : {
-            "name" : "pools~on~f5_bigip_structured_net"
+          "PoolAddresses~on~f5_bigip_structured_net" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_net"
           },
-          "virtualAddresses~on~f5_bigip_structured_net" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_net"
+          "VirtualAddresses~on~f5_bigip_structured_net" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_net"
           }
         },
         "interfaces" : {
@@ -18540,11 +18540,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_net_routing_bgp" : {
-            "name" : "pools~on~f5_bigip_structured_net_routing_bgp"
+          "PoolAddresses~on~f5_bigip_structured_net_routing_bgp" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_net_routing_bgp"
           },
-          "virtualAddresses~on~f5_bigip_structured_net_routing_bgp" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_bgp"
+          "VirtualAddresses~on~f5_bigip_structured_net_routing_bgp" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_net_routing_bgp"
           }
         },
         "routingPolicies" : {
@@ -18698,11 +18698,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_net_routing_prefix_list" : {
-            "name" : "pools~on~f5_bigip_structured_net_routing_prefix_list"
+          "PoolAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_net_routing_prefix_list"
           },
-          "virtualAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_prefix_list"
+          "VirtualAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_net_routing_prefix_list"
           }
         },
         "route6FilterLists" : {
@@ -18753,11 +18753,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_net_routing_route_map" : {
-            "name" : "pools~on~f5_bigip_structured_net_routing_route_map"
+          "PoolAddresses~on~f5_bigip_structured_net_routing_route_map" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_net_routing_route_map"
           },
-          "virtualAddresses~on~f5_bigip_structured_net_routing_route_map" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_route_map"
+          "VirtualAddresses~on~f5_bigip_structured_net_routing_route_map" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_net_routing_route_map"
           }
         },
         "routingPolicies" : {
@@ -18789,11 +18789,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_sys" : {
-            "name" : "pools~on~f5_bigip_structured_sys"
+          "PoolAddresses~on~f5_bigip_structured_sys" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_sys"
           },
-          "virtualAddresses~on~f5_bigip_structured_sys" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_sys"
+          "VirtualAddresses~on~f5_bigip_structured_sys" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_sys"
           }
         },
         "ntpServers" : [
@@ -18814,11 +18814,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_sys_ha_group" : {
-            "name" : "pools~on~f5_bigip_structured_sys_ha_group"
+          "PoolAddresses~on~f5_bigip_structured_sys_ha_group" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_sys_ha_group"
           },
-          "virtualAddresses~on~f5_bigip_structured_sys_ha_group" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_sys_ha_group"
+          "VirtualAddresses~on~f5_bigip_structured_sys_ha_group" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_sys_ha_group"
           }
         },
         "vendorFamily" : { },
@@ -18835,11 +18835,11 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
-          "pools~on~f5_bigip_structured_with_imish" : {
-            "name" : "pools~on~f5_bigip_structured_with_imish"
+          "PoolAddresses~on~f5_bigip_structured_with_imish" : {
+            "name" : "PoolAddresses~on~f5_bigip_structured_with_imish"
           },
-          "virtualAddresses~on~f5_bigip_structured_with_imish" : {
-            "name" : "virtualAddresses~on~f5_bigip_structured_with_imish"
+          "VirtualAddresses~on~f5_bigip_structured_with_imish" : {
+            "name" : "VirtualAddresses~on~f5_bigip_structured_with_imish"
           }
         },
         "ipAccessLists" : {
@@ -22975,6 +22975,9 @@
                     {
                       "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                       "headerSpace" : {
+                        "ipProtocols" : [
+                          "TCP"
+                        ],
                         "negate" : false,
                         "tcpFlagsMatchConditions" : [
                           {
@@ -24378,7 +24381,7 @@
                             "fragments" : [
                               {
                                 "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched destination-address 1.2.3.5"
+                                "text" : "Matched destination-address 1.2.3.5/32"
                               }
                             ]
                           }
@@ -24409,6 +24412,9 @@
                         "icmpCodes" : [
                           "2-2"
                         ],
+                        "ipProtocols" : [
+                          "ICMP"
+                        ],
                         "negate" : false
                       },
                       "traceElement" : {
@@ -24429,6 +24435,9 @@
                             "icmpTypes" : [
                               "3-3"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24445,6 +24454,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "0-0"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24463,6 +24475,9 @@
                             "icmpTypes" : [
                               "8-8"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24479,6 +24494,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "16-16"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24497,6 +24515,9 @@
                             "icmpTypes" : [
                               "15-15"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24513,6 +24534,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "12-12"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24531,6 +24555,9 @@
                             "icmpTypes" : [
                               "5-5"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24547,6 +24574,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "9-9"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24565,6 +24595,9 @@
                             "icmpTypes" : [
                               "10-10"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24581,6 +24614,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "4-4"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24599,6 +24635,9 @@
                             "icmpTypes" : [
                               "11-11"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24615,6 +24654,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "13-13"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24633,6 +24675,9 @@
                             "icmpTypes" : [
                               "14-14"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24650,6 +24695,9 @@
                             "icmpTypes" : [
                               "3-3"
                             ],
+                            "ipProtocols" : [
+                              "ICMP"
+                            ],
                             "negate" : false
                           },
                           "traceElement" : {
@@ -24666,6 +24714,9 @@
                           "headerSpace" : {
                             "icmpTypes" : [
                               "1-1"
+                            ],
+                            "ipProtocols" : [
+                              "ICMP"
                             ],
                             "negate" : false
                           },
@@ -24748,12 +24799,30 @@
                             "fragments" : [
                               {
                                 "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                "text" : "Matched source-address 2.4.6.9"
+                                "text" : "Matched source-address 2.4.6.9/32"
                               }
                             ]
                           }
                         }
                       ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "notSrcIps" : {
+                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "ipWildcard" : "5.5.5.4/31"
+                        }
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched source-address 5.5.5.5/31 except"
+                          }
+                        ]
+                      }
                     }
                   ]
                 },
@@ -24863,7 +24932,7 @@
                               "fragments" : [
                                 {
                                   "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched destination-address 1.2.3.5"
+                                  "text" : "Matched destination-address 1.2.3.5/32"
                                 }
                               ]
                             }
@@ -24894,6 +24963,9 @@
                           "icmpCodes" : [
                             "2-2"
                           ],
+                          "ipProtocols" : [
+                            "ICMP"
+                          ],
                           "negate" : false
                         },
                         "traceElement" : {
@@ -24914,6 +24986,9 @@
                               "icmpTypes" : [
                                 "3-3"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -24930,6 +25005,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "0-0"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -24948,6 +25026,9 @@
                               "icmpTypes" : [
                                 "8-8"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -24964,6 +25045,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "16-16"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -24982,6 +25066,9 @@
                               "icmpTypes" : [
                                 "15-15"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -24998,6 +25085,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "12-12"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25016,6 +25106,9 @@
                               "icmpTypes" : [
                                 "5-5"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25032,6 +25125,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "9-9"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25050,6 +25146,9 @@
                               "icmpTypes" : [
                                 "10-10"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25066,6 +25165,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "4-4"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25084,6 +25186,9 @@
                               "icmpTypes" : [
                                 "11-11"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25100,6 +25205,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "13-13"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25118,6 +25226,9 @@
                               "icmpTypes" : [
                                 "14-14"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25135,6 +25246,9 @@
                               "icmpTypes" : [
                                 "3-3"
                               ],
+                              "ipProtocols" : [
+                                "ICMP"
+                              ],
                               "negate" : false
                             },
                             "traceElement" : {
@@ -25151,6 +25265,9 @@
                             "headerSpace" : {
                               "icmpTypes" : [
                                 "1-1"
+                              ],
+                              "ipProtocols" : [
+                                "ICMP"
                               ],
                               "negate" : false
                             },
@@ -25233,12 +25350,30 @@
                               "fragments" : [
                                 {
                                   "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                                  "text" : "Matched source-address 2.4.6.9"
+                                  "text" : "Matched source-address 2.4.6.9/32"
                                 }
                               ]
                             }
                           }
                         ]
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "negate" : false,
+                          "notSrcIps" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "5.5.5.4/31"
+                          }
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched source-address 5.5.5.5/31 except"
+                            }
+                          ]
+                        }
                       }
                     ],
                     "traceElement" : {
@@ -30191,7 +30326,9 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs"
+            "region" : "aws_configs",
+            "subnetId" : "subnet-a9660ce1",
+            "vpcId" : "vpc-50fffd36"
           }
         },
         "vrfs" : {
@@ -30210,7 +30347,9 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs"
+            "region" : "aws_configs",
+            "subnetId" : "subnet-3e7e3458",
+            "vpcId" : "vpc-50fffd36"
           }
         },
         "vrfs" : {

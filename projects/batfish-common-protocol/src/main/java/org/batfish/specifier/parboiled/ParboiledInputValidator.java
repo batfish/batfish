@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -67,10 +68,16 @@ public final class ParboiledInputValidator {
       _referenceLibrary = referenceLibrary;
 
       _configs =
-          _completionMetadata.getNodes().stream()
+          _completionMetadata.getNodes().entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
-                      n -> n, n -> new Configuration(n, ConfigurationFormat.UNKNOWN)));
+                      Entry::getKey,
+                      n ->
+                          Configuration.builder()
+                              .setHostname(n.getKey())
+                              .setHumanName(n.getValue().getHumanName())
+                              .setConfigurationFormat(ConfigurationFormat.UNKNOWN)
+                              .build()));
     }
 
     @Nonnull

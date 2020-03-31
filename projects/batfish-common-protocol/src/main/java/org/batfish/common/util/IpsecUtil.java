@@ -579,6 +579,16 @@ public class IpsecUtil {
         continue;
       }
 
+      // skip inactivate interfaces
+      if (!nf.getInterface(peerIdU.getHostName(), peerU.getSourceInterface())
+              .map(Interface::getActive)
+              .orElse(Boolean.FALSE)
+          || !nf.getInterface(peerIdV.getHostName(), peerV.getSourceInterface())
+              .map(Interface::getActive)
+              .orElse(Boolean.FALSE)) {
+        continue;
+      }
+
       // not checking reachability for cloud type IPsec sessions, it is a workaround till we are
       // confident that ISP modeling will let us do traceroutes properly between cloud type
       // networks

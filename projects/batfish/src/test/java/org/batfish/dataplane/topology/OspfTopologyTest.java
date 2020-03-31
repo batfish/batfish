@@ -231,7 +231,7 @@ public class OspfTopologyTest {
   }
 
   @Test
-  public void testEdgeIdJsonSerialization() throws IOException {
+  public void testEdgeIdJsonSerialization() {
     final OspfNeighborConfigId r1i13 =
         new OspfNeighborConfigId(
             "r1",

@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -63,7 +62,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  public void testSerialization() {
     Interface i =
         Interface.builder()
             .setMtu(7)

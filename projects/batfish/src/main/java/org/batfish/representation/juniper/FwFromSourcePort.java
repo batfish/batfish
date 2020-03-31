@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -44,6 +45,9 @@ public final class FwFromSourcePort implements FwFrom {
   }
 
   private HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder().setSrcPorts(_portRange).build();
+    return HeaderSpace.builder()
+        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
+        .setSrcPorts(_portRange)
+        .build();
   }
 }

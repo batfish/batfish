@@ -3,7 +3,6 @@ package org.batfish.vendor;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public final class VendorStructureIdTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     VendorStructureId vendorStructureId = new VendorStructureId("f", "t", "n");
     assertEquals(
         vendorStructureId, BatfishObjectMapper.clone(vendorStructureId, VendorStructureId.class));

@@ -304,6 +304,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testCommunityListExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_community_list");
+    assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
+  }
+
+  @Test
   public void testNeighborExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbors");
     {
@@ -591,6 +597,7 @@ public class AristaGrammarTest {
   @Test
   public void testVxlanExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_vxlan");
+    assertThat(config.getEosVxlan().getArpReplyRelay(), equalTo(true));
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 10001));
   }

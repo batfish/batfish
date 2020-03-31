@@ -9,7 +9,8 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROU
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
-import static org.batfish.representation.aws.Utils.traceElementForIcmp;
+import static org.batfish.representation.aws.Utils.traceElementForIcmpCode;
+import static org.batfish.representation.aws.Utils.traceElementForIcmpType;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -83,15 +84,6 @@ public class SecurityGroupsTest {
         traceElementForDstPorts(fromPort, toPort));
   }
 
-  private static MatchHeaderSpace matchIcmpTypeCode(int type, int code) {
-    HeaderSpace.Builder hsBuilder = HeaderSpace.builder();
-    hsBuilder.setIcmpTypes(type);
-    if (code != -1) {
-      hsBuilder.setIcmpCodes(code);
-    }
-    return new MatchHeaderSpace(hsBuilder.build(), traceElementForIcmp(type, code));
-  }
-
   @Before
   public void setup() throws IOException {
     JsonNode json =
@@ -127,6 +119,7 @@ public class SecurityGroupsTest {
         Matchers.equalTo(
             ImmutableList.of(
                 new SecurityGroup(
+                    "For test",
                     "sg-01a88a2ecd621d9ba",
                     "Single port ",
                     ImmutableList.of(
@@ -152,7 +145,9 @@ public class SecurityGroupsTest {
                             ImmutableList.of(
                                 new IpRange("Allowing single port", Prefix.parse("1.2.3.4/32"))),
                             ImmutableList.of(),
-                            ImmutableList.of()))))));
+                            ImmutableList.of())),
+                    ImmutableMap.of("testKey", "testValue"),
+                    "vpc-6f6f8316"))));
   }
 
   @Test
@@ -194,7 +189,12 @@ public class SecurityGroupsTest {
     assertThat(
         line,
         isExprAclLineThat(
-            hasMatchCondition(and(matchIcmp, matchIcmpTypeCode(8, -1), matchUniverse))));
+            hasMatchCondition(
+                and(
+                    matchIcmp,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIcmpTypes(8).build(), traceElementForIcmpType(8)),
+                    matchUniverse))));
   }
 
   @Test
@@ -204,7 +204,14 @@ public class SecurityGroupsTest {
     assertThat(
         line,
         isExprAclLineThat(
-            hasMatchCondition(and(matchIcmp, matchIcmpTypeCode(8, 9), matchUniverse))));
+            hasMatchCondition(
+                and(
+                    matchIcmp,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIcmpTypes(8).build(), traceElementForIcmpType(8)),
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder().setIcmpCodes(9).build(), traceElementForIcmpCode(9)),
+                    matchUniverse))));
   }
 
   @Test
@@ -338,7 +345,7 @@ public class SecurityGroupsTest {
             ImmutableList.of());
 
     SecurityGroup sg =
-        new SecurityGroup("test", "test", ImmutableList.of(perms), ImmutableList.of());
+        new SecurityGroup("test", "test", ImmutableList.of(perms), ImmutableList.of(), "vpc");
 
     List<AclLine> outboundRules =
         sg.toAclLines(
@@ -391,7 +398,8 @@ public class SecurityGroupsTest {
                     22,
                     ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
-                    ImmutableList.of())));
+                    ImmutableList.of())),
+            "vpc");
     List<AclLine> lines = sg.toAclLines(Region.builder("r").build(), true, new Warnings());
     assertThat(
         lines,

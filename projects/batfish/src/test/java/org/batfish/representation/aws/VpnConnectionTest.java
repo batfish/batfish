@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -40,18 +41,17 @@ public class VpnConnectionTest {
     String text = CommonUtil.readResource("org/batfish/representation/aws/VpnConnectionTest.json");
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
-    ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPN_CONNECTIONS);
-    List<VpnConnection> vpnConnections = new LinkedList<>();
+    Region region = new Region("r1");
+    region.addConfigElement(json, null, null);
 
-    for (int index = 0; index < array.size(); index++) {
-      vpnConnections.add(
-          BatfishObjectMapper.mapper().convertValue(array.get(index), VpnConnection.class));
-    }
-
+    /*
+     * Only the available connections should show up.
+     */
     assertThat(
-        vpnConnections,
+        region.getVpnConnections(),
         equalTo(
-            ImmutableList.of(
+            ImmutableMap.of(
+                "vpn-ba2e34a8",
                 new VpnConnection(
                     true,
                     "vpn-ba2e34a8",
@@ -187,7 +187,7 @@ public class VpnConnectionTest {
 
   @Test
   public void testApplyToGateway() {
-    VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of());
+    VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of());
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     BgpProcess bgpProc =
         BgpProcess.builder()

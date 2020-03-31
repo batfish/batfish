@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -32,7 +31,7 @@ public class PacketMatchExprTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     PacketMatchExpr pm = new PacketMatchExpr(TrueExpr.INSTANCE);
     assertThat(BatfishObjectMapper.clone(pm, PacketMatchExpr.class), equalTo(pm));
   }

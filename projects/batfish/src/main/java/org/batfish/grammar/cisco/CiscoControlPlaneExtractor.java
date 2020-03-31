@@ -648,6 +648,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_multicast_groupContext;
@@ -3195,6 +3196,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_vxif_arp(Eos_vxif_arpContext ctx) {
+    _eosVxlan.setArpReplyRelay(true);
+  }
+
+  @Override
   public void exitEos_vxif_description(Eos_vxif_descriptionContext ctx) {
     _eosVxlan.setDescription(getDescription(ctx.description_line()));
   }
@@ -3474,6 +3480,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       name = ctx.num.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
+    } else if (ctx.name_cl != null) {
+      name = ctx.name_cl.getText();
     } else {
       throw new BatfishException("Invalid standard community-list name");
     }
@@ -7891,7 +7899,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    if (ctx.HEARTBEAT() == null) {
+      _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    } else {
+      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+    }
   }
 
   @Override

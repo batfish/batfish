@@ -1209,13 +1209,19 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
+    return bddReachabilityAnalysis(srcIpSpaceAssignment, false);
+  }
+
+  public BDDReachabilityAnalysis bddReachabilityAnalysis(
+      IpSpaceAssignment srcIpSpaceAssignment, boolean useInterfaceRoots) {
     return bddReachabilityAnalysis(
         srcIpSpaceAssignment,
         matchDst(UniverseIpSpace.INSTANCE),
         ImmutableSet.of(),
         ImmutableSet.of(),
         _configs.keySet(),
-        ImmutableSet.of(FlowDisposition.ACCEPTED));
+        ImmutableSet.of(FlowDisposition.ACCEPTED),
+        useInterfaceRoots);
   }
 
   public BDDLoopDetectionAnalysis bddLoopDetectionAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {

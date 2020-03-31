@@ -353,8 +353,8 @@ set_extcommunity_rp_stanza
   SET EXTCOMMUNITY
   (
     set_extcommunity_rt
-    // TODO all the other extended community types
-  )
+    // TODO all the other extended community types. Until then, the ? prevents NPE on recovery.
+  )?
 ;
 
 set_extcommunity_rt

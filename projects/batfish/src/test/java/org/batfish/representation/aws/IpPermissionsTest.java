@@ -67,10 +67,11 @@ public class IpPermissionsTest {
 
   private static Region testRegion() {
     Region region = new Region("test");
-    SecurityGroup sg = new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of());
+    SecurityGroup sg =
+        new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of(), "vpc");
     sg.getReferrerIps().put(Ip.parse("1.1.1.1"), INSTANCE_1);
     sg.getReferrerIps().put(Ip.parse("2.2.2.2"), INSTANCE_2);
-    region.getSecurityGroups().put(sg.getGroupId(), sg);
+    region.getSecurityGroups().put(sg.getId(), sg);
     PrefixList pl =
         new PrefixList(
             PL_ID,
@@ -132,9 +133,10 @@ public class IpPermissionsTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .build();
     Region region = new Region("test");
-    SecurityGroup sg1 = new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of());
+    SecurityGroup sg1 =
+        new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of(), "vpc");
     sg1.updateConfigIps(cg);
-    region.getSecurityGroups().put(sg1.getGroupId(), sg1);
+    region.getSecurityGroups().put(sg1.getId(), sg1);
     return region;
   }
 

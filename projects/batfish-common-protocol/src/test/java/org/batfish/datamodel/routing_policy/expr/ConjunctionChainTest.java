@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.NavigableMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -112,7 +111,7 @@ public class ConjunctionChainTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(BatfishObjectMapper.clone(cc, ConjunctionChain.class), equalTo(cc));
   }

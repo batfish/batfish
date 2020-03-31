@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -13,9 +13,15 @@ import org.batfish.representation.juniper.FwTerm.Field;
 /** Class for firewall filter from source-address */
 public final class FwFromSourceAddress implements FwFrom {
 
-  @Nullable private final IpWildcard _ipWildcard;
+  @Nonnull private final String _description;
+  @Nonnull private final IpWildcard _ipWildcard;
 
-  public FwFromSourceAddress(IpWildcard ipWildcard) {
+  /**
+   * Creates a new {@link FwFromSourceAddress}, matching the given {@link IpWildcard} and using the
+   * given {@code description} for the {@link TraceElement}.
+   */
+  public FwFromSourceAddress(@Nonnull IpWildcard ipWildcard, @Nonnull String description) {
+    _description = description;
     _ipWildcard = ipWildcard;
   }
 
@@ -34,7 +40,7 @@ public final class FwFromSourceAddress implements FwFrom {
   }
 
   private TraceElement getTraceElement() {
-    return TraceElement.of(String.format("Matched source-address %s", _ipWildcard.toString()));
+    return TraceElement.of(String.format("Matched source-address %s", _description));
   }
 
   private HeaderSpace toHeaderspace() {

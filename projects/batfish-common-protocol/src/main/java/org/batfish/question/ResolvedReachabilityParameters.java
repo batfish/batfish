@@ -1,13 +1,9 @@
 package org.batfish.question;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -20,27 +16,14 @@ public final class ResolvedReachabilityParameters {
 
   public static class Builder {
     private SortedSet<FlowDisposition> _actions;
-
-    private Map<String, Configuration> _configurations;
-
-    private DataPlane _dataPlane;
-
     private Set<String> _finalNodes;
-
     private Set<String> _forbiddenTransitNodes;
-
     private AclLineMatchExpr _headerSpace;
-
     private boolean _ignoreFilters;
-
     private int _maxChunkSize;
-
     private IpSpaceAssignment _sourceIpSpaceAssignment;
-
     private SrcNattedConstraint _srcNatted;
-
     private boolean _specialize;
-
     private Set<String> _requiredTransitNodes;
 
     public ResolvedReachabilityParameters build() {
@@ -49,16 +32,6 @@ public final class ResolvedReachabilityParameters {
 
     public Builder setActions(SortedSet<FlowDisposition> actions) {
       _actions = ImmutableSortedSet.copyOf(actions);
-      return this;
-    }
-
-    public Builder setConfigurations(Map<String, Configuration> configurations) {
-      _configurations = ImmutableMap.copyOf(configurations);
-      return this;
-    }
-
-    public Builder setDataPlane(DataPlane dataPlane) {
-      _dataPlane = dataPlane;
       return this;
     }
 
@@ -109,33 +82,18 @@ public final class ResolvedReachabilityParameters {
   }
 
   private final SortedSet<FlowDisposition> _actions;
-
-  private final Map<String, Configuration> _configurations;
-
-  private final DataPlane _dataPlane;
-
   private final Set<String> _finalNodes;
-
   private Set<String> _forbiddenTransitNodes;
-
   private final AclLineMatchExpr _headerSpace;
-
   private boolean _ignoreFilters;
-
   private final int _maxChunkSize;
-
   private final IpSpaceAssignment _sourceIpSpaceByLocations;
-
   private final SrcNattedConstraint _srcNatted;
-
   private final boolean _specialize;
-
   private final Set<String> _requiredTransitNodes;
 
   private ResolvedReachabilityParameters(Builder builder) {
     _actions = builder._actions;
-    _configurations = builder._configurations;
-    _dataPlane = builder._dataPlane;
     _finalNodes = builder._finalNodes;
     _forbiddenTransitNodes = builder._forbiddenTransitNodes;
     _headerSpace = builder._headerSpace;
@@ -153,14 +111,6 @@ public final class ResolvedReachabilityParameters {
 
   public SortedSet<FlowDisposition> getActions() {
     return _actions;
-  }
-
-  public Map<String, Configuration> getConfigurations() {
-    return _configurations;
-  }
-
-  public DataPlane getDataPlane() {
-    return _dataPlane;
   }
 
   public Set<String> getFinalNodes() {

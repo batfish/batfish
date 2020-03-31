@@ -1,0 +1,20 @@
+{
+ "NatGateways": [
+  {
+   "CreateTime": "2020-03-03 01:21:01+00:00",
+   "NatGatewayAddresses": [
+    {
+     "AllocationId": "eipalloc-0353e2d101e93f4a1",
+     "NetworkInterfaceId": "eni-017aaec115610308a",
+     "PrivateIp": "10.1.250.210",
+     "PublicIp": "3.135.127.225"
+    }
+   ],
+   "NatGatewayId": "nat-07ab4846da51f4612",
+   "State": "available",
+   "SubnetId": "subnet-0428892a357fa1f94",
+   "Tags": [],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  }
+ ]
+}

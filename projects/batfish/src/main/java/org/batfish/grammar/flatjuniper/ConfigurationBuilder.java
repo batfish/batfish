@@ -3869,10 +3869,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     FwFrom from;
     IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
     if (ipWildcard != null) {
+      String text = getFullText(ctx.fftfa_address_mask_prefix());
       from =
           ctx.EXCEPT() != null
-              ? new FwFromDestinationAddressExcept(ipWildcard)
-              : new FwFromDestinationAddress(ipWildcard);
+              ? new FwFromDestinationAddressExcept(ipWildcard, text)
+              : new FwFromDestinationAddress(ipWildcard, text);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -4047,10 +4048,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     FwFrom from;
     IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
     if (ipWildcard != null) {
+      String text = getFullText(ctx.fftfa_address_mask_prefix());
       from =
           ctx.EXCEPT() != null
-              ? new FwFromSourceAddressExcept(ipWildcard)
-              : new FwFromSourceAddress(ipWildcard);
+              ? new FwFromSourceAddressExcept(ipWildcard, text)
+              : new FwFromSourceAddress(ipWildcard, text);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -5745,7 +5747,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSepctxpm_destination_address(Sepctxpm_destination_addressContext ctx) {
     Address_specifierContext addressSpecifierContext = ctx.address_specifier();
-    if (addressSpecifierContext.ANY() != null || addressSpecifierContext.ANY_IPV4() != null) {
+    if (addressSpecifierContext.ANY() != null) {
+      FwFromDestinationAddress match = new FwFromDestinationAddress(IpWildcard.ANY, "any");
+      _currentFwTerm.getFroms().add(match);
+      return;
+    } else if (addressSpecifierContext.ANY_IPV4() != null) {
+      FwFromDestinationAddress match = new FwFromDestinationAddress(IpWildcard.ANY, "any-ipv4");
+      _currentFwTerm.getFroms().add(match);
       return;
     }
 
@@ -5776,12 +5784,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSepctxpm_source_address(Sepctxpm_source_addressContext ctx) {
     if (ctx.address_specifier().ANY() != null) {
-      return;
+      FwFromSourceAddress match = new FwFromSourceAddress(IpWildcard.ANY, "any");
+      _currentFwTerm.getFroms().add(match);
     } else if (ctx.address_specifier().ANY_IPV4() != null) {
-      return;
+      FwFromSourceAddress match = new FwFromSourceAddress(IpWildcard.ANY, "any-ipv4");
+      _currentFwTerm.getFroms().add(match);
     } else if (ctx.address_specifier().ANY_IPV6() != null) {
       _currentFwTerm.setIpv6(true);
-      return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
       FwFrom match =
