@@ -509,22 +509,22 @@ public class CumulusConcatenatedGrammarTest {
   public void testCommSetMatchExpr() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-            Bgpv4Route.builder()
-                    .setAsPath(AsPath.ofSingletonAsSets(2L))
-                    .setOriginatorIp(Ip.ZERO)
-                    .setOriginType(OriginType.INCOMPLETE)
-                    .setProtocol(RoutingProtocol.BGP)
-                    .setNextHopIp(origNextHopIp)
-                    .setNetwork(Prefix.parse("10.20.30.0/31"))
-                    .setTag(0L)
-                    .build();
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
     Configuration c = parseConfig("comm_set_match_expr_test");
 
     // Route-map with match on comm-list with single community.
     // Input route has the same community.
     {
       Bgpv4Route inRoute =
-              base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
 
       // Use standard comm-lists.
       RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM1");
@@ -539,10 +539,10 @@ public class CumulusConcatenatedGrammarTest {
     // Input route has the same communities.
     {
       Bgpv4Route inRoute =
-              base.toBuilder()
-                      .setCommunities(
-                              ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
-                      .build();
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
 
       // Use standard comm-lists.
       RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
@@ -557,13 +557,13 @@ public class CumulusConcatenatedGrammarTest {
     // Input route has additional communities.
     {
       Bgpv4Route inRoute =
-              base.toBuilder()
-                      .setCommunities(
-                              ImmutableSet.of(
-                                      StandardCommunity.of(1, 1),
-                                      StandardCommunity.of(2, 2),
-                                      StandardCommunity.of(3, 3)))
-                      .build();
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(2, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
 
       // Use standard comm-lists.
       RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
@@ -578,10 +578,10 @@ public class CumulusConcatenatedGrammarTest {
     // Input route partially matches comm-list.
     {
       Bgpv4Route inRoute =
-              base.toBuilder()
-                      .setCommunities(
-                              ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3)))
-                      .build();
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3)))
+              .build();
 
       // Use standard comm-lists.
       RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
@@ -600,10 +600,10 @@ public class CumulusConcatenatedGrammarTest {
     // Input route has a community that matches the deny followed by permit.
     {
       Bgpv4Route inRoute =
-              base.toBuilder()
-                      .setCommunities(
-                              ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
-                      .build();
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
 
       // Use standard comm-lists.
       RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM3");
@@ -622,7 +622,7 @@ public class CumulusConcatenatedGrammarTest {
     // satisfy its regex.
     {
       Bgpv4Route inRoute =
-              base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
 
       RoutingPolicy rp = c.getRoutingPolicies().get("Expanded_RM1");
       Bgpv4Route.Builder builder = inRoute.toBuilder();
@@ -636,50 +636,48 @@ public class CumulusConcatenatedGrammarTest {
 
     Configuration c = parseConfig("optional_address_family_identifier");
     assertThat(
-            c.getActiveInterfaces()
-                    .get("eth0")
-                    .getVrf()
-                    .getBgpProcess()
-                    .getActiveNeighbors()
-                    .get(Ip.parse("10.20.30.0").toPrefix())
-                    .getIpv4UnicastAddressFamily()
-                    .getExportPolicySources()
-                    .size(),
-            equalTo(1));
+        c.getActiveInterfaces()
+            .get("eth0")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.30.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources()
+            .size(),
+        equalTo(1));
     assertThat(
-            c.getActiveInterfaces()
-                    .get("eth1")
-                    .getVrf()
-                    .getBgpProcess()
-                    .getActiveNeighbors()
-                    .get(Ip.parse("10.20.40.0").toPrefix())
-                    .getIpv4UnicastAddressFamily()
-                    .getExportPolicySources()
-                    .size(),
-            equalTo(1));
+        c.getActiveInterfaces()
+            .get("eth1")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.40.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources()
+            .size(),
+        equalTo(1));
     assertThat(
-            c.getActiveInterfaces()
-                    .get("eth2")
-                    .getVrf()
-                    .getBgpProcess()
-                    .getActiveNeighbors()
-                    .get(Ip.parse("10.20.50.0").toPrefix())
-                    .getIpv4UnicastAddressFamily()
-                    .getExportPolicySources()
-                    .size(),
-            equalTo(1));
+        c.getActiveInterfaces()
+            .get("eth2")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.50.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources()
+            .size(),
+        equalTo(1));
     assertThat(
-            c.getActiveInterfaces()
-                    .get("eth3")
-                    .getVrf()
-                    .getBgpProcess()
-                    .getActiveNeighbors()
-                    .get(Ip.parse("10.20.60.0").toPrefix())
-                    .getIpv4UnicastAddressFamily()
-                    .getExportPolicySources()
-                    .size(),
-            equalTo(1));
-
-    }
-
+        c.getActiveInterfaces()
+            .get("eth3")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.60.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources()
+            .size(),
+        equalTo(1));
+  }
 }
