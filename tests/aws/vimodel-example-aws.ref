@@ -191,28 +191,6 @@
                     "negate" : false,
                     "srcOrDstIps" : {
                       "class" : "org.batfish.datamodel.PrefixIpSpace",
-                      "prefix" : "192.0.2.0/24"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched reserved IP address space 192.0.2.0/24 (Documentation)"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
                       "prefix" : "192.168.0.0/16"
                     }
                   }
@@ -222,50 +200,6 @@
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
                       "text" : "Matched reserved IP address space 192.168.0.0/16 (RFC 1918 private)"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
-                      "prefix" : "198.51.100.0/24"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched reserved IP address space 198.51.100.0/24 (Documentation)"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
-                      "prefix" : "203.0.113.0/24"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched reserved IP address space 203.0.113.0/24 (Documentation)"
                     }
                   ]
                 }
@@ -431,28 +365,6 @@
                     "negate" : false,
                     "srcOrDstIps" : {
                       "class" : "org.batfish.datamodel.PrefixIpSpace",
-                      "prefix" : "192.0.2.0/24"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched reserved IP address space 192.0.2.0/24 (Documentation)"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
                       "prefix" : "192.168.0.0/16"
                     }
                   }
@@ -462,50 +374,6 @@
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
                       "text" : "Matched reserved IP address space 192.168.0.0/16 (RFC 1918 private)"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
-                      "prefix" : "198.51.100.0/24"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched reserved IP address space 198.51.100.0/24 (Documentation)"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.PrefixIpSpace",
-                      "prefix" : "203.0.113.0/24"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched reserved IP address space 203.0.113.0/24 (Documentation)"
                     }
                   ]
                 }
