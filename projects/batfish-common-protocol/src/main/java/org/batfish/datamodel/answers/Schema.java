@@ -21,6 +21,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.AttributeChanges;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.trace.TraceTree;
@@ -63,6 +64,7 @@ public class Schema {
           .put("String", getClassString(String.class))
           .put("Trace", getClassString(Trace.class))
           .put("TraceTree", getClassString(TraceTree.class))
+          .put("AttributeChanges", getClassString(AttributeChanges.class))
           .build();
 
   public static final Schema ACL_TRACE = new Schema("AclTrace");
