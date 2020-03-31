@@ -171,7 +171,11 @@ final class IspModel {
   }
 
   void addNeighbor(Remote neighbor) {
-    _remotes.add(neighbor);
+    _remotes =
+        ImmutableList.<Remote>builderWithExpectedSize(1 + _remotes.size())
+            .addAll(_remotes)
+            .add(neighbor)
+            .build();
   }
 
   @Nonnull
