@@ -512,26 +512,50 @@ public class CumulusConcatenatedGrammarTest {
     Configuration c = parseConfig("optional_address_family_identifier");
 
     {
-      assertThat(c.getActiveInterfaces().get("eth0").getVrf()
-                .getBgpProcess().getActiveNeighbors().get(Ip.parse("10.20.30.0")
-                .toPrefix()).getIpv4UnicastAddressFamily().getExportPolicySources()
-                .size(),
-                equalTo(1));
-      assertThat(c.getActiveInterfaces().get("eth1").getVrf()
-                .getBgpProcess().getActiveNeighbors().get(Ip.parse("10.20.40.0")
-                .toPrefix()).getIpv4UnicastAddressFamily().getExportPolicySources()
-                .size(),
-              equalTo(1));
-      assertThat(c.getActiveInterfaces().get("eth2").getVrf()
-                .getBgpProcess().getActiveNeighbors().get(Ip.parse("10.20.50.0")
-                .toPrefix()).getIpv4UnicastAddressFamily().getExportPolicySources()
-                .size(),
-              equalTo(1));
-      assertThat(c.getActiveInterfaces().get("eth3").getVrf()
-                .getBgpProcess().getActiveNeighbors().get(Ip.parse("10.20.60.0")
-                .toPrefix()).getIpv4UnicastAddressFamily().getExportPolicySources()
-                .size(),
-              equalTo(1));
+      assertThat(
+          c.getActiveInterfaces()
+              .get("eth0")
+              .getVrf()
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Ip.parse("10.20.30.0").toPrefix())
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicySources()
+              .size(),
+          equalTo(1));
+      assertThat(
+          c.getActiveInterfaces()
+              .get("eth1")
+              .getVrf()
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Ip.parse("10.20.40.0").toPrefix())
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicySources()
+              .size(),
+          equalTo(1));
+      assertThat(
+          c.getActiveInterfaces()
+              .get("eth2")
+              .getVrf()
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Ip.parse("10.20.50.0").toPrefix())
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicySources()
+              .size(),
+          equalTo(1));
+      assertThat(
+          c.getActiveInterfaces()
+              .get("eth3")
+              .getVrf()
+              .getBgpProcess()
+              .getActiveNeighbors()
+              .get(Ip.parse("10.20.60.0").toPrefix())
+              .getIpv4UnicastAddressFamily()
+              .getExportPolicySources()
+              .size(),
+          equalTo(1));
     }
   }
 }
