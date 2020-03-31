@@ -17,7 +17,8 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.IspModelingUtils;
+import org.batfish.common.util.isp.IspModelingUtils;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.StepAction;
@@ -76,9 +77,15 @@ public class AwsConfigurationPublicSubnetTest {
 
   @Test
   public void testFromInternetToValidPublicIp() {
+    Flow flowFromInternet =
+        Flow.builder()
+            .setIngressNode(IspModelingUtils.INTERNET_HOST_NAME)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setDstIp(_publicIp)
+            .build();
     Trace trace =
         testTrace(
-            getAnyFlow(IspModelingUtils.INTERNET_HOST_NAME, _publicIp, _batfish),
+            flowFromInternet,
             FlowDisposition.DENIED_IN, // by the default security settings
             ImmutableList.of(
                 IspModelingUtils.INTERNET_HOST_NAME,
@@ -102,8 +109,14 @@ public class AwsConfigurationPublicSubnetTest {
 
   @Test
   public void testFromInternetToInvalidPublicIp() {
+    Flow flowFromInternet =
+        Flow.builder()
+            .setIngressNode(IspModelingUtils.INTERNET_HOST_NAME)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setDstIp(Ip.parse("54.191.107.23"))
+            .build();
     testTrace(
-        getAnyFlow(IspModelingUtils.INTERNET_HOST_NAME, Ip.parse("54.191.107.23"), _batfish),
+        flowFromInternet,
         FlowDisposition.NULL_ROUTED,
         ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME),
         _batfish);
