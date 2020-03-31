@@ -1,25 +1,28 @@
-package org.batfish.common.util;
+package org.batfish.common.util.isp;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
-import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
-import static org.batfish.common.util.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
-import static org.batfish.common.util.IspModelingUtils.HIGH_ADMINISTRATIVE_COST;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO;
-import static org.batfish.common.util.IspModelingUtils.LINK_LOCAL_ADDRESS;
-import static org.batfish.common.util.IspModelingUtils.LINK_LOCAL_IP;
-import static org.batfish.common.util.IspModelingUtils.addBgpPeerToIsp;
-import static org.batfish.common.util.IspModelingUtils.createInternetNode;
-import static org.batfish.common.util.IspModelingUtils.createIspNode;
-import static org.batfish.common.util.IspModelingUtils.getAdvertiseBgpStatement;
-import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
-import static org.batfish.common.util.IspModelingUtils.getDefaultIspNodeName;
-import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToCustomers;
-import static org.batfish.common.util.IspModelingUtils.installRoutingPolicyForIspToInternet;
-import static org.batfish.common.util.IspModelingUtils.ispNameConflicts;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.FROM_INTERNET_ACL_NAME;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.TO_INTERNET_ACL_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
+import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_INTERNET;
+import static org.batfish.common.util.isp.IspModelingUtils.HIGH_ADMINISTRATIVE_COST;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_NULL_ROUTED_PREFIXES;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_OUT_INTERFACE;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_OUT_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.common.util.isp.IspModelingUtils.ISP_TO_INTERNET_INTERFACE_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
+import static org.batfish.common.util.isp.IspModelingUtils.addBgpPeerToIsp;
+import static org.batfish.common.util.isp.IspModelingUtils.createInternetNode;
+import static org.batfish.common.util.isp.IspModelingUtils.createIspNode;
+import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseBgpStatement;
+import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticStatement;
+import static org.batfish.common.util.isp.IspModelingUtils.getDefaultIspNodeName;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToCustomers;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyForIspToInternet;
+import static org.batfish.common.util.isp.IspModelingUtils.ispNameConflicts;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -30,17 +33,20 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -60,8 +66,8 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
-import org.batfish.common.util.IspModel.Remote;
-import org.batfish.common.util.IspModelingUtils.ModeledNodes;
+import org.batfish.common.util.isp.IspModel.Remote;
+import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -70,8 +76,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -87,6 +95,7 @@ import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -355,6 +364,7 @@ public class IspModelingUtilsTest {
             .setAsn(asn)
             .setName(ispName)
             .setRemotes(new Remote("testNode", "testIface", ispIfaceAddress, remotePeerConfig))
+            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
             .build();
 
     ModeledNodes modeledNodes = new ModeledNodes();
@@ -368,7 +378,15 @@ public class IspModelingUtilsTest {
             hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
                 "~Interface_0~", hasAllAddresses(equalTo(ImmutableSet.of(ispIfaceAddress)))),
+            hasIpAccessList(FROM_INTERNET_ACL_NAME, any(IpAccessList.class)),
+            hasIpAccessList(TO_INTERNET_ACL_NAME, any(IpAccessList.class)),
+            hasInterface(ISP_TO_INTERNET_INTERFACE_NAME, any(Interface.class)),
             hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(allOf(hasMultipathEbgp(true))))));
+    Interface toInternet = ispConfiguration.getAllInterfaces().get(ISP_TO_INTERNET_INTERFACE_NAME);
+    assertThat(toInternet.getIncomingFilter(), notNullValue());
+    assertThat(toInternet.getIncomingFilter().getName(), equalTo(FROM_INTERNET_ACL_NAME));
+    assertThat(toInternet.getOutgoingFilter(), notNullValue());
+    assertThat(toInternet.getOutgoingFilter().getName(), equalTo(TO_INTERNET_ACL_NAME));
 
     // compute the reverse config
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
@@ -541,6 +559,7 @@ public class IspModelingUtilsTest {
                         ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24),
                         getOnlyElement(
                             remote.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
+                .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                 .build()));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }
@@ -579,6 +598,7 @@ public class IspModelingUtilsTest {
                                 .getBgpProcess()
                                 .getInterfaceNeighbors()
                                 .values())))
+                .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                 .build()));
     assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
   }
@@ -860,9 +880,9 @@ public class IspModelingUtilsTest {
                     hasInterfaceNeighbors(
                         equalTo(
                             ImmutableMap.of(
-                                "~Interface_2~",
+                                ISP_TO_INTERNET_INTERFACE_NAME,
                                 BgpUnnumberedPeerConfig.builder()
-                                    .setPeerInterface("~Interface_2~")
+                                    .setPeerInterface(ISP_TO_INTERNET_INTERFACE_NAME)
                                     .setRemoteAs(IspModelingUtils.INTERNET_AS)
                                     .setLocalIp(LINK_LOCAL_IP)
                                     .setLocalAs(1L)
@@ -874,7 +894,8 @@ public class IspModelingUtilsTest {
 
     Layer1Node internetLayer1 = new Layer1Node(INTERNET_HOST_NAME, "~Interface_1~");
     Layer1Node ispLayer1Iface0 = new Layer1Node(ispNode.getHostname(), "~Interface_0~");
-    Layer1Node ispLayer1Iface2 = new Layer1Node(ispNode.getHostname(), "~Interface_2~");
+    Layer1Node ispLayer1Iface2 =
+        new Layer1Node(ispNode.getHostname(), ISP_TO_INTERNET_INTERFACE_NAME);
     Layer1Node borderLayer1 = new Layer1Node("conf", "interface");
 
     assertThat(
@@ -1038,7 +1059,7 @@ public class IspModelingUtilsTest {
     assertThat(isp.getAllInterfaces().entrySet(), hasSize(3));
     assertThat(
         isp.getAllInterfaces().keySet(),
-        equalTo(ImmutableSet.of("~Interface_0~", "~Interface_1~", "~Interface_3~")));
+        equalTo(ImmutableSet.of("~Interface_0~", "~Interface_1~", ISP_TO_INTERNET_INTERFACE_NAME)));
   }
 
   @Test
@@ -1176,6 +1197,7 @@ public class IspModelingUtilsTest {
                             ConcreteInterfaceAddress.create(remoteBgpIp2, 24),
                             getOnlyElement(
                                 c2.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
+                    .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                     .build())));
   }
 
