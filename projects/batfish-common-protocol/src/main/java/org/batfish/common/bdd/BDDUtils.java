@@ -19,7 +19,7 @@ public class BDDUtils {
     return factory;
   }
 
-  /** @see BDD#isAssignment(). */
+  /** @see BDD#isAssignment() */
   public static boolean isAssignment(BDD orig) {
     return orig.isAssignment();
   }
