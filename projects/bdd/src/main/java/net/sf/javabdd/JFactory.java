@@ -126,6 +126,10 @@ public final class JFactory extends BDDFactory {
       return _index == BDDONE;
     }
 
+    public boolean isAssignment() {
+      return bdd_isAssignment(_index);
+    }
+
     @Override
     public int var() {
       return bdd_var(_index);
@@ -917,6 +921,25 @@ public final class JFactory extends BDDFactory {
     checkresize();
 
     return res;
+  }
+
+  private boolean bdd_isAssignment(int r) {
+    CHECK(r);
+    if (r == BDDONE) {
+      return true;
+    } else if (r == BDDZERO) {
+      return false;
+    }
+
+    // If this node is an assignment, exactly one child will be zero at every level except the last,
+    // which will be one. If there are no zero children, there are two satisfying paths.
+    if (LOW(r) == BDDZERO) {
+      return bdd_isAssignment(HIGH(r));
+    } else if (HIGH(r) == BDDZERO) {
+      return bdd_isAssignment(LOW(r));
+    }
+
+    return false;
   }
 
   private int bdd_not(int r) {

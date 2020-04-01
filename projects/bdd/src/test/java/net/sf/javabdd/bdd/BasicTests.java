@@ -59,6 +59,39 @@ public class BasicTests extends BDDTestCase {
     junit.textui.TestRunner.run(BasicTests.class);
   }
 
+  public void testIsAssignment() {
+    reset();
+    assertTrue(hasNext());
+    while (hasNext()) {
+      BDDFactory bdd = next();
+      BDD zero = bdd.zero();
+      BDD one = bdd.one();
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD x = bdd.ithVar(1);
+      BDD y = bdd.ithVar(2);
+      BDD z = bdd.ithVar(3);
+      assertFalse(zero.isAssignment());
+      assertTrue(one.isAssignment());
+      assertTrue(x.isAssignment());
+      assertTrue(y.isAssignment());
+      assertTrue(z.isAssignment());
+      BDD a = x.or(y);
+      assertFalse(a.isAssignment());
+      BDD b = x.and(y);
+      assertTrue(b.isAssignment());
+      BDD c = b.or(z);
+      assertFalse(c.isAssignment());
+      a.free();
+      b.free();
+      c.free();
+      x.free();
+      y.free();
+      z.free();
+    }
+  }
+
   public void testIsZeroOne() {
     reset();
     assertTrue(hasNext());
