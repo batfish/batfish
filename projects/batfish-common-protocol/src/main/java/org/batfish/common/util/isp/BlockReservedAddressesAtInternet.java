@@ -51,13 +51,18 @@ public final class BlockReservedAddressesAtInternet implements IspTrafficFilteri
           .put("10.0.0.0/8", "RFC 1918 private")
           .put("127.0.0.0/8", "Loopback")
           .put("172.16.0.0/12", "RFC 1918 private")
-          .put("192.0.2.0/24", "Documentation")
           .put("192.168.0.0/16", "RFC 1918 private")
-          .put("198.51.100.0/24", "Documentation")
-          .put("203.0.113.0/24", "Documentation")
           .put("224.0.0.0/4", "Multicast")
           .put("240.0.0.0/4", "Future use")
           .build();
+  /*
+   * Having ISPs block documentation IPs hurts our examples. TBD how we resolve this.
+   *
+   * .put("192.0.2.0/24", "Documentation")
+   * .put("198.51.100.0/24", "Documentation")
+   * .put("203.0.113.0/24", "Documentation")
+   */
+
   /*
    * Skipping these for now.
    *
