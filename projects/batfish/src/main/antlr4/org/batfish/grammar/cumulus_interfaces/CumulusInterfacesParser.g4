@@ -104,7 +104,7 @@ i_property
 
 i_address
 :
-  ADDRESS
+  IP? ADDRESS
   (
     prefix
     | prefix6
