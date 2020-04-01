@@ -83,9 +83,17 @@ public class BasicTests extends BDDTestCase {
       assertTrue(b.isAssignment());
       BDD c = b.or(z);
       assertFalse(c.isAssignment());
+      // Calling satOne should always produce an assignment.
+      BDD d = c.satOne();
+      assertTrue(d.isAssignment());
+      // Calling fullSatOne should always produce an assignment.
+      BDD e = c.fullSatOne();
+      assertTrue(e.isAssignment());
       a.free();
       b.free();
       c.free();
+      d.free();
+      e.free();
       x.free();
       y.free();
       z.free();

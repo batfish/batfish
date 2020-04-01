@@ -4,33 +4,13 @@ import static org.batfish.common.bdd.BDDOps.andNull;
 import static org.batfish.common.bdd.BDDUtils.swap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.util.function.BiFunction;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
 public class BDDUtilsTest {
-  @Test
-  public void testIsAssignment_trivial() {
-    BDDFactory factory = BDDUtils.bddFactory(1);
-    assertTrue("one is an assignment (that assigns nothing)", factory.one().isAssignment());
-    assertFalse("zero is not an assignment", factory.zero().isAssignment());
-  }
-
-  @Test
-  public void testIsAssignment() {
-    BDDFactory factory = BDDUtils.bddFactory(2);
-    BDD v0 = factory.ithVar(0);
-    BDD v1 = factory.ithVar(1);
-    BDD xor = v0.xor(v1);
-    assertFalse("xor is not an assignment", xor.isAssignment());
-    assertTrue("xor.fullSatOne is an assignment", xor.fullSatOne().isAssignment());
-  }
-
   @Test
   public void testSwap() {
     BDDPacket pkt = new BDDPacket();
