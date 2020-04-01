@@ -2,7 +2,6 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
-import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
@@ -267,7 +266,7 @@ public class BDDPacket {
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
-    checkArgument(isAssignment(satAssignment));
+    checkArgument(satAssignment.isAssignment());
 
     Flow.Builder fb = Flow.builder();
     fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(satAssignment)));
