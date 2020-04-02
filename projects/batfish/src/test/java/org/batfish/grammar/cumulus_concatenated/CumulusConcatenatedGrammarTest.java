@@ -649,11 +649,33 @@ public class CumulusConcatenatedGrammarTest {
         equalTo(1));
     assertThat(
         c.getActiveInterfaces()
+            .get("bond2")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.50.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources()
+            .size(),
+        equalTo(1));
+    assertThat(
+        c.getActiveInterfaces()
             .get("eth3")
             .getVrf()
             .getBgpProcess()
             .getActiveNeighbors()
             .get(Ip.parse("10.20.60.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources()
+            .size(),
+        equalTo(1));
+    assertThat(
+        c.getActiveInterfaces()
+            .get("bond4")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.70.0").toPrefix())
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources()
             .size(),
