@@ -631,4 +631,32 @@ public class CumulusConcatenatedGrammarTest {
       assertThat(builder.build().getMetric(), equalTo(0L));
     }
   }
+
+  @Test
+  public void testOptionalAddressFamily() throws IOException {
+
+    Configuration c = parseConfig("optional_address_family_identifier");
+    assertThat(
+            c.getActiveInterfaces()
+                    .get("eth1")
+                    .getVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(Ip.parse("10.20.40.0").toPrefix())
+                    .getIpv4UnicastAddressFamily()
+                    .getExportPolicySources()
+                    .size(),
+            equalTo(1));
+    assertThat(
+            c.getActiveInterfaces()
+                    .get("eth3")
+                    .getVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(Ip.parse("10.20.60.0").toPrefix())
+                    .getIpv4UnicastAddressFamily()
+                    .getExportPolicySources()
+                    .size(),
+            equalTo(1));
+  }
 }
