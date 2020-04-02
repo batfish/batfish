@@ -222,7 +222,7 @@ public final class CompletionMetadataUtils {
 
   public static Set<Location> getSourceLocationsWithSrcIps(
       Map<Location, LocationInfo> locationInfo) {
-    IpSpaceToBDD toBdd = new IpSpaceToBDD(new BDDPacket().getDstIp());
+    IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
     return locationInfo.entrySet().stream()
         .filter(
             entry -> {
