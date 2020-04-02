@@ -4,7 +4,7 @@ interface_definition_test
 iface lo inet loopback
  address 2.3.0.0/32
 
-iface eth1
+interface eth1
  address 10.20.40.1/31
 
 iface eth3
