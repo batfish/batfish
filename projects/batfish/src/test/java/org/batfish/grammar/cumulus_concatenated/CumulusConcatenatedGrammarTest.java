@@ -642,14 +642,14 @@ public class CumulusConcatenatedGrammarTest {
                     .getVrf()
                     .getBgpProcess()
                     .getActiveNeighbors()
-                    .get(Ip.parse("10.20.40.0").toPrefix())
+                    .get(Ip.parse("10.20.50.0").toPrefix())
                     .getIpv4UnicastAddressFamily()
                     .getExportPolicySources()
                     .size(),
             equalTo(1));
     assertThat(
             c.getActiveInterfaces()
-                    .get("eth3")
+                    .get("eth2")
                     .getVrf()
                     .getBgpProcess()
                     .getActiveNeighbors()

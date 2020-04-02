@@ -5,9 +5,9 @@ iface lo inet loopback
  address 2.3.0.0/32
 
 iface eth1
- address 10.20.40.1/31
+ address 10.20.50.1/31
 
-iface eth3
+iface eth2
  address 10.20.60.1/31
 
 
@@ -23,24 +23,24 @@ router bgp 123
  bgp router-id 2.3.0.0
  network 2.3.0.0/32
 
- ! Test-case1: Interface defined using "interface".
- neighbor pg_with_interface peer-group
- neighbor pg_with_interface remote-as 345
- neighbor pg_with_interface update-source 10.20.40.1
- neighbor 10.20.40.0 peer-group pg_with_interface
+ ! Test-case1: Assigning route-map to neighbor without AFI.
+ neighbor pg_without_afi_with_iface peer-group
+ neighbor pg_without_afi_with_iface remote-as 345
+ neighbor pg_without_afi_with_iface update-source 10.20.50.1
+ neighbor 10.20.50.0 peer-group pg_without_afi_with_iface
+ neighbor pg_without_afi_with_iface route-map TEST_OUT out
+ neighbor pg_without_afi_with_iface route-map TEST_IN in
 
- ! Test-case2: Interface defined using "iface".
- neighbor pg_with_iface peer-group
- neighbor pg_with_iface remote-as 345
- neighbor pg_with_iface update-source 10.20.60.1
- neighbor 10.20.60.0 peer-group pg_with_iface
+ ! Test-case2: Assigning route-map to neighbor with AFI.
+ neighbor pg_with_afi_with_iface peer-group
+ neighbor pg_with_afi_with_iface remote-as 345
+ neighbor pg_with_afi_with_iface update-source 10.20.60.1
+ neighbor 10.20.60.0 peer-group pg_with_afi_with_iface
 
 !
  address-family ipv4 unicast
- neighbor pg_with_interface route-map TEST_OUT out
- neighbor pg_with_interface route-map TEST_IN in
- neighbor pg_with_iface route-map TEST_OUT out
- neighbor pg_with_iface route-map TEST_IN in
+ neighbor pg_with_afi_with_iface route-map TEST_OUT out
+ neighbor pg_with_afi_with_iface route-map TEST_IN in
  exit-address-family
 !
 !
