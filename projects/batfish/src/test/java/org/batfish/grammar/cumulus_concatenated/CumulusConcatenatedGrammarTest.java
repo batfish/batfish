@@ -633,23 +633,9 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testOptionalAddressFamily() throws IOException {
+  public void testInterfaceDefinition() throws IOException {
 
-    Configuration c = parseConfig("optional_address_family_identifier");
-    // Enable this block with the upcoming AFI changes.
-    /*
-    assertThat(
-        c.getActiveInterfaces()
-            .get("eth0")
-            .getVrf()
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Ip.parse("10.20.30.0").toPrefix())
-            .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
-     */
+    Configuration c = parseConfig("interface_definition_test");
     assertThat(
         c.getActiveInterfaces()
             .get("eth1")
@@ -661,20 +647,6 @@ public class CumulusConcatenatedGrammarTest {
             .getExportPolicySources()
             .size(),
         equalTo(1));
-    // Enable this block with the upcoming AFI changes.
-    /*
-    assertThat(
-        c.getActiveInterfaces()
-            .get("eth2")
-            .getVrf()
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Ip.parse("10.20.50.0").toPrefix())
-            .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
-     */
     assertThat(
         c.getActiveInterfaces()
             .get("eth3")
