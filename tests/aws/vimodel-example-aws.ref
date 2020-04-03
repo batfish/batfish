@@ -19832,7 +19832,7 @@
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "10.100.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -19855,7 +19855,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "10.100.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -19977,7 +19977,7 @@
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "10.0.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -20018,7 +20018,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "10.0.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -20303,7 +20303,7 @@
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "192.168.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -20371,7 +20371,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "192.168.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -20603,7 +20603,7 @@
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "172.31.0.0/16",
                 "nextHopInterface" : "null_interface",
@@ -20653,7 +20653,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
+                "administrativeCost" : 255,
                 "metric" : 0,
                 "network" : "172.31.0.0/16",
                 "nextHopInterface" : "null_interface",
