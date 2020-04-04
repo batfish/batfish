@@ -1348,11 +1348,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
-        postProcessSnapshot(snapshot, configurations);
       } else {
         // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-        configurations = parseConfigurationsAndApplyEnvironment(snapshot);
+        configurations = actuallyParseConfigurations(snapshot);
       }
+      // Apply things like blacklist and aggregations before installing in the cache.
+      postProcessSnapshot(snapshot, configurations);
 
       _cachedConfigurations.put(snapshot, configurations);
       return configurations;
@@ -1360,8 +1361,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
-  private SortedMap<String, Configuration> parseConfigurationsAndApplyEnvironment(
-      NetworkSnapshot snapshot) {
+  private SortedMap<String, Configuration> actuallyParseConfigurations(NetworkSnapshot snapshot) {
     _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
     repairConfigurations(snapshot);
     SortedMap<String, Configuration> configurations =
@@ -1370,7 +1370,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
     assert configurations != null;
-    postProcessSnapshot(snapshot, configurations);
     return configurations;
   }
 
