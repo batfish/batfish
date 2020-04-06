@@ -9,6 +9,7 @@ set network interface ethernet ethernet1/3 link-state up
 set network interface ethernet ethernet1/3 comment 'single quoted description'
 set network interface ethernet ethernet1/3 layer3 units ethernet1/3.11 comment 'unit description'
 set network interface ethernet ethernet1/3 layer3 units ethernet1/3.11 tag 11
+set network interface ethernet ethernet21 link-state down
 set network interface loopback ip 7.7.7.7/32
 set network interface loopback ip 7.7.7.8
 # Interfaces are not functionally active unless they are in a virtual-router
