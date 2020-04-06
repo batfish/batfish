@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -644,9 +645,8 @@ public class CumulusConcatenatedGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("10.20.50.0").toPrefix())
             .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
+            .getExportPolicySources(),
+        hasSize(1));
     assertThat(
         c.getActiveInterfaces()
             .get("eth2")
@@ -655,8 +655,7 @@ public class CumulusConcatenatedGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("10.20.60.0").toPrefix())
             .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
+            .getExportPolicySources(),
+        hasSize(1));
   }
 }
