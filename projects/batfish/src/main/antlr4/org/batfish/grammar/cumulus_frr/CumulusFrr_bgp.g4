@@ -16,6 +16,7 @@ s_bgp
   | sb_neighbor
   | sb_network
   | sb_no
+  | sbafi_neighbor
   )*
 ;
 
@@ -221,6 +222,7 @@ sbn_property
 | sbnp_password
 | sbnp_remote_as
 | sbnp_update_source
+| sbnp_local_as
 ;
 
 sbnp_bfd
@@ -256,6 +258,11 @@ sbnp_remote_as
 sbnp_update_source
 :
   UPDATE_SOURCE (ip = IP_ADDRESS | name = word)
+;
+
+sbnp_local_as
+:
+  LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)?
 ;
 
 sb_network

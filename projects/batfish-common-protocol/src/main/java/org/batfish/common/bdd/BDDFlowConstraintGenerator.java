@@ -31,10 +31,16 @@ public final class BDDFlowConstraintGenerator {
   }
 
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_10 = Prefix.parse("10.0.0.0/8");
-
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_172 = Prefix.parse("172.16.0.0/12");
-
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_192 = Prefix.parse("192.168.0.0/16");
+
+  @VisibleForTesting static final Prefix RESERVED_DOCUMENTATION_192 = Prefix.parse("192.0.2.0/24");
+
+  @VisibleForTesting
+  static final Prefix RESERVED_DOCUMENTATION_198 = Prefix.parse("198.51.100.0/24");
+
+  @VisibleForTesting
+  static final Prefix RESERVED_DOCUMENTATION_203 = Prefix.parse("203.0.113.0/24");
 
   private final BDDPacket _bddPacket;
   private final BDDOps _bddOps;
@@ -146,6 +152,14 @@ public final class BDDFlowConstraintGenerator {
         ip.toBDD(PRIVATE_SUBNET_10), ip.toBDD(PRIVATE_SUBNET_172), ip.toBDD(PRIVATE_SUBNET_192));
   }
 
+  @VisibleForTesting
+  static BDD isDocumentationIp(IpSpaceToBDD ip) {
+    return BDDOps.orNull(
+        ip.toBDD(RESERVED_DOCUMENTATION_192),
+        ip.toBDD(RESERVED_DOCUMENTATION_198),
+        ip.toBDD(RESERVED_DOCUMENTATION_203));
+  }
+
   private static List<BDD> ipPreferences(BDDInteger ipInteger) {
     return ImmutableList.of(
         // First, one of the special IPs.
@@ -162,6 +176,9 @@ public final class BDDFlowConstraintGenerator {
     BDD dstIpPrivate = isPrivateIp(_bddPacket.getDstIpSpaceToBDD());
 
     return ImmutableList.<BDD>builder()
+        // 0. Try to not use documentation IPs if that is possible.
+        .add(isDocumentationIp(_bddPacket.getSrcIpSpaceToBDD()).not())
+        .add(isDocumentationIp(_bddPacket.getDstIpSpaceToBDD()).not())
         // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
         // public.
         .add(_bddOps.and(srcIpPrivate, dstIpPrivate.not()))

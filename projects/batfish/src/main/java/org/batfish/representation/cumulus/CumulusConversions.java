@@ -466,6 +466,9 @@ public final class CumulusConversions {
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
       ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      if (ipNeighbor.getLocalAs() != null) {
+        localAs = ipNeighbor.getLocalAs();
+      }
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
       throw new IllegalArgumentException(

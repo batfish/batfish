@@ -122,6 +122,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declConte
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnobd_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_local_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
@@ -428,6 +429,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _w.addWarning(
           ctx, ctx.getText(), _parser, "Overwriting aggregate-address for " + prefix.toString());
     }
+  }
+
+  @Override
+  public void exitSbnp_local_as(Sbnp_local_asContext ctx) {
+    long asn = Long.parseLong(ctx.autonomous_system().getText());
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp neighbor");
+      return;
+    }
+    _currentBgpNeighbor.setLocalAs(asn);
   }
 
   @Override
