@@ -1198,13 +1198,13 @@ public final class PaloAltoGrammarTest {
     String eth1_2 = "ethernet1/2";
     String eth1_3 = "ethernet1/3";
     String eth1_3_11 = "ethernet1/3.11";
-    String eth21 = "ethernet21";
+    String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
     assertThat(
         c.getAllInterfaces().keySet(),
-        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth21, loopback));
+        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_21, loopback));
 
     // Confirm interface MTU is extracted
     assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
@@ -1239,7 +1239,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c.getAllInterfaces().get(eth1_3), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
     assertThat(
         c.getAllInterfaces().get(eth1_3_11), allOf(hasBandwidth(1e9), hasSpeed(nullValue())));
-    assertThat(c.getAllInterfaces().get(eth21), allOf(hasBandwidth(1e10), hasSpeed(1e10)));
+    assertThat(c.getAllInterfaces().get(eth1_21), allOf(hasBandwidth(1e10), hasSpeed(1e10)));
 
     // Confirm link status is extracted
     assertThat(c, hasInterface(eth1_1, isActive()));
@@ -1255,7 +1255,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(eth1_2, hasInterfaceType(InterfaceType.PHYSICAL)));
     assertThat(c, hasInterface(eth1_3, hasInterfaceType(InterfaceType.PHYSICAL)));
     assertThat(c, hasInterface(eth1_3_11, hasInterfaceType(InterfaceType.LOGICAL)));
-    assertThat(c, hasInterface(eth21, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_21, hasInterfaceType(InterfaceType.PHYSICAL)));
   }
 
   @Test
