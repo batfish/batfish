@@ -16,6 +16,7 @@ s_bgp
   | sb_neighbor
   | sb_network
   | sb_no
+  | sbafi_neighbor
   )*
 ;
 
