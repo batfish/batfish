@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
@@ -32,6 +33,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -1192,22 +1194,26 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testInterface() {
     String hostname = "interface";
-    String interfaceName1 = "ethernet1/1";
-    String interfaceName2 = "ethernet1/2";
-    String interfaceName3 = "ethernet1/3";
-    String interfaceName311 = "ethernet1/3.11";
+    String eth1_1 = "ethernet1/1";
+    String eth1_2 = "ethernet1/2";
+    String eth1_3 = "ethernet1/3";
+    String eth1_3_11 = "ethernet1/3.11";
+    String eth21 = "ethernet21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth21, loopback));
+
     // Confirm interface MTU is extracted
-    assertThat(c, hasInterface(interfaceName1, hasMtu(9001)));
+    assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
 
     // Confirm address is extracted
     assertThat(
         c,
         hasInterface(
-            interfaceName1,
-            hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
+            eth1_1, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
     assertThat(
         c,
         hasInterface(
@@ -1217,28 +1223,39 @@ public final class PaloAltoGrammarTest {
                 hasAllAddresses(
                     contains(
                         ConcreteInterfaceAddress.parse("7.7.7.7/32"),
-                        ConcreteInterfaceAddress.parse("7.7.7.8/32"))))));
+                        ConcreteInterfaceAddress.parse("7.7.7.8/32"))),
+                hasBandwidth(nullValue()),
+                hasSpeed(nullValue()))));
 
     // Confirm comments are extracted
-    assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
-    assertThat(c, hasInterface(interfaceName2, hasDescription("interface's long description")));
-    assertThat(c, hasInterface(interfaceName3, hasDescription("single quoted description")));
-    assertThat(c, hasInterface(interfaceName311, hasDescription("unit description")));
+    assertThat(c, hasInterface(eth1_1, hasDescription("description")));
+    assertThat(c, hasInterface(eth1_2, hasDescription("interface's long description")));
+    assertThat(c, hasInterface(eth1_3, hasDescription("single quoted description")));
+    assertThat(c, hasInterface(eth1_3_11, hasDescription("unit description")));
+
+    // Confirm link speed
+    assertThat(c.getAllInterfaces().get(eth1_1), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
+    assertThat(c.getAllInterfaces().get(eth1_2), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
+    assertThat(c.getAllInterfaces().get(eth1_3), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
+    assertThat(
+        c.getAllInterfaces().get(eth1_3_11), allOf(hasBandwidth(1e9), hasSpeed(nullValue())));
+    assertThat(c.getAllInterfaces().get(eth21), allOf(hasBandwidth(1e10), hasSpeed(1e10)));
 
     // Confirm link status is extracted
-    assertThat(c, hasInterface(interfaceName1, isActive()));
-    assertThat(c, hasInterface(interfaceName2, not(isActive())));
-    assertThat(c, hasInterface(interfaceName3, isActive()));
-    assertThat(c, hasInterface(interfaceName311, not(isActive())));
+    assertThat(c, hasInterface(eth1_1, isActive()));
+    assertThat(c, hasInterface(eth1_2, not(isActive())));
+    assertThat(c, hasInterface(eth1_3, isActive()));
+    assertThat(c, hasInterface(eth1_3_11, not(isActive())));
 
     // Confirm tag extraction for units
-    assertThat(c, hasInterface(interfaceName311, hasEncapsulationVlan(11)));
+    assertThat(c, hasInterface(eth1_3_11, hasEncapsulationVlan(11)));
 
     // Confirm types
-    assertThat(c, hasInterface(interfaceName1, hasInterfaceType(InterfaceType.PHYSICAL)));
-    assertThat(c, hasInterface(interfaceName2, hasInterfaceType(InterfaceType.PHYSICAL)));
-    assertThat(c, hasInterface(interfaceName3, hasInterfaceType(InterfaceType.PHYSICAL)));
-    assertThat(c, hasInterface(interfaceName311, hasInterfaceType(InterfaceType.LOGICAL)));
+    assertThat(c, hasInterface(eth1_1, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_2, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_3, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_3_11, hasInterfaceType(InterfaceType.LOGICAL)));
+    assertThat(c, hasInterface(eth21, hasInterfaceType(InterfaceType.PHYSICAL)));
   }
 
   @Test
