@@ -17,7 +17,6 @@ statement
 :
   s_auto
   | s_iface
-  | s_interface
 ;
 
 s_auto
@@ -27,16 +26,7 @@ s_auto
 
 s_iface
 :
-  IFACE interface_name
-  (
-    si_inet
-    | si_no_inet
-  )
-;
-
-s_interface
-:
-  INTERFACE interface_name
+  (IFACE | INTERFACE) interface_name
   (
     si_inet
     | si_no_inet

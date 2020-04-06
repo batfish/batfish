@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -634,7 +635,6 @@ public class CumulusConcatenatedGrammarTest {
 
   @Test
   public void testInterfaceDefinition() throws IOException {
-
     Configuration c = parseConfig("interface_definition_test");
     assertThat(
         c.getActiveInterfaces()
@@ -644,9 +644,8 @@ public class CumulusConcatenatedGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("10.20.40.0").toPrefix())
             .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
+            .getExportPolicySources(),
+        hasSize(1));
     assertThat(
         c.getActiveInterfaces()
             .get("bond2")
@@ -655,9 +654,8 @@ public class CumulusConcatenatedGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("10.20.50.0").toPrefix())
             .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
+            .getExportPolicySources(),
+        hasSize(1));
     assertThat(
         c.getActiveInterfaces()
             .get("eth3")
@@ -666,9 +664,8 @@ public class CumulusConcatenatedGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("10.20.60.0").toPrefix())
             .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
+            .getExportPolicySources(),
+        hasSize(1));
     assertThat(
         c.getActiveInterfaces()
             .get("bond4")
@@ -677,8 +674,7 @@ public class CumulusConcatenatedGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("10.20.70.0").toPrefix())
             .getIpv4UnicastAddressFamily()
-            .getExportPolicySources()
-            .size(),
-        equalTo(1));
+            .getExportPolicySources(),
+        hasSize(1));
   }
 }

@@ -53,7 +53,6 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Number_or_
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.PrefixContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
-import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_interfaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
@@ -127,11 +126,6 @@ public final class CumulusInterfacesConfigurationBuilder
   // Listener methods
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
-    _currentIfaceName = ctx.interface_name().getText();
-  }
-
-  @Override
-  public void enterS_interface(S_interfaceContext ctx) {
     _currentIfaceName = ctx.interface_name().getText();
   }
 
