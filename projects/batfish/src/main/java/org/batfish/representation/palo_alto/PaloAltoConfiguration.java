@@ -1245,7 +1245,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     if (iface.getType() == Interface.Type.PHYSICAL) {
       double speed = 1e9;
-      if (iface.getName().matches("ethernet2[1234]")) {
+      if (iface.getName().matches("ethernet(\\d+)/2[1234]")) {
         // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClssCAC
         speed = 1e10;
       }
