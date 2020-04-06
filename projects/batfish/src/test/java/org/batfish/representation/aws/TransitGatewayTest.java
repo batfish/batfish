@@ -95,7 +95,6 @@ public class TransitGatewayTest {
 
   @Test
   public void testConnectVpcAttachment() {
-
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
@@ -154,7 +153,10 @@ public class TransitGatewayTest {
         vpcCfg.getVrfs().get(Vpc.vrfNameForLink(tgwAttachment.getId())).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME),
+                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
+                    .toBuilder()
+                    .setAdministrativeCost(255)
+                    .build(),
                 toStaticRoute(
                     Prefix.ZERO,
                     Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()),

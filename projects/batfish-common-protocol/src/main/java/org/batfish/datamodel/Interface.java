@@ -76,7 +76,7 @@ public final class Interface extends ComparableStructure<String> {
     private IpAccessList _postTransformationIncomingFilter;
     private boolean _proxyArp;
     private IpAccessList _preTransformationOutgoingFilter;
-    private Set<InterfaceAddress> _secondaryAddresses;
+    private Set<? extends InterfaceAddress> _secondaryAddresses;
     private @Nullable Double _speed;
     private @Nullable Boolean _switchport;
     private @Nullable SwitchportMode _switchportMode;
@@ -86,6 +86,7 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Integer _vlan;
     private Vrf _vrf;
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
+    private @Nullable String _zoneName;
 
     private Builder(@Nullable Supplier<String> nameGenerator) {
       _active = true;
@@ -175,6 +176,7 @@ public final class Interface extends ComparableStructure<String> {
 
       iface.setVrf(_vrf);
       iface.setVrrpGroups(_vrrpGroups);
+      iface.setZoneName(_zoneName);
 
       iface.setOspfSettings(_ospfSettings);
 
@@ -418,7 +420,7 @@ public final class Interface extends ComparableStructure<String> {
      * with a different subnet living on the interface. The interface will reply to ARP for the
      * primary or any secondary IP.
      */
-    public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
+    public Builder setSecondaryAddresses(Iterable<? extends InterfaceAddress> secondaryAddresses) {
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
     }
@@ -460,6 +462,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
       _vrrpGroups = ImmutableSortedMap.copyOf(vrrpGroups);
+      return this;
+    }
+
+    public Builder setZoneName(@Nullable String zoneName) {
+      _zoneName = zoneName;
       return this;
     }
   }

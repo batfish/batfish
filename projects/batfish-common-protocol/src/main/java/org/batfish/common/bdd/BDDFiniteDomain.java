@@ -2,7 +2,6 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.forEachWithIndex;
 
@@ -95,7 +94,7 @@ public final class BDDFiniteDomain<V> {
   }
 
   public V getValueFromAssignment(BDD bdd) {
-    checkArgument(isAssignment(bdd));
+    checkArgument(bdd.isAssignment());
 
     // Exist turns the assignment into just the finite domain.
     V ret = _bddToValue.get(bdd.exist(_var.getOtherVars()));

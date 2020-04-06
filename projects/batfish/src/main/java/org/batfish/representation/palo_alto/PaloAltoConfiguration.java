@@ -1226,20 +1226,38 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface =
+    org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(batfishInterfaceType(iface.getType(), _w))
-            .build();
+            .setType(batfishInterfaceType(iface.getType(), _w));
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
     }
     newIface.setAddress(iface.getAddress());
-    newIface.setAllAddresses(iface.getAllAddresses());
+    if (iface.getAddress() != null) {
+      newIface.setSecondaryAddresses(
+          Sets.difference(iface.getAllAddresses(), ImmutableSet.of(iface.getAddress())));
+    }
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
+
+    if (iface.getType() == Interface.Type.PHYSICAL) {
+      double speed = 1e9;
+      if (iface.getName().matches("ethernet(\\d+)/2[1234]")) {
+        // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClssCAC
+        speed = 1e10;
+      }
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    } else if (iface.getParent() != null) {
+      org.batfish.datamodel.Interface parentIface =
+          _c.getAllInterfaces().get(iface.getParent().getName());
+      assert parentIface != null; // because interfaces are processed in sorted order
+      newIface.setBandwidth(parentIface.getBandwidth());
+      // do not set speed, that's a physical property.
+    }
 
     if (iface.getType() == Interface.Type.LAYER3) {
       newIface.setEncapsulationVlan(iface.getTag());
@@ -1322,7 +1340,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(packetPolicyName);
     }
 
-    return newIface;
+    return newIface.build();
   }
 
   /**
@@ -1802,6 +1820,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     convertSharedGateways();
 
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
+      // NB: sorted order is used here.
       org.batfish.datamodel.Interface viIface = toInterface(i.getValue());
       _c.getAllInterfaces().put(viIface.getName(), viIface);
 
