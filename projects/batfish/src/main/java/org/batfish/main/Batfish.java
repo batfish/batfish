@@ -1772,14 +1772,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(
-                        v ->
-                            postProcessAggregatedInterfacesHelper(
-                                c.getAllInterfaces(v.getName()))));
+        .forEach(c -> postProcessAggregatedInterfacesHelper(c.getAllInterfaces()));
   }
 
   private void postProcessAggregatedInterfacesHelper(Map<String, Interface> interfaces) {
