@@ -26,7 +26,7 @@ s_auto
 
 s_iface
 :
-  IFACE interface_name
+  (IFACE | INTERFACE) interface_name
   (
     si_inet
     | si_no_inet
@@ -94,7 +94,7 @@ i_property
 
 i_address
 :
-  ADDRESS
+  IP? ADDRESS
   (
     prefix
     | prefix6

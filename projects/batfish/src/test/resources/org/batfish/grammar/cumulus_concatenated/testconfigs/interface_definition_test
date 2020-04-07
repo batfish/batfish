@@ -1,0 +1,74 @@
+interface_definition_test
+# This file describes the network interfaces
+
+iface lo inet loopback
+ address 2.3.0.0/32
+
+interface eth1
+ address 10.20.40.1/31
+
+interface bond2
+ ip address 10.20.50.1/31
+
+iface eth3
+ address 10.20.60.1/31
+
+iface bond4
+ ip address 10.20.70.1/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+!
+!
+router bgp 123
+ bgp router-id 2.3.0.0
+ network 2.3.0.0/32
+
+ ! Test-case1: Interface defined using "interface" and "address".
+ neighbor pg_with_interface_and_address peer-group
+ neighbor pg_with_interface_and_address remote-as 345
+ neighbor pg_with_interface_and_address update-source 10.20.40.1
+ neighbor 10.20.40.0 peer-group pg_with_interface_and_address
+
+ ! Test-case2: Interface defined using "interface" and "ip address".
+ neighbor pg_with_interface_and_ip_address peer-group
+ neighbor pg_with_interface_and_ip_address remote-as 345
+ neighbor pg_with_interface_and_ip_address update-source 10.20.50.1
+ neighbor 10.20.50.0 peer-group pg_with_interface_and_ip_address
+
+ ! Test-case3: Interface defined using "iface" and "address".
+ neighbor pg_with_iface_and_address peer-group
+ neighbor pg_with_iface_and_address remote-as 345
+ neighbor pg_with_iface_and_address update-source 10.20.60.1
+ neighbor 10.20.60.0 peer-group pg_with_iface_and_address
+
+ ! Test-case4: Interface defined using "iface" and "address".
+ neighbor pg_with_iface_and_ip_address peer-group
+ neighbor pg_with_iface_and_ip_address remote-as 345
+ neighbor pg_with_iface_and_ip_address update-source 10.20.70.1
+ neighbor 10.20.70.0 peer-group pg_with_iface_and_ip_address
+
+!
+ address-family ipv4 unicast
+ neighbor pg_with_interface_and_address route-map TEST_OUT out
+ neighbor pg_with_interface_and_address route-map TEST_IN in
+ neighbor pg_with_interface_and_ip_address route-map TEST_OUT out
+ neighbor pg_with_interface_and_ip_address route-map TEST_IN in
+ neighbor pg_with_iface_and_address route-map TEST_OUT out
+ neighbor pg_with_iface_and_address route-map TEST_IN in
+ neighbor pg_with_iface_and_ip_address route-map TEST_OUT out
+ neighbor pg_with_iface_and_ip_address route-map TEST_IN in
+ exit-address-family
+!
+!
+route-map TEST_IN permit 10
+route-map TEST_OUT permit 10
+!
+!
+line vty
+!
+!### end frr.conf
