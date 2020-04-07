@@ -15,6 +15,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 @ParametersAreNonnullByDefault
 public final class Interface implements Serializable {
   public enum Type {
+    AGGREGATED_ETHERNET,
     LAYER2,
     LAYER3,
     LOOPBACK,
@@ -27,6 +28,7 @@ public final class Interface implements Serializable {
 
   private boolean _active;
   @Nullable private ConcreteInterfaceAddress _address;
+  @Nullable private String _aggregateGroup;
   @Nonnull private final Set<ConcreteInterfaceAddress> _allAddresses;
   @Nullable private String _comment;
   @Nullable private Integer _mtu;
@@ -60,6 +62,15 @@ public final class Interface implements Serializable {
   @Nullable
   public ConcreteInterfaceAddress getAddress() {
     return _address;
+  }
+
+  @Nullable
+  public String getAggregateGroup() {
+    return _aggregateGroup;
+  }
+
+  public void setAggregateGroup(@Nullable String aggregateGroup) {
+    _aggregateGroup = aggregateGroup;
   }
 
   @Nonnull

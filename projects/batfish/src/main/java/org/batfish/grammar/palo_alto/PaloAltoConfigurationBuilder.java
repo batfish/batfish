@@ -29,6 +29,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ETHERNET_AGGREGATE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
@@ -226,6 +227,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_aggregate_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
@@ -233,6 +235,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_vlanContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_aggregate_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
@@ -1628,6 +1631,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSni_aggregate_ethernet_definition(Sni_aggregate_ethernet_definitionContext ctx) {
+    String name = getText(ctx.name);
+    _currentParentInterface =
+        _configuration
+            .getInterfaces()
+            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.AGGREGATED_ETHERNET));
+    _currentInterface = _currentParentInterface;
+    _configuration.defineFlattenedStructure(INTERFACE, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitSni_aggregate_ethernet_definition(Sni_aggregate_ethernet_definitionContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
   public void enterSni_ethernet_definition(Sni_ethernet_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentParentInterface =
@@ -1726,6 +1746,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
     _currentCrytoProfile = null;
+  }
+
+  @Override
+  public void enterSnie_aggregate_group(Snie_aggregate_groupContext ctx) {
+    String aeName = getText(ctx.group);
+    _currentInterface.setAggregateGroup(aeName);
+    _configuration.referenceStructure(
+        INTERFACE, aeName, ETHERNET_AGGREGATE_GROUP, getLine(ctx.group.start));
   }
 
   @Override

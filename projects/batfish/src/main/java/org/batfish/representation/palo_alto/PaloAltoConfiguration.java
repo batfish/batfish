@@ -28,12 +28,14 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
@@ -1204,12 +1206,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
-  private static InterfaceType batfishInterfaceType(@Nonnull Interface.Type panType, Warnings w) {
+  private static InterfaceType batfishInterfaceType(
+      @Nonnull Interface.Type panType, @Nullable Interface.Type parentType, Warnings w) {
     switch (panType) {
+      case AGGREGATED_ETHERNET:
+        return InterfaceType.AGGREGATED;
       case PHYSICAL:
         return InterfaceType.PHYSICAL;
       case LAYER2:
       case LAYER3:
+        if (parentType == Interface.Type.AGGREGATED_ETHERNET) {
+          return InterfaceType.AGGREGATE_CHILD;
+        }
         return InterfaceType.LOGICAL;
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
@@ -1226,11 +1234,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
+    Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(batfishInterfaceType(iface.getType(), _w));
+            .setType(batfishInterfaceType(iface.getType(), parentType, _w));
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
@@ -1242,6 +1251,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
+    newIface.setChannelGroup(iface.getAggregateGroup());
 
     if (iface.getType() == Interface.Type.PHYSICAL) {
       double speed = 1e9;
@@ -1819,21 +1829,41 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     convertSharedGateways();
 
-    for (Entry<String, Interface> i : _interfaces.entrySet()) {
-      // NB: sorted order is used here.
-      org.batfish.datamodel.Interface viIface = toInterface(i.getValue());
-      _c.getAllInterfaces().put(viIface.getName(), viIface);
+    // A map from aggregate ethernet name (like ae1) to the set of interfaces it aggregates
+    Multimap<String, String> aggregates = HashMultimap.create();
 
-      for (Entry<String, Interface> unit : i.getValue().getUnits().entrySet()) {
+    for (Interface i : _interfaces.values()) {
+      // NB: sorted order is used here.
+      org.batfish.datamodel.Interface viIface = toInterface(i);
+      _c.getAllInterfaces().put(viIface.getName(), viIface);
+      if (i.getAggregateGroup() != null) {
+        aggregates.put(i.getAggregateGroup(), i.getName());
+      }
+
+      for (Entry<String, Interface> unit : i.getUnits().entrySet()) {
         org.batfish.datamodel.Interface viUnit = toInterface(unit.getValue());
         viUnit.addDependency(new Dependency(viIface.getName(), DependencyType.BIND));
         _c.getAllInterfaces().put(viUnit.getName(), viUnit);
       }
     }
+    // Populate aggregates where they exist.
+    for (Entry<String, Collection<String>> entry : aggregates.asMap().entrySet()) {
+      org.batfish.datamodel.Interface ae = _c.getAllInterfaces().get(entry.getKey());
+      if (ae == null) {
+        continue;
+      }
+
+      Collection<String> members = entry.getValue();
+      ae.setChannelGroupMembers(members);
+      ae.setDependencies(
+          members.stream()
+              .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+              .collect(ImmutableSet.toImmutableSet()));
+    }
 
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
-    for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
-      _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
+    for (VirtualRouter vr : _virtualRouters.values()) {
+      _c.getVrfs().put(vr.getName(), toVrf(vr));
     }
 
     // Batfish cannot handle interfaces without a Vrf

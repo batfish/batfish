@@ -1,0 +1,70 @@
+# https://github.com/batfish/batfish/issues/5598
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "interface-agg";
+        }
+      }
+      network {
+        interface {
+          ethernet {
+            ethernet1/3 {
+              layer3 {
+                ip {
+                  10.0.0.1/29;
+                }
+              }
+            }
+            ethernet1/21 {
+              aggregate-group ae1;
+              link-state auto;
+              link-duplex auto;
+              link-speed auto;
+            }
+            ethernet1/22 {
+              aggregate-group ae1;
+              link-state auto;
+              link-duplex auto;
+              link-speed auto;
+            }
+          }
+          aggregate-ethernet {
+            ae1 {
+              layer3 {
+                units {
+                  ae1.290 {
+                    tag 290;
+                    ip {
+                      10.0.1.1/29;
+                    }
+                  }
+                  ae1.200 {
+                    tag 200;
+                    ip {
+                      10.0.2.1/29;
+                    }
+                  }
+                  ae1.201 {
+                    ip {
+                      10.0.3.1/29;
+                    }
+                    tag 201;
+                  }
+                }
+              }
+              comment "Aggregate interface to Core Router";
+            }
+          }
+        }
+        virtual-router {
+          VR {
+            interface [ ethernet1/3 ae1.200 ae1.201 ae1.290 ];
+          }
+        }
+
+      }
+    }
+  }
+}
