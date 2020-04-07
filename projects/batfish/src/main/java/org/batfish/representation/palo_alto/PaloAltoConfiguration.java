@@ -1821,8 +1821,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     // Before processing any Vsys, ensure that interfaces are attached to zones.
     attachInterfacesToZones();
-    // Before processing any Vsys, ensure that interfaces are attached to zones.
-    attachInterfacesToZones();
 
     convertNamespaces();
 
@@ -1831,7 +1829,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     convertSharedGateways();
 
+    // A map from aggregate ethernet name (like ae1) to the set of interfaces it aggregates
     Multimap<String, String> aggregates = HashMultimap.create();
+
     for (Interface i : _interfaces.values()) {
       // NB: sorted order is used here.
       org.batfish.datamodel.Interface viIface = toInterface(i);
