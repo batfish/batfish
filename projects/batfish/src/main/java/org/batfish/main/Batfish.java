@@ -714,12 +714,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 /* Bandwidth should be sum of bandwidth of channel-group members. */
                 iface.setBandwidth(
                     iface.getChannelGroupMembers().stream()
-                        .map(interfaces::get)
-                        .filter(Objects::nonNull)
-                        .filter(Interface::getActive)
-                        .map(Interface::getBandwidth)
-                        .filter(Objects::nonNull)
-                        .mapToDouble(Double::doubleValue)
+                        .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
                         .sum());
               }
             });
