@@ -155,7 +155,10 @@ public class UtilsTest {
         vpcCfg.getVrfs().get(vrfNameForLink(gatewayCfg.getHostname())).getStaticRoutes(),
         equalTo(
             ImmutableSortedSet.of(
-                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME), // via Vpc.initializeVrf
+                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
+                    .toBuilder()
+                    .setAdministrativeCost(255)
+                    .build(), // via Vpc.initializeVrf
                 toStaticRoute(
                     Prefix.ZERO,
                     vpcIface.getName(),

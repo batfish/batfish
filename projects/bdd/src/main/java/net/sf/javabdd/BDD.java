@@ -66,6 +66,17 @@ public abstract class BDD {
   public abstract BDDFactory getFactory();
 
   /**
+   * Returns true if this BDD is a satsifiable assignment.
+   *
+   * <p>A BDD is an assignment if there is exactly a single path to the {@link BDDFactory#one()}
+   * BDD.
+   *
+   * <p>Note that being an assignment does not mean that there is a value assigned to every
+   * variable. See {@link #satOne()} and {@link #fullSatOne()}.
+   */
+  public abstract boolean isAssignment();
+
+  /**
    * Returns true if this BDD is the zero (false) BDD.
    *
    * @return true if this BDD is the zero (false) BDD
