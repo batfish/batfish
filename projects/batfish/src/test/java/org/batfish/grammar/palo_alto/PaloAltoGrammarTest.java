@@ -144,6 +144,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1287,6 +1288,119 @@ public final class PaloAltoGrammarTest {
 
     // Confirm comment is extracted
     assertThat(c, hasInterface(interfaceNameUnit1, hasDescription("unit 1")));
+  }
+
+  // Test for https://github.com/batfish/batfish/issues/5598.
+  @Test
+  public void testInterfaceAggregateExtraction() {
+    String hostname = "interface-agg";
+    PaloAltoConfiguration c = parseNestedConfig(hostname);
+    Map<String, Interface> interfaces = c.getInterfaces();
+    assertThat(
+        interfaces.keySet(),
+        containsInAnyOrder("ethernet1/3", "ethernet1/21", "ethernet1/22", "ae1"));
+    {
+      Interface iface = interfaces.get("ethernet1/3");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/29")));
+    }
+    {
+      Interface iface = interfaces.get("ethernet1/21");
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getAggregateGroup(), equalTo("ae1"));
+    }
+    {
+      Interface iface = interfaces.get("ethernet1/22");
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getAggregateGroup(), equalTo("ae1"));
+    }
+    {
+      Interface iface = interfaces.get("ae1");
+      assertThat(iface.getUnits().keySet(), containsInAnyOrder("ae1.290", "ae1.200", "ae1.201"));
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getAggregateGroup(), nullValue());
+      Interface ae1_290 = iface.getUnits().get("ae1.290");
+      assertThat(ae1_290.getTag(), equalTo(290));
+      assertThat(ae1_290.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1./29")));
+      Interface ae1_200 = iface.getUnits().get("ae1.200");
+      assertThat(ae1_200.getTag(), equalTo(200));
+      assertThat(ae1_200.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1./29")));
+      Interface ae1_201 = iface.getUnits().get("ae1.201");
+      assertThat(ae1_201.getTag(), equalTo(201));
+      assertThat(ae1_201.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.3.1./29")));
+    }
+  }
+
+  // Test for https://github.com/batfish/batfish/issues/5598.
+  @Test
+  public void testInterfaceAggregateConversion() {
+    String hostname = "interface-agg";
+    Configuration c = parseConfig(hostname);
+    Map<String, org.batfish.datamodel.Interface> interfaces = c.getAllInterfaces();
+    assertThat(
+        interfaces.keySet(),
+        containsInAnyOrder(
+            "ethernet1/3", "ethernet1/21", "ethernet1/22", "ae1", "ae1.290", "ae1.200", "ae1.201"));
+    {
+      org.batfish.datamodel.Interface e3 = interfaces.get("ethernet1/3");
+      assertThat(e3.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+      assertThat(e3.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/29")));
+      assertThat(e3.getChannelGroup(), nullValue());
+      assertThat(e3.getChannelGroupMembers(), empty());
+    }
+    {
+      org.batfish.datamodel.Interface e21 = interfaces.get("ethernet1/21");
+      assertThat(e21.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+      assertThat(e21.getAddress(), nullValue());
+      assertThat(e21.getChannelGroup(), equalTo("ae1"));
+      assertThat(e21.getChannelGroupMembers(), empty());
+    }
+    {
+      org.batfish.datamodel.Interface e22 = interfaces.get("ethernet1/22");
+      assertThat(e22.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+      assertThat(e22.getAddress(), nullValue());
+      assertThat(e22.getChannelGroup(), equalTo("ae1"));
+      assertThat(e22.getChannelGroupMembers(), empty());
+    }
+    {
+      org.batfish.datamodel.Interface ae1 = interfaces.get("ae1");
+      assertThat(ae1, hasBandwidth(20e9));
+      assertThat(ae1.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
+      assertThat(ae1.getAddress(), nullValue());
+      assertThat(ae1.getChannelGroup(), nullValue());
+      assertThat(ae1.getChannelGroupMembers(), containsInAnyOrder("ethernet1/21", "ethernet1/22"));
+      assertThat(
+          ae1.getDependencies(),
+          containsInAnyOrder(
+              new Dependency("ethernet1/21", DependencyType.AGGREGATE),
+              new Dependency("ethernet1/22", DependencyType.AGGREGATE)));
+    }
+    {
+      org.batfish.datamodel.Interface iface = interfaces.get("ae1.290");
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/29")));
+      assertThat(iface, hasBandwidth(20e9));
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getChannelGroupMembers(), empty());
+      assertThat(iface.getEncapsulationVlan(), equalTo(290));
+    }
+    {
+      org.batfish.datamodel.Interface iface = interfaces.get("ae1.200");
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/29")));
+      assertThat(iface, hasBandwidth(20e9));
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getChannelGroupMembers(), empty());
+      assertThat(iface.getEncapsulationVlan(), equalTo(200));
+    }
+    {
+      org.batfish.datamodel.Interface iface = interfaces.get("ae1.201");
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.3.1/29")));
+      assertThat(iface, hasBandwidth(20e9));
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getChannelGroupMembers(), empty());
+      assertThat(iface.getEncapsulationVlan(), equalTo(201));
+    }
   }
 
   @Test
