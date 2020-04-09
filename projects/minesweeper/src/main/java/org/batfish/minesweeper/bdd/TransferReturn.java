@@ -10,6 +10,6 @@ public class TransferReturn extends Tuple<BDDRoute, BDD> {
   }
 
   public String debug() {
-    return this.getFirst().dot(this.getSecond());
+    return getFirst().dot(getSecond());
   }
 }

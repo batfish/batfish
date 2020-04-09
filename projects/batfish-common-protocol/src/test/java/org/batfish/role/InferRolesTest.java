@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -86,7 +85,7 @@ public class InferRolesTest {
               Edge.of("host2", "eth0", "as2dept1", "GigabitEthernet3/0")));
 
   @Test
-  public void inferRolesOnExampleTopology() throws JsonProcessingException {
+  public void inferRolesOnExampleTopology() {
     Optional<RoleMapping> roleMappingOpt =
         new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
 

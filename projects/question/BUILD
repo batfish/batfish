@@ -1,3 +1,5 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load("@batfish//skylark:junit.bzl", "junit_tests")
@@ -72,7 +74,6 @@ junit_tests(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
-        "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )

@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -11,6 +12,7 @@ import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
@@ -96,6 +98,14 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
   }
 
   @Override
+  public StateExpr visitInterfaceAccept(InterfaceAccept interfaceAccept) {
+    String hostname = interfaceAccept.getHostname();
+    return _isFinalNode.test(hostname)
+        ? new OriginateInterface(hostname, interfaceAccept.getInterface())
+        : null;
+  }
+
+  @Override
   public StateExpr visitNeighborUnreachable() {
     return null;
   }
@@ -150,6 +160,11 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
   @Override
   public StateExpr visitNodeInterfaceNeighborUnreachable(
       NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable) {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitOriginateInterface(OriginateInterface originateInterface) {
     return null;
   }
 

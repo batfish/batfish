@@ -73,6 +73,6 @@ public abstract class AbstractRoute6 implements Serializable {
 
   @Override
   public String toString() {
-    return this.getClass().getSimpleName() + "<" + _network + ">";
+    return getClass().getSimpleName() + "<" + _network + ">";
   }
 }

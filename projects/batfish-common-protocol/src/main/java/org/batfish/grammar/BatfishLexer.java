@@ -21,7 +21,7 @@ public abstract class BatfishLexer extends Lexer {
   }
 
   public String getMode() {
-    return this.getModeNames()[_mode];
+    return getModeNames()[_mode];
   }
 
   @Nullable
@@ -61,7 +61,7 @@ public abstract class BatfishLexer extends Lexer {
   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
     _parser = parser;
     BatfishLexerErrorListener errorListener =
-        new BatfishLexerErrorListener(this.getClass().getSimpleName(), parser);
+        new BatfishLexerErrorListener(getClass().getSimpleName(), parser);
     removeErrorListeners();
     addErrorListener(errorListener);
     _parser.setLexerErrorListener(errorListener);
@@ -97,7 +97,7 @@ public abstract class BatfishLexer extends Lexer {
 
   /** Unconsume the text for current token and emit nothing. */
   protected final void less() {
-    _input.seek(this._tokenStartCharIndex);
+    _input.seek(_tokenStartCharIndex);
     _type = SKIP;
   }
 }

@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 
@@ -11,19 +12,23 @@ import net.sf.javabdd.BDD;
 @ParametersAreNonnullByDefault
 public final class BDDRepresentativePicker {
 
-  public static BDD pickRepresentative(BDD bdd, List<BDD> preference) {
+  /** Picks a representative flow, possibly from a combination of the given preference BDDs. */
+  public static @Nonnull BDD pickRepresentative(BDD bdd, List<BDD> preference) {
     if (bdd.isZero()) {
       return bdd;
     }
 
-    for (BDD preferedBDD : preference) {
-      BDD newBDD = preferedBDD.and(bdd);
-      if (!newBDD.isZero()) {
-        return newBDD.fullSatOne();
+    BDD curBDD = bdd.id(); // clone so we can free.
+    for (BDD preferredBDD : preference) {
+      BDD newBDD = preferredBDD.and(curBDD);
+      if (newBDD.isZero()) {
+        continue;
       }
+      curBDD.free();
+      curBDD = newBDD;
     }
 
-    return bdd.fullSatOne();
+    return curBDD.fullSatOne();
   }
 
   private BDDRepresentativePicker() {}

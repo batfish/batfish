@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
@@ -42,10 +43,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.symbolic.state.Accept;
 import org.batfish.symbolic.state.DropNoRoute;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -54,6 +57,8 @@ import org.batfish.symbolic.state.NodeDropNullRoute;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
+import org.batfish.symbolic.state.OriginateInterface;
+import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInVrf;
@@ -62,6 +67,7 @@ import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
 import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
+import org.batfish.symbolic.state.Query;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
 import org.junit.Before;
@@ -89,6 +95,10 @@ public final class BDDReachabilityAnalysisTest {
   private String _dstIface2Name;
   private String _dstName;
   private VrfAccept _dstVrfAccept;
+  private InterfaceAccept _link1DstAccept;
+  private InterfaceAccept _link2DstAccept;
+  private InterfaceAccept _dstIface1Accept;
+  private InterfaceAccept _dstIface2Accept;
   private NodeAccept _dstNodeAccept;
   private PostInInterface _dstPostInInterface1;
   private PostInInterface _dstPostInInterface2;
@@ -105,15 +115,19 @@ public final class BDDReachabilityAnalysisTest {
   private String _link1DstName;
 
   private BDD _link1SrcIpBDD;
+  private String _link1SrcName;
 
   private BDD _link2DstIpBDD;
   private String _link2DstName;
 
   private BDD _link2SrcIpBDD;
+  private String _link2SrcName;
 
   private String _srcName;
   private NodeAccept _srcNodeAccept;
   private VrfAccept _srcVrfAccept;
+  private InterfaceAccept _link1SrcAccept;
+  private InterfaceAccept _link2SrcAccept;
   private PostInVrf _srcPostInVrf;
   private PreInInterface _srcPreInInterface1;
   private PreInInterface _srcPreInInterface2;
@@ -129,6 +143,18 @@ public final class BDDReachabilityAnalysisTest {
   public void setup() throws IOException {
     _net = new TestNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
+
+    _link1DstIpBDD = dstIpBDD(LINK_1_NETWORK.getEndIp());
+    _link1DstName = _net._link1Dst.getName();
+
+    _link1SrcIpBDD = dstIpBDD(LINK_1_NETWORK.getStartIp());
+    _link1SrcName = _net._link1Src.getName();
+
+    _link2DstIpBDD = dstIpBDD(LINK_2_NETWORK.getEndIp());
+    _link2DstName = _net._link2Dst.getName();
+
+    _link2SrcIpBDD = dstIpBDD(LINK_2_NETWORK.getStartIp());
+    _link2SrcName = _net._link2Src.getName();
 
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
@@ -158,23 +184,18 @@ public final class BDDReachabilityAnalysisTest {
     _dstName = _net._dstNode.getHostname();
     _dstNodeAccept = new NodeAccept(_dstName);
     _dstVrfAccept = new VrfAccept(_dstName, DEFAULT_VRF_NAME);
+    _link1DstAccept = new InterfaceAccept(_dstName, _link1DstName);
+    _link2DstAccept = new InterfaceAccept(_dstName, _link2DstName);
+    _dstIface1Accept = new InterfaceAccept(_dstName, _dstIface1Name);
+    _dstIface2Accept = new InterfaceAccept(_dstName, _dstIface2Name);
     _dstPostInVrf = new PostInVrf(_dstName, DEFAULT_VRF_NAME);
     _dstPreOutVrf = new PreOutVrf(_dstName, DEFAULT_VRF_NAME);
-
-    _link1DstIpBDD = dstIpBDD(LINK_1_NETWORK.getEndIp());
-    _link1DstName = _net._link1Dst.getName();
-
-    _link1SrcIpBDD = dstIpBDD(LINK_1_NETWORK.getStartIp());
-
-    _link2DstIpBDD = dstIpBDD(LINK_2_NETWORK.getEndIp());
-    _link2DstName = _net._link2Dst.getName();
-
-    _link2SrcIpBDD = dstIpBDD(LINK_2_NETWORK.getStartIp());
-    String link2SrcName = _net._link2Src.getName();
 
     _srcName = _net._srcNode.getHostname();
     _srcNodeAccept = new NodeAccept(_srcName);
     _srcVrfAccept = new VrfAccept(_srcName, DEFAULT_VRF_NAME);
+    _link1SrcAccept = new InterfaceAccept(_srcName, _link1SrcName);
+    _link2SrcAccept = new InterfaceAccept(_srcName, _link2SrcName);
     _srcPostInVrf = new PostInVrf(_srcName, DEFAULT_VRF_NAME);
 
     _dstPostInInterface1 = new PostInInterface(_dstName, _link1DstName);
@@ -184,18 +205,20 @@ public final class BDDReachabilityAnalysisTest {
     _dstPreInInterface2 = new PreInInterface(_dstName, _link2DstName);
 
     _srcPreInInterface1 = new PreInInterface(_srcName, _net._link1Src.getName());
-    _srcPreInInterface2 = new PreInInterface(_srcName, link2SrcName);
+    _srcPreInInterface2 = new PreInInterface(_srcName, _link2SrcName);
 
     _dstPreOutEdge1 = new PreOutEdge(_dstName, _link1DstName, _srcName, _net._link1Src.getName());
-    _dstPreOutEdge2 = new PreOutEdge(_dstName, _link2DstName, _srcName, link2SrcName);
+    _dstPreOutEdge2 = new PreOutEdge(_dstName, _link2DstName, _srcName, _link2SrcName);
     _dstPreOutEdgePostNat1 =
         new PreOutEdgePostNat(_dstName, _link1DstName, _srcName, _net._link1Src.getName());
-    _dstPreOutEdgePostNat2 = new PreOutEdgePostNat(_dstName, _link2DstName, _srcName, link2SrcName);
+    _dstPreOutEdgePostNat2 =
+        new PreOutEdgePostNat(_dstName, _link2DstName, _srcName, _link2SrcName);
     _srcPreOutEdge1 = new PreOutEdge(_srcName, _net._link1Src.getName(), _dstName, _link1DstName);
-    _srcPreOutEdge2 = new PreOutEdge(_srcName, link2SrcName, _dstName, _link2DstName);
+    _srcPreOutEdge2 = new PreOutEdge(_srcName, _link2SrcName, _dstName, _link2DstName);
     _srcPreOutEdgePostNat1 =
         new PreOutEdgePostNat(_srcName, _net._link1Src.getName(), _dstName, _link1DstName);
-    _srcPreOutEdgePostNat2 = new PreOutEdgePostNat(_srcName, link2SrcName, _dstName, _link2DstName);
+    _srcPreOutEdgePostNat2 =
+        new PreOutEdgePostNat(_srcName, _link2SrcName, _dstName, _link2DstName);
     _srcPreOutVrf = new PreOutVrf(_srcName, DEFAULT_VRF_NAME);
   }
 
@@ -232,16 +255,37 @@ public final class BDDReachabilityAnalysisTest {
     return _bddOps.or(bdds);
   }
 
-  private BDD vrfAcceptBDD(String node) {
-    return _graphFactory.getVrfAcceptBDDs().get(node).get(DEFAULT_VRF_NAME);
+  private Map<String, BDD> ifaceAcceptBDDs(String node) {
+    return _graphFactory.getIfaceAcceptBDDs().get(node).get(DEFAULT_VRF_NAME);
   }
 
   @Test
-  public void testVrfAcceptBDDs() {
+  public void testIfaceAcceptBDDs() {
     assertThat(
-        vrfAcceptBDD(_dstName),
-        equalTo(or(_link1DstIpBDD, _link2DstIpBDD, _dstIface1IpBDD, _dstIface2IpBDD)));
-    assertThat(vrfAcceptBDD(_srcName), equalTo(or(_link1SrcIpBDD, _link2SrcIpBDD)));
+        ifaceAcceptBDDs(_dstName),
+        equalTo(
+            ImmutableMap.of(
+                _link1DstName,
+                _link1DstIpBDD,
+                _link2DstName,
+                _link2DstIpBDD,
+                _dstIface1Name,
+                _dstIface1IpBDD,
+                _dstIface2Name,
+                _dstIface2IpBDD)));
+    assertThat(
+        ifaceAcceptBDDs(_srcName),
+        equalTo(ImmutableMap.of(_link1SrcName, _link1SrcIpBDD, _link2SrcName, _link2SrcIpBDD)));
+  }
+
+  @Test
+  public void testBDDTransitions_InterfaceAccept_VrfAccept() {
+    assertThat(bddTransition(_link1SrcAccept, _srcVrfAccept), isOne());
+    assertThat(bddTransition(_link2SrcAccept, _srcVrfAccept), isOne());
+    assertThat(bddTransition(_link1DstAccept, _dstVrfAccept), isOne());
+    assertThat(bddTransition(_link2DstAccept, _dstVrfAccept), isOne());
+    assertThat(bddTransition(_dstIface1Accept, _dstVrfAccept), isOne());
+    assertThat(bddTransition(_dstIface2Accept, _dstVrfAccept), isOne());
   }
 
   @Test
@@ -258,23 +302,60 @@ public final class BDDReachabilityAnalysisTest {
 
   @Test
   public void testBDDTransitions_PostInVrf_outEdges() {
-    BDD vrfAccept = bddTransition(_srcPostInVrf, _srcVrfAccept);
-    BDD nodeDropNoRoute = bddTransition(_srcPostInVrf, new NodeDropNoRoute(_srcName));
-    BDD preOutVrf = bddTransition(_srcPostInVrf, _srcPreOutVrf);
+    Set<StateExpr> srcPostInVrfOutStates = _graph.getForwardEdgeMap().get(_srcPostInVrf).keySet();
+    Set<StateExpr> dstPostInVrfOutStates = _graph.getForwardEdgeMap().get(_dstPostInVrf).keySet();
 
-    // test that out edges are mutually exclusive
-    assertThat(vrfAccept, not(intersects(nodeDropNoRoute)));
-    assertThat(vrfAccept, not(intersects(preOutVrf)));
-    assertThat(nodeDropNoRoute, not(intersects(preOutVrf)));
+    // Confirm out edges are as expected
+    assertThat(
+        srcPostInVrfOutStates,
+        containsInAnyOrder(
+            _link1SrcAccept, _link2SrcAccept, new NodeDropNoRoute(_srcName), _srcPreOutVrf));
+    assertThat(
+        dstPostInVrfOutStates,
+        containsInAnyOrder(
+            _link1DstAccept,
+            _link2DstAccept,
+            _dstIface1Accept,
+            _dstIface2Accept,
+            new NodeDropNoRoute(_dstName),
+            _dstPreOutVrf));
+
+    // Test that out edges are mutually exclusive
+    List<BDD> srcOutBdds =
+        srcPostInVrfOutStates.stream()
+            .map(outState -> bddTransition(_srcPostInVrf, outState))
+            .collect(ImmutableList.toImmutableList());
+    List<BDD> dstOutBdds =
+        dstPostInVrfOutStates.stream()
+            .map(outState -> bddTransition(_dstPostInVrf, outState))
+            .collect(ImmutableList.toImmutableList());
+    testMutuallyExclusive(srcOutBdds);
+    testMutuallyExclusive(dstOutBdds);
+  }
+
+  private void testMutuallyExclusive(List<BDD> bdds) {
+    for (int i = 0; i < bdds.size(); i++) {
+      for (int j = i + 1; j < bdds.size(); j++) {
+        assertThat(bdds.get(i), not(intersects(bdds.get(j))));
+      }
+    }
   }
 
   @Test
-  public void testBDDTransitions_PostInVrf_VrfAccept() {
-    assertThat(
-        bddTransition(_srcPostInVrf, _srcVrfAccept), equalTo(or(_link1SrcIpBDD, _link2SrcIpBDD)));
-    assertThat(
-        bddTransition(_dstPostInVrf, _dstVrfAccept),
-        equalTo(or(_link1DstIpBDD, _link2DstIpBDD, _dstIface1IpBDD, _dstIface2IpBDD)));
+  public void testBDDTransitions_PostInVrf_InterfaceAccept() {
+    BDD link1SrcAcceptBdd = bddTransition(_srcPostInVrf, _link1SrcAccept);
+    BDD link2SrcAcceptBdd = bddTransition(_srcPostInVrf, _link2SrcAccept);
+    assertThat(link1SrcAcceptBdd, equalTo(_link1SrcIpBDD));
+    assertThat(link2SrcAcceptBdd, equalTo(_link2SrcIpBDD));
+
+    BDD link1DstAcceptBdd = bddTransition(_dstPostInVrf, _link1DstAccept);
+    BDD link2DstAcceptBdd = bddTransition(_dstPostInVrf, _link2DstAccept);
+    BDD dstIface1AcceptBdd = bddTransition(_dstPostInVrf, _dstIface1Accept);
+    BDD dstIface2AcceptBdd = bddTransition(_dstPostInVrf, _dstIface2Accept);
+    assertThat(link1DstAcceptBdd, equalTo(_link1DstIpBDD));
+    assertThat(link2DstAcceptBdd, equalTo(_link2DstIpBDD));
+    assertThat(dstIface1AcceptBdd, equalTo(_dstIface1IpBDD));
+    assertThat(dstIface2AcceptBdd, equalTo(_dstIface2IpBDD));
   }
 
   @Test
@@ -482,6 +563,41 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(
         graph.getIngressLocationReachableBDDs(),
         equalTo(ImmutableMap.of(toIngressLocation(originateVrf), pkt.getFactory().zero())));
+  }
+
+  @Test
+  public void testGetSrcLocationBdds() {
+    // Simple reachability graph starting with interface states. Include an intermediate state to
+    // ensure reverseReachableStates are being correctly used (intermediate state is PostInVrf).
+    String hostname = "c";
+    String ifaceName = "iface";
+    OriginateInterface originateInterface = new OriginateInterface(hostname, ifaceName);
+    OriginateInterfaceLink originateInterfaceLink = new OriginateInterfaceLink(hostname, ifaceName);
+    PostInVrf postInVrf = new PostInVrf(hostname, "vrf");
+    BDD ifaceOriginateBdd = PKT.getDstIp().value(1);
+    BDD ifaceLinkBdd = PKT.getDstIp().value(2);
+    BDD postInVrfBdd = PKT.getSrcIp().value(3); // srcIp, so not mutually exclusive w/ other BDDS
+    BDDReachabilityAnalysis analysis =
+        new BDDReachabilityAnalysis(
+            PKT,
+            ImmutableSet.of(originateInterface, originateInterfaceLink),
+            Stream.of(
+                new Edge(originateInterface, Query.INSTANCE, ifaceOriginateBdd),
+                new Edge(originateInterfaceLink, postInVrf, ifaceLinkBdd),
+                new Edge(postInVrf, Query.INSTANCE, postInVrfBdd)),
+            PKT.getFactory().one());
+
+    // The origination states should translate to Locations with the expected success BDDs.
+    InterfaceLocation ifaceLocation = new InterfaceLocation(hostname, ifaceName);
+    InterfaceLinkLocation ifaceLinkLocation = new InterfaceLinkLocation(hostname, ifaceName);
+    assertThat(
+        analysis.getSrcLocationBdds(),
+        equalTo(
+            ImmutableMap.of(
+                ifaceLocation,
+                ifaceOriginateBdd,
+                ifaceLinkLocation,
+                ifaceLinkBdd.and(postInVrfBdd))));
   }
 
   @Test

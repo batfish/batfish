@@ -10,6 +10,8 @@ import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
@@ -17,17 +19,20 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -38,6 +43,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -50,10 +56,13 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
@@ -67,6 +76,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_gotoContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_nextContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_comm_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
@@ -120,6 +130,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
@@ -147,7 +158,11 @@ import org.batfish.representation.cumulus.FrrInterface;
 import org.batfish.representation.cumulus.InterfacesInterface;
 import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
+import org.batfish.representation.cumulus.IpCommunityList;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
+import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
+import org.batfish.representation.cumulus.IpCommunityListStandard;
+import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
@@ -162,6 +177,7 @@ import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
 import org.batfish.representation.cumulus.RouteMapSetAsPath;
+import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
@@ -200,6 +216,24 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
     return StandardCommunity.of(
         Integer.parseInt(ctx.high.getText()), Integer.parseInt(ctx.low.getText()));
+  }
+
+  private @Nonnull Optional<StandardCommunity> toStandardCommunity(Standard_communityContext ctx) {
+    if (ctx.literal != null) {
+      return Optional.of(toStandardCommunity(ctx.literal));
+    } else if (ctx.INTERNET() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.INTERNET));
+    } else if (ctx.LOCAL_AS() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    } else if (ctx.NO_ADVERTISE() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+    } else if (ctx.NO_EXPORT() != null) {
+      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+    } else {
+      // assume valid but unsupported
+      todo(ctx);
+      return Optional.empty();
+    }
   }
 
   @Nonnull
@@ -263,6 +297,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private static long toLong(TerminalNode t) {
     return Long.parseLong(t.getText());
+  }
+
+  private @Nonnull String toString(Ip_community_list_nameContext ctx) {
+    return ctx.getText();
   }
 
   private void clearOspfPassiveInterface() {
@@ -1014,6 +1052,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRms_comm_list(Rms_comm_listContext ctx) {
+    String name = toString(ctx.name);
+    if (Strings.isNullOrEmpty(name)) {
+      return;
+    }
+    _currentRouteMapEntry.setSetCommListDelete(new RouteMapSetCommListDelete(name));
+    _c.referenceStructure(
+        IP_COMMUNITY_LIST, name, ROUTE_MAP_SET_COMM_LIST_DELETE, ctx.getStart().getLine());
+  }
+
+  @Override
   public void exitRms_local_preference(Rms_local_preferenceContext ctx) {
     _currentRouteMapEntry.setSetLocalPreference(new RouteMapSetLocalPreference(toLong(ctx.pref)));
   }
@@ -1028,27 +1077,79 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _w.todo(ctx, "no ip forwarding", _parser);
   }
 
-  @Override
-  public void exitIcl_expanded(Icl_expandedContext ctx) {
-    String name = ctx.name.getText();
-
-    LineAction action;
-    if (ctx.action.permit != null) {
-      action = LineAction.PERMIT;
-    } else if (ctx.action.deny != null) {
-      action = LineAction.DENY;
+  private static @Nonnull LineAction toLineAction(Line_actionContext ctx) {
+    if (ctx.deny != null) {
+      return LineAction.DENY;
     } else {
-      throw new IllegalStateException("only support permit and deny in route map");
+      return LineAction.PERMIT;
     }
+  }
 
-    List<StandardCommunity> communityList =
-        ctx.communities.stream()
-            .map(RuleContext::getText)
-            .map(StandardCommunity::parse)
-            .collect(ImmutableList.toImmutableList());
+  @Override
+  public void enterIcl_expanded(Icl_expandedContext ctx) {
+    String name = toString(ctx.name);
+    if (Strings.isNullOrEmpty(name)) {
+      return;
+    }
+    String regex =
+        ctx.quoted != null
+            ? ctx.quoted.text != null ? ctx.quoted.text.getText() : ""
+            : ctx.regex.getText();
+    IpCommunityList communityList =
+        _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListExpanded::new);
+    if (!(communityList instanceof IpCommunityListExpanded)) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
+      return;
+    }
+    IpCommunityListExpanded communityListExpanded = (IpCommunityListExpanded) communityList;
+    communityListExpanded
+        .getLines()
+        .add(new IpCommunityListExpandedLine(toLineAction(ctx.action), regex));
+    _c.defineStructure(IP_COMMUNITY_LIST_EXPANDED, name, ctx);
+  }
 
-    _c.defineStructure(IP_COMMUNITY_LIST, name, ctx);
-    _frr.getIpCommunityLists().put(name, new IpCommunityListExpanded(name, action, communityList));
+  @Override
+  public void enterIcl_standard(Icl_standardContext ctx) {
+    Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx.communities);
+    if (!communities.isPresent()) {
+      return;
+    }
+    String name = toString(ctx.name);
+    if (Strings.isNullOrEmpty(name)) {
+      return;
+    }
+    IpCommunityList communityList =
+        _c.getIpCommunityLists().computeIfAbsent(name, IpCommunityListStandard::new);
+    if (!(communityList instanceof IpCommunityListStandard)) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              name));
+      return;
+    }
+    IpCommunityListStandard communityListStandard = (IpCommunityListStandard) communityList;
+    communityListStandard
+        .getLines()
+        .add(new IpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
+    _c.defineStructure(IP_COMMUNITY_LIST_STANDARD, name, ctx);
+  }
+
+  private @Nonnull Optional<Set<StandardCommunity>> toStandardCommunitySet(
+      Iterable<Standard_communityContext> communities) {
+    ImmutableSet.Builder<StandardCommunity> builder = ImmutableSet.builder();
+    for (Standard_communityContext communityCtx : communities) {
+      Optional<StandardCommunity> community = toStandardCommunity(communityCtx);
+      if (!community.isPresent()) {
+        return Optional.empty();
+      }
+      builder.add(community.get());
+    }
+    return Optional.of(builder.build());
   }
 
   @Override

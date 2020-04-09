@@ -1,6 +1,5 @@
 package org.batfish.question.testfilters;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -10,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -17,23 +17,23 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
-import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.HeaderSpaceToFlow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -43,18 +43,17 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
-
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
   public static final String COL_FLOW = "Flow";
@@ -69,7 +68,7 @@ public class TestFiltersAnswerer extends Answerer {
           new ColumnMetadata(COL_FLOW, Schema.FLOW, "Evaluated flow", true, false),
           new ColumnMetadata(COL_ACTION, Schema.STRING, "Outcome", false, true),
           new ColumnMetadata(COL_LINE_CONTENT, Schema.STRING, "Line content", false, true),
-          new ColumnMetadata(COL_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
+          new ColumnMetadata(COL_TRACE, Schema.list(Schema.TRACE_TREE), "ACL trace", false, true));
 
   public TestFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -105,23 +104,27 @@ public class TestFiltersAnswerer extends Answerer {
   }
 
   private SortedSet<Flow> getFlows(
-      SpecifierContext context, Configuration c, ImmutableSet.Builder<String> allProblems) {
+      Set<Location> queryLocations,
+      SpecifierContext context,
+      Configuration c,
+      ImmutableSet.Builder<String> allProblems) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
-        question.getStartLocationSpecifier().resolve(context).stream()
-            .filter(LocationVisitor.onNode(node)::visit)
+        queryLocations.stream()
+            .filter(loc -> loc.getNodeName().equals(node))
             .collect(Collectors.toSet());
-
-    ImmutableSortedSet.Builder<Flow> setBuilder = ImmutableSortedSet.naturalOrder();
+    if (srcLocations.isEmpty() && question.getStartLocation() != null) {
+      // The user requested a specific location, not on this node. No work to do.
+      return Collections.emptySortedSet();
+    }
 
     PacketHeaderConstraints constraints = question.getHeaders();
 
-    // if src ip is specified, srcIpAssignments would have only one entry (srcLocatoins,
-    // resovledIpSpace)
+    // if src ip is specified, srcIpAssignments would have only one entry (srcLocations,
+    // resolvedIpSpace)
     // if src ip is not specified and location is specified, srcIpAssignments would have a set of
-    // entries of
-    // (srcLocation, IpSpacePerLocation)
+    // entries of (srcLocation, IpSpacePerLocation)
     IpSpaceAssignment srcIpAssignments =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
@@ -135,39 +138,37 @@ public class TestFiltersAnswerer extends Answerer {
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);
 
-    HeaderSpaceToFlow headerSpaceToFlow =
-        new HeaderSpaceToFlow(c.getIpSpaces(), FlowPreference.TESTFILTER);
-
-    HeaderSpace.Builder hsBuilder =
-        PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(constraints).setDstIps(dstIps);
+    BDDPacket pkt = new BDDPacket();
+    BDD hsBDD =
+        PacketHeaderConstraintsUtil.toBDD(
+            pkt,
+            constraints,
+            srcIpAssignments.getEntries().stream()
+                .findFirst()
+                .map(Entry::getIpSpace)
+                .orElse(UniverseIpSpace.INSTANCE),
+            dstIps);
 
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
       try {
-        Builder flowBuilder =
-            headerSpaceToFlow
-                .getRepresentativeFlow(
-                    hsBuilder
-                        .setSrcIps(
-                            srcIpAssignments.getEntries().stream()
-                                .findFirst()
-                                .map(Entry::getIpSpace)
-                                .orElse(UniverseIpSpace.INSTANCE))
-                        .build())
-                .get();
+        Builder flowBuilder = pkt.getFlow(hsBDD, FlowPreference.TESTFILTER).get();
 
         flowBuilder.setIngressNode(node);
         flowBuilder.setIngressInterface(null);
         flowBuilder.setIngressVrf(
             Configuration.DEFAULT_VRF_NAME); // dummy because Flow needs non-null interface or vrf
-        setBuilder.add(flowBuilder.build());
+        return ImmutableSortedSet.of(flowBuilder.build());
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
       } catch (IllegalArgumentException e) {
         allProblems.add(e.getMessage());
       }
+      // Only reachable in exceptional case.
+      return ImmutableSortedSet.of();
     }
 
+    ImmutableSortedSet.Builder<Flow> flows = ImmutableSortedSet.naturalOrder();
     // Perform cross-product of all locations to flows
     for (Entry entry : srcIpAssignments.getEntries()) {
       Set<Location> locations = entry.getLocations();
@@ -175,7 +176,10 @@ public class TestFiltersAnswerer extends Answerer {
       Flow.Builder flowBuilder;
       try {
         flowBuilder =
-            headerSpaceToFlow.getRepresentativeFlow(hsBuilder.setSrcIps(srcIps).build()).get();
+            pkt.getFlow(
+                    PacketHeaderConstraintsUtil.toBDD(pkt, constraints, srcIps, dstIps),
+                    FlowPreference.TESTFILTER)
+                .get();
       } catch (NoSuchElementException e) {
         allProblems.add("cannot get a flow from the specifier");
         continue;
@@ -184,7 +188,7 @@ public class TestFiltersAnswerer extends Answerer {
       for (Location location : locations) {
         try {
           setStartLocation(ImmutableMap.of(node, c), flowBuilder, location);
-          setBuilder.add(flowBuilder.build());
+          flows.add(flowBuilder.build());
         } catch (IllegalArgumentException e) {
           // record this error but try to keep going
           allProblems.add(e.getMessage());
@@ -192,7 +196,7 @@ public class TestFiltersAnswerer extends Answerer {
       }
     }
 
-    return setBuilder.build();
+    return flows.build();
   }
 
   /**
@@ -200,15 +204,15 @@ public class TestFiltersAnswerer extends Answerer {
    * represented by {@code c}.
    */
   public static Row getRow(IpAccessList filter, Flow flow, Configuration c) {
-    AclTrace trace =
-        new AclTrace(
-            AclTracer.trace(
-                filter,
-                flow,
-                flow.getIngressInterface(),
-                c.getIpAccessLists(),
-                c.getIpSpaces(),
-                c.getIpSpaceMetadata()));
+    @Nullable
+    List<TraceTree> trace =
+        AclTracer.trace(
+            filter,
+            flow,
+            flow.getIngressInterface(),
+            c.getIpAccessLists(),
+            c.getIpSpaces(),
+            c.getIpSpaceMetadata());
     FilterResult result =
         filter.filter(flow, flow.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
     Integer matchLine = result.getMatchLine();
@@ -243,32 +247,40 @@ public class TestFiltersAnswerer extends Answerer {
     // collect all errors while building flows; return this set when no valid flow is found
     ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
 
-    // keep track of whether any matching filters have been found; if none get found, throw error
     boolean foundMatchingFilter = false;
+    boolean foundMatchingFlow = false;
+
+    Set<Location> queryLocations = question.getStartLocationSpecifier().resolve(context);
 
     for (String node : includeNodes) {
-      Configuration c = configurations.get(node);
-      SortedSet<Flow> flows = getFlows(context, c, allProblems);
-
-      // there should be another for loop for v6 filters when we add v6 support
       SortedSet<IpAccessList> filtersByName =
           ImmutableSortedSet.copyOf(
-              Comparator.comparing(IpAccessList::getName),
-              filterSpecifier.resolve(node, _batfish.specifierContext(snapshot)));
+              Comparator.comparing(IpAccessList::getName), filterSpecifier.resolve(node, context));
+      if (filtersByName.isEmpty()) {
+        continue;
+      }
+      foundMatchingFilter = true;
+
+      Configuration c = configurations.get(node);
+      SortedSet<Flow> flows = getFlows(queryLocations, context, c, allProblems);
+      if (flows.isEmpty()) {
+        continue;
+      }
+      foundMatchingFlow = true;
+
+      // there should be another for loop for v6 filters when we add v6 support
       for (IpAccessList filter : filtersByName) {
-        foundMatchingFilter = true;
         for (Flow flow : flows) {
           rows.add(getRow(filter, flow, c));
         }
       }
     }
-    if (!foundMatchingFilter) {
-      throw new BatfishException("No matching filters");
+    if (foundMatchingFilter && !foundMatchingFlow) {
+      throw new BatfishException(
+          String.format(
+              "No valid flow found for specified parameters. Potential problems: %s",
+              String.join(",", allProblems.build())));
     }
-    checkArgument(
-        rows.size() > 0,
-        "No valid flow found for specified parameters. Potential problems: %s",
-        String.join(",", allProblems.build()));
     return rows;
   }
 }

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -49,7 +48,7 @@ public final class BgpTopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertEquals(
         nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), BgpTopology.class));
   }

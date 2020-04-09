@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -25,7 +24,7 @@ public class FalseExprTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(FalseExpr.instance(), FalseExpr.class),
         equalTo(FalseExpr.instance()));

@@ -112,6 +112,13 @@ public final class OspfProcess implements Serializable {
       return ospfProcess;
     }
 
+    public Builder setAllAdminCosts(@Nonnull int adminCosts) {
+      _adminCosts =
+          REQUIRES_ADMIN.stream()
+              .collect(ImmutableMap.toImmutableMap(Function.identity(), rp -> adminCosts));
+      return this;
+    }
+
     public Builder setAdminCosts(@Nonnull Map<RoutingProtocol, Integer> adminCosts) {
       _adminCosts = ImmutableSortedMap.copyOf(adminCosts);
       return this;

@@ -2,6 +2,7 @@ package org.batfish.referencelibrary;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
@@ -21,6 +22,7 @@ public class ServiceObject implements Comparable<ServiceObject>, Serializable {
   @Nonnull private String _name;
   @Nonnull private SubRange _ports;
 
+  @JsonCreator
   public ServiceObject(
       @JsonProperty(PROP_IP_PROTOCOL) IpProtocol ipProtocol,
       @JsonProperty(PROP_NAME) String name,

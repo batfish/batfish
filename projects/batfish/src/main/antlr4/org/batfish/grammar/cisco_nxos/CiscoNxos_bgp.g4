@@ -553,6 +553,7 @@ rb_n_common
   | rb_n_ebgp_multihop
   | rb_n_inherit
   | rb_n_local_as
+  | rb_n_log_neighbor_changes
   | rb_n_low_memory
   | rb_n_maximum_peers
   | rb_n_no
@@ -587,6 +588,7 @@ rb_n_address_family
 rb_n_af_inner
 :
   rb_n_af_advertise_map
+  | rb_n_advertisement_interval
   | rb_n_af_allowas_in
   | rb_n_af_as_override
   | rb_n_af_capability
@@ -617,6 +619,18 @@ rb_n_af_advertise_map
     EXIST_MAP existmap = route_map_name
     | NON_EXIST_MAP nonexistmap = route_map_name
   ) NEWLINE
+;
+
+rb_n_advertisement_interval
+:
+  ADVERTISEMENT_INTERVAL advertise_interval_secs = advertisement_interval NEWLINE
+;
+
+advertisement_interval
+:
+  //1-600
+  UINT8
+  | UINT16
 ;
 
 rb_n_af_allowas_in
@@ -859,6 +873,11 @@ rb_n_local_as
       REPLACE_AS DUAL_AS?
     )?
   )? NEWLINE
+;
+
+rb_n_log_neighbor_changes
+:
+  LOG_NEIGHBOR_CHANGES NEWLINE
 ;
 
 rb_n_low_memory

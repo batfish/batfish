@@ -387,6 +387,11 @@ ADVERTISE
    'advertise'
 ;
 
+ADVERTISEMENT
+:
+   'advertisement'
+;
+
 ADVERTISEMENT_INTERVAL
 :
    'advertisement-interval'
@@ -4364,6 +4369,11 @@ EVENT_LOG_SIZE
    'event-log-size'
 ;
 
+EVENT_MONITOR
+:
+   'event-monitor'
+;
+
 EVENT_THRESHOLDS_PROFILE
 :
    'event-thresholds-profile'
@@ -5393,6 +5403,11 @@ HEADER_PASSING
    'header-passing'
 ;
 
+HEARTBEAT
+:
+   'heartbeat'
+;
+
 HEARTBEAT_INTERVAL
 :
    'heartbeat-interval'
@@ -5656,6 +5671,11 @@ HW_SWITCH
 IBGP
 :
    'ibgp'
+;
+
+IBURST
+:
+   'iburst'
 ;
 
 ICMP
@@ -7730,6 +7750,11 @@ MEDIA_TYPE
 MEMBER
 :
    'member'
+;
+
+MEMBER_INTERFACE
+:
+   'member-interface' -> pushMode(M_Interface)
 ;
 
 MEMORY
@@ -9980,6 +10005,11 @@ PRIORITY_FORCE
    'priority-force'
 ;
 
+PRIORITY_LEVEL
+:
+   'priority-level'
+;
+
 PRIORITY_MAPPING
 :
    'priority-mapping'
@@ -10678,6 +10708,11 @@ REPCMD
 REPLACE_AS
 :
    'replace-as'
+;
+
+REPLY
+:
+   'reply'
 ;
 
 REPLY_TO

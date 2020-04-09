@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -66,7 +65,7 @@ public final class FlowDiffTest {
   }
 
   @Test
-  public void testJackson() throws IOException {
+  public void testJackson() {
     FlowDiff fd = new FlowDiff(PROP_DST_IP, "old", "new");
     assertEquals(BatfishObjectMapper.clone(fd, FlowDiff.class), fd);
   }

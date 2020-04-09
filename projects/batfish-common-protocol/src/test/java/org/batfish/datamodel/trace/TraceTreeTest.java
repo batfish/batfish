@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.TraceElement;
@@ -27,7 +26,7 @@ public final class TraceTreeTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     TraceTree traceTree =
         new TraceTree(
             TraceElement.of("a"),

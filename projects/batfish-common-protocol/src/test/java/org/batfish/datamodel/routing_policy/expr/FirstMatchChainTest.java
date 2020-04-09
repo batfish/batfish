@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.NavigableMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -93,7 +92,7 @@ public class FirstMatchChainTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(BatfishObjectMapper.clone(fmc, FirstMatchChain.class), equalTo(fmc));
   }

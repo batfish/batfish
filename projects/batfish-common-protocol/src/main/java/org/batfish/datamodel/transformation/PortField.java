@@ -12,7 +12,7 @@ public enum PortField {
       case DESTINATION:
         return SOURCE;
       default:
-        throw new IllegalArgumentException("Unexpected PortField " + this.name());
+        throw new IllegalArgumentException("Unexpected PortField " + name());
     }
   }
 }

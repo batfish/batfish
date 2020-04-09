@@ -17,24 +17,33 @@ eos_bandwidth_specifier
 
 eos_vxlan_if_inner
 :
-   (
-      VXLAN
-      (
-         eos_vxif_vxlan_flood
-         | eos_vxif_vxlan_multicast_group
-         | eos_vxif_vxlan_source_interface
-         | eos_vxif_vxlan_udp_port
-         | eos_vxif_vxlan_virtual_router
-         | eos_vxif_vxlan_vlan
-         | eos_vxif_vxlan_vrf
-      )
-   )
+   eos_vxif_arp
    | eos_vxif_description
+   | eos_vxif_vxlan
+;
+
+eos_vxif_arp
+:
+   ARP REPLY RELAY NEWLINE
 ;
 
 eos_vxif_description
 :
    description_line
+;
+
+eos_vxif_vxlan
+:
+  VXLAN
+  (
+     eos_vxif_vxlan_flood
+     | eos_vxif_vxlan_multicast_group
+     | eos_vxif_vxlan_source_interface
+     | eos_vxif_vxlan_udp_port
+     | eos_vxif_vxlan_virtual_router
+     | eos_vxif_vxlan_vlan
+     | eos_vxif_vxlan_vrf
+  )
 ;
 
 eos_vxif_vxlan_flood
@@ -669,6 +678,11 @@ if_isis_tag
 if_load_interval
 :
    LOAD_INTERVAL li = DEC NEWLINE
+;
+
+if_member_interface
+:
+  MEMBER_INTERFACE name = interface_name NEWLINE
 ;
 
 if_eos_mlag
@@ -1517,13 +1531,15 @@ if_vrrp
 :
    VRRP groupnum = DEC
    (
-      ifvrrp_authentication
+      ifvrrp_advertisement
+      | ifvrrp_authentication
       | ifvrrp_description
       | ifvrrp_ip
-      | ifvrrp_ip_secondary
+      | ifvrrp_ipv4
       | ifvrrp_ipv6
       | ifvrrp_preempt
       | ifvrrp_priority
+      | ifvrrp_priority_level
    )
 ;
 
@@ -1712,6 +1728,11 @@ iftunnel_source
    ) NEWLINE
 ;
 
+ifvrrp_advertisement
+:
+   ADVERTISEMENT INTERVAL secs = DEC NEWLINE
+;
+
 ifvrrp_authentication
 :
    AUTHENTICATION TEXT text = variable_permissive NEWLINE
@@ -1724,12 +1745,12 @@ ifvrrp_description
 
 ifvrrp_ip
 :
-   IP ip = IP_ADDRESS NEWLINE
+   IP ip = IP_ADDRESS SECONDARY? NEWLINE
 ;
 
-ifvrrp_ip_secondary
+ifvrrp_ipv4
 :
-   IP ip = IP_ADDRESS SECONDARY NEWLINE
+   IPV4 ip = IP_ADDRESS NEWLINE
 ;
 
 ifvrrp_ipv6
@@ -1749,6 +1770,11 @@ ifvrrp_preempt
 ifvrrp_priority
 :
    PRIORITY priority = DEC NEWLINE
+;
+
+ifvrrp_priority_level
+:
+   PRIORITY_LEVEL priority = DEC NEWLINE
 ;
 
 s_eos_vxlan_interface
@@ -1841,6 +1867,7 @@ if_inner
    | if_isis_passive
    | if_isis_tag
    | if_load_interval
+   | if_member_interface
    | if_mtu
    | if_nameif
    | if_no_bfd

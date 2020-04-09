@@ -346,7 +346,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setPermitted(BoolExpr permitted) {
-    this._permitted = permitted;
+    _permitted = permitted;
   }
 
   ArithExpr getMetric() {
@@ -354,7 +354,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setMetric(ArithExpr metric) {
-    this._metric = metric;
+    _metric = metric;
   }
 
   ArithExpr getLocalPref() {
@@ -362,7 +362,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setLocalPref(ArithExpr localPref) {
-    this._localPref = localPref;
+    _localPref = localPref;
   }
 
   ArithExpr getAdminDist() {
@@ -370,7 +370,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setAdminDist(ArithExpr adminDist) {
-    this._adminDist = adminDist;
+    _adminDist = adminDist;
   }
 
   ArithExpr getMed() {
@@ -378,7 +378,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setMed(ArithExpr med) {
-    this._med = med;
+    _med = med;
   }
 
   ArithExpr getRouterId() {
@@ -390,7 +390,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setPrefixLength(ArithExpr prefixLength) {
-    this._prefixLength = prefixLength;
+    _prefixLength = prefixLength;
   }
 
   SymbolicEnum<Long> getOspfArea() {
@@ -398,7 +398,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setOspfArea(SymbolicEnum<Long> ospfArea) {
-    this._ospfArea = ospfArea;
+    _ospfArea = ospfArea;
   }
 
   SymbolicOspfType getOspfType() {
@@ -406,7 +406,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setOspfType(SymbolicOspfType ospfType) {
-    this._ospfType = ospfType;
+    _ospfType = ospfType;
   }
 
   Map<CommunityVar, BoolExpr> getCommunities() {
@@ -414,7 +414,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setCommunities(Map<CommunityVar, BoolExpr> communities) {
-    this._communities = communities;
+    _communities = communities;
   }
 
   SymbolicEnum<Protocol> getProtocolHistory() {
@@ -426,7 +426,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setClientId(SymbolicOriginatorId clientId) {
-    this._clientId = clientId;
+    _clientId = clientId;
   }
 
   BoolExpr getBgpInternal() {
@@ -434,7 +434,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setBgpInternal(BoolExpr bgpInternal) {
-    this._bgpInternal = bgpInternal;
+    _bgpInternal = bgpInternal;
   }
 
   public ArithExpr getIgpMetric() {
@@ -442,7 +442,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   public void setIgpMetric(ArithExpr igpMetric) {
-    this._igpMetric = igpMetric;
+    _igpMetric = igpMetric;
   }
 
   Protocol getProto() {
@@ -460,7 +460,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
 
     SymbolicRoute that = (SymbolicRoute) o;
 
-    return this._name.equals(that._name);
+    return _name.equals(that._name);
   }
 
   @Override

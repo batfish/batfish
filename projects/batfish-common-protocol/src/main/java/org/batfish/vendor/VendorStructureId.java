@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -69,5 +70,14 @@ public final class VendorStructureId implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_filename, _structureType, _structureName);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(VendorStructureId.class)
+        .add("filename", _filename)
+        .add("structureType", _structureType)
+        .add("structureName", _structureName)
+        .toString();
   }
 }

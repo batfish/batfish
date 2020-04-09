@@ -12,6 +12,7 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
@@ -127,6 +128,8 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_S
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
+import static org.batfish.representation.juniper.JuniperConfiguration.matchingSecurityPolicyTerm;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
@@ -194,7 +197,6 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -218,6 +220,7 @@ import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -250,6 +253,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -305,6 +309,7 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -451,21 +456,54 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                .setSrcPorts(ImmutableList.of(SubRange.singleton(1)))
-                                .build()),
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(2)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .build()),
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .build()))))));
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new OrMatchExpr(
+                                ImmutableList.of(
+                                    // appset1
+                                    new OrMatchExpr(
+                                        ImmutableList.of(
+                                            // a1
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setIpProtocols(
+                                                        ImmutableList.of(IpProtocol.TCP))
+                                                    .setSrcPorts(
+                                                        ImmutableList.of(SubRange.singleton(1)))
+                                                    .build(),
+                                                ApplicationSetMember.getTraceElement(
+                                                    "configs/" + c.getHostname(),
+                                                    APPLICATION,
+                                                    "a1")),
+                                            // a2
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setIpProtocols(
+                                                        ImmutableList.of(IpProtocol.UDP))
+                                                    .setDstPorts(
+                                                        ImmutableList.of(SubRange.singleton(2)))
+                                                    .build(),
+                                                ApplicationSetMember.getTraceElement(
+                                                    "configs/" + c.getHostname(),
+                                                    APPLICATION,
+                                                    "a2"))),
+                                        ApplicationSetMember.getTraceElement(
+                                            "configs/" + c.getHostname(),
+                                            APPLICATION_SET,
+                                            "appset1")),
+                                    // a3
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                            .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
+                                            .build(),
+                                        ApplicationSetMember.getTraceElement(
+                                            "configs/" + c.getHostname(), APPLICATION, "a3"))),
+                                ApplicationSetMember.getTraceElement(
+                                    "configs/" + c.getHostname(), APPLICATION_SET, "appset2")),
+                            "p1",
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
@@ -563,11 +601,8 @@ public final class FlatJuniperGrammarTest {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
 
-    /*
-     * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
-     * should inline the matched application, with the action applied to each generated line
-     * from the application. One line should be generated per application term.
-     */
+    // An IpAccessList should be generated for the cross-zone policy from z1 to z2. Each policy
+    // should correspond to one line.
     assertThat(
         c,
         hasIpAccessList(
@@ -575,18 +610,31 @@ public final class FlatJuniperGrammarTest {
             IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                                .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
-                                .build()),
-                        ExprAclLine.acceptingHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
-                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
-                                .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
-                                .build()))))));
+                        new ExprAclLine(
+                            LineAction.PERMIT,
+                            new OrMatchExpr(
+                                ImmutableList.of(
+                                    // term 1
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setDstPorts(ImmutableList.of(SubRange.singleton(1)))
+                                            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                            .setSrcPorts(ImmutableList.of(SubRange.singleton(2)))
+                                            .build(),
+                                        TraceElement.of("Matched term t1")),
+                                    // term 2
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
+                                            .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                            .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
+                                            .build(),
+                                        TraceElement.of("Matched term t2"))),
+                                ApplicationSetMember.getTraceElement(
+                                    "configs/" + c.getHostname(), APPLICATION, "a1")),
+                            "p1",
+                            matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
   }
 
   @Test
@@ -744,6 +792,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
+  }
+
+  @Test
+  public void testClassOfServiceParsing() {
+    parseJuniperConfig("juniper-class-of-service");
   }
 
   @Test
@@ -1679,7 +1732,7 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
-    final String ipSpaceName = "trust~ADDR1";
+    String ipSpaceName = "trust~ADDR1";
     assertThat(c.getIpSpaces(), hasKey(equalTo(ipSpaceName)));
 
     // It should be the only IpSpace
@@ -1728,7 +1781,7 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
-    final String ipSpaceName = "trust-book~ADDR1";
+    String ipSpaceName = "trust-book~ADDR1";
     assertThat(c.getIpSpaces(), hasKey(equalTo(ipSpaceName)));
 
     // It should be the only IpSpace
@@ -1777,7 +1830,7 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
-    final String ipSpaceName = "global~ADDR1";
+    String ipSpaceName = "global~ADDR1";
     assertThat(c.getIpSpaces(), hasKey(equalTo(ipSpaceName)));
 
     // It should be the only IpSpace
@@ -2712,17 +2765,30 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(
-                                            AclIpSpace.union(
-                                                IpWildcard.ipWithWildcardMask(
-                                                        Ip.parse("1.0.3.0"),
-                                                        Ip.parse("0.255.0.255"))
-                                                    .toIpSpace(),
-                                                IpWildcard.parse("2.3.4.5/24").toIpSpace()))
-                                        .build()))
+                                new AndMatchExpr(
+                                    ImmutableList.of(
+                                        or(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        IpWildcard.ipWithWildcardMask(
+                                                                Ip.parse("1.0.3.0"),
+                                                                Ip.parse("0.255.0.255"))
+                                                            .toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched source-address 1.2.3.4/255.0.255.0")),
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched source-address 2.3.4.5/24"))))))
                             .setName("TERM")
+                            .setTraceElement(
+                                matchingFirewallFilterTerm(
+                                    "configs/" + c.getHostname(), filterNameV4, "TERM"))
                             .build())))));
   }
 
@@ -3005,17 +3071,30 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setDstIps(
-                                            AclIpSpace.union(
-                                                IpWildcard.ipWithWildcardMask(
-                                                        Ip.parse("1.0.3.0"),
-                                                        Ip.parse("0.255.0.255"))
-                                                    .toIpSpace(),
-                                                IpWildcard.parse("2.3.4.5/24").toIpSpace()))
-                                        .build()))
+                                new AndMatchExpr(
+                                    ImmutableList.of(
+                                        or(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setDstIps(
+                                                        IpWildcard.ipWithWildcardMask(
+                                                                Ip.parse("1.0.3.0"),
+                                                                Ip.parse("0.255.0.255"))
+                                                            .toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched destination-address 1.2.3.4/255.0.255.0")),
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setDstIps(
+                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
+                                                    .build(),
+                                                TraceElement.of(
+                                                    "Matched destination-address 2.3.4.5/24"))))))
                             .setName("TERM")
+                            .setTraceElement(
+                                matchingFirewallFilterTerm(
+                                    "configs/" + c.getHostname(), filterNameV4, "TERM"))
                             .build())))));
   }
 
@@ -4930,11 +5009,16 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         new ExprAclLine(
                             LineAction.PERMIT,
-                            AclLineMatchExprs.match(
-                                HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
-                                    .build()),
-                            "TERM")))
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
+                                            .build(),
+                                        TraceElement.of("Matched source-address 1.2.3.6")))),
+                            "TERM",
+                            matchingFirewallFilterTerm(
+                                "configs/" + config.getHostname(), "FILTER1", "TERM"))))
                 .build()));
 
     assertThat(
@@ -5434,5 +5518,69 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         config.getAllInterfaces().get("ge-0/0/1.0").getOspfSettings().getNbmaNeighbors(), empty());
+  }
+
+  @Test
+  public void testRethExtraction() {
+    JuniperConfiguration config = parseJuniperConfig("juniper-reth");
+
+    assertThat(
+        config.getMasterLogicalSystem().getInterfaces(),
+        hasKeys("reth1", "reth2", "ge-1/0/0", "ge-1/0/1"));
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("reth1");
+      assertThat(iface.getUnits(), hasKeys("reth1.1"));
+    }
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("reth2");
+      assertThat(iface.getUnits(), hasKeys("reth2.1"));
+    }
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("ge-1/0/0");
+      assertThat(iface.getRedundantParentInterface(), equalTo("reth1"));
+    }
+    {
+      org.batfish.representation.juniper.Interface iface =
+          config.getMasterLogicalSystem().getInterfaces().get("ge-1/0/1");
+      assertThat(iface.getRedundantParentInterface(), equalTo("reth1"));
+    }
+  }
+
+  @Test
+  public void testRethConversion() {
+    Configuration config = parseConfig("juniper-reth");
+
+    assertThat(
+        config.getAllInterfaces(),
+        hasKeys("reth1", "reth1.1", "reth2", "reth2.1", "ge-1/0/0", "ge-1/0/1"));
+    {
+      Interface iface = config.getAllInterfaces().get("reth1");
+      assertThat(
+          iface.getDependencies(),
+          containsInAnyOrder(
+              new Dependency("ge-1/0/0", DependencyType.AGGREGATE),
+              new Dependency("ge-1/0/1", DependencyType.AGGREGATE)));
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("reth1.1");
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("reth2");
+      assertThat(iface.getDependencies(), empty());
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("reth2.1");
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
   }
 }

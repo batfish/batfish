@@ -70,6 +70,12 @@ SEMICOLON
    ';'
 ;
 
+// Allow initial garbage for prompt, etc.
+SHOW_CONFIG_LINE
+:
+  F_NonNewlineChar* 'show' F_WhitespaceChar+ 'config' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
+;
+
 WORD
 :
    F_QuotedString

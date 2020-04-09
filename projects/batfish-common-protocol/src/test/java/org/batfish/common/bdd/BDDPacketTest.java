@@ -1,5 +1,6 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstPort;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIcmpCode;
@@ -17,6 +18,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsUrg;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -144,6 +146,18 @@ public class BDDPacketTest {
   }
 
   @Test
+  public void testGetFlow_packetLength() {
+    BDDPacket pkt = new BDDPacket();
+
+    // getFlow prefers DEFAULT_PACKET_LENGTH
+    assertEquals(
+        DEFAULT_PACKET_LENGTH, pkt.getFlow(pkt.getFactory().one()).get().getPacketLength());
+
+    BDD bdd = pkt.getPacketLength().value(50);
+    assertEquals(50, pkt.getFlow(bdd).get().getPacketLength());
+  }
+
+  @Test
   public void testGetFlowPreference1() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
@@ -223,7 +237,7 @@ public class BDDPacketTest {
     assertThat(flow, hasDstIp(dstIp));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.TCP));
-    assertThat(flow, hasDstPort(1));
+    assertThat(flow, hasDstPort(80));
     assertThat(flow, hasSrcPort(NamedPort.EPHEMERAL_LOWEST.number()));
   }
 
@@ -238,7 +252,7 @@ public class BDDPacketTest {
     assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
-    assertThat(flow, hasDstIp(Ip.parse("8.8.8.8")));
+    assertThat(flow, hasDstIp(Ip.parse("10.0.0.0")));
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.TCP));
     assertThat(flow, hasDstPort(80));

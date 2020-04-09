@@ -1,11 +1,14 @@
 package org.batfish.datamodel.answers;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.pojo.Node;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,5 +39,11 @@ public class SchemaUtilsTest {
     _thrown.expect(ClassCastException.class);
     _thrown.expectMessage("Cannot recover");
     SchemaUtils.convertType(toJson(ImmutableList.of(1)), Schema.INTEGER);
+  }
+
+  @Test
+  public void testIsValidObject_Node() {
+    assertFalse(SchemaUtils.isValidObject("nodeName", Schema.NODE));
+    assertTrue(SchemaUtils.isValidObject(new Node("node"), Schema.NODE));
   }
 }

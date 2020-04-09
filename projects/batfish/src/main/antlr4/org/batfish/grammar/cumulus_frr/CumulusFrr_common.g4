@@ -9,6 +9,11 @@ autonomous_system
   uint32
 ;
 
+double_quoted_string
+:
+  DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
+;
+
 ip_address
 :
   IP_ADDRESS
@@ -62,9 +67,23 @@ prefix
   IP_PREFIX
 ;
 
+quoted_text
+:
+  QUOTED_TEXT
+;
+
 route_map_name
 :
   WORD
+;
+
+standard_community
+:
+  literal = literal_standard_community
+  | INTERNET
+  | LOCAL_AS
+  | NO_ADVERTISE
+  | NO_EXPORT
 ;
 
 vni_number

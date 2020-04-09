@@ -1,8 +1,7 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Collection;
@@ -12,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -19,7 +19,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.trace.TraceTree;
@@ -51,6 +50,25 @@ public final class AclTracer extends AclLineEvaluator {
     return tracer.getTrace();
   }
 
+  @VisibleForTesting
+  static List<TraceTree> trace(
+      @Nonnull AclLineMatchExpr expr,
+      @Nonnull Flow flow,
+      @Nullable String srcInterface,
+      @Nonnull Map<String, IpAccessList> availableAcls,
+      @Nonnull Map<String, IpSpace> namedIpSpaces,
+      @Nonnull Map<String, IpSpaceMetadata> namedIpSpaceMetadata) {
+    AclTracer tracer =
+        new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
+    tracer._tracer.newSubTrace();
+    if (!tracer.visit(expr)) {
+      tracer._tracer.discardSubTrace();
+      tracer._tracer.newSubTrace();
+    }
+    tracer._tracer.endSubTrace();
+    return tracer.getTrace();
+  }
+
   private final Map<String, IpSpaceMetadata> _ipSpaceMetadata;
 
   private final @Nonnull Tracer _tracer;
@@ -74,22 +92,19 @@ public final class AclTracer extends AclLineEvaluator {
     return _tracer.getTrace();
   }
 
-  private void setTraceElement(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
+  private void setTraceElement(@Nonnull IpAccessList ipAccessList, int index) {
     AclLine line = ipAccessList.getLines().get(index);
     TraceElement traceElement = line.getTraceElement();
-    if (traceElement == null) {
-      recordAction(ipAccessList, index, action);
-    } else {
+    if (traceElement != null) {
       _tracer.setTraceElement(traceElement);
     }
   }
 
-  public void recordAction(@Nonnull IpAccessList ipAccessList, int index, LineAction action) {
-    if (action == LineAction.PERMIT) {
-      _tracer.setTraceElement(permittedByAclLine(ipAccessList, index));
-    } else {
-      _tracer.setTraceElement(deniedByAclLine(ipAccessList, index));
+  private void setTraceElement(@Nullable TraceElement traceElement) {
+    if (traceElement == null) {
+      return;
     }
+    _tracer.setTraceElement(traceElement);
   }
 
   private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
@@ -118,39 +133,6 @@ public final class AclTracer extends AclLineEvaluator {
     if (!headerSpace.getNotDstPorts().isEmpty()
         && rangesContain(headerSpace.getNotDstPorts(), _flow.getDstPort())) {
       return false;
-    }
-    if (!headerSpace.getDstProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol dstProtocol : headerSpace.getDstProtocols()) {
-        if (dstProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = dstProtocol.getPort();
-          if (!dstPort.equals(_flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!headerSpace.getNotDstProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol notDstProtocol : headerSpace.getNotDstProtocols()) {
-        if (notDstProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = notDstProtocol.getPort();
-          if (!dstPort.equals(_flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
     }
     if (!headerSpace.getFragmentOffsets().isEmpty()
         && !rangesContain(headerSpace.getFragmentOffsets(), _flow.getFragmentOffset())) {
@@ -202,24 +184,6 @@ public final class AclTracer extends AclLineEvaluator {
             || rangesContain(headerSpace.getSrcOrDstPorts(), _flow.getDstPort()))) {
       return false;
     }
-    if (!headerSpace.getSrcOrDstProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol protocol : headerSpace.getSrcOrDstProtocols()) {
-        if (protocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer port = protocol.getPort();
-          if (!port.equals(_flow.getDstPort()) && !port.equals(_flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
     if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps(), _flow.getSrcIp())) {
       return false;
     }
@@ -235,39 +199,6 @@ public final class AclTracer extends AclLineEvaluator {
         && rangesContain(headerSpace.getNotSrcPorts(), _flow.getSrcPort())) {
       return false;
     }
-    if (!headerSpace.getSrcProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol srcProtocol : headerSpace.getSrcProtocols()) {
-        if (srcProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = srcProtocol.getPort();
-          if (!srcPort.equals(_flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!headerSpace.getNotSrcProtocols().isEmpty()) {
-      boolean match = false;
-      for (Protocol notSrcProtocol : headerSpace.getNotSrcProtocols()) {
-        if (notSrcProtocol.getIpProtocol().equals(_flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = notSrcProtocol.getPort();
-          if (!srcPort.equals(_flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
-    }
     if (!headerSpace.getTcpFlags().isEmpty()
         && headerSpace.getTcpFlags().stream().noneMatch(tcpFlags -> tcpFlags.match(_flow))) {
       return false;
@@ -282,7 +213,7 @@ public final class AclTracer extends AclLineEvaluator {
       AclLine line = lines.get(i);
       LineAction action = visit(line);
       if (action != null) {
-        setTraceElement(ipAccessList, i, action);
+        setTraceElement(ipAccessList, i);
         _tracer.endSubTrace();
         return action;
       }
@@ -319,17 +250,39 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public LineAction visitExprAclLine(ExprAclLine exprAclLine) {
+    // current context is for the line; create a context for the top-level expression
+    _tracer.newSubTrace();
+    if (visit(exprAclLine.getMatchCondition())) {
+      _tracer.endSubTrace();
+      return exprAclLine.getAction();
+    }
+    _tracer.discardSubTrace();
+    return null;
+  }
+
+  @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    setTraceElement(matchHeaderSpace.getTraceElement());
     return trace(matchHeaderSpace.getHeaderspace());
   }
 
   @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+    setTraceElement(permittedByAcl.getTraceElement());
     return trace(_availableAcls.get(permittedByAcl.getAclName())) == LineAction.PERMIT;
   }
 
   @Override
+  public Boolean visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+    setTraceElement(deniedByAcl.getTraceElement());
+    return firstNonNull(trace(_availableAcls.get(deniedByAcl.getAclName())), LineAction.DENY)
+        == LineAction.DENY;
+  }
+
+  @Override
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+    setTraceElement(andMatchExpr.getTraceElement());
     return andMatchExpr.getConjuncts().stream()
         .allMatch(
             c -> {
@@ -342,13 +295,37 @@ public final class AclTracer extends AclLineEvaluator {
 
   @Override
   public Boolean visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+    setTraceElement(orMatchExpr.getTraceElement());
     return orMatchExpr.getDisjuncts().stream()
         .anyMatch(
             d -> {
               _tracer.newSubTrace();
               Boolean result = d.accept(this);
-              _tracer.endSubTrace();
+              if (result) {
+                _tracer.endSubTrace();
+              } else {
+                _tracer.discardSubTrace();
+              }
               return result;
             });
+  }
+
+  @Override
+  public Boolean visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+    setTraceElement(notMatchExpr.getTraceElement());
+    _tracer.newSubTrace();
+    boolean result = visit(notMatchExpr.getOperand());
+    if (result) {
+      _tracer.discardSubTrace();
+    } else {
+      _tracer.endSubTrace();
+    }
+    return !result;
+  }
+
+  @Override
+  public Boolean visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    setTraceElement(matchSrcInterface.getTraceElement());
+    return super.visitMatchSrcInterface(matchSrcInterface);
   }
 }

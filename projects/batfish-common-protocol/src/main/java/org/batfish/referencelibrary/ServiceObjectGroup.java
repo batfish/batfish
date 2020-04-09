@@ -3,6 +3,7 @@ package org.batfish.referencelibrary;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -21,6 +22,7 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Seria
   @Nonnull private String _name;
   @Nonnull private SortedSet<String> _services;
 
+  @JsonCreator
   public ServiceObjectGroup(
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICES) SortedSet<String> services) {

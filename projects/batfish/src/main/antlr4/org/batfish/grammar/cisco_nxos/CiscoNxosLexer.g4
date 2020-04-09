@@ -9,7 +9,6 @@ tokens {
   BANNER_DELIMITER,
   HSRP_VERSION_1,
   HSRP_VERSION_2,
-  LOCAL,
   MAC_ADDRESS_LITERAL,
   MOTD,
   PASSWORD_0,
@@ -53,7 +52,7 @@ ACCESS_GROUP
 :
   'access-group'
   {
-    if (lastTokenType() == IP || lastTokenType() == PORT) {
+    if (lastTokenType() == IP || lastTokenType() == PORT || lastTokenType() == IGMP) {
       pushMode(M_Word);
     }
   }
@@ -181,6 +180,11 @@ ADVERTISE
 ADVERTISE_MAP
 :
   'advertise-map'
+;
+
+ADVERTISEMENT_INTERVAL
+:
+  'advertisement-interval'
 ;
 
 AES_128
@@ -666,6 +670,11 @@ CMD
   'cmd'
 ;
 
+COLLECT
+:
+  'collect'
+;
+
 COMMAND
 :
   'command'
@@ -1111,6 +1120,11 @@ DOMAIN
   'domain'
 ;
 
+DOMAIN_LIST
+:
+  'domain-list' -> pushMode(M_Word)
+;
+
 DOMAIN_LOOKUP
 :
   'domain-lookup'
@@ -1375,6 +1389,11 @@ EXPLICIT_TRACKING
 EXPORT
 :
   'export'
+;
+
+EXPORTER
+:
+  'exporter' -> pushMode(M_Word)
 ;
 
 EXTENDED
@@ -2200,6 +2219,11 @@ LOAD_SHARE
   'load-share'
 ;
 
+LOCAL
+:
+  'local'
+;
+
 LOCAL_AS
 :
   [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
@@ -2952,6 +2976,11 @@ NSSA
   'nssa'
 ;
 
+NSSA_EXTERNAL
+:
+  'nssa-external'
+;
+
 NTP
 :
   'ntp'
@@ -3502,6 +3531,11 @@ RD
   'rd'
 ;
 
+REACHABLE_VIA
+:
+  'reachable-via'
+;
+
 REACHABILITY
 :
   'reachability'
@@ -3535,6 +3569,11 @@ RECEIVE
 RECONNECT_INTERVAL
 :
   'reconnect-interval'
+;
+
+RECORD
+:
+  'record' -> pushMode(M_Word)
 ;
 
 RECOVERY
@@ -3721,6 +3760,11 @@ ROUTE_REFLECTOR_CLIENT
 ROUTE_TARGET
 :
   'route-target'
+;
+
+ROUTE_TYPE
+:
+  'route-type'
 ;
 
 ROUTER

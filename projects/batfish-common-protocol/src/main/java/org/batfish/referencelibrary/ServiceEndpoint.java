@@ -2,6 +2,7 @@ package org.batfish.referencelibrary;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ServiceEndpoint implements Comparable<ServiceEndpoint>, Serializabl
   @Nonnull private String _name;
   @Nonnull private String _service;
 
+  @JsonCreator
   public ServiceEndpoint(
       @JsonProperty(PROP_ADDRESS) String address,
       @JsonProperty(PROP_NAME) String name,

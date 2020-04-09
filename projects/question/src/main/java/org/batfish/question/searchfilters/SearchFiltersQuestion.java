@@ -9,10 +9,10 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
@@ -184,10 +184,8 @@ public final class SearchFiltersQuestion extends Question {
 
   @VisibleForTesting
   @Nonnull
-  HeaderSpace getHeaderSpace() {
-    return PacketHeaderConstraintsUtil.toHeaderSpaceBuilder(_headerConstraints)
-        .setNegate(_complementHeaderSpace)
-        .build();
+  AclLineMatchExpr getHeaderSpaceExpr() {
+    return PacketHeaderConstraintsUtil.toAclLineMatchExpr(_headerConstraints);
   }
 
   @Nonnull
@@ -195,9 +193,10 @@ public final class SearchFiltersQuestion extends Question {
   SearchFiltersParameters toSearchFiltersParameters() {
     return SearchFiltersParameters.builder()
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())
-        .setHeaderSpace(getHeaderSpace())
+        .setHeaderSpaceExpr(getHeaderSpaceExpr())
         .setSourceIpSpaceSpecifier(getSourceSpecifier())
         .setStartLocationSpecifier(getStartLocationSpecifier())
+        .setComplementHeaderSpace(_complementHeaderSpace)
         .build();
   }
 

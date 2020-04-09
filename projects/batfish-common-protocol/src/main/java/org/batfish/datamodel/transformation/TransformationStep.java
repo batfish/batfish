@@ -23,6 +23,10 @@ public interface TransformationStep {
 
   <T> T accept(TransformationStepVisitor<T> visitor);
 
+  static AssignIpAddressFromPool assignDestinationIp(Ip poolStart) {
+    return new AssignIpAddressFromPool(DEST_NAT, DESTINATION, poolStart, poolStart);
+  }
+
   static AssignIpAddressFromPool assignDestinationIp(Ip poolStart, Ip poolEnd) {
     return new AssignIpAddressFromPool(DEST_NAT, DESTINATION, poolStart, poolEnd);
   }

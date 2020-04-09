@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Bgpv4Route;
@@ -37,7 +36,7 @@ public class AddCommunityTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     AddCommunity ac = new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L)));
     assertThat(BatfishObjectMapper.clone(ac, AddCommunity.class), equalTo(ac));
   }

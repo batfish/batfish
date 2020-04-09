@@ -9,6 +9,7 @@ import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
@@ -17,14 +18,24 @@ import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExpor
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
@@ -571,19 +582,28 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private IpAccessList generateCrossZoneFilter(
       Zone fromZone, Zone toZone, List<Map.Entry<SecurityRule, Vsys>> rules) {
     assert fromZone.getVsys() == toZone.getVsys();
+    String vsysName = fromZone.getVsys().getName();
 
     String crossZoneFilterName =
         zoneToZoneFilter(
             computeObjectName(fromZone.getVsys().getName(), fromZone.getName()),
             computeObjectName(toZone.getVsys().getName(), toZone.getName()));
 
-    if (fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty()
-        || toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty()) {
-      // Non-external zones must have interfaces.
+    boolean fromZoneEmpty =
+        fromZone.getType() != Type.EXTERNAL && fromZone.getInterfaceNames().isEmpty();
+    boolean toZoneEmpty = toZone.getType() != Type.EXTERNAL && toZone.getInterfaceNames().isEmpty();
+    if (fromZoneEmpty || toZoneEmpty) {
       return IpAccessList.builder()
           .setName(crossZoneFilterName)
           .setLines(
-              ImmutableList.of(ExprAclLine.rejecting("No interfaces in zone", TrueExpr.INSTANCE)))
+              ImmutableList.of(
+                  ExprAclLine.REJECT_ALL
+                      .toBuilder()
+                      .setName("No interfaces in zone")
+                      .setTraceElement(
+                          emptyZoneRejectTraceElement(
+                              vsysName, (fromZoneEmpty ? fromZone : toZone).getName()))
+                      .build()))
           .build();
     }
 
@@ -611,7 +631,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       lines =
           ImmutableList.<AclLine>builder()
               .addAll(lines)
-              .add(ExprAclLine.accepting("Accept intrazone by default", TrueExpr.INSTANCE))
+              .add(
+                  new ExprAclLine(
+                      LineAction.PERMIT,
+                      TrueExpr.INSTANCE,
+                      "Accept intrazone by default",
+                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName())))
               .build();
     }
 
@@ -785,8 +810,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // If src interface in zone and filters permits, then permit.
     // Else if src interface in zone, filter must have denied.
     return Stream.of(
-        accepting(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName))),
-        rejecting(matchFromZoneInterface));
+        ExprAclLine.builder()
+            .accepting()
+            .setMatchCondition(and(matchFromZoneInterface, permittedByAcl(crossZoneFilterName)))
+            .setTraceElement(
+                zoneToZoneMatchTraceElement(fromZone.getName(), toZone.getName(), vsysName))
+            .build(),
+        ExprAclLine.builder()
+            .rejecting()
+            // DeniedByAcl is guaranteed to match if reached, but including it in the line allows
+            // traces to include any trace generated by the cross zone filter (e.g. rejecting rule).
+            .setMatchCondition(and(matchFromZoneInterface, deniedByAcl(crossZoneFilterName)))
+            .setTraceElement(
+                zoneToZoneRejectTraceElement(fromZone.getName(), toZone.getName(), vsysName))
+            .build());
   }
 
   /**
@@ -987,6 +1024,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
+        .setTraceElement(matchRuleTraceElement(rule.getName()))
         .build();
   }
 
@@ -1168,12 +1206,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
-  private static InterfaceType batfishInterfaceType(@Nonnull Interface.Type panType, Warnings w) {
+  private static InterfaceType batfishInterfaceType(
+      @Nonnull Interface.Type panType, @Nullable Interface.Type parentType, Warnings w) {
     switch (panType) {
+      case AGGREGATED_ETHERNET:
+        return InterfaceType.AGGREGATED;
       case PHYSICAL:
         return InterfaceType.PHYSICAL;
       case LAYER2:
       case LAYER3:
+        if (parentType == Interface.Type.AGGREGATED_ETHERNET) {
+          return InterfaceType.AGGREGATE_CHILD;
+        }
         return InterfaceType.LOGICAL;
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
@@ -1190,20 +1234,40 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    org.batfish.datamodel.Interface newIface =
+    Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
+    org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(batfishInterfaceType(iface.getType(), _w))
-            .build();
+            .setType(batfishInterfaceType(iface.getType(), parentType, _w));
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
     }
     newIface.setAddress(iface.getAddress());
-    newIface.setAllAddresses(iface.getAllAddresses());
+    if (iface.getAddress() != null) {
+      newIface.setSecondaryAddresses(
+          Sets.difference(iface.getAllAddresses(), ImmutableSet.of(iface.getAddress())));
+    }
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
+    newIface.setChannelGroup(iface.getAggregateGroup());
+
+    if (iface.getType() == Interface.Type.PHYSICAL) {
+      double speed = 1e9;
+      if (iface.getName().matches("ethernet(\\d+)/2[1234]")) {
+        // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClssCAC
+        speed = 1e10;
+      }
+      newIface.setSpeed(speed);
+      newIface.setBandwidth(speed);
+    } else if (iface.getParent() != null) {
+      org.batfish.datamodel.Interface parentIface =
+          _c.getAllInterfaces().get(iface.getParent().getName());
+      assert parentIface != null; // because interfaces are processed in sorted order
+      newIface.setBandwidth(parentIface.getBandwidth());
+      // do not set speed, that's a physical property.
+    }
 
     if (iface.getType() == Interface.Type.LAYER3) {
       newIface.setEncapsulationVlan(iface.getTag());
@@ -1247,15 +1311,23 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         aclLines.add(
             new AclAclLine(
                 String.format(
-                    "Match restrictions for exiting zone %s in vsys %s",
-                    zone.getName(), zone.getVsys().getName()),
-                zoneFilterName));
+                    "Match rules for exiting interface %s in vsys %s zone %s",
+                    iface.getName(), zone.getVsys().getName(), zone.getName()),
+                zoneFilterName,
+                ifaceOutgoingTraceElement(
+                    iface.getName(), zone.getName(), zone.getVsys().getName())));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface
-      aclLines.add(ExprAclLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
+      aclLines.add(
+          ExprAclLine.builder()
+              .rejecting()
+              .setName("Not in a zone")
+              .setMatchCondition(TrueExpr.INSTANCE)
+              .setTraceElement(unzonedIfaceRejectTraceElement(iface.getName()))
+              .build());
     }
 
     if (!aclLines.isEmpty()) {
@@ -1264,7 +1336,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       // the interface
       // TODO this isn't tested and may not line up with actual device behavior, but is in place to
       // allow things like BGP sessions to come up
-      aclLines.add(accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+      aclLines.add(
+          accepting()
+              .setMatchCondition(ORIGINATING_FROM_DEVICE)
+              .setTraceElement(originatedFromDeviceTraceElement())
+              .build());
       newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
 
@@ -1274,7 +1350,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(packetPolicyName);
     }
 
-    return newIface;
+    return newIface.build();
   }
 
   /**
@@ -1753,20 +1829,41 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     convertSharedGateways();
 
-    for (Entry<String, Interface> i : _interfaces.entrySet()) {
-      org.batfish.datamodel.Interface viIface = toInterface(i.getValue());
-      _c.getAllInterfaces().put(viIface.getName(), viIface);
+    // A map from aggregate ethernet name (like ae1) to the set of interfaces it aggregates
+    Multimap<String, String> aggregates = HashMultimap.create();
 
-      for (Entry<String, Interface> unit : i.getValue().getUnits().entrySet()) {
+    for (Interface i : _interfaces.values()) {
+      // NB: sorted order is used here.
+      org.batfish.datamodel.Interface viIface = toInterface(i);
+      _c.getAllInterfaces().put(viIface.getName(), viIface);
+      if (i.getAggregateGroup() != null) {
+        aggregates.put(i.getAggregateGroup(), i.getName());
+      }
+
+      for (Entry<String, Interface> unit : i.getUnits().entrySet()) {
         org.batfish.datamodel.Interface viUnit = toInterface(unit.getValue());
         viUnit.addDependency(new Dependency(viIface.getName(), DependencyType.BIND));
         _c.getAllInterfaces().put(viUnit.getName(), viUnit);
       }
     }
+    // Populate aggregates where they exist.
+    for (Entry<String, Collection<String>> entry : aggregates.asMap().entrySet()) {
+      org.batfish.datamodel.Interface ae = _c.getAllInterfaces().get(entry.getKey());
+      if (ae == null) {
+        continue;
+      }
+
+      Collection<String> members = entry.getValue();
+      ae.setChannelGroupMembers(members);
+      ae.setDependencies(
+          members.stream()
+              .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+              .collect(ImmutableSet.toImmutableSet()));
+    }
 
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
-    for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
-      _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
+    for (VirtualRouter vr : _virtualRouters.values()) {
+      _c.getVrfs().put(vr.getName(), toVrf(vr));
     }
 
     // Batfish cannot handle interfaces without a Vrf

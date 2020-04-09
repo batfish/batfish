@@ -1,20 +1,14 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.collect.Iterators.getOnlyElement;
-import static org.batfish.datamodel.Flow.builder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
-import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.BeforeClass;
@@ -52,16 +46,17 @@ public class AwsConfigurationPrivateSubnetTest {
 
   private static final String onPremRouterFile = "vpn-03701a53bba3c48b7.txt";
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
-
-  private static IBatfish _batfish;
-
   // various entities in the configs
   private static String _instance = "i-099cf38911942421c";
   private static String _subnet = "subnet-0f263105946ad1a1d";
+  private static String _vpc = "vpc-0b966fdeb36d5e43f";
   private static String _vgw = "vgw-0c09bd7fadac961bf";
   private static Ip _privateIp = Ip.parse("10.0.1.204");
   private static String _onPremRouter = onPremRouterFile; // no hostname in the file, so name = file
+
+  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+
+  private static IBatfish _batfish;
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -75,56 +70,35 @@ public class AwsConfigurationPrivateSubnetTest {
     _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
-  private static void testTrace(
-      String ingressNode,
-      Ip dstIp,
-      FlowDisposition expectedDisposition,
-      List<String> expectedNodes) {
-    Flow flow = builder().setIngressNode(ingressNode).setDstIp(dstIp).build();
-    SortedMap<Flow, List<Trace>> traces =
-        _batfish
-            .getTracerouteEngine(_batfish.getSnapshot())
-            .computeTraces(ImmutableSet.of(flow), false);
-
-    Trace trace = getOnlyElement(traces.get(flow).iterator());
-
-    assertThat(
-        trace.getHops().stream()
-            .map(h -> h.getNode().getName())
-            .collect(ImmutableList.toImmutableList()),
-        equalTo(expectedNodes));
-    assertThat(trace.getDisposition(), equalTo(expectedDisposition));
-  }
-
   @Test
   public void testFromOnPrem() {
     testTrace(
-        _onPremRouter,
-        _privateIp,
+        getAnyFlow(_onPremRouter, _privateIp, _batfish),
         FlowDisposition.DENIED_IN,
-        ImmutableList.of(_onPremRouter, _vgw, _subnet, _instance));
+        ImmutableList.of(_onPremRouter, _vgw, _vpc, _subnet, _instance),
+        _batfish);
 
     // to a private IP in the subnet
     testTrace(
-        _onPremRouter,
-        Ip.parse("10.0.1.205"),
-        FlowDisposition.DELIVERED_TO_SUBNET,
-        ImmutableList.of(_onPremRouter, _vgw, _subnet));
+        getAnyFlow(_onPremRouter, Ip.parse("10.0.1.205"), _batfish),
+        FlowDisposition.NEIGHBOR_UNREACHABLE,
+        ImmutableList.of(_onPremRouter, _vgw, _vpc, _subnet),
+        _batfish);
 
     // to a private IP outside the subnet
     testTrace(
-        _onPremRouter,
-        Ip.parse("10.0.2.1"),
+        getAnyFlow(_onPremRouter, Ip.parse("10.0.2.1"), _batfish),
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_onPremRouter, _vgw));
+        ImmutableList.of(_onPremRouter, _vgw, _vpc),
+        _batfish);
   }
 
   @Test
   public void testToOnPrem() {
     testTrace(
-        _instance,
-        Ip.parse("8.8.8.8"), // On prem announces default
+        getAnyFlow(_instance, Ip.parse("8.8.8.8"), _batfish), // On prem announces default
         FlowDisposition.NO_ROUTE,
-        ImmutableList.of(_instance, _subnet, _vgw, _onPremRouter));
+        ImmutableList.of(_instance, _subnet, _vpc, _vgw, _onPremRouter),
+        _batfish);
   }
 }

@@ -66,21 +66,21 @@ class SymbolicPacket {
 
   BoolExpr mkEqual(SymbolicPacket other) {
     return _ctx.mkAnd(
-        _ctx.mkEq(this.getDstIp(), other.getDstIp()),
-        _ctx.mkEq(this.getSrcIp(), other.getSrcIp()),
-        _ctx.mkEq(this.getDstPort(), other.getDstPort()),
-        _ctx.mkEq(this.getSrcPort(), other.getSrcPort()),
-        _ctx.mkEq(this.getIpProtocol(), other.getIpProtocol()),
-        _ctx.mkEq(this.getIcmpCode(), other.getIcmpCode()),
-        _ctx.mkEq(this.getIcmpType(), other.getIcmpType()),
-        _ctx.mkEq(this.getTcpAck(), other.getTcpAck()),
-        _ctx.mkEq(this.getTcpCwr(), other.getTcpCwr()),
-        _ctx.mkEq(this.getTcpEce(), other.getTcpEce()),
-        _ctx.mkEq(this.getTcpFin(), other.getTcpFin()),
-        _ctx.mkEq(this.getTcpSyn(), other.getTcpSyn()),
-        _ctx.mkEq(this.getTcpPsh(), other.getTcpPsh()),
-        _ctx.mkEq(this.getTcpRst(), other.getTcpRst()),
-        _ctx.mkEq(this.getTcpUrg(), other.getTcpUrg()));
+        _ctx.mkEq(getDstIp(), other.getDstIp()),
+        _ctx.mkEq(getSrcIp(), other.getSrcIp()),
+        _ctx.mkEq(getDstPort(), other.getDstPort()),
+        _ctx.mkEq(getSrcPort(), other.getSrcPort()),
+        _ctx.mkEq(getIpProtocol(), other.getIpProtocol()),
+        _ctx.mkEq(getIcmpCode(), other.getIcmpCode()),
+        _ctx.mkEq(getIcmpType(), other.getIcmpType()),
+        _ctx.mkEq(getTcpAck(), other.getTcpAck()),
+        _ctx.mkEq(getTcpCwr(), other.getTcpCwr()),
+        _ctx.mkEq(getTcpEce(), other.getTcpEce()),
+        _ctx.mkEq(getTcpFin(), other.getTcpFin()),
+        _ctx.mkEq(getTcpSyn(), other.getTcpSyn()),
+        _ctx.mkEq(getTcpPsh(), other.getTcpPsh()),
+        _ctx.mkEq(getTcpRst(), other.getTcpRst()),
+        _ctx.mkEq(getTcpUrg(), other.getTcpUrg()));
   }
 
   BitVecExpr getDstIp() {

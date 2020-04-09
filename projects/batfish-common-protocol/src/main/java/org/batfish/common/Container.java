@@ -24,8 +24,8 @@ public final class Container {
   }
 
   private Container(String name, SortedSet<String> testrigs) {
-    this._name = name;
-    this._testrigs = testrigs;
+    _name = name;
+    _testrigs = testrigs;
   }
 
   @JsonProperty(PROP_NAME)

@@ -28,12 +28,14 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -50,8 +52,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -78,11 +78,28 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityIn;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -90,7 +107,6 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -1286,21 +1302,117 @@ public final class CumulusConversions {
 
   static void convertIpCommunityLists(
       Configuration c, Map<String, IpCommunityList> ipCommunityLists) {
+    // create CommunitySetMatchExpr for route-map match community
     ipCommunityLists.forEach(
-        (name, list) -> c.getCommunityLists().put(name, toCommunityList(list)));
+        (name, list) -> {
+          if (list instanceof IpCommunityListStandard) {
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr((IpCommunityListStandard) list));
+          } else if (list instanceof IpCommunityListExpanded) {
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr((IpCommunityListExpanded) list));
+          }
+        });
+
+    // The following code-block is only for "set comm-list delete" statements.
+    ipCommunityLists.forEach(
+        (name, list) -> {
+          if (list instanceof IpCommunityListStandard) {
+            c.getCommunityMatchExprs()
+                .put(name, toCommunityMatchExpr((IpCommunityListStandard) list));
+          } else if (list instanceof IpCommunityListExpanded) {
+            c.getCommunityMatchExprs()
+                .put(name, toCommunityMatchExpr((IpCommunityListExpanded) list));
+          }
+        });
   }
 
   @VisibleForTesting
-  static CommunityList toCommunityList(IpCommunityList list) {
-    return list.accept(
-        ipCommunityList ->
-            new CommunityList(
-                ipCommunityList.getName(),
-                ipCommunityList.getCommunities().stream()
-                    .map(LiteralCommunity::new)
-                    .map(k -> new CommunityListLine(ipCommunityList.getAction(), k))
-                    .collect(ImmutableList.toImmutableList()),
-                false));
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      IpCommunityListStandard ipCommunityListStandard) {
+    Set<Community> whitelist = new HashSet<>();
+    Set<Community> blacklist = new HashSet<>();
+
+    // TODO: support set comm-list delete semantics for line with more than one community
+    for (IpCommunityListStandardLine line : ipCommunityListStandard.getLines()) {
+      if (line.getCommunities().size() != 1) {
+        continue;
+      }
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
+    }
+    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  @VisibleForTesting
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      IpCommunityListExpanded ipCommunityListExpanded) {
+    return new CommunityAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(CumulusConversions::toCommunityAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
+      IpCommunityListStandard ipCommunityListStandard) {
+    return new CommunitySetAcl(
+        ipCommunityListStandard.getLines().stream()
+            .map(CumulusConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
+      IpCommunityListExpanded ipCommunityListExpanded) {
+    return new CommunitySetAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(CumulusConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      IpCommunityListStandardLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchAll(
+            line.getCommunities().stream()
+                .map(community -> new HasCommunity(new CommunityIs(community)))
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      IpCommunityListExpandedLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
+  }
+
+  private static @Nonnull CommunityAclLine toCommunityAclLine(IpCommunityListExpandedLine line) {
+    return new CommunityAclLine(
+        line.getAction(),
+        new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+  }
+
+  private static @Nonnull String toJavaRegex(String cumulusRegex) {
+    String withoutQuotes;
+    if (cumulusRegex.charAt(0) == '"' && cumulusRegex.charAt(cumulusRegex.length() - 1) == '"') {
+      withoutQuotes = cumulusRegex.substring(1, cumulusRegex.length() - 1);
+    } else {
+      withoutQuotes = cumulusRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
   }
 
   static void convertIpAsPathAccessLists(

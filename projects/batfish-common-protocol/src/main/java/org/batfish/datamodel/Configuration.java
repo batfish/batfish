@@ -40,6 +40,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 
 /**
  * A Configuration represents an autonomous network device, such as a router, host, switch, or
@@ -58,7 +60,9 @@ public final class Configuration implements Serializable {
   public static class Builder {
 
     private ConfigurationFormat _configurationFormat;
+    private @Nullable DeviceModel _deviceModel;
     private String _hostname;
+    private String _humanName;
     private Supplier<String> _hostnameGenerator;
     private String _domainName;
     private LineAction _defaultCrossZoneAction;
@@ -74,18 +78,25 @@ public final class Configuration implements Serializable {
           "Must set hostname or supply name generator");
       String name = _hostname != null ? _hostname : _hostnameGenerator.get().toLowerCase();
       Configuration configuration = new Configuration(name, _configurationFormat);
+      configuration.setHumanName(_humanName);
       if (_defaultCrossZoneAction != null) {
         configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
       }
       if (_defaultInboundAction != null) {
         configuration.setDefaultInboundAction(_defaultInboundAction);
       }
+      configuration.setDeviceModel(_deviceModel);
       configuration.setDomainName(_domainName);
       return configuration;
     }
 
     public Builder setConfigurationFormat(ConfigurationFormat configurationFormat) {
       _configurationFormat = configurationFormat;
+      return this;
+    }
+
+    public Builder setDeviceModel(@Nullable DeviceModel model) {
+      _deviceModel = model;
       return this;
     }
 
@@ -100,6 +111,11 @@ public final class Configuration implements Serializable {
       } else {
         _hostname = null;
       }
+      return this;
+    }
+
+    public Builder setHumanName(@Nullable String humanName) {
+      _humanName = humanName;
       return this;
     }
 
@@ -126,10 +142,12 @@ public final class Configuration implements Serializable {
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
+  private static final String PROP_DEVICE_MODEL = "deviceModel";
   private static final String PROP_DEVICE_TYPE = "deviceType";
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
   private static final String PROP_DOMAIN_NAME = "domainName";
   private static final String PROP_GENERATED_REFERENCE_BOOKS = "generatedReferenceBooks";
+  private static final String PROP_HUMAN_NAME = "humanName";
   private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
   private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
@@ -181,6 +199,7 @@ public final class Configuration implements Serializable {
 
   private LineAction _defaultInboundAction;
 
+  private DeviceModel _deviceModel;
   private DeviceType _deviceType;
 
   private NavigableSet<String> _dnsServers;
@@ -213,6 +232,8 @@ public final class Configuration implements Serializable {
 
   private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
 
+  private @Nullable Map<Location, LocationInfo> _locationInfo;
+
   private NavigableSet<String> _loggingServers;
 
   private String _loggingSourceInterface;
@@ -220,6 +241,7 @@ public final class Configuration implements Serializable {
   private NavigableMap<String, Mlag> _mlags;
 
   private final String _name;
+  private @Nullable String _humanName;
 
   /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
   private SubRange _normalVlanRange;
@@ -429,6 +451,11 @@ public final class Configuration implements Serializable {
     return _vrfs.get(DEFAULT_VRF_NAME);
   }
 
+  @JsonProperty(PROP_DEVICE_MODEL)
+  public DeviceModel getDeviceModel() {
+    return _deviceModel;
+  }
+
   @JsonProperty(PROP_DEVICE_TYPE)
   public DeviceType getDeviceType() {
     return _deviceType;
@@ -459,6 +486,12 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_NAME)
   public String getHostname() {
     return _name;
+  }
+
+  /** A human-readable name, alternative to {@link #getHostname}, but not guaranteed unique. */
+  @JsonProperty(PROP_HUMAN_NAME)
+  public @Nullable String getHumanName() {
+    return _humanName;
   }
 
   /** Dictionary of all IKE phase1 keys for this node. */
@@ -554,6 +587,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
   public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
     return _ipsecPhase2Proposals;
+  }
+
+  @JsonIgnore
+  public @Nullable Map<Location, LocationInfo> getLocationInfo() {
+    return _locationInfo;
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)
@@ -713,6 +751,11 @@ public final class Configuration implements Serializable {
     _defaultInboundAction = defaultInboundAction;
   }
 
+  @JsonProperty(PROP_DEVICE_MODEL)
+  public void setDeviceModel(DeviceModel deviceModel) {
+    _deviceModel = deviceModel;
+  }
+
   @JsonProperty(PROP_DEVICE_TYPE)
   public void setDeviceType(DeviceType deviceType) {
     _deviceType = deviceType;
@@ -730,6 +773,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_DOMAIN_NAME)
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  @JsonProperty(PROP_HUMAN_NAME)
+  public void setHumanName(@Nullable String humanName) {
+    _humanName = humanName;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
@@ -793,6 +841,16 @@ public final class Configuration implements Serializable {
         ipsecPhase2Proposals == null
             ? ImmutableSortedMap.of()
             : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
+  }
+
+  /**
+   * Set the {@link LocationInfo} for {@link Location locations} on this node. Any missing locations
+   * will have their {@link LocationInfo} created automatically. See {@link
+   * org.batfish.specifier.LocationInfoUtils#computeLocationInfo(Map)}.
+   */
+  @JsonIgnore
+  public void setLocationInfo(Map<Location, LocationInfo> locationInfo) {
+    _locationInfo = ImmutableMap.copyOf(locationInfo);
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)

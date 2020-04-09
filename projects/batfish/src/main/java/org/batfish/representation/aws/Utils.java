@@ -1,18 +1,29 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP1;
-import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP2;
+import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
+import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -22,6 +33,7 @@ import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -29,6 +41,11 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -56,7 +73,54 @@ final class Utils {
     }
   }
 
+  static String publicIpAddressGroupName(NetworkInterface iface) {
+    return String.format("%s (%s)", iface.getDescription(), iface.getId());
+  }
+
+  /** Creates a generated reference book with the public IPs of the network interfaces */
+  static void createPublicIpsRefBook(
+      Collection<NetworkInterface> networkInterfaces, Configuration cfgNode) {
+    String publicIpBookName =
+        GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps);
+    checkArgument(
+        !cfgNode.getGeneratedReferenceBooks().containsKey(publicIpBookName),
+        "Generated reference book for public IPs already exists for node %s",
+        cfgNode.getHostname());
+    List<AddressGroup> publicIpAddressGroups =
+        networkInterfaces.stream()
+            .map(
+                iface ->
+                    new AddressGroup(
+                        iface.getPrivateIpAddresses().stream()
+                            .filter(privIp -> privIp.getPublicIp() != null)
+                            .map(privIp -> privIp.getPublicIp().toString())
+                            .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())),
+                        publicIpAddressGroupName(iface)))
+            .filter(ag -> !ag.getAddresses().isEmpty())
+            .collect(ImmutableList.toImmutableList());
+    if (!publicIpAddressGroups.isEmpty()) {
+      cfgNode
+          .getGeneratedReferenceBooks()
+          .put(
+              publicIpBookName,
+              ReferenceBook.builder(publicIpBookName)
+                  .setAddressGroups(publicIpAddressGroups)
+                  .build());
+    }
+  }
+
+  /** Prefer variants that provide {@link DeviceModel}. */
+  @VisibleForTesting
   static Configuration newAwsConfiguration(String name, String domainName) {
+    return newAwsConfiguration(name, domainName, Collections.emptyMap(), null);
+  }
+
+  static Configuration newAwsConfiguration(String name, String domainName, DeviceModel model) {
+    return newAwsConfiguration(name, domainName, Collections.emptyMap(), model);
+  }
+
+  static Configuration newAwsConfiguration(
+      String name, String domainName, Map<String, String> tags, @Nullable DeviceModel model) {
     Configuration c =
         Configuration.builder()
             .setHostname(name)
@@ -64,6 +128,8 @@ final class Utils {
             .setConfigurationFormat(ConfigurationFormat.AWS)
             .setDefaultInboundAction(LineAction.PERMIT)
             .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDeviceModel(model)
+            .setHumanName(tags.get(TAG_NAME))
             .build();
     Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
     c.getVendorFamily().setAws(new AwsFamily());
@@ -164,32 +230,43 @@ final class Utils {
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
-    return StaticRoute.builder()
-        .setNetwork(targetPrefix)
-        .setNextHopIp(nextHopIp)
-        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-        .build();
+    return toStaticRoute(targetPrefix, nextHopIp, false);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp, boolean nonForwarding) {
+    return toStaticRoute(targetPrefix, null, nextHopIp, nonForwarding);
   }
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
-    return StaticRoute.builder()
-        .setNetwork(targetPrefix)
-        .setNextHopInterface(nextHopInterfaceName)
-        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-        .build();
+    return toStaticRoute(targetPrefix, nextHopInterfaceName, null, false);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(
+      Prefix targetPrefix, String nextHopInterfaceName, boolean nonForwarding) {
+    return toStaticRoute(targetPrefix, nextHopInterfaceName, null, nonForwarding);
   }
 
   @Nonnull
   static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
+    return toStaticRoute(targetPrefix, nextHopInterfaceName, nextHopIp, false);
+  }
+
+  @Nonnull
+  static StaticRoute toStaticRoute(
+      Prefix targetPrefix,
+      @Nullable String nextHopInterfaceName,
+      @Nullable Ip nextHopIp,
+      boolean nonForwarding) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
         .setNextHopInterface(nextHopInterfaceName)
         .setNextHopIp(nextHopIp)
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .setNonForwarding(nonForwarding)
         .build();
   }
 
@@ -207,11 +284,11 @@ final class Utils {
       String ifaceNameSuffix) {
     String ifaceName1 = interfaceNameToRemote(cfgNode2, ifaceNameSuffix);
     Utils.newInterface(
-        ifaceName1, cfgNode1, vrfName1, LinkLocalAddress.of(LINK_LOCAL_IP1), "To " + ifaceName1);
+        ifaceName1, cfgNode1, vrfName1, LinkLocalAddress.of(LINK_LOCAL_IP), "To " + ifaceName1);
 
     String ifaceName2 = interfaceNameToRemote(cfgNode1, ifaceNameSuffix);
     Utils.newInterface(
-        ifaceName2, cfgNode2, vrfName2, LinkLocalAddress.of(LINK_LOCAL_IP2), "To " + ifaceName2);
+        ifaceName2, cfgNode2, vrfName2, LinkLocalAddress.of(LINK_LOCAL_IP), "To " + ifaceName2);
 
     addLayer1Edge(
         awsConfiguration, cfgNode1.getHostname(), ifaceName1, cfgNode2.getHostname(), ifaceName2);
@@ -231,6 +308,62 @@ final class Utils {
         cfgNode2,
         cfgNode2.getDefaultVrf().getName(),
         "");
+  }
+
+  /**
+   * Connects Internet or Vpn gateway to its VPC and adds static routes on both nodes.
+   *
+   * @retruns The Interface on the gateway for the new link or null if the VPC is not found.
+   */
+  @Nullable
+  static Interface connectGatewayToVpc(
+      String gatewayId,
+      Configuration gatewayCfg,
+      String vpcId,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
+
+    Vpc vpc = region.getVpcs().get(vpcId);
+    if (vpc == null) {
+      warnings.redFlag(
+          String.format("VPC with id %s not found in region %s", vpcId, region.getName()));
+      return null;
+    }
+
+    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    if (vpcCfg == null) {
+      warnings.redFlag(String.format("Configuration for VPC with id %s not found", vpcId));
+      return null;
+    }
+
+    String vrfNameOnVpc = Vpc.vrfNameForLink(gatewayId);
+    if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
+      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
+      vpc.initializeVrf(vrf);
+    }
+
+    connect(awsConfiguration, gatewayCfg, DEFAULT_VRF_NAME, vpcCfg, vrfNameOnVpc, "");
+
+    addStaticRoute(
+        vpcCfg.getVrfs().get(vrfNameOnVpc),
+        toStaticRoute(
+            Prefix.ZERO,
+            Utils.interfaceNameToRemote(gatewayCfg),
+            Utils.getInterfaceLinkLocalIp(gatewayCfg, Utils.interfaceNameToRemote(vpcCfg))));
+
+    vpc.getCidrBlockAssociations()
+        .forEach(
+            prefix ->
+                addStaticRoute(
+                    gatewayCfg,
+                    toStaticRoute(
+                        prefix,
+                        Utils.interfaceNameToRemote(vpcCfg),
+                        Utils.getInterfaceLinkLocalIp(
+                            vpcCfg, Utils.interfaceNameToRemote(gatewayCfg)))));
+
+    return gatewayCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg));
   }
 
   static String interfaceNameToRemote(Configuration remoteCfg) {
@@ -279,6 +412,81 @@ final class Utils {
             ifaceName, configuration.getHostname()));
   }
 
+  /**
+   * Adds a configuration node to subnet using its network interface.
+   *
+   * @return The vendor-independent interface that was created to make the connection.
+   */
+  static Interface addNodeToSubnet(
+      Configuration cfgNode,
+      NetworkInterface netInterface,
+      Subnet subnet,
+      ConvertedConfiguration awsConfiguration,
+      Warnings warnings) {
+    ImmutableSet.Builder<ConcreteInterfaceAddress> ifaceAddressesBuilder =
+        new ImmutableSet.Builder<>();
+
+    Prefix ifaceSubnet = subnet.getCidrBlock();
+    Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
+    StaticRoute defaultRoute =
+        StaticRoute.builder()
+            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+            .setNextHopIp(defaultGatewayAddress)
+            .setNetwork(Prefix.ZERO)
+            .build();
+    cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
+
+    for (PrivateIpAddress privateIp : netInterface.getPrivateIpAddresses()) {
+      if (!ifaceSubnet.containsIp(privateIp.getPrivateIp())) {
+        warnings.pedantic(
+            String.format(
+                "Instance subnet \"%s\" does not contain private ip: \"%s\"",
+                ifaceSubnet, privateIp));
+        continue;
+      }
+
+      if (privateIp.getPrivateIp().equals(ifaceSubnet.getEndIp())) {
+        warnings.pedantic(
+            String.format(
+                "Expected end address \"%s\" to be used by generated subnet node", privateIp));
+        continue;
+      }
+
+      ConcreteInterfaceAddress address =
+          ConcreteInterfaceAddress.create(privateIp.getPrivateIp(), ifaceSubnet.getPrefixLength());
+      ifaceAddressesBuilder.add(address);
+    }
+    Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
+    ConcreteInterfaceAddress primaryAddress =
+        ifaceAddresses.stream()
+            .filter(addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
+            .findFirst()
+            .orElseGet(
+                () -> {
+                  warnings.redFlag(
+                      String.format(
+                          "Primary address not found for interface '%s'. Using lowest address as primary",
+                          netInterface.getId()));
+                  // get() is safe here: ifaceAddresses cannot be empty
+                  return ifaceAddresses.stream().min(naturalOrder()).get();
+                });
+
+    Interface iface =
+        Utils.newInterface(
+            netInterface.getId(), cfgNode, primaryAddress, netInterface.getDescription());
+    iface.setAllAddresses(ifaceAddresses);
+
+    Utils.addLayer1Edge(
+        awsConfiguration,
+        cfgNode.getHostname(),
+        iface.getName(),
+        Subnet.nodeName(subnet.getId()),
+        Subnet.instancesInterfaceName(subnet.getId()));
+
+    return iface;
+  }
+
   /** Extracts the text content of the first element with {@code tag} within {@code element}. */
   static String textOfFirstXmlElementWithTag(Element element, String tag) {
     NodeList nodes = element.getElementsByTagName(tag);
@@ -295,6 +503,52 @@ final class Utils {
     NodeList outerNodes = element.getElementsByTagName(outerTag);
     checkArgument(outerNodes.getLength() > 0, "OuterTag '%s' not found", outerTag);
     return textOfFirstXmlElementWithTag((Element) outerNodes.item(0), innerTag);
+  }
+
+  public static TraceElement getTraceElementForRule(@Nullable String ruleDescription) {
+    if (ruleDescription == null) {
+      return TraceElement.of("Matched rule with no description");
+    }
+    return TraceElement.of(String.format("Matched rule with description %s", ruleDescription));
+  }
+
+  public static TraceElement getTraceElementForSecurityGroup(String securityGroupName) {
+    return TraceElement.of(String.format("Matched security group %s", securityGroupName));
+  }
+
+  static TraceElement traceElementForAddress(
+      String direction, String vsAddressStructure, AddressType addressType) {
+    return TraceElement.of(traceTextForAddress(direction, vsAddressStructure, addressType));
+  }
+
+  static String traceTextForAddress(
+      String direction, String vsAddressStructure, AddressType addressType) {
+    return String.format("Matched %s address %s %s", direction, addressType, vsAddressStructure);
+  }
+
+  static TraceElement traceElementForProtocol(IpProtocol protocol) {
+    return TraceElement.of(String.format("Matched protocol %s", protocol));
+  }
+
+  static TraceElement traceElementForDstPorts(int low, int high) {
+    if (low == high) {
+      return TraceElement.of(String.format("Matched destination port %s", low));
+    }
+    return TraceElement.of(String.format("Matched destination ports [%s-%s]", low, high));
+  }
+
+  static TraceElement traceElementForInstance(String instanceName) {
+    return TraceElement.of(String.format("Matched instance %s", instanceName));
+  }
+
+  static TraceElement traceElementForIcmpType(int type) {
+    assert type != -1;
+    return TraceElement.of(String.format("Matched ICMP type %s", type));
+  }
+
+  static TraceElement traceElementForIcmpCode(int code) {
+    assert code != -1;
+    return TraceElement.of(String.format("Matched ICMP code %s", code));
   }
 
   private Utils() {}

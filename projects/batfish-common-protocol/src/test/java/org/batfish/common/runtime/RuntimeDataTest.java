@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
-import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -16,7 +15,7 @@ import org.junit.Test;
 public class RuntimeDataTest {
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     RuntimeData.Builder builder =
         RuntimeData.builder()
             .setInterfaces(ImmutableMap.of("iface", InterfaceRuntimeData.builder().build()));

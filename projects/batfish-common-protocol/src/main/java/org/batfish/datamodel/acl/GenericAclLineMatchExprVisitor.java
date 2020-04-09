@@ -8,6 +8,8 @@ public interface GenericAclLineMatchExprVisitor<R> {
 
   R visitAndMatchExpr(AndMatchExpr andMatchExpr);
 
+  R visitDeniedByAcl(DeniedByAcl deniedByAcl);
+
   R visitFalseExpr(FalseExpr falseExpr);
 
   R visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace);

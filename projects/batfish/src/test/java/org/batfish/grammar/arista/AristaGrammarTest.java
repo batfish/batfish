@@ -61,10 +61,12 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -92,6 +95,7 @@ import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
@@ -297,6 +301,12 @@ public class AristaGrammarTest {
       assertThat(vlan.getRtImport(), equalTo(ExtendedCommunity.target(10101, 10103)));
       assertThat(vlan.getRtExport(), equalTo(ExtendedCommunity.target(10101, 10103)));
     }
+  }
+
+  @Test
+  public void testCommunityListExtraction() {
+    CiscoConfiguration config = parseVendorConfig("arista_community_list");
+    assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
   }
 
   @Test
@@ -587,6 +597,7 @@ public class AristaGrammarTest {
   @Test
   public void testVxlanExtraction() {
     CiscoConfiguration config = parseVendorConfig("arista_vxlan");
+    assertThat(config.getEosVxlan().getArpReplyRelay(), equalTo(true));
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 10001));
   }
@@ -759,6 +770,29 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_interface");
     assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
+  }
+
+  @Test
+  public void testVrrpConversion() {
+    Configuration c = parseConfig("arista_vrrp");
+    assertThat(c.getAllInterfaces(), hasKey("Vlan20"));
+    Interface i = c.getAllInterfaces().get("Vlan20");
+    assertThat(i.getVrrpGroups(), hasKey(1));
+    VrrpGroup group = i.getVrrpGroups().get(1);
+    assertThat(group.getVirtualAddress(), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+    assertThat(group.getPriority(), equalTo(200));
+  }
+
+  @Test
+  public void testVrrpExtraction() {
+    CiscoConfiguration c = parseVendorConfig("arista_vrrp");
+    assertThat(c.getInterfaces(), hasKey("Vlan20"));
+    assertThat(c.getVrrpGroups(), hasKey("Vlan20"));
+    VrrpInterface vrrpI = c.getVrrpGroups().get("Vlan20");
+    assertThat(vrrpI.getVrrpGroups(), hasKey(1));
+    org.batfish.representation.cisco.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
+    assertThat(g.getVirtualAddress(), equalTo(Ip.parse("1.2.3.4")));
+    assertThat(g.getPriority(), equalTo(200));
   }
 
   @Test

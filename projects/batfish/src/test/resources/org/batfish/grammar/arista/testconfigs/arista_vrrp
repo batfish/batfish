@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+hostname arista_vrrp
+!
+interface vlan 20
+ ip address 2.2.2.2/24
+ vrrp 1 advertisement interval 5
+ vrrp 1 ipv4 1.2.3.4
+ vrrp 1 priority-level 200

@@ -12,6 +12,11 @@ daemon efgh
  exec /mnt/flash/bleh/installed/blerp_example.py
  no shutdown
 !
+event-monitor
+!
+ntp server vrf MGMT 192.168.1.246 iburst maxpoll 3
+ntp server vrf MGMT time.google.com iburst maxpoll 3
+!
 ip pim rp-address 1.2.3.4
 management api http-commands
  protocol unix-socket

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import org.batfish.common.util.serialization.BatfishThirdPartySerializationModule;
 
@@ -45,13 +46,23 @@ public final class BatfishObjectMapper {
   }
 
   /** Uses Jackson to clone the given object using the given type. */
-  public static <T> T clone(Object o, Class<T> clazz) throws IOException {
-    return MAPPER.readValue(WRITER.writeValueAsBytes(o), clazz);
+  @VisibleForTesting // used in JSON serde tests.
+  public static <T> T clone(Object o, Class<T> clazz) {
+    try {
+      return MAPPER.readValue(WRITER.writeValueAsBytes(o), clazz);
+    } catch (IOException e) {
+      throw new RuntimeException("Error cloning with Jackson", e);
+    }
   }
 
   /** Uses Jackson to clone the given object using the given type. */
-  public static <T> T clone(Object o, TypeReference<T> type) throws IOException {
-    return MAPPER.readValue(WRITER.writeValueAsBytes(o), type);
+  @VisibleForTesting // used in JSON serde tests.
+  public static <T> T clone(Object o, TypeReference<T> type) {
+    try {
+      return MAPPER.readValue(WRITER.writeValueAsBytes(o), type);
+    } catch (IOException e) {
+      throw new RuntimeException("Error cloning with Jackson", e);
+    }
   }
 
   /**
@@ -137,6 +148,7 @@ public final class BatfishObjectMapper {
   private static ObjectMapper baseMapper() {
     ObjectMapper mapper = new ObjectMapper();
 
+    mapper.disable(MapperFeature.AUTO_DETECT_CREATORS);
     mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     mapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
     // Next two lines make Instant class serialize as an RFC-3339 timestamp

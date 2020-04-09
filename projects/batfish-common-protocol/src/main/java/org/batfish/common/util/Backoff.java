@@ -51,11 +51,11 @@ public abstract class Backoff {
         Duration cumulativeBackoffLimit,
         int attempts,
         double expansion) {
-      this._initialBackoff = initialBackoff;
-      this._maximumBackoff = maximumBackoff;
-      this._cumulativeBackoffLimit = cumulativeBackoffLimit;
-      this._attemptLimit = attempts;
-      this._expansion = expansion;
+      _initialBackoff = initialBackoff;
+      _maximumBackoff = maximumBackoff;
+      _cumulativeBackoffLimit = cumulativeBackoffLimit;
+      _attemptLimit = attempts;
+      _expansion = expansion;
     }
 
     public Builder withInitialBackoff(Duration initialBackoff) {
@@ -92,7 +92,7 @@ public abstract class Backoff {
     private int _attempts;
 
     private BackoffImpl(Builder builder) {
-      this._builder = builder;
+      _builder = builder;
       _nextBackoff = builder._initialBackoff;
       _cumulativeBackoff = Duration.ZERO;
       _attempts = 0;

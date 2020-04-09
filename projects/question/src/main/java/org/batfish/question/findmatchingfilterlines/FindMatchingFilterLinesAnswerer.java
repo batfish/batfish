@@ -1,14 +1,12 @@
 package org.batfish.question.findmatchingfilterlines;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toHeaderSpaceBuilder;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.batfish.question.FilterQuestionUtils.getSpecifiedFilters;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.PROP_IGNORE_COMPOSITES;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
@@ -24,7 +22,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.bdd.PermitAndDenyBdds;
@@ -35,10 +32,10 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.ActionGetter.LineBehavior;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
@@ -117,13 +114,15 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       SpecifierContext ctxt) {
     Map<String, Configuration> configs = ctxt.getConfigs();
 
-    HeaderSpace headerSpace =
-        toHeaderSpaceBuilder(phc)
-            .setSrcIps(resolveIpSpace(phc.getSrcIps(), ctxt))
-            .setDstIps(resolveIpSpace(phc.getDstIps(), ctxt))
-            .build();
     BDDPacket bddPacket = new BDDPacket();
-    BDD headerSpaceBdd = new HeaderSpaceToBDD(bddPacket, ImmutableMap.of()).toBDD(headerSpace);
+
+    BDD headerSpaceBdd =
+        PacketHeaderConstraintsUtil.toBDD(
+            bddPacket,
+            phc,
+            resolveIpSpace(phc.getSrcIps(), ctxt),
+            resolveIpSpace(phc.getDstIps(), ctxt));
+
     Map<String, BDDSourceManager> mgrMap = BDDSourceManager.forNetwork(bddPacket, configs);
 
     return acls.keySet().stream()

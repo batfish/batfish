@@ -13,29 +13,44 @@ import org.batfish.specifier.SpecifierFactories;
 
 /** Fetches defined structures in config files. */
 public class DefinedStructuresQuestion extends Question {
-  private static final String PROP_NAMES = "names";
+  /** An optional filename for all defined structures returned. */
+  private static final String PROP_FILENAME = "filename";
+  /** A filter on nodes for which to return files defining structures. */
   private static final String PROP_NODES = "nodes";
+
+  /** A filter on structure names. */
+  private static final String PROP_NAMES = "names";
+
+  /** A filter on vendor-specific structure types. */
   private static final String PROP_TYPES = "types";
 
-  @Nonnull private final String _names;
+  @Nullable private final String _filename;
   @Nullable private final String _nodes;
   @Nonnull private final String _types;
+  @Nonnull private final String _names;
 
   @JsonCreator
   private static DefinedStructuresQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_NAMES) String names,
+      @Nullable @JsonProperty(PROP_FILENAME) String filename,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_TYPES) String types) {
-    String actualNames = Strings.isNullOrEmpty(names) ? ".*" : names;
+      @Nullable @JsonProperty(PROP_TYPES) String types,
+      @Nullable @JsonProperty(PROP_NAMES) String names) {
+    String actualFilename = Strings.isNullOrEmpty(filename) ? null : filename;
+    String actualNodes = Strings.isNullOrEmpty(nodes) ? null : nodes;
     String actualTypes = Strings.isNullOrEmpty(types) ? ".*" : types;
-    return new DefinedStructuresQuestion(actualNames, nodes, actualTypes);
+    String actualNames = Strings.isNullOrEmpty(names) ? ".*" : names;
+    return new DefinedStructuresQuestion(actualFilename, actualNodes, actualTypes, actualNames);
   }
 
   public DefinedStructuresQuestion(
-      @Nonnull String names, @Nullable String nodes, @Nonnull String types) {
-    _names = names;
+      @Nullable String filename,
+      @Nullable String nodes,
+      @Nonnull String types,
+      @Nonnull String names) {
+    _filename = filename;
     _nodes = nodes;
     _types = types;
+    _names = names;
   }
 
   @Override
@@ -46,6 +61,12 @@ public class DefinedStructuresQuestion extends Question {
   @Override
   public String getName() {
     return "definedStructures";
+  }
+
+  @JsonProperty(PROP_FILENAME)
+  @Nullable
+  public String getFilename() {
+    return _filename;
   }
 
   @JsonProperty(PROP_NAMES)

@@ -14,6 +14,7 @@ public enum JuniperStructureType implements StructureType {
   BGP_GROUP("bgp group"),
   DHCP_RELAY_SERVER_GROUP("dhcp-relay server-group"),
   FIREWALL_FILTER("firewall filter"),
+  FIREWALL_FILTER_TERM("firewall filter term"),
   IKE_GATEWAY("ike gateway"),
   IKE_POLICY("ike policy"),
   IKE_PROPOSAL("ike proposal"),
@@ -29,6 +30,16 @@ public enum JuniperStructureType implements StructureType {
   RIB_GROUP("rib-group"),
   ROUTING_INSTANCE("routing-instance"),
   SECURE_TUNNEL_INTERFACE("secure tunnel interface"),
+  /**
+   * A security policy. In config like {@code security policies from-zone A to-zone B policy P}, the
+   * entire A-B structure.
+   */
+  SECURITY_POLICY("security policy"),
+  /**
+   * One part of a security policy. In config like {@code security policies from-zone A to-zone B
+   * policy P}, structure P.
+   */
+  SECURITY_POLICY_TERM("security policy term"),
   SECURITY_PROFILE("security-profile"),
   VLAN("vlan");
 

@@ -71,12 +71,12 @@ public class SmtLocalConsistencyQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(NODE_REGEX_VAR)
     public void setRouterRegex(String routerRegex) {
-      this._routerRegex = routerRegex;
+      _routerRegex = routerRegex;
     }
 
     @JsonProperty(STRICT_VAR)
     public void setStrict(boolean strict) {
-      this._strict = strict;
+      _strict = strict;
     }
 
     @Override

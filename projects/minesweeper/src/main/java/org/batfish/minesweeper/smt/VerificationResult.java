@@ -92,7 +92,7 @@ public class VerificationResult {
 
   @JsonProperty(PROP_STATS)
   public void setStats(VerificationStats x) {
-    this._stats = x;
+    _stats = x;
   }
 
   public void debug(EncoderSlice enc, boolean showConstraints, String filter) {

@@ -404,32 +404,34 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // See computeType5DeltaFromMainRibRoutes for why this madness is needed
     // If we have main RIB routes to process (from any VRF) and we have EVPN neighbors, then
     // we make new type 5 routes and send them out
-    if (!_mainRibRoutesToProcess.isEmpty() && !_evpnType5IncomingRoutes.isEmpty()) {
-      for (String vrfName : _mainRibRoutesToProcess.keySet()) {
-        computeType5DeltaFromMainRibRoutes(vrfName, _mainRibRoutesToProcess.get(vrfName), nc);
-      }
-      _mainRibRoutesToProcess = new HashMap<>(1);
-    }
-    if (!_type5RoutesToSendForEveryone.isEmpty()) {
-      sendOutEvpnType5Routes(_type5RoutesToSendForEveryone, nc, allNodes);
-    }
-    _type5RoutesToSendForEveryone = BgpDelta.empty();
-    if (!_type5RoutesToSendPerNeighbor.isEmpty()) {
-      _type5RoutesToSendPerNeighbor
-          .keySet()
-          .forEach(
-              edge -> {
-                BgpPeerConfigId remoteConfigId = edge.tail();
-                BgpSessionProperties session = getSessionProperties(_topology, edge);
-                getNeighborBgpProcess(remoteConfigId, allNodes)
-                    .enqueueEvpnType5Routes(
-                        // Make sure to reverse the edge
-                        edge.reverse(),
-                        getEvpnTransformedRouteStream(
-                            edge, _type5RoutesToSendPerNeighbor.get(edge), nc, allNodes, session));
-              });
-      _type5RoutesToSendPerNeighbor = new HashMap<>(0);
-    }
+    // TODO Everything is broken about type 5 routes
+    //    if (!_mainRibRoutesToProcess.isEmpty() && !_evpnType5IncomingRoutes.isEmpty()) {
+    //      for (String vrfName : _mainRibRoutesToProcess.keySet()) {
+    //        computeType5DeltaFromMainRibRoutes(vrfName, _mainRibRoutesToProcess.get(vrfName), nc);
+    //      }
+    //      _mainRibRoutesToProcess = new HashMap<>(1);
+    //    }
+    //    if (!_type5RoutesToSendForEveryone.isEmpty()) {
+    //      sendOutEvpnType5Routes(_type5RoutesToSendForEveryone, nc, allNodes);
+    //    }
+    //    _type5RoutesToSendForEveryone = BgpDelta.empty();
+    //    if (!_type5RoutesToSendPerNeighbor.isEmpty()) {
+    //      _type5RoutesToSendPerNeighbor
+    //          .keySet()
+    //          .forEach(
+    //              edge -> {
+    //                BgpPeerConfigId remoteConfigId = edge.tail();
+    //                BgpSessionProperties session = getSessionProperties(_topology, edge);
+    //                getNeighborBgpProcess(remoteConfigId, allNodes)
+    //                    .enqueueEvpnType5Routes(
+    //                        // Make sure to reverse the edge
+    //                        edge.reverse(),
+    //                        getEvpnTransformedRouteStream(
+    //                            edge, _type5RoutesToSendPerNeighbor.get(edge), nc, allNodes,
+    // session));
+    //              });
+    //      _type5RoutesToSendPerNeighbor = new HashMap<>(0);
+    //    }
     processBgpMessages(nc, allNodes);
   }
 
@@ -500,18 +502,23 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private void processBgpMessages(NetworkConfigurations nc, Map<String, Node> allNodes) {
     // Process EVPN messages and send out updates
     DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
-    DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
     sendOutEvpnType3Routes(type3Delta._toAdvertise, nc, allNodes);
-    sendOutEvpnType5Routes(type5Delta._toAdvertise, nc, allNodes);
-    // Merge EVPN routes into EVPN RIB and prepare for merging into main RIB
     _changeSet.from(
         importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta)));
     _changeSet.from(
         importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta)));
-    _changeSet.from(
-        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib, type5Delta._toMerge._ebgpDelta)));
-    _changeSet.from(
-        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib, type5Delta._toMerge._ibgpDelta)));
+
+    // TODO Type 5 routes currently broken
+
+    //    DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
+    //    sendOutEvpnType5Routes(type5Delta._toAdvertise, nc, allNodes);
+    //    // Merge EVPN routes into EVPN RIB and prepare for merging into main RIB
+    //    _changeSet.from(
+    //        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib,
+    // type5Delta._toMerge._ebgpDelta)));
+    //    _changeSet.from(
+    //        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib,
+    // type5Delta._toMerge._ibgpDelta)));
 
     // TODO: migrate v4 route propagation here
   }

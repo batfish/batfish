@@ -84,6 +84,7 @@ public class Link extends BfObject {
       case AGGREGATED:
       case AGGREGATE_CHILD:
       case REDUNDANT:
+      case REDUNDANT_CHILD:
       case TUNNEL:
       case VLAN:
       case VPN:

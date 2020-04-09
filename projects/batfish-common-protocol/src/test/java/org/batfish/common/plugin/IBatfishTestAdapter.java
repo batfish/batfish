@@ -51,8 +51,11 @@ import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
+import org.batfish.vendor.VendorConfiguration;
 
 /**
  * A helper for tests that need an {@link IBatfish} implementation. Extend this and implement the
@@ -193,7 +196,17 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
+  public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public ReferenceLibrary getReferenceLibraryData() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String getNetworkObject(NetworkId networkId, String key) {
     throw new UnsupportedOperationException();
   }
 
@@ -272,6 +285,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

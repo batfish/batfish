@@ -2,6 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -126,7 +127,9 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   private ForwardingAnalysis computeForwardingAnalysis() {
-    return new ForwardingAnalysisImpl(getConfigurations(), getFibs(), _layer3Topology);
+    Map<String, Configuration> configs = getConfigurations();
+    return new ForwardingAnalysisImpl(
+        configs, getFibs(), _layer3Topology, computeLocationInfo(configs));
   }
 
   private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>

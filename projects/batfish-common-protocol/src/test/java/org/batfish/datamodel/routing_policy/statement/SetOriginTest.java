@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
@@ -35,7 +34,7 @@ public class SetOriginTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
     assertThat(BatfishObjectMapper.clone(so, SetOrigin.class), equalTo(so));
   }

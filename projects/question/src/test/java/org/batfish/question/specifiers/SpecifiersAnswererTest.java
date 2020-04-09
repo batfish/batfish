@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
@@ -33,6 +34,8 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
@@ -88,14 +91,18 @@ public class SpecifiersAnswererTest {
     _context =
         MockSpecifierContext.builder()
             .setConfigs(ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2))
-            .setInterfaceOwnedIps(
+            .setLocationInfo(
                 ImmutableMap.of(
-                    _c1.getHostname(),
-                    ImmutableMap.of(
-                        _iface1.getName(), _iface1.getConcreteAddress().getIp().toIpSpace()),
-                    _c2.getHostname(),
-                    ImmutableMap.of(
-                        _iface2.getName(), _iface2.getConcreteAddress().getIp().toIpSpace())))
+                    Location.interfaceLocation(_iface1),
+                        new LocationInfo(
+                            true,
+                            _iface1.getConcreteAddress().getIp().toIpSpace(),
+                            EmptyIpSpace.INSTANCE),
+                    Location.interfaceLocation(_iface2),
+                        new LocationInfo(
+                            true,
+                            _iface2.getConcreteAddress().getIp().toIpSpace(),
+                            EmptyIpSpace.INSTANCE)))
             .build();
   }
 

@@ -1,7 +1,7 @@
 package org.batfish.question.bidirectionalreachability;
 
 import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
-import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toHeaderSpaceBuilder;
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toAclLineMatchExpr;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 import static org.batfish.specifier.SpecifierFactories.getIpSpaceSpecifierOrDefault;
@@ -23,10 +23,10 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.specifiers.PathConstraintsInput;
@@ -51,7 +51,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     PathConstraints pathConstraints = createPathConstraints(_pathConstraintsInput);
-    HeaderSpace headerSpace = toHeaderSpaceBuilder(_headerConstraints).build();
+    AclLineMatchExpr headerSpace = toAclLineMatchExpr(_headerConstraints);
 
     ReachabilityParameters parameters =
         ReachabilityParameters.builder()

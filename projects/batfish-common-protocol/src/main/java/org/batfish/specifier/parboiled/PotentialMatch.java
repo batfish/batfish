@@ -85,7 +85,7 @@ class PotentialMatch {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass())
+    return MoreObjects.toStringHelper(getClass())
         .add("anchor", _anchor)
         .add("matchingPrefix", _matchPrefix)
         .add("path", _path)

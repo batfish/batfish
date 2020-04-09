@@ -1,15 +1,16 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.common.util.IspModelingUtils.getAdvertiseStaticStatement;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticStatement;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
+import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -22,6 +23,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -47,15 +49,20 @@ public class VpnGatewayTest {
         region.getVpnGateways(),
         equalTo(
             ImmutableMap.of(
-                "vgw-81fd279f", new VpnGateway("vgw-81fd279f", ImmutableList.of("vpc-815775e7")))));
+                "vgw-81fd279f",
+                new VpnGateway(
+                    "vgw-81fd279f",
+                    ImmutableList.of("vpc-815775e7"),
+                    ImmutableMap.of(TAG_NAME, "lhr-aws-01")))));
   }
 
   @Test
   public void testToConfigurationNodeNoBgp() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")));
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()));
+    VpnGateway vgw =
+        new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of(TAG_NAME, "vgw-name"));
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -80,17 +87,23 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
-
+    assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
+    assertThat(vgwConfig.getHumanName(), equalTo("vgw-name"));
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), nullValue());
+
+    // ensure the connection to VPC
+    assertThat(
+        vgwConfig.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of(Utils.interfaceNameToRemote(vpcConfig))));
   }
 
   @Test
   public void testToConfigurationNodeBgp() {
     Prefix vpcPrefix = Prefix.parse("10.0.0.0/16");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix));
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()));
+    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
 
     VpnConnection vpnConnection =
         new VpnConnection(
@@ -115,13 +128,22 @@ public class VpnGatewayTest {
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
+    assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
 
     // the loopback interface, bgp process, and static route should exist
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), notNullValue());
-    assertThat(vgwConfig.getAllInterfaces().keySet(), equalTo(ImmutableSet.of("loopbackBgp")));
+    assertThat(
+        vgwConfig.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("loopbackBgp", Utils.interfaceNameToRemote(vpcConfig))));
     assertThat(
         vgwConfig.getDefaultVrf().getStaticRoutes(),
-        equalTo(ImmutableSortedSet.of(toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME))));
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    vpcPrefix,
+                    Utils.interfaceNameToRemote(vpcConfig),
+                    Utils.getInterfaceLinkLocalIp(
+                        vpcConfig, Utils.interfaceNameToRemote(vgwConfig))))));
 
     assertThat(
         vgwConfig.getRoutingPolicies(),

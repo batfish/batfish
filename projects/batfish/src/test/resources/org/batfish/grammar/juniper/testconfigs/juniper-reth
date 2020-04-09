@@ -1,0 +1,12 @@
+#
+set system host-name juniper-reth
+#
+
+set interfaces ge-1/0/0 gigether-options redundant-parent reth1
+set interfaces ge-1/0/1 gigether-options redundant-parent reth1
+
+set interfaces reth1 redundant-ether-options redundancy-group 1
+set interfaces reth1 unit 1 family inet address 10.0.1.1/24
+
+set interfaces reth2 redundant-ether-options redundancy-group 2
+set interfaces reth2 unit 1 family inet address 10.0.2.1/24

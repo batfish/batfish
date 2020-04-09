@@ -1,0 +1,7 @@
+#RANCID-CONTENT-TYPE: paloalto
+show config merged
+deviceconfig {
+  system {
+    hostname show-config-custom-hostname;
+  }
+}

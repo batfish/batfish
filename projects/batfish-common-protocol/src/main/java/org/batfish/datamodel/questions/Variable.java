@@ -88,6 +88,7 @@ public class Variable {
     ROUTING_POLICY_NAME("routingPolicyName", true),
     ROUTING_POLICY_SPEC("routingPolicySpec", true),
     ROUTING_PROTOCOL_SPEC("routingProtocolSpec", true),
+    SOURCE_LOCATION("sourceLocation", true),
     STRING("string", true),
     STRUCTURE_NAME("structureName", true),
     SUBRANGE("subrange", true),

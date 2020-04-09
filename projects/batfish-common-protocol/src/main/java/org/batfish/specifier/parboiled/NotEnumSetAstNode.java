@@ -43,6 +43,6 @@ final class NotEnumSetAstNode implements EnumSetAstNode {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass()).add("astNode", _astNode).toString();
+    return MoreObjects.toStringHelper(getClass()).add("astNode", _astNode).toString();
   }
 }

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -41,7 +40,7 @@ public class RibGroupTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     RibId rib1 = new RibId("hostname", "vrfname", "ribname");
     RibId exportRib = new RibId("hostname", "vrfname", "exportRib");
     RibGroup rg = new RibGroup("name", ImmutableList.of(rib1), "policy1", exportRib);

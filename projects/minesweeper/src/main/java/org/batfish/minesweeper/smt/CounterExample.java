@@ -52,7 +52,7 @@ class CounterExample {
   private Model _model;
 
   CounterExample(Model model) {
-    this._model = model;
+    _model = model;
   }
 
   String evaluate(Expr e) {

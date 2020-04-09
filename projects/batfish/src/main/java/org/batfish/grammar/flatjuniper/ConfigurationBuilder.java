@@ -3,6 +3,8 @@ package org.batfish.grammar.flatjuniper;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
@@ -14,6 +16,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
@@ -28,6 +31,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -45,6 +50,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELA
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
@@ -78,7 +84,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_I
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
@@ -1960,7 +1968,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
 
+  // TODO: separate firewall filter and security-policy
   private ConcreteFirewallFilter _currentFilter;
+  private String _currentSecurityPolicyName; // Follows _currentFilter, but with correct name.
 
   private Family _currentFirewallFamily;
 
@@ -2111,7 +2121,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
     _currentApplication =
-        _currentLogicalSystem.getApplications().computeIfAbsent(name, n -> new BaseApplication());
+        _currentLogicalSystem
+            .getApplications()
+            .computeIfAbsent(name, n -> new BaseApplication(name));
     _currentApplicationTerm = _currentApplication.getMainTerm();
     _configuration.defineFlattenedStructure(APPLICATION, name, ctx, _parser);
   }
@@ -2120,7 +2132,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
     _currentApplicationSet =
-        _currentLogicalSystem.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet());
+        _currentLogicalSystem
+            .getApplicationSets()
+            .computeIfAbsent(name, n -> new ApplicationSet(name));
     _configuration.defineFlattenedStructure(APPLICATION_SET, name, ctx, _parser);
   }
 
@@ -2192,7 +2206,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterAa_term(Aa_termContext ctx) {
     String name = ctx.name.getText();
-    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, n -> new Term());
+    _currentApplicationTerm =
+        _currentApplication.getTerms().computeIfAbsent(name, n -> new Term(name));
   }
 
   @Override
@@ -2284,8 +2299,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterFf_term(Ff_termContext ctx) {
     String name = ctx.name.getText();
+    String defName = computeFirewallFilterTermName(_currentFilter.getName(), name);
     Map<String, FwTerm> terms = _currentFilter.getTerms();
     _currentFwTerm = terms.computeIfAbsent(name, FwTerm::new);
+    _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.text));
   }
 
   @Override
@@ -3334,75 +3353,98 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSep_from_zone(Sep_from_zoneContext ctx) {
     if (ctx.from.JUNOS_HOST() != null && ctx.to.JUNOS_HOST() != null) {
       _w.redFlag("Cannot create security policy from junos-host to junos-host");
-    } else {
-      String fromName = ctx.from.getText();
-      String toName = ctx.to.getText();
-      String policyName = zoneToZoneFilter(fromName, toName);
-      if (ctx.from.JUNOS_HOST() == null) {
-        _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
-      }
-
-      if (ctx.to.JUNOS_HOST() == null) {
-        _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
-      }
-
-      if (ctx.from.JUNOS_HOST() != null) {
-        // Policy for traffic originating from this device
-        _currentFilter = _currentToZone.getFromHostFilter();
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentToZone.setFromHostFilter(_currentFilter);
-        }
-      } else if (ctx.to.JUNOS_HOST() != null) {
-        // Policy for traffic destined for this device
-        _currentFilter = _currentFromZone.getToHostFilter();
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentFromZone.setToHostFilter(_currentFilter);
-        }
-      } else {
-        // Policy for thru traffic
-        _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
-        if (_currentFilter == null) {
-          _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
-          _currentLogicalSystem.getFirewallFilters().put(policyName, _currentFilter);
-          _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
-        }
-        // Add this filter to the to-zone for easy combination with egress ACL
-        _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
-      }
-
-      /*
-       * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
-       * firewallFilter
-       */
-      if (_currentFromZone != null) {
-        _currentFilter.setFromZone(_currentFromZone.getName());
-      }
+      _currentFilter =
+          new ConcreteFirewallFilter(
+              "invalid security-policy from junos-host to itself", Family.INET);
+      _currentSecurityPolicyName = "invalid security-policy from junos-host to itself";
+      return;
     }
+
+    String fromName = ctx.from.getText();
+    String toName = ctx.to.getText();
+    String policyName = zoneToZoneFilter(fromName, toName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY, policyName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY, policyName, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
+    _currentSecurityPolicyName = policyName;
+    if (ctx.from.JUNOS_HOST() == null) {
+      _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
+    }
+
+    if (ctx.to.JUNOS_HOST() == null) {
+      _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
+    }
+
+    if (ctx.from.JUNOS_HOST() != null) {
+      // Policy for traffic originating from this device
+      _currentFilter = _currentToZone.getFromHostFilter();
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getSecurityPolicies().put(policyName, _currentFilter);
+        _currentToZone.setFromHostFilter(_currentFilter);
+      }
+    } else if (ctx.to.JUNOS_HOST() != null) {
+      // Policy for traffic destined for this device
+      _currentFilter = _currentFromZone.getToHostFilter();
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getSecurityPolicies().put(policyName, _currentFilter);
+        _currentFromZone.setToHostFilter(_currentFilter);
+      }
+    } else {
+      // Policy for thru traffic
+      _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
+      if (_currentFilter == null) {
+        _currentFilter = new ConcreteFirewallFilter(policyName, Family.INET);
+        _currentLogicalSystem.getSecurityPolicies().put(policyName, _currentFilter);
+        _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
+      }
+      // Add this filter to the to-zone for easy combination with egress ACL
+      _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
+    }
+
+    /*
+     * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
+     * firewallFilter
+     */
+    if (_currentFromZone != null) {
+      _currentFilter.setFromZone(_currentFromZone.getName());
+    }
+  }
+
+  @Override
+  public void exitSep_from_zone(Sep_from_zoneContext ctx) {
+    _currentFilter = null;
+    _currentSecurityPolicyName = null;
   }
 
   @Override
   public void enterSep_global(Sep_globalContext ctx) {
     _currentFilter =
-        (ConcreteFirewallFilter)
-            _currentLogicalSystem
-                .getFirewallFilters()
-                .computeIfAbsent(
-                    ACL_NAME_GLOBAL_POLICY, n -> new ConcreteFirewallFilter(n, Family.INET));
+        _currentLogicalSystem
+            .getSecurityPolicies()
+            .computeIfAbsent(
+                ACL_NAME_GLOBAL_POLICY, n -> new ConcreteFirewallFilter(n, Family.INET));
+    _currentSecurityPolicyName = ACL_NAME_GLOBAL_POLICY;
+    _configuration.defineFlattenedStructure(SECURITY_POLICY, ACL_NAME_GLOBAL_POLICY, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY, ACL_NAME_GLOBAL_POLICY, SECURITY_POLICY_DEFINITION, getLine(ctx.start));
   }
 
   @Override
   public void exitSep_global(Sep_globalContext ctx) {
     _currentFilter = null;
+    _currentSecurityPolicyName = null;
   }
 
   @Override
   public void enterSepctx_policy(Sepctx_policyContext ctx) {
     String termName = ctx.name.getText();
     _currentFwTerm = _currentFilter.getTerms().computeIfAbsent(termName, FwTerm::new);
+    String defName = computeSecurityPolicyTermName(_currentSecurityPolicyName, termName);
+    _configuration.defineFlattenedStructure(SECURITY_POLICY_TERM, defName, ctx, _parser);
+    _configuration.referenceStructure(
+        SECURITY_POLICY_TERM, defName, SECURITY_POLICY_TERM_DEFINITION, getLine(ctx.name.text));
   }
 
   @Override
@@ -3448,7 +3490,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 + "~INTERFACE~"
                 + _currentZoneInterface;
         _currentZoneInboundFilter = new ConcreteFirewallFilter(name, Family.INET);
-        _currentLogicalSystem.getFirewallFilters().put(name, _currentZoneInboundFilter);
+        _currentLogicalSystem.getSecurityPolicies().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
             .put(_currentZoneInterface, _currentZoneInboundFilter);
@@ -3827,10 +3869,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     FwFrom from;
     IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
     if (ipWildcard != null) {
+      String text = getFullText(ctx.fftfa_address_mask_prefix());
       from =
           ctx.EXCEPT() != null
-              ? new FwFromDestinationAddressExcept(ipWildcard)
-              : new FwFromDestinationAddress(ipWildcard);
+              ? new FwFromDestinationAddressExcept(ipWildcard, text)
+              : new FwFromDestinationAddress(ipWildcard, text);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -4005,10 +4048,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     FwFrom from;
     IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
     if (ipWildcard != null) {
+      String text = getFullText(ctx.fftfa_address_mask_prefix());
       from =
           ctx.EXCEPT() != null
-              ? new FwFromSourceAddressExcept(ipWildcard)
-              : new FwFromSourceAddress(ipWildcard);
+              ? new FwFromSourceAddressExcept(ipWildcard, text)
+              : new FwFromSourceAddress(ipWildcard, text);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -4045,39 +4089,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_tcp_established(Fftf_tcp_establishedContext ctx) {
-    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
-    tcpFlags.add(
-        TcpFlagsMatchConditions.builder()
-            .setTcpFlags(TcpFlags.builder().setAck(true).build())
-            .setUseAck(true)
-            .build());
-    tcpFlags.add(
-        TcpFlagsMatchConditions.builder()
-            .setTcpFlags(TcpFlags.builder().setRst(true).build())
-            .setUseRst(true)
-            .build());
-    FwFrom from = new FwFromTcpFlags(tcpFlags);
-    _currentFwTerm.getFroms().add(from);
+    _currentFwTerm.getFroms().add(FwFromTcpFlags.TCP_ESTABLISHED);
   }
 
   @Override
   public void exitFftf_tcp_flags(Fftf_tcp_flagsContext ctx) {
     List<TcpFlagsMatchConditions> tcpFlags = toTcpFlags(ctx.tcp_flags());
-    FwFrom from = new FwFromTcpFlags(tcpFlags);
+    FwFrom from = FwFromTcpFlags.fromTcpFlags(tcpFlags);
     _currentFwTerm.getFroms().add(from);
   }
 
   @Override
   public void exitFftf_tcp_initial(Fftf_tcp_initialContext ctx) {
-    List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
-    tcpFlags.add(
-        TcpFlagsMatchConditions.builder()
-            .setTcpFlags(TcpFlags.builder().setAck(true).setSyn(true).build())
-            .setUseAck(true)
-            .setUseSyn(true)
-            .build());
-    FwFrom from = new FwFromTcpFlags(tcpFlags);
-    _currentFwTerm.getFroms().add(from);
+    _currentFwTerm.getFroms().add(FwFromTcpFlags.TCP_INITIAL);
   }
 
   @Override
@@ -5676,11 +5700,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSep_from_zone(Sep_from_zoneContext ctx) {
-    _currentFilter = null;
-  }
-
-  @Override
   public void exitSepctx_policy(Sepctx_policyContext ctx) {
     _currentFwTerm = null;
   }
@@ -5728,7 +5747,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSepctxpm_destination_address(Sepctxpm_destination_addressContext ctx) {
     Address_specifierContext addressSpecifierContext = ctx.address_specifier();
-    if (addressSpecifierContext.ANY() != null || addressSpecifierContext.ANY_IPV4() != null) {
+    if (addressSpecifierContext.ANY() != null) {
+      FwFromDestinationAddress match = new FwFromDestinationAddress(IpWildcard.ANY, "any");
+      _currentFwTerm.getFroms().add(match);
+      return;
+    } else if (addressSpecifierContext.ANY_IPV4() != null) {
+      FwFromDestinationAddress match = new FwFromDestinationAddress(IpWildcard.ANY, "any-ipv4");
+      _currentFwTerm.getFroms().add(match);
       return;
     }
 
@@ -5759,12 +5784,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSepctxpm_source_address(Sepctxpm_source_addressContext ctx) {
     if (ctx.address_specifier().ANY() != null) {
-      return;
+      FwFromSourceAddress match = new FwFromSourceAddress(IpWildcard.ANY, "any");
+      _currentFwTerm.getFroms().add(match);
     } else if (ctx.address_specifier().ANY_IPV4() != null) {
-      return;
+      FwFromSourceAddress match = new FwFromSourceAddress(IpWildcard.ANY, "any-ipv4");
+      _currentFwTerm.getFroms().add(match);
     } else if (ctx.address_specifier().ANY_IPV6() != null) {
       _currentFwTerm.setIpv6(true);
-      return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
       FwFrom match =

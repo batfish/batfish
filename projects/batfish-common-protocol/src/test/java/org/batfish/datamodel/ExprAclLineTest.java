@@ -4,7 +4,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -49,7 +48,7 @@ public class ExprAclLineTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     {
       ExprAclLine l = new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
       ExprAclLine clone = (ExprAclLine) BatfishObjectMapper.clone(l, AclLine.class);

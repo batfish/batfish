@@ -16,6 +16,8 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.UniverseIpSpace;
 
 public final class AclLineMatchExprs {
 
@@ -43,6 +45,10 @@ public final class AclLineMatchExprs {
 
   public static final AclLineMatchExpr NEW_FLOWS =
       implies(matchIpProtocol(IpProtocol.TCP), NEW_TCP_FLOWS);
+
+  public static AclLineMatchExpr and(String traceElement, AclLineMatchExpr... exprs) {
+    return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+  }
 
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
     return and(ImmutableList.copyOf(exprs));
@@ -89,23 +95,26 @@ public final class AclLineMatchExprs {
     return new MatchHeaderSpace(HeaderSpace.builder().setDscps(ImmutableList.of(dscp)).build());
   }
 
-  public static MatchHeaderSpace matchDst(IpSpace ipSpace) {
+  public static AclLineMatchExpr matchDst(IpSpace ipSpace) {
+    if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
+      return TRUE;
+    }
     return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build());
   }
 
-  public static MatchHeaderSpace matchDst(Ip ip) {
+  public static AclLineMatchExpr matchDst(Ip ip) {
     return matchDst(ip.toIpSpace());
   }
 
-  public static MatchHeaderSpace matchDst(IpWildcard wc) {
+  public static AclLineMatchExpr matchDst(IpWildcard wc) {
     return matchDst(wc.toIpSpace());
   }
 
-  public static MatchHeaderSpace matchDst(Prefix prefix) {
+  public static AclLineMatchExpr matchDst(Prefix prefix) {
     return matchDst(prefix.toIpSpace());
   }
 
-  public static MatchHeaderSpace matchDstIp(String ip) {
+  public static AclLineMatchExpr matchDstIp(String ip) {
     return matchDst(Ip.parse(ip).toIpSpace());
   }
 
@@ -127,7 +136,10 @@ public final class AclLineMatchExprs {
     return matchDst(Prefix.parse(prefix));
   }
 
-  public static MatchHeaderSpace matchSrc(IpSpace ipSpace) {
+  public static AclLineMatchExpr matchSrc(IpSpace ipSpace) {
+    if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
+      return TRUE;
+    }
     return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build());
   }
 
@@ -201,7 +213,7 @@ public final class AclLineMatchExprs {
             .build());
   }
 
-  public static MatchHeaderSpace matchSrc(Ip ip) {
+  public static AclLineMatchExpr matchSrc(Ip ip) {
     return matchSrc(ip.toIpSpace());
   }
 
@@ -209,15 +221,15 @@ public final class AclLineMatchExprs {
     return matchSrc(wc.toIpSpace());
   }
 
-  public static MatchHeaderSpace matchSrc(Prefix prefix) {
+  public static AclLineMatchExpr matchSrc(Prefix prefix) {
     return matchSrc(prefix.toIpSpace());
   }
 
-  public static MatchHeaderSpace matchSrcIp(String ip) {
+  public static AclLineMatchExpr matchSrcIp(String ip) {
     return matchSrc(Ip.parse(ip).toIpSpace());
   }
 
-  public static MatchHeaderSpace matchSrcPrefix(String prefix) {
+  public static AclLineMatchExpr matchSrcPrefix(String prefix) {
     return matchSrc(Prefix.parse(prefix).toIpSpace());
   }
 
@@ -243,10 +255,19 @@ public final class AclLineMatchExprs {
     return matchSrcInterface(ImmutableList.copyOf(ifaces));
   }
 
+  public static @Nonnull MatchSrcInterface matchSrcInterface(
+      TraceElement traceElement, String... ifaces) {
+    return new MatchSrcInterface(ImmutableList.copyOf(ifaces), traceElement);
+  }
+
   public static @Nonnull AclLineMatchExpr matchTcpFlags(
       TcpFlagsMatchConditions... tcpFlagsMatchConditions) {
     return new MatchHeaderSpace(
         HeaderSpace.builder().setTcpFlags(ImmutableList.copyOf(tcpFlagsMatchConditions)).build());
+  }
+
+  public static NotMatchExpr not(String traceElement, AclLineMatchExpr expr) {
+    return new NotMatchExpr(expr, TraceElement.of(traceElement));
   }
 
   /**
@@ -264,6 +285,10 @@ public final class AclLineMatchExprs {
       return ((NotMatchExpr) expr).getOperand();
     }
     return new NotMatchExpr(expr);
+  }
+
+  public static AclLineMatchExpr or(String traceElement, AclLineMatchExpr... exprs) {
+    return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
   }
 
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
@@ -290,5 +315,9 @@ public final class AclLineMatchExprs {
 
   public static PermittedByAcl permittedByAcl(String aclName) {
     return new PermittedByAcl(aclName);
+  }
+
+  public static DeniedByAcl deniedByAcl(String aclName) {
+    return new DeniedByAcl(aclName);
   }
 }

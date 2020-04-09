@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -17,7 +16,7 @@ public final class StandardCommunityHighLowExprsTest {
       new StandardCommunityHighLowExprs(new LiteralInt(1), new LiteralInt(1));
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, StandardCommunityHighLowExprs.class), equalTo(OBJ));
   }
 

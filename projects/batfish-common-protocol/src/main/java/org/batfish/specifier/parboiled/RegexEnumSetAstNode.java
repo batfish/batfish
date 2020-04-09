@@ -55,6 +55,6 @@ final class RegexEnumSetAstNode implements EnumSetAstNode {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass()).add("regex", _regex).toString();
+    return MoreObjects.toStringHelper(getClass()).add("regex", _regex).toString();
   }
 }

@@ -3,6 +3,7 @@ package org.batfish.referencelibrary;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
@@ -21,6 +22,7 @@ public class FilterGroup implements Comparable<FilterGroup>, Serializable {
   @Nonnull private final List<String> _filters;
   @Nonnull private final String _name;
 
+  @JsonCreator
   public FilterGroup(
       @Nullable @JsonProperty(PROP_FILTERS) List<String> filters,
       @Nullable @JsonProperty(PROP_NAME) String name) {

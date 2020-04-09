@@ -1,0 +1,34 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-security-level-permit-tracing
+!
+interface GigabitEthernet0/1
+  nameif out
+  security-level 50
+  ip address 3.0.0.2 255.255.255.0
+!
+interface GigabitEthernet0/2
+  nameif inSameLevel
+  security-level 50
+  ip address 3.0.1.1 255.255.255.0
+!
+interface GigabitEthernet0/3
+  nameif inLowFiltered
+  security-level 10
+  ip address 3.0.1.2 255.255.255.0
+!
+interface GigabitEthernet0/4
+  nameif inHigh
+  security-level 100
+  ip address 3.0.1.3 255.255.255.0
+!
+same-security-traffic permit inter-interface
+same-security-traffic permit intra-interface
+!
+access-group FILTER_OUT out interface out
+access-group FILTER_IN in interface inLowFiltered
+!
+access-list FILTER_OUT extended permit tcp any any eq 123
+access-list FILTER_OUT extended deny tcp any any eq 22
+access-list FILTER_IN extended permit ip any any

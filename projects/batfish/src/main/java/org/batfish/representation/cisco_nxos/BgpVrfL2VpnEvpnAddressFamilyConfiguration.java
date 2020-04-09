@@ -25,7 +25,7 @@ public final class BgpVrfL2VpnEvpnAddressFamilyConfiguration
   }
 
   public final void setMaximumPathsEbgp(int maximumPathsEbgp) {
-    this._maximumPathsEbgp = maximumPathsEbgp;
+    _maximumPathsEbgp = maximumPathsEbgp;
   }
 
   public final int getMaximumPathsIbgp() {
@@ -33,7 +33,7 @@ public final class BgpVrfL2VpnEvpnAddressFamilyConfiguration
   }
 
   public final void setMaximumPathsIbgp(int maximumPathsIbgp) {
-    this._maximumPathsIbgp = maximumPathsIbgp;
+    _maximumPathsIbgp = maximumPathsIbgp;
   }
 
   public @Nonnull RetainRouteType getRetainMode() {

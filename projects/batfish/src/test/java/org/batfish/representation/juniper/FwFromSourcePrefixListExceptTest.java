@@ -1,18 +1,12 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
-import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasNotSrcIps;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
@@ -20,9 +14,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Test for {@link FwFromSourcePrefixListExcept} */
 public class FwFromSourcePrefixListExceptTest {
   private JuniperConfiguration _jc;
   private Warnings _w;
@@ -47,32 +44,33 @@ public class FwFromSourcePrefixListExceptTest {
   }
 
   @Test
-  public void testApplyTo() {
-    IpSpace additionalIpSpace = Ip.parse("2.2.2.2").toIpSpace();
+  public void testToHeaderSpace() {
     IpSpace baseIpSpace = IpWildcard.parse(BASE_IP_PREFIX).toIpSpace();
 
-    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-    HeaderSpace.Builder headerSpaceBuilderWithIpSpaceFilter =
-        HeaderSpace.builder().setNotSrcIps(additionalIpSpace);
     FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept(BASE_PREFIX_LIST_NAME);
 
     // Apply base IP prefix to headerSpace with null IpSpace
-    fwFrom.applyTo(headerSpaceBuilder, _jc, _w, _c);
+    assertEquals(
+        fwFrom.toHeaderspace(_jc, _c, _w), HeaderSpace.builder().setNotSrcIps(baseIpSpace).build());
+  }
 
-    // Apply base IP prefix to headerSpace with non-null IpSpace
-    fwFrom.applyTo(headerSpaceBuilderWithIpSpaceFilter, _jc, _w, _c);
+  @Test
+  public void testToHeaderSpace_notExist() {
+    FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept("noName");
 
-    // Confirm combining base with null IpSpace results in just base IpSpace
-    assertThat(headerSpaceBuilder.build(), hasNotSrcIps(equalTo(baseIpSpace)));
+    assertEquals(
+        fwFrom.toHeaderspace(_jc, _c, _w),
+        HeaderSpace.builder().setNotSrcIps(EmptyIpSpace.INSTANCE).build());
+  }
 
-    // Confirm combining base with additional IpSpace results in an IpSpace combining both
-    assertThat(
-        headerSpaceBuilderWithIpSpaceFilter.build(),
-        hasNotSrcIps(
-            isAclIpSpaceThat(
-                hasLines(
-                    containsInAnyOrder(
-                        AclIpSpaceLine.permit(additionalIpSpace),
-                        AclIpSpaceLine.permit(baseIpSpace))))));
+  @Test
+  public void testToAclLineMatchExpr() {
+    FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept(BASE_PREFIX_LIST_NAME);
+
+    assertEquals(
+        fwFrom.toAclLineMatchExpr(_jc, _c, _w),
+        new MatchHeaderSpace(
+            fwFrom.toHeaderspace(_jc, _c, _w),
+            TraceElement.of("Matched source-prefix-list prefixList except")));
   }
 }

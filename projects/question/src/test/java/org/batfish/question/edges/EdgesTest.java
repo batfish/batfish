@@ -15,9 +15,11 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_VTEP_ADDRESS;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
@@ -42,6 +44,8 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.edges.EdgesQuestion.EdgeType;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -112,6 +116,11 @@ public final class EdgesTest {
           @Override
           public NetworkSnapshot getSnapshot() {
             return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
+          }
+
+          @Override
+          public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot networkSnapshot) {
+            return ImmutableMap.of();
           }
 
           @Override
@@ -199,7 +208,13 @@ public final class EdgesTest {
           public NetworkSnapshot getSnapshot() {
             return new NetworkSnapshot(new NetworkId("a"), new SnapshotId("b"));
           }
+
+          @Override
+          public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot networkSnapshot) {
+            return ImmutableMap.of();
+          }
         };
+
     TableAnswerElement answer =
         (TableAnswerElement)
             new EdgesAnswerer(new EdgesQuestion(null, null, EdgeType.VXLAN, true), batfish)

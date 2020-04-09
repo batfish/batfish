@@ -106,22 +106,22 @@ public final class Mlag implements Serializable {
     private Builder() {}
 
     public Builder setId(@Nonnull String id) {
-      this._id = id;
+      _id = id;
       return this;
     }
 
     public Builder setPeerAddress(@Nullable Ip peerAddress) {
-      this._peerAddress = peerAddress;
+      _peerAddress = peerAddress;
       return this;
     }
 
     public Builder setPeerInterface(@Nullable String peerInterface) {
-      this._peerInterface = peerInterface;
+      _peerInterface = peerInterface;
       return this;
     }
 
     public Builder setLocalInterface(@Nullable String localInterface) {
-      this._localInterface = localInterface;
+      _localInterface = localInterface;
       return this;
     }
 

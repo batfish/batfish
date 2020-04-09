@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -10,6 +11,7 @@ import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
 import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInInterface;
@@ -86,6 +88,11 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
   }
 
   @Override
+  public NodeInterfacePair visitInterfaceAccept(InterfaceAccept interfaceAccept) {
+    return null;
+  }
+
+  @Override
   public NodeInterfacePair visitNeighborUnreachable() {
     return null;
   }
@@ -135,6 +142,11 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
   @Override
   public NodeInterfacePair visitNodeInterfaceNeighborUnreachable(
       NodeInterfaceNeighborUnreachable nodeInterfaceNeighborUnreachable) {
+    return null;
+  }
+
+  @Override
+  public NodeInterfacePair visitOriginateInterface(OriginateInterface originateInterface) {
     return null;
   }
 

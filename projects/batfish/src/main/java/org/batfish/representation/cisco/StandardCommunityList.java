@@ -12,7 +12,7 @@ public final class StandardCommunityList implements Serializable {
   private final String _name;
 
   public StandardCommunityList(@Nonnull String name) {
-    this._name = name;
+    _name = name;
     _lines = new ArrayList<>();
   }
 

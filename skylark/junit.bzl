@@ -18,6 +18,8 @@
 
 # See https://github.com/bazelbuild/bazel/issues/1017 for background.
 
+load("@rules_java//java:defs.bzl", "java_test")
+
 _OUTPUT = """import org.junit.runners.Suite;
 import org.junit.runner.RunWith;
 
@@ -77,7 +79,7 @@ def junit_tests(name, srcs, **kwargs):
         srcs = test_files,
         outname = s_name,
     )
-    native.java_test(
+    java_test(
         name = name,
         test_class = s_name,
         srcs = srcs + [":" + s_name],

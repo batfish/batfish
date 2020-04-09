@@ -12,8 +12,8 @@ class EdgePolicyToRole {
   private int _hcode = 0;
 
   EdgePolicyToRole(Integer abstractId, @Nullable EdgePolicy policy) {
-    this._abstractId = abstractId;
-    this._policy = policy;
+    _abstractId = abstractId;
+    _policy = policy;
   }
 
   @Override

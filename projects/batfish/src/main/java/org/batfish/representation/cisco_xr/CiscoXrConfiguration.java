@@ -2116,7 +2116,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList, this._objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 

@@ -6,6 +6,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   ADDRESS_GROUP_STATIC("address-group static"),
   APPLICATION_GROUP_MEMBERS("application-group members"),
   BGP_PEER_LOCAL_ADDRESS_INTERFACE("bgp peer local-address interface"),
+  ETHERNET_AGGREGATE_GROUP("ethernet aggregate-group"),
   IMPORT_INTERFACE("import network interface"),
   LAYER2_INTERFACE_ZONE("zone network layer2"),
   LAYER3_INTERFACE_ZONE("zone network layer3"),

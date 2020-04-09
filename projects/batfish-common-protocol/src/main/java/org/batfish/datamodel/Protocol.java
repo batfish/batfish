@@ -9,6 +9,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.applications.Application;
+import org.batfish.datamodel.applications.TcpApplication;
+import org.batfish.datamodel.applications.UdpApplication;
 
 /** Shorthands for application-level protocols (i.e., combos of TCP or UDP and port) */
 public enum Protocol {
@@ -67,5 +70,18 @@ public enum Protocol {
   @Nonnull
   public Integer getPort() {
     return _port;
+  }
+
+  /** Converts this object to the new Application object. */
+  public Application toApplication() {
+    switch (_ipProtocol) {
+      case TCP:
+        return new TcpApplication(_port);
+      case UDP:
+        return new UdpApplication(_port);
+      default:
+        throw new IllegalArgumentException(
+            "Protocol with IpProtocol " + _ipProtocol + " cannot be converted to Application");
+    }
   }
 }

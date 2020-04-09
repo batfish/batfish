@@ -46,6 +46,7 @@ public final class InterfaceLinkLocation implements Location {
     return _interfaceName;
   }
 
+  @Override
   @JsonProperty(PROP_NODE_NAME)
   @Nonnull
   public String getNodeName() {

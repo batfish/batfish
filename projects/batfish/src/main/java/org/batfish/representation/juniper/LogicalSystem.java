@@ -46,6 +46,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, FirewallFilter> _filters;
 
+  private final Map<String, ConcreteFirewallFilter> _securityPolicies;
+
   private final Map<String, IkeGateway> _ikeGateways;
 
   private final Map<String, IkePolicy> _ikePolicies;
@@ -129,6 +131,7 @@ public class LogicalSystem implements Serializable {
     _routeFilters = new TreeMap<>();
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
+    _securityPolicies = new TreeMap<>();
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _namedVlans = new TreeMap<>();
@@ -203,6 +206,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, FirewallFilter> getFirewallFilters() {
     return _filters;
+  }
+
+  public Map<String, ConcreteFirewallFilter> getSecurityPolicies() {
+    return _securityPolicies;
   }
 
   @Nonnull

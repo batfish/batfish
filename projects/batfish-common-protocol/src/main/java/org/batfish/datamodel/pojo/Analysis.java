@@ -26,8 +26,8 @@ public class Analysis {
   public Analysis(
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_QUESTIONS) @Nullable Map<String, String> questions) {
-    this._name = name;
-    this._questions = questions == null ? new HashMap<>() : questions;
+    _name = name;
+    _questions = questions == null ? new HashMap<>() : questions;
   }
 
   @JsonProperty(PROP_NAME)
@@ -41,19 +41,19 @@ public class Analysis {
   }
 
   public void addQuestion(String questionName, String questionContent) {
-    if (this._questions.containsKey(questionName)) {
+    if (_questions.containsKey(questionName)) {
       throw new BatfishException(
           String.format("Question %s already exists for analysis %s", questionName, _name));
     }
-    this._questions.put(questionName, questionContent);
+    _questions.put(questionName, questionContent);
   }
 
   public void deleteQuestion(String questionName) {
-    if (!this._questions.containsKey(questionName)) {
+    if (!_questions.containsKey(questionName)) {
       throw new BatfishException(
           String.format("Question %s does not exist for analysis %s", questionName, _name));
     }
-    this._questions.remove(questionName);
+    _questions.remove(questionName);
   }
 
   @Override

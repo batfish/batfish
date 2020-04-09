@@ -1,7 +1,11 @@
 package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.stream.Collectors.groupingBy;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
@@ -20,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -58,7 +63,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -92,10 +96,10 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -158,9 +162,11 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.representation.juniper.FwTerm.Field;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public final class JuniperConfiguration extends VendorConfiguration {
 
@@ -175,6 +181,67 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static final String ACL_NAME_SCREEN_ZONE = "~SCREEN_ZONE~";
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
+
+  public static @Nonnull String computeFirewallFilterTermName(
+      @Nonnull String filterName, @Nonnull String termName) {
+    return String.format("%s %s", filterName, termName);
+  }
+
+  public static @Nonnull String computeSecurityPolicyTermName(
+      @Nonnull String policyName, @Nonnull String termName) {
+    return String.format("%s %s", policyName, termName);
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchingFirewallFilter(String filename, String filterName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            String.format(
+                "%s %s", JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName),
+            new VendorStructureId(
+                filename, JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName))
+        .build();
+  }
+
+  /** Returns a trace element for a firewall filter term for the given test config. */
+  @VisibleForTesting
+  public static TraceElement matchingFirewallFilterTerm(
+      String filename, String filterName, String termName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            termName,
+            new VendorStructureId(
+                filename,
+                JuniperStructureType.FIREWALL_FILTER_TERM.getDescription(),
+                computeFirewallFilterTermName(filterName, termName)))
+        .build();
+  }
+
+  /** Returns a trace element for a security policy term for the given test config. */
+  @VisibleForTesting
+  public static TraceElement matchingSecurityPolicyTerm(
+      String filename, String policyName, String termName) {
+    return TraceElement.builder()
+        .add("Matched ")
+        .add(
+            termName,
+            new VendorStructureId(
+                filename,
+                JuniperStructureType.SECURITY_POLICY_TERM.getDescription(),
+                computeSecurityPolicyTermName(policyName, termName)))
+        .build();
+  }
+
+  private static TraceElement matchingAbstractTerm(
+      JuniperStructureType aclType, String filename, String filterName, String termName) {
+    if (aclType == JuniperStructureType.FIREWALL_FILTER) {
+      return matchingFirewallFilterTerm(filename, filterName, termName);
+    }
+    assert aclType == JuniperStructureType.SECURITY_POLICY;
+    return matchingSecurityPolicyTerm(filename, filterName, termName);
+  }
 
   // See
   // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
@@ -298,16 +365,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
-    Ip routerId = routingInstance.getRouterId();
-    if (routerId == null) {
-      routerId = _masterLogicalSystem.getDefaultRoutingInstance().getRouterId();
-      if (routerId == null) {
-        routerId = Ip.ZERO;
-      }
-    }
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    BgpProcess proc = new BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
+    BgpProcess proc = new BgpProcess(getRouterId(routingInstance), ebgpAdmin, ibgpAdmin);
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
@@ -376,7 +436,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ipv4AfBuilder.setRouteReflectorClient(true);
         neighbor.setClusterId(declaredClusterId.asLong());
       } else {
-        neighbor.setClusterId(routerId.asLong());
+        neighbor.setClusterId(getRouterId(routingInstance).asLong());
       }
 
       neighbor.setConfederation(routingInstance.getConfederation());
@@ -984,10 +1044,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (firstNonNull(routingInstance.getOspfDisable(), Boolean.FALSE)) {
       return null;
     }
-    Ip ospfRouterId = getOspfRouterId(routingInstance);
-    if (ospfRouterId == null) {
-      return null;
-    }
+    Ip ospfRouterId = getRouterId(routingInstance);
     OspfProcess newProc =
         OspfProcess.builder()
             // Use routing instance name since OSPF processes are not named
@@ -1695,10 +1752,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setIncomingTransformation(buildIncomingTransformation(iface));
 
     // Assume the config will need security policies only if it has zones
-    IpAccessList securityPolicyAcl;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
-      securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
+      IpAccessList securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
         newIface.setPreTransformationOutgoingFilter(securityPolicyAcl);
@@ -2064,50 +2120,72 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
-  IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
+  @VisibleForTesting
+  IpAccessList buildSecurityPolicyAcl(String name, @Nullable Zone zone) {
     List<AclLine> zoneAclLines = new LinkedList<>();
 
     /* Default policy allows traffic originating from the device to be accepted */
     zoneAclLines.add(
-        new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
+        new ExprAclLine(
+            LineAction.PERMIT,
+            OriginatingFromDevice.INSTANCE,
+            "HOST_OUTBOUND",
+            TraceElement.of("Matched Juniper semantics on traffic originated from device")));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
+      String toZone = zone.getName();
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
         String filterName = e.getKey();
         FirewallFilter filter = e.getValue();
 
-        // Name the ACL line that will apply zone policy.
-        String zonePolicyLineDesc;
-        // Not possible to configure a zone policy for multiple from zones.
-        String fromZone = filter.getFromZone().orElse(null);
-        if (fromZone == null) {
-          // Zone egress policy for traffic originating from device
-          zonePolicyLineDesc = String.format("Match policy from junos-host to zone %s", filterName);
-        } else if (fromZone.equals(zone.getName())) {
-          // Intra-zone policy
-          zonePolicyLineDesc = String.format("Match intra-zone policy for zone %s", fromZone);
-        } else {
-          // Cross-zone policy
-          zonePolicyLineDesc =
-              String.format(
-                  "Match cross-zone policy from zone %s to zone %s", fromZone, zone.getName());
-        }
+        // The config is "from-zone junos-host", but we choose to only print "zone" when it's not
+        // the host.
+        String fromDesc =
+            filter.getFromZone().map(s -> String.format("zone %s", s)).orElse("junos-host");
+        String policyDesc = String.format("security policy from %s to zone %s", fromDesc, toZone);
 
-        zoneAclLines.add(new AclAclLine(zonePolicyLineDesc, filterName));
+        String policyName = zoneToZoneFilter(filter.getFromZone().orElse("junos-host"), toZone);
+        TraceElement traceElement =
+            TraceElement.builder()
+                .add("Matched ")
+                .add(
+                    policyDesc,
+                    new VendorStructureId(
+                        _filename,
+                        JuniperStructureType.SECURITY_POLICY.getDescription(),
+                        policyName))
+                .build();
+
+        zoneAclLines.add(new AclAclLine("Match " + policyDesc, filterName, traceElement));
       }
     }
 
     /* Global policy if applicable */
-    if (_masterLogicalSystem.getFirewallFilters().get(ACL_NAME_GLOBAL_POLICY) != null) {
+    if (_masterLogicalSystem.getSecurityPolicies().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
-      zoneAclLines.add(new AclAclLine("Match global security policy", ACL_NAME_GLOBAL_POLICY));
+      zoneAclLines.add(
+          new AclAclLine(
+              "Match global security policy",
+              ACL_NAME_GLOBAL_POLICY,
+              TraceElement.builder()
+                  .add("Matched ")
+                  .add(
+                      "global security policy",
+                      new VendorStructureId(
+                          _filename,
+                          JuniperStructureType.SECURITY_POLICY.getDescription(),
+                          ACL_NAME_GLOBAL_POLICY))
+                  .build()));
     }
 
     /* Add catch-all line with default action */
     zoneAclLines.add(
         new ExprAclLine(
-            _masterLogicalSystem.getDefaultCrossZoneAction(), TrueExpr.INSTANCE, "DEFAULT_POLICY"));
+            _masterLogicalSystem.getDefaultCrossZoneAction(),
+            TrueExpr.INSTANCE,
+            "DEFAULT_POLICY",
+            TraceElement.of("Matched default policy")));
 
     IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
@@ -2118,110 +2196,147 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * Convert firewallFilter terms (headerSpace matching) and optional conjunctMatchExpr into a
    * single ACL.
    */
-  private IpAccessList fwTermsToIpAccessList(
-      String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
+  @VisibleForTesting
+  @Nonnull
+  IpAccessList fwTermsToIpAccessList(
+      String aclName,
+      Collection<FwTerm> terms,
+      @Nullable AclLineMatchExpr conjunctMatchExpr,
+      JuniperStructureType aclType)
       throws VendorConversionException {
-    List<ExprAclLine> lines = new ArrayList<>();
-    for (FwTerm term : terms) {
-      // action
-      LineAction action;
-      if (term.getThens().contains(FwThenAccept.INSTANCE)) {
-        action = LineAction.PERMIT;
-      } else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
-        action = LineAction.DENY;
-      } else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
-        // TODO: throw error if any transformation is being done
-        continue;
-      } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
-        // we assume for now that any 'nop' operations imply acceptance
-        action = LineAction.PERMIT;
-      } else if (term.getThens().stream()
-          .map(Object::getClass)
-          .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
-        // Should be handled by packet policy, not applicable to ACLs
-        continue;
-      } else {
-        _w.redFlag(
-            "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
-        action = LineAction.DENY;
-      }
-      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
-      for (FwFrom from : term.getFroms()) {
-        from.applyTo(matchCondition, this, _w, _c);
-      }
-      boolean addLine =
-          term.getFromApplicationSetMembers().isEmpty()
-              && term.getFromHostProtocols().isEmpty()
-              && term.getFromHostServices().isEmpty();
-      for (FwFromHostProtocol from : term.getFromHostProtocols()) {
-        from.applyTo(lines, _w);
-      }
-      for (FwFromHostService from : term.getFromHostServices()) {
-        from.applyTo(lines, _w);
-      }
-      for (FwFromApplicationSetMember fromApplicationSetMember :
-          term.getFromApplicationSetMembers()) {
-        fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
-      }
-      if (term.getFromIpOptions() != null) {
-        // TODO: implement
-        // For now, assume line is unmatchable.
-        continue;
-      }
-      if (addLine) {
-        ExprAclLine line =
-            ExprAclLine.builder()
-                .setAction(action)
-                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
-                .setName(term.getName())
-                .build();
-        lines.add(line);
-      }
-    }
+
+    List<ExprAclLine> lines =
+        terms.stream()
+            .flatMap(term -> convertFwTermToExprAclLines(aclName, term, aclType).stream())
+            .collect(ImmutableList.toImmutableList());
+
     return IpAccessList.builder()
         .setName(aclName)
         .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
         .setSourceName(aclName)
-        .setSourceType(JuniperStructureType.FIREWALL_FILTER.getDescription())
+        .setSourceType(aclType.getDescription())
         .build();
   }
 
+  private List<ExprAclLine> convertFwTermToExprAclLines(
+      String aclName, FwTerm term, JuniperStructureType aclType) {
+    LineAction action = getLineAction(aclName, term);
+    List<ExprAclLine> lines = new ArrayList<>();
+    if (action == null) {
+      return lines;
+    }
+
+    // We do not support ip options for now. Simply return an empty list assuming this term is
+    // unmatchable
+    if (term.getFromIpOptions() != null) {
+      assert term.getFromHostProtocols().isEmpty()
+          && term.getFromHostServices().isEmpty()
+          && term.getFromApplicationSetMembers().isEmpty();
+      // TODO: implement
+      // For now, assume line is unmatchable.
+      return lines;
+    }
+
+    List<AclLineMatchExpr> fwFromAndApplicationConjuncts = new ArrayList<>();
+    if (!term.getFroms().isEmpty()) {
+      fwFromAndApplicationConjuncts.add(toAclLineMatchExpr(term.getFroms(), null));
+    }
+
+    if (!term.getFromApplicationSetMembers().isEmpty()) {
+      fwFromAndApplicationConjuncts.add(
+          or(
+              term.getFromApplicationSetMembers().stream()
+                  .map(from -> from.toAclLineMatchExpr(this, _w))
+                  .collect(ImmutableList.toImmutableList())));
+    }
+
+    // TODO: FwFromHostProtocol should be converted into AclLineMatchExpr
+    for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+      from.applyTo(lines, _w);
+    }
+    // TODO: FwFromHostService should be converted into AclLineMatchExpr
+    for (FwFromHostService from : term.getFromHostServices()) {
+      from.applyTo(lines, _w);
+    }
+
+    if (!(term.getFromHostProtocols().isEmpty() && term.getFromHostServices().isEmpty())) {
+      assert term.getFroms().isEmpty() && term.getFromApplicationSetMembers().isEmpty();
+      return lines;
+    }
+
+    lines.add(
+        ExprAclLine.builder()
+            .setAction(action)
+            .setMatchCondition(and(fwFromAndApplicationConjuncts))
+            .setName(term.getName())
+            .setTraceElement(matchingAbstractTerm(aclType, _filename, aclName, term.getName()))
+            .build());
+    return lines;
+  }
+
+  @Nullable
+  private LineAction getLineAction(String aclName, FwTerm term) {
+    if (term.getThens().contains(FwThenAccept.INSTANCE)) {
+      return LineAction.PERMIT;
+    }
+
+    if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
+      return LineAction.DENY;
+    }
+
+    if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
+      // TODO: throw error if any transformation is being done
+      return null;
+    }
+
+    if (term.getThens().contains(FwThenNop.INSTANCE)) {
+      // we assume for now that any 'nop' operations imply acceptance
+      return LineAction.PERMIT;
+    }
+
+    if (term.getThens().stream()
+        .map(Object::getClass)
+        .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
+      // Should be handled by packet policy, not applicable to ACLs
+      return null;
+    }
+
+    _w.redFlag(
+        "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
+    return LineAction.DENY;
+  }
+
   /** Merge the list of lines with the specified conjunct match expression. */
-  private static List<AclLine> mergeIpAccessListLines(
+  @VisibleForTesting
+  static List<AclLine> mergeIpAccessListLines(
       List<ExprAclLine> lines, @Nullable AclLineMatchExpr conjunctMatchExpr) {
     if (conjunctMatchExpr == null) {
       return ImmutableList.copyOf(lines);
-    } else {
-      return lines.stream()
-          .map(
-              l ->
-                  new ExprAclLine(
-                      l.getAction(),
-                      new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
-                      l.getName()))
-          .collect(ImmutableList.toImmutableList());
     }
+
+    return lines.stream()
+        .map(
+            l ->
+                new ExprAclLine(
+                    l.getAction(),
+                    new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
+                    l.getName(),
+                    l.getTraceElement()))
+        .collect(ImmutableList.toImmutableList());
   }
 
   /** Convert a firewallFilter into an equivalent ACL. */
-  IpAccessList toIpAccessList(FirewallFilter f) throws VendorConversionException {
+  @VisibleForTesting
+  IpAccessList filterToIpAccessList(FirewallFilter f) throws VendorConversionException {
     String name = f.getName();
-    AclLineMatchExpr matchSrcInterface = null;
 
     if (f instanceof ConcreteFirewallFilter) {
       ConcreteFirewallFilter filter = (ConcreteFirewallFilter) f;
-      /*
-       * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
-       * need to make a match condition for that
-       */
-      String zoneName = filter.getFromZone().orElse(null);
-      if (zoneName != null) {
-        matchSrcInterface =
-            new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
-      }
+      assert !filter.getFromZone().isPresent(); // not a security policy
 
       /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
-      return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
+      return fwTermsToIpAccessList(
+          name, filter.getTerms().values(), null, JuniperStructureType.FIREWALL_FILTER);
     } else {
       assert f instanceof CompositeFirewallFilter;
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
@@ -2229,10 +2344,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (FirewallFilter inner : filter.getInner()) {
         String filterName = inner.getName();
         lines.add(
-            new AclAclLine(String.format("Match firewall filter %s", filterName), filterName));
+            new AclAclLine(filterName, filterName, matchingFirewallFilter(_filename, filterName)));
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }
+  }
+
+  /** Convert a security policy into an equivalent ACL. */
+  @VisibleForTesting
+  IpAccessList securityPolicyToIpAccessList(ConcreteFirewallFilter filter)
+      throws VendorConversionException {
+    /*
+     * From zone is present if this is not a global security policy and if the from-zone is not junos-host.
+     */
+    AclLineMatchExpr matchSrcInterface =
+        filter
+            .getFromZone()
+            .map(
+                zoneName ->
+                    new MatchSrcInterface(
+                        _masterLogicalSystem.getZones().get(zoneName).getInterfaces()))
+            .orElse(null);
+
+    /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
+    return fwTermsToIpAccessList(
+        filter.getName(),
+        filter.getTerms().values(),
+        matchSrcInterface,
+        JuniperStructureType.SECURITY_POLICY);
   }
 
   @Nullable
@@ -2472,29 +2611,40 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return new PacketPolicy(filter.getName(), concatenatedStatememnts, new Return(Drop.instance()));
   }
 
+  private AclLineMatchExpr toAclLineMatchExpr(
+      Collection<FwFrom> fwFroms, TraceElement traceElement) {
+    List<AclLineMatchExpr> conjuncts =
+        fwFroms.stream()
+            // EnumMap is sorted, which gives us deterministic ordering of the And conjuncts
+            .collect(
+                groupingBy(FwFrom::getField, () -> new EnumMap<>(Field.class), Collectors.toList()))
+            .values()
+            .stream()
+            .map(
+                fwFromDisjuncts ->
+                    or(
+                        fwFromDisjuncts.stream()
+                            .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
+                            .collect(ImmutableList.toImmutableList())))
+            .collect(ImmutableList.toImmutableList());
+    return new AndMatchExpr(conjuncts, traceElement);
+  }
+
   private PacketPolicy toPacketPolicy(ConcreteFirewallFilter filter) {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> builder =
         ImmutableList.builder();
     for (Entry<String, FwTerm> e : filter.getTerms().entrySet()) {
       FwTerm term = e.getValue();
 
-      /*
-       * Convert "from" statements. Currently, the only supported "from"s are the ones matching on
-       * headerspace, and they are ANDed together, so we collapse them into one big
-       * AclMatch expression.
-       */
-      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
-      for (FwFrom from : term.getFroms()) {
-        from.applyTo(matchCondition, this, _w, _c);
-      }
+      AclLineMatchExpr matchFwFroms =
+          toAclLineMatchExpr(
+              term.getFroms(),
+              TraceElement.of(String.format("Firewall filter term %s", term.getName())));
 
       // A term will become an If statement. If (matchCondition) -> execute "then" statements
       builder.add(
           new org.batfish.datamodel.packet_policy.If(
-              new PacketMatchExpr(
-                  new MatchHeaderSpace(
-                      matchCondition.build(),
-                      String.format("Firewall filter term %s", term.getName()))),
+              new PacketMatchExpr(matchFwFroms),
               TermFwThenToPacketPolicyStatement.convert(term, Configuration.DEFAULT_VRF_NAME)));
     }
 
@@ -2750,6 +2900,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
     _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
+    _masterLogicalSystem.getSecurityPolicies().putAll(ls.getSecurityPolicies());
     _masterLogicalSystem.getAddressBooks().putAll(ls.getAddressBooks());
     _masterLogicalSystem.getIkeGateways().clear();
     _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
@@ -2879,8 +3030,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
     preprocessFilters();
-
     convertFirewallFiltersToIpAccessLists();
+
+    // Convert security policies.
+    convertSecurityPoliciesToIpAccessLists();
 
     // convert firewall filters implementing packet policy to PacketPolicy objects
     for (Entry<String, FirewallFilter> e : _masterLogicalSystem.getFirewallFilters().entrySet()) {
@@ -3213,6 +3366,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.INTERFACE_INCOMING_FILTER_LIST,
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
         JuniperStructureUsage.INTERFACE_OUTGOING_FILTER_LIST);
+    markConcreteStructure(JuniperStructureType.FIREWALL_FILTER_TERM);
     markConcreteStructure(
         JuniperStructureType.INTERFACE,
         JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE,
@@ -3276,6 +3430,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.ROUTING_INSTANCE,
         JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE);
 
+    markConcreteStructure(JuniperStructureType.SECURITY_POLICY);
+    markConcreteStructure(JuniperStructureType.SECURITY_POLICY_TERM);
+
     warnEmptyPrefixLists();
     warnIllegalNamedCommunitiesUsedForSet();
 
@@ -3292,8 +3449,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (filter.getFamily() != Family.INET) {
         continue;
       }
-      IpAccessList list = toIpAccessList(filter);
+      IpAccessList list = filterToIpAccessList(filter);
       _c.getIpAccessLists().put(name, list);
+    }
+  }
+
+  private void convertSecurityPoliciesToIpAccessLists() {
+    for (ConcreteFirewallFilter filter : _masterLogicalSystem.getSecurityPolicies().values()) {
+      // TODO: support other filter families
+      if (filter.getFamily() != Family.INET) {
+        continue;
+      }
+      IpAccessList acl = securityPolicyToIpAccessList(filter);
+      _c.getIpAccessLists().put(acl.getName(), acl);
     }
   }
 
@@ -3668,41 +3836,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  @Nullable
-  private Ip getOspfRouterId(RoutingInstance routingInstance) {
+  /**
+   * Figure out the router ID for a given {@link RoutingInstance}.
+   *
+   * <p>Returns either the explicitly set router id, an inferred one, or a {@link Ip#ZERO}
+   *
+   * <p>For logic, see <a
+   * href="https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/router-id-edit-routing-options.html">Juniper
+   * router id page</a>
+   */
+  @Nonnull
+  @VisibleForTesting
+  static Ip getRouterId(RoutingInstance routingInstance) {
     Ip routerId = routingInstance.getRouterId();
-    if (routerId == null) {
-      Map<String, Interface> interfacesToCheck;
-      Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
-      Map<String, Interface> loopbackInterfaces =
-          allInterfaces.entrySet().stream()
-              .filter(
-                  e ->
-                      e.getKey().toLowerCase().startsWith("lo")
-                          && e.getValue().getActive()
-                          && e.getValue().getPrimaryAddress() != null)
-              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-      interfacesToCheck = loopbackInterfaces.isEmpty() ? allInterfaces : loopbackInterfaces;
-
-      Ip lowesetIp = Ip.MAX;
-      for (Interface iface : interfacesToCheck.values()) {
-        if (!iface.getActive()) {
-          continue;
-        }
-        for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
-          Ip ip = address.getIp();
-          if (lowesetIp.asLong() > ip.asLong()) {
-            lowesetIp = ip;
-          }
-        }
-      }
-      if (lowesetIp == Ip.MAX) {
-        _w.redFlag("No candidates for OSPF router-id");
-        return null;
-      }
-      routerId = lowesetIp;
+    if (routerId != null) {
+      return routerId;
     }
-    return routerId;
+
+    Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
+    Map<String, Interface> loopbackInterfaces =
+        allInterfaces.entrySet().stream()
+            .filter(e -> e.getKey().toLowerCase().startsWith("lo"))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    Map<String, Interface> routerIdCandidates =
+        loopbackInterfaces.isEmpty() ? allInterfaces : loopbackInterfaces;
+
+    return routerIdCandidates.values().stream()
+        .filter(Interface::getActive)
+        .map(Interface::getPrimaryAddress)
+        .filter(Objects::nonNull)
+        .map(ConcreteInterfaceAddress::getIp)
+        .min(Comparator.naturalOrder())
+        .orElse(Ip.ZERO);
   }
 
   public @Nonnull Map<String, LogicalSystem> getLogicalSystems() {

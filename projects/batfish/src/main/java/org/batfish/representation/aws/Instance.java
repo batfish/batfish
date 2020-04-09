@@ -2,39 +2,44 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.immutableEntry;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
+import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
+import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 
 /** Representation for an EC2 instance */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class Instance implements AwsVpcEntity, Serializable {
+public final class Instance implements AwsVpcEntity, Serializable {
 
   /** Represents the status of the instance */
   public enum Status {
@@ -145,40 +150,11 @@ final class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  @ParametersAreNonnullByDefault
-  private static class Tag {
-
-    @Nonnull private final String _key;
-
-    @Nonnull private final String _value;
-
-    @JsonCreator
-    private static Tag create(
-        @Nullable @JsonProperty("Key") String key, @Nullable @JsonProperty("Value") String value) {
-      checkArgument(key != null, "Tag key is null");
-      checkArgument(value != null, "Tag value is null");
-      return new Tag(key, value);
-    }
-
-    private Tag(String key, String value) {
-      _key = key;
-      _value = value;
-    }
-
-    @Nonnull
-    public String getKey() {
-      return _key;
-    }
-
-    @Nonnull
-    public String getValue() {
-      return _value;
-    }
-  }
-
   @Nonnull private final String _instanceId;
 
   @Nonnull private final List<String> _networkInterfaces;
+
+  @Nullable private final Ip _primaryPrivateIpAddress;
 
   @Nonnull private final List<String> _securityGroups;
 
@@ -198,6 +174,7 @@ final class Instance implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_SECURITY_GROUPS) List<SecurityGroupId> securityGroups,
       @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACES)
           List<NetworkInterfaceId> networkInterfaces,
+      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
       @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_STATE) State state) {
 
@@ -211,6 +188,8 @@ final class Instance implements AwsVpcEntity, Serializable {
     checkNonNull(networkInterfaces, "Network interfaces", "Instance");
     checkNonNull(state, "State", "Instance");
 
+    // we don't know if Placement can be null. assuming for now that it can be
+
     return new Instance(
         instanceId,
         vpcId,
@@ -221,6 +200,7 @@ final class Instance implements AwsVpcEntity, Serializable {
         networkInterfaces.stream()
             .map(NetworkInterfaceId::getId)
             .collect(ImmutableList.toImmutableList()),
+        privateIpAddress,
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)),
         state.getName());
@@ -229,12 +209,13 @@ final class Instance implements AwsVpcEntity, Serializable {
     // interface
   }
 
-  Instance(
+  public Instance(
       String instanceId,
       @Nullable String vpcId,
       @Nullable String subnetId,
       List<String> securityGroups,
       List<String> networkInterfaces,
+      @Nullable Ip primaryPrivateIpAddress,
       Map<String, String> tags,
       Status status) {
     _instanceId = instanceId;
@@ -242,6 +223,7 @@ final class Instance implements AwsVpcEntity, Serializable {
     _subnetId = subnetId;
     _securityGroups = securityGroups;
     _networkInterfaces = networkInterfaces;
+    _primaryPrivateIpAddress = primaryPrivateIpAddress;
     _tags = tags;
     _status = status;
   }
@@ -256,13 +238,13 @@ final class Instance implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public String getInstanceId() {
-    return _instanceId;
-  }
-
-  @Nonnull
   public List<String> getNetworkInterfaces() {
     return _networkInterfaces;
+  }
+
+  @Nullable
+  public Ip getPrimaryPrivateIpAddress() {
+    return _primaryPrivateIpAddress;
   }
 
   @Nonnull
@@ -280,6 +262,11 @@ final class Instance implements AwsVpcEntity, Serializable {
     return _subnetId;
   }
 
+  @Nonnull
+  public Map<String, String> getTags() {
+    return _tags;
+  }
+
   @Nullable
   public String getVpcId() {
     return _vpcId;
@@ -287,8 +274,13 @@ final class Instance implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    String name = _tags.getOrDefault("Name", _instanceId);
-    Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(
+            instanceHostname(_instanceId), "aws", _tags, DeviceModel.AWS_EC2_INSTANCE);
+    cfgNode.setDeviceType(DeviceType.HOST);
+    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     for (String interfaceId : _networkInterfaces) {
 
@@ -300,78 +292,43 @@ final class Instance implements AwsVpcEntity, Serializable {
                 interfaceId, _instanceId));
         continue;
       }
-
-      ImmutableSet.Builder<ConcreteInterfaceAddress> ifaceAddressesBuilder =
-          new ImmutableSet.Builder<>();
-
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
-      Prefix ifaceSubnet = subnet.getCidrBlock();
-      Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
-      StaticRoute defaultRoute =
-          StaticRoute.builder()
-              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-              .setNextHopIp(defaultGatewayAddress)
-              .setNetwork(Prefix.ZERO)
-              .build();
-      cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
-      for (PrivateIpAddress privateIp : netInterface.getPrivateIpAddresses()) {
-        if (!ifaceSubnet.containsIp(privateIp.getPrivateIp())) {
-          warnings.pedantic(
-              String.format(
-                  "Instance subnet \"%s\" does not contain private ip: \"%s\"",
-                  ifaceSubnet, privateIp));
-          continue;
-        }
-
-        if (privateIp.getPrivateIp().equals(ifaceSubnet.getEndIp())) {
-          warnings.pedantic(
-              String.format(
-                  "Expected end address \"%s\" to be used by generated subnet node", privateIp));
-          continue;
-        }
-
-        ConcreteInterfaceAddress address =
-            ConcreteInterfaceAddress.create(
-                privateIp.getPrivateIp(), ifaceSubnet.getPrefixLength());
-        ifaceAddressesBuilder.add(address);
-      }
-      Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
-      ConcreteInterfaceAddress primaryAddress =
-          ifaceAddresses.stream()
-              .filter(
-                  addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
-              .findFirst()
-              .orElseGet(
-                  () -> {
-                    warnings.redFlag(
-                        String.format(
-                            "Primary address not found for interface '%s'. Using lowest address as primary",
-                            netInterface.getId()));
-                    // get() is safe here: ifaceAddresses cannot be empty
-                    return ifaceAddresses.stream().min(Comparator.naturalOrder()).get();
-                  });
-
-      Interface iface =
-          Utils.newInterface(interfaceId, cfgNode, primaryAddress, netInterface.getDescription());
-      iface.setAllAddresses(ifaceAddresses);
-
-      Utils.addLayer1Edge(
-          awsConfiguration,
-          cfgNode.getHostname(),
-          iface.getName(),
-          Subnet.nodeName(subnet.getId()),
-          Subnet.instancesInterfaceName(subnet.getId()));
-
-      cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
-      cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
-      cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+      addNodeToSubnet(cfgNode, netInterface, subnet, awsConfiguration, warnings);
     }
+
+    addPublicIpsRefBook(cfgNode, region);
 
     Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
+    // create LocationInfo for each link location on the instance.
+    cfgNode.setLocationInfo(
+        cfgNode.getAllInterfaces().values().stream()
+            .flatMap(
+                iface ->
+                    Stream.of(
+                        immutableEntry(
+                            interfaceLocation(iface), instanceInterfaceLocationInfo(iface)),
+                        immutableEntry(
+                            interfaceLinkLocation(iface), INSTANCE_INTERFACE_LINK_LOCATION_INFO)))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
+
     return cfgNode;
+  }
+
+  /** Adds a generated references book for public Ips if the instance has any such Ips */
+  @VisibleForTesting
+  void addPublicIpsRefBook(Configuration cfgNode, Region region) {
+    createPublicIpsRefBook(
+        _networkInterfaces.stream()
+            .map(id -> region.getNetworkInterfaces().get(id))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList()),
+        cfgNode);
+  }
+
+  static String instanceHostname(String instanceId) {
+    return instanceId;
   }
 
   @Override
@@ -385,6 +342,7 @@ final class Instance implements AwsVpcEntity, Serializable {
     Instance instance = (Instance) o;
     return Objects.equals(_instanceId, instance._instanceId)
         && Objects.equals(_networkInterfaces, instance._networkInterfaces)
+        && Objects.equals(_primaryPrivateIpAddress, instance._primaryPrivateIpAddress)
         && Objects.equals(_securityGroups, instance._securityGroups)
         && _status == instance._status
         && Objects.equals(_subnetId, instance._subnetId)
@@ -397,6 +355,7 @@ final class Instance implements AwsVpcEntity, Serializable {
     return Objects.hash(
         _instanceId,
         _networkInterfaces,
+        _primaryPrivateIpAddress,
         _securityGroups,
         _status.ordinal(),
         _subnetId,
@@ -407,6 +366,7 @@ final class Instance implements AwsVpcEntity, Serializable {
   static final class InstanceBuilder {
     private String _instanceId;
     private List<String> _networkInterfaces;
+    private Ip _primaryPrivateIpAddress;
     private List<String> _securityGroups;
     private Status _status;
     private String _subnetId;
@@ -416,37 +376,42 @@ final class Instance implements AwsVpcEntity, Serializable {
     private InstanceBuilder() {}
 
     public InstanceBuilder setInstanceId(String instanceId) {
-      this._instanceId = instanceId;
+      _instanceId = instanceId;
       return this;
     }
 
     public InstanceBuilder setNetworkInterfaces(List<String> networkInterfaces) {
-      this._networkInterfaces = networkInterfaces;
+      _networkInterfaces = networkInterfaces;
+      return this;
+    }
+
+    public InstanceBuilder setPrimaryPrivateIpAddress(Ip primaryPrivateIpAddress) {
+      _primaryPrivateIpAddress = primaryPrivateIpAddress;
       return this;
     }
 
     public InstanceBuilder setSecurityGroups(List<String> securityGroups) {
-      this._securityGroups = securityGroups;
+      _securityGroups = securityGroups;
       return this;
     }
 
     public InstanceBuilder setStatus(Status status) {
-      this._status = status;
+      _status = status;
       return this;
     }
 
     public InstanceBuilder setSubnetId(String subnetId) {
-      this._subnetId = subnetId;
+      _subnetId = subnetId;
       return this;
     }
 
     public InstanceBuilder setTags(Map<String, String> tags) {
-      this._tags = tags;
+      _tags = tags;
       return this;
     }
 
     public InstanceBuilder setVpcId(String vpcId) {
-      this._vpcId = vpcId;
+      _vpcId = vpcId;
       return this;
     }
 
@@ -458,6 +423,7 @@ final class Instance implements AwsVpcEntity, Serializable {
           _subnetId,
           firstNonNull(_securityGroups, new LinkedList<>()),
           firstNonNull(_networkInterfaces, new LinkedList<>()),
+          _primaryPrivateIpAddress,
           firstNonNull(_tags, new HashMap<>()),
           firstNonNull(_status, Status.RUNNING));
     }

@@ -3,6 +3,7 @@ package org.batfish.common.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -154,6 +155,41 @@ public class HeaderSpaceToBDDTest {
     BDD bdd = _toBDD.toBDD(headerSpace);
     BDD protoBDD = _pkt.getIpProtocol().value(proto1).or(_pkt.getIpProtocol().value(proto2));
     assertThat(bdd, equalTo(protoBDD));
+  }
+
+  @Test
+  public void test_packetLengths() {
+    SubRange range1 = new SubRange(20, 30);
+    SubRange range2 = new SubRange(100, 200);
+    HeaderSpace headerSpace =
+        HeaderSpace.builder().setPacketLengths(ImmutableList.of(range1, range2)).build();
+    BDDPacketLength packetLength = _pkt.getPacketLength();
+    BDD expected =
+        packetLength
+            .range(range1.getStart(), range1.getEnd())
+            .or(packetLength.range(range2.getStart(), range2.getEnd()));
+    assertEquals(expected, _toBDD.toBDD(headerSpace));
+  }
+
+  @Test
+  public void test_notPacketLengths() {
+    SubRange positive = new SubRange(100, 200);
+    SubRange negative = new SubRange(111, 189);
+    HeaderSpace headerSpace =
+        HeaderSpace.builder()
+            .setPacketLengths(ImmutableList.of(positive))
+            .setNotPacketLengths(ImmutableList.of(negative))
+            .build();
+
+    SubRange range1 = new SubRange(100, 110);
+    SubRange range2 = new SubRange(190, 200);
+
+    BDDPacketLength packetLength = _pkt.getPacketLength();
+    BDD expected =
+        packetLength
+            .range(range1.getStart(), range1.getEnd())
+            .or(packetLength.range(range2.getStart(), range2.getEnd()));
+    assertEquals(expected, _toBDD.toBDD(headerSpace));
   }
 
   @Test

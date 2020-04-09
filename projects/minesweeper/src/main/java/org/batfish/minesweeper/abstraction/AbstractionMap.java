@@ -11,8 +11,8 @@ public class AbstractionMap {
   private Map<String, Integer> _groupMap;
 
   public AbstractionMap(Map<Integer, Set<String>> choiceMap, Map<String, Integer> groupMap) {
-    this._abstractChoices = choiceMap;
-    this._groupMap = groupMap;
+    _abstractChoices = choiceMap;
+    _groupMap = groupMap;
   }
 
   public Set<String> getAbstractRepresentatives(String router) {

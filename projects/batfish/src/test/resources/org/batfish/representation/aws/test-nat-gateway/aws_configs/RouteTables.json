@@ -1,0 +1,94 @@
+{
+ "RouteTables": [
+  {
+   "Associations": [
+    {
+     "Main": false,
+     "RouteTableAssociationId": "rtbassoc-0bd58705bc267f329",
+     "RouteTableId": "rtb-0ddf14681733ed0b7",
+     "SubnetId": "subnet-0428892a357fa1f94"
+    }
+   ],
+   "OwnerId": "554773406868",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-0ddf14681733ed0b7",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.1.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    },
+    {
+     "DestinationCidrBlock": "0.0.0.0/0",
+     "GatewayId": "igw-071753b9c23d8a9b2",
+     "Origin": "CreateRoute",
+     "State": "active"
+    }
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "vpc_a_public"
+    }
+   ],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  },
+  {
+   "Associations": [
+    {
+     "Main": false,
+     "RouteTableAssociationId": "rtbassoc-0cc198a3e1c315427",
+     "RouteTableId": "rtb-02fe228b42de92a7c",
+     "SubnetId": "subnet-06f469bcee42e408e"
+    }
+   ],
+   "OwnerId": "554773406868",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-02fe228b42de92a7c",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.1.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    },
+    {
+     "DestinationCidrBlock": "0.0.0.0/0",
+     "NatGatewayId": "nat-07ab4846da51f4612",
+     "Origin": "CreateRoute",
+     "State": "active"
+    }
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "vpc_a_public"
+    }
+   ],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  },
+  {
+   "Associations": [
+    {
+     "Main": true,
+     "RouteTableAssociationId": "rtbassoc-04c00c845f3d518c4",
+     "RouteTableId": "rtb-0e169c4a1e0b27b55"
+    }
+   ],
+   "OwnerId": "554773406868",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-0e169c4a1e0b27b55",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.1.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    }
+   ],
+   "Tags": [],
+   "VpcId": "vpc-0008a7b45e3ddf1dd"
+  }
+ ]
+}

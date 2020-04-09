@@ -648,6 +648,7 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_rbv_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_multicast_groupContext;
@@ -706,6 +707,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.If_member_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
@@ -740,8 +742,10 @@ import org.batfish.grammar.cisco.CiscoParser.Iftunnel_protectionContext;
 import org.batfish.grammar.cisco.CiscoParser.Iftunnel_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipv4Context;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priorityContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priority_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
@@ -922,6 +926,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_area_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
@@ -3191,6 +3196,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitEos_vxif_arp(Eos_vxif_arpContext ctx) {
+    _eosVxlan.setArpReplyRelay(true);
+  }
+
+  @Override
   public void exitEos_vxif_description(Eos_vxif_descriptionContext ctx) {
     _eosVxlan.setDescription(getDescription(ctx.description_line()));
   }
@@ -3470,6 +3480,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       name = ctx.num.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
+    } else if (ctx.name_cl != null) {
+      name = ctx.name_cl.getText();
     } else {
       throw new BatfishException("Invalid standard community-list name");
     }
@@ -6646,6 +6658,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final int NO_TRUST_SECURITY_LEVEL = 0;
 
   @Override
+  public void exitIf_member_interface(If_member_interfaceContext ctx) {
+    if (_currentInterfaces.size() != 1) {
+      warn(ctx, "member-interfaces can only be configured in single-interface context");
+      return;
+    }
+    String member = toInterfaceName(ctx.name);
+    _configuration.referenceStructure(
+        INTERFACE,
+        member,
+        CiscoStructureUsage.INTERFACE_MEMBER_INTERFACE,
+        ctx.name.getStart().getLine());
+    _currentInterfaces.get(0).getMemberInterfaces().add(member);
+  }
+
+  @Override
   public void exitIf_nameif(If_nameifContext ctx) {
     String alias = ctx.name.getText();
     Map<String, Interface> ifaces = _configuration.getInterfaces();
@@ -7030,6 +7057,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIfvrrp_ip(Ifvrrp_ipContext ctx) {
     Ip ip = toIp(ctx.ip);
+    if (ctx.SECONDARY() != null) {
+      todo(ctx); // Batfish VI model does not yet handle secondary VRRP addresses.
+      return;
+    }
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setVirtualAddress(ip);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_ipv4(Ifvrrp_ipv4Context ctx) {
+    Ip ip = toIp(ctx.ip);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
       VrrpGroup vrrpGroup =
@@ -7058,6 +7104,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setPriority(priority);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_priority_level(Ifvrrp_priority_levelContext ctx) {
     int priority = toInteger(ctx.priority);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
@@ -7838,7 +7899,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    if (ctx.HEARTBEAT() == null) {
+      _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
+    } else {
+      _configuration.getEosMlagConfiguration().setPeerAddressHeartbeat(toIp(ctx.ip));
+    }
   }
 
   @Override
@@ -8849,7 +8914,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRo_area_range(CiscoParser.Ro_area_rangeContext ctx) {
+  public void exitRo_area_range(Ro_area_rangeContext ctx) {
     long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
     Prefix prefix;
     if (ctx.area_prefix != null) {

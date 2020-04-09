@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
@@ -25,7 +24,7 @@ public class WarningTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Warning w = new Warning("A", "B");
     assertThat(BatfishObjectMapper.clone(w, Warning.class), equalTo(w));
 

@@ -18,6 +18,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -271,7 +272,8 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws", DeviceModel.AWS_RDS_INSTANCE);
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());

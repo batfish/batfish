@@ -38,12 +38,14 @@ router ospf a_filter_list
 !!! All nssa options can be combined in any order
 router ospf a_nssa
   area 1 nssa
+router ospf a_nssa_dio
+  area 1 nssa default-information-originate
 router ospf a_nssa_no_r
   area 1 nssa no-redistribution
 router ospf a_nssa_no_s
   area 1 nssa no-summary
 router ospf a_nssa_rm
-  area 1 nssa route-map rm1
+  area 1 nssa default-information-originate route-map rm1
 
 !!! area range
 !!! cost and not-advertise can appear in any order
@@ -100,6 +102,9 @@ router ospf dio_route_map
 
 router ospf dio_always_route_map
   default-information originate always route-map rm_e2
+
+router ospf distance
+  distance 243
 
 !!! log-adjacency-changes
 router ospf lac
@@ -239,6 +244,8 @@ interface Ethernet1/1
   ip ospf dead-interval 10
   ! 1-65535 (default is 10) (s)
   ip ospf hello-interval 20
+  ! 1-255 (default is 1)
+  ip ospf priority 10
   ! area ID can be uint32 or IP, pi_d used to test passive-interface default
   ip router ospf pi_d area 0
 

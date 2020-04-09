@@ -127,39 +127,23 @@ ntp_peer
 ntp_server
 :
    SERVER
+   (VRF vrf = variable)?
+   hostname = variable
    (
-      VRF vrf = variable
-   )? hostname = variable
-   (
-      (
-         KEY key = DEC
-      )
-      |
-      (
-         MAXPOLL DEC
-      )
-      |
-      (
-         MINPOLL DEC
-      )
+      IBURST
+      | KEY key = DEC
+      | MAXPOLL DEC
+      | MINPOLL DEC
       | prefer = PREFER
-      |
-      (
-         SOURCE
-         (
-            src_interface = interface_name_unstructured
-            | src_interface_alias = variable
-         )
-      )
-      |
-      (
-         USE_VRF vrf = variable
-      )
-      |
-      (
-         VERSION ver = DEC
-      )
-   )* NEWLINE
+      | SOURCE
+        (
+           src_interface = interface_name_unstructured
+           | src_interface_alias = variable
+        )
+      | USE_VRF vrf = variable
+      | VERSION ver = DEC
+   )*
+   NEWLINE
 ;
 
 ntp_source

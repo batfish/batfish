@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
@@ -34,6 +35,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
 /** Tests for {@link VxlanVniPropertiesAnswerer} */
@@ -193,6 +196,11 @@ public final class VxlanVniPropertiesAnswererTest {
                   .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
                   .build()));
       return MockDataPlane.builder().setConfigs(configs).setVniSettings(vnis).build();
+    }
+
+    @Override
+    public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot networkSnapshot) {
+      return ImmutableMap.of();
     }
   }
 }

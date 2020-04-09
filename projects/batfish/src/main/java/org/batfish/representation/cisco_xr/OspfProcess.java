@@ -92,8 +92,8 @@ public class OspfProcess implements Serializable {
   private Set<OspfWildcardNetwork> _wildcardNetworks;
 
   public long getDefaultMetric(RoutingProtocol protocol) {
-    if (this._defaultMetric != null) {
-      return this._defaultMetric;
+    if (_defaultMetric != null) {
+      return _defaultMetric;
     }
 
     // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html

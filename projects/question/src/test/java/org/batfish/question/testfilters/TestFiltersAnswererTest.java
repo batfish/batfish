@@ -1,16 +1,14 @@
 package org.batfish.question.testfilters;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.forAll;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
-import static org.hamcrest.Matchers.contains;
+import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -27,6 +25,7 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -36,12 +35,12 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Before;
@@ -150,16 +149,15 @@ public class TestFiltersAnswererTest {
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(acl.getName()), Schema.STRING),
                 hasColumn(
-                    TestFiltersAnswerer.COL_TRACE,
-                    hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 1)))),
-                    Schema.ACL_TRACE))));
+                    TestFiltersAnswerer.COL_TRACE, empty(), Schema.list(Schema.TRACE_TREE)))));
     /* Trace should be present for referenced acl with one event: not matching the referenced acl */
     assertThat(
         answer,
         hasRows(
             forAll(
                 hasColumn(COL_FILTER_NAME, equalTo(referencedAcl.getName()), Schema.STRING),
-                hasColumn(TestFiltersAnswerer.COL_TRACE, hasEvents(empty()), Schema.ACL_TRACE))));
+                hasColumn(
+                    TestFiltersAnswerer.COL_TRACE, empty(), Schema.list(Schema.TRACE_TREE)))));
   }
 
   @Test
@@ -218,14 +216,18 @@ public class TestFiltersAnswererTest {
             configs,
             MockSpecifierContext.builder()
                 .setConfigs(configs)
-                .setInterfaceOwnedIps(
+                .setLocationInfo(
                     ImmutableMap.of(
-                        "c1",
-                        ImmutableMap.of(
-                            "iface1",
+                        interfaceLocation(iface1),
+                        new LocationInfo(
+                            true,
                             iface1.getConcreteAddress().getIp().toIpSpace(),
-                            "iface2",
-                            iface2.getConcreteAddress().getIp().toIpSpace())))
+                            EmptyIpSpace.INSTANCE),
+                        interfaceLocation(iface2),
+                        new LocationInfo(
+                            true,
+                            iface2.getConcreteAddress().getIp().toIpSpace(),
+                            EmptyIpSpace.INSTANCE)))
                 .build());
 
     TestFiltersQuestion question = new TestFiltersQuestion(null, null, null, null);
@@ -279,35 +281,32 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testErrorForNoMatchingNodes() {
+  public void testErrorForNoMatchingFlows() {
     Configuration c1 = _cb.setHostname("c1").build();
+    _nf.aclBuilder().setName("acl1").setOwner(c1).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
     IBatfish batfish =
         new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
 
-    // Test that exception is thrown if no nodes match
-    TestFiltersQuestion question = new TestFiltersQuestion("fake_node", null, null, null);
-    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+    // if no filters are matched, no error -- just an empty table
+    {
+      TestFiltersQuestion question =
+          new TestFiltersQuestion(c1.getHostname(), "acl2", null, "nonExistentLocation");
+      TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
+      TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
+      assertThat(answer.getRows().getData(), empty());
+    }
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("No matching filters");
-    answerer.answer(batfish.getSnapshot());
-  }
+    // if filters are matched, but we can't find a flow, we get an error
+    {
+      // Test that exception is thrown if node is found, but no filters match
+      TestFiltersQuestion question =
+          new TestFiltersQuestion(c1.getHostname(), "acl1", null, "nonExistentLocation");
+      TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
 
-  @Test
-  public void testErrorForNoMatchingFilters() {
-    Configuration c1 = _cb.setHostname("c1").build();
-    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
-    IBatfish batfish =
-        new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
-
-    // Test that exception is thrown if node is found, but no filters match
-    TestFiltersQuestion question =
-        new TestFiltersQuestion(c1.getHostname(), "fake_filter", null, null);
-    TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("No matching filters");
-    answerer.answer(batfish.getSnapshot());
+      _thrown.expect(BatfishException.class);
+      _thrown.expectMessage("No valid flow found");
+      answerer.answer(batfish.getSnapshot());
+    }
   }
 }

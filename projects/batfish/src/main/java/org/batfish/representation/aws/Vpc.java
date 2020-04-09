@@ -1,13 +1,18 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -15,6 +20,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -67,11 +73,14 @@ final class Vpc implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Set<Prefix> _cidrBlockAssociations;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @Nonnull private final String _vpcId;
 
   @JsonCreator
   private static Vpc create(
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
+      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET)
           Set<CidrBlockAssociation> cidrBlockAssociations) {
     /*
@@ -83,12 +92,15 @@ final class Vpc implements AwsVpcEntity, Serializable {
         vpcId,
         cidrBlockAssociations.stream()
             .map(CidrBlockAssociation::getBlock)
-            .collect(ImmutableSet.toImmutableSet()));
+            .collect(ImmutableSet.toImmutableSet()),
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  Vpc(String vpcId, Set<Prefix> cidrBlockAssociations) {
+  Vpc(String vpcId, Set<Prefix> cidrBlockAssociations, Map<String, String> tags) {
     _vpcId = vpcId;
     _cidrBlockAssociations = cidrBlockAssociations;
+    _tags = tags;
   }
 
   @Nonnull
@@ -109,7 +121,8 @@ final class Vpc implements AwsVpcEntity, Serializable {
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
-    Configuration cfgNode = Utils.newAwsConfiguration(nodeName(_vpcId), "aws");
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(nodeName(_vpcId), "aws", _tags, DeviceModel.AWS_VPC);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
 
@@ -117,10 +130,17 @@ final class Vpc implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
-  /*
-   * Add null routes for all prefixes associated with the VPC, to ensure that traffic not headed to
-   * one of the subnets in the VPC is dropped on the floors. More specific prefixes that belong to
-   * subnets are added when subnets are processed.
+  /**
+   * The VPC installs a null route for all prefixes associated with the VPC.
+   *
+   * <ul>
+   *   <li>The route must exist, so the VPC can advertise the prefix.
+   *   <li>The null route must be forwarding, so the VPC can drop traffic to that prefix that does
+   *       not have a destination (e.g., associated subnet) even if there's an associated gateway
+   *       providing a default route.
+   *   <li>The route must have a large admin distance. That way a subnet that owns the entire VPC
+   *       will get the traffic, rather than ECMP.
+   * </ul>
    */
   void initializeVrf(Vrf vrf) {
     _cidrBlockAssociations.forEach(
@@ -128,7 +148,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
             vrf.getStaticRoutes()
                 .add(
                     StaticRoute.builder()
-                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                        .setAdministrativeCost(255)
                         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                         .setNetwork(cb)
                         .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
@@ -158,11 +178,12 @@ final class Vpc implements AwsVpcEntity, Serializable {
     }
     Vpc vpc = (Vpc) o;
     return Objects.equals(_cidrBlockAssociations, vpc._cidrBlockAssociations)
+        && Objects.equals(_tags, vpc._tags)
         && Objects.equals(_vpcId, vpc._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return com.google.common.base.Objects.hashCode(_cidrBlockAssociations, _vpcId);
+    return com.google.common.base.Objects.hashCode(_cidrBlockAssociations, _tags, _vpcId);
   }
 }

@@ -1,0 +1,20 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-security-level-deny-tracing
+!
+interface GigabitEthernet0/1
+  nameif out
+  security-level 50
+  ip address 3.0.0.2 255.255.255.0
+!
+interface GigabitEthernet0/2
+  nameif inSameLevel
+  security-level 50
+  ip address 3.0.1.1 255.255.255.0
+!
+interface GigabitEthernet0/3
+  nameif inLowUnfiltered
+  security-level 10
+  ip address 3.0.1.2 255.255.255.0
+

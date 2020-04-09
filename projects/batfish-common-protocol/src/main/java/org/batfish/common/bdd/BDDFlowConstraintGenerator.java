@@ -1,144 +1,213 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_LENGTH;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 
 /** This class generates common useful flow constraints as BDDs. */
 public final class BDDFlowConstraintGenerator {
-  /**
-   * Difference preferences of flow constraints: DEBUGGING: 1. ICMP 2. UDP 3. TCP APPLICATION : 1.
-   * TCP 2. UDP 3. ICMP
-   */
+  /** Allows a caller to express preferences on how packets should be retrieved. */
   public enum FlowPreference {
+    /** Prefers ICMP over UDP over TCP. */
     DEBUGGING,
+    /** Prefers TCP over UDP over ICMP. */
     APPLICATION,
+    /**
+     * Prefers TCP over UDP over ICMP. Not currently different from {@link #APPLICATION}, but may
+     * change.
+     */
     TESTFILTER
   }
 
-  private BDDPacket _bddPacket;
-  private BDD _icmpFlow;
-  private BDD _udpFlow;
-  private BDD _tcpFlow;
-  private List<BDD> _testFilterPrefBdds;
+  @VisibleForTesting static final Prefix PRIVATE_SUBNET_10 = Prefix.parse("10.0.0.0/8");
+  @VisibleForTesting static final Prefix PRIVATE_SUBNET_172 = Prefix.parse("172.16.0.0/12");
+  @VisibleForTesting static final Prefix PRIVATE_SUBNET_192 = Prefix.parse("192.168.0.0/16");
+
+  @VisibleForTesting static final Prefix RESERVED_DOCUMENTATION_192 = Prefix.parse("192.0.2.0/24");
+
+  @VisibleForTesting
+  static final Prefix RESERVED_DOCUMENTATION_198 = Prefix.parse("198.51.100.0/24");
+
+  @VisibleForTesting
+  static final Prefix RESERVED_DOCUMENTATION_203 = Prefix.parse("203.0.113.0/24");
+
+  private final BDDPacket _bddPacket;
+  private final BDDOps _bddOps;
+  private final List<BDD> _icmpConstraints;
+  private final List<BDD> _udpConstraints;
+  private final List<BDD> _tcpConstraints;
+  private final BDD _defaultPacketLength;
+  private final List<BDD> _ipConstraints;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").startActive()) {
       assert span != null; // avoid unused warning
       _bddPacket = pkt;
-      _icmpFlow = computeICMPConstraint();
-      _udpFlow = computeUDPConstraint();
-      _tcpFlow = computeTCPConstraint();
-      _testFilterPrefBdds = computeTestFilterPreference();
+      _bddOps = new BDDOps(pkt.getFactory());
+      _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);
+      _icmpConstraints = computeICMPConstraint();
+      _udpConstraints = computeUDPConstraints();
+      _tcpConstraints = computeTCPConstraints();
+      _ipConstraints = computeIpConstraints();
     }
   }
 
-  public BDD getUDPFlow() {
-    return _udpFlow;
+  private List<BDD> computeICMPConstraint() {
+    BDD icmp = _bddPacket.getIpProtocol().value(IpProtocol.ICMP);
+    BDDIcmpType type = _bddPacket.getIcmpType();
+    BDD codeZero = _bddPacket.getIcmpCode().value(0);
+    // Prefer ICMP Echo_Request, then anything with code 0, then anything ICMP/
+    return ImmutableList.of(
+        _bddOps.and(icmp, type.value(IcmpType.ECHO_REQUEST), codeZero),
+        _bddOps.and(icmp, codeZero),
+        icmp);
   }
 
-  public BDD getTCPFlow() {
-    return _tcpFlow;
+  private BDD emphemeralPort(BDDInteger portInteger) {
+    return portInteger.geq(NamedPort.EPHEMERAL_LOWEST.number());
   }
 
-  public BDD getICMPFlow() {
-    return _icmpFlow;
+  private List<BDD> tcpPortPreferences(BDD tcp, BDDInteger tcpPort) {
+    return ImmutableList.of(
+        _bddOps.and(tcp, tcpPort.value(NamedPort.HTTP.number())),
+        _bddOps.and(tcp, tcpPort.value(NamedPort.HTTPS.number())),
+        _bddOps.and(tcp, tcpPort.value(NamedPort.SSH.number())),
+        // at least not zero if possible
+        _bddOps.and(tcp, tcpPort.value(0).not()));
   }
 
-  // Get ICMP echo request packets
-  BDD computeICMPConstraint() {
-    return _bddPacket
-        .getIpProtocol()
-        .value(IpProtocol.ICMP)
-        .and(
-            _bddPacket
-                .getIcmpType()
-                .value(IcmpType.ECHO_REQUEST)
-                .and(_bddPacket.getIcmpCode().value(0)));
-  }
-
-  // Get TCP packets with names ports:
-  // 1. Considers both directions of a TCP flow.
-  // 2. Set src (dst, respectively) port to a ephemeral port, and dst (src, respectively) port to a
-  // named port
-  BDD computeTCPConstraint() {
+  // Get TCP packets with special named ports, trying to find cases where only one side is
+  // ephemeral.
+  private List<BDD> computeTCPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDD bdd1 =
-        _bddPacket
-            .getFactory()
-            .orAll(
-                Arrays.stream(NamedPort.values())
-                    .map(namedPort -> dstPort.value(namedPort.number()))
-                    .collect(Collectors.toList()));
-    bdd1 = bdd1.and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
-    BDD bdd2 = _bddPacket.swapSourceAndDestinationFields(bdd1);
     BDD tcp = _bddPacket.getIpProtocol().value(IpProtocol.TCP);
-    return tcp.and(bdd1.or(bdd2));
+
+    BDD srcPortEphemeral = emphemeralPort(srcPort);
+    BDD dstPortEphemeral = emphemeralPort(dstPort);
+
+    return ImmutableList.<BDD>builder()
+        // First, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
+        .add(_bddOps.and(tcp, srcPortEphemeral, dstPortEphemeral.not()))
+        .add(_bddOps.and(tcp, srcPortEphemeral.not(), dstPortEphemeral))
+        // Next, execute port preferences
+        .addAll(tcpPortPreferences(tcp, srcPort))
+        .addAll(tcpPortPreferences(tcp, dstPort))
+        // Anything TCP.
+        .add(tcp)
+        .build();
   }
 
-  // Get UDP packets for traceroute:
-  // 1. Considers both directions of a UDP flow.
-  // 2. Set dst (src, respectively) port to the range 33434-33534 (common ports used by traceroute),
-  // and src (dst, respectively) port to a ephemeral port
-  BDD computeUDPConstraint() {
-    BDDInteger dstPort = _bddPacket.getDstPort();
-    BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDD bdd1 = dstPort.range(33434, 33534).and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
-    BDD bdd2 = _bddPacket.swapSourceAndDestinationFields(bdd1);
-    return _bddPacket.getIpProtocol().value(IpProtocol.UDP).and(bdd1.or(bdd2));
+  private List<BDD> udpPortPreferences(BDD udp, BDDInteger tcpPort) {
+    return ImmutableList.of(
+        _bddOps.and(udp, tcpPort.value(NamedPort.DOMAIN.number())),
+        _bddOps.and(udp, tcpPort.value(NamedPort.SNMP.number())),
+        _bddOps.and(udp, tcpPort.value(NamedPort.SNMPTRAP.number())),
+        // at least not zero if possible
+        _bddOps.and(udp, tcpPort.value(0).not()));
   }
 
-  private List<BDD> computeTestFilterPreference() {
-    BDDInteger dstIp = _bddPacket.getDstIp();
+  // Get UDP packets with special named ports, trying to find cases where only one side is
+  // ephemeral.
+  private List<BDD> computeUDPConstraints() {
     BDDInteger dstPort = _bddPacket.getDstPort();
     BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDDIpProtocol ipProtocol = _bddPacket.getIpProtocol();
+    BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
 
-    BDD defaultDstIpBdd = dstIp.value(Ip.parse("8.8.8.8").asLong());
-    BDD tcpBdd = ipProtocol.value(IpProtocol.TCP);
-    BDD udpBdd = ipProtocol.value(IpProtocol.UDP);
-    BDD defaultSrcPortBdd = srcPort.value(NamedPort.EPHEMERAL_LOWEST.number());
-    BDD defaultDstPortBdd = dstPort.value(NamedPort.HTTP.number());
+    BDD srcPortEphemeral = emphemeralPort(srcPort);
+    BDD dstPortEphemeral = emphemeralPort(dstPort);
 
-    BDDOps bddOps = new BDDOps(_bddPacket.getFactory());
-    BDD one = _bddPacket.getFactory().one();
-    // generate all combinations in order to enforce the following logic: when a field in the input
-    // bdd contains the default value for that field, then use that value; otherwise use a value
-    // in BDD of the field.
-    Builder<BDD> builder = ImmutableList.builder();
-    for (BDD dstIpBdd : ImmutableList.of(defaultDstIpBdd, one)) {
-      for (BDD ipProtocolBdd : ImmutableList.of(tcpBdd, udpBdd)) {
-        for (BDD srcPortBdd : ImmutableList.of(defaultSrcPortBdd, one)) {
-          for (BDD dstPortBdd : ImmutableList.of(defaultDstPortBdd, one)) {
-            builder.add(bddOps.and(dstIpBdd, ipProtocolBdd, srcPortBdd, dstPortBdd));
-          }
-        }
-      }
-    }
-    builder.add(defaultDstIpBdd);
-    return builder.build();
+    return ImmutableList.<BDD>builder()
+        // Try for UDP traceroute.
+        .add(
+            _bddOps.and(
+                udp,
+                dstPort.range(33434, 33534).and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()))))
+        // Next, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
+        .add(_bddOps.and(udp, srcPortEphemeral, dstPortEphemeral.not()))
+        .add(_bddOps.and(udp, srcPortEphemeral.not(), dstPortEphemeral))
+        // Next, execute port preferences
+        .addAll(udpPortPreferences(udp, srcPort))
+        .addAll(udpPortPreferences(udp, dstPort))
+        // Anything UDP.
+        .add(udp)
+        .build();
+  }
+
+  @VisibleForTesting
+  static BDD isPrivateIp(IpSpaceToBDD ip) {
+    return BDDOps.orNull(
+        ip.toBDD(PRIVATE_SUBNET_10), ip.toBDD(PRIVATE_SUBNET_172), ip.toBDD(PRIVATE_SUBNET_192));
+  }
+
+  @VisibleForTesting
+  static BDD isDocumentationIp(IpSpaceToBDD ip) {
+    return BDDOps.orNull(
+        ip.toBDD(RESERVED_DOCUMENTATION_192),
+        ip.toBDD(RESERVED_DOCUMENTATION_198),
+        ip.toBDD(RESERVED_DOCUMENTATION_203));
+  }
+
+  private static List<BDD> ipPreferences(BDDInteger ipInteger) {
+    return ImmutableList.of(
+        // First, one of the special IPs.
+        ipInteger.value(Ip.parse("8.8.8.8").asLong()),
+        ipInteger.value(Ip.parse("1.1.1.1").asLong()),
+        // Next, at least don't start with 0.
+        ipInteger.geq(Ip.parse("1.0.0.0").asLong()),
+        // Next, try to be in class A.
+        ipInteger.leq(Ip.parse("126.255.255.254").asLong()));
+  }
+
+  private List<BDD> computeIpConstraints() {
+    BDD srcIpPrivate = isPrivateIp(_bddPacket.getSrcIpSpaceToBDD());
+    BDD dstIpPrivate = isPrivateIp(_bddPacket.getDstIpSpaceToBDD());
+
+    return ImmutableList.<BDD>builder()
+        // 0. Try to not use documentation IPs if that is possible.
+        .add(isDocumentationIp(_bddPacket.getSrcIpSpaceToBDD()).not())
+        .add(isDocumentationIp(_bddPacket.getDstIpSpaceToBDD()).not())
+        // First, try to nudge src and dst IP apart. E.g., if one is private the other should be
+        // public.
+        .add(_bddOps.and(srcIpPrivate, dstIpPrivate.not()))
+        .add(_bddOps.and(srcIpPrivate.not(), dstIpPrivate))
+        // Next, execute IP preferences
+        .addAll(ipPreferences(_bddPacket.getSrcIp()))
+        .addAll(ipPreferences(_bddPacket.getDstIp()))
+        .build();
   }
 
   public List<BDD> generateFlowPreference(FlowPreference preference) {
     switch (preference) {
       case DEBUGGING:
-        return ImmutableList.of(_icmpFlow, _udpFlow, _tcpFlow);
+        return ImmutableList.<BDD>builder()
+            .addAll(_icmpConstraints)
+            .addAll(_udpConstraints)
+            .addAll(_tcpConstraints)
+            .add(_defaultPacketLength)
+            .addAll(_ipConstraints)
+            .build();
       case APPLICATION:
-        return ImmutableList.of(_tcpFlow, _udpFlow, _icmpFlow);
       case TESTFILTER:
-        return _testFilterPrefBdds;
+        return ImmutableList.<BDD>builder()
+            .addAll(_tcpConstraints)
+            .addAll(_udpConstraints)
+            .addAll(_icmpConstraints)
+            .add(_defaultPacketLength)
+            .addAll(_ipConstraints)
+            .build();
       default:
         throw new BatfishException("Not supported flow preference");
     }

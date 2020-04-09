@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.junit.Rule;
@@ -18,7 +17,7 @@ public class AggregateTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     Aggregate a = new Aggregate("someAgg", AggregateType.REGION);
     a.setContents(ImmutableSet.of("id1", "id2"));
 
@@ -26,7 +25,7 @@ public class AggregateTest {
   }
 
   @Test
-  public void testEquals() throws IOException {
+  public void testEquals() {
     Aggregate emptyCloud = new Aggregate("cloud", AggregateType.CLOUD);
     Aggregate emptyCloudCloned = BatfishObjectMapper.clone(emptyCloud, Aggregate.class);
     Aggregate diffName = new Aggregate("cloud2", AggregateType.CLOUD);

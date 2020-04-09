@@ -14,9 +14,9 @@ public class EquivalenceClass {
 
   public EquivalenceClass(
       HeaderSpace headerSpace, Graph graph, @Nullable AbstractionMap abstraction) {
-    this._headerSpace = headerSpace;
-    this._graph = graph;
-    this._abstraction = abstraction;
+    _headerSpace = headerSpace;
+    _graph = graph;
+    _abstraction = abstraction;
   }
 
   public Graph getGraph() {

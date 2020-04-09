@@ -4,6 +4,7 @@ import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
@@ -17,6 +18,9 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSgSgLines;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -439,6 +443,15 @@ public final class PaloAltoConfigurationTest {
             SRC_INTERFACE_NAME,
             createIntraVsysCrossZoneFilters(),
             ImmutableMap.of()));
+
+    // Should have trace elements about zone traversal
+    assertThat(
+        generatedFilter.getLines(),
+        contains(
+            hasTraceElement(
+                zoneToZoneMatchTraceElement(FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName())),
+            hasTraceElement(
+                zoneToZoneRejectTraceElement(FROM_ZONE_NAME, TO_ZONE_NAME, vsys.getName()))));
   }
 
   @Test

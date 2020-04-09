@@ -26,6 +26,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetAsPath _setAsPath;
   private @Nullable RouteMapSetMetric _setMetric;
   private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
+  private @Nullable RouteMapSetCommListDelete _setCommListDelete;
   private @Nullable RouteMapSetCommunity _setCommunity;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
   private @Nullable RouteMapSetTag _setTag;
@@ -91,7 +92,13 @@ public final class RouteMapEntry implements Serializable {
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
     return Stream.of(
-            _setAsPath, _setMetric, _setIpNextHop, _setCommunity, _setLocalPreference, _setTag)
+            _setAsPath,
+            _setCommListDelete,
+            _setMetric,
+            _setIpNextHop,
+            _setCommunity,
+            _setLocalPreference,
+            _setTag)
         .filter(Objects::nonNull);
   }
 
@@ -105,6 +112,10 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapSetIpNextHopLiteral getSetIpNextHop() {
     return _setIpNextHop;
+  }
+
+  public @Nullable RouteMapSetCommListDelete getSetCommListDelete() {
+    return _setCommListDelete;
   }
 
   public @Nullable RouteMapSetCommunity getSetCommunity() {
@@ -142,6 +153,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
     _setMetric = setMetric;
+  }
+
+  public void setSetCommListDelete(@Nullable RouteMapSetCommListDelete setCommListDelete) {
+    _setCommListDelete = setCommListDelete;
   }
 
   public void setSetCommunity(@Nullable RouteMapSetCommunity setCommunity) {

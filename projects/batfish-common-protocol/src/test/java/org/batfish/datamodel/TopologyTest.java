@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -155,7 +154,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     Topology topo = new Topology(_bothEdges);
     assertEquals(BatfishObjectMapper.clone(topo, Topology.class), topo);
   }

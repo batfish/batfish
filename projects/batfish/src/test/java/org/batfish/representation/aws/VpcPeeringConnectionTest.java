@@ -77,11 +77,11 @@ public class VpcPeeringConnectionTest {
 
   @Test
   public void testCreateConnection() {
-    Vpc vpc1 = new Vpc("vpc1", ImmutableSet.of());
+    Vpc vpc1 = new Vpc("vpc1", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpc1Cfg = Utils.newAwsConfiguration(vpc1.getId(), "awstest");
     Prefix vpc1Prefix = Prefix.parse("10.10.10.0/24");
 
-    Vpc vpc2 = new Vpc("vpc2", ImmutableSet.of());
+    Vpc vpc2 = new Vpc("vpc2", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpc2Cfg = Utils.newAwsConfiguration(vpc2.getId(), "awstest");
     Prefix vpc2Prefix = Prefix.parse("10.10.20.0/24");
 

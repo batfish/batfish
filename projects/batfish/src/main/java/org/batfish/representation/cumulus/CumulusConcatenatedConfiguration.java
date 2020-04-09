@@ -680,44 +680,44 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     private Builder() {}
 
     public Builder setHostname(String hostname) {
-      this._hostname = hostname;
+      _hostname = hostname;
       return this;
     }
 
     Builder setInterfacesConfiguration(CumulusInterfacesConfiguration interfacesConfiguration) {
-      this._interfacesConfiguration = interfacesConfiguration;
+      _interfacesConfiguration = interfacesConfiguration;
       return this;
     }
 
     Builder addInterfaces(Map<String, InterfacesInterface> interfaces) {
-      if (this._interfacesConfiguration == null) {
-        this._interfacesConfiguration = new CumulusInterfacesConfiguration();
+      if (_interfacesConfiguration == null) {
+        _interfacesConfiguration = new CumulusInterfacesConfiguration();
       }
-      this._interfacesConfiguration.getInterfaces().putAll(interfaces);
+      _interfacesConfiguration.getInterfaces().putAll(interfaces);
       return this;
     }
 
     Builder setBgpProcess(BgpProcess bgpProcess) {
-      if (this._frrConfiguration == null) {
-        this.setFrrConfiguration(new CumulusFrrConfiguration());
+      if (_frrConfiguration == null) {
+        setFrrConfiguration(new CumulusFrrConfiguration());
       }
-      this._frrConfiguration.setBgpProcess(bgpProcess);
+      _frrConfiguration.setBgpProcess(bgpProcess);
       return this;
     }
 
     Builder setFrrConfiguration(CumulusFrrConfiguration frrConfiguration) {
-      this._frrConfiguration = frrConfiguration;
+      _frrConfiguration = frrConfiguration;
       return this;
     }
 
     Builder setPortsConfiguration(CumulusPortsConfiguration portsConfiguration) {
-      this._portsConfiguration = portsConfiguration;
+      _portsConfiguration = portsConfiguration;
       return this;
     }
 
     public Builder setPorts(Map<String, PortSettings> ports) {
-      this._portsConfiguration = new CumulusPortsConfiguration();
-      this._portsConfiguration.getPortSettings().putAll(ports);
+      _portsConfiguration = new CumulusPortsConfiguration();
+      _portsConfiguration.getPortSettings().putAll(ports);
       return this;
     }
 

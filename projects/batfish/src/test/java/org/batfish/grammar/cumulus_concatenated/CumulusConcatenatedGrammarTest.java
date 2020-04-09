@@ -8,10 +8,12 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeMatch
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -384,5 +386,320 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(outputRoute3.getMetric(), equalTo(1L));
     assertThat(outputRoute4.getMetric(), equalTo(0xFFFFFFFFL));
     assertThat(outputRoute5.getMetric(), equalTo(0L));
+  }
+
+  @Test
+  public void testSetCommListDelete() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("set_comm_list_delete_test");
+    Bgpv4Route inRoute =
+        base.toBuilder()
+            .setCommunities(
+                ImmutableSet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(1, 2),
+                    StandardCommunity.of(2, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 1),
+                    StandardCommunity.of(3, 2)))
+            .build();
+
+    // RMs using expanded comm-lists.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES");
+      assertThat(processRouteIn(rp, inRoute).getCommunities(), empty());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_DENY_PERMIT");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+
+    // RMs using standard comm-lists.
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_1_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_2_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_3_1");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_DENY_PERMIT");
+      assertThat(
+          processRouteIn(rp, inRoute).getCommunities(),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(2, 1),
+              StandardCommunity.of(2, 2),
+              StandardCommunity.of(3, 1),
+              StandardCommunity.of(3, 2)));
+    }
+  }
+
+  @Test
+  public void testCommSetMatchExpr() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("comm_set_match_expr_test");
+
+    // Route-map with match on comm-list with single community.
+    // Input route has the same community.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM1");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(1L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM1");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(1L));
+    }
+
+    // Route-map with match on comm-list with multiple communities.
+    // Input route has the same communities.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+    }
+
+    // Route-map with match on comm-list with single community.
+    // Input route has additional communities.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(2, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM2");
+      assertThat(processRouteIn(rp, inRoute).getMetric(), equalTo(2L));
+    }
+
+    // Route-map with match on comm-list with communities.
+    // Input route partially matches comm-list.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM2");
+      Bgpv4Route.Builder builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM2");
+      builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+    }
+
+    // Route-map with match on comm-list with deny and permit statements on communities.
+    // Input route has a community that matches the deny followed by permit.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+
+      // Use standard comm-lists.
+      RoutingPolicy rp = c.getRoutingPolicies().get("Standard_RM3");
+      Bgpv4Route.Builder builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+
+      // Use expanded comm-lists.
+      rp = c.getRoutingPolicies().get("Expanded_RM3");
+      builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+    }
+
+    // Test a route-map with expanded comm-lists against an input route whose communities don't
+    // satisfy its regex.
+    {
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+
+      RoutingPolicy rp = c.getRoutingPolicies().get("Expanded_RM1");
+      Bgpv4Route.Builder builder = inRoute.toBuilder();
+      rp.process(inRoute, builder, Direction.IN);
+      assertThat(builder.build().getMetric(), equalTo(0L));
+    }
+  }
+
+  @Test
+  public void testInterfaceDefinition() throws IOException {
+    Configuration c = parseConfig("interface_definition_test");
+    assertThat(
+        c.getActiveInterfaces()
+            .get("eth1")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.40.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources(),
+        hasSize(1));
+    assertThat(
+        c.getActiveInterfaces()
+            .get("bond2")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.50.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources(),
+        hasSize(1));
+    assertThat(
+        c.getActiveInterfaces()
+            .get("eth3")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.60.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources(),
+        hasSize(1));
+    assertThat(
+        c.getActiveInterfaces()
+            .get("bond4")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.70.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources(),
+        hasSize(1));
+  }
+
+  @Test
+  public void testOptionalAddressFamily() throws IOException {
+    Configuration c = parseConfig("optional_address_family_identifier");
+    assertThat(
+        c.getActiveInterfaces()
+            .get("eth1")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.50.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources(),
+        hasSize(1));
+    assertThat(
+        c.getActiveInterfaces()
+            .get("eth2")
+            .getVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.20.60.0").toPrefix())
+            .getIpv4UnicastAddressFamily()
+            .getExportPolicySources(),
+        hasSize(1));
   }
 }

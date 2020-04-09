@@ -1,0 +1,62 @@
+set_comm_list_delete_test
+# This file describes the network interfaces
+
+iface eth0
+ address 10.20.30.0/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+agentx
+!
+router bgp 12345
+ bgp router-id 1.2.3.4
+ address-family ipv4 unicast
+  network 10.20.0.0/16
+ exit-address-family
+!
+! The input route for the test will have the following communities 1:1, 1:2, 2:1, 2:2, 3:1, 3:2
+! Expanded community lists.
+ip community-list expanded test_expanded_delete_all_communities permit "[0-9]+:[0-9]+"
+ip community-list expanded test_expanded_delete_comm_begin_with_1 permit "1:.*"
+ip community-list expanded test_expanded_delete_comm_begin_with_2 permit "2:.*"
+ip community-list expanded test_expanded_delete_comm_begin_with_3 permit "3:.*"
+ip community-list expanded test_expanded_delete_comm_deny_permit deny "1:.*"
+ip community-list expanded test_expanded_delete_comm_deny_permit permit "1:.*"
+ip community-list expanded test_expanded_delete_comm_deny_permit permit "2:.*"
+!
+! The input route for the test will have the following communities 1:1, 1:2, 2:1, 2:2, 3:1, 3:2
+! Standard community lists.
+ip community-list standard test_standard_delete_comm_1_1 permit 1:1
+ip community-list standard test_standard_delete_comm_2_1 permit 2:1
+ip community-list standard test_standard_delete_comm_3_1 permit 3:1
+ip community-list standard test_standard_delete_comm_deny_permit deny 1:1
+ip community-list standard test_standard_delete_comm_deny_permit permit 1:1
+ip community-list standard test_standard_delete_comm_deny_permit permit 1:2
+!
+route-map RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES permit 1
+ set comm-list test_expanded_delete_all_communities delete
+route-map RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1 permit 1
+ set comm-list test_expanded_delete_comm_begin_with_1 delete
+route-map RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2 permit 1
+ set comm-list test_expanded_delete_comm_begin_with_2 delete
+route-map RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3 permit 1
+ set comm-list test_expanded_delete_comm_begin_with_3 delete
+route-map RM_EXPANDED_TEST_DELETE_COMM_DENY_PERMIT permit 1
+ set comm-list test_expanded_delete_comm_deny_permit delete
+!
+route-map RM_STANDARD_TEST_DELETE_COMM_1_1 permit 1
+ set comm-list test_standard_delete_comm_1_1 delete
+route-map RM_STANDARD_TEST_DELETE_COMM_2_1 permit 1
+ set comm-list test_standard_delete_comm_2_1 delete
+route-map RM_STANDARD_TEST_DELETE_COMM_3_1 permit 1
+ set comm-list test_standard_delete_comm_3_1 delete
+route-map RM_STANDARD_TEST_DELETE_COMM_DENY_PERMIT permit 1
+ set comm-list test_standard_delete_comm_deny_permit delete
+!
+line vty
+!
+!### end frr.conf

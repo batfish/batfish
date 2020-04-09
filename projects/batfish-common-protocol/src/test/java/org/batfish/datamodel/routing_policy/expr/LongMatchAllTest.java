@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -17,7 +16,7 @@ public final class LongMatchAllTest {
       LongMatchAll.of(new LongComparison(IntComparator.EQ, new LiteralLong(1L)));
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, LongMatchAll.class), equalTo(OBJ));
   }
 

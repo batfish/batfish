@@ -47,7 +47,7 @@ public abstract class BatfishParser extends Parser {
 
   public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
     BatfishParserErrorListener errorListener =
-        new BatfishParserErrorListener(this.getClass().getSimpleName(), parser);
+        new BatfishParserErrorListener(getClass().getSimpleName(), parser);
     removeErrorListeners();
     addErrorListener(errorListener);
     parser.setParserErrorListener(errorListener);

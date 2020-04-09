@@ -1,8 +1,10 @@
 package org.batfish.main;
 
+import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_FILE;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.batfish.main.Batfish.readAllFiles;
 import static org.hamcrest.Matchers.allOf;
@@ -44,11 +46,14 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.Warnings;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -282,6 +287,36 @@ public class BatfishTest {
                 new Layer1Edge(c2i2, c1i1),
                 new Layer1Edge(c1i3, c2i4),
                 new Layer1Edge(c2i4, c1i3))));
+  }
+
+  @Test
+  public void testLoadVendorConfigurations() throws IOException {
+    String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
+    List<String> awsFiles =
+        ImmutableList.of(
+            "NetworkAcls.json",
+            "NetworkInterfaces.json",
+            "Reservations.json",
+            "RouteTables.json",
+            "SecurityGroups.json",
+            "Subnets.json",
+            "Vpcs.json");
+    String routerFile = "rtr1";
+
+    IBatfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setAwsText(snapshotPath, awsFiles)
+                .setConfigurationText(snapshotPath, routerFile)
+                .build(),
+            _folder);
+
+    Map<String, VendorConfiguration> vendorConfigurations =
+        batfish.loadVendorConfigurations(batfish.getSnapshot());
+
+    assertThat(
+        vendorConfigurations.keySet(),
+        equalTo(ImmutableSet.of(routerFile, RELPATH_AWS_CONFIGS_FILE)));
   }
 
   @Test
@@ -817,5 +852,47 @@ public class BatfishTest {
     // should throw FileNotFoundException if file not found
     _thrown.expect(FileNotFoundException.class);
     batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file");
+  }
+
+  @Test
+  public void testMergeInternetAndIspNodes() {
+    Map<String, Configuration> snapshotConfigs = new HashMap<>();
+    Configuration config = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
+    snapshotConfigs.put(config.getHostname(), config);
+
+    Set<Layer1Edge> snapshotEdges = new HashSet<>();
+    Layer1Edge edge = new Layer1Edge("n1", "i1", "n2", "i2");
+    snapshotEdges.add(edge);
+
+    ModeledNodes modeledNodes = new ModeledNodes();
+    Layer1Edge modeledEdge = new Layer1Edge("m1", "i1", "m2", "i2");
+    Configuration modeledConfig = new Configuration("model1", ConfigurationFormat.AWS);
+    modeledNodes.addConfiguration(modeledConfig);
+    modeledNodes.addLayer1Edge(modeledEdge);
+
+    Warnings warnings = new Warnings(true, true, true);
+    mergeInternetAndIspNodes(modeledNodes, snapshotConfigs, snapshotEdges, warnings);
+
+    assertThat(
+        snapshotConfigs,
+        equalTo(
+            ImmutableMap.of(
+                config.getHostname(), config, modeledConfig.getHostname(), modeledConfig)));
+    assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
+    assertTrue(warnings.isEmpty());
+
+    // merging again should be a no-op (even if the modeled nodes contain new information)
+    modeledNodes.addConfiguration(new Configuration("model2", ConfigurationFormat.AWS));
+
+    mergeInternetAndIspNodes(modeledNodes, snapshotConfigs, snapshotEdges, warnings);
+    assertThat(
+        snapshotConfigs,
+        equalTo(
+            ImmutableMap.of(
+                config.getHostname(), config, modeledConfig.getHostname(), modeledConfig)));
+    assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
+    assertThat(
+        warnings.getRedFlagWarnings().get(0).getText(),
+        containsString("Cannot add internet and ISP nodes"));
   }
 }

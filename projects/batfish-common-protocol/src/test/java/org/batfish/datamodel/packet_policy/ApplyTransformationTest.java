@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -38,7 +37,7 @@ public class ApplyTransformationTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     ApplyTransformation at =
         new ApplyTransformation(Transformation.always().apply(ImmutableList.of()).build());
     assertThat(BatfishObjectMapper.clone(at, ApplyTransformation.class), equalTo(at));

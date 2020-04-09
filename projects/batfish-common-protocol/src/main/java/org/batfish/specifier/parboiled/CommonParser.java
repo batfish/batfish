@@ -5,11 +5,15 @@ import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.applications.NamedApplication;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -83,6 +87,12 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   <T> Rule[] initValuesRules(Collection<T> values) {
     return values.stream().map(Objects::toString).map(this::IgnoreCase).toArray(Rule[]::new);
   }
+
+  public static Set<String> namedApplications =
+      Arrays.stream(NamedApplication.values())
+          .map(Object::toString)
+          .map(String::toUpperCase)
+          .collect(ImmutableSet.toImmutableSet());
 
   /**
    * Shared entry point for all expressions.

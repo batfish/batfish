@@ -177,9 +177,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
+import org.batfish.datamodel.OspfInterAreaRoute;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterLine;
@@ -317,6 +320,8 @@ import org.batfish.representation.cisco_nxos.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6Address;
 import org.batfish.representation.cisco_nxos.RouteMapMatchIpv6AddressPrefixList;
 import org.batfish.representation.cisco_nxos.RouteMapMatchMetric;
+import org.batfish.representation.cisco_nxos.RouteMapMatchRouteType;
+import org.batfish.representation.cisco_nxos.RouteMapMatchRouteType.Type;
 import org.batfish.representation.cisco_nxos.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cisco_nxos.RouteMapMatchTag;
 import org.batfish.representation.cisco_nxos.RouteMapMatchVlan;
@@ -372,6 +377,14 @@ public final class CiscoNxosGrammarTest {
         .setArea(0L)
         .setCostToAdvertiser(0L)
         .setLsaMetric(0L);
+  }
+
+  private static @Nonnull OspfIntraAreaRoute.Builder ospfRouteBuilder() {
+    return OspfIntraAreaRoute.builder().setArea(0L);
+  }
+
+  private static @Nonnull OspfInterAreaRoute.Builder ospfIARouteBuilder() {
+    return OspfInterAreaRoute.builder().setArea(0L);
   }
 
   private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -1388,6 +1401,12 @@ public final class CiscoNxosGrammarTest {
   public void testFexParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_fex"), notNullValue());
+  }
+
+  @Test
+  public void testFlowExtraction() {
+    // TODO: make into extraction test
+    assertThat(parseVendorConfig("nxos_flow"), notNullValue());
   }
 
   @Test
@@ -2570,10 +2589,10 @@ public final class CiscoNxosGrammarTest {
               .collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchPacketLength(100)),
-              toBDD(matchPacketLength(IntegerSpace.of(Range.closed(0, 199)))),
+              toBDD(matchPacketLength(IntegerSpace.of(Range.closed(20, 199)))),
               toBDD(
                   matchPacketLength(
-                      IntegerSpace.of(Range.closed(300, Integer.MAX_VALUE))
+                      IntegerSpace.of(Range.closed(301, Integer.MAX_VALUE))
                           .intersection(PACKET_LENGTH_RANGE))),
               toBDD(matchPacketLength(PACKET_LENGTH_RANGE.difference(IntegerSpace.of(400)))),
               toBDD(matchPacketLength(IntegerSpace.of(Range.closed(500, 600))))));
@@ -4638,6 +4657,7 @@ public final class CiscoNxosGrammarTest {
             "a_default_cost",
             "a_filter_list",
             "a_nssa",
+            "a_nssa_dio",
             "a_nssa_no_r",
             "a_nssa_no_s",
             "a_nssa_rm",
@@ -4655,6 +4675,7 @@ public final class CiscoNxosGrammarTest {
             "dio_always",
             "dio_route_map",
             "dio_always_route_map",
+            "distance",
             "lac",
             "lac_detail",
             "mm",
@@ -4689,6 +4710,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_nssa");
       assertThat(proc, hasArea(1L, hasNssa(notNullValue())));
     }
+    // TODO: convert and test "a_nssa_dio" - OSPF NSSA default-information-originate
     {
       org.batfish.datamodel.ospf.OspfProcess proc =
           defaultVrf.getOspfProcesses().get("a_nssa_no_r");
@@ -4803,6 +4825,10 @@ public final class CiscoNxosGrammarTest {
                 .process(generatedInputRoute, outputRoute, Direction.OUT));
         // assign E2 metric-type from route-map
         assertThat(outputRoute.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+      }
+      {
+        org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("distance");
+        assertTrue(proc.getAdminCosts().values().stream().allMatch(i -> i.equals(243)));
       }
     }
     // TODO: convert and test "lac" - OSPF log-adjacency-changes
@@ -4967,6 +4993,7 @@ public final class CiscoNxosGrammarTest {
             "a_default_cost",
             "a_filter_list",
             "a_nssa",
+            "a_nssa_dio",
             "a_nssa_no_r",
             "a_nssa_no_s",
             "a_nssa_rm",
@@ -4984,6 +5011,7 @@ public final class CiscoNxosGrammarTest {
             "dio_always",
             "dio_route_map",
             "dio_always_route_map",
+            "distance",
             "lac",
             "lac_detail",
             "mm",
@@ -5045,36 +5073,50 @@ public final class CiscoNxosGrammarTest {
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertFalse(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("a_nssa_dio");
+      assertThat(proc.getAreas(), hasKeys(1L));
+      OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
+      assertThat(nssa, notNullValue());
+      assertTrue(nssa.getDefaultInformationOriginate());
+      assertFalse(nssa.getNoRedistribution());
+      assertFalse(nssa.getNoSummary());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_no_r");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertFalse(nssa.getDefaultInformationOriginate());
       assertTrue(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_no_s");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertFalse(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertTrue(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), nullValue());
+      assertThat(nssa.getDefaultInformationOriginateMap(), nullValue());
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_nssa_rm");
       assertThat(proc.getAreas(), hasKeys(1L));
       OspfAreaNssa nssa = (OspfAreaNssa) proc.getAreas().get(1L).getTypeSettings();
       assertThat(nssa, notNullValue());
+      assertTrue(nssa.getDefaultInformationOriginate());
       assertFalse(nssa.getNoRedistribution());
       assertFalse(nssa.getNoSummary());
-      assertThat(nssa.getRouteMap(), equalTo("rm1"));
+      assertThat(nssa.getDefaultInformationOriginateMap(), equalTo("rm1"));
     }
     {
       OspfProcess proc = vc.getOspfProcesses().get("a_r");
@@ -5166,6 +5208,10 @@ public final class CiscoNxosGrammarTest {
       assertTrue(defaultOriginate.getAlways());
       assertThat(defaultOriginate.getRouteMap(), equalTo("rm_e2"));
       assertThat(proc.getMaxMetricRouterLsa(), nullValue());
+    }
+    {
+      OspfProcess proc = vc.getOspfProcesses().get("distance");
+      assertThat(proc.getDistance(), equalTo(243));
     }
     // TODO: extract and test log-adjacency-changes
     {
@@ -5309,6 +5355,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf.getDeadIntervalS(), equalTo(10));
       assertThat(ospf.getHelloIntervalS(), equalTo(20));
       assertThat(ospf.getPassive(), nullValue());
+      assertThat(ospf.getPriority(), equalTo(10));
       assertThat(ospf.getProcess(), equalTo("pi_d"));
       assertThat(ospf.getArea(), equalTo(0L));
       assertThat(ospf.getNetwork(), nullValue());
@@ -5323,6 +5370,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(ospf.getDeadIntervalS(), nullValue());
       assertThat(ospf.getHelloIntervalS(), nullValue());
       assertThat(ospf.getPassive(), nullValue());
+      assertThat(ospf.getPriority(), nullValue());
       assertThat(ospf.getProcess(), nullValue());
       assertThat(ospf.getArea(), nullValue());
       assertThat(ospf.getNetwork(), equalTo(BROADCAST));
@@ -5752,6 +5800,14 @@ public final class CiscoNxosGrammarTest {
             "match_ipv6_address",
             "match_ipv6_address_prefix_list",
             "match_metric",
+            "match_route_type_external",
+            "match_route_type_internal",
+            "match_route_type_local",
+            "match_route_type_nssa_external",
+            "match_route_type_type_1",
+            "match_route_type_type_2",
+            "match_route_types",
+            "match_route_types_unsupported",
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
@@ -5876,6 +5932,103 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route route = base.toBuilder().setMetric(1L).build();
       assertRoutingPolicyPermitsRoute(rp, route);
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_external");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_internal");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(rp, ospfRouteBuilder().setNetwork(Prefix.ZERO).build());
+      assertRoutingPolicyPermitsRoute(rp, ospfIARouteBuilder().setNetwork(Prefix.ZERO).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_local");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          LocalRoute.builder()
+              .setNetwork(Prefix.parse("1.2.3.4/32"))
+              .setSourcePrefixLength(24)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_nssa_external");
+      // Should be FALSE.
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_type_1");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_type_type_2");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_types");
+      assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
+      assertRoutingPolicyDeniesRoute(rp, ospfRouteBuilder().setNetwork(Prefix.ZERO).build());
+      assertRoutingPolicyDeniesRoute(rp, ospfIARouteBuilder().setNetwork(Prefix.ZERO).build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
+      assertRoutingPolicyPermitsRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E2)
+              .build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_route_types_unsupported");
+      // Even though the policy has type-1, since it also has nssa-external it's unmatchable
+      assertRoutingPolicyDeniesRoute(
+          rp,
+          ospfExternalRouteBuilder()
+              .setNetwork(Prefix.ZERO)
+              .setOspfMetricType(OspfMetricType.E1)
+              .build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_connected");
@@ -6129,6 +6282,14 @@ public final class CiscoNxosGrammarTest {
             "match_ipv6_address",
             "match_ipv6_address_prefix_list",
             "match_metric",
+            "match_route_type_external",
+            "match_route_type_internal",
+            "match_route_type_local",
+            "match_route_type_nssa_external",
+            "match_route_type_type_1",
+            "match_route_type_type_2",
+            "match_route_types",
+            "match_route_types_unsupported",
             "match_source_protocol_connected",
             "match_source_protocol_static",
             "match_tag",
@@ -6271,6 +6432,62 @@ public final class CiscoNxosGrammarTest {
       RouteMapMatchMetric match = entry.getMatchMetric();
       assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
       assertThat(match.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_external");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.EXTERNAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_internal");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.INTERNAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_local");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.LOCAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_nssa_external");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.NSSA_EXTERNAL)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_type_1");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_1)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_type_type_2");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_2)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_types");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_1, Type.TYPE_2)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_route_types_unsupported");
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      RouteMapMatchRouteType match = entry.getMatchRouteType();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(match.getTypes(), equalTo(ImmutableSet.of(Type.TYPE_1, Type.NSSA_EXTERNAL)));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_source_protocol_connected");

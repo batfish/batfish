@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto;
 
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
+import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginType.EGP;
 import static org.batfish.datamodel.OriginType.IGP;
 import static org.batfish.datamodel.OriginType.INCOMPLETE;
@@ -10,12 +11,14 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasM
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
@@ -30,6 +33,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
@@ -41,6 +45,7 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
 import static org.batfish.datamodel.matchers.StubSettingsMatchers.hasSuppressType3;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isChainOfSingleChildren;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -66,6 +71,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.Any;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_ADDRESS;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_PREFIX;
@@ -100,6 +113,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -124,11 +138,13 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -140,7 +156,9 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
@@ -153,6 +171,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
@@ -1176,22 +1195,26 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testInterface() {
     String hostname = "interface";
-    String interfaceName1 = "ethernet1/1";
-    String interfaceName2 = "ethernet1/2";
-    String interfaceName3 = "ethernet1/3";
-    String interfaceName311 = "ethernet1/3.11";
+    String eth1_1 = "ethernet1/1";
+    String eth1_2 = "ethernet1/2";
+    String eth1_3 = "ethernet1/3";
+    String eth1_3_11 = "ethernet1/3.11";
+    String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_21, loopback));
+
     // Confirm interface MTU is extracted
-    assertThat(c, hasInterface(interfaceName1, hasMtu(9001)));
+    assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
 
     // Confirm address is extracted
     assertThat(
         c,
         hasInterface(
-            interfaceName1,
-            hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
+            eth1_1, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
     assertThat(
         c,
         hasInterface(
@@ -1201,28 +1224,39 @@ public final class PaloAltoGrammarTest {
                 hasAllAddresses(
                     contains(
                         ConcreteInterfaceAddress.parse("7.7.7.7/32"),
-                        ConcreteInterfaceAddress.parse("7.7.7.8/32"))))));
+                        ConcreteInterfaceAddress.parse("7.7.7.8/32"))),
+                hasBandwidth(nullValue()),
+                hasSpeed(nullValue()))));
 
     // Confirm comments are extracted
-    assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
-    assertThat(c, hasInterface(interfaceName2, hasDescription("interface's long description")));
-    assertThat(c, hasInterface(interfaceName3, hasDescription("single quoted description")));
-    assertThat(c, hasInterface(interfaceName311, hasDescription("unit description")));
+    assertThat(c, hasInterface(eth1_1, hasDescription("description")));
+    assertThat(c, hasInterface(eth1_2, hasDescription("interface's long description")));
+    assertThat(c, hasInterface(eth1_3, hasDescription("single quoted description")));
+    assertThat(c, hasInterface(eth1_3_11, hasDescription("unit description")));
+
+    // Confirm link speed
+    assertThat(c.getAllInterfaces().get(eth1_1), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
+    assertThat(c.getAllInterfaces().get(eth1_2), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
+    assertThat(c.getAllInterfaces().get(eth1_3), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
+    assertThat(
+        c.getAllInterfaces().get(eth1_3_11), allOf(hasBandwidth(1e9), hasSpeed(nullValue())));
+    assertThat(c.getAllInterfaces().get(eth1_21), allOf(hasBandwidth(1e10), hasSpeed(1e10)));
 
     // Confirm link status is extracted
-    assertThat(c, hasInterface(interfaceName1, isActive()));
-    assertThat(c, hasInterface(interfaceName2, not(isActive())));
-    assertThat(c, hasInterface(interfaceName3, isActive()));
-    assertThat(c, hasInterface(interfaceName311, not(isActive())));
+    assertThat(c, hasInterface(eth1_1, isActive()));
+    assertThat(c, hasInterface(eth1_2, not(isActive())));
+    assertThat(c, hasInterface(eth1_3, isActive()));
+    assertThat(c, hasInterface(eth1_3_11, not(isActive())));
 
     // Confirm tag extraction for units
-    assertThat(c, hasInterface(interfaceName311, hasEncapsulationVlan(11)));
+    assertThat(c, hasInterface(eth1_3_11, hasEncapsulationVlan(11)));
 
     // Confirm types
-    assertThat(c, hasInterface(interfaceName1, hasInterfaceType(InterfaceType.PHYSICAL)));
-    assertThat(c, hasInterface(interfaceName2, hasInterfaceType(InterfaceType.PHYSICAL)));
-    assertThat(c, hasInterface(interfaceName3, hasInterfaceType(InterfaceType.PHYSICAL)));
-    assertThat(c, hasInterface(interfaceName311, hasInterfaceType(InterfaceType.LOGICAL)));
+    assertThat(c, hasInterface(eth1_1, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_2, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_3, hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(c, hasInterface(eth1_3_11, hasInterfaceType(InterfaceType.LOGICAL)));
+    assertThat(c, hasInterface(eth1_21, hasInterfaceType(InterfaceType.PHYSICAL)));
   }
 
   @Test
@@ -1254,6 +1288,119 @@ public final class PaloAltoGrammarTest {
 
     // Confirm comment is extracted
     assertThat(c, hasInterface(interfaceNameUnit1, hasDescription("unit 1")));
+  }
+
+  // Test for https://github.com/batfish/batfish/issues/5598.
+  @Test
+  public void testInterfaceAggregateExtraction() {
+    String hostname = "interface-agg";
+    PaloAltoConfiguration c = parseNestedConfig(hostname);
+    Map<String, Interface> interfaces = c.getInterfaces();
+    assertThat(
+        interfaces.keySet(),
+        containsInAnyOrder("ethernet1/3", "ethernet1/21", "ethernet1/22", "ae1"));
+    {
+      Interface iface = interfaces.get("ethernet1/3");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/29")));
+    }
+    {
+      Interface iface = interfaces.get("ethernet1/21");
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getAggregateGroup(), equalTo("ae1"));
+    }
+    {
+      Interface iface = interfaces.get("ethernet1/22");
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getAggregateGroup(), equalTo("ae1"));
+    }
+    {
+      Interface iface = interfaces.get("ae1");
+      assertThat(iface.getUnits().keySet(), containsInAnyOrder("ae1.290", "ae1.200", "ae1.201"));
+      assertThat(iface.getAddress(), nullValue());
+      assertThat(iface.getAggregateGroup(), nullValue());
+      Interface ae1_290 = iface.getUnits().get("ae1.290");
+      assertThat(ae1_290.getTag(), equalTo(290));
+      assertThat(ae1_290.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1./29")));
+      Interface ae1_200 = iface.getUnits().get("ae1.200");
+      assertThat(ae1_200.getTag(), equalTo(200));
+      assertThat(ae1_200.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1./29")));
+      Interface ae1_201 = iface.getUnits().get("ae1.201");
+      assertThat(ae1_201.getTag(), equalTo(201));
+      assertThat(ae1_201.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.3.1./29")));
+    }
+  }
+
+  // Test for https://github.com/batfish/batfish/issues/5598.
+  @Test
+  public void testInterfaceAggregateConversion() {
+    String hostname = "interface-agg";
+    Configuration c = parseConfig(hostname);
+    Map<String, org.batfish.datamodel.Interface> interfaces = c.getAllInterfaces();
+    assertThat(
+        interfaces.keySet(),
+        containsInAnyOrder(
+            "ethernet1/3", "ethernet1/21", "ethernet1/22", "ae1", "ae1.290", "ae1.200", "ae1.201"));
+    {
+      org.batfish.datamodel.Interface e3 = interfaces.get("ethernet1/3");
+      assertThat(e3.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+      assertThat(e3.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/29")));
+      assertThat(e3.getChannelGroup(), nullValue());
+      assertThat(e3.getChannelGroupMembers(), empty());
+    }
+    {
+      org.batfish.datamodel.Interface e21 = interfaces.get("ethernet1/21");
+      assertThat(e21.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+      assertThat(e21.getAddress(), nullValue());
+      assertThat(e21.getChannelGroup(), equalTo("ae1"));
+      assertThat(e21.getChannelGroupMembers(), empty());
+    }
+    {
+      org.batfish.datamodel.Interface e22 = interfaces.get("ethernet1/22");
+      assertThat(e22.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+      assertThat(e22.getAddress(), nullValue());
+      assertThat(e22.getChannelGroup(), equalTo("ae1"));
+      assertThat(e22.getChannelGroupMembers(), empty());
+    }
+    {
+      org.batfish.datamodel.Interface ae1 = interfaces.get("ae1");
+      assertThat(ae1, hasBandwidth(20e9));
+      assertThat(ae1.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
+      assertThat(ae1.getAddress(), nullValue());
+      assertThat(ae1.getChannelGroup(), nullValue());
+      assertThat(ae1.getChannelGroupMembers(), containsInAnyOrder("ethernet1/21", "ethernet1/22"));
+      assertThat(
+          ae1.getDependencies(),
+          containsInAnyOrder(
+              new Dependency("ethernet1/21", DependencyType.AGGREGATE),
+              new Dependency("ethernet1/22", DependencyType.AGGREGATE)));
+    }
+    {
+      org.batfish.datamodel.Interface iface = interfaces.get("ae1.290");
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1/29")));
+      assertThat(iface, hasBandwidth(20e9));
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getChannelGroupMembers(), empty());
+      assertThat(iface.getEncapsulationVlan(), equalTo(290));
+    }
+    {
+      org.batfish.datamodel.Interface iface = interfaces.get("ae1.200");
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1/29")));
+      assertThat(iface, hasBandwidth(20e9));
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getChannelGroupMembers(), empty());
+      assertThat(iface.getEncapsulationVlan(), equalTo(200));
+    }
+    {
+      org.batfish.datamodel.Interface iface = interfaces.get("ae1.201");
+      assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.3.1/29")));
+      assertThat(iface, hasBandwidth(20e9));
+      assertThat(iface.getChannelGroup(), nullValue());
+      assertThat(iface.getChannelGroupMembers(), empty());
+      assertThat(iface.getEncapsulationVlan(), equalTo(201));
+    }
   }
 
   @Test
@@ -1611,6 +1758,165 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testShowConfig() {
+    PaloAltoConfiguration vc = parseNestedConfig("show-config");
+    assertThat(vc.getHostname(), equalTo("show-config-custom-hostname"));
+  }
+
+  @Test
+  public void testIntrazoneFilterTraceElements() {
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zoneName = "ZONE";
+
+    // Device has a zone with intrazone security rules DENY and PERMIT
+    String zoneObjName = computeObjectName(vsysName, zoneName);
+    String intrazoneFilterName = zoneToZoneFilter(zoneObjName, zoneObjName);
+    String zoneOutgoingFilterName = computeOutgoingFilterName(zoneObjName);
+    IpAccessList intrazoneFilter = c.getIpAccessLists().get(intrazoneFilterName);
+    IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
+
+    // Expected trace elements in intrazone filter
+    TraceElement ruleDenyTe = matchRuleTraceElement("DENY");
+    TraceElement rulePermitTe = matchRuleTraceElement("PERMIT");
+    TraceElement intrazoneDefaultTe = intrazoneDefaultAcceptTraceElement(vsysName, zoneName);
+
+    // Expected trace elements in zone outgoing filter
+    TraceElement intrazoneRulesTe = zoneToZoneMatchTraceElement(zoneName, zoneName, vsysName);
+    TraceElement mismatchIntrazoneRulesTe =
+        zoneToZoneRejectTraceElement(zoneName, zoneName, vsysName);
+
+    assertThat(
+        intrazoneFilter.getLines(),
+        contains(
+            hasTraceElement(ruleDenyTe),
+            hasTraceElement(rulePermitTe),
+            hasTraceElement(intrazoneDefaultTe)));
+    assertThat(
+        zoneOutgoingFilter.getLines(),
+        contains(hasTraceElement(intrazoneRulesTe), hasTraceElement(mismatchIntrazoneRulesTe)));
+  }
+
+  @Test
+  public void testIfaceOutgoingFilterTraceElements() {
+    // Device has an interface in the zone. Ensure that outgoing filter lines have expected trace
+    // elements and flows leaving the interface generate the expected ACL traces.
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zoneName = "ZONE";
+
+    // Expected trace elements in zone outgoing filter
+    TraceElement intrazoneRulesTe = zoneToZoneMatchTraceElement(zoneName, zoneName, vsysName);
+    TraceElement intrazoneRejectRulesTe =
+        zoneToZoneRejectTraceElement(zoneName, zoneName, vsysName);
+
+    String ifaceName = "ethernet1/1.1";
+    String ifaceOutgoingFilterName = computeOutgoingFilterName(ifaceName);
+    IpAccessList ifaceOutgoingFilter = c.getIpAccessLists().get(ifaceOutgoingFilterName);
+
+    // Expected trace elements in interface outgoing filter
+    TraceElement exitIfaceTe = ifaceOutgoingTraceElement(ifaceName, zoneName, vsysName);
+    TraceElement originatedTe = originatedFromDeviceTraceElement();
+    assertThat(
+        ifaceOutgoingFilter.getLines(),
+        contains(hasTraceElement(exitIfaceTe), hasTraceElement(originatedTe)));
+
+    // Flow that does not match either security rule should fall through to intrazone default
+    Flow.Builder fb = Flow.builder().setDstIp(Ip.ZERO).setIngressNode("n");
+    List<TraceTree> flowTrace =
+        AclTracer.trace(
+            ifaceOutgoingFilter,
+            fb.setSrcIp(Ip.parse("1.1.1.1")).build(),
+            ifaceName,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        flowTrace,
+        contains(
+            isChainOfSingleChildren(
+                exitIfaceTe,
+                intrazoneRulesTe,
+                intrazoneDefaultAcceptTraceElement(vsysName, zoneName))));
+
+    // Flow matching DENY security rule should generate a trace pointing to that rule.
+    flowTrace =
+        AclTracer.trace(
+            ifaceOutgoingFilter,
+            fb.setSrcIp(Ip.parse("2.2.2.2")).build(), // should match DENY rule
+            ifaceName,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        flowTrace,
+        contains(
+            isChainOfSingleChildren(
+                exitIfaceTe, intrazoneRejectRulesTe, matchRuleTraceElement("DENY"))));
+
+    // Flow matching PERMIT security rule should generate a trace pointing to that rule.
+    flowTrace =
+        AclTracer.trace(
+            ifaceOutgoingFilter,
+            fb.setSrcIp(Ip.parse("3.3.3.3")).build(), // should match PERMIT rule
+            ifaceName,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(
+        flowTrace,
+        contains(
+            isChainOfSingleChildren(
+                exitIfaceTe, intrazoneRulesTe, matchRuleTraceElement("PERMIT"))));
+  }
+
+  @Test
+  public void testUnzonedIfaceOutgoingFilterTraceElements() {
+    // Device has an interface without a zone; its outgoing filter should reflect that
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String ifaceName = "ethernet1/1";
+
+    // This ACL has an unnecessary (unreachable) second line; no need to assert on that line
+    IpAccessList ifaceOutgoingFilter =
+        c.getIpAccessLists().get(computeOutgoingFilterName(ifaceName));
+    assertThat(
+        ifaceOutgoingFilter.getLines().get(0),
+        equalTo(
+            ExprAclLine.REJECT_ALL
+                .toBuilder()
+                .setName("Not in a zone")
+                .setTraceElement(unzonedIfaceRejectTraceElement(ifaceName))
+                .build()));
+  }
+
+  @Test
+  public void testEmptyZoneOutgoingFilterTraceElements() {
+    // Device has a zone without any interfaces; intra- and cross-zone filters should reflect that
+    String hostname = "security-no-explicit-match";
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zoneName = "ZONE";
+    String emptyZoneName = "EMPTY_ZONE";
+    String zoneObjName = computeObjectName(vsysName, zoneName);
+    String emptyZoneObjName = computeObjectName(vsysName, emptyZoneName);
+
+    String emptyIntrazoneFilterName = zoneToZoneFilter(emptyZoneObjName, emptyZoneObjName);
+    String emptyToNonEmptyFilterName = zoneToZoneFilter(emptyZoneObjName, zoneObjName);
+    String nonEmptyToEmptyFilterName = zoneToZoneFilter(zoneObjName, emptyZoneObjName);
+    ImmutableList.of(emptyIntrazoneFilterName, emptyToNonEmptyFilterName, nonEmptyToEmptyFilterName)
+        .forEach(
+            filterName -> {
+              IpAccessList filter = c.getIpAccessLists().get(filterName);
+              assertThat(
+                  filter.getLines(),
+                  contains(hasTraceElement(emptyZoneRejectTraceElement(vsysName, emptyZoneName))));
+            });
+  }
+
+  @Test
   public void testRulebaseService() {
     String hostname = "rulebase-service";
     Configuration c = parseConfig(hostname);
@@ -1726,7 +2032,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testNatRulesAndReferences() throws IOException {
+  public void testNatRulesAndReferences() {
     String hostname = "rulebase-nat";
 
     // Check VS model

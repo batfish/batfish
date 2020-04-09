@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -122,7 +121,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     assertEquals(
         nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), OspfTopology.class));
   }

@@ -23,7 +23,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s administrative cost
    * is {@code expectedAdministrativeCost}.
    */
-  public static @Nonnull Matcher<AbstractRouteDecorator> hasAdministrativeCost(
+  public static @Nonnull HasAdministrativeCost hasAdministrativeCost(
       int expectedAdministrativeCost) {
     return new HasAdministrativeCost(equalTo(expectedAdministrativeCost));
   }
@@ -57,7 +57,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the route's nextHopInterface is {@code
    * expectedNextHopInterface}.
    */
-  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopInterface(
+  public static @Nonnull HasNextHopInterface hasNextHopInterface(
       @Nonnull String expectedNextHopInterface) {
     return new HasNextHopInterface(equalTo(expectedNextHopInterface));
   }
@@ -75,8 +75,7 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s nextHopIp is {@code
    * expectedNextHopIp}.
    */
-  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopIp(
-      @Nonnull Ip expectedNextHopIp) {
+  public static @Nonnull HasNextHopIp hasNextHopIp(@Nonnull Ip expectedNextHopIp) {
     return new HasNextHopIp(equalTo(expectedNextHopIp));
   }
 

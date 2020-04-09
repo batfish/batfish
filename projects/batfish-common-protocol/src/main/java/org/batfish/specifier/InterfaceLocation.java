@@ -27,6 +27,7 @@ public final class InterfaceLocation implements Location {
     return _interfaceName;
   }
 
+  @Override
   @JsonProperty(PROP_NODE_NAME)
   public @Nonnull String getNodeName() {
     return _nodeName;

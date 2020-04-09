@@ -46,7 +46,7 @@ public class NodeTest {
 
   @Test
   public void serialization() {
-    Node node = new Node("testnode", "myId", DeviceType.HOST);
+    Node node = new Node("testnode", "myId", null, DeviceType.HOST);
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");
     node.setProperties(properties);

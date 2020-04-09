@@ -8,7 +8,7 @@ load("@batfish//skylark:junit.bzl", "junit_tests")
 junit_tests(
     name = "tests",
     srcs = glob([
-        "**/*Test.java",
+        "**/*Test*.java",
     ]),
     resources = ["//projects/batfish/src/test/resources/org/batfish/representation/aws"],
     deps = [
@@ -16,7 +16,6 @@ junit_tests(
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/java/org/batfish/representation/aws",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

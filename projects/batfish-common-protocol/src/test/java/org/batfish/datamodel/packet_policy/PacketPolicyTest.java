@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -42,7 +41,7 @@ public class PacketPolicyTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     PacketPolicy p =
         new PacketPolicy("name", ImmutableList.of(new Return(Drop.instance())), _defaultAction);
     assertThat(BatfishObjectMapper.clone(p, PacketPolicy.class), equalTo(p));

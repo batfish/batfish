@@ -20,10 +20,10 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
-import static org.batfish.common.util.IspModelingUtils.getInternetAndIspNodes;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
+import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -76,6 +76,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -119,6 +120,9 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CompletionMetadataUtils;
+import org.batfish.common.util.isp.IspModelingUtils;
+import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -217,6 +221,7 @@ import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -463,6 +468,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
 
+  private final Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
+      _cachedVendorConfigurations;
+
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -488,6 +496,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
+      Cache<NetworkSnapshot, Map<String, VendorConfiguration>> cachedVendorConfigurations,
       @Nullable StorageProvider alternateStorageProvider,
       @Nullable IdResolver alternateIdResolver) {
     _settings = settings;
@@ -495,6 +504,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedConfigurations = cachedConfigurations;
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
+    _cachedVendorConfigurations = cachedVendorConfigurations;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     initLocalSettings(settings);
     _logger = _settings.getLogger();
@@ -728,6 +738,44 @@ public class Batfish extends PluginConsumer implements IBatfish {
             });
   }
 
+  private static void computeRedundantInterfaceBandwidths(Map<String, Interface> interfaces) {
+    // Set bandwidths for redundant interfaces
+    interfaces.values().stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.REDUNDANT)
+        .forEach(
+            iface -> {
+              /* If interface has dependencies, bandwidth should be bandwidth of any active dependency. */
+              iface.setBandwidth(
+                  iface.getDependencies().stream()
+                      .map(dependency -> interfaces.get(dependency.getInterfaceName()))
+                      .filter(Objects::nonNull)
+                      .filter(Interface::getActive)
+                      .map(Interface::getBandwidth)
+                      .filter(Objects::nonNull)
+                      .mapToDouble(Double::doubleValue)
+                      .min()
+                      .orElse(0.0));
+            });
+    // Now that redundant interfaces have bandwidths, set bandwidths for redundant child interfaces
+    interfaces.values().stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.REDUNDANT_CHILD)
+        .forEach(
+            iface -> {
+              /*
+              Bandwidth for redundant child interfaces (e.g. units) should be inherited from parent.
+              */
+              double bandwidth =
+                  iface.getDependencies().stream()
+                      .filter(d -> d.getType() == DependencyType.BIND)
+                      .findFirst()
+                      .map(Dependency::getInterfaceName)
+                      .map(interfaces::get)
+                      .map(Interface::getBandwidth)
+                      .orElse(0.0);
+              iface.setBandwidth(bandwidth);
+            });
+  }
+
   public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
         settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -829,6 +877,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public boolean debugFlagEnabled(String flag) {
     return _settings.debugFlagEnabled(flag);
+  }
+
+  @Override
+  public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
+    return computeLocationInfo(
+        getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
@@ -1294,11 +1348,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
-        postProcessSnapshot(snapshot, configurations);
       } else {
         // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-        configurations = parseConfigurationsAndApplyEnvironment(snapshot);
+        configurations = actuallyParseConfigurations(snapshot);
       }
+      // Apply things like blacklist and aggregations before installing in the cache.
+      postProcessSnapshot(snapshot, configurations);
 
       _cachedConfigurations.put(snapshot, configurations);
       return configurations;
@@ -1306,8 +1361,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
-  private SortedMap<String, Configuration> parseConfigurationsAndApplyEnvironment(
-      NetworkSnapshot snapshot) {
+  private SortedMap<String, Configuration> actuallyParseConfigurations(NetworkSnapshot snapshot) {
     _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
     repairConfigurations(snapshot);
     SortedMap<String, Configuration> configurations =
@@ -1316,7 +1370,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
     assert configurations != null;
-    postProcessSnapshot(snapshot, configurations);
     return configurations;
   }
 
@@ -1427,6 +1480,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException(
           "Version error repairing vendor configurations for parse configuration answer element");
+    }
+  }
+
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("Load vendor configurations").startActive()) {
+      assert span != null; // avoid unused warning
+      _logger.debugf("Loading vendor configurations for %s\n", snapshot);
+      // Do we already have configurations in the cache?
+      Map<String, VendorConfiguration> vendorConfigurations =
+          _cachedVendorConfigurations.getIfPresent(snapshot);
+      if (vendorConfigurations == null) {
+        _logger.debugf("Loading vendor configurations for %s, cache miss", snapshot);
+        loadParseVendorConfigurationAnswerElement(snapshot);
+        vendorConfigurations =
+            deserializeVendorConfigurations(getTestrigSettings(snapshot).getSerializeVendorPath());
+        _cachedVendorConfigurations.put(snapshot, vendorConfigurations);
+      }
+      return vendorConfigurations;
     }
   }
 
@@ -1699,14 +1772,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(
-                        v ->
-                            postProcessAggregatedInterfacesHelper(
-                                c.getAllInterfaces(v.getName()))));
+        .forEach(c -> postProcessAggregatedInterfacesHelper(c.getAllInterfaces()));
   }
 
   private void postProcessAggregatedInterfacesHelper(Map<String, Interface> interfaces) {
@@ -1716,6 +1782,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     /* Compute bandwidth for aggregated interfaces. */
     computeAggregatedInterfaceBandwidths(interfaces);
+  }
+
+  private void postProcessRedundantInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(
+                        v ->
+                            postProcessRedundantInterfacesHelper(c.getAllInterfaces(v.getName()))));
+  }
+
+  private void postProcessRedundantInterfacesHelper(Map<String, Interface> interfaces) {
+    /* Compute bandwidth for redundnant interfaces. */
+    computeRedundantInterfaceBandwidths(interfaces);
   }
 
   private void identifyDeviceTypes(Collection<Configuration> configurations) {
@@ -1798,7 +1881,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // Look at aggregate dependencies only now
-    if (iface.getInterfaceType() == InterfaceType.AGGREGATED
+    if ((iface.getInterfaceType() == InterfaceType.AGGREGATED
+            || iface.getInterfaceType() == InterfaceType.REDUNDANT)
         && dependencies.stream()
             .filter(d1 -> d1.getType() == DependencyType.AGGREGATE)
             // Extract existing and active interfaces
@@ -2072,18 +2156,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     updateBlacklistedAndInactiveConfigs(snapshot, configurations);
     postProcessAggregatedInterfaces(configurations);
+    postProcessRedundantInterfaces(configurations);
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
     EigrpTopologyUtils.initNeighborConfigs(nc);
-    computeAndStoreCompletionMetadata(snapshot, configurations);
   }
 
   private void computeAndStoreCompletionMetadata(
       NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
-          computeCompletionMetadata(configurations),
+          computeCompletionMetadata(snapshot, configurations),
           _settings.getContainer(),
           snapshot.getSnapshot());
     } catch (IOException e) {
@@ -2091,11 +2175,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+  private CompletionMetadata computeCompletionMetadata(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     return new CompletionMetadata(
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        CompletionMetadataUtils.getSourceLocationsWithSrcIps(getLocationInfo(snapshot)),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
@@ -2103,6 +2189,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getStructureNames(configurations),
         getVrfs(configurations),
         getZones(configurations));
+  }
+
+  @Override
+  public String getNetworkObject(NetworkId networkId, String key) throws IOException {
+    try (InputStream inputObject = _storage.loadNetworkObject(networkId, key)) {
+      byte[] bytes = IOUtils.toByteArray(inputObject);
+      return new String(bytes, detectCharset(bytes));
+    }
   }
 
   @Override
@@ -2383,9 +2477,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Set<Layer1Edge> layer1Edges =
           vendorConfigs.values().stream()
               .flatMap(vc -> vc.getLayer1Edges().stream())
-              .collect(ImmutableSet.toImmutableSet());
+              .collect(Collectors.toSet());
 
-      addInternetAndIspNodes(snapshot, configurations, vendorConfigs, answerElement.getWarnings());
+      Warnings internetWarnings =
+          answerElement
+              .getWarnings()
+              .computeIfAbsent(INTERNET_HOST_NAME, i -> buildWarnings(_settings));
+
+      ModeledNodes modeledNodes =
+          getInternetAndIspNodes(snapshot, configurations, vendorConfigs, internetWarnings);
+
+      mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2409,23 +2511,57 @@ public class Batfish extends PluginConsumer implements IBatfish {
         assert ppSpan != null; // avoid unused warning
         postProcessSnapshot(snapshot, configurations);
       }
+
+      try (ActiveSpan metadataSpan =
+          GlobalTracer.get().buildSpan("Compute and store completion metadata").startActive()) {
+        assert metadataSpan != null; // avoid unused warning
+        computeAndStoreCompletionMetadata(snapshot, configurations);
+      }
       return answer;
     }
   }
 
-  private void addInternetAndIspNodes(
+  /**
+   * Merges modeled nodes into {@code configurations} and {@code layer1Edges}. Nothing is done if
+   * the input configurations have a node in common with modeled nodes.
+   */
+  @VisibleForTesting
+  static void mergeInternetAndIspNodes(
+      ModeledNodes modeledNodes,
+      Map<String, Configuration> configurations,
+      Set<Layer1Edge> layer1Edges,
+      Warnings internetWarnings) {
+    Map<String, Configuration> modeledConfigs = modeledNodes.getConfigurations();
+    Set<String> commonNodes = Sets.intersection(configurations.keySet(), modeledConfigs.keySet());
+    if (!commonNodes.isEmpty()) {
+      internetWarnings.redFlag(
+          String.format(
+              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              commonNodes));
+      return;
+    }
+    configurations.putAll(modeledConfigs);
+    layer1Edges.addAll(modeledNodes.getLayer1Edges());
+  }
+
+  /**
+   * Creates and returns ISP and Internet nodes.
+   *
+   * <p>If a node named 'internet' already exists in input {@code configurations} an empty {@link
+   * ModeledNodes} object is returned.
+   */
+  @Nonnull
+  private ModeledNodes getInternetAndIspNodes(
       NetworkSnapshot snapshot,
       Map<String, Configuration> configurations,
       Map<String, VendorConfiguration> vendorConfigs,
-      SortedMap<String, Warnings> warnings) {
+      Warnings internetWarnings) {
     if (configurations.containsKey(INTERNET_HOST_NAME)) {
-      warnings
-          .getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings))
-          .redFlag("Cannot add internet because a node with the name 'internet' already exists");
-      return;
+      internetWarnings.redFlag(
+          "Cannot model internet because a node with the name 'internet' already exists");
+      return new ModeledNodes();
     }
 
-    Warnings internetWarnings = warnings.getOrDefault(INTERNET_HOST_NAME, buildWarnings(_settings));
     ImmutableList.Builder<IspConfiguration> ispConfigurations = new ImmutableList.Builder<>();
 
     IspConfiguration ispConfiguration =
@@ -2439,20 +2575,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(Objects::nonNull)
         .forEach(ispConfigurations::add);
 
-    Map<String, Configuration> additionalConfigs =
-        getInternetAndIspNodes(
-            configurations, ispConfigurations.build(), _logger, internetWarnings);
-
-    Set<String> commonNodes =
-        Sets.intersection(configurations.keySet(), additionalConfigs.keySet());
-    if (!commonNodes.isEmpty()) {
-      internetWarnings.redFlag(
-          String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
-              commonNodes));
-    } else {
-      configurations.putAll(additionalConfigs);
-    }
+    return IspModelingUtils.getInternetAndIspNodes(
+        configurations, ispConfigurations.build(), _logger, internetWarnings);
   }
 
   private void updateSnapshotNodeRoles(NetworkSnapshot snapshot) {
@@ -2591,7 +2715,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .map(
                   j -> {
                     ParseVendorConfigurationResult result =
-                        this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
+                        getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
                     batch.incrementAndGet();
                     return result;
                   })
@@ -3021,7 +3145,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions,
-      boolean ignoreFilters) {
+      boolean ignoreFilters,
+      boolean useInterfaceRoots) {
     BDDReachabilityAnalysisFactory factory =
         getBddReachabilityAnalysisFactory(snapshot, pkt, ignoreFilters);
     return factory.bddReachabilityAnalysis(
@@ -3030,7 +3155,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         forbiddenTransitNodes,
         requiredTransitNodes,
         finalNodes,
-        actions);
+        actions,
+        useInterfaceRoots);
   }
 
   /**

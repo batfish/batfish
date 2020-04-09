@@ -140,7 +140,7 @@ public final class EigrpNeighborConfig implements Serializable {
     }
 
     public Builder setInterfaceName(String interfaceName) {
-      this._interfaceName = interfaceName;
+      _interfaceName = interfaceName;
       return this;
     }
 
@@ -150,17 +150,17 @@ public final class EigrpNeighborConfig implements Serializable {
     }
 
     public Builder setHostname(String hostname) {
-      this._hostname = hostname;
+      _hostname = hostname;
       return this;
     }
 
     public Builder setVrfName(String vrfName) {
-      this._vrfName = vrfName;
+      _vrfName = vrfName;
       return this;
     }
 
     public Builder setPassive(boolean passive) {
-      this._isPassive = passive;
+      _isPassive = passive;
       return this;
     }
 

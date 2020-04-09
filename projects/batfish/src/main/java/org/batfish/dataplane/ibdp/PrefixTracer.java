@@ -35,10 +35,10 @@ public class PrefixTracer implements Serializable {
      * allowed or filtered the prefix.
      */
     Neighbor(String hostname, Ip ip, String vrfName, @Nullable String routingPolicy) {
-      this._hostname = hostname;
-      this._ip = ip;
-      this._routingPolicy = routingPolicy;
-      this._vrfName = vrfName;
+      _hostname = hostname;
+      _ip = ip;
+      _routingPolicy = routingPolicy;
+      _vrfName = vrfName;
     }
 
     /** Return the remote neighbor's hostname */

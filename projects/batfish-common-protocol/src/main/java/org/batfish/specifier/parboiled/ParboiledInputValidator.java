@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -15,14 +16,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
 import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
@@ -67,10 +68,16 @@ public final class ParboiledInputValidator {
       _referenceLibrary = referenceLibrary;
 
       _configs =
-          _completionMetadata.getNodes().stream()
+          _completionMetadata.getNodes().entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
-                      n -> n, n -> new Configuration(n, ConfigurationFormat.UNKNOWN)));
+                      Entry::getKey,
+                      n ->
+                          Configuration.builder()
+                              .setHostname(n.getKey())
+                              .setHumanName(n.getValue().getHumanName())
+                              .setConfigurationFormat(ConfigurationFormat.UNKNOWN)
+                              .build()));
     }
 
     @Nonnull
@@ -91,13 +98,13 @@ public final class ParboiledInputValidator {
     }
 
     @Override
-    public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
-      return ImmutableMap.of();
+    public LocationInfo getLocationInfo(Location location) {
+      throw new UnsupportedOperationException();
     }
 
     @Override
-    public IpSpace getSnapshotDeviceOwnedIps() {
-      return EmptyIpSpace.INSTANCE;
+    public Map<Location, LocationInfo> getLocationInfo() {
+      throw new UnsupportedOperationException();
     }
   }
 

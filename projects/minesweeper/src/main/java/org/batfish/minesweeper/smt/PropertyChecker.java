@@ -76,9 +76,9 @@ public class PropertyChecker {
   private final Object _lock;
 
   public PropertyChecker(BDDPacket bddPacket, IBatfish batfish) {
-    this._bddPacket = bddPacket;
-    this._batfish = batfish;
-    this._lock = new Object();
+    _bddPacket = bddPacket;
+    _batfish = batfish;
+    _lock = new Object();
   }
 
   private Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
@@ -1229,13 +1229,13 @@ public class PropertyChecker {
         @Nullable Encoder encDiff,
         @Nullable Map<String, BoolExpr> prop1,
         @Nullable Map<String, BoolExpr> prop2) {
-      this._result = result;
-      this._model = model;
-      this._srcRouters = sourceRouters;
-      this._enc = enc;
-      this._encDiff = encDiff;
-      this._prop = prop1;
-      this._propDiff = prop2;
+      _result = result;
+      _model = model;
+      _srcRouters = sourceRouters;
+      _enc = enc;
+      _encDiff = encDiff;
+      _prop = prop1;
+      _propDiff = prop2;
     }
 
     VerificationResult getResult() {

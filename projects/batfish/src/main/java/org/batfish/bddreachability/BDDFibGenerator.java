@@ -1,13 +1,19 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NodeDropNoRoute;
 import org.batfish.symbolic.state.NodeDropNullRoute;
 import org.batfish.symbolic.state.StateExpr;
@@ -53,6 +59,9 @@ public final class BDDFibGenerator {
   // node --> vrf --> set of packets routable by the vrf
   private final Map<String, Map<String, BDD>> _routableBDDs;
 
+  // node --> vrf --> interface --> set of packets accepted by the interface
+  private final Map<String, Map<String, Map<String, BDD>>> _ifaceAcceptBDDs;
+
   // node --> vrf --> set of packets accepted by the vrf
   private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
 
@@ -62,19 +71,39 @@ public final class BDDFibGenerator {
       Map<String, Map<String, Map<String, BDD>>> deliveredToSubnetBDDs,
       Map<String, Map<String, Map<String, BDD>>> exitsNetworkBDDs,
       Map<String, Map<String, Map<String, BDD>>> insufficientInfoBDDs,
-      Map<String, Map<String, BDD>> vrfAcceptBDDs,
+      Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBDDs,
       Map<String, Map<String, BDD>> routableBDDs,
       Map<String, Map<String, Map<String, BDD>>> nextVrfBDDs,
-      Map<String, Map<String, BDD>> nullRoutedBDDs) {
+      Map<String, Map<String, BDD>> nullRoutedBDDs,
+      Function<Collection<BDD>, BDD> orAll) {
     _arpTrueEdgeBDDs = arpTrueEdgeBDDs;
     _neighborUnreachableBDDs = neighborUnreachableBDDs;
     _deliveredToSubnetBDDs = deliveredToSubnetBDDs;
     _exitsNetworkBDDs = exitsNetworkBDDs;
     _insufficientInfoBDDs = insufficientInfoBDDs;
-    _vrfAcceptBDDs = vrfAcceptBDDs;
+    _ifaceAcceptBDDs = ifaceAcceptBDDs;
+    _vrfAcceptBDDs = computeVrfAcceptBDDs(_ifaceAcceptBDDs, orAll);
     _routableBDDs = routableBDDs;
     _nextVrfBDDs = nextVrfBDDs;
     _nullRoutedBDDs = nullRoutedBDDs;
+  }
+
+  /**
+   * Given a mapping of interface accept BDDs (node -&gt; vrf -&gt; interface -&gt; accept BDD),
+   * returns a mapping of node -&gt; vrf -&gt; accept BDD where each VRF's accept BDD is the union
+   * of its interfaces' accept BDDs.
+   */
+  private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
+      Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBdds,
+      Function<Collection<BDD>, BDD> orAll) {
+    return toImmutableMap(
+        ifaceAcceptBdds,
+        Entry::getKey, // node name
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf name
+                vrfEntry -> orAll.apply(vrfEntry.getValue().values()))); // vrf's accept BDD
   }
 
   /**
@@ -92,7 +121,8 @@ public final class BDDFibGenerator {
       StateExprConstructor2 preOutInterfaceInsufficientInfo,
       StateExprConstructor2 preOutInterfaceNeighborUnreachable) {
     return Streams.concat(
-        generateRules_PostInVrf_VrfAccept(includedNode, postInVrf),
+        generateRules_PostInVrf_InterfaceAccept(includedNode, postInVrf),
+        generateRules_InterfaceAccept_VrfAccept(includedNode),
         generateRules_PostInVrf_NodeDropNoRoute(includedNode, postInVrf),
         generateRules_PostInVrf_PostInVrf(includedNode, postInVrf),
         generateRules_PostInVrf_PreOutVrf(includedNode, postInVrf, preOutVrf),
@@ -109,21 +139,49 @@ public final class BDDFibGenerator {
 
   @Nonnull
   @VisibleForTesting
-  Stream<Edge> generateRules_PostInVrf_VrfAccept(
+  Stream<Edge> generateRules_PostInVrf_InterfaceAccept(
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
-    return _vrfAcceptBDDs.entrySet().stream()
+    return _ifaceAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
         .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().entrySet().stream()
-                    .map(
-                        vrfEntry -> {
-                          String node = nodeEntry.getKey();
-                          String vrf = vrfEntry.getKey();
-                          BDD acceptBDD = vrfEntry.getValue();
-                          return new Edge(
-                              postInVrf.apply(node, vrf), new VrfAccept(node, vrf), acceptBDD);
-                        }));
+            nodeEntry -> {
+              String node = nodeEntry.getKey();
+              return nodeEntry.getValue().entrySet().stream()
+                  .flatMap(
+                      vrfEntry -> {
+                        String vrf = vrfEntry.getKey();
+                        return vrfEntry.getValue().entrySet().stream()
+                            .map(
+                                ifaceEntry -> {
+                                  String iface = ifaceEntry.getKey();
+                                  BDD acceptBdd = ifaceEntry.getValue();
+                                  return new Edge(
+                                      postInVrf.apply(node, vrf),
+                                      new InterfaceAccept(node, iface),
+                                      acceptBdd);
+                                });
+                      });
+            });
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  Stream<Edge> generateRules_InterfaceAccept_VrfAccept(Predicate<String> includedNode) {
+    return _ifaceAcceptBDDs.entrySet().stream()
+        .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
+        .flatMap(
+            nodeEntry -> {
+              String node = nodeEntry.getKey();
+              return nodeEntry.getValue().entrySet().stream()
+                  .flatMap(
+                      vrfEntry ->
+                          vrfEntry.getValue().keySet().stream()
+                              .map(
+                                  iface ->
+                                      new Edge(
+                                          new InterfaceAccept(node, iface),
+                                          new VrfAccept(node, vrfEntry.getKey()))));
+            });
   }
 
   @Nonnull

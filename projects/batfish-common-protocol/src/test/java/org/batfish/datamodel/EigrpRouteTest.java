@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.WideMetric;
@@ -16,7 +15,7 @@ import org.junit.runners.JUnit4;
 public class EigrpRouteTest {
 
   @Test
-  public void testEigrpInternalRouteClone() throws IOException {
+  public void testEigrpInternalRouteClone() {
     EigrpInternalRoute route =
         EigrpInternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -31,7 +30,7 @@ public class EigrpRouteTest {
   }
 
   @Test
-  public void testEigrpExternalRouteClone() throws IOException {
+  public void testEigrpExternalRouteClone() {
     EigrpExternalRoute route =
         EigrpExternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))

@@ -54,16 +54,19 @@ public final class SourcesReferencedByIpAccessLists {
       acl.getLines().forEach(this::visit);
     }
 
-    /* AclLine visit methods */
-
-    @Override
-    public Void visitAclAclLine(AclAclLine aclAclLine) {
-      String aclName = aclAclLine.getAclName();
+    private Void processAclReference(String aclName) {
       Supplier<Void> thunk = _namedAclThunks.get(aclName);
       if (thunk == null) {
         throw new BatfishException("Unknown IpAccessList " + aclName);
       }
       return thunk.get();
+    }
+
+    /* AclLine visit methods */
+
+    @Override
+    public Void visitAclAclLine(AclAclLine aclAclLine) {
+      return processAclReference(aclAclLine.getAclName());
     }
 
     @Override
@@ -78,6 +81,11 @@ public final class SourcesReferencedByIpAccessLists {
     public Void visitAndMatchExpr(AndMatchExpr andMatchExpr) {
       andMatchExpr.getConjuncts().forEach(this::visit);
       return null;
+    }
+
+    @Override
+    public Void visitDeniedByAcl(DeniedByAcl deniedByAcl) {
+      return processAclReference(deniedByAcl.getAclName());
     }
 
     @Override
@@ -116,12 +124,7 @@ public final class SourcesReferencedByIpAccessLists {
 
     @Override
     public Void visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-      String aclName = permittedByAcl.getAclName();
-      Supplier<Void> thunk = _namedAclThunks.get(aclName);
-      if (thunk == null) {
-        throw new BatfishException("Unknown IpAccessList " + aclName);
-      }
-      return thunk.get();
+      return processAclReference(permittedByAcl.getAclName());
     }
 
     @Override

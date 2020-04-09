@@ -1,0 +1,78 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Attachment": {
+    "AttachTime": "2020-02-12 18:00:16+00:00",
+    "AttachmentId": "eni-attach-0ea1f0efff475980f",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-08ef86e76fceabd8d",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-2b",
+   "Description": "Primary network interface",
+   "Groups": [
+    {
+     "GroupId": "sg-03dbad9f9c0cd1949",
+     "GroupName": "launch-wizard-2"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "06:6a:44:b3:27:3a",
+   "NetworkInterfaceId": "eni-010f649a7fc5c1e34",
+   "OwnerId": "554773406868",
+   "PrivateIpAddress": "10.10.1.228",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateIpAddress": "10.10.1.228"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-06c8307e34ffadb04",
+   "TagSet": [],
+   "VpcId": "vpc-062867d29dbf9386f"
+  },
+  {
+   "Attachment": {
+    "AttachTime": "2020-02-12 17:59:42+00:00",
+    "AttachmentId": "eni-attach-062f387d524fdfe04",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-07519d6ba3f9497e4",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-2b",
+   "Description": "Primary network interface",
+   "Groups": [
+    {
+     "GroupId": "sg-02566e413c0030c70",
+     "GroupName": "launch-wizard-1"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "06:c1:8d:95:0a:fc",
+   "NetworkInterfaceId": "eni-029bf1092de61fb40",
+   "OwnerId": "554773406868",
+   "PrivateIpAddress": "10.10.1.44",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateIpAddress": "10.10.1.44"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-06c8307e34ffadb04",
+   "TagSet": [],
+   "VpcId": "vpc-062867d29dbf9386f"
+  }
+ ]
+}

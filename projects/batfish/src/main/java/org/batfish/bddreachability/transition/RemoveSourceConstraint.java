@@ -53,4 +53,9 @@ final class RemoveSourceConstraint implements Transition {
   public BDD transitBackward(BDD bdd) {
     return bdd.and(_mgr.isValidValue());
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }

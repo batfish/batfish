@@ -21,6 +21,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -148,6 +149,7 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
@@ -171,13 +173,23 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT;
+import static org.batfish.representation.cisco.CiscoConfiguration.PERMIT_TRAFFIC_FROM_DEVICE;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaDeniedByOutputFilterTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitHigherSecurityLevelTrafficTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermitLowerSecurityLevelTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaPermittedByOutputFilterTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.asaRejectLowerSecurityLevelTraceElement;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeASASecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeSecurityLevelZoneName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
@@ -263,6 +275,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -341,6 +355,8 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -359,6 +375,7 @@ import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
@@ -384,6 +401,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -398,6 +416,7 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
@@ -992,6 +1011,73 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaInterfaceRedundantExtraction() {
+    CiscoConfiguration config =
+        parseCiscoConfig("asa-interface-redundant", ConfigurationFormat.CISCO_ASA);
+
+    assertThat(
+        config.getInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/1",
+            "GigabitEthernet0/2",
+            "Redundant1",
+            "Redundant1.2",
+            "Redundant2",
+            "Redundant2.2"));
+    {
+      org.batfish.representation.cisco.Interface iface = config.getInterfaces().get("Redundant1");
+      assertThat(
+          iface.getMemberInterfaces(),
+          containsInAnyOrder("GigabitEthernet0/1", "GigabitEthernet0/2"));
+    }
+    {
+      org.batfish.representation.cisco.Interface iface = config.getInterfaces().get("Redundant2");
+      assertThat(iface.getMemberInterfaces(), empty());
+    }
+  }
+
+  @Test
+  public void testAsaInterfaceRedundantConversion() throws IOException {
+    Configuration config = parseConfig("asa-interface-redundant");
+
+    assertThat(
+        config.getAllInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/1",
+            "GigabitEthernet0/2",
+            "Redundant1",
+            "redundant1sub",
+            "Redundant2",
+            "redundant2sub"));
+    {
+      Interface iface = config.getAllInterfaces().get("Redundant1");
+      assertThat(
+          iface.getDependencies(),
+          containsInAnyOrder(
+              new Dependency("GigabitEthernet0/1", DependencyType.AGGREGATE),
+              new Dependency("GigabitEthernet0/2", DependencyType.AGGREGATE)));
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("redundant1sub");
+      assertThat(iface.getBandwidth(), equalTo(1E9D));
+      assertTrue(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("Redundant2");
+      assertThat(iface.getDependencies(), empty());
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+    {
+      Interface iface = config.getAllInterfaces().get("redundant2sub");
+      assertThat(iface.getBandwidth(), equalTo(0.0D));
+      assertFalse(iface.getActive());
+    }
+  }
+
+  @Test
   public void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
     assertThat(
@@ -1021,6 +1107,13 @@ public final class CiscoGrammarTest {
         c,
         hasInterface(
             ifaceAlias, hasPreTransformationOutgoingFilter(not(accepts(flowFail, null, c)))));
+
+    // FILTER_IN is applied post-transformation
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias,
+            hasPostTransformationIncomingFilter(IpAccessListMatchers.hasName("FILTER_IN"))));
   }
 
   @Test
@@ -3636,7 +3729,7 @@ public final class CiscoGrammarTest {
 
   /** Tests that we can append more BGP config at the bottom of a file. */
   @Test
-  public void testBgpReentrantVrf() throws IOException {
+  public void testBgpReentrantVrf() {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf", ConfigurationFormat.CISCO_IOS);
     // Simple test that default VRF was parsed
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
@@ -4216,11 +4309,20 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosMlagConfig() throws IOException {
-    String hostname = "eos-mlag";
+  public void testEosMlagExtraction() {
+    CiscoConfiguration c = parseCiscoConfig("eos-mlag", ConfigurationFormat.ARISTA);
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
+    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
+    assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
+    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
+    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
+  }
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+  @Test
+  public void testEosMlagConversion() throws IOException {
+    Configuration c = parseConfig("eos-mlag");
 
     final String mlagName = "MLAG_DOMAIN_ID";
     assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));
@@ -5311,9 +5413,9 @@ public final class CiscoGrammarTest {
     Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
 
     // Confirm zones are created for each level
-    assertThat(c, hasZone(computeSecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
-    assertThat(c, hasZone(computeSecurityLevelZoneName(45), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeSecurityLevelZoneName(1), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeASASecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
+    assertThat(c, hasZone(computeASASecurityLevelZoneName(45), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeASASecurityLevelZoneName(1), hasMemberInterfaces(hasSize(1))));
 
     // No traffic in and out of the same interface
     assertThat(
@@ -5387,6 +5489,43 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaSecurityLevel_tracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level");
+    String explicit100Interface = "all-trust";
+    String insideInterface = "inside";
+
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
+
+    BiFunction<String, String, List<TraceTree>> trace =
+        (fromIface, toIface) ->
+            AclTracer.trace(
+                c.getAllInterfaces().get(toIface).getPreTransformationOutgoingFilter(),
+                newFlow,
+                fromIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // from device
+    {
+      List<TraceTree> traces = trace.apply(null, insideInterface);
+      assertThat(traces, contains(isTraceTree(PERMIT_TRAFFIC_FROM_DEVICE)));
+    }
+
+    // intra-security-level, but from/to different interfaces
+    {
+      List<TraceTree> traces = trace.apply(explicit100Interface, insideInterface);
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT)));
+    }
+
+    // hairpinning
+    {
+      List<TraceTree> traces = trace.apply(explicit100Interface, explicit100Interface);
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT)));
+    }
+  }
+
+  @Test
   public void testAsaSecurityLevelPermitBoth() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
@@ -5412,6 +5551,224 @@ public final class CiscoGrammarTest {
         c,
         hasInterface(
             ifaceAlias2, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+  }
+
+  @Test
+  public void testAsaSecurityLevelPermitBoth_tracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-both");
+    String ifaceAlias1 = "name1";
+    String ifaceAlias2 = "name2";
+    Flow newFlow = createFlow(IpProtocol.OSPF, 0, 0);
+
+    BiFunction<String, String, List<TraceTree>> trace =
+        (fromIface, toIface) ->
+            AclTracer.trace(
+                c.getAllInterfaces().get(toIface).getPreTransformationOutgoingFilter(),
+                newFlow,
+                fromIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // intra-security-level, but from/to different interfaces
+    {
+      List<TraceTree> traces = trace.apply(ifaceAlias1, ifaceAlias2);
+      assertThat(traces, contains(isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT)));
+    }
+
+    // hairpinning
+    {
+      List<TraceTree> traces = trace.apply(ifaceAlias1, ifaceAlias1);
+      assertThat(traces, contains(isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT)));
+    }
+  }
+
+  /**
+   * Test the traces AclTracer produces for ASA security-levels, when the security-level policy
+   * permits, and there is an out filter on the out interface.
+   */
+  @Test
+  public void testAsaSecurityLevelPermitTracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-tracing");
+    String out = "out"; // security-level 50, has out filter
+    String inSameLevel = "inSameLevel"; // security-level 50
+    String inLowFiltered = "inLowFiltered"; // security-level 10 with ingress filter
+    String inHigh = "inHigh"; // security-level 100
+
+    Flow permitFlow = createFlow(IpProtocol.TCP, 0, 123);
+    Flow defaultDenyFlow = createFlow(IpProtocol.TCP, 0, 80);
+    Flow explicitDenyFlow = createFlow(IpProtocol.TCP, 0, 22);
+
+    // out is always the egress interface
+    IpAccessList filter = c.getAllInterfaces().get(out).getPreTransformationOutgoingFilter();
+    BiFunction<String, Flow, List<TraceTree>> trace =
+        (inIface, flow) ->
+            AclTracer.trace(
+                filter,
+                flow,
+                inIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    IpAccessList filterOut = c.getIpAccessLists().get("FILTER_OUT");
+
+    // permitted, intra-interface
+    {
+      List<TraceTree> traces = trace.apply(out, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+              isTraceTree(
+                  asaPermittedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // default-denied, intra-interface
+    {
+      List<TraceTree> traces = trace.apply(out, defaultDenyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut))));
+    }
+
+    // explicitly denied, intra-interface
+    {
+      List<TraceTree> traces = trace.apply(out, explicitDenyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT),
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut),
+                  isTraceTree(matchedByAclLine("deny tcp any any eq 22")))));
+    }
+
+    // permitted, inter-interface
+    {
+      List<TraceTree> traces = trace.apply(inSameLevel, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
+              isTraceTree(
+                  asaPermittedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, inter-interface
+    {
+      List<TraceTree> traces = trace.apply(inSameLevel, defaultDenyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT),
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut))));
+    }
+
+    // permitted, low-to-high (low has ingress filter)
+    {
+      List<TraceTree> traces = trace.apply(inLowFiltered, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
+              isTraceTree(
+                  asaPermittedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, low-to-high (low has ingress filter)
+    {
+      List<TraceTree> traces = trace.apply(inLowFiltered, defaultDenyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(asaPermitLowerSecurityLevelTraceElement(10)),
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut))));
+    }
+
+    // permitted, high-to-low
+    {
+      List<TraceTree> traces = trace.apply(inHigh, permitFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
+              isTraceTree(
+                  asaPermittedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut),
+                  isTraceTree(matchedByAclLine(filterOut, 0)))));
+    }
+
+    // denied, high-to-low
+    {
+      List<TraceTree> traces = trace.apply(inHigh, defaultDenyFlow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(asaPermitHigherSecurityLevelTrafficTraceElement(100)),
+              isTraceTree(
+                  asaDeniedByOutputFilterTraceElement(
+                      "configs/asa-security-level-permit-tracing", filterOut))));
+    }
+  }
+
+  /**
+   * Test the traces AclTracer produces for ASA security-levels, when the security-level policy
+   * denies
+   */
+  @Test
+  public void testAsaSecurityLevelDenyTracing() throws IOException {
+    Configuration c = parseConfig("asa-security-level-deny-tracing");
+    String out = "out";
+    String inSameLevel = "inSameLevel";
+    String inLowUnfiltered = "inLowUnfiltered";
+
+    Flow flow = createFlow(IpProtocol.TCP, 0, 123);
+
+    // out is always the egress interface
+    IpAccessList filter = c.getAllInterfaces().get(out).getPreTransformationOutgoingFilter();
+    Function<String, List<TraceTree>> trace =
+        (inIface) ->
+            AclTracer.trace(
+                filter,
+                flow,
+                inIface,
+                c.getIpAccessLists(),
+                c.getIpSpaces(),
+                c.getIpSpaceMetadata());
+
+    // same security level, intra-interface (hairpinning)
+    {
+      List<TraceTree> traces = trace.apply(out);
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT)));
+    }
+
+    // same security level, inter-interface
+    {
+      List<TraceTree> traces = trace.apply(inSameLevel);
+      assertThat(traces, contains(isTraceTree(DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT)));
+    }
+
+    // lower security level, no ingress filter
+    {
+      List<TraceTree> traces = trace.apply(inLowUnfiltered);
+      assertThat(traces, contains(isTraceTree(asaRejectLowerSecurityLevelTraceElement(10))));
+    }
   }
 
   @Test
@@ -5717,9 +6074,9 @@ public final class CiscoGrammarTest {
     String hostname = "asa-nat-twice-dynamic";
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
 
-    MatchHeaderSpace matchSourceSubnet =
+    AclLineMatchExpr matchSourceSubnet =
         matchSrc(new IpSpaceReference("source-subnet", "Match network object: 'source-subnet'"));
-    MatchHeaderSpace matchSourceGroup =
+    AclLineMatchExpr matchSourceGroup =
         matchSrc(
             new IpSpaceReference("source-group", "Match network object-group: 'source-group'"));
     AssignIpAddressFromPool assignSourceRange =

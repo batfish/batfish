@@ -6,13 +6,16 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
-public abstract class FwFromApplicationSetMember implements Serializable {
+public interface FwFromApplicationSetMember extends Serializable {
 
-  public abstract void applyTo(
+  void applyTo(
       JuniperConfiguration jc,
       HeaderSpace.Builder srcHeaderSpaceBuilder,
       LineAction action,
       List<? super ExprAclLine> lines,
       Warnings w);
+
+  AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w);
 }

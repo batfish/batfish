@@ -3,10 +3,14 @@ package org.batfish.datamodel.answers;
 import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage;
 import static org.batfish.datamodel.answers.InputValidationUtils.validateIp;
 import static org.batfish.datamodel.answers.InputValidationUtils.validatePrefix;
+import static org.batfish.datamodel.answers.InputValidationUtils.validateSourceLocation;
+import static org.batfish.specifier.parboiled.InternetLocationAstNode.INTERNET_LOCATION;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.function.Function;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Ip;
@@ -20,6 +24,7 @@ import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.parboiled.Grammar;
 import org.junit.Test;
 
@@ -166,5 +171,39 @@ public class InputValidationUtilsTest {
         equalTo(
             new InputValidationNotes(
                 Validity.INVALID, "Invalid IPv4 address: 1.1.1.1111. 1111 is an invalid octet")));
+  }
+
+  @Test
+  public void testValidateSourceLocation() {
+    CompletionMetadata metadata =
+        CompletionMetadata.builder()
+            .setNodes(ImmutableSet.of(INTERNET_LOCATION.getNodeName(), "node"))
+            .setSourceLocations(
+                ImmutableSet.of(INTERNET_LOCATION, new InterfaceLocation("node", "iface")))
+            .build();
+
+    // shorthand for INTERNET_LOCATION is valid
+    {
+      InputValidationNotes notes = validateSourceLocation("internet", metadata);
+      assertEquals(Validity.VALID, notes.getValidity());
+    }
+
+    // longhand for INTERNET_LOCATION is invalid
+    {
+      InputValidationNotes notes = validateSourceLocation("@enter(internet[out])", metadata);
+      assertEquals(Validity.INVALID, notes.getValidity());
+    }
+
+    // exact match is valid
+    {
+      InputValidationNotes notes = validateSourceLocation("node[iface]", metadata);
+      assertEquals(Validity.VALID, notes.getValidity());
+    }
+
+    // partial match is invalid
+    {
+      InputValidationNotes notes = validateSourceLocation("node", metadata);
+      assertEquals(Validity.INVALID, notes.getValidity());
+    }
   }
 }

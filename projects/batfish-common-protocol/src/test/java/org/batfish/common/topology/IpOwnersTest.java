@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
+import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.allOf;
@@ -121,7 +122,7 @@ public class IpOwnersTest {
   }
 
   @Test
-  public void testComputeIpVrfOwners() {
+  public void testComputeIpIfaceOwners() {
     String node = "node";
     String vrfName = "vrf";
     Vrf vrf = new Vrf(vrfName);
@@ -149,10 +150,35 @@ public class IpOwnersTest {
         ImmutableMap.of(activeIp, ImmutableMap.of(node, ImmutableSet.of(activeName)));
 
     // Test
-    Map<Ip, Map<String, Set<String>>> ipVrfOwners = computeIpVrfOwners(allInterfaces, activeIps);
+    Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners =
+        computeIpIfaceOwners(allInterfaces, activeIps);
 
     assertThat(
+        ipIfaceOwners,
+        equalTo(
+            ImmutableMap.of(
+                activeIp,
+                ImmutableMap.of(node, ImmutableMap.of(vrfName, ImmutableSet.of(activeName))))));
+  }
+
+  @Test
+  public void testComputeIpVrfOwners() {
+    String node = "node";
+    String vrf1 = "vrf1";
+    String vrf2 = "vrf2";
+    Ip ip = Ip.parse("1.1.1.1");
+
+    Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners =
+        ImmutableMap.of(
+            ip,
+            ImmutableMap.of(
+                node,
+                ImmutableMap.of(
+                    vrf1, ImmutableSet.of("iface1", "iface2"), vrf2, ImmutableSet.of("iface3"))));
+
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners = computeIpVrfOwners(ipIfaceOwners);
+    assertThat(
         ipVrfOwners,
-        equalTo(ImmutableMap.of(activeIp, ImmutableMap.of(node, ImmutableSet.of(vrfName)))));
+        equalTo(ImmutableMap.of(ip, ImmutableMap.of(node, ImmutableSet.of(vrf1, vrf2)))));
   }
 }

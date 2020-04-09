@@ -1,6 +1,6 @@
-package(default_visibility = ["//visibility:public"])
+load("@rules_java//java:defs.bzl", "java_library")
 
-load("@batfish//skylark:junit.bzl", "junit_tests")
+package(default_visibility = ["//visibility:public"])
 
 java_library(
     name = "symbolic",

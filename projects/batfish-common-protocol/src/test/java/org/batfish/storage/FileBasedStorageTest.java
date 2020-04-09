@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
@@ -39,6 +40,8 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -58,6 +61,7 @@ import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.specifier.InterfaceLocation;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -453,9 +457,10 @@ public final class FileBasedStorageTest {
         new CompletionMetadata(
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
-            ImmutableSet.of("1.1.1.1"),
+            ImmutableMap.of(Ip.parse("1.1.1.1"), new IpCompletionMetadata()),
+            ImmutableSet.of(new InterfaceLocation("node", "iface")),
             ImmutableSet.of("mlag"),
-            ImmutableSet.of("node"),
+            ImmutableMap.of("node", new NodeCompletionMetadata(null)),
             ImmutableSet.of("1.1.1.1/30"),
             ImmutableSet.of("routing1"),
             ImmutableSet.of("structure1"),

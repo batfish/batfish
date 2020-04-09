@@ -33,7 +33,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setClientToClientReflection(boolean clientToClientReflection) {
-    this._clientToClientReflection = clientToClientReflection;
+    _clientToClientReflection = clientToClientReflection;
   }
 
   public final boolean getDefaultInformationOriginate() {
@@ -41,7 +41,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setDefaultInformationOriginate(boolean defaultInformationOriginate) {
-    this._defaultInformationOriginate = defaultInformationOriginate;
+    _defaultInformationOriginate = defaultInformationOriginate;
   }
 
   @Nullable
@@ -50,7 +50,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setDefaultMetric(@Nullable Long defaultMetric) {
-    this._defaultMetric = defaultMetric;
+    _defaultMetric = defaultMetric;
   }
 
   public final int getDistanceEbgp() {
@@ -58,7 +58,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setDistanceEbgp(int distanceEbgp) {
-    this._distanceEbgp = distanceEbgp;
+    _distanceEbgp = distanceEbgp;
   }
 
   public final int getDistanceIbgp() {
@@ -66,7 +66,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setDistanceIbgp(int distanceIbgp) {
-    this._distanceIbgp = distanceIbgp;
+    _distanceIbgp = distanceIbgp;
   }
 
   public final int getDistanceLocal() {
@@ -74,7 +74,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setDistanceLocal(int distanceLocal) {
-    this._distanceLocal = distanceLocal;
+    _distanceLocal = distanceLocal;
   }
 
   public final int getMaximumPathsEbgp() {
@@ -82,7 +82,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setMaximumPathsEbgp(int maximumPathsEbgp) {
-    this._maximumPathsEbgp = maximumPathsEbgp;
+    _maximumPathsEbgp = maximumPathsEbgp;
   }
 
   public final int getMaximumPathsIbgp() {
@@ -90,7 +90,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   public final void setMaximumPathsIbgp(int maximumPathsIbgp) {
-    this._maximumPathsIbgp = maximumPathsIbgp;
+    _maximumPathsIbgp = maximumPathsIbgp;
   }
 
   /** Return all redistribution policies. */

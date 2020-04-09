@@ -3,6 +3,7 @@ package org.batfish.specifier;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.parboiled.Grammar;
+import org.batfish.specifier.parboiled.ParboiledAppSpecifier;
 import org.batfish.specifier.parboiled.ParboiledEnumSetSpecifier;
 import org.batfish.specifier.parboiled.ParboiledFilterSpecifier;
 import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifier;
@@ -30,6 +31,16 @@ public final class SpecifierFactories {
 
   /** Which grammar version is currently in use */
   public static final Version ACTIVE_VERSION = Version.V2;
+
+  public static ApplicationSpecifier getApplicationSpecifier(String input, Version version) {
+    switch (version) {
+      case V1:
+      case V2:
+        return ParboiledAppSpecifier.parse(input);
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
 
   public static FilterSpecifier getFilterSpecifier(String input, Version version) {
     switch (version) {
@@ -128,6 +139,11 @@ public final class SpecifierFactories {
     }
   }
 
+  public static ApplicationSpecifier getApplicationSpecifierOrDefault(
+      @Nullable String input, ApplicationSpecifier defaultSpecifier) {
+    return getApplicationSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
+  }
+
   public static FilterSpecifier getFilterSpecifierOrDefault(
       @Nullable String input, FilterSpecifier defaultSpecifier) {
     return getFilterSpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
@@ -171,6 +187,11 @@ public final class SpecifierFactories {
   public static RoutingPolicySpecifier getRoutingPolicySpecifierOrDefault(
       @Nullable String input, RoutingPolicySpecifier defaultSpecifier) {
     return getRoutingPolicySpecifierOrDefault(input, defaultSpecifier, ACTIVE_VERSION);
+  }
+
+  public static ApplicationSpecifier getApplicationSpecifierOrDefault(
+      @Nullable String input, ApplicationSpecifier defaultSpecifier, Version v) {
+    return input == null || input.isEmpty() ? defaultSpecifier : getApplicationSpecifier(input, v);
   }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(

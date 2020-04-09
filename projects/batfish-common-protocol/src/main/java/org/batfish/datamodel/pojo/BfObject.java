@@ -19,9 +19,7 @@ public abstract class BfObject {
 
   @Override
   public boolean equals(Object o) {
-    return (o != null
-        && o.getClass() == this.getClass()
-        && Objects.equals(_id, ((BfObject) o).getId()));
+    return (o != null && o.getClass() == getClass() && Objects.equals(_id, ((BfObject) o).getId()));
   }
 
   @JsonProperty(PROP_ID)

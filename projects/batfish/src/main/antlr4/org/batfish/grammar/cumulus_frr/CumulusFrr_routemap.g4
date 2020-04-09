@@ -76,6 +76,7 @@ rm_set
   SET
   (
     rms_as_path
+    | rms_comm_list
     | rms_community
     | rms_ip
     | rms_local_preference
@@ -159,6 +160,11 @@ rmsip_next_hop
 rmsipnh_literal
 :
   next_hop = ip_address NEWLINE
+;
+
+rms_comm_list
+:
+  COMM_LIST name = ip_community_list_name DELETE NEWLINE
 ;
 
 rms_community

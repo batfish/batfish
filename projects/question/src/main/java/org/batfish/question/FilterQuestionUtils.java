@@ -121,7 +121,7 @@ public final class FilterQuestionUtils {
         };
 
     return startLocationSpecifier.resolve(specifierContext).stream()
-        .filter(LocationVisitor.onNode(node)::visit)
+        .filter(loc -> loc.getNodeName().equals(node))
         .map(locationToSource::visit)
         .collect(ImmutableSet.toImmutableSet());
   }

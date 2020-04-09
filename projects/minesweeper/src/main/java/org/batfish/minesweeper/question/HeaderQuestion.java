@@ -441,11 +441,11 @@ public class HeaderQuestion extends Question {
 
   @JsonProperty(PROP_USE_ABSTRACTION)
   public void setUseAbstraction(boolean x) {
-    this._useAbstraction = x;
+    _useAbstraction = x;
   }
 
   @JsonProperty(PROP_BENCHMARK)
   public void setBenchmark(boolean x) {
-    this._benchmark = x;
+    _benchmark = x;
   }
 }

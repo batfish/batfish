@@ -38,7 +38,7 @@ public abstract class CiscoNxosBaseLexer extends BatfishLexer {
   }
 
   protected final boolean bannerDelimiterFollows() {
-    return this.getInputStream().LA(1) == _bannerDelimiter;
+    return getInputStream().LA(1) == _bannerDelimiter;
   }
 
   protected final void unsetBannerDelimiter() {

@@ -15,8 +15,8 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
     // relevant length.
     int realPrefixLength = Math.min(prefix.getPrefixLength(), lengthRange.getEnd());
     Ip realPrefixAddress = prefix.getStartIp().getNetworkAddress(realPrefixLength);
-    this._prefix = Prefix.create(realPrefixAddress, prefix.getPrefixLength());
-    this._lengthRange = lengthRange;
+    _prefix = Prefix.create(realPrefixAddress, prefix.getPrefixLength());
+    _lengthRange = lengthRange;
   }
 
   /** Returns a {@link PrefixRange} that contains exactly the specified {@link Prefix}. */
@@ -79,11 +79,11 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
 
   @Override
   public int compareTo(@Nonnull PrefixRange o) {
-    int prefixCmp = this._prefix.compareTo(o._prefix);
+    int prefixCmp = _prefix.compareTo(o._prefix);
     if (prefixCmp != 0) {
       return prefixCmp;
     }
-    return this._lengthRange.compareTo(o._lengthRange);
+    return _lengthRange.compareTo(o._lengthRange);
   }
 
   @Override

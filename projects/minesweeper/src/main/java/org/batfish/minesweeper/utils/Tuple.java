@@ -10,8 +10,8 @@ public class Tuple<T1, T2> {
   private T2 _second;
 
   public Tuple(@Nullable T1 first, @Nullable T2 second) {
-    this._first = first;
-    this._second = second;
+    _first = first;
+    _second = second;
   }
 
   public T1 getFirst() {

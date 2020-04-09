@@ -16,6 +16,7 @@ tokens {
    DYNAMIC_DB,
    FIN,
    INTERFACE_NAME,
+   INTERFACE_WILDCARD,
    ISO_ADDRESS,
    LITERAL_OR_REGEX_COMMUNITY,
    PIPE,
@@ -2064,7 +2065,14 @@ INTERFACE_TRANSMIT_STATISTICS
 
 INTERFACES
 :
-   'interfaces' -> pushMode ( M_Interface )
+  'interfaces'
+  {
+    if (lastTokenType() == CLASS_OF_SERVICE) {
+      pushMode(M_InterfaceWildcard);
+    } else {
+      pushMode(M_Interface);
+    }
+  }
 ;
 
 INTERFACE_ROUTES
@@ -7187,6 +7195,36 @@ M_InterfaceQuote_WILDCARD
 M_InterfaceQuote_DOUBLE_QUOTED_STRING
 :
     ~'"'+ -> type ( DOUBLE_QUOTED_STRING )
+;
+
+mode M_InterfaceWildcard;
+
+M_InterfaceWildcard_APPLY_GROUPS
+:
+  'apply-groups' -> type(APPLY_GROUPS), popMode
+;
+
+M_InterfaceWildcard_APPLY_GROUPS_EXCEPT
+:
+  'apply-groups' -> type(APPLY_GROUPS_EXCEPT), popMode
+;
+
+M_InterfaceWildcard_NEWLINE
+:
+  F_NewlineChar+ -> type(NEWLINE), popMode
+;
+
+M_InterfaceWildcard_INTERFACE_WILDCARD
+:
+  (
+    [A-Za-z]+ [-A-Za-z0-9]+ '*'?
+    | '*'
+  ) -> type(INTERFACE_WILDCARD), popMode
+;
+
+M_InterfaceWildcard_WS
+:
+  F_WhitespaceChar+ -> channel(HIDDEN)
 ;
 
 mode M_ISO;

@@ -1,5 +1,6 @@
 package org.batfish.question.ospfarea;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -15,6 +16,7 @@ public class OspfAreaConfigurationQuestion extends Question {
 
   @Nullable private String _nodes;
 
+  @JsonCreator
   public OspfAreaConfigurationQuestion(@JsonProperty(PROP_NODES) @Nullable String nodes) {
     _nodes = nodes;
   }

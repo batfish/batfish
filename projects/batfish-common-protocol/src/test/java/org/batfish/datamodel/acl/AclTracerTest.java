@@ -1,14 +1,18 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
+import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
-import static org.batfish.datamodel.acl.TraceElements.deniedByAclLine;
-import static org.batfish.datamodel.acl.TraceElements.permittedByAclLine;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasChildren;
-import static org.batfish.datamodel.acl.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
-import static org.hamcrest.Matchers.allOf;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
@@ -46,6 +50,28 @@ public class AclTracerTest {
   private static final String SRC_INTERFACE = null;
 
   private static final String TEST_ACL = "test acl";
+
+  private static final HeaderSpace TRUE_HEADERSPACE = HeaderSpace.builder().build();
+  private static final HeaderSpace FALSE_HEADERSPACE =
+      HeaderSpace.builder().setNotDstIps(UniverseIpSpace.INSTANCE).build();
+
+  private static List<TraceTree> trace(IpAccessList acl) {
+    return AclTracer.trace(
+        acl, FLOW, SRC_INTERFACE, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+  }
+
+  private static List<TraceTree> trace(AclLineMatchExpr expr) {
+    return AclTracer.trace(
+        expr, FLOW, SRC_INTERFACE, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+  }
+
+  private static AclLineMatchExpr trueExpr(String traceElement) {
+    return new MatchHeaderSpace(TRUE_HEADERSPACE, traceElement);
+  }
+
+  private static AclLineMatchExpr falseExpr(String traceElement) {
+    return new MatchHeaderSpace(FALSE_HEADERSPACE, traceElement);
+  }
 
   @Test
   public void testDefaultDeniedByIpAccessList() {
@@ -103,7 +129,7 @@ public class AclTracerTest {
     IpAccessList aclIndirect =
         IpAccessList.builder()
             .setName(aclIndirectName)
-            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
+            .setLines(ImmutableList.of(ACCEPT_ALL))
             .build();
     Map<String, IpAccessList> availableAcls =
         ImmutableMap.of(ACL_NAME, acl, aclIndirectName, aclIndirect);
@@ -113,24 +139,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root,
-        contains(
-            allOf(
-                hasTraceElement(deniedByAclLine(acl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(
-                            hasTraceElement(permittedByAclLine(aclIndirect, 0)),
-                            hasChildren(empty())))))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(
-        trace,
-        hasEvents(
-            contains(
-                TraceEvent.of(deniedByAclLine(acl, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect, 0)))));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(ACCEPT_ALL))));
   }
 
   @Test
@@ -138,7 +147,12 @@ public class AclTracerTest {
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
-            .setLines(ImmutableList.of(ExprAclLine.REJECT_ALL))
+            .setLines(
+                ImmutableList.of(
+                    ExprAclLine.rejecting()
+                        .setMatchCondition(TRUE)
+                        .setTraceElement(TraceElement.of(ACL_NAME))
+                        .build()))
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
@@ -147,11 +161,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root, contains(allOf(hasTraceElement(deniedByAclLine(acl, 0)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(deniedByAclLine(acl, 0)))));
+    assertThat(root, contains(isTraceTree(ACL_NAME)));
   }
 
   @Test
@@ -259,10 +269,7 @@ public class AclTracerTest {
   @Test
   public void testPermittedByAclLine() {
     IpAccessList acl =
-        IpAccessList.builder()
-            .setName(ACL_NAME)
-            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
-            .build();
+        IpAccessList.builder().setName(ACL_NAME).setLines(ImmutableList.of(ACCEPT_ALL)).build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
     Map<String, IpSpaceMetadata> namedIpSpaceMetadata = ImmutableMap.of();
@@ -270,11 +277,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root, contains(allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 0)))));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(ACCEPT_ALL.getName()))));
   }
 
   @Test
@@ -302,25 +305,15 @@ public class AclTracerTest {
     assertThat(
         root,
         contains(
-            allOf(
-                hasTraceElement(permittedByAclLine(acl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(
-                            hasTraceElement(
-                                permittedByNamedIpSpace(
-                                    FLOW.getDstIp(),
-                                    DEST_IP_DESCRIPTION,
-                                    ipSpaceMetadata,
-                                    ipSpaceName)),
-                            hasChildren(empty())))))));
+            isTraceTree(
+                permittedByNamedIpSpace(
+                    FLOW.getDstIp(), DEST_IP_DESCRIPTION, ipSpaceMetadata, ipSpaceName))));
 
     AclTrace trace = new AclTrace(root);
     assertThat(
         trace,
         hasEvents(
             contains(
-                TraceEvent.of(permittedByAclLine(acl, 0)),
                 TraceEvent.of(
                     permittedByNamedIpSpace(
                         FLOW.getDstIp(), DEST_IP_DESCRIPTION, ipSpaceMetadata, ipSpaceName)))));
@@ -349,11 +342,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root, contains(allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 0)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -375,11 +364,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(
-        root, contains(allOf(hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty()))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(trace, hasEvents(contains(TraceEvent.of(permittedByAclLine(acl, 0)))));
+    assertThat(root, empty());
   }
 
   @Test
@@ -397,20 +382,29 @@ public class AclTracerTest {
                                 ImmutableList.of(
                                     new PermittedByAcl(aclIndirectName1),
                                     new PermittedByAcl(aclIndirectName2))))
+                        .setTraceElement(TraceElement.of(ACL_NAME))
                         .build()))
             .build();
     IpAccessList aclIndirect1 =
         IpAccessList.builder()
             .setName(aclIndirectName1)
-            .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
+            .setLines(
+                ImmutableList.of(
+                    ExprAclLine.accepting()
+                        .setTraceElement(TraceElement.of(aclIndirectName1))
+                        .setMatchCondition(TRUE)
+                        .build()))
             .build();
     IpAccessList aclIndirect2 =
         IpAccessList.builder()
             .setName(aclIndirectName2)
             .setLines(
                 ImmutableList.of(
-                    ExprAclLine.acceptingHeaderSpace(
-                        HeaderSpace.builder().setSrcIps(Ip.ZERO.toIpSpace()).build())))
+                    ExprAclLine.accepting()
+                        .setTraceElement(TraceElement.of(aclIndirectName2))
+                        .setMatchCondition(
+                            match(HeaderSpace.builder().setSrcIps(Ip.ZERO.toIpSpace()).build()))
+                        .build()))
             .build();
     Map<String, IpAccessList> availableAcls =
         ImmutableMap.of(
@@ -424,25 +418,7 @@ public class AclTracerTest {
     assertThat(
         root,
         contains(
-            allOf(
-                hasTraceElement(permittedByAclLine(acl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(
-                            hasTraceElement(permittedByAclLine(aclIndirect1, 0)),
-                            hasChildren(empty())),
-                        allOf(
-                            hasTraceElement(permittedByAclLine(aclIndirect2, 0)),
-                            hasChildren(empty())))))));
-
-    AclTrace trace = new AclTrace(root);
-    assertThat(
-        trace,
-        hasEvents(
-            contains(
-                TraceEvent.of(permittedByAclLine(acl, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect1, 0)),
-                TraceEvent.of(permittedByAclLine(aclIndirect2, 0)))));
+            isTraceTree(ACL_NAME, isTraceTree(aclIndirectName1), isTraceTree((aclIndirectName2)))));
   }
 
   @Test
@@ -468,15 +444,8 @@ public class AclTracerTest {
             ImmutableMap.of(),
             ImmutableMap.of());
 
-    assertThat(
-        root,
-        contains(
-            allOf(
-                hasTraceElement(permittedByAclLine(testAcl, 0)),
-                hasChildren(
-                    contains(
-                        allOf(
-                            hasTraceElement(permittedByAclLine(acl, 0)), hasChildren(empty())))))));
+    // no trace elements
+    assertThat(root, empty());
   }
 
   @Test
@@ -509,12 +478,165 @@ public class AclTracerTest {
             ImmutableMap.of(),
             ImmutableMap.of());
 
-    assertThat(
-        root,
-        contains(
-            allOf(
-                hasTraceElement(testAclTraceElement),
-                hasChildren(
-                    contains(allOf(hasTraceElement(aclTraceElement), hasChildren(empty())))))));
+    assertThat(root, contains(isTraceTree(testAclTraceElement, isTraceTree(aclTraceElement))));
+  }
+
+  @Test
+  public void testAnd_False() {
+    List<TraceTree> trace = trace(and(trueExpr("a"), falseExpr("b")));
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testAnd_withoutTraceElement() {
+    List<TraceTree> trace = trace(and(trueExpr("a"), trueExpr("b")));
+    assertThat(trace, contains(isTraceTree("a"), isTraceTree("b")));
+  }
+
+  @Test
+  public void testAnd_withTraceElement() {
+    List<TraceTree> trace = trace(and("and", trueExpr("a"), trueExpr("b")));
+    assertThat(trace, contains(isTraceTree("and", isTraceTree("a"), isTraceTree("b"))));
+  }
+
+  @Test
+  public void testOr_false() {
+    List<TraceTree> trace = trace(or(falseExpr("a"), falseExpr("b"), falseExpr("c")));
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testOr_withoutTraceElement() {
+    List<TraceTree> trace = trace(or(falseExpr("a"), trueExpr("b"), falseExpr("c")));
+    assertThat(trace, contains(isTraceTree("b")));
+  }
+
+  @Test
+  public void testOr_withTraceElement() {
+    List<TraceTree> trace = trace(or("or", falseExpr("a"), trueExpr("b"), falseExpr("c")));
+    assertThat(trace, contains(isTraceTree("or", isTraceTree("b"))));
+  }
+
+  @Test
+  public void testOr_allTrue() {
+    List<TraceTree> trace = trace(or("or", trueExpr("a"), trueExpr("b"), trueExpr("c")));
+    assertThat(trace, contains(isTraceTree("or", isTraceTree("a"))));
+  }
+
+  @Test
+  public void testMatchHeaderspace_withoutTraceElement() {
+    List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE));
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchHeaderspace_withTraceElement() {
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE, a));
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
+  public void testPermittedByAcl() {
+    TraceElement a = TraceElement.of("a");
+    String aclName = "acl";
+    IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(ACCEPT_ALL).build();
+    List<TraceTree> trace =
+        AclTracer.trace(
+            new PermittedByAcl(aclName, a),
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(aclName, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(ACCEPT_ALL)))));
+  }
+
+  @Test
+  public void testDeniedByAcl() {
+    TraceElement a = TraceElement.of("a");
+    String aclName = "acl";
+    IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(REJECT_ALL).build();
+    List<TraceTree> trace =
+        AclTracer.trace(
+            new DeniedByAcl(aclName, a),
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(aclName, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(isTraceTree(a, isTraceTree(matchedByAclLine(acl, 0)))));
+  }
+
+  @Test
+  public void testDeniedByAcl_noMatch() {
+    TraceElement a = TraceElement.of("a");
+    String aclName = "acl";
+    IpAccessList acl = IpAccessList.builder().setName(aclName).build();
+    List<TraceTree> trace =
+        AclTracer.trace(
+            new DeniedByAcl(aclName, a),
+            FLOW,
+            SRC_INTERFACE,
+            ImmutableMap.of(aclName, acl),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
+  public void testLineWithExprAnnotations() {
+    AclLineMatchExpr expr = trueExpr("a");
+    IpAccessList acl =
+        IpAccessList.builder().setName("acl").setLines(ExprAclLine.accepting(expr)).build();
+    List<TraceTree> trace = trace(acl);
+    assertThat(trace, contains(isTraceTree("a")));
+  }
+
+  @Test
+  public void testMatchSrcInterface_withoutTraceElement() {
+    String iface = "iface";
+    List<TraceTree> trace =
+        AclTracer.trace(
+            matchSrcInterface(iface),
+            FLOW,
+            iface,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchSrcInterface_withTraceElement() {
+    String iface = "iface";
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace =
+        AclTracer.trace(
+            matchSrcInterface(a, iface),
+            FLOW,
+            iface,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
+  public void testNotMatchExpr_withoutTraceElement() {
+    List<TraceTree> trace = trace(not(falseExpr("false")));
+    assertThat(trace, contains(isTraceTree("false")));
+  }
+
+  @Test
+  public void testNotMatchExpr_withTraceElement() {
+    List<TraceTree> trace = trace(not("not", falseExpr("false")));
+    assertThat(trace, contains(isTraceTree("not", isTraceTree("false"))));
+  }
+
+  @Test
+  public void testNotMatchExpr_false() {
+    List<TraceTree> trace = trace(not("not", trueExpr("true")));
+    assertThat(trace, empty());
   }
 }

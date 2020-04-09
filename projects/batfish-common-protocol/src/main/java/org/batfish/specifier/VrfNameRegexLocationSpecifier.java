@@ -44,7 +44,7 @@ public abstract class VrfNameRegexLocationSpecifier implements LocationSpecifier
             node ->
                 node.getVrfs().values().stream()
                     .filter(vrf -> _pattern.matcher(vrf.getName()).matches())
-                    .flatMap(v -> this.getVrfLocations(node, v.getName())))
+                    .flatMap(v -> getVrfLocations(node, v.getName())))
         .collect(ImmutableSet.toImmutableSet());
   }
 }

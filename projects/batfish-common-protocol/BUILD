@@ -1,3 +1,5 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load("@batfish//skylark:junit.bzl", "junit_tests")
@@ -82,6 +84,7 @@ java_library(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_errorprone_error_prone_annotations",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_google_re2j_re2j",
         "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_cli_commons_cli",
         "@maven//:commons_io_commons_io",
@@ -143,8 +146,6 @@ junit_tests(
         ":common",
         ":common_testlib",
         ":recovery_grammar",
-        ":recovery_inline_alts_grammar",
-        ":recovery_rule_alts_grammar",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
@@ -293,8 +294,8 @@ genrule(
         "src/generated/resources/org/batfish/common/common.properties",
     ],
     cmd = """
-BATFISH_VERSION="$$(grep -1 batfish-parent $(location //projects:pom.xml) | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
-sed s/\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/org/batfish/common/common.properties) > "$@"
+BATFISH_VERSION="$$(grep -1 batfish-parent $(location //projects:pom.xml) | grep version | sed 's/[<>]/|/g' | cut -f3 -d\\|)"
+sed s/\\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/org/batfish/common/common.properties) > "$@"
 """,
 )
 

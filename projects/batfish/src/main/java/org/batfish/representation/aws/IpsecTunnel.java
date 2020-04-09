@@ -411,102 +411,102 @@ final class IpsecTunnel implements Serializable {
     private Builder() {}
 
     Builder setCgwBgpAsn(@Nullable Long cgwBgpAsn) {
-      this._cgwBgpAsn = cgwBgpAsn;
+      _cgwBgpAsn = cgwBgpAsn;
       return this;
     }
 
     Builder setcgwInsideAddress(Ip cgwInsideAddress) {
-      this._cgwInsideAddress = cgwInsideAddress;
+      _cgwInsideAddress = cgwInsideAddress;
       return this;
     }
 
     Builder setCgwInsidePrefixLength(int cgwInsidePrefixLength) {
-      this._cgwInsidePrefixLength = cgwInsidePrefixLength;
+      _cgwInsidePrefixLength = cgwInsidePrefixLength;
       return this;
     }
 
     Builder setcgwOutsideAddress(Ip cgwOutsideAddress) {
-      this._cgwOutsideAddress = cgwOutsideAddress;
+      _cgwOutsideAddress = cgwOutsideAddress;
       return this;
     }
 
     Builder setIkeAuthProtocol(String ikeAuthProtocol) {
-      this._ikeAuthProtocol = ikeAuthProtocol;
+      _ikeAuthProtocol = ikeAuthProtocol;
       return this;
     }
 
     Builder setIkeEncryptionProtocol(String ikeEncryptionProtocol) {
-      this._ikeEncryptionProtocol = ikeEncryptionProtocol;
+      _ikeEncryptionProtocol = ikeEncryptionProtocol;
       return this;
     }
 
     Builder setIkeLifetime(int ikeLifetime) {
-      this._ikeLifetime = ikeLifetime;
+      _ikeLifetime = ikeLifetime;
       return this;
     }
 
     Builder setIkeMode(String ikeMode) {
-      this._ikeMode = ikeMode;
+      _ikeMode = ikeMode;
       return this;
     }
 
     Builder setIkePerfectForwardSecrecy(String ikePerfectForwardSecrecy) {
-      this._ikePerfectForwardSecrecy = ikePerfectForwardSecrecy;
+      _ikePerfectForwardSecrecy = ikePerfectForwardSecrecy;
       return this;
     }
 
     Builder setIkePreSharedKeyHash(String ikePreSharedKeyHash) {
-      this._ikePreSharedKeyHash = ikePreSharedKeyHash;
+      _ikePreSharedKeyHash = ikePreSharedKeyHash;
       return this;
     }
 
     Builder setIpsecAuthProtocol(String ipsecAuthProtocol) {
-      this._ipsecAuthProtocol = ipsecAuthProtocol;
+      _ipsecAuthProtocol = ipsecAuthProtocol;
       return this;
     }
 
     Builder setIpsecEncryptionProtocol(String ipsecEncryptionProtocol) {
-      this._ipsecEncryptionProtocol = ipsecEncryptionProtocol;
+      _ipsecEncryptionProtocol = ipsecEncryptionProtocol;
       return this;
     }
 
     Builder setIpsecLifetime(int ipsecLifetime) {
-      this._ipsecLifetime = ipsecLifetime;
+      _ipsecLifetime = ipsecLifetime;
       return this;
     }
 
     Builder setIpsecMode(String ipsecMode) {
-      this._ipsecMode = ipsecMode;
+      _ipsecMode = ipsecMode;
       return this;
     }
 
     Builder setIpsecPerfectForwardSecrecy(String ipsecPerfectForwardSecrecy) {
-      this._ipsecPerfectForwardSecrecy = ipsecPerfectForwardSecrecy;
+      _ipsecPerfectForwardSecrecy = ipsecPerfectForwardSecrecy;
       return this;
     }
 
     Builder setIpsecProtocol(String ipsecProtocol) {
-      this._ipsecProtocol = ipsecProtocol;
+      _ipsecProtocol = ipsecProtocol;
       return this;
     }
 
     Builder setVgwBgpAsn(@Nullable Long vgwBgpAsn) {
-      this._vgwBgpAsn = vgwBgpAsn;
+      _vgwBgpAsn = vgwBgpAsn;
       return this;
     }
 
     Builder setVgwInsideAddress(Ip vgwInsideAddress) {
-      this._vgwInsideAddress = vgwInsideAddress;
+      _vgwInsideAddress = vgwInsideAddress;
       return this;
     }
 
     Builder setVgwInsidePrefixLength(int vgwInsidePrefixLength) {
-      this._vgwInsidePrefixLength = vgwInsidePrefixLength;
+      _vgwInsidePrefixLength = vgwInsidePrefixLength;
       return this;
     }
 
     Builder setVgwOutsideAddress(Ip vgwOutsideAddress) {
-      this._vgwOutsideAddress = vgwOutsideAddress;
+      _vgwOutsideAddress = vgwOutsideAddress;
       return this;
     }
 

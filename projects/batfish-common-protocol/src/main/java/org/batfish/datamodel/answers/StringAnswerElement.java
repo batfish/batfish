@@ -19,6 +19,6 @@ public final class StringAnswerElement extends AnswerElement {
   }
 
   public void setAnswer(String answer) {
-    this._answer = answer;
+    _answer = answer;
   }
 }

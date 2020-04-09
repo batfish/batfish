@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ public final class Layer2TopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() throws IOException {
+  public void testJacksonSerialization() {
     Layer2Topology topology =
         Layer2Topology.fromDomains(
             ImmutableSet.of(

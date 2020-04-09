@@ -79,18 +79,18 @@ class AbstractionBuilder {
       List<Prefix> pfxs,
       int fails,
       boolean isDefaultCase) {
-    this._batfish = a.getBatfish();
-    this._graph = a.getGraph();
-    this._network = network;
-    this._possibleFailures = fails;
-    this._destinations = devices;
-    this._headerspace = h;
-    this._prefixes = pfxs;
-    this._isDefaultCase = isDefaultCase;
-    this._eeMap = new Table2<>();
-    this._polMap = new Table2<>();
-    this._existentialMap = new Table2<>();
-    this._universalMap = new HashMap<>();
+    _batfish = a.getBatfish();
+    _graph = a.getGraph();
+    _network = network;
+    _possibleFailures = fails;
+    _destinations = devices;
+    _headerspace = h;
+    _prefixes = pfxs;
+    _isDefaultCase = isDefaultCase;
+    _eeMap = new Table2<>();
+    _polMap = new Table2<>();
+    _existentialMap = new Table2<>();
+    _universalMap = new HashMap<>();
   }
 
   static NetworkSlice createGraph(

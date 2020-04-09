@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
@@ -48,7 +47,7 @@ public class FibLookupOverrideLookupIpTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     FibLookupOverrideLookupIp fl =
         FibLookupOverrideLookupIp.builder()
             .setIps(ImmutableList.of(Ip.ZERO))

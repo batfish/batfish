@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -24,7 +23,7 @@ public class LocalAsTest {
   }
 
   @Test
-  public void testEquals() throws IOException {
+  public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             LocalAs.instance(),

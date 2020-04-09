@@ -27,9 +27,9 @@ public class NodeRoleDimensionBean {
   }
 
   public NodeRoleDimensionBean(NodeRoleDimension nrDim, String snapshot) {
-    this.name = nrDim.getName();
-    this.roles = ImmutableList.of();
-    this.roleDimensionMappings =
+    name = nrDim.getName();
+    roles = ImmutableList.of();
+    roleDimensionMappings =
         nrDim.getRoleDimensionMappings().stream()
             .map(RoleDimensionMappingBean::new)
             .collect(Collectors.toList());

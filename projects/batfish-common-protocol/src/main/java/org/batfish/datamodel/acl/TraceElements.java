@@ -1,7 +1,5 @@
 package org.batfish.datamodel.acl;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,23 +15,19 @@ import org.batfish.datamodel.TraceElement;
 public final class TraceElements {
   private TraceElements() {}
 
-  public static TraceElement permittedByAclLine(IpAccessList acl, int index) {
-    return matchedByAclLine(acl, index, "permitted");
+  public static @Nullable TraceElement matchedByAclLine(IpAccessList acl, int index) {
+    return matchedByAclLine(acl.getLines().get(index));
   }
 
-  public static TraceElement deniedByAclLine(IpAccessList acl, int index) {
-    return matchedByAclLine(acl, index, "denied");
+  public static @Nullable TraceElement matchedByAclLine(AclLine line) {
+    if (line.getName() == null) {
+      return null;
+    }
+    return matchedByAclLine(line.getName());
   }
 
-  private static TraceElement matchedByAclLine(IpAccessList acl, int index, String action) {
-    String type = firstNonNull(acl.getSourceType(), "filter");
-    String name = firstNonNull(acl.getSourceName(), acl.getName());
-    AclLine line = acl.getLines().get(index);
-    String lineDescription = line.getName() == null ? "" : ": " + line.getName();
-    String description =
-        String.format(
-            "Flow %s by %s named %s, index %d%s", action, type, name, index, lineDescription);
-    return TraceElement.of(description);
+  public static TraceElement matchedByAclLine(String lineName) {
+    return TraceElement.of("Matched line " + lineName);
   }
 
   public static TraceElement permittedByNamedIpSpace(

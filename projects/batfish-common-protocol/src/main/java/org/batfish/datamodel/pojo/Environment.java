@@ -44,13 +44,13 @@ public class Environment {
           SortedMap<String, String> routingTables,
       @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS) @Nullable
           SortedSet<BgpAdvertisement> externalBgpAnnouncements) {
-    this._testrigName = testrigName;
-    this._edgeBlacklist = edgeBlacklist;
-    this._interfaceBlacklist = interfaceBlacklist;
-    this._nodeBlacklist = nodeBlacklist;
-    this._bgpTables = bgpTables;
-    this._routingTables = routingTables;
-    this._externalBgpAnnouncements = externalBgpAnnouncements;
+    _testrigName = testrigName;
+    _edgeBlacklist = edgeBlacklist;
+    _interfaceBlacklist = interfaceBlacklist;
+    _nodeBlacklist = nodeBlacklist;
+    _bgpTables = bgpTables;
+    _routingTables = routingTables;
+    _externalBgpAnnouncements = externalBgpAnnouncements;
   }
 
   @JsonProperty(PROP_TESTRIG_NAME)

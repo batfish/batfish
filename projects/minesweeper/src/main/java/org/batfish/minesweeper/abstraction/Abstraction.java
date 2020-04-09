@@ -10,8 +10,8 @@ public class Abstraction {
   private AbstractionMap _abstractionMap;
 
   public Abstraction(Graph graph, @Nullable AbstractionMap abstractionMap) {
-    this._graph = graph;
-    this._abstractionMap = abstractionMap;
+    _graph = graph;
+    _abstractionMap = abstractionMap;
   }
 
   public Graph getGraph() {

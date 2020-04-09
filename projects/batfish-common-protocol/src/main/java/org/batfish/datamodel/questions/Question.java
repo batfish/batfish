@@ -7,12 +7,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.re2j.Pattern;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -45,7 +45,7 @@ public abstract class Question implements IQuestion {
 
   public Question configureTemplate(String exceptions, String assertion) {
     throw new UnsupportedOperationException(
-        "configureTemplate is not supported for question type: " + this.getClass().getName());
+        "configureTemplate is not supported for question type: " + getClass().getName());
   }
 
   /** Returns {@code true} iff this question requires a computed data plane as input. */

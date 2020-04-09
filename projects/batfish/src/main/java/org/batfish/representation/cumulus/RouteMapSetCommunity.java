@@ -42,7 +42,7 @@ public class RouteMapSetCommunity implements RouteMapSet {
 
     return Stream.of(
         new SetCommunities(
-            this.getAdditive()
+            getAdditive()
                 ? CommunitySetUnion.of(InputCommunities.instance(), communities)
                 : CommunitySetUnion.of(
                     new CommunitySetDifference(

@@ -78,9 +78,9 @@ Many types such as `applicationSpec` or `mlagIdSpec` are simply sets of values. 
 
 * `val1, val2` specifies a set with exactly those two values.
 
-* `! val1` specifies all values other than that value.
+* `! val1` specifies all values other than `val1`.
 
-* `/val.*/, ! val1` specifies all values that match regex `val.*` other `val1`.
+* `/val.*/, ! val1` specifies all values that match regex `val.*` other than `val1`.
 
 The full specification of this grammar is:
 
@@ -98,9 +98,44 @@ enumSetTerm :=
 
 ### Application Specifier
 
-A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
+A specification for IP traffic that includes information about protocols (ICMP, TCP, UDP) and about *destination* ports for TCP and UDP and type, code for ICMP.
 
-An application specifier follows the [enum set grammar](#set-of-enums-or-names) with the following values (with the corresponding IP protocol and destination port in parenthesis): `DNS` (UDP, 53), `HTTP` (TCP, 80), `HTTPS` (TCP, 443), `SNMP` (UDP, 161), `SSH` (TCP, 22), `TELNET` (TCP, 23).
+* `HTTP` specifies TCP traffic to port 80. 
+
+* `tcp/80` also specifies TCP traffic to port 80. 
+
+* `tcp/80,3000-3030` specifies TCP traffic to port 80 and ports between 3000 and 3030.
+
+* `tcp` specifies TCP traffic to all ports.
+
+* `icmp` also specifies ICMP traffic of all types. 
+
+* `icmp/0/0` specifies ICMP traffic of type 0 and code 0. 
+
+* `HTTP, udp/53` specifies TCP traffic to port 80 and UDP traffic to port 53.
+
+#### Application Specifier Grammar
+
+<pre>
+applicationSpec :=
+    applicationTerm [<b>,</b> applicationTerm]
+
+applicationTerm :=
+    <b>tcp</b>[<b>/</b>portSpec]
+    | <b>udp</b>[<b>/</b>portSpec]
+    | <b>icmp</b>[<b>/</b>&lt;<i>icmp-type</i>&gt;[<b>/</b>&lt;<i>icmp-code</i>&gt;]]
+    | &lt;<i>application-name</i>&gt;
+
+portSpec :=
+    portTerm [<b>,</b> portTerm]
+
+portTerm := 
+    &lt;<i>port-number</i>&gt;
+    | &lt;<i>from-port</i>&gt;<b>-</b>&lt;<i>to-port</i>&gt;
+
+</pre>
+
+Application name is one of `DNS` (means udp/53), `ECHO-REPLY` (icmp/0/0), `ECHO-REQUEST` (icmp/8/0), `HTTP` (tcp/80), `HTTPS` (tcp/443), `MYSQL` (tcp/3306), `SNMP` (udp/161), `SSH` (tcp/22), `TELNET` (tcp/23).
 
 ### BGP Peer Property Specifier
 
@@ -177,7 +212,9 @@ The following fine-grained disposition values are also supported:
 
 A specification for filters (ACLs or firewall rules) in the network.
 
-* Filter name or a regex over the names indicate filters on all nodes in the network with that name or matching regex. For example, `filter1` includes all filters with that name and `/acl/` includes all filters whose names contain 'acl'.
+* `filter1` includes filters on all nodes with that name.
+
+* `/^acl/` includes all filters (on all nodes) whose names name regex '^acl', i.e., begin with 'acl'.
 
 * `nodeTerm[filterWithoutNode]` indicates filters that match the `filterWithoutNode` specification on nodes that match the `nodeTerm` specification. A simple example is `as1border1[filter1]` which refers to the filter `filter1` on `as1border1`.
 
@@ -226,7 +263,9 @@ An interface property specifier follows the [enum set grammar](#set-of-enums-or-
 
 A specification for interfaces in the network.
 
-* Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all interfaces with that name and `/Ethernet0/` includes all interfaces whose names contain 'Ethernet0'.
+* `Ethernet0/1` indicates interfaces on all nodes with that name.
+
+* `/^Eth/` indicates all interfaces (on all nodes) whose names match the regex '^Eth', i.e., start with 'Eth'.
 
 * `nodeTerm[interfaceWithoutNode]` indicates interfaces that match the `interfaceWithoutNode` specification on nodes that match the `nodeTerm` specification. A simple example is `as1border1[Ethernet0/1]` which refers to the interface `Ethernet0/1` on `as1border1`.
 
@@ -408,7 +447,9 @@ A node property specifier follows the [enum set grammar](#set-of-enums-or-names)
 
 A specification for nodes in the network.
 
-* Node names or a regex over the names indicate nodes in the network with that name or matching regex. For example, `as1border1` indicates that node and `/as1/` indicates all nodes whose names contain `as1`.
+* `as1border1` indicates a node with that name.
+
+* `/^as1/` indicates all nodes whose names match the regex `^as1`, i.e., start with 'as1'.
 
 * `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
 
@@ -498,7 +539,9 @@ The routing protocol specifier grammar follows the [enum set grammar](#set-of-en
 
 A specification for routing policies in the network.
 
-* Routing policy name or a regex over the names indicate routing policies on all nodes in the network with that name or matching regex. For example, `routingPolicy1` includes all routing policies with that name and `/rtpol/` includes all routing policies whose names contain 'rtpol'.
+* `routingPolicy1` includes routing policies on all nodes with that name.
+
+* `/^rtpol/` includes all routing policies (on all nodes) whose names match the regex '^rtpol', i.e., start wtih 'rtpol'.
 
 #### Routing Policy Grammar
 

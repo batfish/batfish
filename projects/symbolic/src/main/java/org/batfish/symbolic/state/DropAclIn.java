@@ -10,4 +10,9 @@ public final class DropAclIn implements StateExpr {
   public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitDropAclIn();
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
 }

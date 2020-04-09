@@ -71,15 +71,15 @@ public abstract class BDDDomain {
     if (range.signum() <= 0) {
       throw new BDDException();
     }
-    this.name = Integer.toString(index);
+    name = Integer.toString(index);
     this.index = index;
-    this.realsize = range;
+    realsize = range;
     int binsize = 1;
     while (calcsize.compareTo(range) < 0) {
       binsize++;
       calcsize = calcsize.shiftLeft(1);
     }
-    this.ivar = new int[binsize];
+    ivar = new int[binsize];
   }
 
   /** Returns the factory that created this domain. */
@@ -113,7 +113,7 @@ public abstract class BDDDomain {
     BigInteger val = size().subtract(BigInteger.ONE);
     BDD d = factory.one();
     int[] ivar = vars();
-    for (int n = 0; n < this.varNum(); n++) {
+    for (int n = 0; n < varNum(); n++) {
       if (val.testBit(0)) {
         d.orWith(factory.nithVar(ivar[n]));
       } else {
@@ -130,23 +130,23 @@ public abstract class BDDDomain {
    * <p>Compare to fdd_domainsize.
    */
   public BigInteger size() {
-    return this.realsize;
+    return realsize;
   }
 
   public BDD buildAdd(BDDDomain that, long value) {
-    if (this.varNum() != that.varNum()) {
+    if (varNum() != that.varNum()) {
       throw new BDDException();
     }
-    return buildAdd(that, this.varNum(), value);
+    return buildAdd(that, varNum(), value);
   }
 
   public BDD buildAdd(BDDDomain that, int bits, long value) {
-    if (bits > this.varNum() || bits > that.varNum()) {
+    if (bits > varNum() || bits > that.varNum()) {
       throw new BDDException(
           "Number of bits requested ("
               + bits
               + ") is larger than domain sizes "
-              + this.varNum()
+              + varNum()
               + ","
               + that.varNum());
     }
@@ -157,12 +157,12 @@ public abstract class BDDDomain {
       BDD result = bdd.one();
       int n;
       for (n = 0; n < bits; n++) {
-        BDD b = bdd.ithVar(this.ivar[n]);
+        BDD b = bdd.ithVar(ivar[n]);
         b.biimpWith(bdd.ithVar(that.ivar[n]));
         result.andWith(b);
       }
-      for (; n < Math.max(this.varNum(), that.varNum()); n++) {
-        BDD b = (n < this.varNum()) ? bdd.nithVar(this.ivar[n]) : bdd.one();
+      for (; n < Math.max(varNum(), that.varNum()); n++) {
+        BDD b = (n < varNum()) ? bdd.nithVar(ivar[n]) : bdd.one();
         b.andWith((n < that.varNum()) ? bdd.nithVar(that.ivar[n]) : bdd.one());
         result.andWith(b);
       }
@@ -170,7 +170,7 @@ public abstract class BDDDomain {
     }
 
     int[] vars = new int[bits];
-    System.arraycopy(this.ivar, 0, vars, 0, vars.length);
+    System.arraycopy(ivar, 0, vars, 0, vars.length);
     BDDBitVector y = bdd.buildVector(vars);
     BDDBitVector v = bdd.constantVector(bits, value);
     BDDBitVector z = y.add(v);
@@ -184,8 +184,8 @@ public abstract class BDDDomain {
       BDD b = x.bitvec[n].biimp(z.bitvec[n]);
       result.andWith(b);
     }
-    for (; n < Math.max(this.varNum(), that.varNum()); n++) {
-      BDD b = (n < this.varNum()) ? bdd.nithVar(this.ivar[n]) : bdd.one();
+    for (; n < Math.max(varNum(), that.varNum()); n++) {
+      BDD b = (n < varNum()) ? bdd.nithVar(ivar[n]) : bdd.one();
       b.andWith((n < that.varNum()) ? bdd.nithVar(that.ivar[n]) : bdd.one());
       result.andWith(b);
     }
@@ -205,14 +205,14 @@ public abstract class BDDDomain {
    * @return BDD
    */
   public BDD buildEquals(BDDDomain that) {
-    if (!this.size().equals(that.size())) {
+    if (!size().equals(that.size())) {
       throw new BDDException(
           "Size of "
               + this
               + " != size of that "
               + that
               + "( "
-              + this.size()
+              + size()
               + " vs "
               + that.size()
               + ")");
@@ -221,10 +221,10 @@ public abstract class BDDDomain {
     BDDFactory factory = getFactory();
     BDD e = factory.one();
 
-    int[] this_ivar = this.vars();
+    int[] this_ivar = vars();
     int[] that_ivar = that.vars();
 
-    for (int n = 0; n < this.varNum(); n++) {
+    for (int n = 0; n < varNum(); n++) {
       BDD a = factory.ithVar(this_ivar[n]);
       BDD b = factory.ithVar(that_ivar[n]);
       a.biimpWith(b);
@@ -263,7 +263,7 @@ public abstract class BDDDomain {
 
     BDDFactory factory = getFactory();
     BDD v = factory.one();
-    int[] ivar = this.vars();
+    int[] ivar = vars();
     for (int i : ivar) {
       if (val.testBit(0)) {
         v.andWith(factory.ithVar(i));
@@ -293,7 +293,7 @@ public abstract class BDDDomain {
 
     BDDFactory factory = getFactory();
     BDD result = factory.zero();
-    int[] ivar = this.vars();
+    int[] ivar = vars();
     while (lo.compareTo(hi) <= 0) {
       BDD v = factory.one();
       for (int n = ivar.length - 1; ; n--) {
@@ -321,7 +321,7 @@ public abstract class BDDDomain {
    * @return int
    */
   public int varNum() {
-    return this.ivar.length;
+    return ivar.length;
   }
 
   /**
@@ -333,7 +333,7 @@ public abstract class BDDDomain {
    * @return int[]
    */
   public int[] vars() {
-    return this.ivar;
+    return ivar;
   }
 
   public int ensureCapacity(long range) {
@@ -348,7 +348,7 @@ public abstract class BDDDomain {
     if (range.compareTo(realsize) < 0) {
       return ivar.length;
     }
-    this.realsize = range.add(BigInteger.ONE);
+    realsize = range.add(BigInteger.ONE);
     int binsize = 1;
     while (calcsize.compareTo(range) <= 0) {
       binsize++;
@@ -372,14 +372,14 @@ public abstract class BDDDomain {
       new_ivar[i] = newVar;
       // System.out.println("Domain "+this+" var#"+i+" = "+newVar);
     }
-    this.ivar = new_ivar;
+    ivar = new_ivar;
     // System.out.println("Domain "+this+" old var = "+var);
-    this.var.free();
+    var.free();
     BDD nvar = factory.one();
     for (int i1 : ivar) {
       nvar.andWith(factory.ithVar(i1));
     }
-    this.var = nvar;
+    var = nvar;
     // System.out.println("Domain "+this+" new var = "+var);
     return binsize;
   }

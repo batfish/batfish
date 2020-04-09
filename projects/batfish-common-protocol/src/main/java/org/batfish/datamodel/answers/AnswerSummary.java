@@ -73,21 +73,21 @@ public class AnswerSummary {
 
   @JsonProperty(PROP_NOTES)
   public void setNotes(String notes) {
-    this._notes = notes;
+    _notes = notes;
   }
 
   @JsonProperty(PROP_NUM_FAILED)
   public void setNumFailed(int numFailed) {
-    this._numFailed = numFailed;
+    _numFailed = numFailed;
   }
 
   @JsonProperty(PROP_NUM_PASSED)
   public void setNumPassed(int numPassed) {
-    this._numPassed = numPassed;
+    _numPassed = numPassed;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)
   public void setNumResults(int numResults) {
-    this._numResults = numResults;
+    _numResults = numResults;
   }
 }

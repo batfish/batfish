@@ -1,13 +1,20 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.Location.interfaceLinkLocation;
+import static org.batfish.specifier.Location.interfaceLocation;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.MockSpecifierContext;
@@ -129,5 +136,64 @@ public class ParboiledLocationSpecifierTest {
     assertThat(
         ParboiledLocationSpecifier.parse("node0"),
         equalTo(new ParboiledLocationSpecifier(InterfaceLocationAstNode.createFromNode("node0"))));
+  }
+
+  @Test
+  public void testParseInternet() {
+    assertThat(
+        ParboiledLocationSpecifier.parse("internet"),
+        equalTo(new ParboiledLocationSpecifier(InternetLocationAstNode.INSTANCE)));
+  }
+
+  @Test
+  public void testParseInternet_noInternet() {
+    assertThat(ParboiledLocationSpecifier.parse("internet").resolve(_ctxt), empty());
+  }
+
+  @Test
+  public void testParseInternet_batfishInternet() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration inet =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(IspModelingUtils.INTERNET_HOST_NAME)
+            .setDeviceModel(DeviceModel.BATFISH_INTERNET)
+            .build();
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setOwner(inet)
+            .setName(IspModelingUtils.INTERNET_OUT_INTERFACE)
+            .build();
+
+    MockSpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(inet.getHostname(), inet))
+            .build();
+
+    assertThat(
+        ParboiledLocationSpecifier.parse("internet").resolve(ctxt),
+        contains(interfaceLinkLocation(i1)));
+  }
+
+  @Test
+  public void testParseInternet_nonBatfishInternet() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration inet =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(IspModelingUtils.INTERNET_HOST_NAME)
+            .build();
+    Interface i1 = nf.interfaceBuilder().setOwner(inet).setName(_iface1).build();
+
+    MockSpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(inet.getHostname(), inet))
+            .build();
+
+    assertThat(
+        ParboiledLocationSpecifier.parse("internet").resolve(ctxt),
+        contains(interfaceLocation(i1)));
   }
 }

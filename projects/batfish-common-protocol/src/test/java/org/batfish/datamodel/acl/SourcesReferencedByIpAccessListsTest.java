@@ -72,6 +72,19 @@ public class SourcesReferencedByIpAccessListsTest {
   }
 
   @Test
+  public void testDeniedByAcl() {
+    IpAccessList acl =
+        IpAccessList.builder()
+            .setName("foo")
+            .setLines(
+                ImmutableList.of(
+                    ExprAclLine.accepting().setMatchCondition(matchSrcInterface("a")).build()))
+            .build();
+    Map<String, IpAccessList> namedAcls = ImmutableMap.of(acl.getName(), acl);
+    assertThat(referencedSources(namedAcls, new DeniedByAcl(acl.getName())), contains("a"));
+  }
+
+  @Test
   public void testPermittedByAcl() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
     IpAccessList acl =

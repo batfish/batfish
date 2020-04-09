@@ -66,8 +66,8 @@ public final class PList<E> extends AbstractSequentialList<E> {
   }
 
   private PList(@Nullable final E first, final PList<E> rest) {
-    this._first = first;
-    this._rest = rest;
+    _first = first;
+    _rest = rest;
 
     _size = 1 + rest._size;
   }

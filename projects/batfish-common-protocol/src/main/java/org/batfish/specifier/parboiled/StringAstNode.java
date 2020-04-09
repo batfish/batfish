@@ -38,6 +38,6 @@ final class StringAstNode implements AstNode {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass()).add("str", _str).toString();
+    return MoreObjects.toStringHelper(getClass()).add("str", _str).toString();
   }
 }

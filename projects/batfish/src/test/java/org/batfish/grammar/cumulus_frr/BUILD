@@ -10,7 +10,7 @@ junit_tests(
     srcs = glob([
         "**/*Test.java",
     ]),
-    resources=["//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_frr/snapshots"],
+    resources = ["//projects/batfish/src/test/resources/org/batfish/grammar/cumulus_frr/snapshots"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",

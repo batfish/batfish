@@ -1,19 +1,36 @@
 package org.batfish.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import org.batfish.common.autocomplete.IpCompletionMetadata;
+import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.NodeCompletionMetadata;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 
 /** Various functions useful for fetching data used in the creation of CompletionMetadata */
 public final class CompletionMetadataUtils {
 
   private CompletionMetadataUtils() {}
+
+  /** We will add these well-known IPs to assist with autocompletion */
+  public static Map<Ip, String> WELL_KNOWN_IPS =
+      ImmutableMap.of(Ip.parse("8.8.8.8"), "Google DNS", Ip.parse("1.1.1.1"), "Cloudflare DNS");
 
   public static Set<String> getFilterNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
@@ -35,8 +52,17 @@ public final class CompletionMetadataUtils {
     return interfaces.build();
   }
 
-  public static Set<String> getIps(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> ips = ImmutableSet.builder();
+  @VisibleForTesting
+  static String interfaceDisplayString(Configuration configuration, Interface iface) {
+    String suffix =
+        configuration.getHumanName() == null
+            ? ""
+            : String.format(" (%s)", configuration.getHumanName());
+    return String.format("%s[%s]%s", configuration.getHostname(), iface.getName(), suffix);
+  }
+
+  public static Map<Ip, IpCompletionMetadata> getIps(Map<String, Configuration> configurations) {
+    Map<Ip, IpCompletionMetadata> ips = new HashMap<>();
     configurations
         .values()
         .forEach(
@@ -47,8 +73,16 @@ public final class CompletionMetadataUtils {
                   .forEach(
                       iface ->
                           iface.getAllConcreteAddresses().stream()
-                              .map(interfaceAddress -> interfaceAddress.getIp().toString())
-                              .forEach(ips::add));
+                              .map(interfaceAddress -> interfaceAddress.getIp())
+                              .forEach(
+                                  ip ->
+                                      ips.computeIfAbsent(ip, k -> new IpCompletionMetadata())
+                                          .addRelevance(
+                                              new IpCompletionRelevance(
+                                                  interfaceDisplayString(configuration, iface),
+                                                  configuration.getHumanName(),
+                                                  configuration.getHostname(),
+                                                  iface.getName()))));
 
               configuration
                   .getGeneratedReferenceBooks()
@@ -62,10 +96,67 @@ public final class CompletionMetadataUtils {
                                           // we are ignoring child groups; their IPs will be caught
                                           // when we process that group itself
                                           .forEach(
-                                              a -> Ip.tryParse(a).ifPresent(ip -> ips.add(a)))));
+                                              a ->
+                                                  addGeneratedRefBookAddress(
+                                                      a,
+                                                      configuration,
+                                                      book.getName(),
+                                                      ag.getName(),
+                                                      ips))));
             });
 
-    return ips.build();
+    WELL_KNOWN_IPS.forEach(
+        (ip, description) -> {
+          if (!ips.containsKey(ip)) {
+            ips.put(
+                ip, new IpCompletionMetadata(new IpCompletionRelevance(description, description)));
+          }
+        });
+    return ImmutableMap.copyOf(ips);
+  }
+
+  @VisibleForTesting
+  static String addressGroupDisplayString(
+      Configuration configuration, String bookName, String groupName) {
+    String suffix =
+        configuration.getHumanName() == null
+            ? ""
+            : String.format(" (%s)", configuration.getHumanName());
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PoolAddresses))) {
+      return String.format(
+          "Pool address %s on %s%s", groupName, configuration.getHostname(), suffix);
+    }
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.VirtualAddresses))) {
+      return String.format(
+          "Virtual address %s on %s%s", groupName, configuration.getHostname(), suffix);
+    }
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps))) {
+      return String.format("%s public IP%s", configuration.getHostname(), suffix);
+    }
+    // Don't know what type of address this is; use default value.
+    return String.format(
+        "%s in %s on %s%s", groupName, bookName, configuration.getHostname(), suffix);
+  }
+
+  private static void addGeneratedRefBookAddress(
+      String ipString,
+      Configuration configuration,
+      String bookName,
+      String groupName,
+      Map<Ip, IpCompletionMetadata> ips) {
+    Ip.tryParse(ipString)
+        .ifPresent(
+            ip ->
+                ips.computeIfAbsent(ip, k -> new IpCompletionMetadata())
+                    .addRelevance(
+                        new IpCompletionRelevance(
+                            addressGroupDisplayString(configuration, bookName, groupName),
+                            configuration.getHostname(),
+                            configuration.getHumanName(),
+                            groupName)));
   }
 
   public static Set<String> getMlagIds(Map<String, Configuration> configurations) {
@@ -76,8 +167,13 @@ public final class CompletionMetadataUtils {
     return mlags.build();
   }
 
-  public static Set<String> getNodes(Map<String, Configuration> configurations) {
-    return ImmutableSet.copyOf(configurations.keySet());
+  public static Map<String, NodeCompletionMetadata> getNodes(
+      Map<String, Configuration> configurations) {
+    return configurations.values().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Configuration::getHostname,
+                config -> new NodeCompletionMetadata(config.getHumanName())));
   }
 
   public static Set<String> getPrefixes(Map<String, Configuration> configurations) {
@@ -122,6 +218,19 @@ public final class CompletionMetadataUtils {
             configuration ->
                 routingPolicyNames.addAll(configuration.getRoutingPolicies().keySet()));
     return routingPolicyNames.build();
+  }
+
+  public static Set<Location> getSourceLocationsWithSrcIps(
+      Map<Location, LocationInfo> locationInfo) {
+    IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
+    return locationInfo.entrySet().stream()
+        .filter(
+            entry -> {
+              LocationInfo info = entry.getValue();
+              return info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
+            })
+        .map(Entry::getKey)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {

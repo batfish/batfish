@@ -960,15 +960,15 @@ public abstract class BDDFactory {
     protected CacheStats() {}
 
     void copyFrom(CacheStats that) {
-      this.uniqueAccess = that.uniqueAccess;
-      this.uniqueChain = that.uniqueChain;
-      this.uniqueHit = that.uniqueHit;
-      this.uniqueMiss = that.uniqueMiss;
-      this.uniqueTrivial = that.uniqueTrivial;
-      this.opHit = that.opHit;
-      this.opMiss = that.opMiss;
-      this.opOverwrite = that.opOverwrite;
-      this.swapCount = that.swapCount;
+      uniqueAccess = that.uniqueAccess;
+      uniqueChain = that.uniqueChain;
+      uniqueHit = that.uniqueHit;
+      uniqueMiss = that.uniqueMiss;
+      uniqueTrivial = that.uniqueTrivial;
+      opHit = that.opHit;
+      opMiss = that.opMiss;
+      opOverwrite = that.opOverwrite;
+      swapCount = that.swapCount;
     }
 
     @Override

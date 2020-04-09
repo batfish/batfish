@@ -1,3 +1,5 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load("@batfish//skylark:junit.bzl", "junit_tests")
@@ -20,6 +22,7 @@ java_library(
     ],
     resources = [
         "src/main/resources/org/batfish/config/batfish.properties",
+        "src/main/resources/org/batfish/representation/aws/ip-ranges.json",
     ],
     runtime_deps = [
         "//projects/question",

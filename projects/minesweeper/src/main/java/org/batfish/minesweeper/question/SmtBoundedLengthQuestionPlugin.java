@@ -51,7 +51,7 @@ public class SmtBoundedLengthQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(LENGTH_VAR)
     public void setBound(int i) {
-      this._bound = i;
+      _bound = i;
     }
 
     @Override

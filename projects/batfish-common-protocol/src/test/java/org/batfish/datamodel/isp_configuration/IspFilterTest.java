@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
@@ -26,7 +25,7 @@ public class IspFilterTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  public void testJsonSerialization() {
     IspFilter ispFilter =
         new IspFilter(ImmutableList.of(5678L), ImmutableList.of(Ip.parse("1.1.1.1")));
 

@@ -62,8 +62,8 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
   }
 
   public Ip6Wildcard(Ip6 address, Ip6 wildcardMask) {
-    this._ip = address;
-    this._wildcardMask = wildcardMask;
+    _ip = address;
+    _wildcardMask = wildcardMask;
     if (!wildcardMask.valid()) {
       throw new BatfishException("Invalid wildcard: " + wildcardMask);
     }

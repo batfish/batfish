@@ -190,6 +190,16 @@ public final class ParboiledAutoComplete {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
+      case APP_ICMP_TYPE:
+      case APP_ICMP_TYPE_CODE:
+        // don't help with numbers
+        return ImmutableSet.of();
+      case APP_NAME:
+        return autoCompleteAppName(pm);
+      case APP_PORT:
+      case APP_PORT_RANGE:
+        // don't help with numbers
+        return ImmutableSet.of();
       case CHAR_LITERAL:
         return autoCompleteLiteral(pm);
       case EOI:
@@ -299,6 +309,15 @@ public final class ParboiledAutoComplete {
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
+  }
+
+  /** Auto completes app name. */
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteAppName(PotentialMatch pm) {
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(pm.getMatchPrefix(), CommonParser.namedApplications),
+        false,
+        Anchor.Type.APP_NAME,
+        pm.getMatchStartIndex());
   }
 
   /** Auto completes enum set values. */
@@ -520,7 +539,7 @@ public final class ParboiledAutoComplete {
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(
-            matchPrefix, nodeRoleDimension.roleNamesFor(_completionMetadata.getNodes())),
+            matchPrefix, nodeRoleDimension.roleNamesFor(_completionMetadata.getNodes().keySet())),
         !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
         pm.getMatchStartIndex());
@@ -652,8 +671,9 @@ public final class ParboiledAutoComplete {
    * Update suggestions obtained through {@link AutoCompleteUtils} to escape names if needed and
    * assign start index
    */
+  @VisibleForTesting
   @Nonnull
-  private static Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
+  static Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
       List<AutocompleteSuggestion> suggestions,
       boolean escape,
       Anchor.Type anchorType,
@@ -665,8 +685,10 @@ public final class ParboiledAutoComplete {
                     escape || (isEscapableNameAnchor(anchorType) && nameNeedsEscaping(s.getText()))
                         ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
                         : s.getText(),
+                    Optional.ofNullable(s.getHint()).orElseGet(anchorType::getHint),
                     startIndex,
-                    anchorType))
+                    anchorType,
+                    Optional.ofNullable(s.getDescription()).orElse(null)))
         .collect(ImmutableSet.toImmutableSet());
   }
 

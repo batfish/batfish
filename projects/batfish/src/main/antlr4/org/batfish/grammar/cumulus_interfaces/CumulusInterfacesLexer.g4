@@ -169,6 +169,11 @@ IFACE
   'iface' -> pushMode(M_Word)
 ;
 
+INTERFACE
+:
+  'interface' -> pushMode(M_Word)
+;
+
 INET
 :
   'inet'

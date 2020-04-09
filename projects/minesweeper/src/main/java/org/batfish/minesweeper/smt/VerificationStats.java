@@ -155,7 +155,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_NUM_NODES)
   public void setAvgNumNodes(double x) {
-    this._avgNumNodes = x;
+    _avgNumNodes = x;
   }
 
   @JsonProperty(PROP_MAX_NUM_NODES)
@@ -165,7 +165,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_NUM_NODES)
   public void setMaxNumNodes(double x) {
-    this._maxNumNodes = x;
+    _maxNumNodes = x;
   }
 
   @JsonProperty(PROP_MIN_NUM_NODES)
@@ -175,7 +175,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_NUM_NODES)
   public void setMinNumNodes(double x) {
-    this._minNumNodes = x;
+    _minNumNodes = x;
   }
 
   @JsonProperty(PROP_AVERAGE_NUM_EDGES)
@@ -185,7 +185,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_NUM_EDGES)
   public void setAvgNumEdges(double x) {
-    this._avgNumEdges = x;
+    _avgNumEdges = x;
   }
 
   @JsonProperty(PROP_MAX_NUM_EDGES)
@@ -195,7 +195,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_NUM_EDGES)
   public void setMaxNumEdges(double x) {
-    this._maxNumEdges = x;
+    _maxNumEdges = x;
   }
 
   @JsonProperty(PROP_MIN_NUM_EDGES)
@@ -205,7 +205,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_NUM_EDGES)
   public void setMinNumEdges(double x) {
-    this._minNumEdges = x;
+    _minNumEdges = x;
   }
 
   @JsonProperty(PROP_AVERAGE_NUM_VARS)
@@ -215,7 +215,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_NUM_VARS)
   public void setAvgNumVariables(double x) {
-    this._avgNumVariables = x;
+    _avgNumVariables = x;
   }
 
   @JsonProperty(PROP_MAX_NUM_VARS)
@@ -225,7 +225,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_NUM_VARS)
   public void setMaxNumVariables(double x) {
-    this._maxNumVariables = x;
+    _maxNumVariables = x;
   }
 
   @JsonProperty(PROP_MIN_NUM_VARS)
@@ -235,7 +235,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_NUM_VARS)
   public void setMinNumVariables(double x) {
-    this._minNumVariables = x;
+    _minNumVariables = x;
   }
 
   @JsonProperty(PROP_AVERAGE_NUM_CONSTRAINTS)
@@ -245,7 +245,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_NUM_CONSTRAINTS)
   public void setAvgNumConstraints(double x) {
-    this._avgNumConstraints = x;
+    _avgNumConstraints = x;
   }
 
   @JsonProperty(PROP_MAX_NUM_CONSTRAINTS)
@@ -255,7 +255,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_NUM_CONSTRAINTS)
   public void setMaxNumConstraints(double x) {
-    this._maxNumConstraints = x;
+    _maxNumConstraints = x;
   }
 
   @JsonProperty(PROP_MIN_NUM_CONSTRAINTS)
@@ -265,7 +265,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_NUM_CONSTRAINTS)
   public void setMinNumConstraints(double x) {
-    this._minNumConstraints = x;
+    _minNumConstraints = x;
   }
 
   @JsonProperty(PROP_AVERAGE_SOLVER_TIME)
@@ -275,7 +275,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_SOLVER_TIME)
   public void setAvgSolverTime(double x) {
-    this._avgSolverTime = x;
+    _avgSolverTime = x;
   }
 
   @JsonProperty(PROP_MAX_SOLVER_TIME)
@@ -285,7 +285,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_SOLVER_TIME)
   public void setMaxSolverTime(double x) {
-    this._maxSolverTime = x;
+    _maxSolverTime = x;
   }
 
   @JsonProperty(PROP_MIN_SOLVER_TIME)
@@ -295,7 +295,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_SOLVER_TIME)
   public void setMinSolverTime(double x) {
-    this._minSolverTime = x;
+    _minSolverTime = x;
   }
 
   @JsonProperty(PROP_AVERAGE_COMPUTE_EC_TIME)
@@ -305,7 +305,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_COMPUTE_EC_TIME)
   public void setAvgComputeEcTime(double x) {
-    this._avgComputeEcTime = x;
+    _avgComputeEcTime = x;
   }
 
   @JsonProperty(PROP_MAX_COMPUTE_EC_TIME)
@@ -315,7 +315,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_COMPUTE_EC_TIME)
   public void setMaxComputeEcTime(double x) {
-    this._maxComputeEcTime = x;
+    _maxComputeEcTime = x;
   }
 
   @JsonProperty(PROP_MIN_COMPUTE_EC_TIME)
@@ -325,7 +325,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_COMPUTE_EC_TIME)
   public void setMinComputeEcTime(double x) {
-    this._minComputeEcTime = x;
+    _minComputeEcTime = x;
   }
 
   @JsonProperty(PROP_TIME_CREATE_BDDS)
@@ -335,7 +335,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_TIME_CREATE_BDDS)
   public void setTimeCreateBdds(double x) {
-    this._timeCreateBdds = x;
+    _timeCreateBdds = x;
   }
 
   @JsonProperty(PROP_AVERAGE_ENCODING_TIME)
@@ -345,7 +345,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_AVERAGE_ENCODING_TIME)
   public void setAvgEncodingTime(double x) {
-    this._avgEncodingTime = x;
+    _avgEncodingTime = x;
   }
 
   @JsonProperty(PROP_MAX_ENCODING_TIME)
@@ -355,7 +355,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MAX_ENCODING_TIME)
   public void setMaxEncodingTime(double x) {
-    this._maxEncodingTime = x;
+    _maxEncodingTime = x;
   }
 
   @JsonProperty(PROP_MIN_ENCODING_TIME)
@@ -365,7 +365,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_MIN_ENCODING_TIME)
   public void setMinEncodingTime(double x) {
-    this._minEncodingTime = x;
+    _minEncodingTime = x;
   }
 
   @JsonProperty(PROP_TOTAL_TIME)
@@ -375,7 +375,7 @@ public class VerificationStats {
 
   @JsonProperty(PROP_TOTAL_TIME)
   public void setTotalTime(double x) {
-    this._totalTime = x;
+    _totalTime = x;
   }
 
   @JsonProperty(PROP_NUM_ECS)
@@ -385,6 +385,6 @@ public class VerificationStats {
 
   @JsonProperty(PROP_NUM_ECS)
   public void setNumEcs(int x) {
-    this._numEcs = x;
+    _numEcs = x;
   }
 }

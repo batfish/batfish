@@ -40,7 +40,10 @@ import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.vendor.VendorConfiguration;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -66,6 +69,9 @@ public interface IBatfish extends IPluginConsumer {
   DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot);
 
   boolean debugFlagEnabled(String flag);
+
+  /** Return the {@link LocationInfo} of each {@link Location} in the {@link NetworkSnapshot}. */
+  Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot);
 
   ReferenceLibrary getReferenceLibraryData();
 
@@ -104,6 +110,16 @@ public interface IBatfish extends IPluginConsumer {
   ImmutableConfiguration getSettingsConfiguration();
 
   /**
+   * Get a network extended object for the given key
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  String getNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
    * Get a snapshot input object for the given key
    *
    * @throws FileNotFoundException if the object for the given key does not exist
@@ -121,6 +137,9 @@ public interface IBatfish extends IPluginConsumer {
 
   /** Returns the configurations for given snapshot. */
   SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot);
+
+  /** Returns the vendor configurations of a given snapshot */
+  Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot);
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse(
       NetworkSnapshot snapshot);

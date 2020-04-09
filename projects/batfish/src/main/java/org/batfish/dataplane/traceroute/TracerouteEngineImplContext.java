@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -20,7 +21,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -167,15 +167,18 @@ public class TracerouteEngineImplContext {
   }
 
   /**
-   * Whether {@code vrf} at {@code node} will accept (NB: not forward) packets destined for {@code
-   * ip}
+   * Returns the name of the interface on the given {@code node} that will accept (NB: not forward)
+   * packets destined for {@code ip} in the given {@code vrf}.
+   *
+   * <p>If the packet is not accepted at this node and vrf, returns {@link Optional#empty()}.
    */
-  boolean acceptsIp(String node, String vrf, Ip ip) {
-    return _forwardingAnalysis
-        .getAcceptsIps()
-        .getOrDefault(node, ImmutableMap.of())
-        .getOrDefault(vrf, EmptyIpSpace.INSTANCE)
-        .containsIp(ip, ImmutableMap.of());
+  @Nonnull
+  Optional<String> interfaceAcceptingIp(String node, String vrf, Ip ip) {
+    return _forwardingAnalysis.getAcceptsIps().getOrDefault(node, ImmutableMap.of())
+        .getOrDefault(vrf, ImmutableMap.of()).entrySet().stream()
+        .filter(e -> e.getValue().containsIp(ip, ImmutableMap.of()))
+        .map(Entry::getKey)
+        .findAny(); // Should be zero or one.
   }
 
   /**
