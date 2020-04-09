@@ -416,7 +416,7 @@ LE
 
 LOCAL_AS
 :
-  [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
+  'local-as'
 ;
 
 LOCAL_PREFERENCE
@@ -509,6 +509,11 @@ NO_EXPORT
   'no-export'
 ;
 
+NO_PREPEND
+:
+  'no-prepend'
+;
+
 NOTIFICATIONS
 :
   'notifications'
@@ -582,6 +587,11 @@ REDISTRIBUTE
 REMOTE_AS
 :
   'remote-as'
+;
+
+REPLACE_AS
+:
+  'replace-as'
 ;
 
 ROUTE_MAP
@@ -777,6 +787,11 @@ BLANK_LINE
 DASH
 :
    '-'
+;
+
+PERIOD
+:
+  '.'
 ;
 
 PLUS

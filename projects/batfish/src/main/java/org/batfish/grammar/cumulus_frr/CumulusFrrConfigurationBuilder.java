@@ -55,6 +55,7 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
+//import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_asnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
@@ -122,6 +123,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declConte
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnobd_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_local_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
@@ -133,6 +135,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint16Context;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
@@ -150,6 +153,7 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
@@ -196,6 +200,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
+  private @Nullable BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
@@ -235,6 +240,22 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return Optional.empty();
     }
   }
+
+  @Nonnull
+  private int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  /*
+  @Nonnull
+  private Long toLong(Bgp_asnContext ctx) {
+    if (ctx.large != null) {
+      return toLong(ctx.large);
+    } else {
+      return (((long) toInteger(ctx.high)) << 16) | ((long) toInteger(ctx.low));
+    }
+  }
+   */
 
   @Nonnull
   private Long toLong(Uint32Context ctx) {
@@ -428,6 +449,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       _w.addWarning(
           ctx, ctx.getText(), _parser, "Overwriting aggregate-address for " + prefix.toString());
     }
+  }
+
+  @Override
+  public void exitSbnp_local_as(Sbnp_local_asContext ctx) {
+    long asn = Long.parseLong(ctx.autonomous_system().getText());
+    _currentBgpVrfNeighbor.setLocalAs(asn);
   }
 
   @Override
