@@ -134,7 +134,6 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint16Context;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;

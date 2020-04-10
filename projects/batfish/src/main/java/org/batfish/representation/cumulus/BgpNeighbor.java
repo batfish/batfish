@@ -76,7 +76,6 @@ public abstract class BgpNeighbor implements Serializable {
    * Returns explicit remote-as number when {@link #getRemoteAsType} is {@link
    * RemoteAsType#EXPLICIT}, or else {@code null}.
    */
-
   public @Nullable Long getLocalAs() {
     return _localAs;
   }
