@@ -1,7 +1,6 @@
 package org.batfish.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.util.concurrent.Striped.lazyWeakReadWriteLock;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
@@ -12,7 +11,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
-import com.google.common.util.concurrent.Striped;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,10 +23,7 @@ import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +33,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,7 +54,6 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
@@ -101,10 +92,6 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_LAYER3_TOPOLOGY = "layer3_topology.json";
   private static final String RELPATH_OSPF_TOPOLOGY = "ospf_topology.json";
   private static final String RELPATH_VXLAN_TOPOLOGY = "vxlan_topology.json";
-
-  // TODO: investigate different minimum numbers of lock stripes
-  // NOTE: every lock is reentrant according to spec
-  private static final Striped<ReadWriteLock> LOCKS = lazyWeakReadWriteLock(1);
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -428,7 +415,7 @@ public final class FileBasedStorage implements StorageProvider {
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
     mkdirs(ccaePath);
-    deleteIfExistsUnchecked(ccaePath);
+    deleteIfExists(ccaePath);
     serializeObject(convertAnswerElement, ccaePath);
 
     // Save the synthesized layer1 topology
@@ -457,12 +444,13 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private void storeConfigurations(
-      Path outputDir, String batchName, Map<String, Configuration> configurations) {
+      Path outputDir, String batchName, Map<String, Configuration> configurations)
+      throws IOException {
     _logger.infof("\n*** %s***\n", batchName.toUpperCase());
     AtomicInteger progressCount = _newBatch.apply(batchName, configurations.size());
 
     // Delete any existing output, then recreate.
-    deleteDirectoryUnchecked(outputDir);
+    deleteDirectory(outputDir);
     mkdirs(outputDir);
 
     configurations
@@ -1190,59 +1178,39 @@ public final class FileBasedStorage implements StorageProvider {
     writeFile(sl1tPath, BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
   }
 
-  private void deleteDirectoryUnchecked(Path path) {
-    Lock lock = LOCKS.get(path).writeLock();
-    lock.lock();
-    try {
-      CommonUtil.deleteDirectory(path);
-    } finally {
-      lock.unlock();
-    }
+  private void deleteDirectory(Path path) throws IOException {
+    FileUtils.deleteDirectory(path.toFile());
   }
 
-  private void deleteIfExistsUnchecked(Path path) {
-    Lock lock = LOCKS.get(path).writeLock();
-    lock.lock();
+  private void deleteIfExists(Path path) throws IOException {
     try {
-      CommonUtil.deleteIfExists(path);
-    } finally {
-      lock.unlock();
+      Files.delete(path);
+    } catch (NoSuchFileException e) {
+      return;
     }
   }
 
   private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
-    ReentrantReadWriteLock.ReadLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).readLock();
-    if (!lock.tryLock()) {
-      throw new FileNotFoundException(String.format("File: %s not available for reading", file));
-    }
-    try {
-      return FileUtils.readFileToString(file.toFile(), charset);
-    } finally {
-      lock.unlock();
-    }
+    return FileUtils.readFileToString(file.toFile(), charset);
   }
 
   private void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
-    ReentrantReadWriteLock.WriteLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).writeLock();
-    if (!lock.tryLock()) {
-      throw new IOException(String.format("File: %s not available for writing", file));
-    }
+    Path tmpFile = Files.createTempFile(null, null);
     try {
-      FileUtils.write(file.toFile(), data, charset);
+      FileUtils.write(tmpFile.toFile(), data, charset);
+      Files.move(tmpFile, file);
     } finally {
-      lock.unlock();
+      deleteIfExists(tmpFile);
     }
   }
 
   private void writeStringToFile(Path file, String data, Charset charset) throws IOException {
-    ReentrantReadWriteLock.WriteLock lock = ((ReentrantReadWriteLock) LOCKS.get(file)).writeLock();
-    if (!lock.tryLock()) {
-      throw new IOException(String.format("File: %s not available for writing", file));
-    }
+    Path tmpFile = Files.createTempFile(null, null);
     try {
-      FileUtils.writeStringToFile(file.toFile(), data, charset);
+      FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
+      Files.move(tmpFile, file);
     } finally {
-      lock.unlock();
+      deleteIfExists(tmpFile);
     }
   }
 }
