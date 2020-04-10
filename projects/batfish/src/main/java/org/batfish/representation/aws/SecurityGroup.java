@@ -123,6 +123,12 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _description;
   }
 
+  /**
+   * Note: it is tempting to follow the strategy used elsewhere in AWS, using the {@code Name} tag,
+   * if present, instead of the {@code Group Name}. However, we specifically chose not to do this
+   * because AWS displays security groups or auto-completes them in a search solely based on {@code
+   * Group Name}, not on the Name Tag.
+   */
   @Nonnull
   public String getGroupName() {
     return _groupName;

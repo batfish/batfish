@@ -1,38 +1,35 @@
-package org.batfish.common.util;
+package org.batfish.common.util.isp;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import org.batfish.common.util.IspModel.Remote;
+import org.batfish.common.util.isp.IspModel.Remote;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 import org.junit.Test;
 
 public class IspModelTest {
 
   @Test
   public void testEquals() {
+    IspModel.Builder builder = IspModel.builder().setAsn(1L).setName("name");
     new EqualsTester()
+        .addEqualityGroup(builder.build(), builder.build())
+        .addEqualityGroup(builder.setAsn(2).build())
+        .addEqualityGroup(builder.setName("other").build())
         .addEqualityGroup(
-            new IspModel(1L, ImmutableList.of(), "name", ImmutableSet.of()),
-            new IspModel(1L, ImmutableList.of(), "name", ImmutableSet.of()))
-        .addEqualityGroup(new IspModel(2L, ImmutableList.of(), "name", ImmutableSet.of()))
-        .addEqualityGroup(
-            new IspModel(
-                1L,
-                ImmutableList.of(
+            builder
+                .setRemotes(
                     new Remote(
                         "a",
                         "b",
                         ConcreteInterfaceAddress.parse("1.1.1.1/32"),
-                        BgpActivePeerConfig.builder().build())),
-                "name",
-                ImmutableSet.of()))
-        .addEqualityGroup(new IspModel(1L, ImmutableList.of(), "other", ImmutableSet.of()))
+                        BgpActivePeerConfig.builder().build()))
+                .build())
         .addEqualityGroup(
-            new IspModel(
-                1L, ImmutableList.of(), "name", ImmutableSet.of(Prefix.parse("1.1.1.1/32"))))
+            builder.setAdditionalPrefixesToInternet(Prefix.parse("1.1.1.1/32")).build())
+        .addEqualityGroup(
+            builder.setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet()))
         .testEquals();
   }
 

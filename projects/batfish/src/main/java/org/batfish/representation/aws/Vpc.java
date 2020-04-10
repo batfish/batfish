@@ -130,10 +130,17 @@ final class Vpc implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
-  /*
-   * Add null routes for all prefixes associated with the VPC, to ensure that traffic not headed to
-   * one of the subnets in the VPC is dropped on the floors. More specific prefixes that belong to
-   * subnets are added when subnets are processed.
+  /**
+   * The VPC installs a null route for all prefixes associated with the VPC.
+   *
+   * <ul>
+   *   <li>The route must exist, so the VPC can advertise the prefix.
+   *   <li>The null route must be forwarding, so the VPC can drop traffic to that prefix that does
+   *       not have a destination (e.g., associated subnet) even if there's an associated gateway
+   *       providing a default route.
+   *   <li>The route must have a large admin distance. That way a subnet that owns the entire VPC
+   *       will get the traffic, rather than ECMP.
+   * </ul>
    */
   void initializeVrf(Vrf vrf) {
     _cidrBlockAssociations.forEach(
@@ -141,7 +148,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
             vrf.getStaticRoutes()
                 .add(
                     StaticRoute.builder()
-                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                        .setAdministrativeCost(255)
                         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                         .setNetwork(cb)
                         .setNextHopInterface(Interface.NULL_INTERFACE_NAME)

@@ -3,20 +3,28 @@ package org.batfish.representation.aws;
 import static com.google.common.collect.Iterators.getOnlyElement;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
+import static org.batfish.representation.aws.LoadBalancer.LISTENER_FILTER_NAME;
 import static org.batfish.representation.aws.LoadBalancer.LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX;
 import static org.batfish.representation.aws.LoadBalancer.chainListenerTransformations;
-import static org.batfish.representation.aws.LoadBalancer.computeDefaultFilter;
+import static org.batfish.representation.aws.LoadBalancer.computeListenerFilter;
+import static org.batfish.representation.aws.LoadBalancer.computeNotForwardedFilter;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
+import static org.batfish.representation.aws.LoadBalancer.getTraceElementForForwardedPackets;
+import static org.batfish.representation.aws.LoadBalancer.getTraceElementForMatchedListener;
+import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNoMatchedListener;
+import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNotForwardedPackets;
 import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -46,6 +54,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
@@ -213,11 +222,12 @@ public class LoadBalancerTest {
         viIface.getConcreteAddress(),
         equalTo(ConcreteInterfaceAddress.create(_loadBalancerIp, 24)));
 
+    assertThat(viIface.getIncomingFilter().getName(), equalTo(LISTENER_FILTER_NAME));
     assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getPostTransformationIncomingFilter(),
         equalTo(
-            computeDefaultFilter(
+            computeNotForwardedFilter(
                 ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, null)))));
 
     assertThat(
@@ -260,24 +270,21 @@ public class LoadBalancerTest {
             new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
             new TargetHealth(HealthState.HEALTHY));
 
-    LoadBalancerListener loadBalancerListener =
-        new LoadBalancerListener(
-            _loadBalancerArn,
-            ImmutableList.of(
-                new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80),
-                new Listener("listener2Arn", ImmutableList.of(action), Protocol.TCP, 82)));
+    List<Listener> listeners =
+        ImmutableList.of(
+            new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80),
+            new Listener("listener2Arn", ImmutableList.of(action), Protocol.TCP, 82));
 
     Region region =
         Region.builder("r1")
-            .setLoadBalancerListeners(
-                ImmutableMap.of(loadBalancerListener.getId(), loadBalancerListener))
             .setTargetGroups(ImmutableMap.of(targetGroup.getId(), targetGroup))
             .setLoadBalancerTargetHealths(
                 ImmutableMap.of(
                     "tgArn", new LoadBalancerTargetHealth("tgArn", ImmutableList.of(target))))
             .build();
 
-    _loadBalancer.installTransformations(viIface, "zone1", true, region, new Warnings());
+    _loadBalancer.installTransformations(viIface, "zone1", true, listeners, region, new Warnings());
+
     assertThat(
         viIface.getIncomingTransformation(),
         equalTo(
@@ -285,7 +292,7 @@ public class LoadBalancerTest {
                 ImmutableList.of(
                     Objects.requireNonNull(
                         _loadBalancer.computeListenerTransformation(
-                            loadBalancerListener.getListeners().get(0),
+                            listeners.get(0),
                             "zone1",
                             _loadBalancerIp,
                             true,
@@ -293,7 +300,7 @@ public class LoadBalancerTest {
                             new Warnings())),
                     Objects.requireNonNull(
                         _loadBalancer.computeListenerTransformation(
-                            loadBalancerListener.getListeners().get(1),
+                            listeners.get(1),
                             "zone1",
                             _loadBalancerIp,
                             true,
@@ -310,7 +317,8 @@ public class LoadBalancerTest {
   public void testInstallTransformation_noListener() {
     Interface viIface = Interface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
-    _loadBalancer.installTransformations(viIface, "zone1", true, region, new Warnings());
+    _loadBalancer.installTransformations(
+        viIface, "zone1", true, ImmutableList.of(), region, new Warnings());
     assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getFirewallSessionInterfaceInfo(),
@@ -688,23 +696,101 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeDefaultFilter() {
-    Ip loadBalancerIp = Ip.parse("10.10.10.10");
-    IpAccessList ipAccessList =
-        computeDefaultFilter(ImmutableList.of(new PrivateIpAddress(true, loadBalancerIp, null)));
+  public void testComputeListenerFilter() {
+    DefaultAction action = new DefaultAction(1, "tgArn", ActionType.FORWARD);
+    List<Listener> listeners =
+        ImmutableList.of(new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80));
 
-    // not transformed
+    IpAccessList ipAccessList = computeListenerFilter(listeners);
+
+    // TCP tp port 80 -- allowed
+    Flow allowedFlow = getTcpFlow(Ip.parse("1.1.1.1"));
+    assertThat(
+        ipAccessList.filter(allowedFlow, null, ImmutableMap.of(), ImmutableMap.of()).getAction(),
+        equalTo(LineAction.PERMIT));
+    assertThat(
+        AclTracer.trace(
+            ipAccessList,
+            allowedFlow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of()),
+        contains(hasTraceElement(getTraceElementForMatchedListener("listener1Arn"))));
+
+    // TCP to port 81 -- dropped
+    Flow deniedTcpFlow =
+        Flow.builder()
+            .setIngressNode("a")
+            .setSrcPort(89)
+            .setDstPort(81)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    assertThat(
+        ipAccessList.filter(deniedTcpFlow, null, ImmutableMap.of(), ImmutableMap.of()).getAction(),
+        equalTo(LineAction.DENY));
+    assertThat(
+        AclTracer.trace(
+            ipAccessList,
+            deniedTcpFlow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of()),
+        contains(hasTraceElement(getTraceElementForNoMatchedListener())));
+
+    // UDP to port 80 -- dropped
     assertThat(
         ipAccessList
-            .filter(getTcpFlow(loadBalancerIp), null, ImmutableMap.of(), ImmutableMap.of())
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setSrcPort(89)
+                    .setDstPort(80)
+                    .setIpProtocol(IpProtocol.UDP)
+                    .build(),
+                null,
+                ImmutableMap.of(),
+                ImmutableMap.of())
             .getAction(),
         equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testComputeNotForwardedFilter() {
+    Ip loadBalancerIp = Ip.parse("10.10.10.10");
+    IpAccessList ipAccessList =
+        computeNotForwardedFilter(
+            ImmutableList.of(new PrivateIpAddress(true, loadBalancerIp, null)));
+
+    // not transformed
+    Flow deniedFlow = getTcpFlow(loadBalancerIp);
+    assertThat(
+        ipAccessList.filter(deniedFlow, null, ImmutableMap.of(), ImmutableMap.of()).getAction(),
+        equalTo(LineAction.DENY));
+    assertThat(
+        AclTracer.trace(
+            ipAccessList,
+            deniedFlow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of()),
+        contains(hasTraceElement(getTraceElementForNotForwardedPackets())));
 
     // transformed
+    Flow allowedFlow = getTcpFlow(Ip.parse("1.1.1.1"));
     assertThat(
-        ipAccessList
-            .filter(getTcpFlow(Ip.parse("1.1.1.1")), null, ImmutableMap.of(), ImmutableMap.of())
-            .getAction(),
+        ipAccessList.filter(allowedFlow, null, ImmutableMap.of(), ImmutableMap.of()).getAction(),
         equalTo(LineAction.PERMIT));
+    assertThat(
+        AclTracer.trace(
+            ipAccessList,
+            allowedFlow,
+            null,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of()),
+        contains(hasTraceElement(getTraceElementForForwardedPackets())));
   }
 }

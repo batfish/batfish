@@ -20,7 +20,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNa
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
-import static org.batfish.common.util.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
@@ -120,8 +120,9 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IspModelingUtils;
-import org.batfish.common.util.IspModelingUtils.ModeledNodes;
+import org.batfish.common.util.CompletionMetadataUtils;
+import org.batfish.common.util.isp.IspModelingUtils;
+import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -1347,11 +1348,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
       if (configurations != null) {
         _logger.debugf("Loaded configurations for %s off disk", snapshot);
-        postProcessSnapshot(snapshot, configurations);
       } else {
         // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-        configurations = parseConfigurationsAndApplyEnvironment(snapshot);
+        configurations = actuallyParseConfigurations(snapshot);
       }
+      // Apply things like blacklist and aggregations before installing in the cache.
+      postProcessSnapshot(snapshot, configurations);
 
       _cachedConfigurations.put(snapshot, configurations);
       return configurations;
@@ -1359,8 +1361,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Nonnull
-  private SortedMap<String, Configuration> parseConfigurationsAndApplyEnvironment(
-      NetworkSnapshot snapshot) {
+  private SortedMap<String, Configuration> actuallyParseConfigurations(NetworkSnapshot snapshot) {
     _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
     repairConfigurations(snapshot);
     SortedMap<String, Configuration> configurations =
@@ -1369,7 +1370,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
     assert configurations != null;
-    postProcessSnapshot(snapshot, configurations);
     return configurations;
   }
 
@@ -1772,14 +1772,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(
-                        v ->
-                            postProcessAggregatedInterfacesHelper(
-                                c.getAllInterfaces(v.getName()))));
+        .forEach(c -> postProcessAggregatedInterfacesHelper(c.getAllInterfaces()));
   }
 
   private void postProcessAggregatedInterfacesHelper(Map<String, Interface> interfaces) {
@@ -2168,14 +2161,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
     EigrpTopologyUtils.initNeighborConfigs(nc);
-    computeAndStoreCompletionMetadata(snapshot, configurations);
   }
 
   private void computeAndStoreCompletionMetadata(
       NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
-          computeCompletionMetadata(configurations),
+          computeCompletionMetadata(snapshot, configurations),
           _settings.getContainer(),
           snapshot.getSnapshot());
     } catch (IOException e) {
@@ -2183,11 +2175,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+  private CompletionMetadata computeCompletionMetadata(
+      NetworkSnapshot snapshot, Map<String, Configuration> configurations) {
     return new CompletionMetadata(
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        CompletionMetadataUtils.getSourceLocationsWithSrcIps(getLocationInfo(snapshot)),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
@@ -2516,6 +2510,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
         assert ppSpan != null; // avoid unused warning
         postProcessSnapshot(snapshot, configurations);
+      }
+
+      try (ActiveSpan metadataSpan =
+          GlobalTracer.get().buildSpan("Compute and store completion metadata").startActive()) {
+        assert metadataSpan != null; // avoid unused warning
+        computeAndStoreCompletionMetadata(snapshot, configurations);
       }
       return answer;
     }

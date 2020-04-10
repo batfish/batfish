@@ -787,6 +787,7 @@ public final class Region implements Serializable {
                         securityGroupToIpAccessList(securityGroup, ingress, cfgNode, warnings))
                     .map(
                         acl ->
+                            // See note about naming on SecurityGroup#getGroupName.
                             new AclAclLine(
                                 String.format("Security Group %s", securityGroup.getGroupName()),
                                 acl.getName(),
@@ -854,6 +855,7 @@ public final class Region implements Serializable {
     if (aclLines.isEmpty()) {
       return null;
     }
+    // See note about naming on SecurityGroup#getGroupName.
     return IpAccessList.builder()
         .setName(
             String.format(

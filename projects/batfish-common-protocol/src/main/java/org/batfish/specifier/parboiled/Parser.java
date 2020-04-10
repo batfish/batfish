@@ -22,6 +22,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.HIDDEN;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
@@ -76,6 +77,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
 import org.parboiled.Parboiled;
@@ -1045,11 +1047,18 @@ public class Parser extends CommonParser {
 
   public Rule LocationTerm() {
     return FirstOf(
+        LocationInternet(),
         LocationEnterDeprecated(),
         LocationEnter(),
         LocationInterfaceDeprecated(),
         LocationInterface(),
         LocationParens());
+  }
+
+  @Anchor(HIDDEN)
+  public Rule LocationInternet() {
+    return Sequence(
+        IgnoreCase(IspModelingUtils.INTERNET_HOST_NAME), push(InternetLocationAstNode.INSTANCE));
   }
 
   @Anchor(LOCATION_ENTER)

@@ -1,25 +1,89 @@
-package org.batfish.common.util;
+package org.batfish.common.util.isp;
 
-import static org.batfish.common.util.IspModelingUtils.LINK_LOCAL_IP;
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_IP;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
 
 /** Contains the information required to model one ISP node */
 @ParametersAreNonnullByDefault
 final class IspModel {
+  static final class Builder {
+    IspModel build() {
+      checkArgument(_asn != null, "Missing ASN");
+      checkArgument(_name != null, "Missing name");
+      return new IspModel(
+          _asn,
+          firstNonNull(_remotes, ImmutableList.of()),
+          _name,
+          firstNonNull(_additionalPrefixesToInternet, ImmutableSet.of()),
+          firstNonNull(_trafficFiltering, IspTrafficFiltering.none()));
+    }
+
+    public Builder setAsn(long asn) {
+      _asn = asn;
+      return this;
+    }
+
+    public Builder setName(@Nullable String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setAdditionalPrefixesToInternet(
+        @Nullable Iterable<Prefix> additionalPrefixesToInternet) {
+      _additionalPrefixesToInternet =
+          additionalPrefixesToInternet == null
+              ? null
+              : ImmutableSet.copyOf(additionalPrefixesToInternet);
+      return this;
+    }
+
+    public Builder setAdditionalPrefixesToInternet(
+        @Nonnull Prefix... additionalPrefixesToInternet) {
+      return setAdditionalPrefixesToInternet(Arrays.asList(additionalPrefixesToInternet));
+    }
+
+    public Builder setRemotes(@Nullable Iterable<Remote> remotes) {
+      _remotes = remotes == null ? null : ImmutableList.copyOf(remotes);
+      return this;
+    }
+
+    public Builder setRemotes(@Nonnull Remote... remotes) {
+      return setRemotes(Arrays.asList(remotes));
+    }
+
+    public Builder setTrafficFiltering(@Nullable IspTrafficFiltering trafficFiltering) {
+      _trafficFiltering = trafficFiltering;
+      return this;
+    }
+
+    private @Nullable Long _asn;
+    private @Nullable String _name;
+    private @Nullable List<Remote> _remotes;
+    private @Nullable Set<Prefix> _additionalPrefixesToInternet;
+    private @Nullable IspTrafficFiltering _trafficFiltering;
+  }
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
 
   /** Represents one remote end of the ISP node */
   static final class Remote {
@@ -101,32 +165,31 @@ final class IspModel {
     }
   }
 
-  private long _asn;
-  private @Nonnull String _name;
+  private final long _asn;
+  private final @Nonnull String _name;
   private @Nonnull List<Remote> _remotes;
-  private @Nonnull Set<Prefix> _additionalPrefixesToInternet;
+  private final @Nonnull Set<Prefix> _additionalPrefixesToInternet;
+  private final @Nonnull IspTrafficFiltering _trafficFiltering;
 
-  IspModel(long asn, String name) {
-    this(asn, new ArrayList<>(), name, ImmutableSet.of());
-  }
-
-  IspModel(long asn, String name, Set<Prefix> additionalPrefixesToInternet) {
-    this(asn, new ArrayList<>(), name, additionalPrefixesToInternet);
-  }
-
-  IspModel(long asn, List<Remote> remotes, String name) {
-    this(asn, remotes, name, ImmutableSet.of());
-  }
-
-  IspModel(long asn, List<Remote> remotes, String name, Set<Prefix> additionalPrefixesToInternet) {
+  private IspModel(
+      long asn,
+      List<Remote> remotes,
+      String name,
+      Set<Prefix> additionalPrefixesToInternet,
+      IspTrafficFiltering trafficFiltering) {
     _asn = asn;
     _remotes = remotes;
     _name = name;
     _additionalPrefixesToInternet = ImmutableSet.copyOf(additionalPrefixesToInternet);
+    _trafficFiltering = trafficFiltering;
   }
 
   void addNeighbor(Remote neighbor) {
-    _remotes.add(neighbor);
+    _remotes =
+        ImmutableList.<Remote>builderWithExpectedSize(1 + _remotes.size())
+            .addAll(_remotes)
+            .add(neighbor)
+            .build();
   }
 
   @Nonnull
@@ -141,6 +204,7 @@ final class IspModel {
         .add("name", _name)
         .add("neighbors", _remotes)
         .add("additionalPrefixes", _additionalPrefixesToInternet)
+        .add("trafficFiltering", _trafficFiltering)
         .toString();
   }
 
@@ -156,12 +220,13 @@ final class IspModel {
     return _asn == ispInfo._asn
         && _remotes.equals(ispInfo._remotes)
         && _name.equals(ispInfo._name)
-        && _additionalPrefixesToInternet.equals(ispInfo._additionalPrefixesToInternet);
+        && _additionalPrefixesToInternet.equals(ispInfo._additionalPrefixesToInternet)
+        && _trafficFiltering.equals(ispInfo._trafficFiltering);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _remotes, _name, _additionalPrefixesToInternet);
+    return Objects.hash(_asn, _remotes, _name, _additionalPrefixesToInternet, _trafficFiltering);
   }
 
   public long getAsn() {
@@ -180,5 +245,11 @@ final class IspModel {
   @Nonnull
   public Set<Prefix> getAdditionalPrefixesToInternet() {
     return _additionalPrefixesToInternet;
+  }
+
+  /** Returns the {@link IspTrafficFiltering traffic filtering policy} of this ISP. */
+  @Nonnull
+  public IspTrafficFiltering getTrafficFiltering() {
+    return _trafficFiltering;
   }
 }

@@ -2,10 +2,12 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.google.re2j.Pattern;
@@ -41,6 +43,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.ToSpecifierString;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
@@ -719,6 +722,11 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case SOURCE_LOCATION:
+          {
+            suggestions = autoCompleteSourceLocation(query, completionMetadata);
+            break;
+          }
         case STRUCTURE_NAME:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
@@ -744,6 +752,28 @@ public final class AutoCompleteUtils {
       // if any error occurs, just return an empty list
       return ImmutableList.of();
     }
+    return suggestions;
+  }
+
+  @Nonnull
+  static List<AutocompleteSuggestion> autoCompleteSourceLocation(
+      String query, @Nullable CompletionMetadata completionMetadata) {
+    List<AutocompleteSuggestion> suggestions;
+    checkNotNull(
+        completionMetadata.getSourceLocations(),
+        "cannot autocomplete source locations without LocationInfo");
+    Map<String, Optional<String>> locationsAndHumanNames =
+        completionMetadata.getSourceLocations().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    ToSpecifierString::toSpecifierString,
+                    location ->
+                        Optional.ofNullable(
+                            completionMetadata
+                                .getNodes()
+                                .get(location.getNodeName())
+                                .getHumanName())));
+    suggestions = stringAutoComplete(query, locationsAndHumanNames);
     return suggestions;
   }
 

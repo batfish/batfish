@@ -5,10 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -17,6 +20,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 
 /** Various functions useful for fetching data used in the creation of CompletionMetadata */
 public final class CompletionMetadataUtils {
@@ -213,6 +218,19 @@ public final class CompletionMetadataUtils {
             configuration ->
                 routingPolicyNames.addAll(configuration.getRoutingPolicies().keySet()));
     return routingPolicyNames.build();
+  }
+
+  public static Set<Location> getSourceLocationsWithSrcIps(
+      Map<Location, LocationInfo> locationInfo) {
+    IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
+    return locationInfo.entrySet().stream()
+        .filter(
+            entry -> {
+              LocationInfo info = entry.getValue();
+              return info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
+            })
+        .map(Entry::getKey)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {

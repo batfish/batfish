@@ -61,6 +61,7 @@ import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.specifier.InterfaceLocation;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -457,6 +458,7 @@ public final class FileBasedStorageTest {
             ImmutableSet.of("filter1"),
             ImmutableSet.of(NodeInterfacePair.of("node", "iface")),
             ImmutableMap.of(Ip.parse("1.1.1.1"), new IpCompletionMetadata()),
+            ImmutableSet.of(new InterfaceLocation("node", "iface")),
             ImmutableSet.of("mlag"),
             ImmutableMap.of("node", new NodeCompletionMetadata(null)),
             ImmutableSet.of("1.1.1.1/30"),

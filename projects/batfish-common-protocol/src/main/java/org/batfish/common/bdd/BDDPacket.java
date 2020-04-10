@@ -2,7 +2,6 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
-import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
@@ -239,13 +238,18 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
+    if (bdd.isZero()) {
+      return Optional.empty();
+    }
     BDD representativeBDD =
         BDDRepresentativePicker.pickRepresentative(
             bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
 
     if (representativeBDD.isZero()) {
+      // Should not be possible if the preference is well-formed.
       return Optional.empty();
     }
+
     return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
@@ -262,7 +266,7 @@ public class BDDPacket {
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
-    checkArgument(isAssignment(satAssignment));
+    checkArgument(satAssignment.isAssignment());
 
     Flow.Builder fb = Flow.builder();
     fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(satAssignment)));

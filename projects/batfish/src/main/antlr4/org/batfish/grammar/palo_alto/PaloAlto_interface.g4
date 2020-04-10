@@ -10,7 +10,8 @@ sn_interface
 :
     INTERFACE
     (
-        sni_ethernet
+        sni_aggregate_ethernet
+        | sni_ethernet
         | sni_loopback
         | sni_tunnel
         | sni_vlan
@@ -34,6 +35,22 @@ if_tag
     TAG tag = vlan_tag
 ;
 
+sni_aggregate_ethernet
+:
+    AGGREGATE_ETHERNET sni_aggregate_ethernet_definition?
+;
+
+sni_aggregate_ethernet_definition
+:
+    name = variable
+    (
+        if_common
+        | snie_layer2
+        | snie_layer3
+        | snie_virtual_wire
+    )?
+;
+
 sni_ethernet
 :
     ETHERNET sni_ethernet_definition?
@@ -44,8 +61,11 @@ sni_ethernet_definition
     name = variable
     (
         if_common
+        | snie_aggregate_group
         | snie_layer2
         | snie_layer3
+        | snie_link_duplex
+        | snie_link_speed
         | snie_link_state
         | snie_tap
         | snie_virtual_wire
@@ -79,6 +99,11 @@ sni_vlan
     )?
 ;
 
+snie_aggregate_group
+:
+    AGGREGATE_GROUP group = variable
+;
+
 snie_layer2
 :
     LAYER2
@@ -94,6 +119,25 @@ snie_layer3
         sniel3_common
         | sniel3_units
     )?
+;
+
+snie_link_duplex
+:
+    LINK_DUPLEX
+    (
+        AUTO
+        | FULL
+        | HALF
+    )
+;
+
+snie_link_speed
+:
+    LINK_SPEED
+    (
+        AUTO
+        | fixed = uint16
+    )
 ;
 
 snie_link_state
