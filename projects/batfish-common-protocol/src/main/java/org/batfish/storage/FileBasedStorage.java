@@ -1056,12 +1056,51 @@ public final class FileBasedStorage implements StorageProvider {
    * Make specified directory along with any parent directories if they do not already exist.
    *
    * @param dir directory to create
-   * @throws BatfishException if there is an error creating the directories
+   * @throws IOException if there is an error creating the directories
    */
   @VisibleForTesting
-  static void mkdirs(Path dir) {
+  static void mkdirs(Path dir) throws IOException {
     if (!dir.toFile().mkdirs() && !dir.toFile().exists()) {
-      throw new BatfishException(String.format("Unable to create directory '%s'", dir));
+      throw new IOException(String.format("Unable to create directory '%s'", dir));
+    }
+  }
+
+  private static void deleteDirectory(Path path) throws IOException {
+    FileUtils.deleteDirectory(path.toFile());
+  }
+
+  private static void deleteIfExists(Path path) throws IOException {
+    try {
+      Files.delete(path);
+    } catch (NoSuchFileException e) {
+      return;
+    }
+  }
+
+  private static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
+    return FileUtils.readFileToString(file.toFile(), charset);
+  }
+
+  private static void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
+    Path tmpFile = Files.createTempFile(null, null);
+    try {
+      FileUtils.write(tmpFile.toFile(), data, charset);
+      mkdirs(file.getParent());
+      Files.move(tmpFile, file);
+    } finally {
+      deleteIfExists(tmpFile);
+    }
+  }
+
+  private static void writeStringToFile(Path file, String data, Charset charset)
+      throws IOException {
+    Path tmpFile = Files.createTempFile(null, null);
+    try {
+      FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
+      mkdirs(file.getParent());
+      Files.move(tmpFile, file);
+    } finally {
+      deleteIfExists(tmpFile);
     }
   }
 
@@ -1180,41 +1219,5 @@ public final class FileBasedStorage implements StorageProvider {
     Path sl1tPath = getSynthesizedLayer1TopologyPath(network, snapshot);
     mkdirs(sl1tPath.getParent());
     writeFile(sl1tPath, BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
-  }
-
-  private void deleteDirectory(Path path) throws IOException {
-    FileUtils.deleteDirectory(path.toFile());
-  }
-
-  private void deleteIfExists(Path path) throws IOException {
-    try {
-      Files.delete(path);
-    } catch (NoSuchFileException e) {
-      return;
-    }
-  }
-
-  private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
-    return FileUtils.readFileToString(file.toFile(), charset);
-  }
-
-  private void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
-    Path tmpFile = Files.createTempFile(null, null);
-    try {
-      FileUtils.write(tmpFile.toFile(), data, charset);
-      Files.move(tmpFile, file);
-    } finally {
-      deleteIfExists(tmpFile);
-    }
-  }
-
-  private void writeStringToFile(Path file, String data, Charset charset) throws IOException {
-    Path tmpFile = Files.createTempFile(null, null);
-    try {
-      FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
-      Files.move(tmpFile, file);
-    } finally {
-      deleteIfExists(tmpFile);
-    }
   }
 }
