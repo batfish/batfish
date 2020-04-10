@@ -262,13 +262,7 @@ sbnp_update_source
 
 sbnp_local_as
 :
-  LOCAL_AS asn = autonomous_system
-  (
-    NO_PREPEND
-    (
-      REPLACE_AS
-    )
-  ) NEWLINE
+  LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)?
 ;
 
 sb_network

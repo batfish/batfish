@@ -55,7 +55,6 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
-//import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_asnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
@@ -153,7 +152,6 @@ import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.cumulus.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusFrrConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
@@ -200,7 +198,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable BgpVrf _currentBgpVrf;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
-  private @Nullable BgpVrfNeighborConfiguration _currentBgpVrfNeighbor;
   private @Nullable IpPrefixList _currentIpPrefixList;
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
@@ -240,22 +237,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return Optional.empty();
     }
   }
-
-  @Nonnull
-  private int toInteger(Uint16Context ctx) {
-    return Integer.parseInt(ctx.getText());
-  }
-
-  /*
-  @Nonnull
-  private Long toLong(Bgp_asnContext ctx) {
-    if (ctx.large != null) {
-      return toLong(ctx.large);
-    } else {
-      return (((long) toInteger(ctx.high)) << 16) | ((long) toInteger(ctx.low));
-    }
-  }
-   */
 
   @Nonnull
   private Long toLong(Uint32Context ctx) {
@@ -454,7 +435,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbnp_local_as(Sbnp_local_asContext ctx) {
     long asn = Long.parseLong(ctx.autonomous_system().getText());
-    _currentBgpVrfNeighbor.setLocalAs(asn);
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp neighbor");
+      return;
+    }
+    _currentBgpNeighbor.setLocalAs(asn);
   }
 
   @Override
