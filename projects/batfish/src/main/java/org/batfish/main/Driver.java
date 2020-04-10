@@ -11,6 +11,7 @@ import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -459,6 +460,13 @@ public class Driver {
                         batfish.outputAnswerWithLog(answer);
                         batfish.outputAnswerMetadata(answer);
                       }
+                    } catch (IOException e) {
+                      String stackTrace = Throwables.getStackTraceAsString(e);
+                      logger.errorf(
+                          "Exception in network:%s, snapshot:%s; exception:%s",
+                          snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
+                      batfish.setTerminatingExceptionMessage(
+                          e.getClass().getName() + ": " + e.getMessage());
                     }
                   }
                 }

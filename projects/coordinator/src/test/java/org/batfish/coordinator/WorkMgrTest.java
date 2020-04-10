@@ -723,7 +723,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testListAnalysesSuggested() {
+  public void testListAnalysesSuggested() throws IOException {
     String containerName = "myContainer";
     _manager.initNetwork(containerName, null);
 
@@ -746,7 +746,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testConfigureAnalysis() {
+  public void testConfigureAnalysis() throws IOException {
     String containerName = "myContainer";
     _manager.initNetwork(containerName, null);
     // test init and add questions to analysis
@@ -790,7 +790,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testConfigureAnalysisSuggested() {
+  public void testConfigureAnalysisSuggested() throws IOException {
     String containerName = "myContainer";
     _manager.initNetwork(containerName, null);
 
@@ -1420,7 +1420,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnalysisAnswers() throws JsonProcessingException {
+  public void testGetAnalysisAnswers() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -1494,7 +1494,7 @@ public final class WorkMgrTest {
 
   /** Test that we return good answers when some questions are bad */
   @Test
-  public void testGetAnalysisAnswersAndMetadataPartial() throws JsonProcessingException {
+  public void testGetAnalysisAnswersAndMetadataPartial() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -1578,7 +1578,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAutoWorkQueueUserAnalysis() {
+  public void testGetAutoWorkQueueUserAnalysis() throws IOException {
     String containerName = "myContainer";
     String testrigName = "myTestrig";
     _manager.initNetwork(containerName, null);
@@ -1607,7 +1607,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAnalysisSuccess() throws JsonProcessingException {
+  public void testGetAnswerMetadataAnalysisSuccess() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
@@ -1650,7 +1650,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAnalysisMissingQuestion() {
+  public void testGetAnswerMetadataAnalysisMissingQuestion() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
@@ -1736,7 +1736,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocSuccess() throws JsonProcessingException {
+  public void testGetAnswerMetadataAdHocSuccess() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -1808,7 +1808,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocMissingQuestion() throws JsonProcessingException {
+  public void testGetAnswerMetadataAdHocMissingQuestion() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -1847,7 +1847,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAutoWorkQueueSuggestedAnalysis() {
+  public void testGetAutoWorkQueueSuggestedAnalysis() throws IOException {
     String containerName = "myContainer";
     String testrigName = "myTestrig";
     _manager.initNetwork(containerName, null);
@@ -3448,7 +3448,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testCheckAnalysisQuestionExists() {
+  public void testCheckAnalysisQuestionExists() throws IOException {
     String network = "network";
     String question = "question";
     String analysis = "analysis";
