@@ -259,7 +259,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
-    } catch (IllegalArgumentException | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException | IOException e) {
       _logger.errorf("WMS:configureAnalysis exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {

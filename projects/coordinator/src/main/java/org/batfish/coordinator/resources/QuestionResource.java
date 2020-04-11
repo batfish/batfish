@@ -2,6 +2,7 @@ package org.batfish.coordinator.resources;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -54,7 +55,7 @@ public final class QuestionResource {
   }
 
   @GET
-  public @Nonnull Response getQuestion() {
+  public @Nonnull Response getQuestion() throws IOException {
     String result = Main.getWorkMgr().getQuestion(_network, _questionName, _analysis);
     if (result == null) {
       return Response.status(Status.NOT_FOUND).build();
@@ -63,7 +64,7 @@ public final class QuestionResource {
   }
 
   @PUT
-  public @Nonnull Response putQuestion(String questionJson) {
+  public @Nonnull Response putQuestion(String questionJson) throws IOException {
     if (_analysis != null) {
       Main.getWorkMgr()
           .configureAnalysis(
