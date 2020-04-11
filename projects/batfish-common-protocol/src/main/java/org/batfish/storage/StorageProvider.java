@@ -153,16 +153,18 @@ public interface StorageProvider {
    *
    * @param answerStr The text of the answer
    * @param answerId The ID of the answer
+   * @throws IOException if there is an error
    */
-  void storeAnswer(String answerStr, AnswerId answerId);
+  void storeAnswer(String answerStr, AnswerId answerId) throws IOException;
 
   /**
    * Store the metadata for the answer to an ad-hoc or analysis question.
    *
    * @param answerMetadata The metadata to store
    * @param answerId The ID of the answer
+   * @throws IOException if there is an error
    */
-  void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId);
+  void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) throws IOException;
 
   /**
    * Load the text of a JSON-serialized ad-hoc or analysis question
@@ -171,9 +173,11 @@ public interface StorageProvider {
    * @param question The name of the question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
+   * @throws IOException if there is some other error
    */
   @Nonnull
-  String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
+  String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+      throws IOException;
 
   /**
    * Returns {@code true} iff the specified question exists.
@@ -222,9 +226,11 @@ public interface StorageProvider {
    * @param question The name of the question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
+   * @throws IOException if there is an error
    */
   void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
+      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+      throws IOException;
 
   /**
    * Return the JSON-serialized settings for the {@code questionClassId} under the specified {@code
