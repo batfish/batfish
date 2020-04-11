@@ -1086,6 +1086,7 @@ public final class FileBasedStorage implements StorageProvider {
     try {
       FileUtils.write(tmpFile.toFile(), data, charset);
       mkdirs(file.getParent());
+      deleteIfExists(file);
       Files.move(tmpFile, file);
     } finally {
       deleteIfExists(tmpFile);
@@ -1098,6 +1099,7 @@ public final class FileBasedStorage implements StorageProvider {
     try {
       FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
       mkdirs(file.getParent());
+      deleteIfExists(file);
       Files.move(tmpFile, file);
     } finally {
       deleteIfExists(tmpFile);
