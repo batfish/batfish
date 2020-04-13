@@ -458,7 +458,12 @@ public final class CumulusConversions {
     org.batfish.datamodel.BgpProcess viBgpProcess =
         c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
     neighbor.inheritFrom(bgpVrf.getNeighbors());
-    Long localAs = firstNonNull(neighbor.getLocalAs(), bgpVrf.getAutonomousSystem());
+    Long localAs = null;
+    if (neighbor.getLocalAs() != null) {
+      localAs = neighbor.getLocalAs();
+    } else if (bgpVrf.getAutonomousSystem() != null) {
+      localAs = bgpVrf.getAutonomousSystem();
+    }
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
