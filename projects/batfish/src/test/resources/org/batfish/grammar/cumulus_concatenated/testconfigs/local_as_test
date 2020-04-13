@@ -8,7 +8,7 @@ interface bond1
  ip address 2.2.2.3/31
 
 interface bond2
- ip address 4.4.4.3/31
+ ip address 4.4.4.3/24
 
 ### end /etc/network/interfaces
 

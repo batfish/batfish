@@ -715,11 +715,7 @@ public class CumulusConcatenatedGrammarTest {
             .getLocalAs();
     assertThat(neighbor_ip_local_as, equalTo(10L));
     Long neighbor_iface_local_as =
-        defaultVrf
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Prefix.parse("4.4.4.2/32"))
-            .getLocalAs();
+        defaultVrf.getBgpProcess().getInterfaceNeighbors().get("bond2").getLocalAs();
     assertThat(neighbor_iface_local_as, equalTo(10L));
   }
 }
