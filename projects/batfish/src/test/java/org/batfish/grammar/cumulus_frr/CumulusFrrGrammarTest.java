@@ -169,7 +169,7 @@ public class CumulusFrrGrammarTest {
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     CumulusFrrConfigurationBuilder cb =
-        new CumulusFrrConfigurationBuilder(_config, parser, _warnings);
+        new CumulusFrrConfigurationBuilder(_config, parser, _warnings, src);
     walker.walk(cb, tree);
     _config = SerializationUtils.clone(_config);
   }

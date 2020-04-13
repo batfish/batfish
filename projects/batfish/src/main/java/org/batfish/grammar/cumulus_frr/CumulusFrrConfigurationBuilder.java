@@ -191,6 +191,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private final CumulusFrrConfiguration _frr;
   private final CumulusFrrCombinedParser _parser;
   private final Warnings _w;
+  private final String _text;
 
   private @Nullable Vrf _currentVrf;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
@@ -202,11 +203,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable FrrInterface _currentInterface;
 
   public CumulusFrrConfigurationBuilder(
-      CumulusConcatenatedConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
+      CumulusConcatenatedConfiguration configuration,
+      CumulusFrrCombinedParser parser,
+      Warnings w,
+      String fullText) {
     _c = configuration;
     _frr = configuration.getFrrConfiguration();
     _parser = parser;
     _w = w;
+    _text = fullText;
   }
 
   CumulusConcatenatedConfiguration getVendorConfiguration() {
@@ -268,12 +273,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
   }
 
+  /** Return the text of a given rule context */
+  @Nonnull
+  String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    return _text.substring(start, end + 1);
+  }
+
   private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, ctx.getText(), _parser);
+    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, ctx.getText(), _parser, message);
+    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
