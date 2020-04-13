@@ -19,6 +19,7 @@ public abstract class BgpNeighbor implements Serializable {
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _l2vpnEvpnAddressFamily;
   private @Nullable Long _ebgpMultihop;
   private @Nullable BgpNeighborSource _bgpNeighborSource;
+  private @Nullable Long _localAs;
 
   // Whether this configuration has inherited from its parent.
   private boolean _inherited = false;
@@ -75,6 +76,10 @@ public abstract class BgpNeighbor implements Serializable {
    * Returns explicit remote-as number when {@link #getRemoteAsType} is {@link
    * RemoteAsType#EXPLICIT}, or else {@code null}.
    */
+  public @Nullable Long getLocalAs() {
+    return _localAs;
+  }
+
   public @Nullable Long getRemoteAs() {
     return _remoteAs;
   }
@@ -89,6 +94,10 @@ public abstract class BgpNeighbor implements Serializable {
 
   public void setEbgpMultihop(@Nullable Long ebgpMultihop) {
     _ebgpMultihop = ebgpMultihop;
+  }
+
+  public void setLocalAs(@Nullable Long localAs) {
+    _localAs = localAs;
   }
 
   public void setRemoteAs(@Nullable Long remoteAs) {
@@ -138,6 +147,10 @@ public abstract class BgpNeighbor implements Serializable {
       _l2vpnEvpnAddressFamily = other.getL2vpnEvpnAddressFamily();
     } else if (other.getL2vpnEvpnAddressFamily() != null) {
       _l2vpnEvpnAddressFamily.inheritFrom(other.getL2vpnEvpnAddressFamily());
+    }
+
+    if (_localAs == null) {
+      _localAs = other.getLocalAs();
     }
   }
 
