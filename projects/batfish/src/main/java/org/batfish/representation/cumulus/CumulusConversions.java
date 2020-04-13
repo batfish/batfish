@@ -462,6 +462,9 @@ public final class CumulusConversions {
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
       interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      if (interfaceNeighbor.getLocalAs() != null) {
+        localAs = interfaceNeighbor.getLocalAs();
+      }
       addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;

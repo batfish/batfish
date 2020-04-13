@@ -702,4 +702,35 @@ public class CumulusConcatenatedGrammarTest {
             .getExportPolicySources(),
         hasSize(1));
   }
+
+  @Test
+  public void testLocalAs() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("local_as_test");
+    org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
+    Long neighbor_ip_local_as =
+        defaultVrf
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("2.2.2.2/32"))
+            .getLocalAs();
+    assertThat(neighbor_ip_local_as, equalTo(10L));
+    Long neighbor_iface_local_as =
+        defaultVrf
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("4.4.4.2/32"))
+            .getLocalAs();
+    assertThat(neighbor_iface_local_as, equalTo(10L));
+  }
 }
