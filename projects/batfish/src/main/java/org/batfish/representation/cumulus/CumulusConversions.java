@@ -455,17 +455,27 @@ public final class CumulusConversions {
       BgpNeighbor neighbor,
       Warnings w) {
 
-    Long localAs = bgpVrf.getAutonomousSystem();
     org.batfish.datamodel.BgpProcess viBgpProcess =
         c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
+    neighbor.inheritFrom(bgpVrf.getNeighbors());
+    Long localAs = null;
+    if (neighbor.getLocalAs() != null) {
+      localAs = neighbor.getLocalAs();
+    } else if (bgpVrf.getAutonomousSystem() != null) {
+      localAs = bgpVrf.getAutonomousSystem();
+    }
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-      interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      if (interfaceNeighbor.getLocalAs() != null) {
+        localAs = interfaceNeighbor.getLocalAs();
+      }
       addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-      ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      if (ipNeighbor.getLocalAs() != null) {
+        localAs = ipNeighbor.getLocalAs();
+      }
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
       throw new IllegalArgumentException(

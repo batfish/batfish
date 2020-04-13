@@ -702,4 +702,20 @@ public class CumulusConcatenatedGrammarTest {
             .getExportPolicySources(),
         hasSize(1));
   }
+
+  @Test
+  public void testLocalAs() throws IOException {
+    Configuration c = parseConfig("local_as_test");
+    org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
+    Long neighbor_ip_local_as =
+        defaultVrf
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("2.2.2.2/32"))
+            .getLocalAs();
+    assertThat(neighbor_ip_local_as, equalTo(10L));
+    Long neighbor_iface_local_as =
+        defaultVrf.getBgpProcess().getInterfaceNeighbors().get("bond2").getLocalAs();
+    assertThat(neighbor_iface_local_as, equalTo(10L));
+  }
 }
