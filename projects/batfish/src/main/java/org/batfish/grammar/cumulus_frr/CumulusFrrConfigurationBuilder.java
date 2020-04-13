@@ -440,6 +440,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
     _currentBgpNeighbor.setLocalAs(asn);
     // TODO: Handle no-prepend and replace-as.
+    if (ctx.NO_PREPEND() != null || ctx.REPLACE_AS() != null) {
+      todo(ctx);
+    }
   }
 
   @Override
