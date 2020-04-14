@@ -17,7 +17,7 @@ public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
 
   @Override
   public void applyTo(
-      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+      List<Statement> statements, AristaConfiguration cc, Configuration c, Warnings w) {
     statements.add(new SetLocalPreference(_localPreference));
   }
 

@@ -21,7 +21,7 @@ public final class RouteMapSetAdditiveCommunityListLine extends RouteMapSetLine 
 
   @Override
   public void applyTo(
-      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+      List<Statement> statements, AristaConfiguration cc, Configuration c, Warnings w) {
     SortedSet<Long> communities = new TreeSet<>();
     for (String communityListName : _communityLists) {
       CommunityList communityList = c.getCommunityLists().get(communityListName);

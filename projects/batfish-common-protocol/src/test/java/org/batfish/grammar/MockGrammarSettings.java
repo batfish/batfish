@@ -160,11 +160,6 @@ public final class MockGrammarSettings implements GrammarSettings {
   }
 
   @Override
-  public boolean getUseAristaBgp() {
-    return false;
-  }
-
-  @Override
   public void setDisableUnrecognized(boolean b) {
     throw new UnsupportedOperationException("immutable");
   }

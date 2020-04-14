@@ -179,7 +179,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _outboundRouteMap;
   }
 
-  protected final BgpPeerGroup getParentGroup(BgpProcess proc, CiscoConfiguration cv) {
+  protected final BgpPeerGroup getParentGroup(BgpProcess proc, AristaConfiguration cv) {
     BgpPeerGroup parent = null;
     if (_groupName != null) {
       parent = proc.getNamedPeerGroups().get(_groupName);
@@ -191,7 +191,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return parent;
   }
 
-  protected final BgpPeerGroup getParentSession(BgpProcess proc, CiscoConfiguration cv) {
+  protected final BgpPeerGroup getParentSession(BgpProcess proc, AristaConfiguration cv) {
     BgpPeerGroup parent = null;
     if (_peerSession != null) {
       parent = proc.getPeerSessions().get(_peerSession);
@@ -340,7 +340,7 @@ public abstract class BgpPeerGroup implements Serializable {
     }
   }
 
-  public void inheritUnsetFields(BgpProcess proc, CiscoConfiguration cv) {
+  public void inheritUnsetFields(BgpProcess proc, AristaConfiguration cv) {
     if (_inherited) {
       return;
     }

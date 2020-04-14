@@ -13,7 +13,6 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
     _additionalPathsReceive = false;
     _additionalPathsSelectAll = false;
     _additionalPathsSend = false;
-    _advertiseInactive = false;
     _allowAsIn = false;
     _defaultOriginate = false;
     _disablePeerAsCheck = true;

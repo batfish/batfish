@@ -22,7 +22,7 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
 
   @Override
   public void applyTo(
-      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+      List<Statement> statements, AristaConfiguration cc, Configuration c, Warnings w) {
     List<Long> communities = new ArrayList<>();
     for (String communityListName : _communityLists) {
       CommunityList communityList = c.getCommunityLists().get(communityListName);

@@ -20,9 +20,9 @@ public class ProtocolOrServiceObjectGroupServiceSpecifier implements AccessListS
     ObjectGroup objectGroup = objectGroups.get(_name);
     String aclName;
     if (objectGroup instanceof ProtocolObjectGroup) {
-      aclName = CiscoConfiguration.computeProtocolObjectGroupAclName(_name);
+      aclName = AristaConfiguration.computeProtocolObjectGroupAclName(_name);
     } else if (objectGroup instanceof ServiceObjectGroup) {
-      aclName = CiscoConfiguration.computeServiceObjectGroupAclName(_name);
+      aclName = AristaConfiguration.computeServiceObjectGroupAclName(_name);
     } else {
       return FalseExpr.INSTANCE;
     }

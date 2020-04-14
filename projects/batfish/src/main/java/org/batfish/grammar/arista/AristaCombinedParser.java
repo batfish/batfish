@@ -5,8 +5,6 @@ import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFa
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.arista.AristaLexer;
-import org.batfish.grammar.arista.AristaParser;
 import org.batfish.grammar.arista.AristaParser.Cisco_configurationContext;
 
 public class AristaCombinedParser extends BatfishCombinedParser<AristaParser, AristaLexer> {
@@ -31,7 +29,7 @@ public class AristaCombinedParser extends BatfishCombinedParser<AristaParser, Ar
     _lexer.setEos(eos);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _parser.setAristaBgp(settings.getUseAristaBgp() && format == ConfigurationFormat.ARISTA);
+    _parser.setAristaBgp(format == ConfigurationFormat.ARISTA);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _parser.setEos(eos);
     _parser.setCadant(cadant);

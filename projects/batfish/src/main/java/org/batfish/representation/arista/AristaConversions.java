@@ -6,7 +6,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
-import static org.batfish.representation.arista.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
+import static org.batfish.representation.arista.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;

@@ -22,7 +22,7 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
   }
 
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, AristaConfiguration cc, Warnings w) {
     Disjunction d = new Disjunction();
     List<BooleanExpr> disjuncts = d.getDisjuncts();
     for (String listName : _listNames) {

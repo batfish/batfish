@@ -10,12 +10,12 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-import static org.batfish.representation.arista.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
-import static org.batfish.representation.arista.CiscoConfiguration.computeBgpPeerImportPolicyName;
-import static org.batfish.representation.arista.CiscoConfiguration.computeIcmpObjectGroupAclName;
-import static org.batfish.representation.arista.CiscoConfiguration.computeProtocolObjectGroupAclName;
-import static org.batfish.representation.arista.CiscoConfiguration.computeServiceObjectAclName;
-import static org.batfish.representation.arista.CiscoConfiguration.computeServiceObjectGroupAclName;
+import static org.batfish.representation.arista.AristaConfiguration.computeBgpDefaultRouteExportPolicyName;
+import static org.batfish.representation.arista.AristaConfiguration.computeBgpPeerImportPolicyName;
+import static org.batfish.representation.arista.AristaConfiguration.computeIcmpObjectGroupAclName;
+import static org.batfish.representation.arista.AristaConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.arista.AristaConfiguration.computeServiceObjectAclName;
+import static org.batfish.representation.arista.AristaConfiguration.computeServiceObjectGroupAclName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -583,7 +583,7 @@ public class CiscoConversions {
 
   static IkePhase1Policy toIkePhase1Policy(
       @Nonnull NamedRsaPubKey rsaPubKey,
-      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull AristaConfiguration oldConfig,
       @Nonnull IkePhase1Key ikePhase1KeyFromRsaPubKey) {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(getRsaPubKeyGeneratedName(rsaPubKey));
 
@@ -606,7 +606,7 @@ public class CiscoConversions {
 
   static IkePhase1Policy toIkePhase1Policy(
       @Nonnull IsakmpKey isakmpKey,
-      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull AristaConfiguration oldConfig,
       @Nonnull IkePhase1Key ikePhase1KeyFromIsakmpKey) {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(getIsakmpKeyGeneratedName(isakmpKey));
 
@@ -635,7 +635,10 @@ public class CiscoConversions {
   }
 
   static IkePhase1Policy toIkePhase1Policy(
-      IsakmpProfile isakmpProfile, CiscoConfiguration oldConfig, Configuration config, Warnings w) {
+      IsakmpProfile isakmpProfile,
+      AristaConfiguration oldConfig,
+      Configuration config,
+      Warnings w) {
     IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(isakmpProfile.getName());
 
     ImmutableList.Builder<String> ikePhase1ProposalBuilder = ImmutableList.builder();
@@ -825,7 +828,7 @@ public class CiscoConversions {
   static IpsecPeerConfig toIpsecPeerConfig(
       Tunnel tunnel,
       String tunnelIfaceName,
-      CiscoConfiguration oldConfig,
+      AristaConfiguration oldConfig,
       Configuration newConfig) {
 
     IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder =
@@ -1067,7 +1070,7 @@ public class CiscoConversions {
 
   @Nullable
   static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
-      EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+      EigrpProcess proc, String vrfName, Configuration c, AristaConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
 
@@ -1134,13 +1137,13 @@ public class CiscoConversions {
    *
    * @param eigrpRedistributionPolicies {@link EigrpRedistributionPolicy}s of the EIGRP process
    * @param vsEigrpProc Vendor specific {@link EigrpProcess}
-   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param vsConfig Vendor specific {@link AristaConfiguration configuration}
    * @return {@link List} of {@link If} statements
    */
   static List<If> eigrpRedistributionPoliciesToStatements(
       Collection<EigrpRedistributionPolicy> eigrpRedistributionPolicies,
       EigrpProcess vsEigrpProc,
-      CiscoConfiguration vsConfig) {
+      AristaConfiguration vsConfig) {
     return eigrpRedistributionPolicies.stream()
         .map(policy -> convertEigrpRedistributionPolicy(policy, vsEigrpProc, vsConfig))
         .filter(Objects::nonNull)
@@ -1149,7 +1152,7 @@ public class CiscoConversions {
 
   @Nullable
   private static If convertEigrpRedistributionPolicy(
-      EigrpRedistributionPolicy policy, EigrpProcess proc, CiscoConfiguration oldConfig) {
+      EigrpRedistributionPolicy policy, EigrpProcess proc, AristaConfiguration oldConfig) {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction eigrpExportConditions = new Conjunction();
@@ -1229,7 +1232,7 @@ public class CiscoConversions {
   }
 
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
-      IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
+      IsisProcess proc, Configuration c, AristaConfiguration oldConfig) {
     org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
         org.batfish.datamodel.isis.IsisProcess.builder();
     if (proc.getNetAddress() == null) {
@@ -1314,7 +1317,7 @@ public class CiscoConversions {
   static boolean sanityCheckDistributeList(
       @Nonnull DistributeList distributeList,
       @Nonnull Configuration c,
-      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull AristaConfiguration oldConfig,
       String vrfName,
       String ospfProcessId) {
     if (distributeList.getFilterType() != DistributeListFilterType.PREFIX_LIST) {
@@ -1356,7 +1359,7 @@ public class CiscoConversions {
       @Nonnull Configuration c,
       @Nonnull String vrf,
       @Nonnull String ospfProcessId,
-      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull AristaConfiguration oldConfig,
       @Nonnull Warnings w) {
     DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
 
@@ -1444,7 +1447,7 @@ public class CiscoConversions {
    */
   static RoutingPolicy insertDistributeListFilterAndGetPolicy(
       @Nonnull Configuration c,
-      @Nonnull CiscoConfiguration vsConfig,
+      @Nonnull AristaConfiguration vsConfig,
       @Nullable DistributeList distributeList,
       @Nonnull List<If> existingStatements,
       @Nonnull String name) {
@@ -1476,14 +1479,14 @@ public class CiscoConversions {
    *
    * @param c Vendor independent {@link Configuration configuration}
    * @param distributeList {@link DistributeList distributeList} to be validated
-   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param vsConfig Vendor specific {@link AristaConfiguration configuration}
    * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
    *     policy
    */
   static boolean sanityCheckEigrpDistributeList(
       @Nonnull Configuration c,
       @Nonnull DistributeList distributeList,
-      @Nonnull CiscoConfiguration vsConfig) {
+      @Nonnull AristaConfiguration vsConfig) {
     if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
         && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
       vsConfig
@@ -1552,13 +1555,13 @@ public class CiscoConversions {
   }
 
   private static AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
-    String regex = CiscoConfiguration.toJavaRegex(elem.regex());
+    String regex = AristaConfiguration.toJavaRegex(elem.regex());
     AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
     return line;
   }
 
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
-    String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
+    String javaRegex = AristaConfiguration.toJavaRegex(eclLine.getRegex());
     return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
   }
 

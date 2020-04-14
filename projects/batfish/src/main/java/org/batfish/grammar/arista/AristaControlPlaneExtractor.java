@@ -1112,6 +1112,7 @@ import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
 import org.batfish.grammar.arista.AristaParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
+import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.AristaDynamicSourceNat;
 import org.batfish.representation.arista.BgpAggregateIpv4Network;
 import org.batfish.representation.arista.BgpAggregateIpv6Network;
@@ -1121,7 +1122,6 @@ import org.batfish.representation.arista.BgpPeerGroup;
 import org.batfish.representation.arista.BgpProcess;
 import org.batfish.representation.arista.BgpRedistributionPolicy;
 import org.batfish.representation.arista.CiscoAsaNat;
-import org.batfish.representation.arista.CiscoConfiguration;
 import org.batfish.representation.arista.CiscoIosDynamicNat;
 import org.batfish.representation.arista.CiscoIosNat;
 import org.batfish.representation.arista.CiscoIosNat.RuleAction;
@@ -1350,7 +1350,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private static String toInterfaceName(Interface_nameContext ctx) {
     StringBuilder name =
         new StringBuilder(
-            CiscoConfiguration.getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha.getText()));
+            AristaConfiguration.getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha.getText()));
     for (Token part : ctx.name_middle_parts) {
       name.append(part.getText());
     }
@@ -1455,7 +1455,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private CiscoConfiguration _configuration;
+  private AristaConfiguration _configuration;
 
   @SuppressWarnings("unused")
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
@@ -2049,7 +2049,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterCisco_configuration(Cisco_configurationContext ctx) {
-    _configuration = new CiscoConfiguration();
+    _configuration = new AristaConfiguration();
     _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     if (_format == CISCO_IOS) {
@@ -3505,7 +3505,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentVrf = ctx.vrf.getText();
     }
     if (ctx.MANAGEMENT() != null) {
-      _currentVrf = CiscoConfiguration.MANAGEMENT_VRF_NAME;
+      _currentVrf = AristaConfiguration.MANAGEMENT_VRF_NAME;
     }
   }
 
@@ -4382,7 +4382,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
     String canonicalNamePrefix;
     try {
-      canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
+      canonicalNamePrefix = AristaConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     } catch (BatfishException e) {
       warn(ctx, "Error fetching interface name: " + e.getMessage());
       _currentInterfaces = ImmutableList.of();
@@ -10493,7 +10493,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return _configuration.canonicalizeInterfaceName(ifaceName);
   }
 
-  public CiscoConfiguration getConfiguration() {
+  public AristaConfiguration getConfiguration() {
     return _configuration;
   }
 
@@ -10538,10 +10538,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {
     String nameAlpha = ctx.name_prefix_alpha.getText();
-    String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
+    String canonicalNamePrefix = AristaConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     String vrf =
-        canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
-            ? CiscoConfiguration.MANAGEMENT_VRF_NAME
+        canonicalNamePrefix.equals(AristaConfiguration.MANAGEMENT_INTERFACE_PREFIX)
+            ? AristaConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();
     iface.setVrf(vrf);

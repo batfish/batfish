@@ -215,7 +215,7 @@ import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
-public final class CiscoConfiguration extends VendorConfiguration {
+public final class AristaConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static final TraceElement PERMIT_TRAFFIC_FROM_DEVICE =
       TraceElement.of("Matched traffic originating from this device");
@@ -596,7 +596,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   // initialized when needed
   private Multimap<Integer, Interface> _interfacesBySecurityLevel;
 
-  public CiscoConfiguration() {
+  public AristaConfiguration() {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
@@ -2660,7 +2660,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
-      OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
+      OspfProcess proc, String vrfName, Configuration c, AristaConfiguration oldConfig) {
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
       routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());

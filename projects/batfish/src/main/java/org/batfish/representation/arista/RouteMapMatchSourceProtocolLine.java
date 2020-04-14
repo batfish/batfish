@@ -23,7 +23,7 @@ public class RouteMapMatchSourceProtocolLine extends RouteMapMatchLine {
   }
 
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+  public BooleanExpr toBooleanExpr(Configuration c, AristaConfiguration cc, Warnings w) {
     // When evaluating a Route Policy, the "source protocol" is really the protocol on which the
     // route map is being evaluated.
     return new MatchProtocol(_protocols);

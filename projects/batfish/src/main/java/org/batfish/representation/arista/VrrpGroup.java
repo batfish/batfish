@@ -17,8 +17,8 @@ public class VrrpGroup implements Serializable {
 
   public VrrpGroup(Integer name) {
     _name = name;
-    _preempt = CiscoConfiguration.DEFAULT_VRRP_PREEMPT;
-    _priority = CiscoConfiguration.DEFAULT_VRRP_PRIORITY;
+    _preempt = AristaConfiguration.DEFAULT_VRRP_PREEMPT;
+    _priority = AristaConfiguration.DEFAULT_VRRP_PRIORITY;
   }
 
   public String getAuthenticationTextHash() {

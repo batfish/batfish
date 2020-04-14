@@ -15,13 +15,13 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_EXTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_INTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
+import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_EXTERNAL;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_INTERNAL;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -90,29 +90,27 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.grammar.cisco.CiscoCombinedParser;
-import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.VrrpInterface;
-import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
-import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
-import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
-import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
-import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
-import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
-import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
-import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
-import org.batfish.representation.cisco.eos.AristaBgpV4DynamicNeighbor;
-import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
-import org.batfish.representation.cisco.eos.AristaBgpVlan;
-import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
-import org.batfish.representation.cisco.eos.AristaBgpVrf;
-import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
-import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
-import org.batfish.representation.cisco.eos.AristaBgpVrfIpv6UnicastAddressFamily;
-import org.batfish.representation.cisco.eos.AristaRedistributeType;
+import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.VrrpInterface;
+import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
+import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
+import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
+import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
+import org.batfish.representation.arista.eos.AristaBgpPeerGroupNeighbor;
+import org.batfish.representation.arista.eos.AristaBgpRedistributionPolicy;
+import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
+import org.batfish.representation.arista.eos.AristaBgpV4Neighbor;
+import org.batfish.representation.arista.eos.AristaBgpVlan;
+import org.batfish.representation.arista.eos.AristaBgpVlanAwareBundle;
+import org.batfish.representation.arista.eos.AristaBgpVrf;
+import org.batfish.representation.arista.eos.AristaBgpVrfEvpnAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpVrfIpv4UnicastAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpVrfIpv6UnicastAddressFamily;
+import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -122,21 +120,21 @@ public class AristaGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private static @Nonnull CiscoConfiguration parseVendorConfig(String hostname) {
+  private static @Nonnull AristaConfiguration parseVendorConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    CiscoCombinedParser ciscoParser =
-        new CiscoCombinedParser(src, settings, ConfigurationFormat.ARISTA);
-    CiscoControlPlaneExtractor extractor =
-        new CiscoControlPlaneExtractor(
+    AristaCombinedParser ciscoParser =
+        new AristaCombinedParser(src, settings, ConfigurationFormat.ARISTA);
+    AristaControlPlaneExtractor extractor =
+        new AristaControlPlaneExtractor(
             src, ciscoParser, ConfigurationFormat.ARISTA, new Warnings());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    CiscoConfiguration vendorConfiguration =
-        (CiscoConfiguration) extractor.getVendorConfiguration();
+    AristaConfiguration vendorConfiguration =
+        (AristaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     return SerializationUtils.clone(vendorConfiguration);
@@ -170,7 +168,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testTopLevelBgpExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp");
+    AristaConfiguration config = parseVendorConfig("arista_bgp");
     // Basic VRF config
     {
       AristaBgpVrf defaultVrf = config.getAristaBgp().getDefaultVrf();
@@ -213,7 +211,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testAggregateAddressExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_aggregate_address");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_aggregate_address");
     {
       AristaBgpAggregateNetwork agg =
           config.getAristaBgp().getDefaultVrf().getV4aggregates().get(Prefix.parse("1.2.33.0/24"));
@@ -284,7 +282,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testBgpVlansExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_vlans");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_vlans");
     {
       AristaBgpVlanAwareBundle bundle = config.getAristaBgp().getVlanAwareBundles().get("Tenant_A");
       assertThat(bundle, notNullValue());
@@ -305,13 +303,13 @@ public class AristaGrammarTest {
 
   @Test
   public void testCommunityListExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_community_list");
+    AristaConfiguration config = parseVendorConfig("arista_community_list");
     assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
   }
 
   @Test
   public void testNeighborExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbors");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_neighbors");
     {
       String peergName = "PEER_G";
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
@@ -457,7 +455,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testVrfExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_vrf");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_vrf");
     assertThat(config.getAristaBgp(), notNullValue());
     assertThat(
         config.getAristaBgp().getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR"));
@@ -518,7 +516,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testAddressFamilyExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_af");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_af");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = vrf.getV4UnicastAf();
     AristaBgpVrfIpv6UnicastAddressFamily ipv6af = vrf.getV6UnicastAf();
@@ -566,7 +564,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testNetworkExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_network");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_network");
     {
       Prefix prefix = Prefix.parse("1.1.1.0/24");
       AristaBgpNetworkConfiguration network =
@@ -596,7 +594,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testVxlanExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_vxlan");
+    AristaConfiguration config = parseVendorConfig("arista_vxlan");
     assertThat(config.getEosVxlan().getArpReplyRelay(), equalTo(true));
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 10001));
@@ -627,7 +625,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testRedistributeExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_redistribute");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute");
     {
       Map<AristaRedistributeType, AristaBgpRedistributionPolicy> redistributionPolicies =
           config.getAristaBgp().getDefaultVrf().getRedistributionPolicies();
@@ -650,7 +648,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testRedistributeOspfExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_redistribute_ospf");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute_ospf");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf1");
       assertThat(
@@ -785,12 +783,12 @@ public class AristaGrammarTest {
 
   @Test
   public void testVrrpExtraction() {
-    CiscoConfiguration c = parseVendorConfig("arista_vrrp");
+    AristaConfiguration c = parseVendorConfig("arista_vrrp");
     assertThat(c.getInterfaces(), hasKey("Vlan20"));
     assertThat(c.getVrrpGroups(), hasKey("Vlan20"));
     VrrpInterface vrrpI = c.getVrrpGroups().get("Vlan20");
     assertThat(vrrpI.getVrrpGroups(), hasKey(1));
-    org.batfish.representation.cisco.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
+    org.batfish.representation.arista.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
     assertThat(g.getVirtualAddress(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(g.getPriority(), equalTo(200));
   }
@@ -861,7 +859,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testBgpSendCommunityExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_send_community");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_send_community");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     {
       Ip ip = Ip.parse("1.1.1.1");
@@ -1041,7 +1039,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testAllowasInExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_allowas_in");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_allowas_in");
     assertThat(config.getAristaBgp().getDefaultVrf().getAllowAsIn(), equalTo(2));
   }
 
@@ -1072,7 +1070,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testEnforceFirstAsExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
     assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));
   }
 
@@ -1086,7 +1084,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testNeighborPrefixListExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbor_prefix_list");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_neighbor_prefix_list");
     assertThat(
         config
             .getAristaBgp()
@@ -1182,7 +1180,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testNextHopUnchangedExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_nexthop_unchanged");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_nexthop_unchanged");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertTrue(vrf.getV4neighbors().get(Ip.parse("9.9.9.9")).getNextHopUnchanged());
@@ -1300,7 +1298,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testConfederationExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_confederations");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_confederations");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertThat(vrf.getConfederationIdentifier(), equalTo(1111L));
@@ -1339,7 +1337,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testEvpnImportPolicyExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_evpn_import_policy");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_evpn_import_policy");
     AristaBgpNeighborAddressFamily neighbor =
         config.getAristaBgp().getDefaultVrf().getEvpnAf().getNeighbor(Ip.parse("2.2.2.2"));
     assertThat(neighbor.getRouteMapIn(), equalTo("ALLOW_10"));

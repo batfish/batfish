@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -10,29 +10,9 @@ options {
 }
 
 @members {
-   private boolean _aristaBgp;
-
-   private boolean _eos;
-
    private boolean _cadant;
 
    private boolean _multilineBgpNeighbors;
-
-   public boolean isAristaBgp() {
-      return _aristaBgp;
-   }
-
-   public boolean isEos() {
-      return _eos;
-   }
-
-   public void setAristaBgp(boolean b) {
-      _aristaBgp = b;
-   }
-
-   public void setEos(boolean b) {
-      _eos = b;
-   }
 
    public void setCadant(boolean b) {
       _cadant = b;
@@ -44,11 +24,9 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_eos: %s\n, _aristaBgp: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
          _cadant,
-         _multilineBgpNeighbors,
-         _eos,
-         _aristaBgp
+         _multilineBgpNeighbors
       );
    }
 }
@@ -2314,21 +2292,10 @@ asa_banner_header
 
 s_banner_cadant
 :
-  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
+  BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
 ;
 
 cadant_banner_type
-:
-  LOGIN
-  | MOTD
-;
-
-s_banner_eos
-:
-  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_EOS // delimiter includes newline
-;
-
-eos_banner_type
 :
   LOGIN
   | MOTD
@@ -2977,11 +2944,6 @@ s_no_enable
    NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
 ;
 
-s_no_vlan_eos
-:
-  (NO | DEFAULT) VLAN eos_vlan_id NEWLINE
-;
-
 s_nv
 :
    NO? NV NEWLINE
@@ -3348,19 +3310,6 @@ s_vlan_cisco
    )*
 ;
 
-s_vlan_eos
-:
-   VLAN eos_vlan_id NEWLINE
-   (
-     eos_vlan_name
-     | eos_vlan_state
-     | eos_vlan_trunk
-     | eos_vlan_no_name
-     | eos_vlan_no_state
-     | eos_vlan_no_trunk
-   )*
-;
-
 s_vlan_internal_cisco
 :
    NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
@@ -3432,12 +3381,11 @@ s_vpn_dialer
    )*
 ;
 
-// a way to define a VRF on IOS or EOS
+// a way to define a VRF on IOS
 s_vrf_definition
 :
-   // DEFINITION is for IOS and older versions of EOS (pre-4.23)
-   // INSTANCE is for EOS 4.23 and later
-   VRF (DEFINITION | INSTANCE)? name = variable NEWLINE
+   // DEFINITION is for IOS
+   VRF DEFINITION name = variable NEWLINE
    (
       vrfd_address_family
       | vrfd_description
@@ -3731,7 +3679,6 @@ stanza
    | s_authentication
    | s_banner_asa
    | s_banner_cadant
-   | s_banner_eos
    | s_banner_ios
    | s_bfd
    | s_bfd_template
@@ -3763,7 +3710,6 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
-   | s_eos_mlag
    | s_ephone_dn_template
    | s_ethernet_services
    | s_event
@@ -3783,7 +3729,6 @@ stanza
    |
    // do not move below s_interface
    s_interface_line
-   | s_eos_vxlan_interface
    | s_interface
    | s_ip_access_list_eth
    | s_ip_access_list_session
@@ -3839,8 +3784,6 @@ stanza
    | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
-   | { _eos }? s_no_vlan_internal_eos
-   | { _eos }? s_no_vlan_eos
    | s_ntp
    | s_null
    | s_nv
@@ -3893,10 +3836,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | { !_eos && !isAsa() }? s_vlan_cisco
-   | { _eos }? s_vlan_eos
-   | { !_eos && !isAsa() }? s_vlan_internal_cisco
-   | { _eos }? s_vlan_internal_eos
+   | { !isAsa() }? s_vlan_cisco
+   | { !isAsa() }? s_vlan_internal_cisco
    | s_vlan_name
    | s_voice
    | s_voice_card
@@ -4192,11 +4133,7 @@ u_password
          PASSWORD
          | SECRET
       )
-      (
-         up_arista_md5
-         | up_arista_sha512
-         | up_cisco
-      )
+      up_cisco
    )
    |
    (
@@ -4223,19 +4160,6 @@ ua_null
       GROUP_LOCK
       | VPN_GROUP_POLICY
    ) null_rest_of_line
-;
-
-up_arista_md5
-:
-   DEC
-   (
-      pass = MD5_ARISTA
-   )
-;
-
-up_arista_sha512
-:
-   SHA512 pass = SHA512_ARISTA
 ;
 
 up_cisco

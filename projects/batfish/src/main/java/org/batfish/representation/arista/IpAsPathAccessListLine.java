@@ -19,7 +19,7 @@ public class IpAsPathAccessListLine implements Serializable {
   }
 
   public AsPathAccessListLine toAsPathAccessListLine() {
-    String regex = CiscoConfiguration.toJavaRegex(_regex);
+    String regex = AristaConfiguration.toJavaRegex(_regex);
     return new AsPathAccessListLine(_action, regex);
   }
 }

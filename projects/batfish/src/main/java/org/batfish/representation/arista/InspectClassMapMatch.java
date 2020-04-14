@@ -7,5 +7,5 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 public interface InspectClassMapMatch extends Serializable {
   AclLineMatchExpr toAclLineMatchExpr(
-      CiscoConfiguration cc, Configuration c, MatchSemantics matchSemantics, Warnings w);
+      AristaConfiguration cc, Configuration c, MatchSemantics matchSemantics, Warnings w);
 }

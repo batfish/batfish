@@ -16,7 +16,7 @@ public class ServiceObjectServiceSpecifier implements AccessListServiceSpecifier
   @Override
   @Nonnull
   public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
-    String aclName = CiscoConfiguration.computeServiceObjectAclName(_name);
+    String aclName = AristaConfiguration.computeServiceObjectAclName(_name);
     return new PermittedByAcl(aclName, String.format("Match service object: '%s'", _name));
   }
 }

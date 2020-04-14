@@ -25,7 +25,7 @@ public class InspectClassMapMatchProtocol implements InspectClassMapMatch {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(
-      CiscoConfiguration cc, Configuration c, MatchSemantics matchSemantics, Warnings w) {
+      AristaConfiguration cc, Configuration c, MatchSemantics matchSemantics, Warnings w) {
     /* TODO: Proper implementation: https://github.com/batfish/batfish/issues/1260 */
     HeaderSpace headerSpace;
     switch (_protocol) {

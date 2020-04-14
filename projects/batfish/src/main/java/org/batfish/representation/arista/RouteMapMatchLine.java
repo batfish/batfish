@@ -7,5 +7,5 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 
 public abstract class RouteMapMatchLine implements Serializable {
 
-  public abstract BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w);
+  public abstract BooleanExpr toBooleanExpr(Configuration c, AristaConfiguration cc, Warnings w);
 }

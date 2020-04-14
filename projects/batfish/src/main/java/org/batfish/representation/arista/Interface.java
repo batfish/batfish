@@ -298,7 +298,7 @@ public class Interface implements Serializable {
     }
   }
 
-  public Interface(String name, CiscoConfiguration c) {
+  public Interface(String name, AristaConfiguration c) {
     _active = true;
     _autoState = true;
     _declaredNames = ImmutableSortedSet.of();

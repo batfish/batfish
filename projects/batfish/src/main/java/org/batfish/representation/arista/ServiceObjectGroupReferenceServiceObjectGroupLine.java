@@ -1,6 +1,6 @@
 package org.batfish.representation.arista;
 
-import static org.batfish.representation.arista.CiscoConfiguration.computeServiceObjectGroupAclName;
+import static org.batfish.representation.arista.AristaConfiguration.computeServiceObjectGroupAclName;
 
 import java.util.Map;
 import javax.annotation.Nonnull;

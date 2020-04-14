@@ -9,5 +9,5 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 public abstract class RouteMapSetLine implements Serializable {
 
   public abstract void applyTo(
-      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w);
+      List<Statement> statements, AristaConfiguration cc, Configuration c, Warnings w);
 }

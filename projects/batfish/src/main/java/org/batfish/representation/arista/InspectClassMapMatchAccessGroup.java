@@ -24,7 +24,7 @@ public class InspectClassMapMatchAccessGroup implements InspectClassMapMatch {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(
-      CiscoConfiguration cc, Configuration c, MatchSemantics matchSemantics, Warnings w) {
+      AristaConfiguration cc, Configuration c, MatchSemantics matchSemantics, Warnings w) {
     /* For now assume no match for non-existent ACLs */
     if (!c.getIpAccessLists().containsKey(_name)) {
       return FalseExpr.INSTANCE;

@@ -18,7 +18,7 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
 
   @Override
   public void applyTo(
-      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+      List<Statement> statements, AristaConfiguration cc, Configuration c, Warnings w) {
     statements.add(new PrependAsPath(new LiteralAsList(_asList)));
   }
 

@@ -14,7 +14,6 @@ public abstract class BgpPeerGroup implements Serializable {
   protected Boolean _additionalPathsReceive;
   protected Boolean _additionalPathsSelectAll;
   protected Boolean _additionalPathsSend;
-  protected Boolean _advertiseInactive;
   protected Boolean _allowAsIn;
   private Set<Long> _alternateAs;
   protected Ip _clusterId;
@@ -69,10 +68,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public Boolean getAdditionalPathsSend() {
     return _additionalPathsSend;
-  }
-
-  public Boolean getAdvertiseInactive() {
-    return _advertiseInactive;
   }
 
   public Boolean getAllowAsIn() {
@@ -251,9 +246,6 @@ public abstract class BgpPeerGroup implements Serializable {
     if (_additionalPathsSend == null) {
       _additionalPathsSend = pg.getAdditionalPathsSend();
     }
-    if (_advertiseInactive == null) {
-      _advertiseInactive = pg.getAdvertiseInactive();
-    }
     if (_allowAsIn == null) {
       _allowAsIn = pg.getAllowAsIn();
     }
@@ -371,10 +363,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setAdditionalPathsSend(Boolean additionalPathsSend) {
     _additionalPathsSend = additionalPathsSend;
-  }
-
-  public void setAdvertiseInactive(boolean advertiseInactive) {
-    _advertiseInactive = advertiseInactive;
   }
 
   public void setAllowAsIn(boolean allowAsIn) {

@@ -1,6 +1,6 @@
 package org.batfish.representation.arista;
 
-import static org.batfish.representation.arista.CiscoConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.arista.AristaConfiguration.computeProtocolObjectGroupAclName;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
