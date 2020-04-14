@@ -10,11 +10,19 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastA
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.arista.CiscoStructureType.INTERFACE;
+import static org.batfish.representation.arista.CiscoStructureType.VXLAN;
 import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_EXTERNAL;
@@ -23,6 +31,7 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -79,6 +88,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -86,6 +96,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -93,6 +104,7 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.MlagConfiguration;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -110,6 +122,7 @@ import org.batfish.representation.arista.eos.AristaBgpVrf;
 import org.batfish.representation.arista.eos.AristaBgpVrfEvpnAddressFamily;
 import org.batfish.representation.arista.eos.AristaBgpVrfIpv4UnicastAddressFamily;
 import org.batfish.representation.arista.eos.AristaBgpVrfIpv6UnicastAddressFamily;
+import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.junit.Rule;
 import org.junit.Test;
@@ -278,6 +291,70 @@ public class AristaGrammarTest {
   public void testAggregateAddressConversion() {
     // Don't crash.
     parseConfig("arista_bgp_aggregate_address");
+  }
+
+  @Test
+  public void testEosMlagExtraction() {
+    AristaConfiguration c = parseVendorConfig("eos-mlag");
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
+    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
+    assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
+    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
+    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
+  }
+
+  @Test
+  public void testEosMlagConversion() throws IOException {
+    Configuration c = parseConfig("eos-mlag");
+
+    final String mlagName = "MLAG_DOMAIN_ID";
+    assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));
+    assertThat(c, hasMlagConfig(mlagName, hasPeerAddress(Ip.parse("1.1.1.3"))));
+    assertThat(c, hasMlagConfig(mlagName, hasPeerInterface("Port-Channel1")));
+    assertThat(c, hasMlagConfig(mlagName, MlagMatchers.hasLocalInterface("Vlan4094")));
+
+    // Test interface config
+    assertThat(c, hasInterface("Port-Channel1", hasMlagId(5)));
+  }
+
+  @Test
+  public void testEosVxlanCiscoConfig() {
+    String hostname = "eos-vxlan";
+
+    AristaConfiguration config = parseVendorConfig(hostname);
+
+    assertThat(config, notNullValue());
+    AristaEosVxlan eosVxlan = config.getEosVxlan();
+    assertThat(eosVxlan, notNullValue());
+
+    assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
+    // Confirm flood address set doesn't contain the removed address
+    assertThat(
+        eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
+    assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
+    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
+    assertThat(eosVxlan.getUdpPort(), equalTo(5555));
+
+    assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
+
+    // Confirm flood address set was overwritten as expected
+    assertThat(
+        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
+  }
+
+  @Test
+  public void testEosVxlanReference() throws IOException {
+    String hostname = "eos-vxlan";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, VXLAN, "Vxlan1", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback1", 2));
   }
 
   @Test

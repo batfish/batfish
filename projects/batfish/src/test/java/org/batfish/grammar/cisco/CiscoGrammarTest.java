@@ -53,7 +53,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -100,7 +99,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
@@ -133,9 +131,6 @@ import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
@@ -221,7 +216,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
-import static org.batfish.representation.cisco.CiscoStructureType.VXLAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -379,7 +373,6 @@ import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
@@ -416,14 +409,12 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
-import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
-import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -4309,32 +4300,6 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosMlagExtraction() {
-    CiscoConfiguration c = parseCiscoConfig("eos-mlag", ConfigurationFormat.ARISTA);
-    MlagConfiguration mlag = c.getEosMlagConfiguration();
-    assertThat(mlag, notNullValue());
-    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
-    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
-    assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
-    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
-    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
-  }
-
-  @Test
-  public void testEosMlagConversion() throws IOException {
-    Configuration c = parseConfig("eos-mlag");
-
-    final String mlagName = "MLAG_DOMAIN_ID";
-    assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));
-    assertThat(c, hasMlagConfig(mlagName, hasPeerAddress(Ip.parse("1.1.1.3"))));
-    assertThat(c, hasMlagConfig(mlagName, hasPeerInterface("Port-Channel1")));
-    assertThat(c, hasMlagConfig(mlagName, MlagMatchers.hasLocalInterface("Vlan4094")));
-
-    // Test interface config
-    assertThat(c, hasInterface("Port-Channel1", hasMlagId(5)));
-  }
-
-  @Test
   public void testEosVxlan() throws IOException {
     String hostnameBase = "eos-vxlan";
     String hostnameNoLoopbackAddr = "eos-vxlan-no-loopback-address";
@@ -4418,44 +4383,6 @@ public final class CiscoGrammarTest {
     assertThat(
         c, hasInterface("Port-Channel1", hasAllowedVlans(IntegerSpace.of(Range.closed(1, 2)))));
     assertThat(c, hasInterface("Port-Channel2", hasAllowedVlans(IntegerSpace.of(99))));
-  }
-
-  @Test
-  public void testEosVxlanCiscoConfig() {
-    String hostname = "eos-vxlan";
-
-    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);
-
-    assertThat(config, notNullValue());
-    AristaEosVxlan eosVxlan = config.getEosVxlan();
-    assertThat(eosVxlan, notNullValue());
-
-    assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
-    // Confirm flood address set doesn't contain the removed address
-    assertThat(
-        eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
-    assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
-    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
-    assertThat(eosVxlan.getUdpPort(), equalTo(5555));
-
-    assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
-
-    // Confirm flood address set was overwritten as expected
-    assertThat(
-        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
-  }
-
-  @Test
-  public void testEosVxlanReference() throws IOException {
-    String hostname = "eos-vxlan";
-    String filename = "configs/" + hostname;
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-
-    assertThat(ccae, hasNumReferrers(filename, VXLAN, "Vxlan1", 1));
-    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback1", 2));
   }
 
   @Test
