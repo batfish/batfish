@@ -1110,7 +1110,6 @@ import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
 import org.batfish.grammar.arista.AristaParser.Zp_service_policy_inspectContext;
-import org.batfish.grammar.arista.AristaParserBaseListener;
 import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
 import org.batfish.representation.arista.AristaDynamicSourceNat;
@@ -1277,7 +1276,7 @@ import org.batfish.representation.arista.eos.AristaEosVxlan;
 import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
-public class CiscoControlPlaneExtractor extends AristaParserBaseListener
+public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements BatfishListener, ControlPlaneExtractor {
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
@@ -1620,7 +1619,7 @@ public class CiscoControlPlaneExtractor extends AristaParserBaseListener
    */
   private String _lastKnownOspfProcess;
 
-  public CiscoControlPlaneExtractor(
+  public AristaControlPlaneExtractor(
       String text, AristaCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
     _text = text;
     _parser = parser;
@@ -8875,7 +8874,7 @@ public class CiscoControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.alt_ases != null) {
       _currentPeerGroup.setAlternateAs(
           ctx.alt_ases.stream()
-              .map(CiscoControlPlaneExtractor::toAsNum)
+              .map(AristaControlPlaneExtractor::toAsNum)
               .collect(ImmutableSet.toImmutableSet()));
     }
   }
