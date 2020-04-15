@@ -1,0 +1,179 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_show_run_all
+!
+router bgp 64900
+   bgp trace neighbor all
+   bgp trace route-key all
+   bgp asn notation asplain
+   ! TODO bgp labeled-unicast rib tunnel
+   no shutdown
+   router-id 192.0.2.1
+   ! TODO bgp convergence time 300
+   ! TODO bgp convergence slow-peer time 90
+   no bgp confederation identifier
+   no update wait-for-convergence
+   no update wait-install
+   bgp log-neighbor-changes
+   bgp default ipv4-unicast
+   no bgp default ipv4-unicast transport ipv6
+   no bgp default ipv6-unicast
+   ! TODO no bgp missing-policy direction in action
+   ! TODO no bgp missing-policy direction out action
+   ! TODO timers bgp 60 180
+   ! TODO distance bgp 200 200 200
+   ! TODO graceful-restart restart-time 300
+   ! TODO graceful-restart stalepath-time 300
+   no bgp allowas-in
+   no bgp cluster-id
+   bgp client-to-client reflection
+   no graceful-restart
+   graceful-restart-helper
+   ! TODO bgp peer-mac-resolution-timeout 0
+   bgp enforce-first-as
+   ! TODO no bgp route install-map
+   no ip access-group
+   no ipv6 access-group
+   ! TODO no bgp transport listen-port
+   no default-metric
+   no bgp always-compare-med
+   ! TODO no bgp bestpath med missing-as-worst
+   ! TODO no bgp bestpath med confed
+   ! TODO no bgp route-reflector preserve-attributes
+   maximum-paths 32 ecmp 32
+   bgp additional-paths receive
+   ! TODO no bgp additional-paths send any
+   ! TODO ucmp mode 1 128 5.0
+   ! TODO ucmp link-bandwidth update-delay 0
+   ! TODO no ucmp link-bandwidth encoding-weighted
+   ! TODO ucmp fec threshold trigger 50 clear 40 warning-only
+   ! TODO bgp listen limit 1000
+   bgp bestpath as-path multipath-relax
+   ! TODO no bgp bestpath as-path ignore
+   ! TODO no bgp aspath-cmp-include-nexthop
+   ! TODO bgp bestpath ecmp-fast
+   ! TODO no bgp bestpath tie-break age
+   ! TODO no bgp bestpath tie-break router-id
+   ! TODO no bgp bestpath tie-break originator-id
+   ! TODO no bgp bestpath tie-break cluster-list-length
+   ! TODO no bgp advertise-inactive
+   ! TODO no bgp auto-local-addr
+   ! TODO no bgp next-hop-unchanged
+   ! TODO no bgp monitoring
+   neighbor SOME_GROUP peer-group
+   no neighbor SOME_GROUP remote-as
+   ! TODO no neighbor SOME_GROUP import-localpref
+   ! TODO no neighbor SOME_GROUP export-localpref
+   ! TODO no neighbor SOME_GROUP next-hop-self
+   ! TODO no neighbor SOME_GROUP next-hop-peer
+   ! TODO no neighbor SOME_GROUP next-hop-unchanged
+   ! TODO no neighbor SOME_GROUP shutdown
+   ! TODO no neighbor SOME_GROUP remove-private-as
+   ! TODO no neighbor SOME_GROUP out-delay
+   ! TODO no neighbor SOME_GROUP link-bandwidth update-delay
+   ! TODO no neighbor SOME_GROUP local-as
+   ! TODO no neighbor SOME_GROUP weight
+   ! TODO no neighbor SOME_GROUP transport connection-mode passive
+   ! TODO no neighbor SOME_GROUP transport remote-port
+   ! TODO no neighbor SOME_GROUP update-source
+   ! TODO no neighbor SOME_GROUP dont-capability-negotiate
+   ! TODO no neighbor SOME_GROUP fall-over bfd
+   ! TODO no neighbor SOME_GROUP local-v4-addr
+   ! TODO no neighbor SOME_GROUP local-v6-addr
+   ! TODO no neighbor SOME_GROUP auto-local-addr
+   ! TODO default neighbor SOME_GROUP monitoring
+   ! TODO no neighbor SOME_GROUP next-hop-v6-addr
+   ! TODO no neighbor SOME_GROUP description
+   ! TODO neighbor SOME_GROUP allowas-in 1
+   ! TODO neighbor SOME_GROUP soft-reconfiguration inbound
+   ! TODO no neighbor SOME_GROUP ebgp-multihop
+   ! TODO no neighbor SOME_GROUP ttl maximum-hops
+   ! TODO no neighbor SOME_GROUP route-reflector-client
+   ! TODO neighbor SOME_GROUP timers 4 12
+   ! TODO neighbor SOME_GROUP route-map SOME_MAP in
+   ! TODO no neighbor SOME_GROUP graceful-restart
+   ! TODO neighbor SOME_GROUP graceful-restart-helper
+   ! TODO neighbor SOME_GROUP additional-paths receive
+   ! TODO no neighbor SOME_GROUP additional-paths send any
+   ! TODO neighbor SOME_GROUP route-to-peer
+   ! TODO neighbor SOME_GROUP route-map SOME_MAP out
+   ! TODO no neighbor SOME_GROUP password
+   ! TODO no neighbor SOME_GROUP default-originate
+   ! TODO no neighbor SOME_GROUP enforce-first-as
+   ! TODO no neighbor SOME_GROUP metric-out
+   ! TODO no neighbor SOME_GROUP idle-restart-timer
+   ! TODO neighbor SOME_GROUP send-community
+   ! TODO neighbor SOME_GROUP maximum-routes 12000
+   ! TODO no neighbor SOME_GROUP maximum-accepted-routes
+   ! TODO no neighbor SOME_GROUP link-bandwidth
+   neighbor 192.0.2.7 peer-group SOME_GROUP
+   neighbor 192.0.2.7 remote-as 65000
+   neighbor 192.0.2.7 update-source Ethernet1/1
+   ! TODO neighbor 192.0.2.7 local-v6-addr 2001:db8::
+   neighbor 192.0.2.7 description some-desc
+   ! TODO bgp redistribute-internal
+   ! TODO redistribute connected route-map REDISTRIBUTE_CONNECTED
+   ! TODO no redistribute isis
+   ! TODO no redistribute ospf match internal
+   ! TODO no redistribute ospf match external
+   ! TODO no redistribute ospf match nssa-external
+   ! TODO no redistribute ospf3 match internal
+   ! TODO no redistribute ospf3 match external
+   ! TODO no redistribute ospf3 match nssa-external
+   ! TODO redistribute static route-map REDISTRIBUTE_STATIC
+   ! TODO no redistribute rip
+   ! TODO no redistribute aggregate
+   ! TODO no monitoring port
+   !
+   address-family evpn
+      ! bgp additional-paths receive
+      neighbor default encapsulation vxlan
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map EVPN_IN in
+   !
+   ! TODO address-family ipv4
+      ! TODO no bgp additional-paths install
+      ! TODO no bgp next-hop address-family ipv6
+      ! TODO bgp additional-paths receive
+      ! TODO no bgp additional-paths send any
+      ! TODO no bgp route install-map
+      ! TODO neighbor SOME_GROUP activate
+      ! TODO neighbor SOME_GROUP additional-paths receive
+      ! TODO no neighbor SOME_GROUP route-map in
+      ! TODO no neighbor SOME_GROUP route-map out
+      ! TODO no neighbor SOME_GROUP prefix-list in
+      ! TODO no neighbor SOME_GROUP prefix-list out
+      ! TODO no neighbor SOME_GROUP default-originate
+      ! TODO no neighbor SOME_GROUP additional-paths send any
+      ! TODO no neighbor SOME_GROUP next-hop address-family ipv6
+      ! TODO no neighbor SOME_GROUP next-hop-unchanged
+      ! TODO default neighbor 192.0.2.7 activate
+   !
+   ! TODO address-family ipv4 labeled-unicast
+      ! TODO bgp additional-paths receive
+      ! TODO default neighbor SOME_GROUP activate
+      ! TODO neighbor SOME_GROUP additional-paths receive
+      ! TODO no neighbor SOME_GROUP next-hop-self source-interface
+      ! TODO default neighbor 192.0.2.7 activate
+   !
+   ! TODO address-family ipv6
+      ! TODO no bgp additional-paths install
+      ! TODO bgp additional-paths receive
+      ! TODO no bgp additional-paths send any
+      ! TODO no bgp route install-map
+      ! TODO neighbor SOME_GROUP activate
+      ! TODO neighbor SOME_GROUP additional-paths receive
+      ! TODO no neighbor SOME_GROUP route-map in
+      ! TODO no neighbor SOME_GROUP route-map out
+      ! TODO no neighbor SOME_GROUP prefix-list in
+      ! TODO no neighbor SOME_GROUP prefix-list out
+      ! TODO no neighbor SOME_GROUP default-originate
+      ! TODO no neighbor SOME_GROUP additional-paths send any
+      ! TODO no neighbor SOME_GROUP next-hop-unchanged
+      ! TODO default neighbor 192.0.2.7 activate
+!
