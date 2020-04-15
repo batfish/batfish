@@ -108,9 +108,6 @@ public class Interface implements Serializable {
 
   private String _cryptoMap;
 
-  /** Delay value for this interface, if set. In picoseconds */
-  @Nullable private Long _delay;
-
   private String _description;
 
   private SortedSet<Ip> _dhcpRelayAddresses;
@@ -399,12 +396,6 @@ public class Interface implements Serializable {
     return _address;
   }
 
-  /** Return the delay value for this interface, in picoseconds */
-  @Nullable
-  public Long getDelay() {
-    return _delay;
-  }
-
   public boolean getProxyArp() {
     return _proxyArp;
   }
@@ -588,11 +579,6 @@ public class Interface implements Serializable {
 
   public void setAddress(ConcreteInterfaceAddress address) {
     _address = address;
-  }
-
-  /** Set delay for this interface, in picoseconds */
-  public void setDelay(@Nullable Long delayPs) {
-    _delay = delayPs;
   }
 
   public void setProxyArp(boolean proxyArp) {

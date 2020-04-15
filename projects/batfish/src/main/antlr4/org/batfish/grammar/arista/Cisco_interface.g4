@@ -190,11 +190,6 @@ if_description
    description_line
 ;
 
-if_delay
-:
-   NO? DELAY DEC NEWLINE
-;
-
 if_flow_sampler
 :
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
@@ -1604,7 +1599,6 @@ if_inner
    | if_channel_group
    | if_crypto_map
    | if_default_gw
-   | if_delay
    | if_description
    | if_eos_mlag
    | if_flow_sampler

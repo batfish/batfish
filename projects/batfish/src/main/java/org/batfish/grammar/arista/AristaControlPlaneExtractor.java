@@ -539,7 +539,6 @@ import org.batfish.grammar.arista.AristaParser.If_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_bfd_templateContext;
 import org.batfish.grammar.arista.AristaParser.If_channel_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
-import org.batfish.grammar.arista.AristaParser.If_delayContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_access_groupContext;
@@ -4492,17 +4491,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_crypto_map(If_crypto_mapContext ctx) {
     _currentInterfaces.forEach(i -> i.setCryptoMap(ctx.name.getText()));
-  }
-
-  @Override
-  public void exitIf_delay(If_delayContext ctx) {
-    Long newDelayPs;
-    if (ctx.NO() != null) {
-      newDelayPs = null;
-    } else {
-      newDelayPs = toLong(ctx.DEC()) * 10_000_000;
-    }
-    _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
   }
 
   private @Nullable String computeAggregatedInterfaceName(int num) {
