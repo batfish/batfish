@@ -1111,11 +1111,6 @@ if_null_inner
    ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
 ;
 
-if_null_eos
-:
-  SERVICE_POLICY null_rest_of_line
-;
-
 if_null_single
 :
   NO?
@@ -1327,6 +1322,7 @@ if_service_policy
       TYPE (
          CONTROL SUBSCRIBER
          | PBR
+         | PDP
          | QOS
          | QUEUING
       )
@@ -1809,7 +1805,6 @@ if_inner
    | if_vrrpno
    // do not rearrange items below
  
-   | if_null_eos
    | if_null_single
    | if_null_block
 ;

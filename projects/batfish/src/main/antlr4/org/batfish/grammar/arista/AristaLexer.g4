@@ -9418,6 +9418,11 @@ PD_ROUTE_INJECTION
    'pd-route-injection'
 ;
 
+PDP
+:
+   'pdp'
+;
+
 PEAKDETECT
 :
    'peakdetect'
