@@ -1116,11 +1116,6 @@ ip_domain_null
    ) null_rest_of_line
 ;
 
-ip_nat_destination
-:
-   IP NAT INSIDE DESTINATION LIST acl = variable POOL pool = variable NEWLINE
-;
-
 ip_nat_null
 :
    IP NAT (
@@ -1144,32 +1139,6 @@ ip_nat_pool_range
    (
       RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
    )+
-;
-
-ip_nat_source
-:
-   IP NAT (INSIDE | OUTSIDE) SOURCE
-   (
-      (
-         LIST acl = variable POOL pool = variable
-      )
-      |
-      (
-         STATIC local = IP_ADDRESS global = IP_ADDRESS
-      )
-      |
-      (
-         STATIC NETWORK local = IP_ADDRESS global = IP_ADDRESS
-         (
-            mask = IP_ADDRESS
-            | FORWARD_SLASH prefix = DEC
-         )
-      )
-   )
-   (
-      ADD_ROUTE
-      | NO_ALIAS
-   )* NEWLINE
 ;
 
 ip_probe_null
@@ -2669,11 +2638,9 @@ s_ip_name_server
 
 s_ip_nat
 :
-   ip_nat_destination
-   | ip_nat_null
+   ip_nat_null
    | ip_nat_pool
    | ip_nat_pool_range
-   | ip_nat_source
 ;
 
 s_ip_nbar
@@ -3732,8 +3699,6 @@ stanza
    | s_ntp
    | s_null
    | s_nv
-   | s_object
-   | s_object_group
    | s_openflow
    | s_passwd
    | s_phone_proxy

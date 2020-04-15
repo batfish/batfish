@@ -8,7 +8,6 @@ import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
-import static org.batfish.representation.arista.CiscoAsaNat.ANY_INTERFACE;
 import static org.batfish.representation.arista.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.arista.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.CiscoStructureType.BFD_TEMPLATE;
@@ -55,7 +54,6 @@ import static org.batfish.representation.arista.CiscoStructureType.NETWORK_OBJEC
 import static org.batfish.representation.arista.CiscoStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.CiscoStructureType.PREFIX6_LIST;
 import static org.batfish.representation.arista.CiscoStructureType.PREFIX_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.arista.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.arista.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.arista.CiscoStructureType.SECURITY_ZONE;
@@ -143,7 +141,6 @@ import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDIST
 import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
@@ -192,15 +189,8 @@ import static org.batfish.representation.arista.CiscoStructureUsage.MLAG_CONFIGU
 import static org.batfish.representation.arista.CiscoStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
 import static org.batfish.representation.arista.CiscoStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.arista.CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
-import static org.batfish.representation.arista.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
 import static org.batfish.representation.arista.CiscoStructureUsage.NTP_ACCESS_GROUP;
 import static org.batfish.representation.arista.CiscoStructureUsage.NTP_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.OBJECT_NAT_MAPPED_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.OBJECT_NAT_REAL_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT;
 import static org.batfish.representation.arista.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.arista.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
@@ -228,7 +218,6 @@ import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_C
 import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
-import static org.batfish.representation.arista.CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.arista.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.arista.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
@@ -243,7 +232,6 @@ import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MA
 import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
 import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
-import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
 import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
 import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
 import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
@@ -329,8 +317,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
@@ -440,7 +426,6 @@ import org.batfish.grammar.arista.AristaParser.As_exprContext;
 import org.batfish.grammar.arista.AristaParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Asa_ag_globalContext;
 import org.batfish.grammar.arista.AristaParser.Asa_ag_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Asa_nat_ifacesContext;
 import org.batfish.grammar.arista.AristaParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_address_familyContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_advertise_inactive_rb_stanzaContext;
@@ -749,10 +734,8 @@ import org.batfish.grammar.arista.AristaParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.arista.AristaParser.Ip_domain_lookupContext;
 import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_hostnameContext;
-import org.batfish.grammar.arista.AristaParser.Ip_nat_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_poolContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
-import org.batfish.grammar.arista.AristaParser.Ip_nat_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_stanzaContext;
@@ -807,44 +790,7 @@ import org.batfish.grammar.arista.AristaParser.Ntp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Null_as_path_regexContext;
-import org.batfish.grammar.arista.AristaParser.O_networkContext;
-import org.batfish.grammar.arista.AristaParser.O_serviceContext;
-import org.batfish.grammar.arista.AristaParser.Og_icmp_typeContext;
-import org.batfish.grammar.arista.AristaParser.Og_networkContext;
-import org.batfish.grammar.arista.AristaParser.Og_protocolContext;
-import org.batfish.grammar.arista.AristaParser.Og_serviceContext;
-import org.batfish.grammar.arista.AristaParser.Ogg_icmp_typeContext;
-import org.batfish.grammar.arista.AristaParser.Ogg_networkContext;
-import org.batfish.grammar.arista.AristaParser.Ogg_protocolContext;
-import org.batfish.grammar.arista.AristaParser.Ogg_serviceContext;
-import org.batfish.grammar.arista.AristaParser.Oggit_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Oggn_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Oggp_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Oggs_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogit_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogit_icmp_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogn_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogn_host_ipContext;
-import org.batfish.grammar.arista.AristaParser.Ogn_ip_with_maskContext;
-import org.batfish.grammar.arista.AristaParser.Ogn_network_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogp_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogp_protocol_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogs_group_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogs_icmpContext;
-import org.batfish.grammar.arista.AristaParser.Ogs_port_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogs_service_objectContext;
-import org.batfish.grammar.arista.AristaParser.Ogs_tcpContext;
-import org.batfish.grammar.arista.AristaParser.Ogs_udpContext;
-import org.batfish.grammar.arista.AristaParser.On_descriptionContext;
-import org.batfish.grammar.arista.AristaParser.On_fqdnContext;
-import org.batfish.grammar.arista.AristaParser.On_hostContext;
-import org.batfish.grammar.arista.AristaParser.On_natContext;
-import org.batfish.grammar.arista.AristaParser.On_rangeContext;
-import org.batfish.grammar.arista.AristaParser.On_subnetContext;
-import org.batfish.grammar.arista.AristaParser.Onn_dynamicContext;
-import org.batfish.grammar.arista.AristaParser.Onn_staticContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
-import org.batfish.grammar.arista.AristaParser.Os_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_is_stanzaContext;
@@ -1100,11 +1046,6 @@ import org.batfish.representation.arista.BgpNetwork6;
 import org.batfish.representation.arista.BgpPeerGroup;
 import org.batfish.representation.arista.BgpProcess;
 import org.batfish.representation.arista.BgpRedistributionPolicy;
-import org.batfish.representation.arista.CiscoAsaNat;
-import org.batfish.representation.arista.CiscoIosDynamicNat;
-import org.batfish.representation.arista.CiscoIosNat;
-import org.batfish.representation.arista.CiscoIosNat.RuleAction;
-import org.batfish.representation.arista.CiscoIosStaticNat;
 import org.batfish.representation.arista.CiscoStructureType;
 import org.batfish.representation.arista.CiscoStructureUsage;
 import org.batfish.representation.arista.CryptoMapEntry;
@@ -1121,12 +1062,8 @@ import org.batfish.representation.arista.ExtendedAccessList;
 import org.batfish.representation.arista.ExtendedAccessListLine;
 import org.batfish.representation.arista.ExtendedIpv6AccessList;
 import org.batfish.representation.arista.ExtendedIpv6AccessListLine;
-import org.batfish.representation.arista.FqdnNetworkObject;
-import org.batfish.representation.arista.HostNetworkObject;
 import org.batfish.representation.arista.HsrpGroup;
-import org.batfish.representation.arista.IcmpServiceObjectGroupLine;
 import org.batfish.representation.arista.IcmpTypeGroupReferenceLine;
-import org.batfish.representation.arista.IcmpTypeGroupTypeLine;
 import org.batfish.representation.arista.IcmpTypeObjectGroup;
 import org.batfish.representation.arista.InspectClassMap;
 import org.batfish.representation.arista.InspectClassMapMatch;
@@ -1158,7 +1095,6 @@ import org.batfish.representation.arista.NatPool;
 import org.batfish.representation.arista.NetworkObjectAddressSpecifier;
 import org.batfish.representation.arista.NetworkObjectGroup;
 import org.batfish.representation.arista.NetworkObjectGroupAddressSpecifier;
-import org.batfish.representation.arista.NetworkObjectInfo;
 import org.batfish.representation.arista.NssaSettings;
 import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.OspfNetworkType;
@@ -1171,10 +1107,7 @@ import org.batfish.representation.arista.Prefix6ListLine;
 import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
 import org.batfish.representation.arista.ProtocolObjectGroup;
-import org.batfish.representation.arista.ProtocolObjectGroupProtocolLine;
-import org.batfish.representation.arista.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.arista.ProtocolOrServiceObjectGroupServiceSpecifier;
-import org.batfish.representation.arista.RangeNetworkObject;
 import org.batfish.representation.arista.RipProcess;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
@@ -1207,9 +1140,7 @@ import org.batfish.representation.arista.SecurityZonePair;
 import org.batfish.representation.arista.ServiceObject;
 import org.batfish.representation.arista.ServiceObjectGroup;
 import org.batfish.representation.arista.ServiceObjectGroup.ServiceProtocol;
-import org.batfish.representation.arista.ServiceObjectGroupLine;
 import org.batfish.representation.arista.ServiceObjectGroupReferenceServiceObjectGroupLine;
-import org.batfish.representation.arista.ServiceObjectReferenceServiceObjectGroupLine;
 import org.batfish.representation.arista.ServiceObjectServiceSpecifier;
 import org.batfish.representation.arista.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.arista.StandardAccessList;
@@ -1221,19 +1152,14 @@ import org.batfish.representation.arista.StandardIpv6AccessList;
 import org.batfish.representation.arista.StandardIpv6AccessListLine;
 import org.batfish.representation.arista.StaticRoute;
 import org.batfish.representation.arista.StubSettings;
-import org.batfish.representation.arista.SubnetNetworkObject;
-import org.batfish.representation.arista.TcpServiceObjectGroupLine;
-import org.batfish.representation.arista.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.arista.Tunnel;
 import org.batfish.representation.arista.Tunnel.TunnelMode;
-import org.batfish.representation.arista.UdpServiceObjectGroupLine;
 import org.batfish.representation.arista.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.arista.VlanTrunkGroup;
 import org.batfish.representation.arista.Vrf;
 import org.batfish.representation.arista.VrrpGroup;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.WildcardAddressSpecifier;
-import org.batfish.representation.arista.asa.AsaPredefinedServiceObject;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
@@ -1259,8 +1185,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements BatfishListener, ControlPlaneExtractor {
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
-
-  private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -1448,8 +1372,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private AristaBgpVlanBase _currentAristaBgpVlan;
   private AristaBgpVrf _currentAristaBgpVrf;
   private AristaBgpVrfAddressFamily _currentAristaBgpVrfAf;
-
-  @Nullable private CiscoAsaNat _currentAsaNat;
 
   private IpAsPathAccessList _currentAsPathAcl;
 
@@ -3581,334 +3503,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     proc.setNetAddress(isoAddress);
   }
 
-  @Override
-  public void enterO_network(O_networkContext ctx) {
-    _currentNetworkObjectName = ctx.name.getText();
-    _configuration
-        .getNetworkObjectInfos()
-        .putIfAbsent(_currentNetworkObjectName, new NetworkObjectInfo(_currentNetworkObjectName));
-
-    _configuration.defineStructure(NETWORK_OBJECT, _currentNetworkObjectName, ctx);
-  }
-
-  @Override
-  public void exitO_network(O_networkContext ctx) {
-    _currentNetworkObjectName = null;
-  }
-
-  @Override
-  public void enterO_service(O_serviceContext ctx) {
-    String name = ctx.name.getText();
-    _currentServiceObject =
-        _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
-    _configuration.defineStructure(SERVICE_OBJECT, name, ctx);
-  }
-
-  @Override
-  public void exitO_service(O_serviceContext ctx) {
-    _currentServiceObject = null;
-  }
-
-  @Override
-  public void enterOg_icmp_type(Og_icmp_typeContext ctx) {
-    String name = ctx.name.getText();
-    if (_configuration.getObjectGroups().containsKey(name)) {
-      _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _currentIcmpTypeObjectGroup =
-          _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name, IcmpTypeObjectGroup::new);
-      _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
-      _configuration.defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOgit_icmp_object(Ogit_icmp_objectContext ctx) {
-    _currentIcmpTypeObjectGroup
-        .getLines()
-        .add(new IcmpTypeGroupTypeLine(toIcmpType(ctx.icmp_object_type())));
-  }
-
-  @Override
-  public void exitOgit_group_object(Ogit_group_objectContext ctx) {
-    addIcmpTypeGroupReference(ctx.name);
-  }
-
-  @Override
-  public void exitOg_icmp_type(Og_icmp_typeContext ctx) {
-    _currentIcmpTypeObjectGroup = null;
-  }
-
-  @Override
-  public void enterOgg_icmp_type(Ogg_icmp_typeContext ctx) {
-    String name = ctx.name.getText();
-    _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
-    if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _configuration.getIcmpTypeObjectGroups().put(name, _currentIcmpTypeObjectGroup);
-      _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
-      _configuration.defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOggit_group_object(Oggit_group_objectContext ctx) {
-    addIcmpTypeGroupReference(ctx.name);
-  }
-
-  @Override
-  public void exitOgg_icmp_type(Ogg_icmp_typeContext ctx) {
-    _currentIcmpTypeObjectGroup = null;
-  }
-
   private void addIcmpTypeGroupReference(Variable_permissiveContext nameCtx) {
     String name = nameCtx.getText();
     _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
     _configuration.referenceStructure(
         ICMP_TYPE_OBJECT_GROUP, name, ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT, nameCtx.start.getLine());
-  }
-
-  @Override
-  public void enterOgg_network(Ogg_networkContext ctx) {
-    String name = ctx.name.getText();
-    _currentNetworkObjectGroup = new NetworkObjectGroup(name);
-    if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _configuration.getNetworkObjectGroups().put(name, _currentNetworkObjectGroup);
-      _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
-      _configuration.defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOggn_group_object(Oggn_group_objectContext ctx) {
-    String name = ctx.name.getText();
-    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
-    _configuration.referenceStructure(
-        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
-  }
-
-  @Override
-  public void exitOgg_network(Ogg_networkContext ctx) {
-    _currentNetworkObjectGroup = null;
-  }
-
-  @Override
-  public void enterOgg_protocol(Ogg_protocolContext ctx) {
-    String name = ctx.name.getText();
-    _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
-    if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _configuration.getProtocolObjectGroups().put(name, _currentProtocolObjectGroup);
-      _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
-      _configuration.defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOggp_group_object(Oggp_group_objectContext ctx) {
-    String name = ctx.name.getText();
-    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
-    _configuration.referenceStructure(
-        PROTOCOL_OBJECT_GROUP,
-        name,
-        EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
-        ctx.name.start.getLine());
-  }
-
-  @Override
-  public void exitOgg_protocol(Ogg_protocolContext ctx) {
-    _currentProtocolObjectGroup = null;
-  }
-
-  @Override
-  public void enterOgg_service(Ogg_serviceContext ctx) {
-    String name = ctx.name.getText();
-    ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
-    _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
-    if (_configuration.getObjectGroups().containsKey(name)) {
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _configuration.getServiceObjectGroups().put(name, _currentServiceObjectGroup);
-      _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
-      _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOggs_group_object(Oggs_group_objectContext ctx) {
-    addServiceGroupReference(ctx.name);
-  }
-
-  @Override
-  public void exitOgg_service(Ogg_serviceContext ctx) {
-    _currentServiceObjectGroup = null;
-  }
-
-  @Override
-  public void enterOg_network(Og_networkContext ctx) {
-    String name = ctx.name.getText();
-    // If there is a conflict, create a dummy object group
-    if (_configuration.getObjectGroups().get(name) != null) {
-      _currentNetworkObjectGroup = new NetworkObjectGroup(name);
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _currentNetworkObjectGroup =
-          _configuration.getNetworkObjectGroups().computeIfAbsent(name, NetworkObjectGroup::new);
-      _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
-      _configuration.defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOg_network(Og_networkContext ctx) {
-    _currentNetworkObjectGroup = null;
-  }
-
-  @Override
-  public void enterOg_service(Og_serviceContext ctx) {
-    String name = ctx.name.getText();
-    ServiceProtocol protocol = toServiceProtocol(ctx.protocol_type);
-    // If there is a conflict, create a dummy object group
-    if (_configuration.getObjectGroups().get(name) != null) {
-      _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _currentServiceObjectGroup =
-          _configuration
-              .getServiceObjectGroups()
-              .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
-      _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
-      _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOg_service(Og_serviceContext ctx) {
-    _currentServiceObjectGroup = null;
-  }
-
-  @Override
-  public void enterOg_protocol(Og_protocolContext ctx) {
-    String name = ctx.name.getText();
-    // If there is a conflict, create a dummy object group
-    if (_configuration.getObjectGroups().get(name) != null) {
-      _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
-      warnObjectGroupRedefinition(ctx.name);
-    } else {
-      _currentProtocolObjectGroup =
-          _configuration.getProtocolObjectGroups().computeIfAbsent(name, ProtocolObjectGroup::new);
-      _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
-      _configuration.defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
-    }
-  }
-
-  @Override
-  public void exitOg_protocol(Og_protocolContext ctx) {
-    _currentProtocolObjectGroup = null;
-  }
-
-  @Override
-  public void exitOgn_group_object(Ogn_group_objectContext ctx) {
-    String name = ctx.name.getText();
-    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
-    _configuration.referenceStructure(
-        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
-  }
-
-  @Override
-  public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
-    _currentNetworkObjectGroup.getLines().add(toIp(ctx.ip).toIpSpace());
-  }
-
-  @Override
-  public void exitOgn_ip_with_mask(Ogn_ip_with_maskContext ctx) {
-    Ip ip = toIp(ctx.ip);
-    Ip mask = toIp(ctx.mask);
-    _currentNetworkObjectGroup.getLines().add(Prefix.create(ip, mask).toIpSpace());
-  }
-
-  @Override
-  public void exitOgn_network_object(Ogn_network_objectContext ctx) {
-    IpSpace ipSpace = null;
-    if (ctx.prefix != null) {
-      ipSpace = IpWildcard.parse(ctx.prefix.getText()).toIpSpace();
-    } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
-      // Mask needs to be inverted since zeros are don't-cares in this context
-      ipSpace =
-          IpWildcard.ipWithWildcardMask(
-                  toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
-              .toIpSpace();
-    } else if (ctx.address != null) {
-      ipSpace = IpWildcard.parse(ctx.address.getText()).toIpSpace();
-    } else if (ctx.name != null) {
-      String name = ctx.name.getText();
-      ipSpace = new IpSpaceReference(name);
-      _configuration.referenceStructure(
-          NETWORK_OBJECT, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, ctx.name.start.getLine());
-    }
-    if (ipSpace == null) {
-      warn(ctx, "Unimplemented object-group network line.");
-    } else {
-      _currentNetworkObjectGroup.getLines().add(ipSpace);
-    }
-  }
-
-  @Override
-  public void exitOgp_protocol_object(Ogp_protocol_objectContext ctx) {
-    _currentProtocolObjectGroup
-        .getLines()
-        .add(new ProtocolObjectGroupProtocolLine(toIpProtocol(ctx.protocol())));
-  }
-
-  @Override
-  public void exitOgp_group_object(Ogp_group_objectContext ctx) {
-    String name = ctx.name.getText();
-    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupReferenceLine(name));
-    _configuration.referenceStructure(
-        PROTOCOL_OBJECT_GROUP, name, PROTOCOL_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
-  }
-
-  @Override
-  public void exitOgs_icmp(Ogs_icmpContext ctx) {
-    _currentServiceObjectGroup.getLines().add(new IcmpServiceObjectGroupLine());
-  }
-
-  @Override
-  public void enterOgs_service_object(Ogs_service_objectContext ctx) {
-    if (ctx.service_specifier() != null) {
-      _currentServiceObject = new ServiceObject(INLINE_SERVICE_OBJECT_NAME);
-    }
-  }
-
-  @Override
-  public void exitOgs_service_object(Ogs_service_objectContext ctx) {
-    if (ctx.predef != null) {
-      String name = ctx.predef.getText();
-      _currentServiceObjectGroup
-          .getLines()
-          .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
-      _configuration.getServiceObjects().computeIfAbsent(name, AsaPredefinedServiceObject::forName);
-    } else if (ctx.name != null) {
-      String name = ctx.name.getText();
-      _currentServiceObjectGroup
-          .getLines()
-          .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
-      _configuration.referenceStructure(
-          SERVICE_OBJECT, name, SERVICE_OBJECT_GROUP_SERVICE_OBJECT, ctx.name.getStart().getLine());
-    } else if (ctx.service_specifier() != null) {
-      _currentServiceObjectGroup.getLines().add(_currentServiceObject);
-      _currentServiceObject = null;
-    }
-  }
-
-  @Override
-  public void exitOgs_group_object(Ogs_group_objectContext ctx) {
-    addServiceGroupReference(ctx.name);
   }
 
   private void addServiceGroupReference(Variable_group_idContext nameCtx) {
@@ -3921,201 +3520,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         name,
         EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
         nameCtx.start.getLine());
-  }
-
-  @Override
-  public void exitOgs_tcp(Ogs_tcpContext ctx) {
-    _currentServiceObjectGroup.getLines().add(new TcpServiceObjectGroupLine(toPortRanges(ctx.ps)));
-  }
-
-  @Override
-  public void exitOgs_udp(Ogs_udpContext ctx) {
-    _currentServiceObjectGroup.getLines().add(new UdpServiceObjectGroupLine(toPortRanges(ctx.ps)));
-  }
-
-  @Override
-  public void exitOgs_port_object(Ogs_port_objectContext ctx) {
-    List<SubRange> ranges = toPortRanges(ctx.ps);
-    ServiceProtocol protocol = _currentServiceObjectGroup.getProtocol();
-    ServiceObjectGroupLine line;
-    if (protocol == null || protocol == ServiceProtocol.TCP_UDP) {
-      line = new TcpUdpServiceObjectGroupLine(ranges);
-    } else if (protocol == ServiceProtocol.TCP) {
-      line = new TcpServiceObjectGroupLine(ranges);
-    } else if (protocol == ServiceProtocol.UDP) {
-      line = new UdpServiceObjectGroupLine(ranges);
-    } else {
-      throw new IllegalStateException(
-          "Unexpected service object group protocol: '" + protocol + "'");
-    }
-    _currentServiceObjectGroup.getLines().add(line);
-  }
-
-  @Override
-  public void exitOn_description(On_descriptionContext ctx) {
-    _configuration
-        .getNetworkObjectInfos()
-        .get(_currentNetworkObjectName)
-        .setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitOn_fqdn(On_fqdnContext ctx) {
-    _configuration.getNetworkObjects().put(_currentNetworkObjectName, new FqdnNetworkObject());
-    warn(ctx, "Unknown how to resolve domain name to IP address");
-  }
-
-  @Override
-  public void exitOn_host(On_hostContext ctx) {
-    if (ctx.address != null) {
-      _configuration
-          .getNetworkObjects()
-          .put(_currentNetworkObjectName, new HostNetworkObject(Ip.parse(ctx.address.getText())));
-    } else {
-      // IPv6
-      warn(ctx, "Unimplemented network object line");
-    }
-  }
-
-  @Override
-  public void enterOn_nat(On_natContext ctx) {
-    CiscoAsaNat nat = new CiscoAsaNat();
-
-    nat.setRealSource(new NetworkObjectAddressSpecifier(_currentNetworkObjectName));
-    _configuration.referenceStructure(
-        NETWORK_OBJECT,
-        _currentNetworkObjectName,
-        OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
-        ctx.getStart().getLine());
-
-    nat.setSection(CiscoAsaNat.Section.OBJECT);
-    natInterfaces(
-        nat, ctx.asa_nat_ifaces(), OBJECT_NAT_REAL_INTERFACE, OBJECT_NAT_MAPPED_INTERFACE);
-
-    _currentAsaNat = nat;
-  }
-
-  @Override
-  public void exitOnn_dynamic(Onn_dynamicContext ctx) {
-    _currentAsaNat.setDynamic(true);
-
-    AccessListAddressSpecifier mappedSource;
-    if (ctx.mapped_iface != null || ctx.mapped_iface_after != null) {
-      // Match outside/mapped interface. Interface must be specified.
-      // This can be in lieu of or in addition to a mapped source.
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    }
-    if (ctx.asa_nat_pat_pool() != null) {
-      // PAT pool
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    }
-
-    if (ctx.host_ip != null) {
-      // PAT
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    } else {
-      mappedSource =
-          referenceNetworkObjectOrGroup(
-              ctx.obj.getText(),
-              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-              ctx.getStart().getLine());
-    }
-
-    // Not handled
-    if (ctx.DNS() != null) {
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    }
-    _currentAsaNat.setMappedSource(mappedSource);
-  }
-
-  @Override
-  public void exitOnn_static(Onn_staticContext ctx) {
-    _currentAsaNat.setDynamic(false);
-
-    AccessListAddressSpecifier mappedSource;
-    if (ctx.INTERFACE() != null) {
-      // Match outside/mapped interface. Interface must be specified.
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    }
-
-    if (ctx.host_ip != null) {
-      // mappedSource will have the same prefix length as the real source, which may not be
-      // defined yet.
-      mappedSource =
-          new WildcardAddressSpecifier(IpWildcard.create(Ip.parse(ctx.host_ip.getText())));
-    } else {
-      mappedSource =
-          referenceNetworkObjectOrGroup(
-              ctx.obj.getText(),
-              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-              ctx.getStart().getLine());
-    }
-
-    // Optional service object specifiers
-    if (ctx.asa_object_nat_service() != null) {
-      // Specifies static port translation for static NAT
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    }
-
-    // Options are not handled
-    if (!ctx.asa_nat_optional_args().isEmpty()) {
-      _currentAsaNat = null;
-      todo(ctx);
-      return;
-    }
-
-    _currentAsaNat.setMappedSource(mappedSource);
-  }
-
-  @Override
-  public void exitOn_nat(On_natContext ctx) {
-    if (_currentAsaNat != null) {
-      _configuration.getCiscoAsaNats().add(_currentAsaNat);
-    }
-    _currentAsaNat = null;
-  }
-
-  @Override
-  public void exitOn_range(On_rangeContext ctx) {
-    _configuration
-        .getNetworkObjects()
-        .put(
-            _currentNetworkObjectName,
-            new RangeNetworkObject(Ip.parse(ctx.start.getText()), Ip.parse(ctx.end.getText())));
-  }
-
-  @Override
-  public void exitOn_subnet(On_subnetContext ctx) {
-    if (ctx.address != null) {
-      _configuration
-          .getNetworkObjects()
-          .put(
-              _currentNetworkObjectName,
-              new SubnetNetworkObject(
-                  Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText()))));
-    } else {
-      // IPv6
-      warn(ctx, "Unimplemented network object line");
-    }
-  }
-
-  @Override
-  public void exitOs_description(Os_descriptionContext ctx) {
-    _currentServiceObject.setDescription(getDescription(ctx.description_line()));
   }
 
   @Override
@@ -7180,71 +6584,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIp_nat_destination(Ip_nat_destinationContext ctx) {
-    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
-    String acl = ctx.acl.getText();
-    int aclLine = ctx.acl.getStart().getLine();
-    nat.setAclName(acl);
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
-    String pool = ctx.pool.getText();
-    int poolLine = ctx.pool.getStart().getLine();
-    nat.setNatPool(pool);
-    _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
-    nat.setAction(RuleAction.DESTINATION_INSIDE);
-    _configuration.getCiscoIosNats().add(nat);
-  }
-
-  @Override
-  public void exitIp_nat_source(Ip_nat_sourceContext ctx) {
-    CiscoIosNat nat;
-    if (ctx.STATIC() != null) {
-      CiscoIosStaticNat staticNat = new CiscoIosStaticNat();
-      Ip local = toIp(ctx.local);
-      Ip global = toIp(ctx.global);
-      if (ctx.OUTSIDE() != null) {
-        // local and global reversed for outside
-        Ip tmp = local;
-        local = global;
-        global = tmp;
-      }
-      int prefixLength = 32;
-      if (ctx.NETWORK() != null) {
-        if (ctx.mask != null) {
-          Ip mask = toIp(ctx.mask);
-          prefixLength = mask.numSubnetBits();
-        } else {
-          prefixLength = toInteger(ctx.prefix);
-        }
-      }
-      staticNat.setLocalNetwork(Prefix.create(local, prefixLength));
-      staticNat.setGlobalNetwork(Prefix.create(global, prefixLength));
-      nat = staticNat;
-    } else {
-      CiscoIosDynamicNat dynamicNat = new CiscoIosDynamicNat();
-      String acl = ctx.acl.getText();
-      int aclLine = ctx.acl.getStart().getLine();
-      dynamicNat.setAclName(acl);
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
-      String pool = ctx.pool.getText();
-      int poolLine = ctx.pool.getStart().getLine();
-      dynamicNat.setNatPool(pool);
-      _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
-      nat = dynamicNat;
-    }
-    if (ctx.INSIDE() != null) {
-      nat.setAction(RuleAction.SOURCE_INSIDE);
-    } else {
-      nat.setAction(RuleAction.SOURCE_OUTSIDE);
-    }
-    if (ctx.ADD_ROUTE() != null) {
-      // Adding a route via NAT is not currently supported
-      // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
-      todo(ctx);
-    }
-    _configuration.getCiscoIosNats().add(nat);
-  }
-
-  @Override
   public void exitIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
     _currentPrefixList = null;
   }
@@ -9449,29 +8788,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     iface.setMtu(toInteger(ctx.bytes));
   }
 
-  private void natInterfaces(
-      CiscoAsaNat nat,
-      Asa_nat_ifacesContext ctx,
-      CiscoStructureUsage realStructure,
-      CiscoStructureUsage mappedStructure) {
-    if (ctx == null) {
-      nat.setInsideInterface(ANY_INTERFACE);
-      nat.setOutsideInterface(ANY_INTERFACE);
-      return;
-    }
-    String inside = ctx.real_if.getText();
-    String outside = ctx.mapped_if.getText();
-    int line = ctx.getStart().getLine();
-    nat.setInsideInterface(inside);
-    if (!inside.equals(ANY_INTERFACE)) {
-      _configuration.referenceStructure(INTERFACE, inside, realStructure, line);
-    }
-    nat.setOutsideInterface(outside);
-    if (!outside.equals(ANY_INTERFACE)) {
-      _configuration.referenceStructure(INTERFACE, outside, mappedStructure, line);
-    }
-  }
-
   @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
@@ -10320,37 +9636,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private void pushPeer(@Nonnull BgpPeerGroup pg) {
     _peerGroupStack.add(_currentPeerGroup);
     _currentPeerGroup = pg;
-  }
-
-  /**
-   * Determine if this is a reference to a network object or a network object group. They are not
-   * supposed to be ambiguous and must already be defined. Also matches "any" as all addresses.
-   *
-   * @param name Name of network object or network object group
-   * @param objectStructure Name of structure to reference if this is a network object
-   * @param groupStructure Name of structure to reference if this is a network object group
-   * @param line Line number in configuration
-   * @return Address specifier for this reference
-   */
-  private AccessListAddressSpecifier referenceNetworkObjectOrGroup(
-      String name,
-      CiscoStructureUsage objectStructure,
-      CiscoStructureUsage groupStructure,
-      int line) {
-    if (name.equals(ANY_INTERFACE)) {
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
-    }
-    if (_configuration.getNetworkObjectGroups().containsKey(name)) {
-      _configuration.referenceStructure(NETWORK_OBJECT_GROUP, name, groupStructure, line);
-      return new NetworkObjectGroupAddressSpecifier(name);
-    }
-    // Assume this is an defined or undefined reference to a network object
-    _configuration.referenceStructure(NETWORK_OBJECT, name, objectStructure, line);
-    if (_configuration.getNetworkObjects().containsKey(name)) {
-      return new NetworkObjectAddressSpecifier(name);
-    }
-    _w.redFlag("Undefined network object or network object-group " + name);
-    return null;
   }
 
   private void resetPeerGroups() {

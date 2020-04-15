@@ -59,7 +59,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -202,7 +201,6 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.representation.arista.CiscoAsaNat.Section;
 import org.batfish.representation.arista.Tunnel.TunnelMode;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -529,10 +527,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private final Set<String> _natOutside;
 
-  private final List<CiscoAsaNat> _ciscoAsaNats;
-
-  private final List<CiscoIosNat> _ciscoIosNats;
-
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObjectInfo> _networkObjectInfos;
@@ -626,8 +620,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
-    _ciscoAsaNats = new ArrayList<>();
-    _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
     _networkObjects = new TreeMap<>();
@@ -920,14 +912,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public Set<String> getNatOutside() {
     return _natOutside;
-  }
-
-  public List<CiscoAsaNat> getCiscoAsaNats() {
-    return _ciscoAsaNats;
-  }
-
-  public List<CiscoIosNat> getCiscoIosNats() {
-    return _ciscoIosNats;
   }
 
   private String getNewInterfaceName(Interface iface) {
@@ -2207,22 +2191,10 @@ public final class AristaConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoing transformations
      */
 
-    List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
-    List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
     List<AristaDynamicSourceNat> aristaDynamicSourceNats =
         firstNonNull(iface.getAristaNats(), ImmutableList.of());
-    int natTypes =
-        (aristaDynamicSourceNats.isEmpty() ? 0 : 1)
-            + (ciscoAsaNats.isEmpty() ? 0 : 1)
-            + (ciscoIosNats.isEmpty() ? 0 : 1);
-    if (natTypes > 1) {
-      _w.redFlag("Multiple NAT types should not be present in same configuration.");
-    } else if (!aristaDynamicSourceNats.isEmpty()) {
+    if (!aristaDynamicSourceNats.isEmpty()) {
       generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
-    } else if (!ciscoAsaNats.isEmpty()) {
-      generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
-    } else if (!ciscoIosNats.isEmpty()) {
-      generateCiscoIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
     }
 
     String routingPolicyName = iface.getRoutingPolicy();
@@ -2282,84 +2254,6 @@ public final class AristaConfiguration extends VendorConfiguration {
       next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
     }
     newIface.setOutgoingTransformation(next);
-  }
-
-  private void generateCiscoAsaNatTransformations(
-      String ifaceName, org.batfish.datamodel.Interface newIface, List<CiscoAsaNat> ciscoAsaNats) {
-
-    if (!ciscoAsaNats.stream().map(CiscoAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
-      _w.unimplemented("No support for Twice NAT");
-    }
-
-    // ASA places incoming and outgoing object NATs as transformations on the outside interface.
-    // Each NAT rule specifies an outside interface or ANY_INTERFACE
-    SortedSet<CiscoAsaNat> objectNats =
-        ciscoAsaNats.stream()
-            .filter(nat -> nat.getSection().equals(Section.OBJECT))
-            .filter(
-                nat ->
-                    nat.getOutsideInterface().equals(CiscoAsaNat.ANY_INTERFACE)
-                        || nat.getOutsideInterface().equals(ifaceName))
-            .collect(Collectors.toCollection(TreeSet::new));
-
-    newIface.setIncomingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toIncomingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
-
-    newIface.setOutgoingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toOutgoingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
-  }
-
-  private void generateCiscoIosNatTransformations(
-      String ifaceName,
-      org.batfish.datamodel.Interface newIface,
-      Map<String, IpAccessList> ipAccessLists,
-      Configuration c) {
-    List<CiscoIosNat> incomingNats = new ArrayList<>();
-    List<CiscoIosNat> outgoingNats = new ArrayList<>();
-
-    // Check if this is an outside interface
-    if (getNatOutside().contains(ifaceName)) {
-      incomingNats.addAll(getCiscoIosNats());
-      outgoingNats.addAll(getCiscoIosNats());
-    }
-
-    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
-    // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
-    // NAT, an outgoing NAT, or both.
-
-    Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
-        incomingNats.stream()
-            .map(
-                nat ->
-                    new SimpleEntry<>(nat, nat.toIncomingTransformation(ipAccessLists, _natPools)))
-            .filter(entry -> entry.getValue().isPresent())
-            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
-    if (!convertedIncomingNats.isEmpty()) {
-      newIface.setIncomingTransformation(
-          CiscoIosNatUtil.toIncomingTransformationChain(convertedIncomingNats));
-    }
-
-    Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
-        outgoingNats.stream()
-            .map(
-                nat ->
-                    new SimpleEntry<>(
-                        nat,
-                        nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), c)))
-            .filter(entry -> entry.getValue().isPresent())
-            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
-    if (!convertedOutgoingNats.isEmpty()) {
-      newIface.setOutgoingTransformation(
-          CiscoIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
-    }
   }
 
   private void applyZoneFilter(
@@ -3370,33 +3264,12 @@ public final class AristaConfiguration extends VendorConfiguration {
     /*
      * Consolidate info about networkObjects
      * - Associate networkObjects with their Info
-     * - Associate ASA Object NATs with their object (needed for sorting)
-     * - Removes ASA Object NATs that were created without a valid network object
      */
     _networkObjectInfos.forEach(
         (name, info) -> {
           if (_networkObjects.containsKey(name)) {
             _networkObjects.get(name).setInfo(info);
           }
-        });
-    _ciscoAsaNats.removeIf(
-        nat -> {
-          if (nat.getSection() != Section.OBJECT) {
-            return false;
-          }
-          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
-          NetworkObject object = _networkObjects.get(objectName);
-          if (object == null) {
-            // Network object has a NAT but no addresses
-            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
-            return true;
-          }
-          if (object.getStart() == null) {
-            // Unsupported network object type, already warned
-            return true;
-          }
-          nat.setRealSourceObject(object);
-          return false;
         });
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
