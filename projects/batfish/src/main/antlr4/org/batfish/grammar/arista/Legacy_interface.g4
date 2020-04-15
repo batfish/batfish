@@ -182,7 +182,60 @@ if_crypto_map
 
 if_default_eos
 :
-   DEFAULT null_rest_of_line
+   DEFAULT
+   (
+     ifd_ip_eos
+     | ifd_ipv6_eos
+     | ifd_null_eos
+     | ifd_switchport_eos
+   )
+;
+
+ifd_ip_eos
+:
+  IP
+  ifd_ip_null_eos
+;
+
+ifd_ip_null_eos
+:
+  (
+    DHCP
+    | PIM
+  ) null_rest_of_line
+;
+
+ifd_ipv6_eos
+:
+  IPV6
+  ifd_ipv6_null_eos
+;
+
+ifd_ipv6_null_eos
+:
+  (
+    ND
+  ) null_rest_of_line
+;
+
+ifd_null_eos
+:
+  (
+    ARP
+    | ERROR_CORRECTION
+    | LACP
+    | LOAD_INTERVAL
+    | LOGGING
+    | NTP
+    | QOS
+    | UNIDIRECTIONAL
+  ) null_rest_of_line
+;
+
+ifd_switchport_eos
+:
+  SWITCHPORT
+  null_rest_of_line
 ;
 
 if_default_gw
