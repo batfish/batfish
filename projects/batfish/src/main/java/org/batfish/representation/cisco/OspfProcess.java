@@ -34,8 +34,6 @@ public class OspfProcess implements Serializable {
 
   public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 0xFF0000L;
 
-  private static final double DEFAULT_REFERENCE_BANDWIDTH_10_MBPS = 10E6D;
-
   private static final double DEFAULT_REFERENCE_BANDWIDTH_100_MBPS = 100E6D;
 
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;

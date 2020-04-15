@@ -1362,10 +1362,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private User _currentUser;
 
-  @Nullable private IntegerSpace _currentVlans;
-
-  private Integer _currentVxlanVlanNum;
-
   private String _currentVrf;
 
   private VrrpGroup _currentVrrpGroup;
@@ -1475,7 +1471,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess p = v.getBgpProcess();
     if (p == null) {
       long procNum = _configuration.getDefaultVrf().getBgpProcess().getProcnum();
-      p = new BgpProcess(_format, procNum);
+      p = new BgpProcess(procNum);
       v.setBgpProcess(p);
     }
     pushPeer(p.getMasterBgpPeerGroup());
@@ -3068,7 +3064,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
     Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
     if (vrf.getBgpProcess() == null) {
-      BgpProcess proc = new BgpProcess(_format, procNum);
+      BgpProcess proc = new BgpProcess(procNum);
       vrf.setBgpProcess(proc);
     }
     BgpProcess proc = vrf.getBgpProcess();

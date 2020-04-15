@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpTieBreaker;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
@@ -72,7 +71,7 @@ public class BgpProcess implements Serializable {
 
   private BgpTieBreaker _tieBreaker;
 
-  public BgpProcess(ConfigurationFormat format, long procnum) {
+  public BgpProcess(long procnum) {
     _afGroups = new HashMap<>();
     _aggregateNetworks = new HashMap<>();
     _aggregateIpv6Networks = new HashMap<>();
