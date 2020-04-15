@@ -88,6 +88,7 @@ eos_rb_af_ipv4_unicast
   NEWLINE
   (
     eos_rbafipv4u_bgp
+    | eos_rbafipv4u_default
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
     | eos_rbafipv4_no
@@ -137,6 +138,19 @@ eos_rbafipv4ub_redistribute_internal
 eos_rbafipv4ub_route
 :
   ROUTE INSTALL name = variable NEWLINE
+;
+
+eos_rbafipv4u_default
+:
+  DEFAULT
+  (
+    eos_rbafipv4ud_neighbor
+  )
+;
+
+eos_rbafipv4ud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_default_neighbor_common
 ;
 
 eos_rbafipv4u_neighbor
@@ -190,6 +204,7 @@ eos_rb_af_evpn
   EVPN NEWLINE
   (
     eos_rb_af_evpn_bgp
+    | eos_rb_af_evpn_default
     | eos_rb_af_evpn_graceful_restart
     | eos_rb_af_evpn_host_flap
     | eos_rb_af_evpn_neighbor
@@ -203,6 +218,19 @@ eos_rb_af_evpn_bgp
   (
     eos_rbafeb_additional_paths
     | eos_rbafeb_next_hop_unchanged
+  )
+;
+
+eos_rb_af_evpn_default
+:
+  DEFAULT eos_rb_afed_neighbor
+;
+
+eos_rb_afed_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
   )
 ;
 
@@ -250,6 +278,17 @@ eos_rb_af_evpn_no:
 eos_rb_af_evpn_no_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
+;
+
+// Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.
+eos_rb_af_default_neighbor_common
+:
+  eos_rbafdnc_activate
+;
+
+eos_rbafdnc_activate
+:
+  ACTIVATE NEWLINE
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afnc rules.
