@@ -22,17 +22,7 @@ public abstract class AristaBaseParser extends BatfishParser {
     return true;
   }
 
-  private boolean _asa;
-
   public AristaBaseParser(TokenStream input) {
     super(input);
-  }
-
-  protected boolean isAsa() {
-    return _asa;
-  }
-
-  public void setAsa(boolean asa) {
-    _asa = asa;
   }
 }

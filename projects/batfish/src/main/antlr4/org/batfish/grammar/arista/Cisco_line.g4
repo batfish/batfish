@@ -200,11 +200,3 @@ s_line
       | description_line
    )*
 ;
-
-s_line_cadant
-:
-   LINE line_type_cadant start_line = DEC end_line = DEC?
-   (
-      lc_null
-   )
-;

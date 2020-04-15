@@ -260,16 +260,6 @@ import static org.batfish.representation.arista.CiscoStructureUsage.TACACS_SOURC
 import static org.batfish.representation.arista.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.arista.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.arista.CiscoStructureUsage.TUNNEL_SOURCE;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.arista.CiscoStructureUsage.VXLAN_SELF_REF;
 import static org.batfish.representation.arista.CiscoStructureUsage.VXLAN_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.CiscoStructureUsage.WCCP_GROUP_LIST;
@@ -429,7 +419,6 @@ import org.batfish.grammar.arista.AristaParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_accounting_default_localContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_authenticationContext;
-import org.batfish.grammar.arista.AristaParser.Aaa_authentication_asaContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_authentication_list_methodContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_authentication_login_listContext;
@@ -451,12 +440,7 @@ import org.batfish.grammar.arista.AristaParser.As_exprContext;
 import org.batfish.grammar.arista.AristaParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Asa_ag_globalContext;
 import org.batfish.grammar.arista.AristaParser.Asa_ag_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Asa_banner_headerContext;
 import org.batfish.grammar.arista.AristaParser.Asa_nat_ifacesContext;
-import org.batfish.grammar.arista.AristaParser.Asa_nat_optional_argsContext;
-import org.batfish.grammar.arista.AristaParser.Asa_twice_nat_destinationContext;
-import org.batfish.grammar.arista.AristaParser.Asa_twice_nat_dynamicContext;
-import org.batfish.grammar.arista.AristaParser.Asa_twice_nat_staticContext;
 import org.batfish.grammar.arista.AristaParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_address_familyContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_advertise_inactive_rb_stanzaContext;
@@ -754,7 +738,6 @@ import org.batfish.grammar.arista.AristaParser.Inspect_protocolContext;
 import org.batfish.grammar.arista.AristaParser.Int_exprContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
-import org.batfish.grammar.arista.AristaParser.Ios_banner_headerContext;
 import org.batfish.grammar.arista.AristaParser.Ios_delimited_bannerContext;
 import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_tailContext;
@@ -967,11 +950,7 @@ import org.batfish.grammar.arista.AristaParser.Rs_routeContext;
 import org.batfish.grammar.arista.AristaParser.Rs_vrfContext;
 import org.batfish.grammar.arista.AristaParser.S_aaaContext;
 import org.batfish.grammar.arista.AristaParser.S_access_lineContext;
-import org.batfish.grammar.arista.AristaParser.S_asa_twice_natContext;
-import org.batfish.grammar.arista.AristaParser.S_banner_asaContext;
-import org.batfish.grammar.arista.AristaParser.S_banner_cadantContext;
 import org.batfish.grammar.arista.AristaParser.S_banner_eosContext;
-import org.batfish.grammar.arista.AristaParser.S_banner_iosContext;
 import org.batfish.grammar.arista.AristaParser.S_bfd_templateContext;
 import org.batfish.grammar.arista.AristaParser.S_cableContext;
 import org.batfish.grammar.arista.AristaParser.S_class_mapContext;
@@ -1731,35 +1710,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void enterAaa_authentication_login(Aaa_authentication_loginContext ctx) {
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-  }
-
-  @Override
-  public void enterAaa_authentication_asa(Aaa_authentication_asaContext ctx) {
-    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
-      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-    ArrayList<AuthenticationMethod> methods = new ArrayList<>();
-    if (ctx.aaa_authentication_asa_console().group != null) {
-      methods.add(AuthenticationMethod.GROUP_USER_DEFINED);
-    }
-    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
-      methods.add(AuthenticationMethod.LOCAL_CASE);
-    }
-    if (!methods.isEmpty()) {
-      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
-      String name = ctx.linetype.getText();
-      AaaAuthenticationLoginList authList = new AaaAuthenticationLoginList(methods);
-
-      _configuration
-          .getCf()
-          .getLines()
-          .computeIfAbsent(name, Line::new)
-          .setAaaAuthenticationLoginList(authList);
-
-      // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
-      // rather than put so we only accept the first login list
-      _currentAaaAuthenticationLoginList = login.getLists().computeIfAbsent(name, k -> authList);
     }
   }
 
@@ -4246,47 +4196,23 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    if (_parser.getParser().isAristaBgp()) {
-      _currentAristaBgpProcess = _configuration.getAristaBgp();
-      long asn = toAsNum(ctx.bgp_asn());
-      if (_currentAristaBgpProcess == null) {
-        _currentAristaBgpProcess = new AristaBgpProcess(asn);
-        _configuration.setAristaBgp(_currentAristaBgpProcess);
-      } else if (asn != _currentAristaBgpProcess.getAsn()) {
-        // Create a dummy node
-        _currentAristaBgpProcess = new AristaBgpProcess(asn);
-        _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
-      }
-      _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
-      return;
+    _currentAristaBgpProcess = _configuration.getAristaBgp();
+    long asn = toAsNum(ctx.bgp_asn());
+    if (_currentAristaBgpProcess == null) {
+      _currentAristaBgpProcess = new AristaBgpProcess(asn);
+      _configuration.setAristaBgp(_currentAristaBgpProcess);
+    } else if (asn != _currentAristaBgpProcess.getAsn()) {
+      // Create a dummy node
+      _currentAristaBgpProcess = new AristaBgpProcess(asn);
+      _w.addWarning(ctx, getFullText(ctx), _parser, "Ignoring bgp configuration for invalid ASN");
     }
-
-    // Cisco hybrid parser
-    long procNum = ctx.bgp_asn() == null ? 0 : toAsNum(ctx.bgp_asn());
-    Vrf vrf = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
-    if (vrf.getBgpProcess() == null) {
-      BgpProcess proc = new BgpProcess(_format, procNum);
-      vrf.setBgpProcess(proc);
-    }
-    BgpProcess proc = vrf.getBgpProcess();
-    if (proc.getProcnum() != procNum && procNum != 0) {
-      warn(ctx, "Cannot have multiple BGP processes with different ASNs");
-      pushPeer(_dummyPeerGroup);
-      return;
-    }
-    pushPeer(proc.getMasterBgpPeerGroup());
+    _currentAristaBgpVrf = _currentAristaBgpProcess.getDefaultVrf();
   }
 
   @Override
   public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    if (_parser.getParser().isAristaBgp()) {
-      _currentAristaBgpProcess = null;
-      _currentAristaBgpVrf = null;
-      return;
-    }
-
-    // hybrid cisco parser
-    popPeer();
+    _currentAristaBgpProcess = null;
+    _currentAristaBgpVrf = null;
   }
 
   @Override
@@ -5061,81 +4987,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitS_banner_asa(S_banner_asaContext ctx) {
-    String bannerType = toBannerType(ctx.banner_header);
-    if (bannerType == null) {
-      warn(ctx, String.format("Unsupported ASA banner header: %s", ctx.banner_header.getText()));
-      return;
-    }
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration
-        .getCf()
-        .getBanners()
-        .compute(bannerType, (k, v) -> v == null ? body : v + "\n" + body);
-  }
-
-  private static @Nullable String toBannerType(Asa_banner_headerContext ctx) {
-    if (ctx.BANNER_ASDM_ASA() != null) {
-      return "asdm";
-    } else if (ctx.BANNER_EXEC_ASA() != null) {
-      return "exec";
-    } else if (ctx.BANNER_LOGIN_ASA() != null) {
-      return "login";
-    } else if (ctx.BANNER_MOTD_ASA() != null) {
-      return "motd";
-    }
-    return null;
-  }
-
-  @Override
-  public void exitS_banner_cadant(S_banner_cadantContext ctx) {
-    String bannerType = ctx.type.getText();
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
-  @Override
   public void exitS_banner_eos(S_banner_eosContext ctx) {
     String bannerType = ctx.type.getText();
     String body = ctx.body != null ? ctx.body.getText() : "";
     _configuration.getCf().getBanners().put(bannerType, body);
   }
 
-  @Override
-  public void exitS_banner_ios(S_banner_iosContext ctx) {
-    String bannerType = toBannerType(ctx.banner_header);
-    if (bannerType == null) {
-      warn(ctx, String.format("Unsupported IOS banner header: %s", ctx.banner_header.getText()));
-      return;
-    }
-    String body = toString(ctx.banner);
-    _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
   private static @Nonnull String toString(Ios_delimited_bannerContext ctx) {
     return ctx.body != null ? ctx.body.getText() : "";
-  }
-
-  private static @Nullable String toBannerType(Ios_banner_headerContext ctx) {
-    if (ctx.BANNER_IOS() != null) {
-      return "";
-    } else if (ctx.BANNER_CONFIG_SAVE_IOS() != null) {
-      return "config-save";
-    } else if (ctx.BANNER_EXEC_IOS() != null) {
-      return "exec";
-    } else if (ctx.BANNER_INCOMING_IOS() != null) {
-      return "incoming";
-    } else if (ctx.BANNER_LOGIN_IOS() != null) {
-      return "login";
-    } else if (ctx.BANNER_MOTD_IOS() != null) {
-      return "motd";
-    } else if (ctx.BANNER_PROMPT_TIMEOUT_IOS() != null) {
-      return "prompt-timeout";
-    } else if (ctx.BANNER_SLIP_PPP_IOS() != null) {
-      return "slip-ppp";
-    } else {
-      return null;
-    }
   }
 
   @Override
@@ -9611,114 +9470,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (!outside.equals(ANY_INTERFACE)) {
       _configuration.referenceStructure(INTERFACE, outside, mappedStructure, line);
     }
-  }
-
-  @Override
-  public void exitS_asa_twice_nat(S_asa_twice_natContext ctx) {
-    CiscoAsaNat nat = new CiscoAsaNat();
-
-    natInterfaces(nat, ctx.asa_nat_ifaces(), TWICE_NAT_REAL_INTERFACE, TWICE_NAT_MAPPED_INTERFACE);
-
-    Asa_twice_nat_dynamicContext dynamicContext = ctx.asa_twice_nat_dynamic();
-    Asa_twice_nat_staticContext staticContext = ctx.asa_twice_nat_static();
-    String realSource;
-    String mappedSource;
-    if (dynamicContext != null) {
-      if (dynamicContext.mapped_src_iface != null) {
-        // Match outside/mapped interface. Interface must be specified.
-        // This can be in lieu of or in addition to a mapped source object.
-        todo(ctx);
-        return;
-      }
-      if (dynamicContext.asa_nat_pat_pool() != null) {
-        // PAT pool
-        todo(ctx);
-        return;
-      }
-
-      nat.setDynamic(true);
-      realSource = dynamicContext.real_src.getText();
-      mappedSource = dynamicContext.mapped_src.getText();
-    } else {
-      nat.setDynamic(false);
-      realSource = staticContext.real_src.getText();
-      mappedSource = staticContext.mapped_src.getText();
-    }
-
-    int line = ctx.getStart().getLine();
-    AccessListAddressSpecifier addressSpecifier =
-        referenceNetworkObjectOrGroup(
-            realSource,
-            TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT,
-            TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP,
-            line);
-    nat.setRealSource(addressSpecifier);
-
-    addressSpecifier =
-        referenceNetworkObjectOrGroup(
-            mappedSource,
-            TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-            TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-            line);
-    nat.setMappedSource(addressSpecifier);
-
-    // Optional static destination NAT
-    Asa_twice_nat_destinationContext destinationContext = ctx.asa_twice_nat_destination();
-    if (destinationContext != null) {
-      nat.setTwice(true);
-      if (destinationContext.mapped_dst.getText() != null) {
-        addressSpecifier =
-            referenceNetworkObjectOrGroup(
-                destinationContext.mapped_dst.getText(),
-                TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
-                TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
-                line);
-        nat.setMappedDestination(addressSpecifier);
-      } else {
-        // Match inside/real interface. Interface must be specified.
-        todo(ctx);
-        return;
-      }
-      addressSpecifier =
-          referenceNetworkObjectOrGroup(
-              destinationContext.real_dst.getText(),
-              TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
-              TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
-              line);
-      nat.setRealDestination(addressSpecifier);
-    } else {
-      nat.setTwice(false);
-    }
-
-    // Optional service object specifiers
-    if (ctx.asa_twice_nat_service() != null) {
-      // Specifies static port translation for static NAT or dynamic source + static destination NAT
-      todo(ctx);
-      return;
-    }
-
-    // Choose section for this NAT
-    boolean afterAuto = ctx.AFTER_AUTO() != null;
-    if (afterAuto) {
-      nat.setSection(CiscoAsaNat.Section.AFTER);
-    } else {
-      nat.setSection(CiscoAsaNat.Section.BEFORE);
-    }
-
-    // Check options. INACTIVE means rule is ignored. Other options are not handled.
-    for (Asa_nat_optional_argsContext optionCtx : ctx.asa_nat_optional_args()) {
-      if (optionCtx.INACTIVE() != null) {
-        nat.setInactive(true);
-      } else {
-        todo(ctx);
-        return;
-      }
-    }
-
-    // Twice NATs are sorted by section and sequentially
-    nat.setLine(_configuration.getCiscoAsaNats().size() + 1);
-
-    _configuration.getCiscoAsaNats().add(nat);
   }
 
   @Override

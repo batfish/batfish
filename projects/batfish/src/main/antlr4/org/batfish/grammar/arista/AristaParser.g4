@@ -9,50 +9,6 @@ options {
    tokenVocab = AristaLexer;
 }
 
-@members {
-   private boolean _aristaBgp;
-
-   private boolean _eos;
-
-   private boolean _cadant;
-
-   private boolean _multilineBgpNeighbors;
-
-   public boolean isAristaBgp() {
-      return _aristaBgp;
-   }
-
-   public boolean isEos() {
-      return _eos;
-   }
-
-   public void setAristaBgp(boolean b) {
-      _aristaBgp = b;
-   }
-
-   public void setEos(boolean b) {
-      _eos = b;
-   }
-
-   public void setCadant(boolean b) {
-      _cadant = b;
-   }
-
-   public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
-      _multilineBgpNeighbors = multilineBgpNeighbors;
-   }
-
-   @Override
-   public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_eos: %s\n, _aristaBgp: %s\n",
-         _cadant,
-         _multilineBgpNeighbors,
-         _eos,
-         _aristaBgp
-      );
-   }
-}
-
 address_aiimgp_stanza
 :
    ADDRESS null_rest_of_line
@@ -2283,46 +2239,6 @@ s_authentication
    AUTHENTICATION null_rest_of_line
 ;
 
-s_asa_twice_nat
-:
-   NAT asa_nat_ifaces? AFTER_AUTO? SOURCE
-   (
-      asa_twice_nat_dynamic
-      | asa_twice_nat_static
-   )
-   asa_twice_nat_destination?
-   asa_twice_nat_service?
-   asa_nat_optional_args*
-   (
-      description_line
-      | NEWLINE
-   )
-;
-
-s_banner_asa
-:
-  banner_header = asa_banner_header body = BANNER_BODY? NEWLINE
-;
-
-asa_banner_header
-:
-  BANNER_ASDM_ASA
-  | BANNER_EXEC_ASA
-  | BANNER_LOGIN_ASA
-  | BANNER_MOTD_ASA
-;
-
-s_banner_cadant
-:
-  BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
-;
-
-cadant_banner_type
-:
-  LOGIN
-  | MOTD
-;
-
 s_banner_eos
 :
   BANNER type = eos_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_EOS // delimiter includes newline
@@ -2332,23 +2248,6 @@ eos_banner_type
 :
   LOGIN
   | MOTD
-;
-
-s_banner_ios
-:
-  banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
-;
-
-ios_banner_header
-:
-  BANNER_IOS
-  | BANNER_CONFIG_SAVE_IOS
-  | BANNER_EXEC_IOS
-  | BANNER_INCOMING_IOS
-  | BANNER_LOGIN_IOS
-  | BANNER_MOTD_IOS
-  | BANNER_PROMPT_TIMEOUT_IOS
-  | BANNER_SLIP_PPP_IOS
 ;
 
 s_bfd
@@ -3727,12 +3626,8 @@ stanza
    | s_application_var
    | s_archive
    | s_arp_access_list_extended
-   | s_asa_twice_nat
    | s_authentication
-   | s_banner_asa
-   | s_banner_cadant
    | s_banner_eos
-   | s_banner_ios
    | s_bfd
    | s_bfd_template
    | s_cable
@@ -3810,14 +3705,7 @@ stanza
    | s_l2tp_class
    | s_l2vpn
    | s_license
-   |
-   {!_cadant}?
-
-   s_line
-   |
-   {_cadant}?
-
-   s_line_cadant
+   | s_line
    | s_logging
    | s_lpts
    | s_management
@@ -3839,8 +3727,8 @@ stanza
    | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
-   | { _eos }? s_no_vlan_internal_eos
-   | { _eos }? s_no_vlan_eos
+   | s_no_vlan_internal_eos
+   | s_no_vlan_eos
    | s_ntp
    | s_null
    | s_nv
@@ -3893,10 +3781,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | { !_eos && !isAsa() }? s_vlan_cisco
-   | { _eos }? s_vlan_eos
-   | { !_eos && !isAsa() }? s_vlan_internal_cisco
-   | { _eos }? s_vlan_internal_eos
+   | s_vlan_eos
+   | s_vlan_internal_eos
    | s_vlan_name
    | s_voice
    | s_voice_card

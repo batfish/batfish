@@ -1379,66 +1379,6 @@ BANNER
   'banner'
 ;
 
-BANNER_IOS
-:
-  'banner' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_ASDM_ASA
-:
-  'banner' F_Whitespace+ 'asdm' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
-BANNER_CONFIG_SAVE_IOS
-:
-  'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_EXEC_ASA
-:
-  'banner' F_Whitespace+ 'exec' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
-BANNER_EXEC_IOS
-:
-  'banner' F_Whitespace+ 'exec' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_INCOMING_IOS
-:
-  'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_LOGIN_ASA
-:
-  'banner' F_Whitespace+ 'login' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
-BANNER_LOGIN_IOS
-:
-  'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_MOTD_ASA
-:
-  'banner' F_Whitespace+ 'motd' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
-BANNER_MOTD_IOS
-:
-  'banner' F_Whitespace+ 'motd' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_PROMPT_TIMEOUT_IOS
-:
-  'banner' F_Whitespace+ 'prompt-timeout' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_SLIP_PPP_IOS
-:
-  'banner' F_Whitespace+ 'slip-ppp' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
 BASE
 :
    'base'
@@ -6266,7 +6206,7 @@ INTERCEPT
 INTERFACE
 :
    'int' 'erface'?
-   { _enableIpv6Address = false; if (!isAsa() || lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
+   { _enableIpv6Address = false; pushMode(M_Interface);}
 
 ;
 
@@ -7162,14 +7102,7 @@ LOGGING
 
 LOGIN
 :
-  'login'
-  {
-    if (isCadant()) {
-      pushMode(M_BannerCadant);
-    } else if (isEos()) {
-      pushMode(M_BannerEos);
-    }
-  }
+  'login' -> pushMode(M_BannerEos)
 ;
 
 LOGIN_ATTEMPTS
@@ -14282,16 +14215,6 @@ VACANT_MESSAGE
   'vacant-message'
 ;
 
-VACANT_MESSAGE_BANNER_IOS
-:
-  'vacant-message' F_Whitespace+
-  {
-    if (lastTokenType() != NO) {
-      pushMode(M_BannerIosDelimiter);
-    }
-  } -> type(VACANT_MESSAGE)
-;
-
 VACL
 :
    'vacl'
@@ -15131,9 +15054,6 @@ ACL_NUM
 	else if (200 <= val && val <= 299) {
 		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
 	}
-   else if (isFoundry() && 400 <= val && val <= 1399) {
-      _type = ACL_NUM_FOUNDRY_L2;
-   }
 	else if (600 <= val && val <= 699) {
 		_type = ACL_NUM_APPLETALK;
 	}
@@ -15903,12 +15823,7 @@ M_Authentication_DOUBLE_QUOTE
 
 M_Authentication_BANNER
 :
-  'banner' F_Whitespace+
-  {
-    if (isIos()) {
-      mode(M_BannerIosDelimiter);
-    }
-  } -> type ( BANNER )
+  'banner' F_Whitespace+ -> type ( BANNER )
 ;
 
 M_Authentication_ARAP
@@ -16161,52 +16076,6 @@ M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
    '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
-mode M_BannerAsa;
-// Initial whitespace character after banner type should have been consumed if present.
-// Further whitespace is part of body.
-
-M_BannerAsa_BANNER_BODY
-:
-  F_NonNewline+ -> type(BANNER_BODY)
-;
-
-M_BannerAsa_NEWLINE
-:
-  F_Newline+ -> type(NEWLINE), popMode
-;
-
-mode M_BannerCadant;
-
-M_BannerCadant_NEWLINE
-:
-  // Consume single newline. Subsequent newlines are part of banner.
-  F_Newline -> type(NEWLINE), mode(M_BannerCadantText)
-;
-
-M_BannerCadant_WS
-:
-  F_Whitespace+ -> channel(HIDDEN)
-;
-
-mode M_BannerCadantText;
-
-M_BannerCadant_BANNER_DELIMITER_CADANT
-:
-  '/end' F_Newline+ -> type(BANNER_DELIMITER_CADANT), popMode
-;
-
-M_BannerCadant_BODY
-:
-  F_NonNewline* F_Newline+
-  {
-    if (bannerCadantDelimiterFollows()) {
-      setType(BANNER_BODY);
-    } else {
-      more();
-    }
-  }
-;
-
 mode M_BannerEos;
 
 M_BannerEos_NEWLINE
@@ -16237,84 +16106,6 @@ M_BannerEos_BODY
       more();
     }
   }
-;
-
-mode M_BannerIosDelimiter;
-// whitespace should have been consumed before entering this mode
-
-M_BannerIosDelimiter_BANNER_DELIMITER_IOS
-:
-  (
-    '^C'
-    | F_NonWhitespace
-  )
-  {
-    setBannerIosDelimiter();
-  } -> type(BANNER_DELIMITER_IOS), mode(M_BannerIosText)
-;
-
-M_BannerIosDelimiter_NEWLINE
-:
-  // illegal, but pop anyway and let parser deal with it
-  F_Newline+ -> type(NEWLINE), popMode
-;
-
-mode M_BannerIosText;
-
-M_BannerIosText_BANNER_DELIMITER_IOS
-:
-  {bannerIosDelimiterFollows()}?
-
-  .
-  {
-    unsetBannerIosDelimiter();
-  } -> type ( BANNER_DELIMITER_IOS ) , mode ( M_BannerIosCleanup )
-;
-
-M_BannerIosText_BODY
-:
-  .
-  {
-    if (bannerIosDelimiterFollows()) {
-      setType(BANNER_BODY);
-    } else {
-      more();
-    }
-  }
-;
-
-mode M_BannerIosCleanup;
-
-M_BannerIosCleanup_IGNORED
-:
-  F_NonNewline+ -> channel ( HIDDEN )
-;
-
-M_BannerIosCleanup_NEWLINE
-:
-  F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-mode M_CadantSshKey;
-
-M_CadantSshKey_END
-:
-   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode
-;
-
-M_CadantSshKey_LINE
-:
-   F_HexDigit+ F_Newline+
-;
-
-M_CadantSshKey_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-M_CadantSshKey_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE )
 ;
 
 mode M_Certificate;
@@ -16951,11 +16742,6 @@ M_SnmpServerCommunity_CHAR
 ;
 
 mode M_SshKey;
-
-M_SshKey_DSA1024
-:
-   'dsa1024' -> type ( DSA1024 ), mode ( M_CadantSshKey )
-;
 
 M_SshKey_NEWLINE
 :

@@ -1791,13 +1791,7 @@ s_interface
       | MULTIPOINT
       | POINT_TO_POINT
    )?
-   (
-      NEWLINE
-      |
-      {_cadant}?
-
-      NEWLINE?
-   )
+   NEWLINE
    if_inner*
 ;
 

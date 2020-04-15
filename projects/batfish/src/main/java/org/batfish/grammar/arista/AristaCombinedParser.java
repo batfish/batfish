@@ -22,18 +22,6 @@ public class AristaCombinedParser extends BatfishCombinedParser<AristaParser, Ar
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
-    boolean eos = format == ConfigurationFormat.ARISTA;
-    boolean cadant = format == ConfigurationFormat.CADANT;
-    _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _lexer.setCadant(cadant);
-    _lexer.setEos(eos);
-    _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
-    _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _parser.setAristaBgp(format == ConfigurationFormat.ARISTA);
-    _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _parser.setEos(eos);
-    _parser.setCadant(cadant);
-    _parser.setMultilineBgpNeighbors(false);
   }
 
   @Override
