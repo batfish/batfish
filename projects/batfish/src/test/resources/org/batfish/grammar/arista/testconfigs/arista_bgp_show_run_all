@@ -127,7 +127,7 @@ router bgp 64900
    !
    address-family evpn
       bgp additional-paths receive
-      ! TODO neighbor default encapsulation vxlan
+      neighbor default encapsulation vxlan
       ! TODO default neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       ! TODO no neighbor SOME_GROUP route-map in

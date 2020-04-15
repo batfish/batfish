@@ -6,6 +6,13 @@ options {
    tokenVocab = AristaLexer;
 }
 
+eos_neighbor_id
+:
+  v4 = IP_ADDRESS
+  | v6 = IPV6_ADDRESS
+  | pg = variable
+;
+
 router_bgp_stanza
 :
    ROUTER BGP
@@ -134,13 +141,7 @@ eos_rbafipv4ub_route
 
 eos_rbafipv4u_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
 ;
 
 eos_rbafipv4_no
@@ -153,13 +154,7 @@ eos_rbafipv4_no
 
 eos_rbafipv4_no_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_no_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
 
 eos_rbafipv4u_network
@@ -187,13 +182,7 @@ eos_rb_af_ipv6_unicast
 
 eos_rbafipv6u_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
 ;
 
 eos_rb_af_evpn
@@ -231,11 +220,26 @@ eos_rb_af_evpn_neighbor
 :
   NEIGHBOR
   (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
+    eos_rb_af_evpn_neighbor_default
+    | eos_rb_af_evpn_neighbor_nid
   )
-  eos_rb_af_neighbor_common
+;
+
+eos_rb_af_evpn_neighbor_default
+:
+  DEFAULT ENCAPSULATION VXLAN NEWLINE
+;
+
+eos_rb_af_evpn_neighbor_nid
+:
+  nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_graceful_restart
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
 ;
 
 eos_rb_af_evpn_no:
@@ -245,15 +249,10 @@ eos_rb_af_evpn_no:
 
 eos_rb_af_evpn_no_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_no_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
 
+// Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afnc rules.
 eos_rb_af_neighbor_common
 :
   (
@@ -886,12 +885,7 @@ eos_rbino_bgp_default_ipv4_unicast
 
 eos_rbino_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
+  NEIGHBOR nid = eos_neighbor_id
   (
     eos_rbinon_enforce_first_as
     | eos_rbinon_shutdown
