@@ -24,6 +24,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -1725,6 +1726,14 @@ public class AristaGrammarTest {
   public void testParseCvx() {
     parseVendorConfig("arista_cvx");
     // don't crash.
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll() {
+    Configuration c = parseConfig("arista_interface_show_run_all");
+    // Relies on the last line in the interface being this address, and only the last line.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
   }
 
   @Test

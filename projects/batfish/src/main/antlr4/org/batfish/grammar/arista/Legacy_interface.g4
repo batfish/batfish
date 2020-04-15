@@ -180,6 +180,11 @@ if_crypto_map
    CRYPTO MAP name = variable NEWLINE
 ;
 
+if_default_eos
+:
+   DEFAULT null_rest_of_line
+;
+
 if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
@@ -289,7 +294,7 @@ if_ip_inband_access_group
 
 if_ip_igmp
 :
-   NO? IP IGMP
+   IP IGMP
    (
       NEWLINE
       | ifigmp_access_group
@@ -581,33 +586,119 @@ if_eos_mlag
    MLAG id = DEC NEWLINE
 ;
 
+if_evpn_eos
+:
+  EVPN ETHERNET_SEGMENT NEWLINE
+  (
+    if_evpn_no_eos
+  )*
+;
+
+if_evpn_no_eos
+:
+  NO (
+    DESIGNATED_FORWARDER ELECTION HOLD_TIME
+    | IDENTIFIER
+    | REDUNDANCY
+  ) NEWLINE
+;
+
 if_mtu
 :
    MTU mtu_size = DEC NEWLINE
 ;
 
-if_no_bfd
+if_no
 :
-   NO BFD (IPV4 | IPV6)?
-   (
-       AUTHENTICATION
-       | ECHO
-       | ECHO_RX_INTERVAL
-       | INTERVAL
-       | NEIGHBOR SRC_IP src_ip = IP_ADDRESS DEST_IP dst_ip = IP_ADDRESS
-       | NEIGHBOR SRC_IP src_ip6 = IPV6_ADDRESS DEST_IP dst_ip6 = IPV6_ADDRESS
-       | OPTIMIZE SUBINTERFACE
-   ) NEWLINE
+  NO
+  (
+    if_no_bfd
+    | if_no_channel_group_eos
+    | if_no_ip_eos
+    | if_no_link_debounce_eos
+    | if_no_null_eos
+    | if_no_routing_dynamic
+    | if_no_speed_eos
+    | if_no_traffic_loopback_eos
+  )
 ;
 
-if_no_ip_address
+if_no_bfd
 :
-   NO IP ADDRESS NEWLINE
+  BFD (IPV4 | IPV6)?
+  (
+     AUTHENTICATION
+     | ECHO
+     | ECHO_RX_INTERVAL
+     | INTERVAL
+     | NEIGHBOR SRC_IP src_ip = IP_ADDRESS DEST_IP dst_ip = IP_ADDRESS
+     | NEIGHBOR SRC_IP src_ip6 = IPV6_ADDRESS DEST_IP dst_ip6 = IPV6_ADDRESS
+     | OPTIMIZE SUBINTERFACE
+  ) NEWLINE
+;
+
+if_no_channel_group_eos
+:
+  CHANNEL_GROUP NEWLINE
+;
+
+if_no_ip_eos
+:
+  IP
+  (
+    if_no_ip_address_eos
+    | if_no_ip_local_proxy_arp_eos
+    | if_no_ip_null_eos
+  )
+;
+
+if_no_ip_address_eos
+:
+  ADDRESS NEWLINE
+;
+
+if_no_ip_local_proxy_arp_eos
+:
+  LOCAL_PROXY_ARP NEWLINE
+;
+
+if_no_ip_null_eos
+:
+  (
+    ATTACHED_HOSTS
+    | IGMP
+  ) null_rest_of_line
+;
+
+if_no_link_debounce_eos
+:
+  LINK_DEBOUNCE NEWLINE
+;
+
+if_no_null_eos
+:
+  (
+    ERROR_CORRECTION
+    | L2
+    | L2_PROTOCOL
+    | MSRP
+    | MVRP
+  ) null_rest_of_line
 ;
 
 if_no_routing_dynamic
 :
-   NO ROUTING DYNAMIC NEWLINE
+   ROUTING DYNAMIC NEWLINE
+;
+
+if_no_speed_eos
+:
+  SPEED NEWLINE
+;
+
+if_no_traffic_loopback_eos
+:
+  TRAFFIC_LOOPBACK NEWLINE
 ;
 
 if_null_block
@@ -697,15 +788,13 @@ if_null_block
             | CGMP
             | CONTROL_APPS_USE_MGMT_PORT
             | DVMRP
-            |
-            (
-               DIRECTED_BROADCAST
-            )
+            | DIRECTED_BROADCAST
             | FLOW
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
             | MASK_REPLY
+            | MFIB
             | MROUTE_CACHE
             | MTU
             | MULTICAST
@@ -730,13 +819,18 @@ if_null_block
             (
                PIM
                (
-                  BORDER
+                  BIDIRECTIONAL
+                  | BORDER
                   | BORDER_ROUTER
                   | BSR_BORDER
                   | DENSE_MODE
                   | DR_PRIORITY
                   | HELLO_INTERVAL
+                  | JOIN_PRUNE_COUNT
+                  | JOIN_PRUNE_INTERVAL
+                  | NEIGHBOR_FILTER
                   | PASSIVE
+                  | QUERY_COUNT
                   | QUERY_INTERVAL
                   | SNOOPING
                   | SPARSE_DENSE_MODE
@@ -902,10 +996,8 @@ if_null_block
             | BLOCK
             | DOT1Q
             | EMPTY
-            |
-            (
-               MODE PRIVATE_VLAN
-            )
+            | MAC ADDRESS LEARNING
+            | MODE PRIVATE_VLAN
             | MONITOR
             | NONEGOTIATE
             | PORT_SECURITY
@@ -964,6 +1056,11 @@ if_null_inner
       | TRANSMIT
       | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
+;
+
+if_null_eos
+:
+  SERVICE_POLICY null_rest_of_line
 ;
 
 if_null_single
@@ -1150,7 +1247,8 @@ if_st_portfast
 :
    PORTFAST
    (
-      disable = DISABLE
+      auto = AUTO
+      | disable = DISABLE
       | edge = EDGE
       | network = NETWORK
       | trunk = TRUNK
@@ -1573,9 +1671,11 @@ if_inner
    | if_bfd
    | if_channel_group
    | if_crypto_map
+   | if_default_eos
    | if_default_gw
    | if_description
    | if_eos_mlag
+   | if_evpn_eos
    | if_flow_sampler
    | if_ip_proxy_arp
    | if_ip_verify
@@ -1626,9 +1726,7 @@ if_inner
    | if_load_interval
    | if_member_interface
    | if_mtu
-   | if_no_bfd
-   | if_no_ip_address
-   | if_no_routing_dynamic
+   | if_no
    | if_port_security
    | if_private_vlan
    | if_routing_dynamic
@@ -1658,6 +1756,7 @@ if_inner
    | if_vrrpno
    // do not rearrange items below
  
+   | if_null_eos
    | if_null_single
    | if_null_block
 ;
