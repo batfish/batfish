@@ -4,7 +4,7 @@ import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFa
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.arista.AristaParser.Cisco_configurationContext;
+import org.batfish.grammar.arista.AristaParser.Arista_configurationContext;
 
 public class AristaCombinedParser extends BatfishCombinedParser<AristaParser, AristaLexer> {
 
@@ -22,7 +22,7 @@ public class AristaCombinedParser extends BatfishCombinedParser<AristaParser, Ar
   }
 
   @Override
-  public Cisco_configurationContext parse() {
-    return _parser.cisco_configuration();
+  public Arista_configurationContext parse() {
+    return _parser.arista_configuration();
   }
 }

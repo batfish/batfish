@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SubRange;
@@ -193,18 +192,11 @@ public class Interface implements Serializable {
   }
 
   /**
-   * Returns the default {@link SwitchportMode} for the given {@code vendor} to be used when a
-   * switchport is explicitly enabled, ignoring any override of the default mode.
+   * Returns the default {@link SwitchportMode} to be used when a switchport is explicitly enabled,
+   * ignoring any override of the default mode.
    */
-  public static SwitchportMode getUndeclaredDefaultSwitchportMode(ConfigurationFormat vendor) {
-    switch (vendor) {
-      case ARISTA:
-        return SwitchportMode.ACCESS;
-      case CISCO_IOS:
-        return SwitchportMode.DYNAMIC_AUTO;
-      default:
-        return SwitchportMode.ACCESS;
-    }
+  public static SwitchportMode getUndeclaredDefaultSwitchportMode() {
+    return SwitchportMode.ACCESS;
   }
 
   public Interface(String name, AristaConfiguration c) {

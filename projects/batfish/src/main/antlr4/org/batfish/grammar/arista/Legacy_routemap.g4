@@ -1,6 +1,6 @@
-parser grammar Cisco_routemap;
+parser grammar Legacy_routemap;
 
-import Cisco_common;
+import Legacy_common;
 
 options {
    tokenVocab = AristaLexer;

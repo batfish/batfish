@@ -1,6 +1,6 @@
-parser grammar Cisco_snmp;
+parser grammar Legacy_snmp;
 
-import Cisco_common;
+import Legacy_common;
 
 options {
    tokenVocab = AristaLexer;

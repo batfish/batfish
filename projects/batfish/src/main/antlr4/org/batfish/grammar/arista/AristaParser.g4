@@ -1,7 +1,7 @@
 parser grammar AristaParser;
 
 import
-Cisco_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Legacy_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Legacy_aaa, Legacy_acl, Legacy_cable, Legacy_crypto, Legacy_callhome, Legacy_ignored, Legacy_interface, Legacy_isis, Legacy_line, Legacy_logging, Legacy_mpls, Legacy_ntp, Legacy_ospf, Legacy_pim, Legacy_qos, Legacy_rip, Legacy_routemap, Legacy_snmp, Legacy_static, Legacy_zone;
 
 
 options {
@@ -205,7 +205,7 @@ bfd_template_null
   ) null_rest_of_line
 ;
 
-cisco_configuration
+arista_configuration
 :
    NEWLINE?
    (

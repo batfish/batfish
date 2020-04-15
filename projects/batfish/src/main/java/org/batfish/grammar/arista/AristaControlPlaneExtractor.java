@@ -342,6 +342,7 @@ import org.batfish.grammar.arista.AristaParser.Aaa_new_modelContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_actionContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip_rangeContext;
+import org.batfish.grammar.arista.AristaParser.Arista_configurationContext;
 import org.batfish.grammar.arista.AristaParser.As_exprContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_asnContext;
 import org.batfish.grammar.arista.AristaParser.Cd_match_addressContext;
@@ -358,7 +359,6 @@ import org.batfish.grammar.arista.AristaParser.Cipt_modeContext;
 import org.batfish.grammar.arista.AristaParser.Cis_keyContext;
 import org.batfish.grammar.arista.AristaParser.Cis_policyContext;
 import org.batfish.grammar.arista.AristaParser.Cis_profileContext;
-import org.batfish.grammar.arista.AristaParser.Cisco_configurationContext;
 import org.batfish.grammar.arista.AristaParser.Cispol_authenticationContext;
 import org.batfish.grammar.arista.AristaParser.Cispol_encryptionContext;
 import org.batfish.grammar.arista.AristaParser.Cispol_encryption_arubaContext;
@@ -1312,6 +1312,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void enterArista_configuration(Arista_configurationContext ctx) {
+    _configuration = new AristaConfiguration();
+    _configuration.setVendor(_format);
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
   public void enterAaa_accounting(Aaa_accountingContext ctx) {
     if (_configuration.getCf().getAaa().getAccounting() == null) {
       _configuration.getCf().getAaa().setAccounting(new AaaAccounting());
@@ -1575,13 +1582,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     self-reference here */
     _configuration.referenceStructure(
         ISAKMP_PROFILE, ctx.name.getText(), ISAKMP_PROFILE_SELF_REF, ctx.name.start.getLine());
-  }
-
-  @Override
-  public void enterCisco_configuration(Cisco_configurationContext ctx) {
-    _configuration = new AristaConfiguration();
-    _configuration.setVendor(_format);
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -4961,7 +4961,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
           iface.setSwitchportMode(
               (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                  ? Interface.getUndeclaredDefaultSwitchportMode(_configuration.getVendor())
+                  ? Interface.getUndeclaredDefaultSwitchportMode()
                   : defaultSwitchportMode);
         }
       }

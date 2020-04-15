@@ -1,6 +1,6 @@
-parser grammar Cisco_crypto;
+parser grammar Legacy_crypto;
 
-import Cisco_common;
+import Legacy_common;
 
 options {
    tokenVocab = AristaLexer;

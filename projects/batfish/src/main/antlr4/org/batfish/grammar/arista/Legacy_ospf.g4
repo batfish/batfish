@@ -1,6 +1,6 @@
-parser grammar Cisco_ospf;
+parser grammar Legacy_ospf;
 
-import Cisco_common;
+import Legacy_common;
 
 options {
    tokenVocab = AristaLexer;

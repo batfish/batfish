@@ -1546,7 +1546,7 @@
         },
         "configs/arista_bgp" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1875,7 +1875,7 @@
         },
         "configs/arista_misc" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -2098,7 +2098,7 @@
         },
         "configs/arista_nat" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -42753,7 +42753,7 @@
         },
         "configs/eos_mlag" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -42882,7 +42882,7 @@
         },
         "configs/eos_trunk_group" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -76219,13 +76219,13 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 12,
-              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match internal route-map ROUTE_MAP"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
-              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match external route-map UNDEFINED_MAP"
             }
           ]
@@ -76245,13 +76245,13 @@
             {
               "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP",
               "Line" : 9,
-              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255"
             },
             {
               "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP",
               "Line" : 10,
-              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32"
             }
           ]

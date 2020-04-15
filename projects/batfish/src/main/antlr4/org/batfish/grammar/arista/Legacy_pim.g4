@@ -1,6 +1,6 @@
-parser grammar Cisco_pim;
+parser grammar Legacy_pim;
 
-import Cisco_common;
+import Legacy_common;
 
 options {
    tokenVocab = AristaLexer;
