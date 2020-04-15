@@ -8233,11 +8233,6 @@ NAMED_KEY
    'named-key'
 ;
 
-NAMEIF
-:
-   'nameif'
-;
-
 NAMESPACE
 :
    'namespace'
@@ -11165,11 +11160,6 @@ SA_FILTER
    'sa-filter'
 ;
 
-SAME_SECURITY_TRAFFIC
-:
-   'same-security-traffic'
-;
-
 SAMPLER
 :
    'sampler'
@@ -11323,11 +11313,6 @@ SECURITY
 SECURITY_ASSOCIATION
 :
    'security-association'
-;
-
-SECURITY_LEVEL
-:
-   'security-level'
 ;
 
 SELECT
@@ -14888,21 +14873,6 @@ YELLOW
 Z39_50
 :
    'z39-50'
-;
-
-ZONE
-:
-   'zone'
-;
-
-ZONE_MEMBER
-:
-   'zone-member'
-;
-
-ZONE_PAIR
-:
-  'zone-pair'
 ;
 
 /* Other Tokens */

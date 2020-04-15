@@ -586,11 +586,6 @@ if_mtu
    MTU mtu_size = DEC NEWLINE
 ;
 
-if_nameif
-:
-   NAMEIF name = variable NEWLINE
-;
-
 if_no_bfd
 :
    NO BFD (IPV4 | IPV6)?
@@ -610,19 +605,9 @@ if_no_ip_address
    NO IP ADDRESS NEWLINE
 ;
 
-if_no_nameif
-:
-   NO NAMEIF NEWLINE
-;
-
 if_no_routing_dynamic
 :
    NO ROUTING DYNAMIC NEWLINE
-;
-
-if_no_security_level
-:
-   NO SECURITY_LEVEL NEWLINE
 ;
 
 if_null_block
@@ -1352,16 +1337,6 @@ ifvrrpno_preempt
    PREEMPT NEWLINE
 ;
 
-if_zone_member
-:
-   ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
-;
-
-if_security_level
-:
-   SECURITY_LEVEL level = DEC NEWLINE
-;
-
 ifdhcp_null
 :
    (
@@ -1651,12 +1626,9 @@ if_inner
    | if_load_interval
    | if_member_interface
    | if_mtu
-   | if_nameif
    | if_no_bfd
    | if_no_ip_address
-   | if_no_nameif
    | if_no_routing_dynamic
-   | if_no_security_level
    | if_port_security
    | if_private_vlan
    | if_routing_dynamic
@@ -1684,8 +1656,6 @@ if_inner
    | if_vrf_member
    | if_vrrp
    | if_vrrpno
-   | if_zone_member
-   | if_security_level
    // do not rearrange items below
  
    | if_null_single

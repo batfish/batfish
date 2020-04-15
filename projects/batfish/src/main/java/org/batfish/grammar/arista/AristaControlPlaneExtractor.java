@@ -42,12 +42,9 @@ import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX6_LIST;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureType.ROUTE_MAP;
-import static org.batfish.representation.arista.AristaStructureType.SECURITY_ZONE;
-import static org.batfish.representation.arista.AristaStructureType.SECURITY_ZONE_PAIR;
 import static org.batfish.representation.arista.AristaStructureType.SERVICE_CLASS;
 import static org.batfish.representation.arista.AristaStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.arista.AristaStructureType.TRACK;
-import static org.batfish.representation.arista.AristaStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGATE_MATCH_MAP;
@@ -87,8 +84,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL
 import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.arista.AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.FAILOVER_LAN_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.FAILOVER_LINK_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_BFD_TEMPLATE;
@@ -106,8 +101,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_P
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
@@ -172,8 +165,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_M
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_GLOBAL;
-import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
@@ -192,9 +183,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.VXLAN_SOURC
 import static org.batfish.representation.arista.AristaStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.WCCP_SERVICE_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
-import static org.batfish.representation.arista.AristaStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
-import static org.batfish.representation.arista.AristaStructureUsage.ZONE_PAIR_SOURCE_ZONE;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_EXTERNAL;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_INTERNAL;
@@ -530,10 +518,6 @@ import org.batfish.grammar.arista.AristaParser.Extended_access_list_stanzaContex
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_tailContext;
-import org.batfish.grammar.arista.AristaParser.Failover_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Failover_linkContext;
-import org.batfish.grammar.arista.AristaParser.Flan_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Flan_unitContext;
 import org.batfish.grammar.arista.AristaParser.If_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_bfd_templateContext;
@@ -572,9 +556,6 @@ import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
-import org.batfish.grammar.arista.AristaParser.If_nameifContext;
-import org.batfish.grammar.arista.AristaParser.If_no_security_levelContext;
-import org.batfish.grammar.arista.AristaParser.If_security_levelContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
@@ -592,7 +573,6 @@ import org.batfish.grammar.arista.AristaParser.If_vlanContext;
 import org.batfish.grammar.arista.AristaParser.If_vrfContext;
 import org.batfish.grammar.arista.AristaParser.If_vrf_memberContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
-import org.batfish.grammar.arista.AristaParser.If_zone_memberContext;
 import org.batfish.grammar.arista.AristaParser.Ifdhcpr_addressContext;
 import org.batfish.grammar.arista.AristaParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
@@ -762,17 +742,14 @@ import org.batfish.grammar.arista.AristaParser.S_lineContext;
 import org.batfish.grammar.arista.AristaParser.S_loggingContext;
 import org.batfish.grammar.arista.AristaParser.S_mac_access_listContext;
 import org.batfish.grammar.arista.AristaParser.S_mac_access_list_extendedContext;
-import org.batfish.grammar.arista.AristaParser.S_mtuContext;
 import org.batfish.grammar.arista.AristaParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.arista.AristaParser.S_no_access_list_standardContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ospfContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ripContext;
-import org.batfish.grammar.arista.AristaParser.S_same_security_trafficContext;
 import org.batfish.grammar.arista.AristaParser.S_serviceContext;
 import org.batfish.grammar.arista.AristaParser.S_service_policy_globalContext;
-import org.batfish.grammar.arista.AristaParser.S_service_policy_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.S_service_templateContext;
 import org.batfish.grammar.arista.AristaParser.S_snmp_serverContext;
 import org.batfish.grammar.arista.AristaParser.S_sntpContext;
@@ -785,8 +762,6 @@ import org.batfish.grammar.arista.AristaParser.S_usernameContext;
 import org.batfish.grammar.arista.AristaParser.S_vlan_eosContext;
 import org.batfish.grammar.arista.AristaParser.S_vlan_internal_eosContext;
 import org.batfish.grammar.arista.AristaParser.S_vrf_definitionContext;
-import org.batfish.grammar.arista.AristaParser.S_zoneContext;
-import org.batfish.grammar.arista.AristaParser.S_zone_pairContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_blankContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Set_as_path_prepend_rm_stanzaContext;
@@ -847,7 +822,6 @@ import org.batfish.grammar.arista.AristaParser.Vrfc_vniContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
-import org.batfish.grammar.arista.AristaParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
 import org.batfish.representation.arista.AristaConfiguration;
@@ -924,8 +898,6 @@ import org.batfish.representation.arista.RouteMapSetNextHopLine;
 import org.batfish.representation.arista.RouteMapSetNextHopPeerAddress;
 import org.batfish.representation.arista.RouteMapSetOriginTypeLine;
 import org.batfish.representation.arista.RouteMapSetWeightLine;
-import org.batfish.representation.arista.SecurityZone;
-import org.batfish.representation.arista.SecurityZonePair;
 import org.batfish.representation.arista.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.arista.StandardAccessList;
 import org.batfish.representation.arista.StandardAccessListLine;
@@ -1250,8 +1222,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private InspectPolicyMap _currentInspectPolicyMap;
 
   private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
-
-  private SecurityZonePair _currentSecurityZonePair;
 
   private String _currentTrackingGroup;
 
@@ -3655,62 +3625,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitS_zone(S_zoneContext ctx) {
-    String name = ctx.name.getText();
-    if (ctx.SECURITY() != null) {
-      _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
-      _configuration.defineStructure(SECURITY_ZONE, name, ctx);
-    } else {
-      todo(ctx);
-      _configuration.defineStructure(TRAFFIC_ZONE, name, ctx);
-    }
-  }
-
-  @Override
-  public void enterS_zone_pair(S_zone_pairContext ctx) {
-    String name = ctx.name.getText();
-    String srcName = ctx.source.getText();
-    int srcLine = ctx.source.getStart().getLine();
-    _configuration.referenceStructure(SECURITY_ZONE, srcName, ZONE_PAIR_SOURCE_ZONE, srcLine);
-    String dstName = ctx.destination.getText();
-    int dstLine = ctx.destination.getStart().getLine();
-    _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
-    _configuration.defineStructure(SECURITY_ZONE_PAIR, name, ctx);
-    _currentSecurityZonePair =
-        _configuration
-            .getSecurityZonePairs()
-            .computeIfAbsent(dstName, n -> new TreeMap<>())
-            .computeIfAbsent(srcName, n -> new SecurityZonePair(name, srcName, dstName));
-  }
-
-  @Override
-  public void exitS_zone_pair(S_zone_pairContext ctx) {
-    _currentSecurityZonePair = null;
-  }
-
-  @Override
-  public void exitZp_service_policy_inspect(Zp_service_policy_inspectContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        INSPECT_POLICY_MAP, name, ZONE_PAIR_INSPECT_SERVICE_POLICY, line);
-    _currentSecurityZonePair.setInspectPolicyMap(name);
-  }
-
-  @Override
-  public void exitIf_zone_member(If_zone_memberContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    if (ctx.SECURITY() != null) {
-      _configuration.referenceStructure(SECURITY_ZONE, name, INTERFACE_ZONE_MEMBER, line);
-      _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
-    } else {
-      _configuration.referenceStructure(TRAFFIC_ZONE, name, INTERFACE_TRAFFIC_ZONE_MEMBER, line);
-      todo(ctx);
-    }
-  }
-
-  @Override
   public void exitCd_match_address(Cd_match_addressContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -4409,53 +4323,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitFailover_interface(Failover_interfaceContext ctx) {
-    String name = ctx.name.getText();
-    Ip primaryIp = toIp(ctx.pip);
-    Ip primaryMask = toIp(ctx.pmask);
-    Ip standbyIp = toIp(ctx.sip);
-    ConcreteInterfaceAddress primaryAddress =
-        ConcreteInterfaceAddress.create(primaryIp, primaryMask);
-    ConcreteInterfaceAddress standbyAddress =
-        ConcreteInterfaceAddress.create(standbyIp, primaryMask);
-    _configuration.getFailoverPrimaryAddresses().put(name, primaryAddress);
-    _configuration.getFailoverStandbyAddresses().put(name, standbyAddress);
-  }
-
-  @Override
-  public void exitFailover_link(Failover_linkContext ctx) {
-    String alias = ctx.name.getText();
-    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, FAILOVER_LINK_INTERFACE, ctx.iface.getStart().getLine());
-    _configuration.getFailoverInterfaces().put(alias, ifaceName);
-    _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
-    _configuration.setFailoverStatefulSignalingInterface(ifaceName);
-  }
-
-  @Override
-  public void exitFlan_interface(Flan_interfaceContext ctx) {
-    String alias = ctx.name.getText();
-    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, FAILOVER_LAN_INTERFACE, ctx.iface.getStart().getLine());
-    _configuration.getFailoverInterfaces().put(alias, ifaceName);
-    _configuration.setFailoverCommunicationInterface(ifaceName);
-    _configuration.setFailoverCommunicationInterfaceAlias(alias);
-  }
-
-  @Override
-  public void exitFlan_unit(Flan_unitContext ctx) {
-    if (ctx.PRIMARY() != null) {
-      _configuration.setFailoverSecondary(false);
-    } else if (ctx.SECONDARY() != null) {
-      _configuration.setFailoverSecondary(true);
-      _configuration.setHostname(_configuration.getHostname() + "-FAILOVER-SECONDARY");
-    }
-    _configuration.setFailover(true);
-  }
-
-  @Override
   public void exitIf_autostate(If_autostateContext ctx) {
     if (ctx.NO() != null) {
       for (Interface currentInterface : _currentInterfaces) {
@@ -4812,11 +4679,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private static final String TRUST_SECURITY_LEVEL_ALIAS = "inside";
-  private static final int TRUST_SECURITY_LEVEL = 100;
-  private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
-  private static final int NO_TRUST_SECURITY_LEVEL = 0;
-
   @Override
   public void exitIf_member_interface(If_member_interfaceContext ctx) {
     if (_currentInterfaces.size() != 1) {
@@ -4830,61 +4692,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         AristaStructureUsage.INTERFACE_MEMBER_INTERFACE,
         ctx.name.getStart().getLine());
     _currentInterfaces.get(0).getMemberInterfaces().add(member);
-  }
-
-  @Override
-  public void exitIf_nameif(If_nameifContext ctx) {
-    String alias = ctx.name.getText();
-    Map<String, Interface> ifaces = _configuration.getInterfaces();
-    if (ifaces.containsKey(alias)) {
-      warn(ctx, String.format("Interface alias '%s' is already in use.", alias));
-    } else if (_currentInterfaces.size() > 1) {
-      warn(ctx, "Parse assertion failed for _currentInterfaces");
-    } else {
-      // Define the alias as an interface to make ref tracking easier
-      _configuration.defineStructure(INTERFACE, alias, ctx);
-      _configuration.referenceStructure(
-          INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
-      Interface iface = _currentInterfaces.get(0);
-      iface.setDeclaredNames(
-          ImmutableSortedSet.<String>naturalOrder()
-              .addAll(iface.getDeclaredNames())
-              .add(alias)
-              .build());
-      iface.setAlias(alias);
-
-      // Only set level to default if it is not already set
-      if (iface.getSecurityLevel() == null) {
-        switch (alias) {
-          case TRUST_SECURITY_LEVEL_ALIAS:
-            iface.setSecurityLevel(TRUST_SECURITY_LEVEL);
-            break;
-          case NO_TRUST_SECURITY_LEVEL_ALIAS:
-            iface.setSecurityLevel(NO_TRUST_SECURITY_LEVEL);
-            break;
-          default:
-            // don't set a level
-        }
-      }
-    }
-  }
-
-  @Override
-  public void exitIf_no_security_level(If_no_security_levelContext ctx) {
-    if (_currentInterfaces.size() != 1) {
-      warn(ctx, "Security level can only be configured in single-interface context");
-      return;
-    }
-    _currentInterfaces.get(0).setSecurityLevel(0);
-  }
-
-  @Override
-  public void exitIf_security_level(If_security_levelContext ctx) {
-    if (_currentInterfaces.size() != 1) {
-      warn(ctx, "Security level can only be configured in single-interface context");
-      return;
-    }
-    _currentInterfaces.get(0).setSecurityLevel(toInteger(ctx.level));
   }
 
   @Override
@@ -6854,18 +6661,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitS_mtu(S_mtuContext ctx) {
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(ctx, String.format("mtu refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-    iface.setMtu(toInteger(ctx.bytes));
-  }
-
-  @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
     _configuration.getExtendedAcls().remove(name);
@@ -6890,16 +6685,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitS_same_security_traffic(S_same_security_trafficContext ctx) {
-    if (ctx.INTER_INTERFACE() != null) {
-      _configuration.setSameSecurityTrafficInter(true);
-    }
-    if (ctx.INTRA_INTERFACE() != null) {
-      _configuration.setSameSecurityTrafficIntra(true);
-    }
-  }
-
-  @Override
   public void exitS_service(S_serviceContext ctx) {
     List<String> words = ctx.words.stream().map(RuleContext::getText).collect(Collectors.toList());
     boolean enabled = ctx.NO() == null;
@@ -6921,27 +6706,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitS_service_policy_global(S_service_policy_globalContext ctx) {
     _configuration.referenceStructure(
         POLICY_MAP, ctx.name.getText(), SERVICE_POLICY_GLOBAL, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitS_service_policy_interface(S_service_policy_interfaceContext ctx) {
-    _configuration.referenceStructure(
-        POLICY_MAP,
-        ctx.name.getText(),
-        SERVICE_POLICY_INTERFACE_POLICY,
-        ctx.name.getStart().getLine());
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(
-          ctx,
-          String.format("service-policy refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-
-    _configuration.referenceStructure(
-        INTERFACE, iface.getName(), SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -7466,14 +7230,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       return null;
     }
-  }
-
-  @Nullable
-  private Interface getAsaInterfaceByAlias(String alias) {
-    return _configuration.getInterfaces().values().stream()
-        .filter(i -> alias.equals(i.getAlias()))
-        .findFirst()
-        .orElse(null);
   }
 
   private String getCanonicalInterfaceName(String ifaceName) {

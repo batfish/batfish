@@ -1,7 +1,7 @@
 parser grammar AristaParser;
 
 import
-Legacy_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Legacy_aaa, Legacy_acl, Legacy_cable, Legacy_crypto, Legacy_callhome, Legacy_ignored, Legacy_interface, Legacy_isis, Legacy_line, Legacy_logging, Legacy_mpls, Legacy_ntp, Legacy_ospf, Legacy_pim, Legacy_qos, Legacy_rip, Legacy_routemap, Legacy_snmp, Legacy_static, Legacy_zone;
+Legacy_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Legacy_aaa, Legacy_acl, Legacy_cable, Legacy_crypto, Legacy_callhome, Legacy_ignored, Legacy_interface, Legacy_isis, Legacy_line, Legacy_logging, Legacy_mpls, Legacy_ntp, Legacy_ospf, Legacy_pim, Legacy_qos, Legacy_rip, Legacy_routemap, Legacy_snmp, Legacy_static;
 
 
 options {
@@ -583,42 +583,6 @@ event_null
       | EVENT
       | SET
    ) null_rest_of_line
-;
-
-failover_lan
-:
-   LAN failover_lan_tail
-;
-
-failover_lan_tail
-:
-   flan_interface
-   | flan_unit
-;
-
-failover_link
-:
-   LINK name = variable iface = interface_name_unstructured NEWLINE
-;
-
-failover_interface
-:
-   INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY sip
-   = IP_ADDRESS NEWLINE
-;
-
-flan_interface
-:
-   INTERFACE name = variable iface = interface_name_unstructured NEWLINE
-;
-
-flan_unit
-:
-   UNIT
-   (
-      PRIMARY
-      | SECONDARY
-   ) NEWLINE
 ;
 
 flow_null
@@ -2369,19 +2333,6 @@ s_event_monitor
    EVENT_MONITOR NEWLINE
 ;
 
-s_failover
-:
-   FAILOVER s_failover_tail
-;
-
-s_failover_tail
-:
-   NEWLINE
-   | failover_lan
-   | failover_link
-   | failover_interface
-;
-
 s_flow
 :
    FLOW
@@ -2719,11 +2670,6 @@ s_monitor_session
    )*
 ;
 
-s_mtu
-:
-   MTU iface = variable bytes = DEC NEWLINE
-;
-
 s_name
 :
    NAME variable variable null_rest_of_line
@@ -2867,15 +2813,6 @@ s_router_vrrp
    )*
 ;
 
-s_same_security_traffic
-:
-  SAME_SECURITY_TRAFFIC PERMIT
-  (
-     INTER_INTERFACE
-     | INTRA_INTERFACE
-  ) NEWLINE
-;
-
 s_sccp
 :
    NO? SCCP null_rest_of_line
@@ -2895,11 +2832,6 @@ s_service
 s_service_policy_global
 :
    SERVICE_POLICY name = variable GLOBAL NEWLINE
-;
-
-s_service_policy_interface
-:
-   SERVICE_POLICY name = variable INTERFACE iface = interface_name_unstructured NEWLINE
 ;
 
 s_sip_ua
@@ -3517,7 +3449,6 @@ stanza
    | s_event
    | s_event_handler
    | s_event_monitor
-   | s_failover
    | s_flow
    | s_flow_sampler_map
    | s_foundry_mac_access_list
@@ -3571,7 +3502,6 @@ stanza
    | s_mpls_label_range
    | s_mpls_ldp
    | s_mpls_traffic_eng
-   | s_mtu
    | s_name
    | s_netdestination
    | s_netdestination6
@@ -3604,11 +3534,9 @@ stanza
    | s_router_rip
    | s_router_static
    | s_router_vrrp
-   | s_same_security_traffic
    | s_sccp
    | s_service
    | s_service_policy_global
-   | s_service_policy_interface
    | s_service_template
    | s_sip_ua
    | s_snmp_server
@@ -3647,8 +3575,6 @@ stanza
    | s_wlan
    | s_wsma
    | s_xconnect_logging
-   | s_zone
-   | s_zone_pair
    | srlg_stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza

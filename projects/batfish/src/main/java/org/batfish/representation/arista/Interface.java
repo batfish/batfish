@@ -93,8 +93,6 @@ public class Interface implements Serializable {
 
   private boolean _active;
 
-  private String _alias;
-
   @Nullable private IntegerSpace _allowedVlans;
 
   private List<AristaDynamicSourceNat> _aristaNats;
@@ -179,17 +177,9 @@ public class Interface implements Serializable {
 
   private SortedSet<String> _declaredNames;
 
-  private String _securityZone;
-
-  @Nullable private Integer _securityLevel;
-
   private @Nullable Double _speed;
 
   public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
-
-  public String getSecurityZone() {
-    return _securityZone;
-  }
 
   /**
    * Returns the default {@link SwitchportMode} to be used when a switchport is explicitly enabled,
@@ -249,10 +239,6 @@ public class Interface implements Serializable {
 
   public boolean getActive() {
     return _active;
-  }
-
-  public String getAlias() {
-    return _alias;
   }
 
   @Nullable
@@ -439,11 +425,6 @@ public class Interface implements Serializable {
     return _tunnel;
   }
 
-  @Nullable
-  public Integer getSecurityLevel() {
-    return _securityLevel;
-  }
-
   /**
    * Retun the (immutable) set of VLAN trunk groups that this interface belongs to. To add trunk
    * groups, see {@link #addVlanTrunkGroup(String)}
@@ -463,10 +444,6 @@ public class Interface implements Serializable {
 
   public void setActive(boolean active) {
     _active = active;
-  }
-
-  public void setAlias(String alias) {
-    _alias = alias;
   }
 
   public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {
@@ -623,13 +600,5 @@ public class Interface implements Serializable {
 
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
-  }
-
-  public void setSecurityZone(String securityZone) {
-    _securityZone = securityZone;
-  }
-
-  public void setSecurityLevel(@Nullable Integer level) {
-    _securityLevel = level;
   }
 }
