@@ -13,8 +13,6 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(CiscoLexer.NEWLINE, "\n");
 
-  public static final String DEBUG_FLAG_NO_USE_ARISTA_BGP = "noaristabgp";
-
   public CiscoCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
     super(
         CiscoParser.class,
@@ -23,16 +21,12 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
-    boolean eos = format == ConfigurationFormat.ARISTA;
     boolean cadant = format == ConfigurationFormat.CADANT;
     _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _lexer.setCadant(cadant);
-    _lexer.setEos(eos);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _parser.setAristaBgp(settings.getUseAristaBgp() && format == ConfigurationFormat.ARISTA);
     _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _parser.setEos(eos);
     _parser.setCadant(cadant);
     _parser.setMultilineBgpNeighbors(false);
   }

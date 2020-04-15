@@ -27,6 +27,8 @@ import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
+import org.batfish.grammar.arista.AristaCombinedParser;
+import org.batfish.grammar.arista.AristaControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
@@ -154,6 +156,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       switch (format) {
         case ARISTA:
+          {
+            AristaCombinedParser aristaParser = new AristaCombinedParser(_fileText, _settings);
+            combinedParser = aristaParser;
+            extractor = new AristaControlPlaneExtractor(_fileText, aristaParser, format, _warnings);
+            break;
+          }
+
         case ARUBAOS:
         case CADANT:
         case CISCO_ASA:

@@ -718,6 +718,17 @@
         }
       },
       {
+        "Structure_Type" : "extended ipv4 access-list",
+        "Structure_Name" : "abc",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            4,
+            5
+          ]
+        }
+      },
+      {
         "Structure_Type" : "bgp peer-group",
         "Structure_Name" : "8075-CORE",
         "Source_Lines" : {
@@ -3905,10 +3916,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 263 results",
+      "notes" : "Found 264 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 263
+      "numResults" : 264
     }
   }
 ]

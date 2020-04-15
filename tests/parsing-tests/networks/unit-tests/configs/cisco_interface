@@ -88,11 +88,8 @@ interface Ethernet0
  ip igmp query-timeout 255
  ip igmp robustness-variable 2
  ip multicast boundary 1
- ip nat destination static 1.2.3.4 access-list mynatacl 2.3.4.5
  ip nat inside
  ip nat outside
- ip nat source dynamic access-list def overload
- ip nat source dynamic access-list abc pool beeble
  ip nbar protocol-discovery
  ip nhrp map 130.59.254.2 130.59.32.21
  ip ospf 1 area 0
@@ -321,13 +318,6 @@ interface tunnel0
  tunnel source Ethernet0
  tunnel source dynamic
 interface Vlan111
-!
-interface Vxlan1
- vxlan source-interface Loopback1
- vxlan udp-port 1234
- vxlan vlan 123 vni 456
- vxlan vlan 123 flood vtep 1.0.0.1 2.0.0.1 3.0.0.1
-!
 !
 interface vlan1
 !
