@@ -606,8 +606,10 @@ import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
+import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
@@ -3148,11 +3150,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIf_spanning_tree(If_spanning_treeContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
-  @Override
   public void enterIf_vrrp(If_vrrpContext ctx) {
     _currentVrrpGroupNum = toInteger(ctx.groupnum);
   }
@@ -4661,11 +4658,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_autostate(If_autostateContext ctx) {
-    if (ctx.NO() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setAutoState(false);
-      }
-    }
+    _currentInterfaces.forEach(currentInterface -> currentInterface.setAutoState(true));
   }
 
   @Override
@@ -5027,6 +5020,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIf_no_autostate(If_no_autostateContext ctx) {
+    _currentInterfaces.forEach(currentInterface -> currentInterface.setAutoState(false));
+  }
+
+  @Override
   public void exitIf_no_channel_group_eos(If_no_channel_group_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setChannelGroup(null));
   }
@@ -5034,6 +5032,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_no_speed_eos(If_no_speed_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setSpeed(null));
+  }
+
+  @Override
+  public void exitIf_no_st_portfast(If_no_st_portfastContext ctx) {
+    _currentInterfaces.forEach(i -> i.setSpanningTreePortfast(false));
   }
 
   @Override
@@ -5087,12 +5090,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_st_portfast(If_st_portfastContext ctx) {
-    if (!_no) {
-      boolean spanningTreePortfast = ctx.disable == null;
-      for (Interface iface : _currentInterfaces) {
-        iface.setSpanningTreePortfast(spanningTreePortfast);
-      }
-    }
+    boolean spanningTreePortfast = ctx.disable == null;
+    _currentInterfaces.forEach(i -> i.setSpanningTreePortfast(spanningTreePortfast));
   }
 
   @Override

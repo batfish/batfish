@@ -94,7 +94,7 @@ eos_vxif_vxlan_vrf
 
 if_autostate
 :
-   NO? AUTOSTATE NEWLINE
+   AUTOSTATE NEWLINE
 ;
 
 if_bandwidth
@@ -665,15 +665,22 @@ if_no
 :
   NO
   (
-    if_no_bfd
+    if_no_autostate
+    | if_no_bfd
     | if_no_channel_group_eos
     | if_no_ip_eos
     | if_no_link_debounce_eos
     | if_no_null_eos
     | if_no_routing_dynamic
+    | if_no_spanning_tree
     | if_no_speed_eos
     | if_no_traffic_loopback_eos
   )
+;
+
+if_no_autostate
+:
+  AUTOSTATE NEWLINE
 ;
 
 if_no_bfd
@@ -742,6 +749,38 @@ if_no_null_eos
 if_no_routing_dynamic
 :
    ROUTING DYNAMIC NEWLINE
+;
+
+if_no_spanning_tree
+:
+   SPANNING_TREE
+   (
+      if_no_st_null
+      | if_no_st_portfast
+   )
+;
+
+if_no_st_null
+:
+   (
+      BPDUFILTER
+      | BPDUGUARD
+      | COST
+      | GUARD
+      | LINK_TYPE
+      | MST
+      | PORT
+      | PORT_PRIORITY
+      | PRIORITY
+      | PROTECT
+      | RSTP
+      | VLAN
+   ) null_rest_of_line
+;
+
+if_no_st_portfast
+:
+   PORTFAST NEWLINE
 ;
 
 if_no_speed_eos
@@ -1164,7 +1203,7 @@ if_si_inner
     if_si_bridge_domain
     | if_si_encapsulation
     | if_si_l2protocol
-    | if_si_no_bridge_domain
+    | if_si_no
     | if_si_rewrite
     | if_si_service_policy
 ;
@@ -1176,7 +1215,7 @@ if_si_bridge_domain
 
 if_si_encapsulation
 :
-    NO? ENCAPSULATION null_rest_of_line
+    ENCAPSULATION null_rest_of_line
 ;
 
 if_si_l2protocol
@@ -1184,9 +1223,23 @@ if_si_l2protocol
     L2PROTOCOL TUNNEL? (DROP | FORWARD | PEER)? (CDP | DOT1X | DTP | LACP | PAGP | STP | VTP)? NEWLINE
 ;
 
+if_si_no
+:
+  NO
+  (
+    if_si_no_bridge_domain
+    | if_si_no_encapsulation
+  )
+;
+
 if_si_no_bridge_domain
 :
-    NO BRIDGE_DOMAIN id = DEC NEWLINE
+    BRIDGE_DOMAIN id = DEC NEWLINE
+;
+
+if_si_no_encapsulation
+:
+    ENCAPSULATION null_rest_of_line
 ;
 
 if_si_rewrite
@@ -1201,7 +1254,7 @@ if_si_service_policy
 
 if_spanning_tree
 :
-   NO? SPANNING_TREE
+   SPANNING_TREE
    (
       if_st_null
       | if_st_portfast
