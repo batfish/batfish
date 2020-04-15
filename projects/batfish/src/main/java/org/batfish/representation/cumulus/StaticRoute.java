@@ -2,11 +2,12 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_STATIC_ROUTE_METRIC;
-import static org.batfish.representation.cumulus.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.representation.cumulus.Interface.NULL_INTERFACE_PATTERN;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -67,11 +68,20 @@ public class StaticRoute implements Serializable {
         .setNetwork(_network)
         .setNextHopIp(_nextHopIp)
         .setNextHopInterface(
-            // canonicalize null interface name if needed
-            NULL_INTERFACE_NAME.equalsIgnoreCase(_nextHopInterface)
-                ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
-                : _nextHopInterface)
+            _nextHopInterface != null ? CanonicalizeInterfaceName(_nextHopInterface) : null)
         .build();
+  }
+
+  /**
+   * Canonicalizes the many FRR discard interface names into just the standard one
+   * supported by the Batfish VI model - "null_interface"
+   */
+  public String CanonicalizeInterfaceName(String nextHopInterface) {
+    Matcher matcher = NULL_INTERFACE_PATTERN.matcher(nextHopInterface);
+    if (matcher.matches()) {
+      return org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+    }
+    return nextHopInterface;
   }
 
   @Override
