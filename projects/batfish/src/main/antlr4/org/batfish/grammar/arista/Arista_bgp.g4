@@ -91,7 +91,7 @@ eos_rb_af_ipv4_unicast
     | eos_rbafipv4u_default
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
-    | eos_rbafipv4_no
+    | eos_rbafipv4u_no
     | eos_rbafipv4u_network
 //    | eos_rbafipv4u_redistribute
   )*
@@ -158,15 +158,15 @@ eos_rbafipv4u_neighbor
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
 ;
 
-eos_rbafipv4_no
+eos_rbafipv4u_no
 :
   NO
   (
-    eos_rbafipv4_no_neighbor
+    eos_rbafipv4u_no_neighbor
   )
 ;
 
-eos_rbafipv4_no_neighbor
+eos_rbafipv4u_no_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
