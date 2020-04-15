@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -67,33 +66,24 @@ import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.eigrp.EigrpMetric;
-import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
-import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.arista.DistributeList.DistributeListFilterType;
@@ -332,19 +322,6 @@ public class Conversions {
             .map(Conversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(scList.getName(), cllList, false);
-  }
-
-  static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
-    return org.batfish.datamodel.hsrp.HsrpGroup.builder()
-        .setAuthentication(hsrpGroup.getAuthentication())
-        .setHelloTime(hsrpGroup.getHelloTime())
-        .setHoldTime(hsrpGroup.getHoldTime())
-        .setIp(hsrpGroup.getIp())
-        .setGroupNumber(hsrpGroup.getGroupNumber())
-        .setPreempt(hsrpGroup.getPreempt())
-        .setPriority(hsrpGroup.getPriority())
-        .setTrackActions(hsrpGroup.getTrackActions())
-        .build();
   }
 
   static IkePhase1Key toIkePhase1Key(Keyring keyring) {
@@ -798,169 +775,6 @@ public class Conversions {
     return ipsecPhase2Policy;
   }
 
-  @Nullable
-  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
-      EigrpProcess proc, String vrfName, Configuration c, AristaConfiguration oldConfig) {
-    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
-        org.batfish.datamodel.eigrp.EigrpProcess.builder();
-
-    if (proc.getAsn() == null) {
-      oldConfig.getWarnings().redFlag("Invalid EIGRP process");
-      return null;
-    }
-
-    newProcess.setAsNumber(proc.getAsn());
-    newProcess.setMode(proc.getMode());
-
-    // TODO set stub process
-    // newProcess.setStub(proc.isStub())
-
-    // TODO create summary filters
-
-    // TODO originate default route if configured
-
-    Ip routerId = proc.getRouterId();
-    if (routerId == null) {
-      routerId = getHighestIp(oldConfig.getInterfaces());
-      if (routerId == Ip.ZERO) {
-        oldConfig
-            .getWarnings()
-            .redFlag("No candidates for EIGRP (AS " + proc.getAsn() + ") router-id");
-        return null;
-      }
-    }
-    newProcess.setRouterId(routerId);
-
-    /*
-     * Route redistribution modifies the configuration structure, so do this last to avoid having to
-     * clean up configuration if another conversion step fails
-     */
-    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
-    RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
-    c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
-    newProcess.setExportPolicy(eigrpExportPolicyName);
-
-    eigrpExportPolicy
-        .getStatements()
-        .addAll(
-            eigrpRedistributionPoliciesToStatements(
-                proc.getRedistributionPolicies().values(), proc, oldConfig));
-
-    return newProcess.build();
-  }
-
-  /** Creates an {@link If} statement to allow EIGRP routes redistributed from supplied localAsn */
-  @Nonnull
-  private static If ifToAllowEigrpToOwnAsn(long localAsn) {
-    return new If(
-        new Conjunction(
-            ImmutableList.of(
-                new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
-                new MatchProcessAsn(localAsn))),
-        ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-  }
-
-  /**
-   * Converts {@link EigrpRedistributionPolicy}s in an {@link EigrpProcess} to equivalent {@link If}
-   * statements
-   *
-   * @param eigrpRedistributionPolicies {@link EigrpRedistributionPolicy}s of the EIGRP process
-   * @param vsEigrpProc Vendor specific {@link EigrpProcess}
-   * @param vsConfig Vendor specific {@link AristaConfiguration configuration}
-   * @return {@link List} of {@link If} statements
-   */
-  static List<If> eigrpRedistributionPoliciesToStatements(
-      Collection<EigrpRedistributionPolicy> eigrpRedistributionPolicies,
-      EigrpProcess vsEigrpProc,
-      AristaConfiguration vsConfig) {
-    return eigrpRedistributionPolicies.stream()
-        .map(policy -> convertEigrpRedistributionPolicy(policy, vsEigrpProc, vsConfig))
-        .filter(Objects::nonNull)
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  @Nullable
-  private static If convertEigrpRedistributionPolicy(
-      EigrpRedistributionPolicy policy, EigrpProcess proc, AristaConfiguration oldConfig) {
-    RoutingProtocol protocol = policy.getSourceProtocol();
-    // All redistribution must match the specified protocol.
-    Conjunction eigrpExportConditions = new Conjunction();
-    BooleanExpr matchExpr;
-    if (protocol == RoutingProtocol.EIGRP) {
-      matchExpr = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
-
-      Long otherAsn =
-          (Long) policy.getSpecialAttributes().get(EigrpRedistributionPolicy.EIGRP_AS_NUMBER);
-      if (otherAsn == null) {
-        oldConfig
-            .getWarnings()
-            .redFlag(
-                String.format(
-                    "Unable to redistribute %s into EIGRP proc %s - policy has no ASN",
-                    protocol, proc.getAsn()));
-        return null;
-      }
-      eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
-    } else if (protocol == RoutingProtocol.ISIS_ANY) {
-      matchExpr =
-          new MatchProtocol(
-              RoutingProtocol.ISIS_EL1,
-              RoutingProtocol.ISIS_EL2,
-              RoutingProtocol.ISIS_L1,
-              RoutingProtocol.ISIS_L2);
-    } else {
-      matchExpr = new MatchProtocol(protocol);
-    }
-    eigrpExportConditions.getConjuncts().add(matchExpr);
-
-    // Default routes can be redistributed into EIGRP. Don't filter them.
-
-    ImmutableList.Builder<Statement> eigrpExportStatements = ImmutableList.builder();
-
-    // Set the metric
-    // TODO prefer metric from route map
-    // https://github.com/batfish/batfish/issues/2070
-    EigrpMetricValues metric =
-        policy.getMetric() != null
-            ? policy.getMetric()
-            : Optional.ofNullable(proc.getDefaultMetric()).map(EigrpMetric::getValues).orElse(null);
-    if (metric != null) {
-      eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
-    } else if (protocol != RoutingProtocol.EIGRP) {
-      /*
-       * TODO no default metric (and not EIGRP into EIGRP)
-       * 1) connected can use the interface metric
-       * 2) static with next hop interface can use the interface metric
-       * 3) If none of the above, bad configuration
-       */
-      oldConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "Unable to redistribute %s into EIGRP proc %s - no metric",
-                  protocol, proc.getAsn()));
-      return null;
-    }
-
-    String exportRouteMapName = policy.getRouteMap();
-    if (exportRouteMapName != null) {
-      RouteMap exportRouteMap = oldConfig.getRouteMaps().get(exportRouteMapName);
-      if (exportRouteMap != null) {
-        eigrpExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
-      }
-    }
-
-    eigrpExportStatements.add(Statements.ExitAccept.toStaticStatement());
-
-    // Construct a new policy and add it before returning.
-    return new If(
-        "EIGRP export routes for " + protocol.protocolName(),
-        eigrpExportConditions,
-        eigrpExportStatements.build(),
-        ImmutableList.of());
-  }
-
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, AristaConfiguration oldConfig) {
     org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
@@ -1148,95 +962,6 @@ public class Conversions {
         ospfSettings.setInboundDistributeListPolicy(policyName);
       }
     }
-  }
-
-  /**
-   * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
-   * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
-   */
-  static List<If> clearFalseStatementsAndAddMatchOwnAsn(List<If> redistributeIfs, long ownAsn) {
-    List<Statement> emptyFalseStatements = ImmutableList.of();
-    List<If> redistributeIfsWithEmptyFalse =
-        redistributeIfs.stream()
-            .map(
-                redistributionStatement ->
-                    new If(
-                        redistributionStatement.getGuard(),
-                        redistributionStatement.getTrueStatements(),
-                        emptyFalseStatements))
-            .collect(Collectors.toList());
-
-    redistributeIfsWithEmptyFalse.add(ifToAllowEigrpToOwnAsn(ownAsn));
-
-    return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
-  }
-
-  /**
-   * Inserts an {@link If} generated from the provided distributeList to the beginning of
-   * existingStatements and creates a {@link RoutingPolicy} from the result
-   */
-  static RoutingPolicy insertDistributeListFilterAndGetPolicy(
-      @Nonnull Configuration c,
-      @Nonnull AristaConfiguration vsConfig,
-      @Nullable DistributeList distributeList,
-      @Nonnull List<If> existingStatements,
-      @Nonnull String name) {
-    ImmutableList.Builder<Statement> combinedStatments = ImmutableList.builder();
-    if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
-      combinedStatments.add(
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(),
-                  new NamedPrefixSet(distributeList.getFilterName())),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    }
-    combinedStatments.addAll(existingStatements);
-    return RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(name)
-        .setStatements(combinedStatments.build())
-        .build();
-  }
-
-  /**
-   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
-   * Returns false if it refers to an extended access list, which is not supported and also returns
-   * false if the access-list referred by it does not exist.
-   *
-   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
-   * distributeList} is not found to be valid for conversion to routing policy.
-   *
-   * @param c Vendor independent {@link Configuration configuration}
-   * @param distributeList {@link DistributeList distributeList} to be validated
-   * @param vsConfig Vendor specific {@link AristaConfiguration configuration}
-   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
-   *     policy
-   */
-  static boolean sanityCheckEigrpDistributeList(
-      @Nonnull Configuration c,
-      @Nonnull DistributeList distributeList,
-      @Nonnull AristaConfiguration vsConfig) {
-    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-        && vsConfig.getExtendedAcls().containsKey(distributeList.getFilterName())) {
-      vsConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "Extended access lists are not supported in EIGRP distribute-lists: %s",
-                  distributeList.getFilterName()));
-      return false;
-    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
-      // if referred access-list is not defined, all prefixes will be allowed
-      vsConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "distribute-list refers an undefined access-list `%s`, it will not filter anything",
-                  distributeList.getFilterName()));
-      return false;
-    }
-    return true;
   }
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {

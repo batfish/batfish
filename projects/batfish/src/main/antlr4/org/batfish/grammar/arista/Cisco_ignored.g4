@@ -69,7 +69,6 @@ null_block
       | GROUP_POLICY
       | HASH_ALGORITHM
       | HPM
-      | HSRP
       | HW_SWITCH
       | INSTALL
       |

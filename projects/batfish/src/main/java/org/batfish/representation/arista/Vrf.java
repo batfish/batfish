@@ -5,14 +5,12 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public final class Vrf implements Serializable {
-  @Nonnull private final Map<Long, EigrpProcess> _eigrpProcesses;
   @Nullable private String _description;
   @Nullable private IsisProcess _isisProcess;
   @Nonnull private final String _name;
@@ -26,7 +24,6 @@ public final class Vrf implements Serializable {
   @Nullable private Integer _vni;
 
   public Vrf(@Nonnull String name) {
-    _eigrpProcesses = new TreeMap<>();
     _name = name;
     // Ensure that processes are in insertion order.
     _ospfProcesses = new LinkedHashMap<>(0);
@@ -36,11 +33,6 @@ public final class Vrf implements Serializable {
   @Nullable
   public String getDescription() {
     return _description;
-  }
-
-  @Nonnull
-  public Map<Long, EigrpProcess> getEigrpProcesses() {
-    return _eigrpProcesses;
   }
 
   @Nullable

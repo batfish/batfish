@@ -200,66 +200,6 @@ if_flow_sampler
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
 ;
 
-if_hsrp
-:
-   HSRP group = DEC NEWLINE
-   (
-      if_hsrp_ip_address
-      | if_hsrp_null
-      | if_hsrp_preempt
-      | if_hsrp_priority
-      | if_hsrp_track
-   )*
-;
-
-if_hsrp_ip_address
-:
-   IP ip = IP_ADDRESS SECONDARY? NEWLINE
-;
-
-if_hsrp_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | MAC_ADDRESS
-      | NAME
-      | TIMERS
-   ) null_rest_of_line
-;
-
-if_hsrp_preempt
-:
-   NO? PREEMPT null_rest_of_line
-;
-
-if_hsrp_priority
-:
-   NO? PRIORITY value = DEC null_rest_of_line
-;
-
-if_hsrp_track
-:
-   NO? TRACK null_rest_of_line
-;
-
-if_hsrp6
-:
-   HSRP group = DEC IPV6 NEWLINE
-   (
-      if_hsrp6_ip_address
-      | if_hsrp_null
-      | if_hsrp_preempt
-      | if_hsrp_priority
-      | if_hsrp_track
-   )*
-;
-
-if_hsrp6_ip_address
-:
-   IP ip = IPV6_ADDRESS NEWLINE
-;
-
 if_ip_access_group
 :
    (
@@ -319,25 +259,6 @@ if_ip_address_secondary
    ) SECONDARY DHCP_GIADDR? NEWLINE
 ;
 
-if_ip_authentication
-:
-   IP AUTHENTICATION
-   (
-     if_ip_auth_key_chain
-     | if_ip_auth_mode
-   )
-;
-
-if_ip_auth_key_chain
-:
-   KEY_CHAIN EIGRP asn = DEC name = variable_permissive NEWLINE
-;
-
-if_ip_auth_mode
-:
-   MODE EIGRP asn = DEC MD5 NEWLINE
-;
-
 if_ip_dhcp
 :
    NO? IP DHCP
@@ -361,19 +282,9 @@ if_ip_forward
    NO? IP FORWARD NEWLINE
 ;
 
-if_ip_hello_interval
-:
-   IP HELLO_INTERVAL EIGRP asn = DEC interval = DEC NEWLINE
-;
-
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-if_ip_hold_time
-:
-   IP HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
 ;
 
 if_ip_inband_access_group
@@ -472,11 +383,6 @@ if_ip_ospf_shutdown
    NO? IP OSPF SHUTDOWN NEWLINE
 ;
 
-if_ip_passive_interface_eigrp
-:
-   NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
-;
-
 if_ip_pim_neighbor_filter
 :
    IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
@@ -512,16 +418,6 @@ if_ip_sticky_arp
    (NO? IP STICKY_ARP NEWLINE)
    |
    (IP STICKY_ARP IGNORE NEWLINE)
-;
-
-if_ip_summary_address
-:
-   IP SUMMARY_ADDRESS EIGRP asn = DEC
-   (
-      addr = IP_ADDRESS netmask = IP_ADDRESS
-      | prefix = IP_PREFIX
-   )
-   (LEAK_MAP mapname = variable)? NEWLINE
 ;
 
 if_ip_tcp
@@ -804,16 +700,6 @@ if_null_block
       | HARDWARE
       | HISTORY
       | HOLD_QUEUE
-      |
-      (
-         HSRP
-         (
-            BFD
-            | DELAY
-            | USE_BIA
-            | VERSION
-         )
-      )
       | IGNORE
       | INGRESS
       |
@@ -1327,91 +1213,6 @@ if_shutdown
    ) FORCE? LAN? NEWLINE
 ;
 
-if_standby
-:
-  NO? STANDBY
-  (
-    standby_group
-    | standby_version
-  ) NEWLINE
-;
-
-standby_group
-:
-  group = DEC
-  (
-    standby_group_authentication
-    | standby_group_ip
-    | standby_group_preempt
-    | standby_group_priority
-    | standby_group_timers
-    | standby_group_track
-  )
-;
-
-standby_group_authentication
-:
-  AUTHENTICATION auth = variable
-;
-
-standby_group_ip
-:
-  IP ip = IP_ADDRESS
-;
-
-standby_group_preempt
-:
-  PREEMPT standby_group_preempt_delay?
-;
-
-standby_group_preempt_delay
-:
-  DELAY
-  (
-     MINIMUM min_secs = DEC
-     | RELOAD reload_secs = DEC
-     | SYNC sync_secs = DEC
-  )+
-;
-
-standby_group_priority
-:
-  PRIORITY priority = DEC
-;
-
-standby_group_timers
-:
-  TIMERS
-  (
-     MSEC hello_ms = DEC
-     | hello_sec = DEC
-  )
-  (
-     MSEC hold_ms = DEC
-     | hold_sec = DEC
-  )
-;
-
-standby_group_track
-:
-  TRACK group = DEC track_action
-;
-
-track_action
-:
-  track_action_decrement
-;
-
-track_action_decrement
-:
-  DECREMENT subtrahend = DEC
-;
-
-standby_version
-:
-  VERSION version = variable_permissive
-;
-
 if_switchport
 :
    NO? SWITCHPORT NEWLINE
@@ -1807,21 +1608,16 @@ if_inner
    | if_description
    | if_eos_mlag
    | if_flow_sampler
-   | if_hsrp
-   | if_hsrp6
    | if_ip_proxy_arp
    | if_ip_verify
    | if_ip_access_group
    | if_ip_address
    | if_ip_address_dhcp
    | if_ip_address_secondary
-   | if_ip_authentication
    | if_ip_dhcp
    | if_ip_flow_monitor
    | if_ip_forward
-   | if_ip_hello_interval
    | if_ip_helper_address
-   | if_ip_hold_time
    | if_ip_inband_access_group
    | if_ip_igmp
    | if_ip_nat_destination
@@ -1837,14 +1633,12 @@ if_inner
    | if_ip_ospf_network
    | if_ip_ospf_passive_interface
    | if_ip_ospf_shutdown
-   | if_ip_passive_interface_eigrp
    | if_ip_pim_neighbor_filter
    | if_ip_policy
    | if_ip_router_isis
    | if_ip_router_ospf_area
    | if_ip_rtp
    | if_ip_sticky_arp
-   | if_ip_summary_address
    | if_ip_tcp
    | if_ip_virtual_router
    | if_ip_vrf_autoclassify
@@ -1880,7 +1674,6 @@ if_inner
    | if_speed_eos
    | if_speed_ios
    | if_speed_ios_dot11radio
-   | if_standby
    | if_switchport
    | if_switchport_access
    | if_switchport_mode

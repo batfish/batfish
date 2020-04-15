@@ -6,10 +6,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -123,10 +121,6 @@ public class Interface implements Serializable {
 
   private @Nullable Integer _encapsulationVlan;
 
-  private Map<Integer, HsrpGroup> _hsrpGroups;
-
-  private String _hsrpVersion;
-
   private String _incomingFilter;
 
   @Nullable private Long _isisCost;
@@ -197,23 +191,6 @@ public class Interface implements Serializable {
 
   private @Nullable Double _speed;
 
-  /** Returns the default interface delay in picoseconds for the given {@code format}. */
-  public static long getDefaultDelay(String name, ConfigurationFormat format) {
-    Double bandwidth = getDefaultBandwidth(name);
-    if (bandwidth == null || bandwidth == 0D) {
-      return 0xFFFFFFFFL;
-    }
-
-    /*
-     * Delay is only relevant on routers that support EIGRP (Cisco).
-     *
-     * When bandwidth > 1Gb, this formula is used. The interface may report a different value.
-     * For bandwidths < 1Gb, the delay may be interface type-specific.
-     * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
-     */
-    return (long) (1E16 / bandwidth);
-  }
-
   public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
 
   public String getSecurityZone() {
@@ -240,7 +217,6 @@ public class Interface implements Serializable {
     _autoState = true;
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
-    _hsrpGroups = new TreeMap<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _memberInterfaces = new HashSet<>();
     _name = name;
@@ -340,14 +316,6 @@ public class Interface implements Serializable {
 
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
-  }
-
-  public Map<Integer, HsrpGroup> getHsrpGroups() {
-    return _hsrpGroups;
-  }
-
-  public String getHsrpVersion() {
-    return _hsrpVersion;
   }
 
   public String getIncomingFilter() {
@@ -683,10 +651,6 @@ public class Interface implements Serializable {
 
   public void setSecurityZone(String securityZone) {
     _securityZone = securityZone;
-  }
-
-  public void setHsrpVersion(String hsrpVersion) {
-    _hsrpVersion = hsrpVersion;
   }
 
   public void setSecurityLevel(@Nullable Integer level) {

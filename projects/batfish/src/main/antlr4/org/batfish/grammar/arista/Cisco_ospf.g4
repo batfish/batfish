@@ -374,17 +374,6 @@ ro_redistribute_connected
    )* NEWLINE
 ;
 
-ro_redistribute_eigrp
-:
-   REDISTRIBUTE EIGRP tag = DEC
-   (
-      METRIC metric = DEC
-      | METRIC_TYPE type = DEC
-      | ROUTE_MAP map = variable
-      | SUBNETS
-   )* NEWLINE
-;
-
 ro_redistribute_ospf_null
 :
    REDISTRIBUTE OSPF null_rest_of_line
@@ -668,7 +657,6 @@ s_router_ospf
       | ro_passive_interface
       | ro_redistribute_bgp_arista
       | ro_redistribute_connected
-      | ro_redistribute_eigrp
       | ro_redistribute_ospf_null
       | ro_redistribute_rip
       | ro_redistribute_static

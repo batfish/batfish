@@ -87,16 +87,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL
 import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.arista.AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_AF_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_PASSIVE_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.FAILOVER_LAN_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.FAILOVER_LINK_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
@@ -116,8 +106,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_P
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_STANDBY_TRACK;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -156,7 +144,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRI
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.PIM_ACCEPT_REGISTER_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
@@ -293,11 +280,6 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.eigrp.ClassicMetric;
-import org.batfish.datamodel.eigrp.EigrpMetric;
-import org.batfish.datamodel.eigrp.EigrpMetricValues;
-import org.batfish.datamodel.eigrp.EigrpProcessMode;
-import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -317,8 +299,6 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
-import org.batfish.datamodel.tracking.DecrementPriority;
-import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
@@ -434,7 +414,6 @@ import org.batfish.grammar.arista.AristaParser.Dscp_typeContext;
 import org.batfish.grammar.arista.AristaParser.Dt_depi_classContext;
 import org.batfish.grammar.arista.AristaParser.Dt_l2tp_classContext;
 import org.batfish.grammar.arista.AristaParser.Dt_protect_tunnelContext;
-import org.batfish.grammar.arista.AristaParser.Eigrp_metricContext;
 import org.batfish.grammar.arista.AristaParser.Enable_secretContext;
 import org.batfish.grammar.arista.AristaParser.Eos_as_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_as_range_listContext;
@@ -588,7 +567,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_ospf_areaContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_summary_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_verifyContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_vrf_sitemapContext;
@@ -605,7 +583,6 @@ import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_iosContext;
 import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
-import org.batfish.grammar.arista.AristaParser.If_standbyContext;
 import org.batfish.grammar.arista.AristaParser.If_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_modeContext;
@@ -719,30 +696,8 @@ import org.batfish.grammar.arista.AristaParser.PortContext;
 import org.batfish.grammar.arista.AristaParser.Port_specifierContext;
 import org.batfish.grammar.arista.AristaParser.ProtocolContext;
 import org.batfish.grammar.arista.AristaParser.RangeContext;
-import org.batfish.grammar.arista.AristaParser.Re_autonomous_systemContext;
-import org.batfish.grammar.arista.AristaParser.Re_classicContext;
-import org.batfish.grammar.arista.AristaParser.Re_default_metricContext;
-import org.batfish.grammar.arista.AristaParser.Re_distribute_listContext;
-import org.batfish.grammar.arista.AristaParser.Re_eigrp_router_idContext;
-import org.batfish.grammar.arista.AristaParser.Re_networkContext;
-import org.batfish.grammar.arista.AristaParser.Re_passive_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Re_passive_interface_defaultContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_bgpContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_connectedContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_eigrpContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_isisContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_ospfContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_ripContext;
-import org.batfish.grammar.arista.AristaParser.Re_redistribute_staticContext;
-import org.batfish.grammar.arista.AristaParser.Reaf_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Reaf_interface_defaultContext;
-import org.batfish.grammar.arista.AristaParser.Reafi_passive_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Rec_address_familyContext;
-import org.batfish.grammar.arista.AristaParser.Rec_metric_weightsContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ren_address_familyContext;
-import org.batfish.grammar.arista.AristaParser.Ren_metric_weightsContext;
 import org.batfish.grammar.arista.AristaParser.Ro6_distribute_listContext;
 import org.batfish.grammar.arista.AristaParser.Ro_areaContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_filterlistContext;
@@ -761,7 +716,6 @@ import org.batfish.grammar.arista.AristaParser.Ro_passive_interface_defaultConte
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_bgp_aristaContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_bgp_ciscoContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_connectedContext;
-import org.batfish.grammar.arista.AristaParser.Ro_redistribute_eigrpContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ro_rfc1583_compatibilityContext;
@@ -845,7 +799,6 @@ import org.batfish.grammar.arista.AristaParser.Set_community_list_rm_stanzaConte
 import org.batfish.grammar.arista.AristaParser.Set_community_none_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_community_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_local_preference_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_metric_eigrp_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_metric_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_metric_type_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_next_hop_peer_address_stanzaContext;
@@ -870,14 +823,6 @@ import org.batfish.grammar.arista.AristaParser.Standard_access_list_stanzaContex
 import org.batfish.grammar.arista.AristaParser.Standard_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Standard_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Standard_ipv6_access_list_tailContext;
-import org.batfish.grammar.arista.AristaParser.Standby_groupContext;
-import org.batfish.grammar.arista.AristaParser.Standby_group_authenticationContext;
-import org.batfish.grammar.arista.AristaParser.Standby_group_ipContext;
-import org.batfish.grammar.arista.AristaParser.Standby_group_preemptContext;
-import org.batfish.grammar.arista.AristaParser.Standby_group_priorityContext;
-import org.batfish.grammar.arista.AristaParser.Standby_group_timersContext;
-import org.batfish.grammar.arista.AristaParser.Standby_group_trackContext;
-import org.batfish.grammar.arista.AristaParser.Standby_versionContext;
 import org.batfish.grammar.arista.AristaParser.SubrangeContext;
 import org.batfish.grammar.arista.AristaParser.Summary_address_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Suppressed_iis_stanzaContext;
@@ -885,7 +830,6 @@ import org.batfish.grammar.arista.AristaParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Switchport_trunk_encapsulationContext;
 import org.batfish.grammar.arista.AristaParser.T_serverContext;
 import org.batfish.grammar.arista.AristaParser.T_source_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Track_actionContext;
 import org.batfish.grammar.arista.AristaParser.Track_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Ts_hostContext;
 import org.batfish.grammar.arista.AristaParser.U_passwordContext;
@@ -916,15 +860,12 @@ import org.batfish.representation.arista.CryptoMapEntry;
 import org.batfish.representation.arista.CryptoMapSet;
 import org.batfish.representation.arista.DistributeList;
 import org.batfish.representation.arista.DistributeList.DistributeListFilterType;
-import org.batfish.representation.arista.EigrpProcess;
-import org.batfish.representation.arista.EigrpRedistributionPolicy;
 import org.batfish.representation.arista.ExpandedCommunityList;
 import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.ExtendedAccessList;
 import org.batfish.representation.arista.ExtendedAccessListLine;
 import org.batfish.representation.arista.ExtendedIpv6AccessList;
 import org.batfish.representation.arista.ExtendedIpv6AccessListLine;
-import org.batfish.representation.arista.HsrpGroup;
 import org.batfish.representation.arista.InspectClassMap;
 import org.batfish.representation.arista.InspectClassMapMatch;
 import org.batfish.representation.arista.InspectClassMapMatchAccessGroup;
@@ -980,7 +921,6 @@ import org.batfish.representation.arista.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.arista.RouteMapSetDeleteCommunityLine;
 import org.batfish.representation.arista.RouteMapSetLine;
 import org.batfish.representation.arista.RouteMapSetLocalPreferenceLine;
-import org.batfish.representation.arista.RouteMapSetMetricEigrpLine;
 import org.batfish.representation.arista.RouteMapSetMetricLine;
 import org.batfish.representation.arista.RouteMapSetNextHopLine;
 import org.batfish.representation.arista.RouteMapSetNextHopPeerAddress;
@@ -1229,10 +1169,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private NamedRsaPubKey _currentNamedRsaPubKey;
 
-  @Nullable private String _currentEigrpInterface;
-
-  @Nullable private EigrpProcess _currentEigrpProcess;
-
   private ExpandedCommunityList _currentExpandedCommunityList;
 
   private ExtendedAccessList _currentExtendedAcl;
@@ -1307,8 +1243,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private boolean _no;
 
-  @Nullable private EigrpProcess _parentEigrpProcess;
-
   private final AristaCombinedParser _parser;
 
   private final String _text;
@@ -1322,8 +1256,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
 
   private SecurityZonePair _currentSecurityZonePair;
-
-  private Integer _currentHsrpGroup;
 
   private String _currentTrackingGroup;
 
@@ -1473,38 +1405,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
     }
-  }
-
-  @Override
-  public void enterRec_address_family(Rec_address_familyContext ctx) {
-    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
-    // AS number
-
-    // There may not be an ASN specified here, but it will be specified in this AF context
-    Long asn = ctx.asnum == null ? null : toLong(ctx.asnum);
-
-    EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, ctx.vrf.getText());
-
-    _parentEigrpProcess = _currentEigrpProcess;
-    _currentEigrpProcess = proc;
-  }
-
-  @Override
-  public void enterRen_address_family(Ren_address_familyContext ctx) {
-    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
-    // AS number
-
-    long asn = toLong(ctx.asnum);
-
-    if (ctx.IPV6() != null) {
-      todo(ctx);
-    }
-    if (ctx.MULTICAST() != null) {
-      todo(ctx);
-    }
-
-    String vrfName = ctx.vrf == null ? _currentVrf : ctx.vrf.getText();
-    _currentEigrpProcess = new EigrpProcess(asn, EigrpProcessMode.NAMED, vrfName);
   }
 
   @Override
@@ -2950,118 +2850,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIf_standby(If_standbyContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
-  @Override
-  public void exitIf_standby(If_standbyContext ctx) {
-    _no = false;
-  }
-
-  @Override
-  public void enterStandby_group(Standby_groupContext ctx) {
-    int group = toInteger(ctx.group);
-    _currentHsrpGroup = group;
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new));
-  }
-
-  @Override
-  public void exitStandby_group(Standby_groupContext ctx) {
-    _currentHsrpGroup = null;
-  }
-
-  @Override
-  public void exitStandby_version(Standby_versionContext ctx) {
-    if (!_no) {
-      _currentInterfaces.forEach(i -> i.setHsrpVersion(ctx.version.getText()));
-    } else {
-      _currentInterfaces.forEach(i -> i.setHsrpVersion(null));
-    }
-  }
-
-  @Override
-  public void exitStandby_group_authentication(Standby_group_authenticationContext ctx) {
-    String rawAuthenticationString = ctx.auth.getText();
-    _currentInterfaces.forEach(
-        i ->
-            i.getHsrpGroups()
-                .get(_currentHsrpGroup)
-                .setAuthentication(CommonUtil.sha256Digest(rawAuthenticationString)));
-  }
-
-  @Override
-  public void exitStandby_group_ip(Standby_group_ipContext ctx) {
-    Ip ip = toIp(ctx.ip);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setIp(ip));
-  }
-
-  @Override
-  public void exitStandby_group_preempt(Standby_group_preemptContext ctx) {
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPreempt(!_no));
-  }
-
-  @Override
-  public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
-    int priority =
-        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
-    _currentInterfaces.forEach(i -> i.getHsrpGroups().get(_currentHsrpGroup).setPriority(priority));
-  }
-
-  @Override
-  public void exitStandby_group_timers(Standby_group_timersContext ctx) {
-    int helloTime;
-    int holdTime;
-    if (_no) {
-      helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
-      holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
-    } else {
-      helloTime =
-          ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
-      holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
-    }
-    _currentInterfaces.forEach(
-        i -> {
-          HsrpGroup hsrpGroup = i.getHsrpGroups().get(_currentHsrpGroup);
-          hsrpGroup.setHelloTime(helloTime);
-          hsrpGroup.setHoldTime(holdTime);
-        });
-  }
-
-  @Override
-  public void exitStandby_group_track(Standby_group_trackContext ctx) {
-    String trackingGroup = ctx.group.getText();
-    _configuration.referenceStructure(
-        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.getLine());
-    TrackAction trackAction = toTrackAction(ctx.track_action());
-    if (trackAction == null) {
-      return;
-    }
-    _currentInterfaces.stream()
-        .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
-        .forEach(
-            trackActions -> {
-              if (_no) {
-                // 'no' version of command only operates if rest of line matches existing setting
-                if (trackAction.equals(trackActions.get(trackingGroup))) {
-                  trackActions.remove(trackingGroup);
-                }
-              } else {
-                trackActions.put(trackingGroup, trackAction);
-              }
-            });
-  }
-
-  private @Nullable TrackAction toTrackAction(Track_actionContext ctx) {
-    if (ctx.track_action_decrement() != null) {
-      int subtrahend = toInteger(ctx.track_action_decrement().subtrahend);
-      return new DecrementPriority(subtrahend);
-    } else {
-      return convProblem(TrackAction.class, ctx, null);
-    }
-  }
-
-  @Override
   public void enterIf_vrrp(If_vrrpContext ctx) {
     _currentVrrpGroupNum = toInteger(ctx.groupnum);
   }
@@ -3266,27 +3054,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
     _currentAristaBgpProcess = null;
     _currentAristaBgpVrf = null;
-  }
-
-  @Override
-  public void enterRe_classic(Re_classicContext ctx) {
-    // Create a classic EIGRP process with ASN
-    long asn = toLong(ctx.asnum);
-    _currentEigrpProcess =
-        new EigrpProcess(asn, EigrpProcessMode.CLASSIC, Configuration.DEFAULT_VRF_NAME);
-  }
-
-  @Override
-  public void enterReaf_interface(Reaf_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, EIGRP_AF_INTERFACE, ctx.iname.getStart().getLine());
-    _currentEigrpInterface = ifaceName;
-  }
-
-  @Override
-  public void enterReaf_interface_default(Reaf_interface_defaultContext ctx) {
-    _currentEigrpInterface = "default";
   }
 
   @Override
@@ -4231,46 +3998,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _configuration.referenceStructure(DEPI_TUNNEL, name, DEPI_TUNNEL_PROTECT_TUNNEL, line);
   }
 
-  private void exitEigrpProcess(ParserRuleContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    EigrpProcess proc = _currentEigrpProcess;
-    if (proc.getAsn() == null) {
-      /*
-       * This will happen with the following configuration:
-       *  address-family ... autonomous-system 1
-       *   autonomous-system 2
-       *   no autonomous-system
-       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
-       * process with null ASN.
-       */
-      warn(ctx, "No EIGRP ASN configured");
-      return;
-    }
-    proc.computeNetworks(_configuration.getInterfaces().values());
-
-    // Check for duplicates in this VRF
-    _currentVrf = proc.getVrf();
-    Map<Long, EigrpProcess> eigrpProcesses = currentVrf().getEigrpProcesses();
-    boolean duplicate = eigrpProcesses.containsKey(proc.getAsn());
-    if (duplicate) {
-      warn(ctx, "Duplicate EIGRP router ASN");
-    } else {
-      eigrpProcesses.put(proc.getAsn(), proc);
-    }
-
-    // Pop process if nested
-    _currentEigrpProcess = _parentEigrpProcess;
-    _parentEigrpProcess = null;
-    _currentVrf =
-        _currentEigrpProcess != null
-            ? _currentEigrpProcess.getVrf()
-            : Configuration.DEFAULT_VRF_NAME;
-  }
-
   @Override
   public void exitEnable_secret(Enable_secretContext ctx) {
     String password;
@@ -5042,18 +4769,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       iface.setOspfArea(area);
       iface.setOspfProcess(ospfProcessName);
     }
-  }
-
-  @Override
-  public void exitIf_ip_summary_address(If_ip_summary_addressContext ctx) {
-    if (ctx.LEAK_MAP() != null) {
-      _configuration.referenceStructure(
-          ROUTE_MAP,
-          ctx.mapname.getText(),
-          INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
-          ctx.mapname.getStart().getLine());
-    }
-    todo(ctx);
   }
 
   @Override
@@ -6277,293 +5992,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRe_autonomous_system(Re_autonomous_systemContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-
-    Long asn = (ctx.NO() == null) ? toLong(ctx.asnum) : null;
-    _currentEigrpProcess.setAsn(asn);
-  }
-
-  @Override
-  public void exitRe_default_metric(Re_default_metricContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    if (ctx.NO() == null) {
-      EigrpMetric metric = toEigrpMetric(ctx.metric, _currentEigrpProcess.getMode());
-      _currentEigrpProcess.setDefaultMetric(metric);
-    } else {
-      _currentEigrpProcess.setDefaultMetric(null);
-    }
-  }
-
-  @Override
-  public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    if (ctx.NO() == null) {
-      Ip routerId = toIp(ctx.id);
-      _currentEigrpProcess.setRouterId(routerId);
-    } else {
-      _currentEigrpProcess.setRouterId(null);
-    }
-  }
-
-  @Override
-  public void exitRe_network(Re_networkContext ctx) {
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    // In process context
-    Ip address = toIp(ctx.address);
-    Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
-    _currentEigrpProcess.getWildcardNetworks().add(IpWildcard.ipWithWildcardMask(address, mask));
-  }
-
-  @Override
-  public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    boolean passive = (ctx.NO() == null);
-    String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
-    interfaceName = getCanonicalInterfaceName(interfaceName);
-    _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
-    _configuration.referenceStructure(
-        INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
-  }
-
-  @Override
-  public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    boolean passive = (ctx.NO() == null);
-    _currentEigrpProcess.setPassiveInterfaceDefault(passive);
-  }
-
-  @Override
-  public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-    long as = toAsNum(ctx.asn);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.BGP_AS, as);
-
-    if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      r.setRouteMap(mapname);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_BGP_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-
-    if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      r.setRouteMap(mapname);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-    long asn = toLong(ctx.asn);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.EIGRP_AS_NUMBER, asn);
-
-    if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      r.setRouteMap(mapname);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRe_redistribute_isis(Re_redistribute_isisContext ctx) {
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
-    }
-    _w.addWarning(
-        ctx, getFullText(ctx), _parser, "ISIS redistribution in EIGRP is not implemented");
-  }
-
-  @Override
-  public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-    int procNum = toInteger(ctx.proc);
-    r.getSpecialAttributes().put(EigrpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
-
-    if (ctx.MATCH() != null) {
-      todo(ctx);
-    }
-
-    if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      r.setRouteMap(mapname);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-
-    if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      r.setRouteMap(mapname);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_RIP_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-    EigrpRedistributionPolicy r = new EigrpRedistributionPolicy(sourceProtocol);
-    _currentEigrpProcess.getRedistributionPolicies().put(sourceProtocol, r);
-
-    if (!ctx.METRIC().isEmpty()) {
-      r.setMetric(toEigrpMetricValues(ctx.metric));
-    }
-
-    if (ctx.map != null) {
-      String mapname = ctx.map.getText();
-      r.setRouteMap(mapname);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitReaf_interface(Reaf_interfaceContext ctx) {
-    _currentEigrpInterface = null;
-  }
-
-  @Override
-  public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
-    // In process context
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    // In interface context
-    if (_currentEigrpInterface == null) {
-      warn(ctx, "No EIGRP interface available");
-      return;
-    }
-
-    boolean passive = (ctx.NO() == null);
-    if (_currentEigrpInterface.equals("default")) {
-      _currentEigrpProcess.setPassiveInterfaceDefault(passive);
-    } else {
-      _currentEigrpProcess.getInterfacePassiveStatus().put(_currentEigrpInterface, passive);
-    }
-  }
-
-  @Override
-  public void exitRec_address_family(Rec_address_familyContext ctx) {
-    exitEigrpProcess(ctx);
-  }
-
-  @Override
-  public void exitRec_metric_weights(Rec_metric_weightsContext ctx) {
-    // See https://github.com/batfish/batfish/issues/1946
-    todo(ctx);
-  }
-
-  @Override
-  public void exitRen_address_family(Ren_address_familyContext ctx) {
-    exitEigrpProcess(ctx);
-  }
-
-  @Override
-  public void exitRen_metric_weights(Ren_metric_weightsContext ctx) {
-    // See https://github.com/batfish/batfish/issues/1946
-    todo(ctx);
-  }
-
-  @Override
   public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
     String prefixListName = ctx.name.getText();
     _configuration.getPrefixLists().remove(prefixListName);
@@ -6954,29 +6382,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRe_distribute_list(Re_distribute_listContext ctx) {
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
-    }
-    if (ctx.iname == null) {
-      _w.addWarning(
-          ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
-      return;
-    }
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    String filterName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
-    _currentEigrpProcess
-        .getOutboundInterfaceDistributeLists()
-        .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
-  }
-
-  @Override
   public void exitRo_distribute_list(Ro_distribute_listContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -7146,33 +6551,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRo_redistribute_eigrp(Ro_redistribute_eigrpContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
-    long asn = toLong(ctx.tag);
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.EIGRP_AS_NUMBER, asn);
-    if (ctx.metric != null) {
-      int metric = toInteger(ctx.metric);
-      r.setMetric(metric);
-    }
-    if (ctx.type != null) {
-      int typeInt = toInteger(ctx.type);
-      OspfMetricType type = OspfMetricType.fromInteger(typeInt);
-      r.setOspfMetricType(type);
-    } else {
-      r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      r.setRouteMap(map);
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
   public void exitRo_redistribute_rip(Ro_redistribute_ripContext ctx) {
     todo(ctx);
   }
@@ -7298,11 +6676,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);
-  }
-
-  @Override
-  public void exitRe_classic(Re_classicContext ctx) {
-    exitEigrpProcess(ctx);
   }
 
   @Override
@@ -7736,12 +7109,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     LongExpr localPreference = toLocalPreferenceLongExpr(ctx.pref);
     RouteMapSetLocalPreferenceLine line = new RouteMapSetLocalPreferenceLine(localPreference);
     _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void enterSet_metric_eigrp_rm_stanza(Set_metric_eigrp_rm_stanzaContext ctx) {
-    EigrpMetricValues metric = toEigrpMetricValues(ctx.metric);
-    _currentRouteMapClause.addSetLine(new RouteMapSetMetricEigrpLine(metric));
   }
 
   @Override
@@ -8207,30 +7574,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private EigrpMetricValues toEigrpMetricValues(Eigrp_metricContext ctx) {
-    return EigrpMetricValues.builder()
-        .setBandwidth(toLong(ctx.bw_kbps))
-        // Scale to picoseconds
-        .setDelay(toLong(ctx.delay_10us) * 10_000_000)
-        .build();
-  }
-
-  @Nonnull
-  private EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
-    /*
-     * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
-     * the K constants are configured.
-     * See https://github.com/batfish/batfish/issues/1946
-     */
-    if (mode == EigrpProcessMode.CLASSIC) {
-      return ClassicMetric.builder().setValues(toEigrpMetricValues(ctx)).build();
-    } else if (mode == EigrpProcessMode.NAMED) {
-      return WideMetric.builder().setValues(toEigrpMetricValues(ctx)).build();
-    } else {
-      throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
-    }
-  }
-
   private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
       Ipsec_authenticationContext ctx) {
     if (ctx.ESP_MD5_HMAC() != null || ctx.AH_MD5_HMAC() != null) {
@@ -8453,8 +7796,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else if (ctx.AH() != null || ctx.AHP() != null) {
       // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
       return IpProtocol.AHP;
-    } else if (ctx.EIGRP() != null) {
-      return IpProtocol.EIGRP;
     } else if (ctx.ESP() != null) {
       return IpProtocol.ESP;
     } else if (ctx.GRE() != null) {

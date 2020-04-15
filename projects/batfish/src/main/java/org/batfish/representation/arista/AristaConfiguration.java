@@ -14,13 +14,10 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
-import static org.batfish.representation.arista.Conversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.arista.Conversions.computeDistributeListPolicies;
 import static org.batfish.representation.arista.Conversions.convertCryptoMapSet;
-import static org.batfish.representation.arista.Conversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.arista.Conversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.arista.Conversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.arista.Conversions.insertDistributeListFilterAndGetPolicy;
 import static org.batfish.representation.arista.Conversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.arista.Conversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.arista.Conversions.resolveTunnelIfaceNames;
@@ -79,7 +76,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
@@ -138,12 +134,6 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.BgpConfederation;
-import org.batfish.datamodel.eigrp.ClassicMetric;
-import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
-import org.batfish.datamodel.eigrp.EigrpMetric;
-import org.batfish.datamodel.eigrp.EigrpMetricValues;
-import org.batfish.datamodel.eigrp.EigrpProcessMode;
-import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -1467,10 +1457,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
-    newIface.setHsrpGroups(
-        CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(), Entry::getKey, e -> Conversions.toHsrpGroup(e.getValue())));
-    newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
@@ -1499,61 +1485,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
     allPrefixes.addAll(iface.getSecondaryAddresses());
     newIface.setAllAddresses(allPrefixes.build());
-
-    EigrpProcess eigrpProcess = null;
-    if (iface.getAddress() != null) {
-      for (EigrpProcess process : vrf.getEigrpProcesses().values()) {
-        if (process.getNetworks().contains(iface.getAddress().getPrefix())) {
-          // Found a process on interface
-          if (eigrpProcess != null) {
-            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
-            // interface
-            _w.redFlag("Interface: '" + iface.getName() + "' matches multiple EIGRP processes");
-            break;
-          }
-          eigrpProcess = process;
-        }
-      }
-    }
-    // Let toEigrpProcess handle null asn failure
-    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
-      boolean passive =
-          eigrpProcess
-              .getInterfacePassiveStatus()
-              .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
-
-      List<If> redistributePolicyStatements =
-          eigrpRedistributionPoliciesToStatements(
-              eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
-
-      List<If> redistributeAndAllowEigrpFromSelfAsn =
-          clearFalseStatementsAndAddMatchOwnAsn(
-              redistributePolicyStatements, eigrpProcess.getAsn());
-
-      String policyName =
-          String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName);
-      RoutingPolicy routingPolicy =
-          insertDistributeListFilterAndGetPolicy(
-              c,
-              this,
-              eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName()),
-              redistributeAndAllowEigrpFromSelfAsn,
-              policyName);
-
-      c.getRoutingPolicies().put(policyName, routingPolicy);
-
-      newIface.setEigrp(
-          EigrpInterfaceSettings.builder()
-              .setAsn(eigrpProcess.getAsn())
-              .setEnabled(true)
-              .setExportPolicy(policyName)
-              .setMetric(computeEigrpMetricForInterface(iface, eigrpProcess.getMode()))
-              .setPassive(passive)
-              .build());
-      if (newIface.getEigrp() == null) {
-        _w.redFlag("Interface: '" + iface.getName() + "' failed to set EIGRP settings");
-      }
-    }
 
     boolean level1 = false;
     boolean level2 = false;
@@ -1658,34 +1589,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
 
     return newIface;
-  }
-
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
-    Optional<Double> bw =
-        Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName()))
-            .filter(Objects::nonNull)
-            .findFirst();
-    if (!bw.isPresent()) {
-      _w.redFlag(
-          String.format("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName()));
-    }
-    EigrpMetricValues values =
-        EigrpMetricValues.builder()
-            .setDelay(
-                firstNonNull(iface.getDelay(), Interface.getDefaultDelay(iface.getName(), _vendor)))
-            .setBandwidth(
-                // Scale to kbps
-                // TODO: this value is wrong for port-channels but will prevent crashing
-                bw.orElse(1e12) / 1000)
-            .build();
-    if (mode == EigrpProcessMode.CLASSIC) {
-      return ClassicMetric.builder().setValues(values).build();
-    } else if (mode == EigrpProcessMode.NAMED) {
-      return WideMetric.builder().setValues(values).build();
-    } else {
-      throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
-    }
   }
 
   private void generateAristaDynamicSourceNats(
@@ -1932,11 +1835,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
-    if (protocol == RoutingProtocol.EIGRP) {
-      ospfExportConditions
-          .getConjuncts()
-          .add(new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX));
-    } else if (protocol == RoutingProtocol.ISIS_ANY) {
+    if (protocol == RoutingProtocol.ISIS_ANY) {
       ospfExportConditions
           .getConjuncts()
           .add(
@@ -3004,12 +2903,6 @@ public final class AristaConfiguration extends VendorConfiguration {
                   .map(proc -> toOspfProcess(proc, vrfName, c, this))
                   .filter(Objects::nonNull));
 
-          // convert eigrp processes
-          vrf.getEigrpProcesses().values().stream()
-              .map(proc -> Conversions.toEigrpProcess(proc, vrfName, c, this))
-              .filter(Objects::nonNull)
-              .forEach(newVrf::addEigrpProcess);
-
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
@@ -3139,8 +3032,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureType.INTERFACE,
         AristaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
-        AristaStructureUsage.EIGRP_AF_INTERFACE,
-        AristaStructureUsage.EIGRP_PASSIVE_INTERFACE,
         AristaStructureUsage.FAILOVER_LAN_INTERFACE,
         AristaStructureUsage.FAILOVER_LINK_INTERFACE,
         AristaStructureUsage.INTERFACE_SELF_REF,
@@ -3277,16 +3168,8 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
         AristaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         AristaStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
-        AristaStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
         AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP,
         AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
-        AristaStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
         AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
         AristaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
@@ -3294,7 +3177,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         AristaStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         AristaStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        AristaStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
         AristaStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
         AristaStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
         AristaStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
@@ -3905,21 +3787,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         }
       }
       // TODO: do we need to check Arista bgp policies?
-      // check EIGRP policies
-      // distribute lists
-      if (vrf.getEigrpProcesses().values().stream()
-          .flatMap(
-              eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
-          .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
-        return true;
-      }
-      // EIGRP redistribution policy
-      if (vrf.getEigrpProcesses().values().stream()
-          .map(EigrpProcess::getRedistributionPolicies)
-          .flatMap(redisrPolicies -> redisrPolicies.values().stream())
-          .anyMatch(rm -> containsIpAccessList(aclName, rm.getRouteMap()))) {
-        return true;
-      }
     }
     return false;
   }

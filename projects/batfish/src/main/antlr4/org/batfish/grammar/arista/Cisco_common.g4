@@ -82,11 +82,6 @@ ec_literal
    DEC COLON DEC
 ;
 
-eigrp_metric
-:
-   bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
-;
-
 eos_vlan_id
 :
    vlan_ids += subrange
@@ -462,7 +457,6 @@ protocol
    AH
    | AHP
    | DEC
-   | EIGRP
    | ESP
    | GRE
    | ICMP
@@ -595,11 +589,6 @@ variable_secret
 variable_group_id
 :
     ~( NEWLINE | TCP | TCP_UDP | UDP )+
-;
-
-variable_vlan
-:
-   ~( NEWLINE | ACCESS_MAP | DEC )
 ;
 
 vlan_id

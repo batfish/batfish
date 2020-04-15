@@ -3892,11 +3892,6 @@ EIBGP
    'eibgp'
 ;
 
-EIGRP
-:
-   'eigrp'
-;
-
 ELSE
 :
    'else'
@@ -5543,11 +5538,6 @@ HP_ALARM_MGR
 HPM
 :
    'hpm'
-;
-
-HSRP
-:
-   'hsrp'
 ;
 
 HT_SSID_PROFILE
@@ -16258,11 +16248,6 @@ M_Interface_DEFAULT
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
-;
-
-M_Interface_EIGRP
-:
-   'eigrp' -> type ( EIGRP ) , popMode
 ;
 
 M_Interface_EQ

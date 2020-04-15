@@ -1,7 +1,7 @@
 parser grammar AristaParser;
 
 import
-Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -3119,23 +3119,6 @@ s_username_attributes
    )*
 ;
 
-
-s_vlan_cisco
-:
-   NO? VLAN
-   (
-      ACCESS_MAP
-      |
-      (
-         variable_vlan? DEC
-      )
-   ) null_rest_of_line
-   (
-      vlan_vn_segment
-      | vlan_null
-   )*
-;
-
 s_vlan_eos
 :
    VLAN eos_vlan_id NEWLINE
@@ -3499,7 +3482,6 @@ stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
-   | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
    | rsvp_stanza
@@ -3633,7 +3615,6 @@ stanza
    | s_rf
    | s_role
    | s_route
-   | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
    | s_router_rip
@@ -4088,41 +4069,6 @@ viafv_preempt
 viafv_priority
 :
    PRIORITY priority = DEC NEWLINE
-;
-
-vlan_vn_segment
-:
-   VN_SEGMENT vni = DEC NEWLINE
-;
-
-vlan_null
-:
-   NO?
-   (
-      ACTION
-      | BACKUPCRF
-      | BRIDGE
-      | MATCH
-      | MEDIA
-      | MTU
-      | MULTICAST
-      | NAME
-      | PARENT
-      | PRIORITY
-      | PRIVATE_VLAN
-      | REMOTE_SPAN
-      | ROUTER_INTERFACE
-      | SHUTDOWN
-      | SPANNING_TREE
-      | STATE
-      | STATISTICS
-      | STP
-      | TAGGED
-      | TRUNK
-      | TB_VLAN1
-      | TB_VLAN2
-      | UNTAGGED
-   ) null_rest_of_line
 ;
 
 voice_class

@@ -75,7 +75,6 @@ common_is_stanza
    | net_is_stanza
    | null_is_stanza
    | redistribute_connected_is_stanza
-   | redistribute_eigrp_is_stanza_null
    | redistribute_static_is_stanza
    | passive_interface_default_is_stanza
    | passive_interface_is_stanza
@@ -240,26 +239,6 @@ redistribute_connected_is_stanza
    REDISTRIBUTE CONNECTED
    (
       IP
-      | LEVEL_1
-      | LEVEL_1_2
-      | LEVEL_2
-      |
-      (
-         METRIC metric = DEC
-      )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-      )
-   )* NEWLINE
-;
-
-redistribute_eigrp_is_stanza_null
-:
-   REDISTRIBUTE EIGRP
-   (
-      DEC
-      | IP
       | LEVEL_1
       | LEVEL_1_2
       | LEVEL_2
