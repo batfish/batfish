@@ -5245,11 +5245,6 @@ GUEST_MODE
    'guest-mode'
 ;
 
-GW_TYPE_PREFIX
-:
-   'gw-type-prefix'
-;
-
 H225
 :
    'h225'
@@ -7140,11 +7135,6 @@ LPTS
 LRE
 :
    'lre'
-;
-
-LRQ
-:
-   'lrq'
 ;
 
 LSP_GEN_INTERVAL

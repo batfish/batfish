@@ -629,16 +629,6 @@ gae_null
    ) null_rest_of_line
 ;
 
-gk_null
-:
-   NO?
-   (
-      GW_TYPE_PREFIX
-      | LRQ
-      | SHUTDOWN
-   ) null_rest_of_line
-;
-
 gpsec_null
 :
    NO?
