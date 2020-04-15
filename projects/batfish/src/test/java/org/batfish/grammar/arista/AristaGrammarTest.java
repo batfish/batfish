@@ -1731,7 +1731,7 @@ public class AristaGrammarTest {
   @Test
   public void testParseInterfaceShowRunAll() {
     Configuration c = parseConfig("arista_interface_show_run_all");
-    // Relies on the last line in the interface being this address, and only the last line.
+    // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
   }
