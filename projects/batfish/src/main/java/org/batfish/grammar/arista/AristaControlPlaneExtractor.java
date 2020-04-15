@@ -444,6 +444,8 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_additional_pathsContex
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_activateContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_next_hop_unchangedContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_maximum_pathsContext;
@@ -2035,11 +2037,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setActivate(false);
-  }
-
-  @Override
   public void exitEos_rbafnc_activate(Eos_rbafnc_activateContext ctx) {
     _currentAristaBgpNeighborAddressFamily.setActivate(true);
   }
@@ -2101,7 +2098,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setDefaultActivate(false);
+    _currentAristaBgpNeighborAddressFamily.setActivate(false);
+  }
+
+  @Override
+  public void exitEos_rbafnonc_next_hop_unchanged(Eos_rbafnonc_next_hop_unchangedContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setNextHopUnchanged(false);
+  }
+
+  @Override
+  public void exitEos_rbafnonc_route_map(Eos_rbafnonc_route_mapContext ctx) {
+    if (ctx.IN() != null) {
+      _currentAristaBgpNeighborAddressFamily.setRouteMapIn(null);
+    } else {
+      assert ctx.OUT() != null;
+      _currentAristaBgpNeighborAddressFamily.setRouteMapOut(null);
+    }
   }
 
   @Override

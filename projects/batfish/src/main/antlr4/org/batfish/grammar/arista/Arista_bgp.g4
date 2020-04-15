@@ -277,7 +277,12 @@ eos_rb_af_evpn_no:
 
 eos_rb_af_evpn_no_neighbor
 :
-  NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.
@@ -339,14 +344,27 @@ eos_rbafnc_route_map
   ROUTE_MAP name = variable (IN | OUT) NEWLINE
 ;
 
+// Common to ipv4/ipv6 unicast. Other address families should just use the rbafnonc rules.
 eos_rb_af_no_neighbor_common
 :
   eos_rbafnonc_activate
+  | eos_rbafnonc_next_hop_unchanged
+  | eos_rbafnonc_route_map
 ;
 
 eos_rbafnonc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnonc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnonc_route_map
+:
+  ROUTE_MAP (IN | OUT) NEWLINE
 ;
 
 eos_rb_inner
