@@ -2051,7 +2051,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.SEND() != null) {
       addPaths.setSend(SendType.ANY);
     }
-    _currentAristaBgpNeighborAddressFamily.setAdditionalPaths(addPaths);
   }
 
   @Override

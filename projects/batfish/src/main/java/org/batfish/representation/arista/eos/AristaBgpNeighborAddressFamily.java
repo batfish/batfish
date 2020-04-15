@@ -37,10 +37,6 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     return _additionalPaths;
   }
 
-  public void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
-    _additionalPaths = additionalPaths;
-  }
-
   @Nullable
   public Boolean getNextHopUnchanged() {
     return _nextHopUnchanged;
