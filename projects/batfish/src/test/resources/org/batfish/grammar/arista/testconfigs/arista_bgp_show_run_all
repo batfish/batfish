@@ -133,7 +133,7 @@ router bgp 64900
       no neighbor SOME_GROUP route-map in
       no neighbor SOME_GROUP route-map out
       neighbor SOME_GROUP next-hop-unchanged
-      ! TODO default neighbor 192.0.2.7 activate
+      default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map EVPN_IN in
    !
    ! TODO address-family ipv4
