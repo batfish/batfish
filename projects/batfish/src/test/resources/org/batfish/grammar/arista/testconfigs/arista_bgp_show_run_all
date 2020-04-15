@@ -136,14 +136,14 @@ router bgp 64900
       default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map EVPN_IN in
    !
-   ! TODO address-family ipv4
+   address-family ipv4
       ! TODO no bgp additional-paths install
       ! TODO no bgp next-hop address-family ipv6
       ! TODO bgp additional-paths receive
       ! TODO no bgp additional-paths send any
       ! TODO no bgp route install-map
-      ! TODO neighbor SOME_GROUP activate
-      ! TODO neighbor SOME_GROUP additional-paths receive
+      neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
       ! TODO no neighbor SOME_GROUP route-map in
       ! TODO no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
@@ -152,7 +152,8 @@ router bgp 64900
       ! TODO no neighbor SOME_GROUP additional-paths send any
       ! TODO no neighbor SOME_GROUP next-hop address-family ipv6
       ! TODO no neighbor SOME_GROUP next-hop-unchanged
-      ! TODO default neighbor 192.0.2.7 activate
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV4_IN in
    !
    ! TODO address-family ipv4 labeled-unicast
       ! TODO bgp additional-paths receive
