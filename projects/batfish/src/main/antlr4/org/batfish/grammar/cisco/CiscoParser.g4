@@ -3385,7 +3385,7 @@ s_vpn_dialer
 s_vrf_definition
 :
    // DEFINITION is for IOS
-   VRF DEFINITION name = variable NEWLINE
+   VRF DEFINITION? name = variable NEWLINE
    (
       vrfd_address_family
       | vrfd_description
