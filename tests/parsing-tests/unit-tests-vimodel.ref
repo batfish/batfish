@@ -1239,7 +1239,7 @@
               },
               "noc" : {
                 "name" : "noc",
-                "password" : "bee05f48f9aed7d383bf9b82553b31b06fc417df4ac06a02120c51271d396453"
+                "password" : "57eaabe63a5726f36e16ec9ba5aba7bd944d511a2c2226c131fb3aade3671252"
               }
             }
           }
@@ -9091,27 +9091,6 @@
               "helloMultiplier" : 0,
               "networkType" : "BROADCAST",
               "passive" : false
-            },
-            "outgoingTransformation" : {
-              "guard" : {
-                "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                "aclName" : "def"
-              },
-              "transformationSteps" : [
-                {
-                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
-                  "ipField" : "SOURCE",
-                  "ipRanges" : [
-                    {
-                      "lowerEndpoint" : "1.2.3.4",
-                      "lowerBoundType" : "CLOSED",
-                      "upperEndpoint" : "1.2.3.4",
-                      "upperBoundType" : "CLOSED"
-                    }
-                  ],
-                  "transformationType" : "SOURCE_NAT"
-                }
-              ]
             },
             "prefix" : "1.2.3.4/30",
             "proxyArp" : false,
