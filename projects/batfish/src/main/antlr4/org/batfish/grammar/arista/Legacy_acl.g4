@@ -963,7 +963,9 @@ standard_access_list_null_tail
       )? num = DEC
    )?
    (
-      REMARK
+      FRAGMENT_RULES
+      | NO STATISTICS
+      | REMARK
       | STATISTICS
    ) null_rest_of_line
 ;
