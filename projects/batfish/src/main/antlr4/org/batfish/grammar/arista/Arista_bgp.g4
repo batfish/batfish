@@ -891,6 +891,7 @@ eos_rbi_no
   (
     eos_rbino_bgp
     | eos_rbino_neighbor
+    | eos_rbino_redistribute
   )
 ;
 
@@ -957,6 +958,45 @@ eos_rbinon_enforce_first_as
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbino_redistribute
+:
+  REDISTRIBUTE
+  (
+    eos_rbinor_aggregate
+    | eos_rbinor_connected
+    | eos_rbinor_isis
+    //| eos_rbinor_ospf
+    //| eos_rbinor_ospf3
+    | eos_rbinor_rip
+    | eos_rbinor_static
+  )
+;
+
+eos_rbinor_aggregate
+:
+  AGGREGATE NEWLINE
+;
+
+eos_rbinor_connected
+:
+  CONNECTED NEWLINE
+;
+
+eos_rbinor_isis
+:
+  ISIS NEWLINE
+;
+
+eos_rbinor_rip
+:
+  RIP NEWLINE
+;
+
+eos_rbinor_static
+:
+  STATIC NEWLINE
 ;
 
 // Defining a peer group

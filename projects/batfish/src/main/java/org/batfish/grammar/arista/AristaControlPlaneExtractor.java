@@ -496,6 +496,10 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4_unicas
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_connectedContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_isisContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_ripContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_staticContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_connectedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_dynamicContext;
@@ -2493,6 +2497,29 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_shutdown(Eos_rbinon_shutdownContext ctx) {
     _currentAristaBgpNeighbor.setShutdown(false);
+  }
+
+  @Override
+  public void exitEos_rbinor_connected(Eos_rbinor_connectedContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.CONNECTED);
+  }
+
+  @Override
+  public void exitEos_rbinor_isis(Eos_rbinor_isisContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS);
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L1);
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L2);
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L1_L2);
+  }
+
+  @Override
+  public void exitEos_rbinor_rip(Eos_rbinor_ripContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.RIP);
+  }
+
+  @Override
+  public void exitEos_rbinor_static(Eos_rbinor_staticContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.STATIC);
   }
 
   @Override

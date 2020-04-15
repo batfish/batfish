@@ -113,7 +113,7 @@ router bgp 64900
    neighbor 192.0.2.7 description some-desc
    ! TODO bgp redistribute-internal
    redistribute connected route-map REDISTRIBUTE_CONNECTED
-   ! TODO no redistribute isis
+   no redistribute isis
    ! TODO no redistribute ospf match internal
    ! TODO no redistribute ospf match external
    ! TODO no redistribute ospf match nssa-external
@@ -121,8 +121,8 @@ router bgp 64900
    ! TODO no redistribute ospf3 match external
    ! TODO no redistribute ospf3 match nssa-external
    redistribute static route-map REDISTRIBUTE_STATIC
-   ! TODO no redistribute rip
-   ! TODO no redistribute aggregate
+   no redistribute rip
+   no redistribute aggregate
    ! TODO no monitoring port
    !
    address-family evpn
