@@ -41,25 +41,7 @@ public class Interface implements Serializable {
   /** Loopback bandwidth */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
 
-  /** Loopback delay in picoseconds for IOS */
-  private static final long LOOPBACK_IOS_DELAY = (long) 5e9;
-
-  /**
-   * Tunnel bandwidth in bps for IOS (checked in IOS 16.4)
-   *
-   * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
-   */
-  private static final double TUNNEL_IOS_BANDWIDTH = 100E3D;
-
-  /**
-   * Tunnel delay in picoseconds for IOS (checked in IOS 16.4)
-   *
-   * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
-   */
-  private static final long TUNNEL_IOS_DELAY = (long) 5e10;
-
-  public static @Nullable Double getDefaultBandwidth(
-      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+  public static @Nullable Double getDefaultBandwidth(@Nonnull String name) {
     Double defaultSpeed = getDefaultSpeed(name);
     if (defaultSpeed != null) {
       return defaultSpeed;
@@ -73,8 +55,6 @@ public class Interface implements Serializable {
       return null;
     } else if (name.startsWith("Vlan")) {
       return DEFAULT_VLAN_BANDWIDTH;
-    } else if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
-      return TUNNEL_IOS_BANDWIDTH;
     } else {
       // Use default bandwidth for other interface types that have no speed
       return DEFAULT_INTERFACE_BANDWIDTH;
@@ -219,15 +199,7 @@ public class Interface implements Serializable {
 
   /** Returns the default interface delay in picoseconds for the given {@code format}. */
   public static long getDefaultDelay(String name, ConfigurationFormat format) {
-    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
-      // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
-      return LOOPBACK_IOS_DELAY;
-    }
-    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
-      return TUNNEL_IOS_DELAY;
-    }
-
-    Double bandwidth = getDefaultBandwidth(name, format);
+    Double bandwidth = getDefaultBandwidth(name);
     if (bandwidth == null || bandwidth == 0D) {
       return 0xFFFFFFFFL;
     }
@@ -273,23 +245,9 @@ public class Interface implements Serializable {
     _memberInterfaces = new HashSet<>();
     _name = name;
     _secondaryAddresses = new LinkedHashSet<>();
-    ConfigurationFormat vendor = c.getVendor();
-
-    // Proxy-ARP defaults
-    switch (vendor) {
-      case CISCO_ASA:
-      case CISCO_IOS:
-        setProxyArp(true);
-        break;
-
-        // $CASES-OMITTED$
-      default:
-        break;
-    }
 
     // Switchport defaults
-    if (vendor == ConfigurationFormat.ARISTA
-        && (name.startsWith("Ethernet") || name.startsWith("Port-Channel"))) {
+    if (name.startsWith("Ethernet") || name.startsWith("Port-Channel")) {
       SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
       if (defaultSwitchportMode == null) {
         // Arista Ethernet and Port-channel default switchport mode is ACCESS

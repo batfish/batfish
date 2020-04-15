@@ -5,9 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
-import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.BFD_TEMPLATE;
@@ -1664,11 +1661,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
     _currentIsakmpPolicy.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-    if (_format == ARUBAOS) {
-      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
-    } else {
-      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    }
+    _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
     _configuration.defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
@@ -1693,15 +1686,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _configuration = new AristaConfiguration();
     _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    if (_format == CISCO_IOS) {
-      Logging logging = new Logging();
-      logging.setOn(true);
-      _configuration.getCf().setLogging(logging);
-    } else if (_format == CISCO_ASA) {
-      // serial line may not be anywhere in the config so add it here to make sure the serial line
-      // is in the data model
-      _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
-    }
   }
 
   @Override
@@ -4537,9 +4521,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       if (ctx.wildcard != null) {
         // IP and mask
         Ip wildcard = toIp(ctx.wildcard);
-        if (_format == CISCO_ASA) {
-          wildcard = wildcard.inverted();
-        }
         return new WildcardAddressSpecifier(IpWildcard.ipWithWildcardMask(toIp(ctx.ip), wildcard));
       } else {
         // Just IP. Same as if 'host' was specified
@@ -4780,7 +4761,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_channel_group(If_channel_groupContext ctx) {
     int num = toInteger(ctx.num);
-    String name = computeAggregatedInterfaceName(num, _format);
+    String name = computeAggregatedInterfaceName(num);
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
   }
 
@@ -4800,21 +4781,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
   }
 
-  private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
-    switch (format) {
-      case CISCO_ASA:
-      case ARISTA:
-      case FORCE10:
-      case CISCO_IOS:
-        return String.format("Port-Channel%d", num);
-
-      case CISCO_IOS_XR:
-        return String.format("Bundle-Ethernet%d", num);
-
-      default:
-        _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
-        return null;
-    }
+  private @Nullable String computeAggregatedInterfaceName(int num) {
+    return String.format("Port-Channel%d", num);
   }
 
   @Override
@@ -6359,9 +6327,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     // In process context
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
-    if (_format == CISCO_ASA) {
-      mask = mask.inverted();
-    }
     _currentEigrpProcess.getWildcardNetworks().add(IpWildcard.ipWithWildcardMask(address, mask));
   }
 
@@ -6374,9 +6339,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
     boolean passive = (ctx.NO() == null);
     String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
-    if (_format != CISCO_ASA) {
-      interfaceName = getCanonicalInterfaceName(interfaceName);
-    }
+    interfaceName = getCanonicalInterfaceName(interfaceName);
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
@@ -7077,9 +7040,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
     }
-    if (_format == CISCO_ASA) {
-      wildcard = wildcard.inverted();
-    }
     long area;
     if (ctx.area_int != null) {
       area = toLong(ctx.area_int);
@@ -7107,19 +7067,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     boolean passive = ctx.NO() == null;
     OspfProcess proc = _currentOspfProcess;
     proc.setPassiveInterfaceDefault(passive);
-    if (_configuration.getVendor() == CISCO_IOS) {
-      proc.getNonDefaultInterfaces().clear();
-    }
-  }
-
-  private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
-    /*
-     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
-     * ARISTA redistributes all subnets.
-     *
-     * We assume that others use this sane default too. TODO: verify more vendors.
-     */
-    return format != CISCO_IOS;
   }
 
   @Override
@@ -7167,7 +7114,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -7197,7 +7143,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -7225,7 +7170,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
     }
-    r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -7260,7 +7204,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override

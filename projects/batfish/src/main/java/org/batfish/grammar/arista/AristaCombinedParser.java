@@ -1,6 +1,5 @@
 package org.batfish.grammar.arista;
 
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
@@ -12,9 +11,7 @@ public class AristaCombinedParser extends BatfishCombinedParser<AristaParser, Ar
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategyFactory(AristaLexer.NEWLINE, "\n");
 
-  public static final String DEBUG_FLAG_NO_USE_ARISTA_BGP = "noaristabgp";
-
-  public AristaCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
+  public AristaCombinedParser(String input, GrammarSettings settings) {
     super(
         AristaParser.class,
         AristaLexer.class,

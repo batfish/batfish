@@ -1478,7 +1478,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         firstNonNull(
             iface.getBandwidth(),
             newIface.getSpeed(),
-            Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat())));
+            Interface.getDefaultBandwidth(iface.getName())));
     if (iface.getDhcpRelayClient()) {
       newIface.setDhcpRelayAddresses(_dhcpRelayServers);
     } else {
@@ -1663,7 +1663,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   @Nonnull
   private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
     Optional<Double> bw =
-        Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName(), _vendor))
+        Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName()))
             .filter(Objects::nonNull)
             .findFirst();
     if (!bw.isPresent()) {

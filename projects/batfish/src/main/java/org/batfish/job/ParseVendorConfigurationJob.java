@@ -157,8 +157,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       switch (format) {
         case ARISTA:
           {
-            AristaCombinedParser aristaParser =
-                new AristaCombinedParser(_fileText, _settings, format);
+            AristaCombinedParser aristaParser = new AristaCombinedParser(_fileText, _settings);
             combinedParser = aristaParser;
             extractor = new AristaControlPlaneExtractor(_fileText, aristaParser, format, _warnings);
             break;

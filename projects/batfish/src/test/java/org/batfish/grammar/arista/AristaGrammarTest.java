@@ -183,8 +183,7 @@ public class AristaGrammarTest {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    AristaCombinedParser ciscoParser =
-        new AristaCombinedParser(src, settings, ConfigurationFormat.ARISTA);
+    AristaCombinedParser ciscoParser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
         new AristaControlPlaneExtractor(
             src, ciscoParser, ConfigurationFormat.ARISTA, new Warnings());
