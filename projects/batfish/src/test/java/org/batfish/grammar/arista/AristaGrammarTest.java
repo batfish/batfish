@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -31,6 +32,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
@@ -1725,6 +1727,13 @@ public class AristaGrammarTest {
   public void testParseCvx() {
     parseVendorConfig("arista_cvx");
     // don't crash.
+  }
+
+  @Test
+  public void testParseAclShowRunAll() {
+    Configuration c = parseConfig("arista_acl_show_run_all");
+    // Tests that the ACL parses.
+    assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
   }
 
   @Test
