@@ -139,19 +139,19 @@ router bgp 64900
    address-family ipv4
       ! TODO no bgp additional-paths install
       ! TODO no bgp next-hop address-family ipv6
-      ! TODO bgp additional-paths receive
-      ! TODO no bgp additional-paths send any
+      bgp additional-paths receive
+      ! no bgp additional-paths send any
       ! TODO no bgp route install-map
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
-      ! TODO no neighbor SOME_GROUP route-map in
-      ! TODO no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
       ! TODO no neighbor SOME_GROUP prefix-list out
       ! TODO no neighbor SOME_GROUP default-originate
       ! TODO no neighbor SOME_GROUP additional-paths send any
       ! TODO no neighbor SOME_GROUP next-hop address-family ipv6
-      ! TODO no neighbor SOME_GROUP next-hop-unchanged
+      no neighbor SOME_GROUP next-hop-unchanged
       default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map IPV4_IN in
    !
