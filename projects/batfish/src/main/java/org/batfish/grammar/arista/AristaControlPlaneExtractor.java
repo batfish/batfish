@@ -530,7 +530,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_forwardContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_igmpContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_insideContext;
@@ -556,6 +555,8 @@ import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
+import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
@@ -2806,11 +2807,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIf_ip_igmp(If_ip_igmpContext ctx) {
-    _no = (ctx.NO() != null);
-  }
-
-  @Override
   public void enterIf_spanning_tree(If_spanning_treeContext ctx) {
     _no = ctx.NO() != null;
   }
@@ -4439,11 +4435,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_igmp(If_ip_igmpContext ctx) {
-    _no = false;
-  }
-
-  @Override
   public void exitIf_ip_inband_access_group(If_ip_inband_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -4692,6 +4683,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         AristaStructureUsage.INTERFACE_MEMBER_INTERFACE,
         ctx.name.getStart().getLine());
     _currentInterfaces.get(0).getMemberInterfaces().add(member);
+  }
+
+  @Override
+  public void exitIf_no_channel_group_eos(If_no_channel_group_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setChannelGroup(null));
+  }
+
+  @Override
+  public void exitIf_no_speed_eos(If_no_speed_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setSpeed(null));
   }
 
   @Override

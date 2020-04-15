@@ -25,6 +25,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -1734,6 +1735,14 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_acl_show_run_all");
     // Tests that the ACL parses.
     assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll() {
+    Configuration c = parseConfig("arista_interface_show_run_all");
+    // Test relies on the last line in each interface being this description.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
   }
 
   @Test
