@@ -5138,11 +5138,6 @@ GROUP_LOCK
    'group-lock'
 ;
 
-GROUP_OBJECT
-:
-   'group-object'
-;
-
 GROUP_POLICY
 :
    'group-policy'
@@ -5676,11 +5671,6 @@ ICMP_MASK_REQUEST
 ICMP_MOBILE_REDIRECT
 :
    'icmp-mobile-redirect'
-;
-
-ICMP_OBJECT
-:
-   'icmp-object'
 ;
 
 ICMP_PARAMETER_PROBLEM
@@ -8516,11 +8506,6 @@ NETWORK_DELAY
    'network-delay'
 ;
 
-NETWORK_OBJECT
-:
-   'network-object'
-;
-
 NETWORK_QOS
 :
    'network-qos'
@@ -8854,11 +8839,6 @@ OAM
 OBJECT
 :
    'object'
-;
-
-OBJECT_GROUP
-:
-   'object-group' -> pushMode(M_ObjectGroup)
 ;
 
 ODMR
@@ -9711,11 +9691,6 @@ PORT_NAME
    'port-name'
 ;
 
-PORT_OBJECT
-:
-   'port-object'
-;
-
 PORT_PRIORITY
 :
    'port-priority'
@@ -10076,11 +10051,6 @@ PROTOCOL_DISCOVERY
 PROTOCOL_HTTP
 :
    'protocol-http'
-;
-
-PROTOCOL_OBJECT
-:
-   'protocol-object'
 ;
 
 PROTOCOL_UNREACHABLE
@@ -11541,11 +11511,6 @@ SERVICE_LIST
 SERVICE_MODULE
 :
    'service-module'
-;
-
-SERVICE_OBJECT
-:
-   'service-object'
 ;
 
 SERVICE_POLICY
@@ -16581,59 +16546,6 @@ M_NEIGHBOR_VARIABLE
 ;
 
 M_NEIGHBOR_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_ObjectGroup;
-
-M_ObjectGroup_IP
-:
-  'ip' -> type ( IP ) , popMode
-;
-
-M_ObjectGroup_NETWORK
-:
-  'network' -> type ( NETWORK ) , popMode
-;
-
-M_ObjectGroup_PROTOCOL
-:
-  'protocol' -> type ( PROTOCOL ) , popMode
-;
-
-M_ObjectGroup_SERVICE
-:
-  'service' -> type ( SERVICE ) , popMode
-;
-
-M_ObjectGroup_USER
-:
-  'user' -> type ( USER ) , popMode
-;
-
-M_ObjectGroup_ICMP_TYPE
-:
-  'icmp-type' -> type ( ICMP_TYPE ) , popMode
-;
-
-M_ObjectGroup_GROUP
-:
-  'group' -> type ( GROUP ) , popMode
-;
-
-/* Do not reorder above literals */
-M_ObjectGroup_NAME
-:
-   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
-;
-
-M_ObjectGroup_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_ObjectGroup_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;

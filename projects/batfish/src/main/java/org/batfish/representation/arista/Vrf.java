@@ -13,7 +13,6 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public final class Vrf implements Serializable {
   @Nonnull private final Map<Long, EigrpProcess> _eigrpProcesses;
-  @Nullable private BgpProcess _bgpProcess;
   @Nullable private String _description;
   @Nullable private IsisProcess _isisProcess;
   @Nonnull private final String _name;
@@ -32,11 +31,6 @@ public final class Vrf implements Serializable {
     // Ensure that processes are in insertion order.
     _ospfProcesses = new LinkedHashMap<>(0);
     _staticRoutes = new HashSet<>();
-  }
-
-  @Nullable
-  public BgpProcess getBgpProcess() {
-    return _bgpProcess;
   }
 
   @Nullable
@@ -111,10 +105,6 @@ public final class Vrf implements Serializable {
   @Nonnull
   public Set<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
-  }
-
-  public void setBgpProcess(@Nullable BgpProcess bgpProcess) {
-    _bgpProcess = bgpProcess;
   }
 
   public void setDescription(@Nullable String description) {

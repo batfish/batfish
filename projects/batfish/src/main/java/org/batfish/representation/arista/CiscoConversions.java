@@ -1,21 +1,12 @@
 package org.batfish.representation.arista;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
-import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
-import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-import static org.batfish.representation.arista.AristaConfiguration.computeBgpDefaultRouteExportPolicyName;
-import static org.batfish.representation.arista.AristaConfiguration.computeBgpPeerImportPolicyName;
-import static org.batfish.representation.arista.AristaConfiguration.computeIcmpObjectGroupAclName;
-import static org.batfish.representation.arista.AristaConfiguration.computeProtocolObjectGroupAclName;
-import static org.batfish.representation.arista.AristaConfiguration.computeServiceObjectAclName;
-import static org.batfish.representation.arista.AristaConfiguration.computeServiceObjectGroupAclName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -41,7 +32,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -49,8 +39,6 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -72,7 +60,6 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RegexCommunitySet;
@@ -91,7 +78,6 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
-import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -101,17 +87,12 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -253,192 +234,6 @@ public class CiscoConversions {
         convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName(), w);
       }
     }
-  }
-
-  /**
-   * Returns the name of a {@link RoutingPolicy} to be used as the BGP import policy for the given
-   * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on the peer's inbound
-   * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
-   * in the given configuration's routing policies.
-   */
-  @Nullable
-  static String generateBgpImportPolicy(
-      LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
-    // TODO Support filter-list
-    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
-
-    String inboundRouteMapName = lpg.getInboundRouteMap();
-    String inboundPrefixListName = lpg.getInboundPrefixList();
-    String inboundIpAccessListName = lpg.getInboundIpAccessList();
-
-    // TODO Support using multiple filters in BGP import policies
-    if (Stream.of(inboundRouteMapName, inboundPrefixListName, inboundIpAccessListName)
-            .filter(Objects::nonNull)
-            .count()
-        > 1) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for incoming BGP routes."
-              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
-    }
-
-    // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
-    if (inboundRouteMapName != null && c.getRoutingPolicies().containsKey(inboundRouteMapName)) {
-      // Inbound route-map is defined. Use that as the BGP import policy.
-      return inboundRouteMapName;
-    }
-
-    String exportRouteFilter = null;
-    if (inboundPrefixListName != null
-        && c.getRouteFilterLists().containsKey(inboundPrefixListName)) {
-      exportRouteFilter = inboundPrefixListName;
-    } else if (inboundIpAccessListName != null
-        && c.getRouteFilterLists().containsKey(inboundIpAccessListName)) {
-      exportRouteFilter = inboundIpAccessListName;
-    }
-
-    if (exportRouteFilter != null) {
-      // Inbound prefix-list or distribute-list is defined. Build an import policy around it.
-      String generatedImportPolicyName = computeBgpPeerImportPolicyName(vrfName, lpg.getName());
-      RoutingPolicy.builder()
-          .setOwner(c)
-          .setName(generatedImportPolicyName)
-          .addStatement(
-              new If(
-                  new MatchPrefixSet(
-                      DestinationNetwork.instance(), new NamedPrefixSet(exportRouteFilter)),
-                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                  ImmutableList.of(Statements.ExitReject.toStaticStatement())))
-          .build();
-      return generatedImportPolicyName;
-    }
-    // Return null to indicate no constraints were imposed on inbound BGP routes.
-    return null;
-  }
-
-  /**
-   * Creates a {@link RoutingPolicy} to be used as the BGP export policy for the given {@link
-   * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
-   */
-  static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg,
-      String vrfName,
-      boolean ipv4,
-      @Nullable String defaultOriginateExportRouteMapName,
-      Configuration c,
-      Warnings w) {
-    List<Statement> exportPolicyStatements = new ArrayList<>();
-    if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
-      exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance()));
-    }
-    if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
-      exportPolicyStatements.add(Statements.RemovePrivateAs.toStaticStatement());
-    }
-
-    // If defaultOriginate is set, generate a default route export policy. Default route will match
-    // this policy and get exported without going through the rest of the export policy.
-    // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
-    if (lpg.getDefaultOriginate()) {
-      initBgpDefaultRouteExportPolicy(
-          vrfName, lpg.getName(), ipv4, defaultOriginateExportRouteMapName, c);
-      exportPolicyStatements.add(
-          new If(
-              "Export default route from peer with default-originate configured",
-              new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, lpg.getName())),
-              singletonList(Statements.ReturnTrue.toStaticStatement()),
-              ImmutableList.of()));
-    }
-
-    // Conditions for exporting regular routes (not spawned by default-originate)
-    List<BooleanExpr> peerExportConjuncts = new ArrayList<>();
-    peerExportConjuncts.add(new CallExpr(generatedBgpCommonExportPolicyName(vrfName)));
-
-    // Add constraints on export routes from configured outbound filter.
-    // TODO support configuring multiple outbound filters
-    String outboundPrefixListName = lpg.getOutboundPrefixList();
-    String outboundRouteMapName = lpg.getOutboundRouteMap();
-    String outboundIpAccessListName = lpg.getOutboundIpAccessList();
-    if (Stream.of(outboundRouteMapName, outboundPrefixListName, outboundIpAccessListName)
-            .filter(Objects::nonNull)
-            .count()
-        > 1) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for outgoing BGP routes."
-              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
-    }
-    if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
-      peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
-    } else if (outboundPrefixListName != null
-        && c.getRouteFilterLists().containsKey(outboundPrefixListName)) {
-      peerExportConjuncts.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixListName)));
-    } else if (outboundIpAccessListName != null
-        && c.getRouteFilterLists().containsKey(outboundIpAccessListName)) {
-      peerExportConjuncts.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(), new NamedPrefixSet(outboundIpAccessListName)));
-    }
-    exportPolicyStatements.add(
-        new If(
-            "peer-export policy main conditional: exitAccept if true / exitReject if false",
-            new Conjunction(peerExportConjuncts),
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(generatedBgpPeerExportPolicyName(vrfName, lpg.getName()))
-        .setStatements(exportPolicyStatements)
-        .build();
-  }
-
-  /**
-   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
-   * policy is the same across BGP processes, so only one is created for each configuration.
-   *
-   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
-   * @param defaultOriginateExportMapName Name of route-map to apply to generated route before
-   *     export. This is an Arista-specific concept and <a
-   *     href=https://www.arista.com/en/um-eos/eos-section-32-4-bgp-commands#ww1116958>does not
-   *     affect whether the route will be exported</a>.
-   */
-  static void initBgpDefaultRouteExportPolicy(
-      String vrfName,
-      String peerName,
-      boolean ipv4,
-      @Nullable String defaultOriginateExportMapName,
-      Configuration c) {
-    SetOrigin setOrigin =
-        new SetOrigin(
-            new LiteralOrigin(
-                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                    ? OriginType.IGP
-                    : OriginType.INCOMPLETE,
-                null));
-    List<Statement> defaultRouteExportStatements;
-    if (defaultOriginateExportMapName == null
-        || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {
-      defaultRouteExportStatements =
-          ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
-    } else {
-      defaultRouteExportStatements =
-          ImmutableList.of(
-              setOrigin,
-              new CallStatement(defaultOriginateExportMapName),
-              Statements.ReturnTrue.toStaticStatement());
-    }
-
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, peerName))
-        .addStatement(
-            new If(
-                new Conjunction(
-                    ImmutableList.of(
-                        ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
-                        new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                defaultRouteExportStatements))
-        .addStatement(Statements.ReturnFalse.toStaticStatement())
-        .build();
   }
 
   /**
@@ -741,16 +536,15 @@ public class CiscoConversions {
     return new Ip6AccessList(name, lines);
   }
 
-  static IpAccessList toIpAccessList(
-      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
+  static IpAccessList toIpAccessList(ExtendedAccessList eaList) {
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(l -> toIpAccessListLine(l, objectGroups))
+            .map(CiscoConversions::toIpAccessListLine)
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         eaList.getParent() != null
-            ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
-            : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
+            ? AristaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
+            : AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
     String name = eaList.getName();
     return IpAccessList.builder()
         .setName(name)
@@ -758,70 +552,6 @@ public class CiscoConversions {
         .setSourceName(name)
         .setSourceType(sourceType)
         .build();
-  }
-
-  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(
-      ServiceObject serviceObject,
-      Map<String, ServiceObject> serviceObjects,
-      Map<String, ServiceObjectGroup> serviceObjectGroups) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(
-                        serviceObject.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
-                    .build()))
-        .setName(computeServiceObjectAclName(serviceObject.getName()))
-        .setSourceName(serviceObject.getName())
-        .setSourceType(CiscoStructureType.SERVICE_OBJECT.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(
-      ServiceObjectGroup serviceObjectGroup,
-      Map<String, ServiceObject> serviceObjects,
-      Map<String, ServiceObjectGroup> serviceObjectGroups) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(
-                        serviceObjectGroup.toAclLineMatchExpr(serviceObjects, serviceObjectGroups))
-                    .build()))
-        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
-        .setSourceName(serviceObjectGroup.getName())
-        .setSourceType(CiscoStructureType.SERVICE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
-    return firstNonNull(AclIpSpace.union(networkObjectGroup.getLines()), EmptyIpSpace.INSTANCE);
   }
 
   /** Converts a {@link Tunnel} to an {@link IpsecPeerConfig} */
@@ -1523,11 +1253,10 @@ public class CiscoConversions {
         .build();
   }
 
-  private static ExprAclLine toIpAccessListLine(
-      ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
+  private static ExprAclLine toIpAccessListLine(ExtendedAccessListLine line) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
-    AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr(objectGroups);
+    AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr();
     AclLineMatchExpr match;
     if (matchService instanceof MatchHeaderSpace) {
       match =

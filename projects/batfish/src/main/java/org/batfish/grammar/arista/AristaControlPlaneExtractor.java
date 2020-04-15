@@ -8,254 +8,209 @@ import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
-import static org.batfish.representation.arista.CiscoStructureType.ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.BFD_TEMPLATE;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_AF_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_NEIGHBOR_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_PEER_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_SESSION_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_UNDECLARED_PEER;
-import static org.batfish.representation.arista.CiscoStructureType.BGP_UNDECLARED_PEER_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.CLASS_MAP;
-import static org.batfish.representation.arista.CiscoStructureType.COMMUNITY_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.COMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.arista.CiscoStructureType.COMMUNITY_LIST_STANDARD;
-import static org.batfish.representation.arista.CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET;
-import static org.batfish.representation.arista.CiscoStructureType.CRYPTO_MAP_SET;
-import static org.batfish.representation.arista.CiscoStructureType.DEPI_CLASS;
-import static org.batfish.representation.arista.CiscoStructureType.DEPI_TUNNEL;
-import static org.batfish.representation.arista.CiscoStructureType.DOCSIS_POLICY;
-import static org.batfish.representation.arista.CiscoStructureType.DOCSIS_POLICY_RULE;
-import static org.batfish.representation.arista.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.INSPECT_CLASS_MAP;
-import static org.batfish.representation.arista.CiscoStructureType.INSPECT_POLICY_MAP;
-import static org.batfish.representation.arista.CiscoStructureType.INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureType.IPSEC_PROFILE;
-import static org.batfish.representation.arista.CiscoStructureType.IPSEC_TRANSFORM_SET;
-import static org.batfish.representation.arista.CiscoStructureType.IPV4_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.arista.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
-import static org.batfish.representation.arista.CiscoStructureType.IPV6_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.arista.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
-import static org.batfish.representation.arista.CiscoStructureType.IP_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.ISAKMP_POLICY;
-import static org.batfish.representation.arista.CiscoStructureType.ISAKMP_PROFILE;
-import static org.batfish.representation.arista.CiscoStructureType.KEYRING;
-import static org.batfish.representation.arista.CiscoStructureType.L2TP_CLASS;
-import static org.batfish.representation.arista.CiscoStructureType.MAC_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.NAMED_RSA_PUB_KEY;
-import static org.batfish.representation.arista.CiscoStructureType.NAT_POOL;
-import static org.batfish.representation.arista.CiscoStructureType.NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureType.NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.POLICY_MAP;
-import static org.batfish.representation.arista.CiscoStructureType.PREFIX6_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.PREFIX_LIST;
-import static org.batfish.representation.arista.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureType.SECURITY_ZONE;
-import static org.batfish.representation.arista.CiscoStructureType.SECURITY_ZONE_PAIR;
-import static org.batfish.representation.arista.CiscoStructureType.SERVICE_CLASS;
-import static org.batfish.representation.arista.CiscoStructureType.SERVICE_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureType.SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureType.SERVICE_TEMPLATE;
-import static org.batfish.representation.arista.CiscoStructureType.TRACK;
-import static org.batfish.representation.arista.CiscoStructureType.TRAFFIC_ZONE;
-import static org.batfish.representation.arista.CiscoStructureType.VXLAN;
-import static org.batfish.representation.arista.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_INHERITED_SESSION;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_USE_AF_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_USE_SESSION_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.CLASS_MAP_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
-import static org.batfish.representation.arista.CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
-import static org.batfish.representation.arista.CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL;
-import static org.batfish.representation.arista.CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_TRANSFORM_SET;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
-import static org.batfish.representation.arista.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
-import static org.batfish.representation.arista.CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
-import static org.batfish.representation.arista.CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
-import static org.batfish.representation.arista.CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
-import static org.batfish.representation.arista.CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
-import static org.batfish.representation.arista.CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_AF_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.FAILOVER_LAN_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.FAILOVER_LINK_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
-import static org.batfish.representation.arista.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_SELF_REF;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
-import static org.batfish.representation.arista.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
-import static org.batfish.representation.arista.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
-import static org.batfish.representation.arista.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
-import static org.batfish.representation.arista.CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
-import static org.batfish.representation.arista.CiscoStructureUsage.IP_ROUTE_NHINT;
-import static org.batfish.representation.arista.CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
-import static org.batfish.representation.arista.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
-import static org.batfish.representation.arista.CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF;
-import static org.batfish.representation.arista.CiscoStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
-import static org.batfish.representation.arista.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.MLAG_CONFIGURATION_LOCAL_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
-import static org.batfish.representation.arista.CiscoStructureUsage.MSDP_PEER_SA_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
-import static org.batfish.representation.arista.CiscoStructureUsage.NTP_ACCESS_GROUP;
-import static org.batfish.representation.arista.CiscoStructureUsage.NTP_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_AREA_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_ACCEPT_RP_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_RP_ADDRESS_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_RP_CANDIDATE_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_CLASS;
-import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
-import static org.batfish.representation.arista.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
-import static org.batfish.representation.arista.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
-import static org.batfish.representation.arista.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTER_STATIC_ROUTE;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
-import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
-import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
-import static org.batfish.representation.arista.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
-import static org.batfish.representation.arista.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE;
-import static org.batfish.representation.arista.CiscoStructureUsage.SSH_IPV4_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.SSH_IPV6_ACL;
-import static org.batfish.representation.arista.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.TRACK_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
-import static org.batfish.representation.arista.CiscoStructureUsage.TUNNEL_SOURCE;
-import static org.batfish.representation.arista.CiscoStructureUsage.VXLAN_SELF_REF;
-import static org.batfish.representation.arista.CiscoStructureUsage.VXLAN_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.CiscoStructureUsage.WCCP_GROUP_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.WCCP_REDIRECT_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.WCCP_SERVICE_LIST;
-import static org.batfish.representation.arista.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
-import static org.batfish.representation.arista.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
-import static org.batfish.representation.arista.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
+import static org.batfish.representation.arista.AristaStructureType.ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureType.BGP_PEER_GROUP;
+import static org.batfish.representation.arista.AristaStructureType.CLASS_MAP;
+import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST;
+import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.arista.AristaStructureType.CRYPTO_DYNAMIC_MAP_SET;
+import static org.batfish.representation.arista.AristaStructureType.CRYPTO_MAP_SET;
+import static org.batfish.representation.arista.AristaStructureType.DEPI_CLASS;
+import static org.batfish.representation.arista.AristaStructureType.DEPI_TUNNEL;
+import static org.batfish.representation.arista.AristaStructureType.DOCSIS_POLICY;
+import static org.batfish.representation.arista.AristaStructureType.DOCSIS_POLICY_RULE;
+import static org.batfish.representation.arista.AristaStructureType.INSPECT_CLASS_MAP;
+import static org.batfish.representation.arista.AristaStructureType.INSPECT_POLICY_MAP;
+import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
+import static org.batfish.representation.arista.AristaStructureType.IPSEC_PROFILE;
+import static org.batfish.representation.arista.AristaStructureType.IPSEC_TRANSFORM_SET;
+import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.arista.AristaStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.ISAKMP_POLICY;
+import static org.batfish.representation.arista.AristaStructureType.ISAKMP_PROFILE;
+import static org.batfish.representation.arista.AristaStructureType.KEYRING;
+import static org.batfish.representation.arista.AristaStructureType.L2TP_CLASS;
+import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.NAMED_RSA_PUB_KEY;
+import static org.batfish.representation.arista.AristaStructureType.NAT_POOL;
+import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
+import static org.batfish.representation.arista.AristaStructureType.PREFIX6_LIST;
+import static org.batfish.representation.arista.AristaStructureType.PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureType.ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureType.SECURITY_ZONE;
+import static org.batfish.representation.arista.AristaStructureType.SECURITY_ZONE_PAIR;
+import static org.batfish.representation.arista.AristaStructureType.SERVICE_CLASS;
+import static org.batfish.representation.arista.AristaStructureType.SERVICE_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureType.TRACK;
+import static org.batfish.representation.arista.AristaStructureType.TRAFFIC_ZONE;
+import static org.batfish.representation.arista.AristaStructureType.VXLAN;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGATE_MATCH_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureUsage.CONTROLLER_DEPI_TUNNEL;
+import static org.batfish.representation.arista.AristaStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
+import static org.batfish.representation.arista.AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
+import static org.batfish.representation.arista.AristaStructureUsage.COPS_LISTENER_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_DYNAMIC_MAP_TRANSFORM_SET;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
+import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
+import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
+import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
+import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
+import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
+import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
+import static org.batfish.representation.arista.AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_AF_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_PASSIVE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.FAILOVER_LAN_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.FAILOVER_LINK_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_BFD_TEMPLATE;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_STANDBY_TRACK;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_ZONE_MEMBER;
+import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
+import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_SOURCE_POOL;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_ROUTE_NHINT;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_TACACS_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.ISAKMP_POLICY_SELF_REF;
+import static org.batfish.representation.arista.AristaStructureUsage.ISAKMP_PROFILE_KEYRING;
+import static org.batfish.representation.arista.AristaStructureUsage.ISAKMP_PROFILE_SELF_REF;
+import static org.batfish.representation.arista.AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.LINE_ACCESS_CLASS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.LINE_ACCESS_CLASS_LIST6;
+import static org.batfish.representation.arista.AristaStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.MLAG_CONFIGURATION_LOCAL_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
+import static org.batfish.representation.arista.AristaStructureUsage.MSDP_PEER_SA_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
+import static org.batfish.representation.arista.AristaStructureUsage.NTP_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.NTP_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_AREA_FILTER_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_AREA_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_ACCEPT_REGISTER_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_ACCEPT_RP_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_RP_ADDRESS_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_RP_ANNOUNCE_FILTER;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_RP_CANDIDATE_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.PIM_SPT_THRESHOLD_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_CLASS;
+import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
+import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS;
+import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
+import static org.batfish.representation.arista.AristaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
+import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_STATIC_ROUTE;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY;
+import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_GLOBAL;
+import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
+import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
+import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
+import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_TRAP_SOURCE;
+import static org.batfish.representation.arista.AristaStructureUsage.SSH_IPV4_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.SSH_IPV6_ACL;
+import static org.batfish.representation.arista.AristaStructureUsage.SYSTEM_SERVICE_POLICY;
+import static org.batfish.representation.arista.AristaStructureUsage.TACACS_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.TRACK_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
+import static org.batfish.representation.arista.AristaStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.arista.AristaStructureUsage.VXLAN_SELF_REF;
+import static org.batfish.representation.arista.AristaStructureUsage.VXLAN_SOURCE_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.WCCP_GROUP_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.WCCP_REDIRECT_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.WCCP_SERVICE_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
+import static org.batfish.representation.arista.AristaStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
+import static org.batfish.representation.arista.AristaStructureUsage.ZONE_PAIR_SOURCE_ZONE;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_EXTERNAL;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_INTERNAL;
@@ -265,7 +220,6 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
@@ -299,7 +253,6 @@ import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AuthenticationMethod;
-import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -413,26 +366,8 @@ import org.batfish.grammar.arista.AristaParser.Aaa_new_modelContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_actionContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip_rangeContext;
-import org.batfish.grammar.arista.AristaParser.Activate_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Additional_paths_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Address_family_headerContext;
-import org.batfish.grammar.arista.AristaParser.Address_family_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Advertise_map_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Af_group_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Aggregate_address_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Allowas_in_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.As_exprContext;
-import org.batfish.grammar.arista.AristaParser.As_path_multipath_relax_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Asa_ag_globalContext;
-import org.batfish.grammar.arista.AristaParser.Asa_ag_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Auto_summary_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Bgp_address_familyContext;
-import org.batfish.grammar.arista.AristaParser.Bgp_advertise_inactive_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_asnContext;
-import org.batfish.grammar.arista.AristaParser.Bgp_confederation_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Bgp_listen_range_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Bgp_redistribute_internal_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Cadant_stdacl_nameContext;
 import org.batfish.grammar.arista.AristaParser.Cd_match_addressContext;
 import org.batfish.grammar.arista.AristaParser.Cd_set_isakmp_profileContext;
@@ -467,7 +402,6 @@ import org.batfish.grammar.arista.AristaParser.Ckr_pskContext;
 import org.batfish.grammar.arista.AristaParser.Clb_docsis_policyContext;
 import org.batfish.grammar.arista.AristaParser.Clb_ruleContext;
 import org.batfish.grammar.arista.AristaParser.Clbdg_docsis_policyContext;
-import org.batfish.grammar.arista.AristaParser.Cluster_id_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Cm_ios_inspectContext;
 import org.batfish.grammar.arista.AristaParser.Cm_iosi_matchContext;
 import org.batfish.grammar.arista.AristaParser.Cm_matchContext;
@@ -478,7 +412,6 @@ import org.batfish.grammar.arista.AristaParser.Cmm_service_templateContext;
 import org.batfish.grammar.arista.AristaParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.arista.AristaParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.arista.AristaParser.CommunityContext;
-import org.batfish.grammar.arista.AristaParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Copsl_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cp_ip_access_groupContext;
@@ -495,15 +428,8 @@ import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_transform_set
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ipsec_isakmpContext;
 import org.batfish.grammar.arista.AristaParser.Cs_classContext;
 import org.batfish.grammar.arista.AristaParser.Csc_nameContext;
-import org.batfish.grammar.arista.AristaParser.Default_information_originate_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Default_metric_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Default_originate_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Default_shutdown_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Description_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Description_lineContext;
 import org.batfish.grammar.arista.AristaParser.Dh_groupContext;
-import org.batfish.grammar.arista.AristaParser.Disable_peer_as_check_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Distribute_list_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Distribute_list_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Domain_lookupContext;
 import org.batfish.grammar.arista.AristaParser.Domain_nameContext;
@@ -512,7 +438,6 @@ import org.batfish.grammar.arista.AristaParser.Dscp_typeContext;
 import org.batfish.grammar.arista.AristaParser.Dt_depi_classContext;
 import org.batfish.grammar.arista.AristaParser.Dt_l2tp_classContext;
 import org.batfish.grammar.arista.AristaParser.Dt_protect_tunnelContext;
-import org.batfish.grammar.arista.AristaParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Eigrp_metricContext;
 import org.batfish.grammar.arista.AristaParser.Enable_secretContext;
 import org.batfish.grammar.arista.AristaParser.Eos_as_rangeContext;
@@ -633,11 +558,8 @@ import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_stanzaC
 import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Failover_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Failover_linkContext;
-import org.batfish.grammar.arista.AristaParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Flan_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Flan_unitContext;
-import org.batfish.grammar.arista.AristaParser.Icmp_inline_object_typeContext;
-import org.batfish.grammar.arista.AristaParser.Icmp_object_typeContext;
 import org.batfish.grammar.arista.AristaParser.If_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_bfd_templateContext;
@@ -717,8 +639,6 @@ import org.batfish.grammar.arista.AristaParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.arista.AristaParser.Ifvrrp_priority_levelContext;
 import org.batfish.grammar.arista.AristaParser.Ike_encryptionContext;
 import org.batfish.grammar.arista.AristaParser.Ike_encryption_arubaContext;
-import org.batfish.grammar.arista.AristaParser.Inherit_peer_policy_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Inherit_peer_session_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Inspect_protocolContext;
 import org.batfish.grammar.arista.AristaParser.Int_exprContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
@@ -751,7 +671,6 @@ import org.batfish.grammar.arista.AristaParser.L_access_classContext;
 import org.batfish.grammar.arista.AristaParser.L_exec_timeoutContext;
 import org.batfish.grammar.arista.AristaParser.L_login_authenticationContext;
 import org.batfish.grammar.arista.AristaParser.L_transportContext;
-import org.batfish.grammar.arista.AristaParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Logging_addressContext;
 import org.batfish.grammar.arista.AristaParser.Logging_bufferedContext;
 import org.batfish.grammar.arista.AristaParser.Logging_consoleContext;
@@ -772,20 +691,9 @@ import org.batfish.grammar.arista.AristaParser.Match_ipv6_prefix_list_rm_stanzaC
 import org.batfish.grammar.arista.AristaParser.Match_semanticsContext;
 import org.batfish.grammar.arista.AristaParser.Match_source_protocol_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Match_tag_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Maximum_paths_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Maximum_peers_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Neighbor_flat_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Neighbor_group_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Network6_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Network_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Next_hop_self_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.No_neighbor_activate_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.No_neighbor_shutdown_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.No_redistribute_connected_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_source_interfaceContext;
@@ -794,8 +702,6 @@ import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
 import org.batfish.grammar.arista.AristaParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_is_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Peer_group_assignment_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Peer_group_creation_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Peer_sa_filterContext;
 import org.batfish.grammar.arista.AristaParser.Pi_iosicd_dropContext;
 import org.batfish.grammar.arista.AristaParser.Pi_iosicd_passContext;
@@ -816,7 +722,6 @@ import org.batfish.grammar.arista.AristaParser.Pm_iosict_passContext;
 import org.batfish.grammar.arista.AristaParser.Pmc_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.PortContext;
 import org.batfish.grammar.arista.AristaParser.Port_specifierContext;
-import org.batfish.grammar.arista.AristaParser.Prefix_list_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.ProtocolContext;
 import org.batfish.grammar.arista.AristaParser.RangeContext;
 import org.batfish.grammar.arista.AristaParser.Re_autonomous_systemContext;
@@ -839,16 +744,8 @@ import org.batfish.grammar.arista.AristaParser.Reaf_interface_defaultContext;
 import org.batfish.grammar.arista.AristaParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Rec_address_familyContext;
 import org.batfish.grammar.arista.AristaParser.Rec_metric_weightsContext;
-import org.batfish.grammar.arista.AristaParser.Redistribute_aggregate_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Redistribute_ospf_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Redistribute_ospfv3_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Redistribute_rip_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Redistribute_static_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Remote_as_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ren_address_familyContext;
 import org.batfish.grammar.arista.AristaParser.Ren_metric_weightsContext;
 import org.batfish.grammar.arista.AristaParser.Ro6_distribute_listContext;
@@ -880,13 +777,10 @@ import org.batfish.grammar.arista.AristaParser.Roa_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Roi_costContext;
 import org.batfish.grammar.arista.AristaParser.Roi_passiveContext;
 import org.batfish.grammar.arista.AristaParser.Route_distinguisherContext;
-import org.batfish.grammar.arista.AristaParser.Route_map_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Route_map_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Route_reflector_client_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Route_tailContext;
 import org.batfish.grammar.arista.AristaParser.Route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Router_bgp_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Router_isis_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Rr_distribute_listContext;
 import org.batfish.grammar.arista.AristaParser.Rr_networkContext;
@@ -948,12 +842,6 @@ import org.batfish.grammar.arista.AristaParser.S_zoneContext;
 import org.batfish.grammar.arista.AristaParser.S_zone_pairContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_blankContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_shutdownContext;
-import org.batfish.grammar.arista.AristaParser.Send_community_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Service_group_protocolContext;
-import org.batfish.grammar.arista.AristaParser.Service_specifier_icmpContext;
-import org.batfish.grammar.arista.AristaParser.Service_specifier_protocolContext;
-import org.batfish.grammar.arista.AristaParser.Service_specifier_tcp_udpContext;
-import org.batfish.grammar.arista.AristaParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_as_path_prepend_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_comm_list_delete_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_community_additive_rm_stanzaContext;
@@ -969,7 +857,6 @@ import org.batfish.grammar.arista.AristaParser.Set_next_hop_peer_address_stanzaC
 import org.batfish.grammar.arista.AristaParser.Set_next_hop_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_origin_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_weight_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Shutdown_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.Sntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Spanning_tree_portfastContext;
 import org.batfish.grammar.arista.AristaParser.Ss_communityContext;
@@ -1003,30 +890,19 @@ import org.batfish.grammar.arista.AristaParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Switchport_trunk_encapsulationContext;
 import org.batfish.grammar.arista.AristaParser.T_serverContext;
 import org.batfish.grammar.arista.AristaParser.T_source_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Template_peer_address_familyContext;
-import org.batfish.grammar.arista.AristaParser.Template_peer_policy_rb_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Template_peer_session_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Track_actionContext;
 import org.batfish.grammar.arista.AristaParser.Track_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Ts_hostContext;
 import org.batfish.grammar.arista.AristaParser.U_passwordContext;
 import org.batfish.grammar.arista.AristaParser.U_roleContext;
 import org.batfish.grammar.arista.AristaParser.Uint32Context;
-import org.batfish.grammar.arista.AristaParser.Unsuppress_map_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Update_source_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Use_af_group_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Use_neighbor_group_bgp_tailContext;
-import org.batfish.grammar.arista.AristaParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.arista.AristaParser.VariableContext;
 import org.batfish.grammar.arista.AristaParser.Variable_access_listContext;
-import org.batfish.grammar.arista.AristaParser.Variable_group_idContext;
-import org.batfish.grammar.arista.AristaParser.Variable_permissiveContext;
 import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_addressContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_preemptContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
 import org.batfish.grammar.arista.AristaParser.Vlan_idContext;
-import org.batfish.grammar.arista.AristaParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Vrfc_rdContext;
 import org.batfish.grammar.arista.AristaParser.Vrfc_route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Vrfc_shutdownContext;
@@ -1039,21 +915,12 @@ import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
 import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.AristaDynamicSourceNat;
-import org.batfish.representation.arista.BgpAggregateIpv4Network;
-import org.batfish.representation.arista.BgpAggregateIpv6Network;
-import org.batfish.representation.arista.BgpNetwork;
-import org.batfish.representation.arista.BgpNetwork6;
-import org.batfish.representation.arista.BgpPeerGroup;
-import org.batfish.representation.arista.BgpProcess;
-import org.batfish.representation.arista.BgpRedistributionPolicy;
-import org.batfish.representation.arista.CiscoStructureType;
-import org.batfish.representation.arista.CiscoStructureUsage;
+import org.batfish.representation.arista.AristaStructureType;
+import org.batfish.representation.arista.AristaStructureUsage;
 import org.batfish.representation.arista.CryptoMapEntry;
 import org.batfish.representation.arista.CryptoMapSet;
 import org.batfish.representation.arista.DistributeList;
 import org.batfish.representation.arista.DistributeList.DistributeListFilterType;
-import org.batfish.representation.arista.DynamicIpBgpPeerGroup;
-import org.batfish.representation.arista.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.arista.EigrpProcess;
 import org.batfish.representation.arista.EigrpRedistributionPolicy;
 import org.batfish.representation.arista.ExpandedCommunityList;
@@ -1063,8 +930,6 @@ import org.batfish.representation.arista.ExtendedAccessListLine;
 import org.batfish.representation.arista.ExtendedIpv6AccessList;
 import org.batfish.representation.arista.ExtendedIpv6AccessListLine;
 import org.batfish.representation.arista.HsrpGroup;
-import org.batfish.representation.arista.IcmpTypeGroupReferenceLine;
-import org.batfish.representation.arista.IcmpTypeObjectGroup;
 import org.batfish.representation.arista.InspectClassMap;
 import org.batfish.representation.arista.InspectClassMapMatch;
 import org.batfish.representation.arista.InspectClassMapMatchAccessGroup;
@@ -1075,10 +940,8 @@ import org.batfish.representation.arista.InspectPolicyMapInspectClass;
 import org.batfish.representation.arista.Interface;
 import org.batfish.representation.arista.IpAsPathAccessList;
 import org.batfish.representation.arista.IpAsPathAccessListLine;
-import org.batfish.representation.arista.IpBgpPeerGroup;
 import org.batfish.representation.arista.IpsecProfile;
 import org.batfish.representation.arista.IpsecTransformSet;
-import org.batfish.representation.arista.Ipv6BgpPeerGroup;
 import org.batfish.representation.arista.IsakmpKey;
 import org.batfish.representation.arista.IsakmpPolicy;
 import org.batfish.representation.arista.IsakmpProfile;
@@ -1086,15 +949,10 @@ import org.batfish.representation.arista.IsisProcess;
 import org.batfish.representation.arista.IsisRedistributionPolicy;
 import org.batfish.representation.arista.Keyring;
 import org.batfish.representation.arista.MacAccessList;
-import org.batfish.representation.arista.MasterBgpPeerGroup;
 import org.batfish.representation.arista.MatchSemantics;
 import org.batfish.representation.arista.MlagConfiguration;
-import org.batfish.representation.arista.NamedBgpPeerGroup;
 import org.batfish.representation.arista.NamedRsaPubKey;
 import org.batfish.representation.arista.NatPool;
-import org.batfish.representation.arista.NetworkObjectAddressSpecifier;
-import org.batfish.representation.arista.NetworkObjectGroup;
-import org.batfish.representation.arista.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.arista.NssaSettings;
 import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.OspfNetworkType;
@@ -1106,8 +964,6 @@ import org.batfish.representation.arista.Prefix6List;
 import org.batfish.representation.arista.Prefix6ListLine;
 import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
-import org.batfish.representation.arista.ProtocolObjectGroup;
-import org.batfish.representation.arista.ProtocolOrServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.arista.RipProcess;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
@@ -1137,11 +993,6 @@ import org.batfish.representation.arista.RouteMapSetOriginTypeLine;
 import org.batfish.representation.arista.RouteMapSetWeightLine;
 import org.batfish.representation.arista.SecurityZone;
 import org.batfish.representation.arista.SecurityZonePair;
-import org.batfish.representation.arista.ServiceObject;
-import org.batfish.representation.arista.ServiceObjectGroup;
-import org.batfish.representation.arista.ServiceObjectGroup.ServiceProtocol;
-import org.batfish.representation.arista.ServiceObjectGroupReferenceServiceObjectGroupLine;
-import org.batfish.representation.arista.ServiceObjectServiceSpecifier;
 import org.batfish.representation.arista.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.arista.StandardAccessList;
 import org.batfish.representation.arista.StandardAccessListLine;
@@ -1383,10 +1234,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private NamedRsaPubKey _currentNamedRsaPubKey;
 
-  private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
-
-  private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
-
   @Nullable private String _currentEigrpInterface;
 
   @Nullable private EigrpProcess _currentEigrpProcess;
@@ -1403,13 +1250,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private IsakmpProfile _currentIsakmpProfile;
 
-  private IpBgpPeerGroup _currentIpPeerGroup;
-
   private IpsecTransformSet _currentIpsecTransformSet;
 
   private IpsecProfile _currentIpsecProfile;
-
-  private Ipv6BgpPeerGroup _currentIpv6PeerGroup;
 
   private Interface _currentIsisInterface;
 
@@ -1422,17 +1265,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @SuppressWarnings("unused")
   private MacAccessList _currentMacAccessList;
 
-  private NamedBgpPeerGroup _currentNamedPeerGroup;
-
   private Long _currentOspfArea;
 
   private String _currentOspfInterface;
 
   private OspfProcess _currentOspfProcess;
-
-  private BgpPeerGroup _currentPeerGroup;
-
-  private NamedBgpPeerGroup _currentPeerSession;
 
   private Prefix6List _currentPrefix6List;
 
@@ -1445,8 +1282,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private RouteMapClause _currentRouteMapClause;
 
   private ServiceClass _currentServiceClass;
-
-  private ServiceObject _currentServiceObject;
 
   private SnmpCommunity _currentSnmpCommunity;
 
@@ -1473,11 +1308,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private String _currentVrrpInterface;
 
-  private final @Nonnull BgpPeerGroup _dummyPeerGroup = new MasterBgpPeerGroup();
-
   private final ConfigurationFormat _format;
-
-  private boolean _inIpv6BgpPeer;
 
   private boolean _no;
 
@@ -1485,21 +1316,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private final AristaCombinedParser _parser;
 
-  private final List<BgpPeerGroup> _peerGroupStack;
-
   private final String _text;
 
   private final Warnings _w;
-
-  private NetworkObjectGroup _currentNetworkObjectGroup;
-
-  private String _currentNetworkObjectName;
-
-  private IcmpTypeObjectGroup _currentIcmpTypeObjectGroup;
-
-  private ProtocolObjectGroup _currentProtocolObjectGroup;
-
-  private ServiceObjectGroup _currentServiceObjectGroup;
 
   private InspectClassMap _currentInspectClassMap;
 
@@ -1526,7 +1345,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _parser = parser;
     _format = format;
     _w = warnings;
-    _peerGroupStack = new ArrayList<>();
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -1568,18 +1386,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private Vrf currentVrf() {
     return initVrf(_currentVrf);
-  }
-
-  private void enterBgpVrfAndPushNewPeer(String vrfName) {
-    _currentVrf = vrfName;
-    Vrf v = currentVrf();
-    BgpProcess p = v.getBgpProcess();
-    if (p == null) {
-      long procNum = _configuration.getDefaultVrf().getBgpProcess().getProcnum();
-      p = new BgpProcess(_format, procNum);
-      v.setBgpProcess(p);
-    }
-    pushPeer(p.getMasterBgpPeerGroup());
   }
 
   @Override
@@ -1704,41 +1510,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
     String vrfName = ctx.vrf == null ? _currentVrf : ctx.vrf.getText();
     _currentEigrpProcess = new EigrpProcess(asn, EigrpProcessMode.NAMED, vrfName);
-  }
-
-  @Override
-  public void enterAddress_family_header(Address_family_headerContext ctx) {
-    Bgp_address_familyContext af = ctx.af;
-    if (af.VPNV4() != null || af.VPNV6() != null || af.MDT() != null || af.MULTICAST() != null) {
-      pushPeer(_dummyPeerGroup);
-    } else {
-      if (ctx.af.vrf_name != null) {
-        enterBgpVrfAndPushNewPeer(ctx.af.vrf_name.getText());
-      } else {
-        pushPeer(_currentPeerGroup);
-      }
-    }
-    if (af.IPV6() != null || af.VPNV6() != null) {
-      _inIpv6BgpPeer = true;
-    }
-  }
-
-  @Override
-  public void enterAf_group_rb_stanza(Af_group_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    String name = ctx.name.getText();
-    NamedBgpPeerGroup afGroup = proc.getAfGroups().get(name);
-    if (afGroup == null) {
-      afGroup = proc.addNamedPeerGroup(name);
-    }
-    pushPeer(afGroup);
-    _currentNamedPeerGroup = afGroup;
-    _configuration.defineStructure(BGP_AF_GROUP, name, ctx);
-  }
-
-  @Override
-  public void enterBgp_confederation_rb_stanza(Bgp_confederation_rb_stanzaContext ctx) {
-    todo(ctx);
   }
 
   @Override
@@ -3412,114 +3183,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
-    if (ctx.ip6 != null) {
-      // Remember we are in IPv6 context so that structure references are identified accordingly
-      _inIpv6BgpPeer = true;
-    }
-    // do no further processing for unsupported address families / containers
-    if (_currentPeerGroup == _dummyPeerGroup) {
-      pushPeer(_dummyPeerGroup);
-      return;
-    }
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // we must create peer group if it does not exist and this is a remote_as
-    // declaration
-    boolean create =
-        ctx.remote_as_bgp_tail() != null || ctx.inherit_peer_session_bgp_tail() != null;
-    if (ctx.ip != null) {
-      Ip ip = toIp(ctx.ip);
-      _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-      if (_currentIpPeerGroup == null) {
-        if (create || _format == ARISTA) {
-          _currentIpPeerGroup = proc.addIpPeerGroup(ip);
-          pushPeer(_currentIpPeerGroup);
-        } else {
-          _configuration.referenceStructure(
-              BGP_UNDECLARED_PEER, ip.toString(), BGP_NEIGHBOR_WITHOUT_REMOTE_AS, ctx.ip.getLine());
-          pushPeer(_dummyPeerGroup);
-        }
-      } else {
-        pushPeer(_currentIpPeerGroup);
-      }
-    } else if (ctx.ip6 != null) {
-      Ip6 ip6 = toIp6(ctx.ip6);
-      Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
-      if (pg6 == null) {
-        if (create || _format == ARISTA) {
-          pg6 = proc.addIpv6PeerGroup(ip6);
-          pushPeer(pg6);
-        } else {
-          _configuration.referenceStructure(
-              BGP_UNDECLARED_PEER,
-              ip6.toString(),
-              BGP_NEIGHBOR_WITHOUT_REMOTE_AS,
-              ctx.ip6.getLine());
-          pushPeer(_dummyPeerGroup);
-        }
-      } else {
-        pushPeer(pg6);
-      }
-      _currentIpv6PeerGroup = pg6;
-    } else if (ctx.peergroup != null) {
-      String name = ctx.peergroup.getText();
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-      if (_currentNamedPeerGroup == null) {
-        if (create || _format == ARISTA) {
-          _currentNamedPeerGroup = proc.addNamedPeerGroup(name);
-          _configuration.referenceStructure(
-              BGP_PEER_GROUP, name, BGP_NEIGHBOR_STATEMENT, ctx.peergroup.getLine());
-        } else {
-          _configuration.referenceStructure(
-              BGP_UNDECLARED_PEER_GROUP,
-              name,
-              BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED,
-              ctx.peergroup.getLine());
-          _currentNamedPeerGroup = new NamedBgpPeerGroup("dummy");
-        }
-      }
-      pushPeer(_currentNamedPeerGroup);
-    } else {
-      throw new BatfishException("unknown neighbor type");
-    }
-  }
-
-  @Override
-  public void enterNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    String name = ctx.name.getText();
-    _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-    if (_currentNamedPeerGroup == null) {
-      _currentNamedPeerGroup = proc.addNamedPeerGroup(name);
-    }
-    pushPeer(_currentNamedPeerGroup);
-    _configuration.defineStructure(BGP_NEIGHBOR_GROUP, name, ctx);
-  }
-
-  @Override
   public void enterNet_is_stanza(Net_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
     IsoAddress isoAddress = new IsoAddress(ctx.ISO_ADDRESS().getText());
     proc.setNetAddress(isoAddress);
-  }
-
-  private void addIcmpTypeGroupReference(Variable_permissiveContext nameCtx) {
-    String name = nameCtx.getText();
-    _currentIcmpTypeObjectGroup.getLines().add(new IcmpTypeGroupReferenceLine(name));
-    _configuration.referenceStructure(
-        ICMP_TYPE_OBJECT_GROUP, name, ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT, nameCtx.start.getLine());
-  }
-
-  private void addServiceGroupReference(Variable_group_idContext nameCtx) {
-    String name = nameCtx.getText();
-    _currentServiceObjectGroup
-        .getLines()
-        .add(new ServiceObjectGroupReferenceServiceObjectGroupLine(name));
-    _configuration.referenceStructure(
-        SERVICE_OBJECT_GROUP,
-        name,
-        EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
-        nameCtx.start.getLine());
   }
 
   @Override
@@ -4070,48 +3737,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitService_specifier_icmp(Service_specifier_icmpContext ctx) {
-    _currentServiceObject.addProtocol(IpProtocol.ICMP);
-    if (ctx.icmp_object_type() != null) {
-      _currentServiceObject.setIcmpType(toIcmpType(ctx.icmp_object_type()));
-    }
-  }
-
-  @Override
-  public void exitService_specifier_protocol(Service_specifier_protocolContext ctx) {
-    _currentServiceObject.addProtocol(toIpProtocol(ctx.protocol()));
-  }
-
-  @Override
-  public void exitService_specifier_tcp_udp(Service_specifier_tcp_udpContext ctx) {
-    if (ctx.TCP() != null || ctx.TCP_UDP() != null) {
-      _currentServiceObject.addProtocol(IpProtocol.TCP);
-    }
-    if (ctx.TCP_UDP() != null || ctx.UDP() != null) {
-      _currentServiceObject.addProtocol(IpProtocol.UDP);
-    }
-    if (ctx.dst_ps != null) {
-      _currentServiceObject.addDstPorts(toPortRanges(ctx.dst_ps));
-    }
-    if (ctx.src_ps != null) {
-      _currentServiceObject.addSrcPorts(toPortRanges(ctx.src_ps));
-    }
-  }
-
-  @Override
-  public void enterSession_group_rb_stanza(Session_group_rb_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    BgpProcess proc = currentVrf().getBgpProcess();
-    _currentPeerSession = proc.getPeerSessions().get(name);
-    if (_currentPeerSession == null) {
-      proc.addPeerSession(name);
-      _currentPeerSession = proc.getPeerSessions().get(name);
-    }
-    _configuration.defineStructure(BGP_SESSION_GROUP, name, ctx);
-    pushPeer(_currentPeerSession);
-  }
-
-  @Override
   public void enterSs_community(Ss_communityContext ctx) {
     String name = ctx.name.getText();
     Map<String, SnmpCommunity> communities = _configuration.getSnmpServer().getCommunities();
@@ -4163,31 +3788,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    BgpProcess proc = currentVrf().getBgpProcess();
-    _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-    if (_currentNamedPeerGroup == null) {
-      _currentNamedPeerGroup = proc.addNamedPeerGroup(name);
-    }
-    pushPeer(_currentNamedPeerGroup);
-    _configuration.defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
-  }
-
-  @Override
-  public void enterTemplate_peer_session_rb_stanza(Template_peer_session_rb_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    BgpProcess proc = currentVrf().getBgpProcess();
-    _currentPeerSession = proc.getPeerSessions().get(name);
-    if (_currentPeerSession == null) {
-      proc.addPeerSession(name);
-      _currentPeerSession = proc.getPeerSessions().get(name);
-    }
-    _configuration.defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
-    pushPeer(_currentPeerSession);
-  }
-
-  @Override
   public void enterTs_host(Ts_hostContext ctx) {
     String hostname = ctx.hostname.getText();
     if (!_no) {
@@ -4204,11 +3804,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface())
             .getVrrpGroups()
             .computeIfAbsent(groupNum, VrrpGroup::new);
-  }
-
-  @Override
-  public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
-    enterBgpVrfAndPushNewPeer(ctx.name.getText());
   }
 
   @Override
@@ -4252,145 +3847,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitActivate_bgp_tail(Activate_bgp_tailContext ctx) {
-    if (_currentPeerGroup == null) {
-      return;
-    }
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
-      _currentPeerGroup.setActive(true);
-    } else {
-      throw new BatfishException("no peer or peer group to activate in this context");
-    }
-  }
-
-  @Override
-  public void exitAdditional_paths_rb_stanza(Additional_paths_rb_stanzaContext ctx) {
-    if (ctx.SELECT() != null && ctx.ALL() != null) {
-      _currentPeerGroup.setAdditionalPathsSelectAll(true);
-    } else {
-      if (ctx.RECEIVE() != null) {
-        _currentPeerGroup.setAdditionalPathsReceive(true);
-      }
-      if (ctx.SEND() != null) {
-        _currentPeerGroup.setAdditionalPathsSend(true);
-      }
-    }
-  }
-
-  @Override
-  public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
-    if (ctx.address_family_header() != null
-        && ctx.address_family_header().af != null
-        && ctx.address_family_header().af.vrf_name != null) {
-      _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    }
-    popPeer();
-  }
-
-  @Override
-  public void exitAdvertise_map_bgp_tail(Advertise_map_bgp_tailContext ctx) {
-    // TODO: https://github.com/batfish/batfish/issues/1836
-    warn(ctx, "BGP advertise-map is not currently supported");
-    String advertiseMapName = ctx.am_name.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, advertiseMapName, BGP_ROUTE_MAP_ADVERTISE, ctx.am_name.getStart().getLine());
-    if (ctx.em_name != null) {
-      warn(ctx, "BGP exist-map is not currently supported");
-      String existMapName = ctx.em_name.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, existMapName, BGP_ADVERTISE_MAP_EXIST_MAP, ctx.em_name.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitAf_group_rb_stanza(Af_group_rb_stanzaContext ctx) {
-    resetPeerGroups();
-    popPeer();
-  }
-
-  @Override
-  public void exitAggregate_address_rb_stanza(Aggregate_address_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // Intentional identity comparison
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      boolean summaryOnly = ctx.summary_only != null;
-      boolean asSet = ctx.as_set != null;
-      if (ctx.network != null || ctx.prefix != null) {
-        // ipv4
-        Prefix prefix;
-        if (ctx.network != null) {
-          Ip network = toIp(ctx.network);
-          Ip subnet = toIp(ctx.subnet);
-          int prefixLength = subnet.numSubnetBits();
-          prefix = Prefix.create(network, prefixLength);
-        } else {
-          // ctx.prefix != null
-          prefix = Prefix.parse(ctx.prefix.getText());
-        }
-        BgpAggregateIpv4Network net = new BgpAggregateIpv4Network(prefix);
-        net.setAsSet(asSet);
-        net.setSummaryOnly(summaryOnly);
-        if (ctx.mapname != null) {
-          String mapName = ctx.mapname.getText();
-          net.setAttributeMap(mapName);
-          _configuration.referenceStructure(
-              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        }
-        proc.getAggregateNetworks().put(prefix, net);
-      } else if (ctx.ipv6_prefix != null) {
-        // ipv6
-        Prefix6 prefix6 = Prefix6.parse(ctx.ipv6_prefix.getText());
-        BgpAggregateIpv6Network net = new BgpAggregateIpv6Network(prefix6);
-        net.setAsSet(asSet);
-        net.setSummaryOnly(summaryOnly);
-        if (ctx.mapname != null) {
-          String mapName = ctx.mapname.getText();
-          net.setAttributeMap(mapName);
-          _configuration.referenceStructure(
-              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        }
-        proc.getAggregateIpv6Networks().put(prefix6, net);
-      }
-    } else if (_currentIpPeerGroup != null
-        || _currentIpv6PeerGroup != null
-        || _currentDynamicIpPeerGroup != null
-        || _currentDynamicIpv6PeerGroup != null
-        || _currentNamedPeerGroup != null) {
-      throw new BatfishException("unexpected occurrence in peer group/neighbor context");
-
-    } else if (ctx.mapname != null) {
-      String map = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitAllowas_in_bgp_tail(Allowas_in_bgp_tailContext ctx) {
-    _currentPeerGroup.setAllowAsIn(true);
-    if (ctx.num != null) {
-      todo(ctx);
-    }
-  }
-
-  @Override
-  public void exitAlways_compare_med_rb_stanza(Always_compare_med_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    proc.setAlwaysCompareMed(true);
-  }
-
-  @Override
-  public void exitAs_path_multipath_relax_rb_stanza(As_path_multipath_relax_rb_stanzaContext ctx) {
-    currentVrf().getBgpProcess().setAsPathMultipathRelax(ctx.NO() == null);
-  }
-
-  @Override
-  public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitS_banner_eos(S_banner_eosContext ctx) {
     String bannerType = ctx.type.getText();
     String body = ctx.body != null ? ctx.body.getText() : "";
@@ -4399,42 +3855,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static @Nonnull String toString(Ios_delimited_bannerContext ctx) {
     return ctx.body != null ? ctx.body.getText() : "";
-  }
-
-  @Override
-  public void exitBgp_advertise_inactive_rb_stanza(Bgp_advertise_inactive_rb_stanzaContext ctx) {
-    _currentPeerGroup.setAdvertiseInactive(true);
-  }
-
-  @Override
-  public void exitBgp_listen_range_rb_stanza(Bgp_listen_range_rb_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_PEER_GROUP, name, BGP_LISTEN_RANGE_PEER_GROUP, ctx.name.getStart().getLine());
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (ctx.IP_PREFIX() != null) {
-      Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-      DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
-      pg.setGroupName(name);
-      if (ctx.bgp_asn() != null) {
-        long remoteAs = toAsNum(ctx.bgp_asn());
-        pg.setRemoteAs(remoteAs);
-      }
-    } else if (ctx.IPV6_PREFIX() != null) {
-      Prefix6 prefix6 = Prefix6.parse(ctx.IPV6_PREFIX().getText());
-      DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
-      pg.setGroupName(name);
-      if (ctx.bgp_asn() != null) {
-        long remoteAs = toAsNum(ctx.bgp_asn());
-        pg.setRemoteAs(remoteAs);
-      }
-    }
-  }
-
-  @Override
-  public void exitBgp_redistribute_internal_rb_stanza(
-      Bgp_redistribute_internal_rb_stanzaContext ctx) {
-    todo(ctx); // TODO(https://github.com/batfish/batfish/issues/3230)
   }
 
   @Override
@@ -4474,18 +3894,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.policy.getText();
     _configuration.referenceStructure(
         DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitCluster_id_bgp_tail(Cluster_id_bgp_tailContext ctx) {
-    Ip clusterId = null;
-    if (ctx.DEC() != null) {
-      long ipAsLong = toLong(ctx.DEC());
-      clusterId = Ip.create(ipAsLong);
-    } else if (ctx.IP_ADDRESS() != null) {
-      clusterId = toIp(ctx.IP_ADDRESS());
-    }
-    _currentPeerGroup.setClusterId(clusterId);
   }
 
   @Override
@@ -4711,11 +4119,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitCompare_routerid_rb_stanza(Compare_routerid_rb_stanzaContext ctx) {
-    currentVrf().getBgpProcess().setTieBreaker(BgpTieBreaker.ROUTER_ID);
-  }
-
-  @Override
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
     Integer target = null;
@@ -4742,7 +4145,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitCp_service_policy(Cp_service_policyContext ctx) {
-    CiscoStructureUsage usage =
+    AristaStructureUsage usage =
         ctx.INPUT() != null
             ? CONTROL_PLANE_SERVICE_POLICY_INPUT
             : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
@@ -4820,75 +4223,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitDefault_information_originate_rb_stanza(
-      Default_information_originate_rb_stanzaContext ctx) {
-    _currentPeerGroup.setDefaultOriginate(true);
-  }
-
-  @Override
-  public void exitDefault_metric_bgp_tail(Default_metric_bgp_tailContext ctx) {
-    int metric = toInteger(ctx.metric);
-    _currentPeerGroup.setDefaultMetric(metric);
-  }
-
-  @Override
-  public void exitDefault_originate_bgp_tail(Default_originate_bgp_tailContext ctx) {
-    _currentPeerGroup.setDefaultOriginate(true);
-    if (ctx.map != null) {
-      String mapName = ctx.map.getText();
-      _currentPeerGroup.setDefaultOriginateMap(mapName);
-      _configuration.referenceStructure(
-          ROUTE_MAP, mapName, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitDefault_shutdown_bgp_tail(Default_shutdown_bgp_tailContext ctx) {
-    _currentPeerGroup.setShutdown(true);
-  }
-
-  @Override
-  public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
-    _currentPeerGroup.setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitDisable_peer_as_check_bgp_tail(Disable_peer_as_check_bgp_tailContext ctx) {
-    _currentPeerGroup.setDisablePeerAsCheck(true);
-  }
-
-  @Override
-  public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
-    // Note: Mutually exclusive with Prefix_list_bgp_tail
-    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
-    String name = ctx.list_name.getText();
-    int line = ctx.list_name.getStart().getLine();
-    CiscoStructureUsage usage;
-    if (_inIpv6BgpPeer) {
-      // TODO Support IPv6 access lists in BGP distribute-lists
-      if (ctx.IN() != null) {
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
-      } else if (ctx.OUT() != null) {
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
-      } else {
-        throw new BatfishException("Invalid direction for BGP distribute-list");
-      }
-    } else {
-      if (ctx.IN() != null) {
-        _currentPeerGroup.setInboundIpAccessList(name);
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-      } else if (ctx.OUT() != null) {
-        _currentPeerGroup.setOutboundIpAccessList(name);
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-      } else {
-        throw new BatfishException("Invalid direction for BGP distribute-list");
-      }
-    }
-    CiscoStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
-    _configuration.referenceStructure(type, name, usage, line);
-  }
-
-  @Override
   public void exitDistribute_list_is_stanza(Distribute_list_is_stanzaContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -4923,11 +4257,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(DEPI_TUNNEL, name, DEPI_TUNNEL_PROTECT_TUNNEL, line);
-  }
-
-  @Override
-  public void exitEbgp_multihop_bgp_tail(Ebgp_multihop_bgp_tailContext ctx) {
-    _currentPeerGroup.setEbgpMultihop(true);
   }
 
   private void exitEigrpProcess(ParserRuleContext ctx) {
@@ -5209,33 +4538,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           .setSrcPortRanges(srcPortRanges)
           .setTcpFlags(tcpFlags)
           .build();
-    } else if (ctx.ogs != null) {
-      // This object group specifier could be a service or protocol object group
-      String name = ctx.ogs.getText();
-      int line = ctx.ogs.getStart().getLine();
-      _configuration.referenceStructure(
-          PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-          name,
-          EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-          line);
-      return new ProtocolOrServiceObjectGroupServiceSpecifier(name);
-    } else if (ctx.obj != null) {
-      String name = ctx.obj.getText();
-      int line = ctx.obj.getStart().getLine();
-      _configuration.referenceStructure(
-          SERVICE_OBJECT, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT, line);
-      return new ServiceObjectServiceSpecifier(name);
-    } else if (ctx.inline_obj != null) {
-      // ASA inline service object for a particular protocol
-      return SimpleExtendedAccessListServiceSpecifier.builder()
-          .setProtocol(toIpProtocol(ctx.inline_obj))
-          .build();
-    } else if (ctx.inline_obj_icmp != null) {
-      // ASA inline service object for a particular ICMP type
-      return SimpleExtendedAccessListServiceSpecifier.builder()
-          .setProtocol(IpProtocol.ICMP)
-          .setIcmpType(toIcmpType(ctx.inline_obj_icmp))
-          .build();
     } else {
       return convProblem(
           AccessListServiceSpecifier.class, ctx, UnimplementedAccessListServiceSpecifier.INSTANCE);
@@ -5259,24 +4561,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.prefix != null) {
       return new WildcardAddressSpecifier(IpWildcard.create(Prefix.parse(ctx.prefix.getText())));
-    } else if (ctx.address_group != null) {
-      todo(ctx);
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.iface != null) {
       todo(ctx);
       return new WildcardAddressSpecifier(IpWildcard.ANY);
-    } else if (ctx.obj != null) {
-      String name = ctx.obj.getText();
-      int line = ctx.obj.getStart().getLine();
-      _configuration.referenceStructure(
-          NETWORK_OBJECT, name, EXTENDED_ACCESS_LIST_NETWORK_OBJECT, line);
-      return new NetworkObjectAddressSpecifier(name);
-    } else if (ctx.og != null) {
-      String name = ctx.og.getText();
-      int line = ctx.og.getStart().getLine();
-      _configuration.referenceStructure(
-          NETWORK_OBJECT_GROUP, name, EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP, line);
-      return new NetworkObjectGroupAddressSpecifier(name);
     } else {
       throw convError(AccessListAddressSpecifier.class, ctx);
     }
@@ -5455,18 +4742,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
-    String filterList = ctx.num.getText();
-    _configuration.referenceStructure(
-        AS_PATH_ACCESS_LIST,
-        filterList,
-        BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        ctx.getStart().getLine());
-    // TODO: Handle filter-list in batfish
-    todo(ctx);
-  }
-
-  @Override
   public void exitFlan_interface(Flan_interfaceContext ctx) {
     String alias = ctx.name.getText();
     String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
@@ -5555,43 +4830,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(
-          ctx,
-          String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-    CiscoStructureUsage usage = null;
-    String aclName = ctx.name.getText();
-    if (ctx.IN() != null) {
-      iface.setIncomingFilter(aclName);
-      usage = INTERFACE_INCOMING_FILTER;
-    } else if (ctx.OUT() != null) {
-      iface.setOutgoingFilter(aclName);
-      usage = INTERFACE_OUTGOING_FILTER;
-    }
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, aclName, usage, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitAsa_ag_global(Asa_ag_globalContext ctx) {
-    String aclName = ctx.name.getText();
-    for (Interface iface : _configuration.getInterfaces().values()) {
-      iface.setIncomingFilter(aclName);
-    }
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, aclName, ACCESS_GROUP_GLOBAL_FILTER, ctx.name.getStart().getLine());
-  }
-
-  @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    CiscoStructureUsage usage = null;
+    AristaStructureUsage usage = null;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
@@ -5887,7 +5128,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
-    CiscoStructureUsage usage =
+    AristaStructureUsage usage =
         ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
     _configuration.referenceStructure(
         IPV6_ACCESS_LIST, ctx.acl.getText(), usage, ctx.acl.getStart().getLine());
@@ -5930,7 +5171,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _configuration.referenceStructure(
         INTERFACE,
         member,
-        CiscoStructureUsage.INTERFACE_MEMBER_INTERFACE,
+        AristaStructureUsage.INTERFACE_MEMBER_INTERFACE,
         ctx.name.getStart().getLine());
     _currentInterfaces.get(0).getMemberInterfaces().add(member);
   }
@@ -6396,50 +5637,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitInherit_peer_policy_bgp_tail(Inherit_peer_policy_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    String groupName = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_TEMPLATE_PEER_POLICY,
-        groupName,
-        BGP_INHERITED_PEER_POLICY,
-        ctx.name.getStart().getLine());
-    if (_currentIpPeerGroup != null) {
-      _currentIpPeerGroup.setGroupName(groupName);
-    } else if (_currentNamedPeerGroup != null) {
-      // May not hit this since parser for peer-policy does not have
-      // recursion.
-      _currentNamedPeerGroup.setGroupName(groupName);
-    } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      // Intentional identity comparison above
-      throw new BatfishException("Invalid peer context for inheritance");
-    } else {
-      todo(ctx);
-    }
-  }
-
-  @Override
-  public void exitInherit_peer_session_bgp_tail(Inherit_peer_session_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    String sessionName = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_TEMPLATE_PEER_SESSION,
-        sessionName,
-        BGP_INHERITED_SESSION,
-        ctx.name.getStart().getLine());
-    if (_currentIpPeerGroup != null) {
-      _currentIpPeerGroup.setPeerSession(sessionName);
-    } else if (_currentNamedPeerGroup != null) {
-      _currentNamedPeerGroup.setPeerSession(sessionName);
-    } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      // Intentional identity comparison above
-      throw new BatfishException("Invalid peer context for inheritance");
-    } else {
-      todo(ctx);
-    }
-  }
-
-  @Override
   public void exitInterface_is_stanza(Interface_is_stanzaContext ctx) {
     _currentIsisInterface = null;
   }
@@ -6709,8 +5906,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     int nameLine = ctx.name.getStart().getLine();
     BiConsumer<Line, String> setter;
-    CiscoStructureType structureType;
-    CiscoStructureUsage structureUsage;
+    AristaStructureType structureType;
+    AristaStructureUsage structureUsage;
     if (ctx.OUT() != null || ctx.EGRESS() != null) {
       if (ipv6) {
         setter = Line::setOutputIpv6AccessList;
@@ -6801,12 +5998,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       Line line = _configuration.getCf().getLines().get(currentName);
       setter.accept(line, protocols);
     }
-  }
-
-  @Override
-  public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
-    long as = toAsNum(ctx.bgp_asn());
-    _currentPeerGroup.setLocalAs(as);
   }
 
   @Override
@@ -7063,26 +6254,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitMaximum_paths_bgp_tail(Maximum_paths_bgp_tailContext ctx) {
-    int maximumPaths = toInteger(ctx.paths);
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (ctx.EBGP() != null) {
-      proc.setMaximumPathsEbgp(maximumPaths);
-    } else if (ctx.IBGP() != null) {
-      proc.setMaximumPathsIbgp(maximumPaths);
-    } else if (ctx.EIBGP() != null) {
-      proc.setMaximumPathsEibgp(maximumPaths);
-    } else {
-      proc.setMaximumPaths(maximumPaths);
-    }
-  }
-
-  @Override
-  public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitEos_mlag_domain(Eos_mlag_domainContext ctx) {
     _configuration.getEosMlagConfiguration().setDomainId(ctx.id.getText());
   }
@@ -7147,54 +6318,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
     assert _currentVlans != null;
     trunkGroup.addVlans(_currentVlans);
-  }
-
-  @Override
-  public void exitNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
-    resetPeerGroups();
-    popPeer();
-  }
-
-  @Override
-  public void exitNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
-    resetPeerGroups();
-    popPeer();
-  }
-
-  @Override
-  public void exitNetwork_bgp_tail(Network_bgp_tailContext ctx) {
-    Prefix prefix;
-    if (ctx.prefix != null) {
-      prefix = Prefix.parse(ctx.prefix.getText());
-    } else {
-      Ip address = toIp(ctx.ip);
-      Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
-      int prefixLength = mask.numSubnetBits();
-      prefix = Prefix.create(address, prefixLength);
-    }
-    String map = null;
-    if (ctx.mapname != null) {
-      map = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_NETWORK_ORIGINATION_ROUTE_MAP, ctx.mapname.getStart().getLine());
-    }
-    BgpNetwork bgpNetwork = new BgpNetwork(map);
-    BgpProcess proc = currentVrf().getBgpProcess();
-    proc.getIpNetworks().put(prefix, bgpNetwork);
-  }
-
-  @Override
-  public void exitNetwork6_bgp_tail(Network6_bgp_tailContext ctx) {
-    Prefix6 prefix6 = Prefix6.parse(ctx.prefix.getText());
-    String map = null;
-    if (ctx.mapname != null) {
-      map = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_NETWORK6_ORIGINATION_ROUTE_MAP, ctx.mapname.getStart().getLine());
-    }
-    BgpProcess proc = currentVrf().getBgpProcess();
-    BgpNetwork6 bgpNetwork6 = new BgpNetwork6(map);
-    proc.getIpv6Networks().put(prefix6, bgpNetwork6);
   }
 
   @Override
@@ -7490,107 +6613,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
-    boolean val = ctx.NO() == null;
-    _currentPeerGroup.setNextHopSelf(val);
-  }
-
-  @Override
   public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
     String prefixListName = ctx.name.getText();
     _configuration.getPrefixLists().remove(prefixListName);
   }
 
   @Override
-  public void exitNo_neighbor_activate_rb_stanza(No_neighbor_activate_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (ctx.ip != null) {
-      Ip ip = toIp(ctx.ip);
-      IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
-      if (pg == null) {
-        warn(ctx, "ignoring attempt to activate undefined ip peer group: " + ip);
-      } else {
-        pg.setActive(false);
-      }
-    } else if (ctx.ip6 != null) {
-      Ip6 ip6 = toIp6(ctx.ip6);
-      Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
-      if (pg == null) {
-        warn(ctx, "ignoring attempt to activate undefined ipv6 peer group: " + ip6);
-      } else {
-        pg.setActive(false);
-      }
-    } else if (ctx.peergroup != null) {
-      String pgName = ctx.peergroup.getText();
-      NamedBgpPeerGroup npg = proc.getNamedPeerGroups().get(pgName);
-      npg.setActive(false);
-      for (IpBgpPeerGroup ipg : proc.getIpPeerGroups().values()) {
-        String currentGroupName = ipg.getGroupName();
-        if (currentGroupName != null && currentGroupName.equals(pgName)) {
-          ipg.setActive(false);
-        }
-      }
-      for (Ipv6BgpPeerGroup ipg : proc.getIpv6PeerGroups().values()) {
-        String currentGroupName = ipg.getGroupName();
-        if (currentGroupName != null && currentGroupName.equals(pgName)) {
-          ipg.setActive(false);
-        }
-      }
-    }
-  }
-
-  @Override
-  public void exitNo_neighbor_shutdown_rb_stanza(No_neighbor_shutdown_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (ctx.ip != null) {
-      Ip ip = toIp(ctx.ip);
-      IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
-      // TODO: see if it is always ok to set active on 'no shutdown'
-      if (pg == null) {
-        warn(ctx, "ignoring attempt to shut down to undefined ip peer group: " + ip);
-      } else {
-        pg.setActive(true);
-        pg.setShutdown(false);
-      }
-    } else if (ctx.ip6 != null) {
-      Ip6 ip6 = toIp6(ctx.ip6);
-      Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
-      // TODO: see if it is always ok to set active on 'no shutdown'
-      if (pg == null) {
-        warn(ctx, "ignoring attempt to shut down undefined ipv6 peer group: " + ip6);
-      } else {
-        pg.setActive(true);
-        pg.setShutdown(false);
-      }
-    } else if (ctx.peergroup != null) {
-      warn(ctx, "'no shutdown' of  peer group unsupported");
-    }
-  }
-
-  @Override
-  public void exitNo_redistribute_connected_rb_stanza(
-      No_redistribute_connected_rb_stanzaContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // Intentional identity comparison
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      proc.getRedistributionPolicies().remove(sourceProtocol);
-    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
-      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
-    }
-  }
-
-  @Override
   public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
     String mapName = ctx.name.getText();
     _configuration.getRouteMaps().remove(mapName);
-  }
-
-  @Override
-  public void exitNo_shutdown_rb_stanza(No_shutdown_rb_stanzaContext ctx) {
-    // TODO: see if it is always ok to set active on 'no shutdown'
-    _currentPeerGroup.setShutdown(false);
-    _currentPeerGroup.setActive(true);
   }
 
   @Override
@@ -7654,43 +6685,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
     }
-  }
-
-  @Override
-  public void exitPeer_group_assignment_rb_stanza(Peer_group_assignment_rb_stanzaContext ctx) {
-    String peerGroupName = ctx.name.getText();
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (ctx.address != null) {
-      Ip address = toIp(ctx.address);
-      IpBgpPeerGroup ipPeerGroup = proc.getIpPeerGroups().get(address);
-      if (ipPeerGroup == null) {
-        ipPeerGroup = proc.addIpPeerGroup(address);
-      }
-      ipPeerGroup.setGroupName(peerGroupName);
-    } else if (ctx.address6 != null) {
-      Ip6 address6 = toIp6(ctx.address6);
-      Ipv6BgpPeerGroup ipv6PeerGroup = proc.getIpv6PeerGroups().get(address6);
-      if (ipv6PeerGroup == null) {
-        ipv6PeerGroup = proc.addIpv6PeerGroup(address6);
-      }
-      ipv6PeerGroup.setGroupName(peerGroupName);
-    }
-    _configuration.referenceStructure(
-        BGP_PEER_GROUP, peerGroupName, BGP_NEIGHBOR_PEER_GROUP, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitPeer_group_creation_rb_stanza(Peer_group_creation_rb_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (proc.getNamedPeerGroups().get(name) == null) {
-      NamedBgpPeerGroup npg = proc.addNamedPeerGroup(name);
-      if (ctx.PASSIVE() != null) {
-        // dell: won't otherwise specify activation so just activate here
-        npg.setActive(true);
-      }
-    }
-    _configuration.defineStructure(BGP_PEER_GROUP, name, ctx);
   }
 
   @Override
@@ -7865,63 +6859,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
-    String listName = ctx.list_name.getText();
-    int line = ctx.list_name.getLine();
-    CiscoStructureUsage usage;
-    if (_inIpv6BgpPeer) {
-      // TODO Support IPv6 prefix-lists in BGP
-      if (ctx.IN() != null) {
-        usage = BGP_INBOUND_PREFIX6_LIST;
-      } else if (ctx.OUT() != null) {
-        usage = BGP_OUTBOUND_PREFIX6_LIST;
-      } else {
-        throw new BatfishException("Invalid direction for BGP prefix-list");
-      }
-    } else {
-      if (ctx.IN() != null) {
-        _currentPeerGroup.setInboundPrefixList(listName);
-        usage = BGP_INBOUND_PREFIX_LIST;
-      } else if (ctx.OUT() != null) {
-        _currentPeerGroup.setOutboundPrefixList(listName);
-        usage = BGP_OUTBOUND_PREFIX_LIST;
-      } else {
-        throw new BatfishException("Invalid direction for BGP prefix-list");
-      }
-    }
-    CiscoStructureType type = _inIpv6BgpPeer ? PREFIX6_LIST : PREFIX_LIST;
-    _configuration.referenceStructure(type, listName, usage, line);
-  }
-
-  @Override
-  public void exitRedistribute_aggregate_bgp_tail(Redistribute_aggregate_bgp_tailContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitRedistribute_connected_bgp_tail(Redistribute_connected_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // Intentional identity comparison
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-        int metric = toInteger(ctx.metric);
-        r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        r.setRouteMap(map);
-        _configuration.referenceStructure(
-            ROUTE_MAP, map, BGP_REDISTRIBUTE_CONNECTED_MAP, ctx.map.getStart().getLine());
-      }
-    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
-      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
-    }
-  }
-
-  @Override
   public void exitRedistribute_connected_is_stanza(Redistribute_connected_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -7945,91 +6882,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       r.setLevel(IsisLevel.LEVEL_1_2);
     } else {
       r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
-    }
-  }
-
-  @Override
-  public void exitRedistribute_ospf_bgp_tail(Redistribute_ospf_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // Intentional identity comparison
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-        int metric = toInteger(ctx.metric);
-        r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        r.setRouteMap(map);
-        _configuration.referenceStructure(
-            ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
-      }
-      if (ctx.MATCH() != null) {
-        todo(ctx);
-      }
-      if (ctx.procname != null) {
-        r.getSpecialAttributes()
-            .put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, ctx.procname.getText());
-      }
-    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
-      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
-    }
-  }
-
-  @Override
-  public void exitRedistribute_ospfv3_bgp_tail(Redistribute_ospfv3_bgp_tailContext ctx) {
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.map.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitRedistribute_rip_bgp_tail(Redistribute_rip_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // Intentional identity comparison
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-        int metric = toInteger(ctx.metric);
-        r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        r.setRouteMap(map);
-        _configuration.referenceStructure(
-            ROUTE_MAP, map, BGP_REDISTRIBUTE_RIP_MAP, ctx.map.getStart().getLine());
-      }
-    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
-      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
-    }
-  }
-
-  @Override
-  public void exitRedistribute_static_bgp_tail(Redistribute_static_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    // Intentional identity comparison
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-        long metric = toLong(ctx.metric);
-        r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-        String map = ctx.map.getText();
-        r.setRouteMap(map);
-        _configuration.referenceStructure(
-            ROUTE_MAP, map, BGP_REDISTRIBUTE_STATIC_MAP, ctx.map.getStart().getLine());
-      }
-    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
-      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }
   }
 
@@ -8058,28 +6910,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
     }
-  }
-
-  @Override
-  public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      throw new BatfishException(
-          "no peer or peer group in context: " + getLocation(ctx) + getFullText(ctx));
-    }
-    long as = toAsNum(ctx.remote);
-    _currentPeerGroup.setRemoteAs(as);
-    if (ctx.alt_ases != null) {
-      _currentPeerGroup.setAlternateAs(
-          ctx.alt_ases.stream()
-              .map(AristaControlPlaneExtractor::toAsNum)
-              .collect(ImmutableSet.toImmutableSet()));
-    }
-  }
-
-  @Override
-  public void exitRemove_private_as_bgp_tail(Remove_private_as_bgp_tailContext ctx) {
-    _currentPeerGroup.setRemovePrivateAs(true);
   }
 
   @Override
@@ -8200,8 +7030,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     boolean in = ctx.IN() != null;
-    CiscoStructureType type;
-    CiscoStructureUsage usage;
+    AristaStructureType type;
+    AristaStructureUsage usage;
     DistributeListFilterType filterType;
     if (ctx.PREFIX() != null) {
       type = PREFIX_LIST;
@@ -8468,7 +7298,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     boolean in = ctx.IN() != null;
-    CiscoStructureUsage usage =
+    AristaStructureUsage usage =
         in ? OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
     _configuration.referenceStructure(PREFIX6_LIST, name, usage, line);
 
@@ -8509,44 +7339,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRoute_map_bgp_tail(Route_map_bgp_tailContext ctx) {
-    if (_currentPeerGroup == null) {
-      return;
-    }
-    String mapName = ctx.name.getText();
-    boolean ipv6 = _inIpv6BgpPeer || _currentIpv6PeerGroup != null;
-    CiscoStructureUsage usage;
-    if (ctx.IN() != null) {
-      if (ipv6) {
-        _currentPeerGroup.setInboundRoute6Map(mapName);
-        usage = BGP_INBOUND_ROUTE6_MAP;
-      } else {
-        _currentPeerGroup.setInboundRouteMap(mapName);
-        usage = BGP_INBOUND_ROUTE_MAP;
-      }
-    } else if (ctx.OUT() != null) {
-      if (ipv6) {
-        _currentPeerGroup.setOutboundRoute6Map(mapName);
-        usage = BGP_OUTBOUND_ROUTE6_MAP;
-      } else {
-        _currentPeerGroup.setOutboundRouteMap(mapName);
-        usage = BGP_OUTBOUND_ROUTE_MAP;
-      }
-    } else {
-      throw new BatfishException("bad direction");
-    }
-    _configuration.referenceStructure(ROUTE_MAP, mapName, usage, ctx.getStart().getLine());
-  }
-
-  @Override
   public void exitRoute_map_stanza(Route_map_stanzaContext ctx) {
     _currentRouteMap = null;
     _currentRouteMapClause = null;
-  }
-
-  @Override
-  public void exitRoute_reflector_client_bgp_tail(Route_reflector_client_bgp_tailContext ctx) {
-    _currentPeerGroup.setRouteReflectorClient(true);
   }
 
   @Override
@@ -8572,13 +7367,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);
-  }
-
-  @Override
-  public void exitRouter_id_bgp_tail(Router_id_bgp_tailContext ctx) {
-    Ip routerId = toIp(ctx.routerid);
-    BgpProcess proc = currentVrf().getBgpProcess();
-    proc.setRouterId(routerId);
   }
 
   @Override
@@ -8923,41 +7711,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitSend_community_bgp_tail(Send_community_bgp_tailContext ctx) {
-    boolean extended = false;
-    boolean standard = false;
-    if (ctx.SEND_COMMUNITY() != null) {
-      if (ctx.BOTH() != null) {
-        extended = true;
-        standard = true;
-      } else if (ctx.EXTENDED() != null) {
-        extended = true;
-      } else {
-        standard = true;
-      }
-    } else if (ctx.SEND_COMMUNITY_EBGP() != null) {
-      standard = true;
-    } else if (ctx.SEND_EXTENDED_COMMUNITY_EBGP() != null) {
-      extended = true;
-    }
-    if (standard) {
-      _currentPeerGroup.setSendCommunity(true);
-    }
-    if (extended) {
-      _currentPeerGroup.setSendExtendedCommunity(true);
-    }
-  }
-
-  @Override
-  public void exitSession_group_rb_stanza(Session_group_rb_stanzaContext ctx) {
-    _currentIpPeerGroup = null;
-    _currentIpv6PeerGroup = null;
-    _currentNamedPeerGroup = null;
-    _currentPeerSession = null;
-    popPeer();
-  }
-
-  @Override
   public void exitSet_as_path_prepend_rm_stanza(Set_as_path_prepend_rm_stanzaContext ctx) {
     List<AsExpr> asList = new ArrayList<>();
     for (As_exprContext asx : ctx.as_list) {
@@ -9100,14 +7853,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
     RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.DEC()));
     _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitShutdown_bgp_tail(Shutdown_bgp_tailContext ctx) {
-    if (_currentPeerGroup == null) {
-      return;
-    }
-    _currentPeerGroup.setShutdown(true);
   }
 
   @Override
@@ -9306,25 +8051,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentStandardIpv6Acl.addLine(line);
   }
 
-  // @Override
-  // public void exitSubnet_bgp_tail(Subnet_bgp_tailContext ctx) {
-  // BgpProcess proc = currentVrf().getBgpProcess();
-  // if (ctx.IP_PREFIX() != null) {
-  // Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-  // NamedBgpPeerGroup namedGroup = _currentNamedPeerGroup;
-  // namedGroup.addNeighborIpPrefix(prefix);
-  // DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
-  // pg.setGroupName(namedGroup.getName());
-  // }
-  // else if (ctx.IPV6_PREFIX() != null) {
-  // Prefix6 prefix6 = Prefix6.parse(ctx.IPV6_PREFIX().getText());
-  // NamedBgpPeerGroup namedGroup = _currentNamedPeerGroup;
-  // namedGroup.addNeighborIpv6Prefix(prefix6);
-  // DynamicIpv6BgpPeerGroup pg = proc.addDynamicIpv6PeerGroup(prefix6);
-  // pg.setGroupName(namedGroup.getName());
-  // }
-  // }
-  //
   @Override
   public void exitSummary_address_is_stanza(Summary_address_is_stanzaContext ctx) {
     Ip ip = toIp(ctx.ip);
@@ -9376,28 +8102,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitTemplate_peer_address_family(Template_peer_address_familyContext ctx) {
-    popPeer();
-  }
-
-  @Override
-  public void exitTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
-    _currentIpPeerGroup = null;
-    _currentIpv6PeerGroup = null;
-    _currentNamedPeerGroup = null;
-    popPeer();
-  }
-
-  @Override
-  public void exitTemplate_peer_session_rb_stanza(Template_peer_session_rb_stanzaContext ctx) {
-    _currentIpPeerGroup = null;
-    _currentIpv6PeerGroup = null;
-    _currentNamedPeerGroup = null;
-    _currentPeerSession = null;
-    popPeer();
-  }
-
-  @Override
   public void exitU_password(U_passwordContext ctx) {
     String passwordString;
     if (ctx.up_arista_md5() != null) {
@@ -9422,67 +8126,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitUnsuppress_map_bgp_tail(Unsuppress_map_bgp_tailContext ctx) {
-    String name = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
-    warn(ctx, "BGP unusuppress-map is not currently supported");
-  }
-
-  @Override
-  public void exitUpdate_source_bgp_tail(Update_source_bgp_tailContext ctx) {
-    String source = toInterfaceName(ctx.source);
-    _configuration.referenceStructure(
-        INTERFACE, source, BGP_UPDATE_SOURCE_INTERFACE, ctx.getStart().getLine());
-
-    if (_currentPeerGroup != null) {
-      _currentPeerGroup.setUpdateSource(source);
-    }
-  }
-
-  @Override
-  public void exitUse_neighbor_group_bgp_tail(Use_neighbor_group_bgp_tailContext ctx) {
-    String groupName = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_NEIGHBOR_GROUP, groupName, BGP_USE_NEIGHBOR_GROUP, ctx.name.getStart().getLine());
-    if (_currentIpPeerGroup != null) {
-      _currentIpPeerGroup.setGroupName(groupName);
-    } else if (_currentIpv6PeerGroup != null) {
-      _currentIpv6PeerGroup.setGroupName(groupName);
-    } else if (_currentNamedPeerGroup != null) {
-      _currentNamedPeerGroup.setGroupName(groupName);
-    } else {
-      throw new BatfishException("Unexpected context for use neighbor group");
-    }
-  }
-
-  @Override
-  public void exitUse_af_group_bgp_tail(Use_af_group_bgp_tailContext ctx) {
-    String groupName = ctx.name.getText();
-    _configuration.referenceStructure(
-        BGP_AF_GROUP, groupName, BGP_USE_AF_GROUP, ctx.name.getStart().getLine());
-    todo(ctx);
-  }
-
-  @Override
-  public void exitUse_session_group_bgp_tail(Use_session_group_bgp_tailContext ctx) {
-    BgpProcess proc = currentVrf().getBgpProcess();
-    String groupName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(BGP_SESSION_GROUP, groupName, BGP_USE_SESSION_GROUP, line);
-    if (_currentIpPeerGroup != null) {
-      _currentIpPeerGroup.setPeerSession(groupName);
-    } else if (_currentNamedPeerGroup != null) {
-      _currentNamedPeerGroup.setPeerSession(groupName);
-    } else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      // Intentional identity comparison above
-      throw new BatfishException("Invalid peer context for inheritance");
-    } else {
-      todo(ctx);
-    }
-  }
-
-  @Override
   public void exitViaf_vrrp(Viaf_vrrpContext ctx) {
     _currentVrrpGroup = null;
   }
@@ -9502,12 +8145,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitViafv_priority(Viafv_priorityContext ctx) {
     int priority = toInteger(ctx.priority);
     _currentVrrpGroup.setPriority(priority);
-  }
-
-  @Override
-  public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    popPeer();
   }
 
   @Override
@@ -9620,29 +8257,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return _configuration.getVrfs().computeIfAbsent(vrfName, Vrf::new);
   }
 
-  private void popPeer() {
-    int index = _peerGroupStack.size() - 1;
-    _currentPeerGroup = _peerGroupStack.get(index);
-    _peerGroupStack.remove(index);
-    _inIpv6BgpPeer = false;
-  }
-
   @Override
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
-  }
-
-  private void pushPeer(@Nonnull BgpPeerGroup pg) {
-    _peerGroupStack.add(_currentPeerGroup);
-    _currentPeerGroup = pg;
-  }
-
-  private void resetPeerGroups() {
-    _currentDynamicIpPeerGroup = null;
-    _currentIpPeerGroup = null;
-    _currentIpv6PeerGroup = null;
-    _currentNamedPeerGroup = null;
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
@@ -9890,97 +8508,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {
       throw convError(EncryptionAlgorithm.class, ctx);
-    }
-  }
-
-  private Integer toIcmpType(Icmp_object_typeContext ctx) {
-    if (ctx.ALTERNATE_ADDRESS() != null) {
-      return IcmpType.ALTERNATE_ADDRESS;
-    } else if (ctx.CONVERSION_ERROR() != null) {
-      return IcmpType.CONVERSION_ERROR;
-    } else if (ctx.ECHO() != null) {
-      return IcmpType.ECHO_REQUEST;
-    } else if (ctx.ECHO_REPLY() != null) {
-      return IcmpType.ECHO_REPLY;
-    } else if (ctx.INFORMATION_REPLY() != null) {
-      return IcmpType.INFO_REPLY;
-    } else if (ctx.INFORMATION_REQUEST() != null) {
-      return IcmpType.INFO_REQUEST;
-    } else if (ctx.MASK_REPLY() != null) {
-      return IcmpType.MASK_REPLY;
-    } else if (ctx.MASK_REQUEST() != null) {
-      return IcmpType.MASK_REQUEST;
-    } else if (ctx.MOBILE_REDIRECT() != null) {
-      return IcmpType.MOBILE_REDIRECT;
-    } else if (ctx.PARAMETER_PROBLEM() != null) {
-      return IcmpType.PARAMETER_PROBLEM;
-    } else if (ctx.REDIRECT() != null) {
-      return IcmpType.REDIRECT_MESSAGE;
-    } else if (ctx.ROUTER_ADVERTISEMENT() != null) {
-      return IcmpType.ROUTER_ADVERTISEMENT;
-    } else if (ctx.ROUTER_SOLICITATION() != null) {
-      return IcmpType.ROUTER_SOLICITATION;
-    } else if (ctx.SOURCE_QUENCH() != null) {
-      return IcmpType.SOURCE_QUENCH;
-    } else if (ctx.TIME_EXCEEDED() != null) {
-      return IcmpType.TIME_EXCEEDED;
-    } else if (ctx.TIMESTAMP_REPLY() != null) {
-      return IcmpType.TIMESTAMP_REPLY;
-    } else if (ctx.TIMESTAMP_REQUEST() != null) {
-      return IcmpType.TIMESTAMP_REQUEST;
-    } else if (ctx.TRACEROUTE() != null) {
-      return IcmpType.TRACEROUTE;
-    } else if (ctx.UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
-    } else if (ctx.UNSET() != null) {
-      return IcmpType.UNSET;
-    } else {
-      throw convError(IcmpType.class, ctx);
-    }
-  }
-
-  // Handle ASA style ICMP codes
-  private Integer toIcmpType(Icmp_inline_object_typeContext ctx) {
-    if (ctx.ICMP_ALTERNATE_ADDRESS() != null) {
-      return IcmpType.ALTERNATE_ADDRESS;
-    } else if (ctx.ICMP_CONVERSION_ERROR() != null) {
-      return IcmpType.CONVERSION_ERROR;
-    } else if (ctx.ICMP_ECHO() != null) {
-      return IcmpType.ECHO_REQUEST;
-    } else if (ctx.ICMP_ECHO_REPLY() != null) {
-      return IcmpType.ECHO_REPLY;
-    } else if (ctx.ICMP_INFORMATION_REPLY() != null) {
-      return IcmpType.INFO_REPLY;
-    } else if (ctx.ICMP_INFORMATION_REQUEST() != null) {
-      return IcmpType.INFO_REQUEST;
-    } else if (ctx.ICMP_MASK_REPLY() != null) {
-      return IcmpType.MASK_REPLY;
-    } else if (ctx.ICMP_MASK_REQUEST() != null) {
-      return IcmpType.MASK_REQUEST;
-    } else if (ctx.ICMP_MOBILE_REDIRECT() != null) {
-      return IcmpType.MOBILE_REDIRECT;
-    } else if (ctx.ICMP_PARAMETER_PROBLEM() != null) {
-      return IcmpType.PARAMETER_PROBLEM;
-    } else if (ctx.ICMP_REDIRECT() != null) {
-      return IcmpType.REDIRECT_MESSAGE;
-    } else if (ctx.ICMP_ROUTER_ADVERTISEMENT() != null) {
-      return IcmpType.ROUTER_ADVERTISEMENT;
-    } else if (ctx.ICMP_ROUTER_SOLICITATION() != null) {
-      return IcmpType.ROUTER_SOLICITATION;
-    } else if (ctx.ICMP_SOURCE_QUENCH() != null) {
-      return IcmpType.SOURCE_QUENCH;
-    } else if (ctx.ICMP_TIME_EXCEEDED() != null) {
-      return IcmpType.TIME_EXCEEDED;
-    } else if (ctx.ICMP_TIMESTAMP_REPLY() != null) {
-      return IcmpType.TIMESTAMP_REPLY;
-    } else if (ctx.ICMP_TIMESTAMP_REQUEST() != null) {
-      return IcmpType.TIMESTAMP_REQUEST;
-    } else if (ctx.ICMP_TRACEROUTE() != null) {
-      return IcmpType.TRACEROUTE;
-    } else if (ctx.ICMP_UNREACHABLE() != null) {
-      return IcmpType.DESTINATION_UNREACHABLE;
-    } else {
-      throw convError(IcmpType.class, ctx);
     }
   }
 
@@ -10669,29 +9196,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }
     return ExtendedCommunity.target(toAsNum(ctx.bgp_asn()), la);
-  }
-
-  private void warnObjectGroupRedefinition(ParserRuleContext name) {
-    ParserRuleContext outer = firstNonNull(name.getParent(), name);
-    warn(outer, "Object group defined multiple times: '" + name.getText() + "'.");
-  }
-
-  @Nullable
-  private ServiceProtocol toServiceProtocol(Service_group_protocolContext protocol) {
-    if (protocol == null) {
-      return null;
-    }
-    switch (protocol.getText()) {
-      case "tcp":
-        return ServiceProtocol.TCP;
-      case "udp":
-        return ServiceProtocol.UDP;
-      case "tcp-udp":
-        return ServiceProtocol.TCP_UDP;
-      default:
-        warn(protocol, "Unexpected service protocol type.");
-        return null;
-    }
   }
 
   @Override

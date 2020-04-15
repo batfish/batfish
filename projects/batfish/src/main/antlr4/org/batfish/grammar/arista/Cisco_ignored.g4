@@ -639,7 +639,6 @@ null_single
       | HTTP
       | HW_MODULE
       | ICMP
-      | ICMP_OBJECT
       | IDENTITY
       | INACTIVITY_TIMER
       |
@@ -784,7 +783,6 @@ null_single
       | NAMES
       | NAT_CONTROL
       | NETCONF
-      | NETWORK_OBJECT
       | NETWORK_CLOCK
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
@@ -851,13 +849,11 @@ null_single
       | PLATFORM
       | POAP
       | PORT_CHANNEL
-      | PORT_OBJECT
       | POWER
       | POWER_MONITOR
       | PRIORITY_QUEUE
       | PROCESS
       | PROMPT
-      | PROTOCOL_OBJECT
       | QOS
       | QOS_SC
       | QUIT

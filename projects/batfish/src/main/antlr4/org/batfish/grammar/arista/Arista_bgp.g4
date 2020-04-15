@@ -6,6 +6,15 @@ options {
    tokenVocab = AristaLexer;
 }
 
+router_bgp_stanza
+:
+   ROUTER BGP
+   (
+      procnum = bgp_asn
+   )? NEWLINE
+   eos_router_bgp_tail*
+;
+
 eos_as_range
 :
   lo = bgp_asn

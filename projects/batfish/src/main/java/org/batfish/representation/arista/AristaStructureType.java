@@ -2,7 +2,7 @@ package org.batfish.representation.arista;
 
 import org.batfish.vendor.StructureType;
 
-public enum CiscoStructureType implements StructureType {
+public enum AristaStructureType implements StructureType {
   ACCESS_LIST("acl"),
   AS_PATH_ACCESS_LIST("as-path access-list"),
   BFD_TEMPLATE("bfd-template"),
@@ -68,7 +68,7 @@ public enum CiscoStructureType implements StructureType {
 
   private final String _description;
 
-  CiscoStructureType(String description) {
+  AristaStructureType(String description) {
     _description = description;
   }
 

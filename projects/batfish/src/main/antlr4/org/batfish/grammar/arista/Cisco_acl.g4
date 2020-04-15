@@ -20,19 +20,7 @@ access_list_ip_range
    | prefix = IP_PREFIX
    |
    (
-      ADDRGROUP address_group = variable
-   )
-   |
-   (
       INTERFACE iface = variable
-   )
-   |
-   (
-      OBJECT obj = variable
-   )
-   |
-   (
-      OBJECT_GROUP og = variable
    )
 ;
 
@@ -103,31 +91,6 @@ aruba_app
 aruba_appcategory
 :
    PEER_TO_PEER
-;
-
-asa_access_group
-:
-   ACCESS_GROUP
-   (
-      asa_ag_interface
-      | asa_ag_global
-   )
-   NEWLINE
-;
-
-asa_ag_interface
-:
-   name = variable
-   (
-      IN
-      | OUT
-   )
-   INTERFACE iface = variable
-;
-
-asa_ag_global
-:
-   name = variable GLOBAL
 ;
 
 bandwidth_irs_stanza
@@ -322,19 +285,6 @@ extended_access_list_tail
    )?
    (
       prot = protocol
-      |
-      (
-         OBJECT_GROUP ogs = variable
-      )
-      |
-      (
-         OBJECT
-         (
-            inline_obj = protocol
-            | inline_obj_icmp = icmp_inline_object_type
-            | obj = variable
-         )
-      )
    ) srcipr = access_list_ip_range
    (
       alps_src = port_specifier

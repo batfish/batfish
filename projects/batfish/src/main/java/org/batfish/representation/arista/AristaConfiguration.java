@@ -18,8 +18,6 @@ import static org.batfish.representation.arista.CiscoConversions.clearFalseState
 import static org.batfish.representation.arista.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.arista.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.arista.CiscoConversions.eigrpRedistributionPoliciesToStatements;
-import static org.batfish.representation.arista.CiscoConversions.generateBgpExportPolicy;
-import static org.batfish.representation.arista.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.arista.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.arista.CiscoConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.arista.CiscoConversions.insertDistributeListFilterAndGetPolicy;
@@ -31,7 +29,6 @@ import static org.batfish.representation.arista.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.arista.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.arista.CiscoConversions.toIkePhase1Proposal;
 import static org.batfish.representation.arista.CiscoConversions.toIpAccessList;
-import static org.batfish.representation.arista.CiscoConversions.toIpSpace;
 import static org.batfish.representation.arista.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.arista.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.arista.CiscoConversions.toIpsecPhase2Proposal;
@@ -63,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -99,7 +95,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -111,7 +106,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -120,15 +114,11 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
-import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -148,9 +138,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
-import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -174,13 +162,10 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
@@ -519,29 +504,17 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private final @Nonnull Map<String, NatPool> _natPools;
 
-  private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
-
   private final Map<String, IntegerSpace> _namedVlans;
 
   private final @Nonnull Set<String> _natInside;
 
   private final Set<String> _natOutside;
 
-  private final Map<String, NetworkObjectGroup> _networkObjectGroups;
-
-  private final Map<String, NetworkObjectInfo> _networkObjectInfos;
-
-  private final Map<String, NetworkObject> _networkObjects;
-
   private String _ntpSourceInterface;
-
-  private final Map<String, ObjectGroup> _objectGroups;
 
   private final Map<String, Prefix6List> _prefix6Lists;
 
   private final Map<String, PrefixList> _prefixLists;
-
-  private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
 
   private final Map<String, RouteMap> _routeMaps;
 
@@ -554,8 +527,6 @@ public final class AristaConfiguration extends VendorConfiguration {
   private boolean _sameSecurityTrafficInter;
 
   private boolean _sameSecurityTrafficIntra;
-
-  private final Map<String, ServiceObject> _serviceObjects;
 
   private SnmpServer _snmpServer;
 
@@ -578,8 +549,6 @@ public final class AristaConfiguration extends VendorConfiguration {
   private final Map<String, Vrf> _vrfs;
 
   private final SortedMap<String, VrrpInterface> _vrrpGroups;
-
-  private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
   private final Map<String, Map<String, SecurityZonePair>> _securityZonePairs;
 
@@ -616,23 +585,15 @@ public final class AristaConfiguration extends VendorConfiguration {
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
-    _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
-    _networkObjectGroups = new TreeMap<>();
-    _networkObjectInfos = new TreeMap<>();
-    _networkObjects = new TreeMap<>();
-    _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
-    _protocolObjectGroups = new TreeMap<>();
     _routeMaps = new TreeMap<>();
     _securityLevels = new TreeMap<>();
     _securityZonePairs = new TreeMap<>();
     _securityZones = new TreeMap<>();
-    _serviceObjectGroups = new TreeMap<>();
-    _serviceObjects = new TreeMap<>();
     _standardAccessLists = new TreeMap<>();
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
@@ -732,43 +693,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public Map<String, AsPathSet> getAsPathSets() {
     return _asPathSets;
-  }
-
-  private Ip getBgpRouterId(final Configuration c, String vrfName, BgpProcess proc) {
-    Ip processRouterId = proc.getRouterId();
-    if (processRouterId == null) {
-      processRouterId = _vrfs.get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getRouterId();
-    }
-    if (processRouterId == null) {
-      processRouterId = Ip.ZERO;
-      for (Entry<String, org.batfish.datamodel.Interface> e :
-          c.getAllInterfaces(vrfName).entrySet()) {
-        String iname = e.getKey();
-        org.batfish.datamodel.Interface iface = e.getValue();
-        if (iname.startsWith("Loopback")) {
-          ConcreteInterfaceAddress address = iface.getConcreteAddress();
-          if (address != null) {
-            Ip currentIp = address.getIp();
-            if (currentIp.asLong() > processRouterId.asLong()) {
-              processRouterId = currentIp;
-            }
-          }
-        }
-      }
-      if (processRouterId.equals(Ip.ZERO)) {
-        for (org.batfish.datamodel.Interface currentInterface :
-            c.getAllInterfaces(vrfName).values()) {
-          ConcreteInterfaceAddress address = currentInterface.getConcreteAddress();
-          if (address != null) {
-            Ip currentIp = address.getIp();
-            if (currentIp.asLong() > processRouterId.asLong()) {
-              processRouterId = currentIp;
-            }
-          }
-        }
-      }
-    }
-    return processRouterId;
   }
 
   public CiscoFamily getCf() {
@@ -988,51 +912,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _tacacsSourceInterface;
   }
 
-  private Ip getUpdateSource(
-      Configuration c,
-      String vrfName,
-      LeafBgpPeerGroup lpg,
-      String updateSourceInterface,
-      boolean ipv4) {
-    Ip updateSource = null;
-    if (ipv4) {
-      if (updateSourceInterface != null) {
-        org.batfish.datamodel.Interface sourceInterface =
-            c.getAllInterfaces(vrfName).get(updateSourceInterface);
-        if (sourceInterface != null) {
-          ConcreteInterfaceAddress address = sourceInterface.getConcreteAddress();
-          if (address != null) {
-            Ip sourceIp = address.getIp();
-            updateSource = sourceIp;
-          } else {
-            _w.redFlag(
-                "bgp update source interface: '"
-                    + updateSourceInterface
-                    + "' not assigned an ip address");
-          }
-        }
-      } else {
-        if (lpg instanceof DynamicIpBgpPeerGroup) {
-          updateSource = Ip.AUTO;
-        } else {
-          Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
-          for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
-            for (ConcreteInterfaceAddress interfaceAddress : iface.getAllConcreteAddresses()) {
-              if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
-                Ip ifaceAddress = interfaceAddress.getIp();
-                updateSource = ifaceAddress;
-              }
-            }
-          }
-        }
-      }
-      if (updateSource == null && lpg.getNeighborPrefix().getStartIp().valid()) {
-        _w.redFlag("Could not determine update source for BGP neighbor: '" + lpg.getName() + "'");
-      }
-    }
-    return updateSource;
-  }
-
   public ConfigurationFormat getVendor() {
     return _vendor;
   }
@@ -1045,52 +924,52 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _vrrpGroups;
   }
 
-  private void markAcls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markAcls(AristaStructureUsage... usages) {
+    for (AristaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.IP_ACCESS_LIST,
+          AristaStructureType.IP_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+              AristaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AristaStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              AristaStructureType.IPV6_ACCESS_LIST_STANDARD,
+              AristaStructureType.IPV6_ACCESS_LIST_EXTENDED));
     }
   }
 
-  private void markIpOrMacAcls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markIpOrMacAcls(AristaStructureUsage... usages) {
+    for (AristaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.ACCESS_LIST,
+          AristaStructureType.ACCESS_LIST,
           usage,
           Arrays.asList(
-              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
-              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoStructureType.MAC_ACCESS_LIST));
+              AristaStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              AristaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AristaStructureType.IPV6_ACCESS_LIST_EXTENDED,
+              AristaStructureType.IPV6_ACCESS_LIST_STANDARD,
+              AristaStructureType.MAC_ACCESS_LIST));
     }
   }
 
-  private void markIpv4Acls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markIpv4Acls(AristaStructureUsage... usages) {
+    for (AristaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.IPV4_ACCESS_LIST,
+          AristaStructureType.IPV4_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
+              AristaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AristaStructureType.IPV4_ACCESS_LIST_EXTENDED));
     }
   }
 
-  private void markIpv6Acls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markIpv6Acls(AristaStructureUsage... usages) {
+    for (AristaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.IPV6_ACCESS_LIST,
+          AristaStructureType.IPV6_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+              AristaStructureType.IPV6_ACCESS_LIST_STANDARD,
+              AristaStructureType.IPV6_ACCESS_LIST_EXTENDED));
     }
   }
 
@@ -1222,426 +1101,6 @@ public final class AristaConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
-  }
-
-  private org.batfish.datamodel.BgpProcess toBgpProcess(
-      final Configuration c, BgpProcess proc, String vrfName) {
-    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
-    Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin);
-    BgpTieBreaker tieBreaker = proc.getTieBreaker();
-    if (tieBreaker != null) {
-      newBgpProcess.setTieBreaker(tieBreaker);
-    }
-    MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
-        proc.getAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH;
-    newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    boolean multipathEbgp = false;
-    boolean multipathIbgp = false;
-    if (firstNonNull(proc.getMaximumPaths(), 0) > 1) {
-      multipathEbgp = true;
-      multipathIbgp = true;
-    }
-    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1) {
-      multipathEbgp = true;
-    }
-    if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
-      multipathIbgp = true;
-    }
-    newBgpProcess.setMultipathEbgp(multipathEbgp);
-    newBgpProcess.setMultipathIbgp(multipathIbgp);
-
-    /*
-     * Create common bgp export policy. This policy encompasses network
-     * statements, aggregate-address with/without summary-only, redistribution
-     * from other protocols, and default-origination
-     */
-    RoutingPolicy bgpCommonExportPolicy =
-        new RoutingPolicy(Names.generatedBgpCommonExportPolicyName(vrfName), c);
-    c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
-    List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy.getStatements();
-
-    // Never export routes suppressed because they are more specific than summary-only aggregate
-    Stream<Prefix> summaryOnlyNetworks =
-        proc.getAggregateNetworks().entrySet().stream()
-            .filter(e -> e.getValue().getSummaryOnly())
-            .map(Entry::getKey);
-    If suppressSummaryOnly = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
-    if (suppressSummaryOnly != null) {
-      bgpCommonExportStatements.add(suppressSummaryOnly);
-    }
-
-    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
-    Disjunction routesShouldBeExported = new Disjunction();
-    bgpCommonExportStatements.add(
-        new If(
-            routesShouldBeExported,
-            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-            ImmutableList.of()));
-    // This list of reasons to export a route will be built up over the remainder of this function.
-    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
-
-    // Finally, the export policy ends with returning false: do not export unmatched routes.
-    bgpCommonExportStatements.add(Statements.ReturnFalse.toStaticStatement());
-
-    // Export the generated routes for aggregate ipv4 addresses
-    for (Entry<Prefix, BgpAggregateIpv4Network> e : proc.getAggregateNetworks().entrySet()) {
-      Prefix prefix = e.getKey();
-      BgpAggregateIpv4Network aggNet = e.getValue();
-
-      // Generate a policy that matches routes to be aggregated.
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
-
-      GeneratedRoute.Builder gr =
-          GeneratedRoute.builder()
-              .setNetwork(prefix)
-              .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-              .setGenerationPolicy(genPolicy.getName())
-              .setDiscard(true);
-
-      // Conditions to generate this route
-      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-      exportAggregateConditions.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-      // If defined, set attribute map for aggregate network
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          // need to apply attribute changes if this specific route is matched
-          weInterior = new CallExpr(attributeMapName);
-          gr.setAttributePolicy(attributeMapName);
-        }
-      }
-      exportAggregateConditions.add(bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
-
-      v.getGeneratedRoutes().add(gr.build());
-      // Do export a generated aggregate.
-      exportConditions.add(new Conjunction(exportAggregateConditions));
-    }
-
-    // add generated routes for aggregate ipv6 addresses
-    // TODO: merge with above to make cleaner
-    for (Entry<Prefix6, BgpAggregateIpv6Network> e : proc.getAggregateIpv6Networks().entrySet()) {
-      Prefix6 prefix6 = e.getKey();
-      BgpAggregateIpv6Network aggNet = e.getValue();
-
-      // create generation policy for aggregate network
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix6);
-      GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_AGGREGATE_ROUTE_ADMIN_COST);
-      gr.setGenerationPolicy(genPolicy.getName());
-      gr.setDiscard(true);
-      v.getGeneratedIpv6Routes().add(gr);
-
-      // set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          gr.setAttributePolicy(attributeMapName);
-        }
-      }
-    }
-
-    // Export RIP routes that should be redistributed.
-    BgpRedistributionPolicy redistributeRipPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.RIP);
-    if (redistributeRipPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportRipConditions = new Conjunction();
-      exportRipConditions.setComment("Redistribute RIP routes into BGP");
-      exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
-      String mapName = redistributeRipPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeRipRouteMap = _routeMaps.get(mapName);
-        if (redistributeRipRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportRipConditions.getConjuncts().add(we);
-      exportConditions.add(exportRipConditions);
-    }
-
-    // Export static routes that should be redistributed.
-    BgpRedistributionPolicy redistributeStaticPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.STATIC);
-    if (redistributeStaticPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportStaticConditions = new Conjunction();
-      exportStaticConditions.setComment("Redistribute static routes into BGP");
-      exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
-      String mapName = redistributeStaticPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeStaticRouteMap = _routeMaps.get(mapName);
-        if (redistributeStaticRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportStaticConditions.getConjuncts().add(we);
-      exportConditions.add(exportStaticConditions);
-    }
-
-    // Export connected routes that should be redistributed.
-    BgpRedistributionPolicy redistributeConnectedPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
-    if (redistributeConnectedPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportConnectedConditions = new Conjunction();
-      exportConnectedConditions.setComment("Redistribute connected routes into BGP");
-      exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
-      String mapName = redistributeConnectedPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeConnectedRouteMap = _routeMaps.get(mapName);
-        if (redistributeConnectedRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportConnectedConditions.getConjuncts().add(we);
-      exportConditions.add(exportConnectedConditions);
-    }
-
-    // Export OSPF routes that should be redistributed.
-    BgpRedistributionPolicy redistributeOspfPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.OSPF);
-    if (redistributeOspfPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportOspfConditions = new Conjunction();
-      exportOspfConditions.setComment("Redistribute OSPF routes into BGP");
-      exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
-      String mapName = redistributeOspfPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeOspfRouteMap = _routeMaps.get(mapName);
-        if (redistributeOspfRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportOspfConditions.getConjuncts().add(we);
-      exportConditions.add(exportOspfConditions);
-    }
-
-    // cause ip peer groups to inherit unset fields from owning named peer
-    // group if it exists, and then always from process master peer group
-    Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<>();
-    leafGroups.addAll(proc.getIpPeerGroups().values());
-    leafGroups.addAll(proc.getIpv6PeerGroups().values());
-    leafGroups.addAll(proc.getDynamicIpPeerGroups().values());
-    leafGroups.addAll(proc.getDynamicIpv6PeerGroups().values());
-    for (LeafBgpPeerGroup lpg : leafGroups) {
-      lpg.inheritUnsetFields(proc, this);
-    }
-
-    // create origination prefilter from listed advertised networks
-    proc.getIpNetworks()
-        .forEach(
-            (prefix, bgpNetwork) -> {
-              String mapName = bgpNetwork.getRouteMapName();
-              BooleanExpr weExpr = BooleanExprs.TRUE;
-              if (mapName != null) {
-                RouteMap routeMap = _routeMaps.get(mapName);
-                if (routeMap != null) {
-                  weExpr = new CallExpr(mapName);
-                }
-              }
-              BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
-              Conjunction exportNetworkConditions = new Conjunction();
-              PrefixSpace space = new PrefixSpace();
-              space.addPrefix(prefix);
-              newBgpProcess.addToOriginationSpace(space);
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new Not(
-                          new MatchProtocol(
-                              RoutingProtocol.BGP,
-                              RoutingProtocol.IBGP,
-                              RoutingProtocol.AGGREGATE)));
-              exportNetworkConditions.getConjuncts().add(we);
-              exportConditions.add(exportNetworkConditions);
-            });
-    if (!proc.getIpv6Networks().isEmpty()) {
-      String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
-      Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
-      proc.getIpv6Networks()
-          .forEach(
-              (prefix6, bgpNetwork6) -> {
-                int prefixLen = prefix6.getPrefixLength();
-                Route6FilterLine line =
-                    new Route6FilterLine(LineAction.PERMIT, prefix6, SubRange.singleton(prefixLen));
-                localFilter6.addLine(line);
-                String mapName = bgpNetwork6.getRouteMapName();
-                if (mapName != null) {
-                  RouteMap routeMap = _routeMaps.get(mapName);
-                  if (routeMap != null) {
-                    BooleanExpr we =
-                        bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
-                    Conjunction exportNetwork6Conditions = new Conjunction();
-                    Prefix6Space space6 = new Prefix6Space();
-                    space6.addPrefix6(prefix6);
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(
-                            new MatchPrefix6Set(
-                                new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
-                    exportNetwork6Conditions
-                        .getConjuncts()
-                        .add(
-                            new Not(
-                                new MatchProtocol(
-                                    RoutingProtocol.BGP,
-                                    RoutingProtocol.IBGP,
-                                    RoutingProtocol.AGGREGATE)));
-                    exportNetwork6Conditions.getConjuncts().add(we);
-                    exportConditions.add(exportNetwork6Conditions);
-                  }
-                }
-              });
-      c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
-    }
-
-    // Export BGP and IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
-
-    for (LeafBgpPeerGroup lpg : leafGroups) {
-      if (!lpg.getActive() || lpg.getShutdown()) {
-        continue;
-      }
-      if (lpg.getRemoteAs() == null) {
-        _w.redFlag("No remote-as set for peer: " + lpg.getName());
-        continue;
-      }
-      if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
-        // TODO: implement ipv6 bgp neighbors
-        continue;
-      }
-      // update source
-      String updateSourceInterface = lpg.getUpdateSource();
-      boolean ipv4 = lpg.getNeighborPrefix() != null;
-      Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
-
-      // Get default-originate generation policy (if Cisco) or export policy (if Arista)
-      String defaultOriginateExportMap = null;
-      String defaultOriginateGenerationMap = null;
-      if (lpg.getDefaultOriginate()) {
-        if (c.getConfigurationFormat() == ConfigurationFormat.ARISTA) {
-          defaultOriginateExportMap = lpg.getDefaultOriginateMap();
-        } else {
-          defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
-        }
-      }
-
-      // Generate import and export policies
-      String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, defaultOriginateExportMap, c, _w);
-
-      // If defaultOriginate is set, create default route for this peer group
-      GeneratedRoute.Builder defaultRoute = null;
-      GeneratedRoute6.Builder defaultRoute6;
-      if (lpg.getDefaultOriginate()) {
-        defaultRoute = GeneratedRoute.builder();
-        defaultRoute.setNetwork(Prefix.ZERO);
-        defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
-        defaultRoute6 = new GeneratedRoute6.Builder();
-        defaultRoute6.setNetwork(Prefix6.ZERO);
-        defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);
-
-        if (defaultOriginateGenerationMap != null
-            && c.getRoutingPolicies().containsKey(defaultOriginateGenerationMap)) {
-          // originate contingent on generation policy
-          if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultOriginateGenerationMap);
-          } else {
-            defaultRoute6.setGenerationPolicy(defaultOriginateGenerationMap);
-          }
-        }
-      }
-
-      Ip clusterId = lpg.getClusterId();
-      if (clusterId == null) {
-        clusterId = bgpRouterId;
-      }
-      String description = lpg.getDescription();
-      Long pgLocalAs = lpg.getLocalAs();
-      long localAs = pgLocalAs != null ? pgLocalAs : proc.getProcnum();
-
-      BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
-      if (lpg instanceof IpBgpPeerGroup) {
-        IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
-        newNeighborBuilder =
-            BgpActivePeerConfig.builder()
-                .setPeerAddress(ipg.getIp())
-                .setRemoteAs(lpg.getRemoteAs());
-      } else if (lpg instanceof DynamicIpBgpPeerGroup) {
-        DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
-        LongSpace.Builder asns = LongSpace.builder().including(dpg.getRemoteAs());
-        Optional.ofNullable(dpg.getAlternateAs()).ifPresent(asns::includingAll);
-        newNeighborBuilder =
-            BgpPassivePeerConfig.builder()
-                .setPeerPrefix(dpg.getPrefix())
-                .setRemoteAsns(asns.build());
-      } else {
-        throw new VendorConversionException("Invalid BGP leaf neighbor type");
-      }
-      newNeighborBuilder.setBgpProcess(newBgpProcess);
-
-      AddressFamilyCapabilities ipv4AfSettings =
-          AddressFamilyCapabilities.builder()
-              .setAdditionalPathsReceive(lpg.getAdditionalPathsReceive())
-              .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
-              .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
-              .setAllowLocalAsIn(lpg.getAllowAsIn())
-              .setAllowRemoteAsOut(firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE))
-              /*
-               * On Arista EOS, advertise-inactive is a command that we parse and extract;
-               *
-               * On Cisco IOS, advertise-inactive is true by default. This can be modified by
-               * "bgp suppress-inactive" command,
-               * which we currently do not parse/extract. So we choose the default value here.
-               *
-               * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
-               * we assume behavior to be identical to IOS family.
-               */
-              .setAdvertiseInactive(
-                  _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
-              .setSendCommunity(lpg.getSendCommunity())
-              .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
-              .build();
-      newNeighborBuilder.setIpv4UnicastAddressFamily(
-          Ipv4UnicastAddressFamily.builder()
-              .setAddressFamilyCapabilities(ipv4AfSettings)
-              .setImportPolicy(peerImportPolicyName)
-              .setExportPolicy(Names.generatedBgpPeerExportPolicyName(vrfName, lpg.getName()))
-              .setRouteReflectorClient(lpg.getRouteReflectorClient())
-              .build());
-      newNeighborBuilder.setClusterId(clusterId.asLong());
-      newNeighborBuilder.setDefaultMetric(proc.getDefaultMetric());
-      newNeighborBuilder.setDescription(description);
-      newNeighborBuilder.setEbgpMultihop(lpg.getEbgpMultihop());
-      if (defaultRoute != null) {
-        newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
-      }
-      newNeighborBuilder.setGroup(lpg.getGroupName());
-      newNeighborBuilder.setLocalAs(localAs);
-      newNeighborBuilder.setLocalIp(updateSource);
-      newNeighborBuilder.build();
-    }
-    return newBgpProcess;
   }
 
   private org.batfish.datamodel.BgpProcess toEosBgpProcess(
@@ -3101,9 +2560,9 @@ public final class AristaConfiguration extends VendorConfiguration {
           if (continueTargetPolicy == null) {
             String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
             undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
+                AristaStructureType.ROUTE_MAP_CLAUSE,
                 name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
+                AristaStructureUsage.ROUTE_MAP_CONTINUE,
                 continueStatement.getStatementLine());
             continueStatement = null;
           }
@@ -3249,78 +2708,16 @@ public final class AristaConfiguration extends VendorConfiguration {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(saList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      c.getIpAccessLists()
-          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), _objectGroups));
+      c.getIpAccessLists().put(saList.getName(), toIpAccessList(saList.toExtendedAccessList()));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
-
-    /*
-     * Consolidate info about networkObjects
-     * - Associate networkObjects with their Info
-     */
-    _networkObjectInfos.forEach(
-        (name, info) -> {
-          if (_networkObjects.containsKey(name)) {
-            _networkObjects.get(name).setInfo(info);
-          }
-        });
-
-    // convert each NetworkObject and NetworkObjectGroup to IpSpace
-    _networkObjectGroups.forEach(
-        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
-    _networkObjectGroups
-        .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
-    _networkObjects.forEach(
-        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
-    _networkObjects
-        .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
-
-    // convert each IcmpTypeGroup to IpAccessList
-    _icmpTypeObjectGroups.forEach(
-        (name, icmpTypeObjectGroups) ->
-            c.getIpAccessLists()
-                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
-
-    // convert each ProtocolObjectGroup to IpAccessList
-    _protocolObjectGroups.forEach(
-        (name, protocolObjectGroup) ->
-            c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
-
-    // convert each ServiceObject and ServiceObjectGroup to IpAccessList
-    _serviceObjectGroups.forEach(
-        (name, serviceObjectGroup) ->
-            c.getIpAccessLists()
-                .put(
-                    computeServiceObjectGroupAclName(name),
-                    toIpAccessList(serviceObjectGroup, _serviceObjects, _serviceObjectGroups)));
-    _serviceObjects.forEach(
-        (name, serviceObject) ->
-            c.getIpAccessLists()
-                .put(
-                    computeServiceObjectAclName(name),
-                    toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
@@ -3648,24 +3045,13 @@ public final class AristaConfiguration extends VendorConfiguration {
             newVrf.setIsisProcess(newIsisProcess);
           }
 
-          ///////////////////////////////////////////////
-          // BEGIN Convert BGP process for various vendors
-          // Hybrid
-          BgpProcess bgpProcess = vrf.getBgpProcess();
-          if (bgpProcess != null) {
-            org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
-            newVrf.setBgpProcess(newBgpProcess);
-          }
-
-          // Arista
+          // convert bgp process
           AristaBgpVrf aristaBgp = _aristaBgp == null ? null : _aristaBgp.getVrfs().get(vrfName);
           if (aristaBgp != null) {
             org.batfish.datamodel.BgpProcess newBgpProcess =
                 toEosBgpProcess(c, getAristaBgp(), aristaBgp);
             newVrf.setBgpProcess(newBgpProcess);
           }
-          // END Convert BGP process for various vendors
-          ///////////////////////////////////////////////
         });
 
     /*
@@ -3762,345 +3148,348 @@ public final class AristaConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences.getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureReferences.getOrDefault(AristaStructureType.INTERFACE, ImmutableSortedMap.of())
             .getOrDefault("Null0", ImmutableSortedMap.of()).entrySet().stream()
             .flatMap(e -> e.getValue().stream())
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
-      defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
+      defineSingleLineStructure(AristaStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
 
     markConcreteStructure(
-        CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
+        AristaStructureType.BFD_TEMPLATE, AristaStructureUsage.INTERFACE_BFD_TEMPLATE);
 
     markConcreteStructure(
-        CiscoStructureType.SECURITY_ZONE_PAIR, CiscoStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
+        AristaStructureType.SECURITY_ZONE_PAIR, AristaStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
 
     markConcreteStructure(
-        CiscoStructureType.INTERFACE,
-        CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
-        CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
-        CiscoStructureUsage.EIGRP_AF_INTERFACE,
-        CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
-        CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
-        CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
-        CiscoStructureUsage.INTERFACE_SELF_REF,
-        CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
-        CiscoStructureUsage.IP_ROUTE_NHINT,
-        CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE,
-        CiscoStructureUsage.NTP_SOURCE_INTERFACE,
-        CiscoStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
-        CiscoStructureUsage.OBJECT_NAT_REAL_INTERFACE,
-        CiscoStructureUsage.OSPF_AREA_INTERFACE,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.ROUTER_STATIC_ROUTE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
-        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
-        CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE,
-        CiscoStructureUsage.TACACS_SOURCE_INTERFACE,
-        CiscoStructureUsage.TRACK_INTERFACE,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
-        CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE,
-        CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
+        AristaStructureType.INTERFACE,
+        AristaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
+        AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
+        AristaStructureUsage.EIGRP_AF_INTERFACE,
+        AristaStructureUsage.EIGRP_PASSIVE_INTERFACE,
+        AristaStructureUsage.FAILOVER_LAN_INTERFACE,
+        AristaStructureUsage.FAILOVER_LINK_INTERFACE,
+        AristaStructureUsage.INTERFACE_SELF_REF,
+        AristaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
+        AristaStructureUsage.IP_ROUTE_NHINT,
+        AristaStructureUsage.IP_TACACS_SOURCE_INTERFACE,
+        AristaStructureUsage.NTP_SOURCE_INTERFACE,
+        AristaStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
+        AristaStructureUsage.OBJECT_NAT_REAL_INTERFACE,
+        AristaStructureUsage.OSPF_AREA_INTERFACE,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
+        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AristaStructureUsage.ROUTER_STATIC_ROUTE,
+        AristaStructureUsage.ROUTER_VRRP_INTERFACE,
+        AristaStructureUsage.SERVICE_POLICY_INTERFACE,
+        AristaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
+        AristaStructureUsage.SNMP_SERVER_TRAP_SOURCE,
+        AristaStructureUsage.TACACS_SOURCE_INTERFACE,
+        AristaStructureUsage.TRACK_INTERFACE,
+        AristaStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
+        AristaStructureUsage.TWICE_NAT_REAL_INTERFACE,
+        AristaStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
-        CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
+        AristaStructureUsage.CLASS_MAP_ACCESS_GROUP, AristaStructureUsage.CLASS_MAP_ACCESS_LIST);
     markIpv4Acls(
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
-        CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
-        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
-        CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
-        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
-        CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
-        CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
-        CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
-        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST,
-        CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
-        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
-        CiscoStructureUsage.MSDP_PEER_SA_LIST,
-        CiscoStructureUsage.NTP_ACCESS_GROUP,
-        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL,
-        CiscoStructureUsage.PIM_ACCEPT_RP_ACL,
-        CiscoStructureUsage.PIM_RP_ADDRESS_ACL,
-        CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER,
-        CiscoStructureUsage.PIM_RP_CANDIDATE_ACL,
-        CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
-        CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
-        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
-        CiscoStructureUsage.SSH_IPV4_ACL);
+        AristaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AristaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AristaStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
+        AristaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
+        AristaStructureUsage.INTERFACE_INCOMING_FILTER,
+        AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
+        AristaStructureUsage.INTERFACE_OUTGOING_FILTER,
+        AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
+        AristaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
+        AristaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+        AristaStructureUsage.LINE_ACCESS_CLASS_LIST,
+        AristaStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
+        AristaStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
+        AristaStructureUsage.MSDP_PEER_SA_LIST,
+        AristaStructureUsage.NTP_ACCESS_GROUP,
+        AristaStructureUsage.PIM_ACCEPT_REGISTER_ACL,
+        AristaStructureUsage.PIM_ACCEPT_RP_ACL,
+        AristaStructureUsage.PIM_RP_ADDRESS_ACL,
+        AristaStructureUsage.PIM_RP_ANNOUNCE_FILTER,
+        AristaStructureUsage.PIM_RP_CANDIDATE_ACL,
+        AristaStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
+        AristaStructureUsage.PIM_SPT_THRESHOLD_ACL,
+        AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
+        AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
+        AristaStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
-        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
-        CiscoStructureUsage.NTP_ACCESS_GROUP,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
-        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
-        CiscoStructureUsage.SSH_IPV6_ACL,
-        CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
-        CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
+        AristaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
+        AristaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
+        AristaStructureUsage.LINE_ACCESS_CLASS_LIST6,
+        AristaStructureUsage.NTP_ACCESS_GROUP,
+        AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
+        AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
+        AristaStructureUsage.SSH_IPV6_ACL,
+        AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
+        AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
     markAcls(
-        CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
-        CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
-        CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
-        CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
-        CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
-        CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
-        CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
-        CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
-        CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
-        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
-        CiscoStructureUsage.SSH_ACL,
-        CiscoStructureUsage.WCCP_GROUP_LIST,
-        CiscoStructureUsage.WCCP_REDIRECT_LIST,
-        CiscoStructureUsage.WCCP_SERVICE_LIST);
+        AristaStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
+        AristaStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
+        AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
+        AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
+        AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
+        AristaStructureUsage.INTERFACE_INCOMING_FILTER,
+        AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        AristaStructureUsage.INTERFACE_OUTGOING_FILTER,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AristaStructureUsage.RIP_DISTRIBUTE_LIST,
+        AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
+        AristaStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
+        AristaStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
+        AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
+        AristaStructureUsage.SSH_ACL,
+        AristaStructureUsage.WCCP_GROUP_LIST,
+        AristaStructureUsage.WCCP_REDIRECT_LIST,
+        AristaStructureUsage.WCCP_SERVICE_LIST);
 
     markCommunityLists(
-        CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
-        CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
-        CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY);
+        AristaStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
+        AristaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
+        AristaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
+        AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY);
 
     markConcreteStructure(
-        CiscoStructureType.PREFIX_LIST,
-        CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
-        CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
+        AristaStructureType.PREFIX_LIST,
+        AristaStructureUsage.BGP_INBOUND_PREFIX_LIST,
+        AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
     markConcreteStructure(
-        CiscoStructureType.PREFIX6_LIST,
-        CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
-        CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
+        AristaStructureType.PREFIX6_LIST,
+        AristaStructureUsage.BGP_INBOUND_PREFIX6_LIST,
+        AristaStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
+        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
     // mark references to route-maps
     markConcreteStructure(
-        CiscoStructureType.ROUTE_MAP,
-        CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
-        CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-        CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP,
-        CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
-        CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP,
-        CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
-        CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
-        CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
-        CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
-        CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
-        CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
-        CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP,
-        CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
-        CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
-        CiscoStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
-        CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
+        AristaStructureType.ROUTE_MAP,
+        AristaStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
+        AristaStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
+        AristaStructureUsage.BGP_AGGREGATE_MATCH_MAP,
+        AristaStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
+        AristaStructureUsage.BGP_INBOUND_ROUTE_MAP,
+        AristaStructureUsage.BGP_INBOUND_ROUTE6_MAP,
+        AristaStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
+        AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
+        AristaStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
+        AristaStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
+        AristaStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_RIP_MAP,
+        AristaStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP,
+        AristaStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
+        AristaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
+        AristaStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
+        AristaStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
+        AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP,
+        AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
+        AristaStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
+        AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
+        AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
+        AristaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
+        AristaStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
+        AristaStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
+        AristaStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
+        AristaStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
+        AristaStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
+        AristaStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
+        AristaStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
+        AristaStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
+        AristaStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
 
     // Cable
     markConcreteStructure(
-        CiscoStructureType.DEPI_CLASS, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
+        AristaStructureType.DEPI_CLASS, AristaStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
     markConcreteStructure(
-        CiscoStructureType.DEPI_TUNNEL,
-        CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL,
-        CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
+        AristaStructureType.DEPI_TUNNEL,
+        AristaStructureUsage.CONTROLLER_DEPI_TUNNEL,
+        AristaStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
     markConcreteStructure(
-        CiscoStructureType.DOCSIS_POLICY, CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
+        AristaStructureType.DOCSIS_POLICY, AristaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
     markConcreteStructure(
-        CiscoStructureType.DOCSIS_POLICY_RULE,
-        CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
+        AristaStructureType.DOCSIS_POLICY_RULE,
+        AristaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_CLASS, CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
+        AristaStructureType.SERVICE_CLASS, AristaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
     // L2tp
     markConcreteStructure(
-        CiscoStructureType.L2TP_CLASS, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+        AristaStructureType.L2TP_CLASS, AristaStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
     // Crypto, Isakmp, and IPSec
     markConcreteStructure(
-        CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
+        AristaStructureType.CRYPTO_DYNAMIC_MAP_SET,
+        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
     markConcreteStructure(
-        CiscoStructureType.ISAKMP_PROFILE,
-        CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
-        CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
+        AristaStructureType.ISAKMP_PROFILE,
+        AristaStructureUsage.ISAKMP_PROFILE_SELF_REF,
+        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
+        AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
     markConcreteStructure(
-        CiscoStructureType.ISAKMP_POLICY, CiscoStructureUsage.ISAKMP_POLICY_SELF_REF);
+        AristaStructureType.ISAKMP_POLICY, AristaStructureUsage.ISAKMP_POLICY_SELF_REF);
     markConcreteStructure(
-        CiscoStructureType.IPSEC_PROFILE, CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
+        AristaStructureType.IPSEC_PROFILE, AristaStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
     markConcreteStructure(
-        CiscoStructureType.IPSEC_TRANSFORM_SET,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
-        CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+        AristaStructureType.IPSEC_TRANSFORM_SET,
+        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
+        AristaStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
+    markConcreteStructure(AristaStructureType.KEYRING, AristaStructureUsage.ISAKMP_PROFILE_KEYRING);
     markConcreteStructure(
-        CiscoStructureType.NAMED_RSA_PUB_KEY, CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
+        AristaStructureType.NAMED_RSA_PUB_KEY, AristaStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
 
     // class-map
     markConcreteStructure(
-        CiscoStructureType.INSPECT_CLASS_MAP, CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+        AristaStructureType.INSPECT_CLASS_MAP,
+        AristaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
     markConcreteStructure(
-        CiscoStructureType.CLASS_MAP,
-        CiscoStructureUsage.POLICY_MAP_CLASS,
-        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
+        AristaStructureType.CLASS_MAP,
+        AristaStructureUsage.POLICY_MAP_CLASS,
+        AristaStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
     markConcreteStructure(
-        CiscoStructureType.INSPECT_POLICY_MAP,
-        CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+        AristaStructureType.INSPECT_POLICY_MAP,
+        AristaStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
     markConcreteStructure(
-        CiscoStructureType.POLICY_MAP,
-        CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT,
-        CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT,
-        CiscoStructureUsage.INTERFACE_SERVICE_POLICY,
-        CiscoStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
-        CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
-        CiscoStructureUsage.SERVICE_POLICY_GLOBAL,
-        CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
+        AristaStructureType.POLICY_MAP,
+        AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT,
+        AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT,
+        AristaStructureUsage.INTERFACE_SERVICE_POLICY,
+        AristaStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
+        AristaStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
+        AristaStructureUsage.SERVICE_POLICY_GLOBAL,
+        AristaStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
 
     // object-group
     markConcreteStructure(
-        CiscoStructureType.ICMP_TYPE_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP,
-        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
+        AristaStructureType.ICMP_TYPE_OBJECT_GROUP,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP,
+        AristaStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
-        CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
+        AristaStructureType.NETWORK_OBJECT_GROUP,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
+        AristaStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
+        AristaStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+        AristaStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
+        AristaStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+        AristaStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
+        AristaStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
     markConcreteStructure(
-        CiscoStructureType.PROTOCOL_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
-        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
+        AristaStructureType.PROTOCOL_OBJECT_GROUP,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
+        AristaStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.SERVICE_OBJECT_GROUP_GROUP_OBJECT);
+        AristaStructureType.SERVICE_OBJECT_GROUP,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+        AristaStructureUsage.SERVICE_OBJECT_GROUP_GROUP_OBJECT);
     markAbstractStructure(
-        CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        AristaStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         ImmutableList.of(
-            CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
+            AristaStructureType.PROTOCOL_OBJECT_GROUP, AristaStructureType.SERVICE_OBJECT_GROUP));
 
     // objects
     markConcreteStructure(
-        CiscoStructureType.ICMP_TYPE_OBJECT,
-        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
+        AristaStructureType.ICMP_TYPE_OBJECT,
+        AristaStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.NETWORK_OBJECT,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
-        CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT);
+        AristaStructureType.NETWORK_OBJECT,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
+        AristaStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
+        AristaStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+        AristaStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
+        AristaStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
+        AristaStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+        AristaStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
+        AristaStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_OBJECT,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
-        CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
+        AristaStructureType.SERVICE_OBJECT,
+        AristaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
+        AristaStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.PROTOCOL_OBJECT,
-        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
+        AristaStructureType.PROTOCOL_OBJECT,
+        AristaStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
 
     // service template
     markConcreteStructure(
-        CiscoStructureType.SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
-        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+        AristaStructureType.SERVICE_TEMPLATE,
+        AristaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
+        AristaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
+        AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
 
     // track
-    markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
+    markConcreteStructure(AristaStructureType.TRACK, AristaStructureUsage.INTERFACE_STANDBY_TRACK);
 
     // VXLAN
-    markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
+    markConcreteStructure(AristaStructureType.VXLAN, AristaStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(
-        CiscoStructureType.SECURITY_ZONE,
-        CiscoStructureUsage.INTERFACE_ZONE_MEMBER,
-        CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
-        CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
+        AristaStructureType.SECURITY_ZONE,
+        AristaStructureUsage.INTERFACE_ZONE_MEMBER,
+        AristaStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
+        AristaStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
-    markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
+    markConcreteStructure(AristaStructureType.NAT_POOL, AristaStructureUsage.IP_NAT_SOURCE_POOL);
     markConcreteStructure(
-        CiscoStructureType.AS_PATH_ACCESS_LIST,
-        CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
+        AristaStructureType.AS_PATH_ACCESS_LIST,
+        AristaStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        AristaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
 
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
-    markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
+    markConcreteStructure(AristaStructureType.BGP_AF_GROUP, AristaStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
+        AristaStructureType.BGP_NEIGHBOR_GROUP, AristaStructureUsage.BGP_USE_NEIGHBOR_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_PEER_GROUP,
-        CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
-        CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
-        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+        AristaStructureType.BGP_PEER_GROUP,
+        AristaStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
+        AristaStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
+        AristaStructureUsage.BGP_NEIGHBOR_STATEMENT);
     markConcreteStructure(
-        CiscoStructureType.BGP_SESSION_GROUP, CiscoStructureUsage.BGP_USE_SESSION_GROUP);
+        AristaStructureType.BGP_SESSION_GROUP, AristaStructureUsage.BGP_USE_SESSION_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
+        AristaStructureType.BGP_TEMPLATE_PEER_POLICY,
+        AristaStructureUsage.BGP_INHERITED_PEER_POLICY);
     markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
+        AristaStructureType.BGP_TEMPLATE_PEER_SESSION, AristaStructureUsage.BGP_INHERITED_SESSION);
     markConcreteStructure(
-        CiscoStructureType.BGP_UNDECLARED_PEER, CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
+        AristaStructureType.BGP_UNDECLARED_PEER,
+        AristaStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
     markConcreteStructure(
-        CiscoStructureType.BGP_UNDECLARED_PEER_GROUP,
-        CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
+        AristaStructureType.BGP_UNDECLARED_PEER_GROUP,
+        AristaStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     return ImmutableList.of(c);
   }
@@ -4197,7 +3586,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                   ImmutableList.of(
                       ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
               .setSourceName(inspectClassMapName)
-              .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
+              .setSourceType(AristaStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
         });
   }
@@ -4269,7 +3658,7 @@ public final class AristaConfiguration extends VendorConfiguration {
               .setName(inspectPolicyMapAclName)
               .setLines(policyMapAclLines.build())
               .setSourceName(inspectPolicyMapName)
-              .setSourceType(CiscoStructureType.INSPECT_POLICY_MAP.getDescription())
+              .setSourceType(AristaStructureType.INSPECT_POLICY_MAP.getDescription())
               .build();
         });
   }
@@ -4409,7 +3798,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                             srcZoneName, inspectPolicyMapName))
                     .build()))
         .setSourceName(zonePair.getName())
-        .setSourceType(CiscoStructureType.SECURITY_ZONE_PAIR.getDescription())
+        .setSourceType(AristaStructureType.SECURITY_ZONE_PAIR.getDescription())
         .build();
     return Optional.of(
         ExprAclLine.accepting()
@@ -4542,34 +3931,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           }
         }
       }
-      // check bgp policies
-      BgpProcess bgpProcess = vrf.getBgpProcess();
-      if (bgpProcess != null) {
-        for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
-        for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          currentMapName = pg.getInboundRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getOutboundRouteMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getDefaultOriginateMap();
-          if (containsIpAccessList(aclName, currentMapName)) {
-            return true;
-          }
-          if (aclName.equals(pg.getInboundIpAccessList())
-              || aclName.equals(pg.getOutboundIpAccessList())) {
-            return true;
-          }
-        }
-      }
+      // TODO: do we need to check Arista bgp policies?
       // check EIGRP policies
       // distribute lists
       if (vrf.getEigrpProcesses().values().stream()
@@ -4605,50 +3967,19 @@ public final class AristaConfiguration extends VendorConfiguration {
           return true;
         }
       }
-      // check bgp policies
-      BgpProcess bgpProcess = vrf.getBgpProcess();
-      if (bgpProcess != null) {
-        for (BgpRedistributionPolicy rp : bgpProcess.getRedistributionPolicies().values()) {
-          currentMapName = rp.getRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
-        for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          currentMapName = pg.getInboundRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getInboundRoute6Map();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getOutboundRouteMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getOutboundRoute6Map();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-          currentMapName = pg.getDefaultOriginateMap();
-          if (containsIpv6AccessList(aclName, currentMapName)) {
-            return true;
-          }
-        }
-      }
+      // TODO: do we need to check Arista bgp policies?
     }
     return false;
   }
 
-  private void markCommunityLists(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markCommunityLists(AristaStructureUsage... usages) {
+    for (AristaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.COMMUNITY_LIST,
+          AristaStructureType.COMMUNITY_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.COMMUNITY_LIST_EXPANDED,
-              CiscoStructureType.COMMUNITY_LIST_STANDARD));
+              AristaStructureType.COMMUNITY_LIST_EXPANDED,
+              AristaStructureType.COMMUNITY_LIST_STANDARD));
     }
   }
 
@@ -4687,38 +4018,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }
-  }
-
-  public Map<String, IcmpTypeObjectGroup> getIcmpTypeObjectGroups() {
-    return _icmpTypeObjectGroups;
-  }
-
-  public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
-    return _networkObjectGroups;
-  }
-
-  public Map<String, NetworkObjectInfo> getNetworkObjectInfos() {
-    return _networkObjectInfos;
-  }
-
-  public Map<String, NetworkObject> getNetworkObjects() {
-    return _networkObjects;
-  }
-
-  public Map<String, ObjectGroup> getObjectGroups() {
-    return _objectGroups;
-  }
-
-  public Map<String, ProtocolObjectGroup> getProtocolObjectGroups() {
-    return _protocolObjectGroups;
-  }
-
-  public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
-    return _serviceObjectGroups;
-  }
-
-  public Map<String, ServiceObject> getServiceObjects() {
-    return _serviceObjects;
   }
 
   public Map<String, InspectClassMap> getInspectClassMaps() {

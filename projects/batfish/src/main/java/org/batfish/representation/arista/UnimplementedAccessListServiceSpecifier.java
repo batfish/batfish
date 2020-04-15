@@ -1,6 +1,5 @@
 package org.batfish.representation.arista;
 
-import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -16,7 +15,7 @@ public final class UnimplementedAccessListServiceSpecifier implements AccessList
 
   @Nonnull
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
+  public AclLineMatchExpr toAclLineMatchExpr() {
     return FalseExpr.INSTANCE;
   }
 

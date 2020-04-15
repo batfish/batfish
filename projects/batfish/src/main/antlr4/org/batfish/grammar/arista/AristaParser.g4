@@ -1,7 +1,7 @@
 parser grammar AristaParser;
 
 import
-Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -174,72 +174,6 @@ archive_null
       | PATH
       | WRITE_MEMORY
    ) null_rest_of_line
-;
-
-asa_comment_stanza
-:
-   COLON null_rest_of_line
-;
-
-asa_nat_ifaces
-:
-   PAREN_LEFT real_if = variable COMMA mapped_if = variable PAREN_RIGHT
-;
-
-asa_nat_optional_args
-:
-   DNS
-   | INACTIVE
-   | NO_PROXY_ARP
-   | ROUTE_LOOKUP
-   | UNIDIRECTIONAL
-;
-
-asa_nat_pat_pool
-:
-   PAT_POOL pat_obj = variable?
-   (
-       BLOCK_ALLOCATION
-       | EXTENDED
-       | (FLAT INCLUDE_RESERVE?)
-       | INTERFACE
-       | ROUND_ROBIN
-   )*
-;
-
-asa_twice_nat_destination
-:
-   DESTINATION STATIC
-   (
-      mapped_dst = variable
-      | mapped_dst_iface = INTERFACE
-   )
-   real_dst = variable
-;
-
-asa_twice_nat_dynamic
-:
-   DYNAMIC real_src = variable
-   (
-      (mapped_src = variable mapped_src_iface = INTERFACE?)
-      | mapped_src_iface = INTERFACE
-      | asa_nat_pat_pool
-   )
-;
-
-asa_twice_nat_service
-:
-   SERVICE svc_obj1 = variable svc_obj2 = variable
-;
-
-asa_twice_nat_static
-:
-   STATIC
-   real_src = variable
-   (
-      mapped_src = variable
-      | mapped_src_iface = INTERFACE
-   )
 ;
 
 av_null
@@ -3557,8 +3491,6 @@ ssh_timeout
 stanza
 :
    appletalk_access_list_stanza
-   | asa_comment_stanza
-   | asa_access_group
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza

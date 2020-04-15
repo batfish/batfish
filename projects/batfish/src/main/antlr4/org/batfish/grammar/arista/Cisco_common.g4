@@ -110,54 +110,6 @@ extended_community
    ec_literal
 ;
 
-icmp_object_type
-:
-   DEC
-   | ALTERNATE_ADDRESS
-   | CONVERSION_ERROR
-   | ECHO
-   | ECHO_REPLY
-   | INFORMATION_REPLY
-   | INFORMATION_REQUEST
-   | MASK_REPLY
-   | MASK_REQUEST
-   | MOBILE_REDIRECT
-   | PARAMETER_PROBLEM
-   | REDIRECT
-   | ROUTER_ADVERTISEMENT
-   | ROUTER_SOLICITATION
-   | SOURCE_QUENCH
-   | TIME_EXCEEDED
-   | TIMESTAMP_REPLY
-   | TIMESTAMP_REQUEST
-   | TRACEROUTE
-   | UNREACHABLE
-   | UNSET
-;
-
-icmp_inline_object_type
-:
-   ICMP_ALTERNATE_ADDRESS
-   | ICMP_CONVERSION_ERROR
-   | ICMP_ECHO
-   | ICMP_ECHO_REPLY
-   | ICMP_INFORMATION_REPLY
-   | ICMP_INFORMATION_REQUEST
-   | ICMP_MASK_REPLY
-   | ICMP_MASK_REQUEST
-   | ICMP_MOBILE_REDIRECT
-   | ICMP_PARAMETER_PROBLEM
-   | ICMP_REDIRECT
-   | ICMP_ROUTER_ADVERTISEMENT
-   | ICMP_ROUTER_SOLICITATION
-   | ICMP_SOURCE_QUENCH
-   | ICMP_TIME_EXCEEDED
-   | ICMP_TIMESTAMP_REPLY
-   | ICMP_TIMESTAMP_REQUEST
-   | ICMP_TRACEROUTE
-   | ICMP_UNREACHABLE
-;
-
 int_expr
 :
    (
@@ -572,38 +524,6 @@ community_set_elem_half
    )
    | ASTERISK
    | PRIVATE_AS
-;
-
-service_group_protocol
-:
-     TCP | TCP_UDP | UDP
-;
-
-service_specifier
-:
-   service_specifier_icmp
-   | service_specifier_tcp_udp
-   | service_specifier_protocol
-;
-
-service_specifier_icmp
-:
-   ICMP icmp_object_type?
-;
-
-service_specifier_protocol
-:
-   protocol
-;
-
-service_specifier_tcp_udp
-:
-   (
-      TCP
-      | TCP_UDP
-      | UDP
-   )
-   (SOURCE src_ps = port_specifier)? (DESTINATION? dst_ps = port_specifier)?
 ;
 
 subrange

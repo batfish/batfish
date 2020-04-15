@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.HeaderSpace;
@@ -112,7 +111,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
   @Override
   @Nonnull
-  public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
+  public AclLineMatchExpr toAclLineMatchExpr() {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setDscps(_dscps)

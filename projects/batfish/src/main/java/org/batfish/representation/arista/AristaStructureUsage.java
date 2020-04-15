@@ -2,7 +2,7 @@ package org.batfish.representation.arista;
 
 import org.batfish.vendor.StructureUsage;
 
-public enum CiscoStructureUsage implements StructureUsage {
+public enum AristaStructureUsage implements StructureUsage {
   ACCESS_GROUP_GLOBAL_FILTER("access-group global filter"),
   BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
@@ -237,7 +237,7 @@ public enum CiscoStructureUsage implements StructureUsage {
 
   private final String _description;
 
-  CiscoStructureUsage(String description) {
+  AristaStructureUsage(String description) {
     _description = description;
   }
 
