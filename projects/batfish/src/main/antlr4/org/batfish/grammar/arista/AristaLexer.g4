@@ -4895,6 +4895,11 @@ FRAGMENTATION
    'fragmentation'
 ;
 
+FRAGMENT_RULES
+:
+   'fragment-rules'
+;
+
 FRAGMENTS
 :
    'fragments'
