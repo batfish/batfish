@@ -14,27 +14,27 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
-import static org.batfish.representation.arista.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
-import static org.batfish.representation.arista.CiscoConversions.computeDistributeListPolicies;
-import static org.batfish.representation.arista.CiscoConversions.convertCryptoMapSet;
-import static org.batfish.representation.arista.CiscoConversions.eigrpRedistributionPoliciesToStatements;
-import static org.batfish.representation.arista.CiscoConversions.getIsakmpKeyGeneratedName;
-import static org.batfish.representation.arista.CiscoConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.arista.CiscoConversions.insertDistributeListFilterAndGetPolicy;
-import static org.batfish.representation.arista.CiscoConversions.resolveIsakmpProfileIfaceNames;
-import static org.batfish.representation.arista.CiscoConversions.resolveKeyringIfaceNames;
-import static org.batfish.representation.arista.CiscoConversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.arista.CiscoConversions.toCommunityList;
-import static org.batfish.representation.arista.CiscoConversions.toIkePhase1Key;
-import static org.batfish.representation.arista.CiscoConversions.toIkePhase1Policy;
-import static org.batfish.representation.arista.CiscoConversions.toIkePhase1Proposal;
-import static org.batfish.representation.arista.CiscoConversions.toIpAccessList;
-import static org.batfish.representation.arista.CiscoConversions.toIpsecPeerConfig;
-import static org.batfish.representation.arista.CiscoConversions.toIpsecPhase2Policy;
-import static org.batfish.representation.arista.CiscoConversions.toIpsecPhase2Proposal;
-import static org.batfish.representation.arista.CiscoConversions.toOspfDeadInterval;
-import static org.batfish.representation.arista.CiscoConversions.toOspfHelloInterval;
-import static org.batfish.representation.arista.CiscoConversions.toOspfNetworkType;
+import static org.batfish.representation.arista.Conversions.clearFalseStatementsAndAddMatchOwnAsn;
+import static org.batfish.representation.arista.Conversions.computeDistributeListPolicies;
+import static org.batfish.representation.arista.Conversions.convertCryptoMapSet;
+import static org.batfish.representation.arista.Conversions.eigrpRedistributionPoliciesToStatements;
+import static org.batfish.representation.arista.Conversions.getIsakmpKeyGeneratedName;
+import static org.batfish.representation.arista.Conversions.getRsaPubKeyGeneratedName;
+import static org.batfish.representation.arista.Conversions.insertDistributeListFilterAndGetPolicy;
+import static org.batfish.representation.arista.Conversions.resolveIsakmpProfileIfaceNames;
+import static org.batfish.representation.arista.Conversions.resolveKeyringIfaceNames;
+import static org.batfish.representation.arista.Conversions.resolveTunnelIfaceNames;
+import static org.batfish.representation.arista.Conversions.toCommunityList;
+import static org.batfish.representation.arista.Conversions.toIkePhase1Key;
+import static org.batfish.representation.arista.Conversions.toIkePhase1Policy;
+import static org.batfish.representation.arista.Conversions.toIkePhase1Proposal;
+import static org.batfish.representation.arista.Conversions.toIpAccessList;
+import static org.batfish.representation.arista.Conversions.toIpsecPeerConfig;
+import static org.batfish.representation.arista.Conversions.toIpsecPhase2Policy;
+import static org.batfish.representation.arista.Conversions.toIpsecPhase2Proposal;
+import static org.batfish.representation.arista.Conversions.toOspfDeadInterval;
+import static org.batfish.representation.arista.Conversions.toOspfHelloInterval;
+import static org.batfish.representation.arista.Conversions.toOspfNetworkType;
 import static org.batfish.representation.arista.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.CONNECTED;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
@@ -1469,7 +1469,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+            iface.getHsrpGroups(), Entry::getKey, e -> Conversions.toHsrpGroup(e.getValue())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
@@ -1991,7 +1991,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, AristaConfiguration oldConfig) {
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
-      routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
+      routerId = Conversions.getHighestIp(oldConfig.getInterfaces());
       if (routerId == Ip.ZERO) {
         _w.redFlag("No candidates for OSPF router-id");
         return null;
@@ -2644,13 +2644,13 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // convert as path access lists to vendor independent format
     for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
-      AsPathAccessList apList = CiscoConversions.toAsPathAccessList(pathList);
+      AsPathAccessList apList = Conversions.toAsPathAccessList(pathList);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
     // convert as-path-sets to vendor independent format
     for (AsPathSet asPathSet : _asPathSets.values()) {
-      AsPathAccessList apList = CiscoConversions.toAsPathAccessList(asPathSet);
+      AsPathAccessList apList = Conversions.toAsPathAccessList(asPathSet);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
@@ -2666,13 +2666,13 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
-      RouteFilterList newRouteFilterList = CiscoConversions.toRouteFilterList(prefixList);
+      RouteFilterList newRouteFilterList = Conversions.toRouteFilterList(prefixList);
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
     // convert ipv6 prefix lists to route6 filter lists
     for (Prefix6List prefixList : _prefix6Lists.values()) {
-      Route6FilterList newRouteFilterList = CiscoConversions.toRoute6FilterList(prefixList);
+      Route6FilterList newRouteFilterList = Conversions.toRoute6FilterList(prefixList);
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
@@ -2680,14 +2680,14 @@ public final class AristaConfiguration extends VendorConfiguration {
     // lists
     for (StandardAccessList saList : _standardAccessLists.values()) {
       if (isAclUsedForRouting(saList.getName())) {
-        RouteFilterList rfList = CiscoConversions.toRouteFilterList(saList);
+        RouteFilterList rfList = Conversions.toRouteFilterList(saList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists().put(saList.getName(), toIpAccessList(saList.toExtendedAccessList()));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
-        RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
+        RouteFilterList rfList = Conversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       IpAccessList ipaList = toIpAccessList(eaList);
@@ -2699,20 +2699,18 @@ public final class AristaConfiguration extends VendorConfiguration {
     // lists
     for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
       if (isAclUsedForRoutingv6(saList.getName())) {
-        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(saList);
+        Route6FilterList rfList = Conversions.toRoute6FilterList(saList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);
       }
       c.getIp6AccessLists()
-          .put(
-              saList.getName(),
-              CiscoConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
+          .put(saList.getName(), Conversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
     }
     for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
       if (isAclUsedForRoutingv6(eaList.getName())) {
-        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(eaList);
+        Route6FilterList rfList = Conversions.toRoute6FilterList(eaList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);
       }
-      Ip6AccessList ipaList = CiscoConversions.toIp6AccessList(eaList);
+      Ip6AccessList ipaList = Conversions.toIp6AccessList(eaList);
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -2990,7 +2988,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(c, staticRoute));
+            newVrf.getStaticRoutes().add(Conversions.toStaticRoute(c, staticRoute));
           }
 
           // convert rip process
@@ -3008,7 +3006,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
           // convert eigrp processes
           vrf.getEigrpProcesses().values().stream()
-              .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
+              .map(proc -> Conversions.toEigrpProcess(proc, vrfName, c, this))
               .filter(Objects::nonNull)
               .forEach(newVrf::addEigrpProcess);
 
@@ -3016,7 +3014,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
             org.batfish.datamodel.isis.IsisProcess newIsisProcess =
-                CiscoConversions.toIsisProcess(isisProcess, c, this);
+                Conversions.toIsisProcess(isisProcess, c, this);
             newVrf.setIsisProcess(newIsisProcess);
           }
 
