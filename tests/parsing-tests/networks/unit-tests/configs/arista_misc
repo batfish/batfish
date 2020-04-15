@@ -1,4 +1,4 @@
-!
+!RANCID-CONTENT-TYPE: arista
 hostname arista_misc
 !
 a1awesomehost#show running

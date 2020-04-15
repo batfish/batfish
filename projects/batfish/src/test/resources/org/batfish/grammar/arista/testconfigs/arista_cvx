@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_cvx
+!
+cvx
+   shutdown
+   port 9979
+   heartbeat-interval 20
+   heartbeat-timeout 60
+   no ssl profile
+   no peer host
+   no source-interface
+   peer timeout 10

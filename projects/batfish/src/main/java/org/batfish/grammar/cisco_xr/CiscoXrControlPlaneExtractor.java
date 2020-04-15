@@ -8266,12 +8266,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return NamedPort.CSNET_NS;
     } else if (ctx.CTIQBE() != null) {
       return NamedPort.CTIQBE;
-    } else if (ctx.CVX() != null) {
-      return NamedPort.CVX;
-    } else if (ctx.CVX_CLUSTER() != null) {
-      return NamedPort.CVX_CLUSTER;
-    } else if (ctx.CVX_LICENSE() != null) {
-      return NamedPort.CVX_LICENSE;
     } else if (ctx.DAYTIME() != null) {
       return NamedPort.DAYTIME;
     } else if (ctx.DHCP_FAILOVER2() != null) {

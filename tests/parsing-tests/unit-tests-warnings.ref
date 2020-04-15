@@ -46,14 +46,14 @@
         "Filename" : "configs/arista_bgp",
         "Line" : 12,
         "Text" : "ospf3 match internal route-map ROUTE_MAP",
-        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/arista_bgp",
         "Line" : 13,
         "Text" : "ospf3 match external route-map UNDEFINED_MAP",
-        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+        "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -67,14 +67,14 @@
         "Filename" : "configs/arista_nat",
         "Line" : 9,
         "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255",
-        "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+        "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
         "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP"
       },
       {
         "Filename" : "configs/arista_nat",
         "Line" : 10,
         "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32",
-        "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+        "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
         "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP"
       },
       {
@@ -380,28 +380,28 @@
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 128,
+        "Line" : 125,
         "Text" : "ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map",
         "Parser_Context" : "[if_ip_summary_address if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 281,
+        "Line" : 278,
         "Text" : "zone-member t1",
         "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 316,
+        "Line" : 313,
         "Text" : "mode gre ipv4",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 317,
+        "Line" : 314,
         "Text" : "mode gre multipoint",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

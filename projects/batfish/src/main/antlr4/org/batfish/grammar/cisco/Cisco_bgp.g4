@@ -142,11 +142,6 @@ auto_summary_bgp_tail
    NO? AUTO_SUMMARY NEWLINE
 ;
 
-bgp_advertise_inactive_rb_stanza
-:
-   BGP ADVERTISE_INACTIVE NEWLINE
-;
-
 //confederations are not currently implemented
 //not putting this under null so we can warn the user
 
@@ -778,8 +773,7 @@ router_bgp_stanza
    (
       procnum = bgp_asn
    )? NEWLINE (
-      {!_aristaBgp}? router_bgp_stanza_tail
-      | {_aristaBgp}? eos_router_bgp_tail
+      router_bgp_stanza_tail
    )*
 ;
 
@@ -792,7 +786,6 @@ router_bgp_stanza_tail
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
    | as_path_multipath_relax_rb_stanza
-   | bgp_advertise_inactive_rb_stanza
    | bgp_confederation_rb_stanza
    | bgp_listen_range_rb_stanza
    | bgp_maxas_limit_rb_stanza
