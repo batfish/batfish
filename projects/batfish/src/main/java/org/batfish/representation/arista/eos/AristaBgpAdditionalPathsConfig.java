@@ -1,9 +1,10 @@
 package org.batfish.representation.arista.eos;
 
+import java.io.Serializable;
 import javax.annotation.Nullable;
 
 /** Configuration for BGP "additional paths" setting */
-public class AristaBgpAdditionalPathsConfig {
+public class AristaBgpAdditionalPathsConfig implements Serializable {
   public enum SendType {
     ANY
   }

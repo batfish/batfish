@@ -417,9 +417,11 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_aa_v4Context;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_aa_v6Context;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpnContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_neighbor_nidContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_no_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4Context;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv6_unicastContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rb_afed_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vab_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vlan_aware_bundleContext;
@@ -427,6 +429,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_vlan_tail_rdContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vlan_tail_redistributeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vrfContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafdnc_activateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafeb_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4_no_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4u_neighborContext;
@@ -437,9 +440,12 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_redistribute_inter
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_routeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv6u_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_activateContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_activateContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_next_hop_unchangedContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_distanceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_maximum_pathsContext;
@@ -490,6 +496,10 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4_unicas
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_connectedContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_isisContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_ripContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_staticContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_connectedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_dynamicContext;
@@ -917,6 +927,8 @@ import org.batfish.representation.arista.Vrf;
 import org.batfish.representation.arista.VrrpGroup;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.WildcardAddressSpecifier;
+import org.batfish.representation.arista.eos.AristaBgpAdditionalPathsConfig;
+import org.batfish.representation.arista.eos.AristaBgpAdditionalPathsConfig.SendType;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
@@ -1833,6 +1845,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbafdnc_activate(Eos_rbafdnc_activateContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setActivate(null);
+  }
+
+  @Override
   public void enterEos_rb_af_evpn(Eos_rb_af_evpnContext ctx) {
     _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateEvpnAf();
   }
@@ -1848,20 +1865,46 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterEos_rb_af_evpn_neighbor(Eos_rb_af_evpn_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
+  public void enterEos_rb_afed_neighbor(Eos_rb_afed_neighborContext ctx) {
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
       _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-    } else if (ctx.v6 != null) {
+    } else if (ctx.nid.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.nid.v6));
+    } else {
+      throw new IllegalStateException(
+          String.format("Unknown neighbor type in %s", getFullText(ctx)));
+    }
+  }
+
+  @Override
+  public void exitEos_rb_afed_neighbor(Eos_rb_afed_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rb_af_evpn_neighbor_nid(Eos_rb_af_evpn_neighbor_nidContext ctx) {
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
+      _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
+      _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
+      _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
+      _configuration.referenceStructure(
+          BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
+    } else if (ctx.nid.v6 != null) {
+      _currentAristaBgpNeighborAddressFamily =
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.nid.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
@@ -1875,19 +1918,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterEos_rb_af_evpn_no_neighbor(Eos_rb_af_evpn_no_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
       _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-    } else if (ctx.v6 != null) {
+    } else if (ctx.nid.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.nid.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
@@ -1947,19 +1990,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterEos_rbafipv4u_neighbor(Eos_rbafipv4u_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
       _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-    } else if (ctx.v6 != null) {
+    } else if (ctx.nid.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.nid.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
@@ -1973,19 +2016,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterEos_rbafipv6u_neighbor(Eos_rbafipv6u_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
       _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-    } else if (ctx.v6 != null) {
+    } else if (ctx.nid.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.nid.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
@@ -1998,13 +2041,20 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setActivate(false);
+  public void exitEos_rbafnc_activate(Eos_rbafnc_activateContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setActivate(true);
   }
 
   @Override
-  public void exitEos_rbafnc_activate(Eos_rbafnc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setActivate(true);
+  public void exitEos_rbafnc_additional_paths(Eos_rbafnc_additional_pathsContext ctx) {
+    AristaBgpAdditionalPathsConfig addPaths =
+        _currentAristaBgpNeighborAddressFamily.getOrCreateAdditionalPaths();
+    if (ctx.RECEIVE() != null) {
+      addPaths.setReceive(true);
+    }
+    if (ctx.SEND() != null) {
+      addPaths.setSend(SendType.ANY);
+    }
   }
 
   @Override
@@ -2025,19 +2075,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterEos_rbafipv4_no_neighbor(Eos_rbafipv4_no_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
       _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreateNeighbor(address);
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
       _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _currentAristaBgpNeighborAddressFamily = _currentAristaBgpVrfAf.getOrCreatePeerGroup(name);
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-    } else if (ctx.v6 != null) {
+    } else if (ctx.nid.v6 != null) {
       _currentAristaBgpNeighborAddressFamily =
-          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.v6));
+          _currentAristaBgpVrfAf.getOrCreateNeighbor(toIp6(ctx.nid.v6));
     } else {
       throw new IllegalStateException(
           String.format("Unknown neighbor type in %s", getFullText(ctx)));
@@ -2051,7 +2101,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
-    _currentAristaBgpNeighborAddressFamily.setDefaultActivate(false);
+    _currentAristaBgpNeighborAddressFamily.setActivate(false);
+  }
+
+  @Override
+  public void exitEos_rbafnonc_next_hop_unchanged(Eos_rbafnonc_next_hop_unchangedContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setNextHopUnchanged(false);
+  }
+
+  @Override
+  public void exitEos_rbafnonc_route_map(Eos_rbafnonc_route_mapContext ctx) {
+    if (ctx.IN() != null) {
+      _currentAristaBgpNeighborAddressFamily.setRouteMapIn(null);
+    } else {
+      assert ctx.OUT() != null;
+      _currentAristaBgpNeighborAddressFamily.setRouteMapOut(null);
+    }
   }
 
   @Override
@@ -2400,17 +2465,17 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
-    if (ctx.v4 != null) {
-      Ip address = toIp(ctx.v4);
+    if (ctx.nid.v4 != null) {
+      Ip address = toIp(ctx.nid.v4);
       _currentAristaBgpNeighbor =
           _currentAristaBgpVrf.getOrCreateV4Neighbor(address); // ensure peer exists
-    } else if (ctx.pg != null) {
-      String name = ctx.pg.getText();
+    } else if (ctx.nid.pg != null) {
+      String name = ctx.nid.pg.getText();
       _currentAristaBgpNeighbor =
           _currentAristaBgpProcess.getOrCreatePeerGroup(name); // ensure peer exists
       _configuration.referenceStructure(
           BGP_PEER_GROUP, name, BGP_NEIGHBOR_PEER_GROUP, ctx.getStart().getLine());
-    } else if (ctx.v6 != null) {
+    } else if (ctx.nid.v6 != null) {
       // TODO: v6 neighbors
       _currentAristaBgpNeighbor = new AristaBgpPeerGroupNeighbor("dummy");
     } else {
@@ -2432,6 +2497,29 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_shutdown(Eos_rbinon_shutdownContext ctx) {
     _currentAristaBgpNeighbor.setShutdown(false);
+  }
+
+  @Override
+  public void exitEos_rbinor_connected(Eos_rbinor_connectedContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.CONNECTED);
+  }
+
+  @Override
+  public void exitEos_rbinor_isis(Eos_rbinor_isisContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS);
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L1);
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L2);
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L1_L2);
+  }
+
+  @Override
+  public void exitEos_rbinor_rip(Eos_rbinor_ripContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.RIP);
+  }
+
+  @Override
+  public void exitEos_rbinor_static(Eos_rbinor_staticContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.STATIC);
   }
 
   @Override

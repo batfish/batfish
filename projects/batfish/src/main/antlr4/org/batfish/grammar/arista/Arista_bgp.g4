@@ -6,6 +6,13 @@ options {
    tokenVocab = AristaLexer;
 }
 
+eos_neighbor_id
+:
+  v4 = IP_ADDRESS
+  | v6 = IPV6_ADDRESS
+  | pg = variable
+;
+
 router_bgp_stanza
 :
    ROUTER BGP
@@ -81,6 +88,7 @@ eos_rb_af_ipv4_unicast
   NEWLINE
   (
     eos_rbafipv4u_bgp
+    | eos_rbafipv4u_default
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
     | eos_rbafipv4_no
@@ -132,15 +140,22 @@ eos_rbafipv4ub_route
   ROUTE INSTALL name = variable NEWLINE
 ;
 
+eos_rbafipv4u_default
+:
+  DEFAULT
+  (
+    eos_rbafipv4ud_neighbor
+  )
+;
+
+eos_rbafipv4ud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_default_neighbor_common
+;
+
 eos_rbafipv4u_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
 ;
 
 eos_rbafipv4_no
@@ -153,13 +168,7 @@ eos_rbafipv4_no
 
 eos_rbafipv4_no_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_no_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
 
 eos_rbafipv4u_network
@@ -187,13 +196,7 @@ eos_rb_af_ipv6_unicast
 
 eos_rbafipv6u_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
-  eos_rb_af_neighbor_common
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
 ;
 
 eos_rb_af_evpn
@@ -201,6 +204,7 @@ eos_rb_af_evpn
   EVPN NEWLINE
   (
     eos_rb_af_evpn_bgp
+    | eos_rb_af_evpn_default
     | eos_rb_af_evpn_graceful_restart
     | eos_rb_af_evpn_host_flap
     | eos_rb_af_evpn_neighbor
@@ -214,6 +218,19 @@ eos_rb_af_evpn_bgp
   (
     eos_rbafeb_additional_paths
     | eos_rbafeb_next_hop_unchanged
+  )
+;
+
+eos_rb_af_evpn_default
+:
+  DEFAULT eos_rb_afed_neighbor
+;
+
+eos_rb_afed_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
   )
 ;
 
@@ -231,11 +248,26 @@ eos_rb_af_evpn_neighbor
 :
   NEIGHBOR
   (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
+    eos_rb_af_evpn_neighbor_default
+    | eos_rb_af_evpn_neighbor_nid
   )
-  eos_rb_af_neighbor_common
+;
+
+eos_rb_af_evpn_neighbor_default
+:
+  DEFAULT ENCAPSULATION VXLAN NEWLINE
+;
+
+eos_rb_af_evpn_neighbor_nid
+:
+  nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_graceful_restart
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
 ;
 
 eos_rb_af_evpn_no:
@@ -245,20 +277,31 @@ eos_rb_af_evpn_no:
 
 eos_rb_af_evpn_no_neighbor
 :
-  NEIGHBOR
+  NEIGHBOR nid = eos_neighbor_id
   (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
+    eos_rbafnonc_activate
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
   )
-  eos_rb_af_no_neighbor_common
 ;
 
+// Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.
+eos_rb_af_default_neighbor_common
+:
+  eos_rbafdnc_activate
+;
+
+eos_rbafdnc_activate
+:
+  ACTIVATE NEWLINE
+;
+
+// Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afnc rules.
 eos_rb_af_neighbor_common
 :
   (
     eos_rbafnc_activate
-//    | eos_rbafnc_additional_paths
+    | eos_rbafnc_additional_paths
     | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
@@ -281,6 +324,11 @@ eos_rbafnc_activate
   ACTIVATE NEWLINE
 ;
 
+eos_rbafnc_additional_paths
+:
+  ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
+;
+
 eos_rbafnc_graceful_restart
 :
   GRACEFUL_RESTART NEWLINE
@@ -296,14 +344,27 @@ eos_rbafnc_route_map
   ROUTE_MAP name = variable (IN | OUT) NEWLINE
 ;
 
+// Common to ipv4/ipv6 unicast. Other address families should just use the rbafnonc rules.
 eos_rb_af_no_neighbor_common
 :
   eos_rbafnonc_activate
+  | eos_rbafnonc_next_hop_unchanged
+  | eos_rbafnonc_route_map
 ;
 
 eos_rbafnonc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnonc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnonc_route_map
+:
+  ROUTE_MAP (IN | OUT) NEWLINE
 ;
 
 eos_rb_inner
@@ -830,6 +891,7 @@ eos_rbi_no
   (
     eos_rbino_bgp
     | eos_rbino_neighbor
+    | eos_rbino_redistribute
   )
 ;
 
@@ -881,12 +943,7 @@ eos_rbino_bgp_default_ipv4_unicast
 
 eos_rbino_neighbor
 :
-  NEIGHBOR
-  (
-    v4 = IP_ADDRESS
-    | v6 = IPV6_ADDRESS
-    | pg = variable
-  )
+  NEIGHBOR nid = eos_neighbor_id
   (
     eos_rbinon_enforce_first_as
     | eos_rbinon_shutdown
@@ -901,6 +958,45 @@ eos_rbinon_enforce_first_as
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbino_redistribute
+:
+  REDISTRIBUTE
+  (
+    eos_rbinor_aggregate
+    | eos_rbinor_connected
+    | eos_rbinor_isis
+    //| eos_rbinor_ospf
+    //| eos_rbinor_ospf3
+    | eos_rbinor_rip
+    | eos_rbinor_static
+  )
+;
+
+eos_rbinor_aggregate
+:
+  AGGREGATE NEWLINE
+;
+
+eos_rbinor_connected
+:
+  CONNECTED NEWLINE
+;
+
+eos_rbinor_isis
+:
+  ISIS NEWLINE
+;
+
+eos_rbinor_rip
+:
+  RIP NEWLINE
+;
+
+eos_rbinor_static
+:
+  STATIC NEWLINE
 ;
 
 // Defining a peer group

@@ -16531,6 +16531,11 @@ M_NEIGHBOR_CHANGES
    'changes' -> type ( CHANGES ) , popMode
 ;
 
+M_NEIGHBOR_DEFAULT
+:
+   'default' -> type ( DEFAULT ) , popMode
+;
+
 M_NEIGHBOR_IP_ADDRESS
 :
    F_IpAddress -> type ( IP_ADDRESS ) ,  popMode

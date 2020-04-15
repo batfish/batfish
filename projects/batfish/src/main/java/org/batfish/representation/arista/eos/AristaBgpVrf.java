@@ -307,6 +307,10 @@ public final class AristaBgpVrf implements Serializable {
     _redistributionPolicies.put(type, new AristaBgpRedistributionPolicy(type, routeMap));
   }
 
+  public void removeRedistributionPolicy(AristaRedistributeType type) {
+    _redistributionPolicies.remove(type);
+  }
+
   @Nullable
   public RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;

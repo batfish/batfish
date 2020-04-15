@@ -1,13 +1,13 @@
 package org.batfish.representation.arista.eos;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** BGP neighbor settings. This class implements the union of all address families. */
 public class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Boolean _activate;
   @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
-  private boolean _defaultActivate = false;
   @Nullable private Boolean _nextHopUnchanged;
   @Nullable private String _prefixListIn;
   @Nullable private String _prefixListOut;
@@ -29,17 +29,12 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     return _additionalPaths;
   }
 
-  public void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
-    _additionalPaths = additionalPaths;
-  }
-
-  /** Whether the neighbors by default are activated in this address family */
-  public boolean isDefaultActivate() {
-    return _defaultActivate;
-  }
-
-  public void setDefaultActivate(boolean defaultActivate) {
-    _defaultActivate = defaultActivate;
+  @Nonnull
+  public AristaBgpAdditionalPathsConfig getOrCreateAdditionalPaths() {
+    if (_additionalPaths == null) {
+      _additionalPaths = new AristaBgpAdditionalPathsConfig();
+    }
+    return _additionalPaths;
   }
 
   @Nullable
