@@ -999,7 +999,7 @@
         }
       },
       "arista_misc" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -1048,9 +1048,6 @@
           "cisco" : {
             "defaultSwitchportMode" : "NONE",
             "hostname" : "arista_misc",
-            "logging" : {
-              "on" : true
-            },
             "ntp" : {
               "servers" : {
                 "192.168.1.246" : {
