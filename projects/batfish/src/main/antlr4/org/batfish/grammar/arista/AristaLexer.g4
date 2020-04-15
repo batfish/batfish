@@ -1026,6 +1026,11 @@ ATTACHED_HOST
    'attached-host'
 ;
 
+ATTACHED_HOSTS
+:
+   'attached-hosts'
+;
+
 ATM
 :
    'atm'
@@ -1519,6 +1524,11 @@ BGP_COMMUNITY
 BGP_POLICY
 :
    'bgp-policy'
+;
+
+BIDIRECTIONAL
+:
+   'bidirectional'
 ;
 
 BIDIR_ENABLE
@@ -3032,6 +3042,11 @@ DESCRIPTION
    'description' -> pushMode ( M_Description )
 ;
 
+DESIGNATED_FORWARDER
+:
+   'designated-forwarder'
+;
+
 DESIRABLE
 :
    'desirable'
@@ -3892,6 +3907,11 @@ EIBGP
    'eibgp'
 ;
 
+ELECTION
+:
+   'election'
+;
+
 ELSE
 :
    'else'
@@ -4110,6 +4130,11 @@ ERROR
    'error'
 ;
 
+ERROR_CORRECTION
+:
+   'error-correction'
+;
+
 ERROR_ENABLE
 :
    'error-enable'
@@ -4264,6 +4289,11 @@ ETHERCHANNEL
 ETHERNET
 :
    'ethernet'
+;
+
+ETHERNET_SEGMENT
+:
+   'ethernet-segment'
 ;
 
 ETHERNET_SERVICES
@@ -6442,6 +6472,16 @@ JOIN_GROUP
     'join-group'
 ;
 
+JOIN_PRUNE_COUNT
+:
+    'join-prune-count'
+;
+
+JOIN_PRUNE_INTERVAL
+:
+    'join-prune-interval'
+;
+
 JUMBO
 :
    'jumbo'
@@ -6597,6 +6637,11 @@ L2_FILTER
    'l2-filter'
 ;
 
+L2_PROTOCOL
+:
+   'l2-protocol'
+;
+
 L2_SRC
 :
    'l2-src'
@@ -6737,6 +6782,11 @@ LEARNED
    'learned'
 ;
 
+LEARNING
+:
+   'learning'
+;
+
 LEASE
 :
    'lease'
@@ -6865,6 +6915,11 @@ LINK
 LINK_BANDWIDTH
 :
    'link-bandwidth'
+;
+
+LINK_DEBOUNCE
+:
+   'link-debounce'
 ;
 
 LINK_FAIL
@@ -7000,6 +7055,11 @@ LOCAL_PORT
 LOCAL_PREFERENCE
 :
    'local-preference'
+;
+
+LOCAL_PROXY_ARP
+:
+   'local-proxy-arp'
 ;
 
 LOCAL_V6_ADDR
@@ -8108,6 +8168,11 @@ MSP
    'msp'
 ;
 
+MSRP
+:
+   'msrp'
+;
+
 MSRPC
 :
    'msrpc'
@@ -8201,6 +8266,11 @@ MUST_SECURE
 MVR
 :
    'mvr'
+;
+
+MVRP
+:
+   'mvrp'
 ;
 
 NAME
@@ -9353,6 +9423,11 @@ PD_ROUTE_INJECTION
    'pd-route-injection'
 ;
 
+PDP
+:
+   'pdp'
+;
+
 PEAKDETECT
 :
    'peakdetect'
@@ -10153,6 +10228,11 @@ QOS_SC
 QOTD
 :
    'qotd'
+;
+
+QUERY_COUNT
+:
+   'query-count'
 ;
 
 QUERY_INTERVAL
@@ -13400,6 +13480,11 @@ TRAFFIC_FILTER
 TRAFFIC_INDEX
 :
    'traffic-index'
+;
+
+TRAFFIC_LOOPBACK
+:
+   'traffic-loopback'
 ;
 
 TRAFFIC_SHARE
