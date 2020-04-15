@@ -2744,21 +2744,6 @@ CUSTOMER_ID
    'customer-id'
 ;
 
-CVX
-:
-   'cvx'
-;
-
-CVX_CLUSTER
-:
-   'cvx-cluster'
-;
-
-CVX_LICENSE
-:
-   'cvx-license'
-;
-
 CWR
 :
    'cwr'

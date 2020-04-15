@@ -1,7 +1,7 @@
 parser grammar AristaParser;
 
 import
-Cisco_common, Arista_bgp, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -366,14 +366,6 @@ ctlf_null
    (
       RECORD_ENTRY
       | SHUTDOWN
-   ) null_rest_of_line
-;
-
-cvx_null
-:
-   NO?
-   (
-      SHUTDOWN
    ) null_rest_of_line
 ;
 
@@ -2228,14 +2220,6 @@ s_ctl_file
    NO? CTL_FILE null_rest_of_line
    (
       ctlf_null
-   )*
-;
-
-s_cvx
-:
-   CVX NEWLINE
-   (
-      cvx_null
    )*
 ;
 

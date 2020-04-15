@@ -322,9 +322,6 @@ port
    | COURIER
    | CSNET_NS
    | CTIQBE
-   | CVX
-   | CVX_CLUSTER
-   | CVX_LICENSE
    | DAYTIME
    | DHCP_FAILOVER2
    | DHCPV6_CLIENT

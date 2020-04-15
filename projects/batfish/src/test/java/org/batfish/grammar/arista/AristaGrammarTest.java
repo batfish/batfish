@@ -1722,6 +1722,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseCvx() {
+    parseVendorConfig("arista_cvx");
+    // don't crash.
+  }
+
+  @Test
   public void testEnforceFirstAsExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
     assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));

@@ -5345,6 +5345,11 @@ HEARTBEAT_TIME
    'heartbeat-time'
 ;
 
+HEARTBEAT_TIMEOUT
+:
+   'heartbeat-timeout'
+;
+
 HELLO
 :
    'hello'
