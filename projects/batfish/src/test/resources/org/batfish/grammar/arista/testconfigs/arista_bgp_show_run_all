@@ -137,10 +137,10 @@ router bgp 64900
       neighbor 192.0.2.7 route-map EVPN_IN in
    !
    address-family ipv4
-      ! TODO no bgp additional-paths install
+      no bgp additional-paths install
       ! TODO no bgp next-hop address-family ipv6
       bgp additional-paths receive
-      ! no bgp additional-paths send any
+      no bgp additional-paths send any
       ! TODO no bgp route install-map
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive

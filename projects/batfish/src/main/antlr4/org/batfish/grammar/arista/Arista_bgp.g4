@@ -162,7 +162,16 @@ eos_rbafipv4u_no
 :
   NO
   (
-    eos_rbafipv4u_no_neighbor
+    eos_rbafipv4u_no_bgp
+    | eos_rbafipv4u_no_neighbor
+  )
+;
+
+eos_rbafipv4u_no_bgp
+:
+  BGP
+  (
+    eos_rb_af_no_bgp_common
   )
 ;
 
@@ -342,6 +351,17 @@ eos_rbafnc_next_hop_unchanged
 eos_rbafnc_route_map
 :
   ROUTE_MAP name = variable (IN | OUT) NEWLINE
+;
+
+// Common to ipv4/ipv6 unicast. Other address families should just use the rbafnobc rules.
+eos_rb_af_no_bgp_common
+:
+  eos_rbafnobc_additional_paths
+;
+
+eos_rbafnobc_additional_paths
+:
+  ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
 ;
 
 // Common to ipv4/ipv6 unicast. Other address families should just use the rbafnonc rules.
