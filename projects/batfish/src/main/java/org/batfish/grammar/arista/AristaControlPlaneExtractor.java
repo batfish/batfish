@@ -455,7 +455,9 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbib_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_advertise_inactiveContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_always_compare_medContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbib_client_to_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_cluster_idContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbib_default_ipv4_unicastContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_enforce_first_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibbp_tie_breakContext;
@@ -485,10 +487,18 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_route_reflector_clientC
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_update_sourceContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_allowas_inContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_always_compare_medContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
-import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4_unicastContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_client_to_clientContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_cluster_idContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_confederationContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4_unicast_enabledContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remote_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_attached_hostContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_connectedContext;
@@ -2076,6 +2086,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbib_client_to_client(Eos_rbib_client_to_clientContext ctx) {
+    _currentAristaBgpVrf.setClientToClientReflection(true);
+  }
+
+  @Override
   public void exitEos_rbib_cluster_id(Eos_rbib_cluster_idContext ctx) {
     Ip clusterId = toIp(ctx.ip);
     if (Ip.ZERO.equals(clusterId)) {
@@ -2094,6 +2109,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbibconf_peers(Eos_rbibconf_peersContext ctx) {
     _currentAristaBgpVrf.setConfederationPeers(toAsSpace(ctx.asns));
+  }
+
+  @Override
+  public void exitEos_rbib_default_ipv4_unicast(Eos_rbib_default_ipv4_unicastContext ctx) {
+    _currentAristaBgpVrf.setDefaultIpv4Unicast(true);
   }
 
   @Override
@@ -2388,14 +2408,45 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbino_bgp_allowas_in(Eos_rbino_bgp_allowas_inContext ctx) {
+    _currentAristaBgpVrf.setAllowAsIn(0);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_always_compare_med(Eos_rbino_bgp_always_compare_medContext ctx) {
+    _currentAristaBgpVrf.setAlwaysCompareMed(false);
+  }
+
+  @Override
   public void exitEos_rbino_bgp_bpa_multipath_relax(Eos_rbino_bgp_bpa_multipath_relaxContext ctx) {
     _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(false);
   }
 
   @Override
-  public void exitEos_rbino_bgp_default_ipv4_unicast(
-      Eos_rbino_bgp_default_ipv4_unicastContext ctx) {
+  public void exitEos_rbino_bgp_client_to_client(Eos_rbino_bgp_client_to_clientContext ctx) {
+    todo(ctx);
+    _currentAristaBgpVrf.setClientToClientReflection(false);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_cluster_id(Eos_rbino_bgp_cluster_idContext ctx) {
+    _currentAristaBgpVrf.setClusterId(null);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_confederation(Eos_rbino_bgp_confederationContext ctx) {
+    _currentAristaBgpVrf.setConfederationIdentifier(null);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_default_ipv4_unicast_enabled(
+      Eos_rbino_bgp_default_ipv4_unicast_enabledContext ctx) {
     _currentAristaBgpVrf.setDefaultIpv4Unicast(false);
+  }
+
+  @Override
+  public void exitEos_rbino_default_metric(Eos_rbino_default_metricContext ctx) {
+    _currentAristaBgpVrf.setDefaultMetric(null);
   }
 
   @Override
@@ -2430,8 +2481,18 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbinon_remote_as(Eos_rbinon_remote_asContext ctx) {
+    _currentAristaBgpNeighbor.setRemoteAs(null);
+  }
+
+  @Override
   public void exitEos_rbinon_shutdown(Eos_rbinon_shutdownContext ctx) {
     _currentAristaBgpNeighbor.setShutdown(false);
+  }
+
+  @Override
+  public void exitEos_rbino_shutdown(Eos_rbino_shutdownContext ctx) {
+    _currentAristaBgpVrf.setShutdown(false);
   }
 
   @Override

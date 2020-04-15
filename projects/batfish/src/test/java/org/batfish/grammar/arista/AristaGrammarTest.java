@@ -60,6 +60,7 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -1735,6 +1736,13 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_acl_show_run_all");
     // Tests that the ACL parses.
     assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
+  }
+
+  @Test
+  public void testParseBgpShowRunAll() {
+    Configuration c = parseConfig("arista_bgp_show_run_all");
+    // Relies on the last line in the interface being this address, and only the last line.
+    assertThat(c, hasDefaultVrf(hasBgpProcess(any(BgpProcess.class))));
   }
 
   @Test

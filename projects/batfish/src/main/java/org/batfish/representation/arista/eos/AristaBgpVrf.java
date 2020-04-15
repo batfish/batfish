@@ -21,6 +21,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private Boolean _alwaysCompareMed;
   @Nullable private Boolean _bestpathAsPathMultipathRelax;
   @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
+  @Nullable private Boolean _clientToClientReflection;
   @Nullable private Ip _clusterId;
   @Nullable private Long _confederationIdentifier;
   @Nullable private LongSpace _confederationPeers;
@@ -115,6 +116,15 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setBestpathTieBreaker(@Nullable AristaBgpBestpathTieBreaker bestpathTieBreaker) {
     _bestpathTieBreaker = bestpathTieBreaker;
+  }
+
+  @Nullable
+  public Boolean getClientToClientReflection() {
+    return _clientToClientReflection;
+  }
+
+  public void setClientToClientReflection(@Nullable Boolean clientToClientReflection) {
+    _clientToClientReflection = clientToClientReflection;
   }
 
   @Nullable

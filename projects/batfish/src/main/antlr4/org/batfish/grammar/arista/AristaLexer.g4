@@ -3392,6 +3392,11 @@ DIRECTED_REQUEST
    'directed-request'
 ;
 
+DIRECTION
+:
+   'direction'
+;
+
 DISABLE
 :
    'disable'
@@ -6367,6 +6372,11 @@ IPV6_ADDRESS_POOL
    'ipv6-address-pool'
 ;
 
+IPV6_UNICAST
+:
+   'ipv6-unicast'
+;
+
 IPV6IP
 :
   'ipv6ip'
@@ -7950,6 +7960,11 @@ MIRROR
 MISMATCH
 :
    'mismatch'
+;
+
+MISSING_POLICY
+:
+   'missing-policy'
 ;
 
 MLAG
@@ -10968,6 +10983,11 @@ ROUTE
 ROUTE_CACHE
 :
    'route-cache'
+;
+
+ROUTE_KEY
+:
+   'route-key'
 ;
 
 ROUTE_LOOKUP
@@ -16525,6 +16545,11 @@ M_Name_WS
 ;
 
 mode M_NEIGHBOR;
+
+M_NEIGHBOR_ALL
+:
+   'all' -> type ( ALL ) , popMode
+;
 
 M_NEIGHBOR_CHANGES
 :

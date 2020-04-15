@@ -46,6 +46,7 @@ eos_bgp_community
 eos_router_bgp_tail
 :
   eos_rb_address_family
+  | eos_rb_bgp
   | eos_rb_inner
   | eos_rb_monitoring
   | eos_rb_vlan
@@ -201,6 +202,7 @@ eos_rb_af_evpn
   EVPN NEWLINE
   (
     eos_rb_af_evpn_bgp
+    | eos_rb_af_evpn_default
     | eos_rb_af_evpn_graceful_restart
     | eos_rb_af_evpn_host_flap
     | eos_rb_af_evpn_neighbor
@@ -215,6 +217,32 @@ eos_rb_af_evpn_bgp
     eos_rbafeb_additional_paths
     | eos_rbafeb_next_hop_unchanged
   )
+;
+
+eos_rb_af_evpn_default
+:
+  DEFAULT
+  (
+    eos_rb_afed_neighbor
+  )
+;
+
+eos_rb_afed_neighbor
+:
+  NEIGHBOR
+  (
+    v4 = IP_ADDRESS
+    | v6 = IPV6_ADDRESS
+    | pg = variable
+  )
+  (
+    eos_rb_afedn_activate
+  )
+;
+
+eos_rb_afedn_activate
+:
+  ACTIVATE NEWLINE
 ;
 
 eos_rb_af_evpn_graceful_restart
@@ -258,7 +286,7 @@ eos_rb_af_neighbor_common
 :
   (
     eos_rbafnc_activate
-//    | eos_rbafnc_additional_paths
+    | eos_rbafnc_additional_paths
     | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
@@ -281,6 +309,11 @@ eos_rbafnc_activate
   ACTIVATE NEWLINE
 ;
 
+eos_rbafnc_additional_paths
+:
+  ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
+;
+
 eos_rbafnc_graceful_restart
 :
   GRACEFUL_RESTART NEWLINE
@@ -299,6 +332,8 @@ eos_rbafnc_route_map
 eos_rb_af_no_neighbor_common
 :
   eos_rbafnonc_activate
+  | eos_rbafnonc_next_hop_unchanged
+  | eos_rbafnonc_route_map
 ;
 
 eos_rbafnonc_activate
@@ -306,10 +341,34 @@ eos_rbafnonc_activate
   ACTIVATE NEWLINE
 ;
 
+eos_rbafnonc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnonc_route_map
+:
+  ROUTE_MAP (IN | OUT) NEWLINE
+;
+
+eos_rb_bgp
+:
+  BGP
+  (
+    eos_rbb_trace
+  )
+;
+
+eos_rbb_trace
+:
+  TRACE (NEIGHBOR | ROUTE_KEY) ALL NEWLINE
+;
+
 eos_rb_inner
 :
   eos_rbi_aggregate_address
   | eos_rbi_bgp
+  | eos_rbi_default
   | eos_rbi_default_metric
   | eos_rbi_distance
   | eos_rbi_graceful_restart
@@ -348,15 +407,15 @@ eos_rbi_bgp
     | eos_rbib_asn
 //    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
-//    | eos_rbib_client_to_client
+    | eos_rbib_client_to_client
     | eos_rbib_cluster_id
     | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
     | eos_rbib_convergence
-//    | eos_rbib_default
+    | eos_rbib_default
     | eos_rbib_enforce_first_as
 //    | eos_rbib_host_routes
-//    | eos_rbib_labeled_unicast
+    | eos_rbib_labeled_unicast_null
     | eos_rbib_listen
     | eos_rbib_log_neighbor_changes
 //    | eos_rbib_missing_policy
@@ -429,6 +488,17 @@ eos_rbib_convergence
   NEWLINE
 ;
 
+eos_rbib_default
+:
+  DEFAULT
+  eos_rbib_default_ipv4_unicast
+;
+
+eos_rbib_default_ipv4_unicast
+:
+  IPV4_UNICAST NEWLINE
+;
+
 eos_rbib_enforce_first_as
 :
   ENFORCE_FIRST_AS NEWLINE
@@ -465,9 +535,19 @@ eos_rbibbpa_multipath_relax
   MULTIPATH_RELAX NEWLINE
 ;
 
+eos_rbib_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
+;
+
 eos_rbib_cluster_id
 :
   CLUSTER_ID ip = IP_ADDRESS NEWLINE
+;
+
+eos_rbib_labeled_unicast_null
+:
+  LABELED_UNICAST null_rest_of_line
 ;
 
 eos_rbib_listen
@@ -508,6 +588,28 @@ eos_rbib_log_neighbor_changes
 eos_rbib_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbi_default
+:
+  DEFAULT
+  eos_rbid_neighbor
+;
+
+eos_rbid_neighbor
+:
+  NEIGHBOR
+  (
+      v4 = IP_ADDRESS
+      | v6 = IPV6_ADDRESS
+      | pg = variable
+  )
+  eos_rbidn_monitoring
+;
+
+eos_rbidn_monitoring
+:
+  MONITORING NEWLINE
 ;
 
 eos_rbi_default_metric
@@ -829,7 +931,13 @@ eos_rbi_no
   NO
   (
     eos_rbino_bgp
+    | eos_rbino_default_metric
+    | eos_rbino_graceful_restart
+    | eos_rbino_ip
+    | eos_rbino_ipv6
     | eos_rbino_neighbor
+    | eos_rbino_shutdown
+    | eos_rbino_update
   )
 ;
 
@@ -837,9 +945,26 @@ eos_rbino_bgp
 :
   BGP
   (
-    eos_rbino_bgp_bestpath
+    eos_rbino_bgp_allowas_in
+    | eos_rbino_bgp_always_compare_med
+    | eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_client_to_client
+    | eos_rbino_bgp_cluster_id
+    | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
+    | eos_rbino_bgp_missing_policy
+    | eos_rbino_bgp_transport
   )
+;
+
+eos_rbino_bgp_allowas_in
+:
+  ALLOWAS_IN NEWLINE
+;
+
+eos_rbino_bgp_always_compare_med
+:
+  ALWAYS_COMPARE_MED NEWLINE
 ;
 
 eos_rbino_bgp_bestpath
@@ -868,15 +993,93 @@ eos_rbino_bgp_bpa_multipath_relax
   MULTIPATH_RELAX NEWLINE
 ;
 
+eos_rbino_bgp_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
+;
+
+eos_rbino_bgp_cluster_id
+:
+  CLUSTER_ID NEWLINE
+;
+
+eos_rbino_bgp_confederation
+:
+  CONFEDERATION IDENTIFIER NEWLINE
+;
+
 eos_rbino_bgp_default
 :
   DEFAULT
-  eos_rbino_bgp_default_ipv4_unicast
+  (
+    eos_rbino_bgp_default_ipv4_unicast
+    | eos_rbino_bgp_default_ipv6_unicast
+  )
 ;
 
 eos_rbino_bgp_default_ipv4_unicast
 :
-  IPV4_UNICAST NEWLINE
+  IPV4_UNICAST
+  (
+    eos_rbino_bgp_default_ipv4_unicast_enabled
+    | eos_rbino_bgp_default_ipv4_unicast_transport
+  )
+;
+
+eos_rbino_bgp_default_ipv4_unicast_enabled
+:
+  // Used to disambiguate `bgp default ipv4-unicast` from `... transport ipv6`.
+  NEWLINE
+;
+
+eos_rbino_bgp_default_ipv4_unicast_transport
+:
+  TRANSPORT IPV6 NEWLINE
+;
+
+eos_rbino_bgp_default_ipv6_unicast
+:
+  IPV6_UNICAST NEWLINE
+;
+
+eos_rbino_bgp_missing_policy
+:
+  MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
+;
+
+eos_rbino_bgp_transport
+:
+  TRANSPORT LISTEN_PORT NEWLINE
+;
+
+eos_rbino_default_metric
+:
+  DEFAULT_METRIC NEWLINE
+;
+
+eos_rbino_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbino_ip
+:
+  IP eos_rbino_ip_access_group
+;
+
+eos_rbino_ip_access_group
+:
+  ACCESS_GROUP NEWLINE
+;
+
+eos_rbino_ipv6
+:
+  IPV6 eos_rbino_ipv6_access_group
+;
+
+eos_rbino_ipv6_access_group
+:
+  ACCESS_GROUP NEWLINE
 ;
 
 eos_rbino_neighbor
@@ -889,6 +1092,7 @@ eos_rbino_neighbor
   )
   (
     eos_rbinon_enforce_first_as
+    | eos_rbinon_remote_as
     | eos_rbinon_shutdown
   )
 ;
@@ -898,9 +1102,28 @@ eos_rbinon_enforce_first_as
   ENFORCE_FIRST_AS NEWLINE
 ;
 
+eos_rbinon_remote_as
+:
+  REMOTE_AS NEWLINE
+;
+
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbino_shutdown
+:
+  SHUTDOWN NEWLINE
+;
+
+eos_rbino_update
+:
+  UPDATE
+  (
+    WAIT_FOR_CONVERGENCE
+    | WAIT_INSTALL
+  ) NEWLINE
 ;
 
 // Defining a peer group
