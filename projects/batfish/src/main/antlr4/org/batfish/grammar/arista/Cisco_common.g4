@@ -155,11 +155,6 @@ interface_name_unstructured
   )*
 ;
 
-ios_delimited_banner
-:
-  BANNER_DELIMITER_IOS body = BANNER_BODY? BANNER_DELIMITER_IOS
-;
-
 ip_hostname
 :
    IP_ADDRESS

@@ -147,11 +147,6 @@ l_transport
    ) prot += variable+ NEWLINE
 ;
 
-l_vacant_message
-:
-  VACANT_MESSAGE message = ios_delimited_banner NEWLINE
-;
-
 lc_null
 :
    (
@@ -196,7 +191,6 @@ s_line
       | l_null
       | l_script
       | l_transport
-      | l_vacant_message
       | description_line
    )*
 ;

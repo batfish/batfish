@@ -1178,16 +1178,6 @@ ip_ssh_null
    ) null_rest_of_line
 ;
 
-ip_ssh_private_key
-:
-   PRIVATE_KEY ~END_CADANT+ END_CADANT
-;
-
-ip_ssh_public_key
-:
-   PUBLIC_KEY ~END_CADANT+ END_CADANT
-;
-
 ip_ssh_pubkey_chain
 :
    PUBKEY_CHAIN NEWLINE
@@ -2612,9 +2602,7 @@ s_ip_ssh
 :
    NO? IP SSH
    (
-      ip_ssh_private_key
-      | ip_ssh_pubkey_chain
-      | ip_ssh_public_key
+      ip_ssh_pubkey_chain
       | ip_ssh_version
       | ip_ssh_null
    )

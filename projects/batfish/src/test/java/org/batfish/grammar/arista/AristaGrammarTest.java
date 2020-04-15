@@ -277,7 +277,7 @@ public class AristaGrammarTest {
     Configuration defaults = parseConfig("aristaOspfCostDefaults");
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
+        equalTo(getReferenceOspfBandwidth()));
   }
 
   @Test

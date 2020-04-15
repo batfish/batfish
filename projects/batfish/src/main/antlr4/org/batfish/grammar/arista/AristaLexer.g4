@@ -17,16 +17,13 @@ tokens {
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
-   BANNER_DELIMITER_CADANT,
    BANNER_DELIMITER_EOS,
-   BANNER_DELIMITER_IOS,
    BANNER_BODY,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    DSA1024,
-   END_CADANT,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
@@ -15151,7 +15148,6 @@ COMMENT_LINE
     ((java.util.function.Supplier<Boolean>)() -> {
       switch(lastTokenType()) {
         case -1:
-        case BANNER_DELIMITER_CADANT:
         case BANNER_DELIMITER_EOS:
         case NEWLINE:
           return true;

@@ -285,8 +285,7 @@ aaa_authentication
 :
    AUTHENTICATION
    (
-      aaa_authentication_banner
-      | aaa_authentication_captive_portal
+      aaa_authentication_captive_portal
       | aaa_authentication_dot1x
       | aaa_authentication_enable
       | aaa_authentication_include
@@ -303,11 +302,6 @@ aaa_authentication
       | aaa_authentication_wired
       | aaa_authentication_wispr
    )
-;
-
-aaa_authentication_banner
-:
-   BANNER banner = ios_delimited_banner NEWLINE
 ;
 
 aaa_authentication_captive_portal

@@ -368,7 +368,6 @@ import org.batfish.grammar.arista.AristaParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.arista.AristaParser.As_exprContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_asnContext;
-import org.batfish.grammar.arista.AristaParser.Cadant_stdacl_nameContext;
 import org.batfish.grammar.arista.AristaParser.Cd_match_addressContext;
 import org.batfish.grammar.arista.AristaParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.arista.AristaParser.Cd_set_peerContext;
@@ -643,7 +642,6 @@ import org.batfish.grammar.arista.AristaParser.Inspect_protocolContext;
 import org.batfish.grammar.arista.AristaParser.Int_exprContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
-import org.batfish.grammar.arista.AristaParser.Ios_delimited_bannerContext;
 import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_stanzaContext;
@@ -3213,7 +3211,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             .computeIfAbsent(
                 _currentOspfProcess.getName(),
                 (procName) -> {
-                  OspfProcess p = new OspfProcess(procName, _format);
+                  OspfProcess p = new OspfProcess(procName);
                   p.setRouterId(routerId);
                   return p;
                 });
@@ -3592,7 +3590,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentOspfProcess =
         currentVrf()
             .getOspfProcesses()
-            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
+            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName));
   }
 
   @Override
@@ -3851,16 +3849,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String bannerType = ctx.type.getText();
     String body = ctx.body != null ? ctx.body.getText() : "";
     _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
-  private static @Nonnull String toString(Ios_delimited_bannerContext ctx) {
-    return ctx.body != null ? ctx.body.getText() : "";
-  }
-
-  @Override
-  public void exitCadant_stdacl_name(Cadant_stdacl_nameContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getStandardAcls().put(name, _currentStandardAcl);
   }
 
   @Override

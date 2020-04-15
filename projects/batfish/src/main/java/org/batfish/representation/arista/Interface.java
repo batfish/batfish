@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -61,7 +60,7 @@ public class Interface implements Serializable {
 
   public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
-    Double defaultSpeed = getDefaultSpeed(name, format);
+    Double defaultSpeed = getDefaultSpeed(name);
     if (defaultSpeed != null) {
       return defaultSpeed;
     } else if (name.startsWith("Bundle-Ethernet")) {
@@ -82,43 +81,9 @@ public class Interface implements Serializable {
     }
   }
 
-  public static @Nullable Double getDefaultSpeed(
-      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+  public static @Nullable Double getDefaultSpeed(@Nonnull String name) {
     if (name.startsWith("Ethernet")) {
-      switch (format) {
-        case ARISTA:
-          return DEFAULT_ARISTA_ETHERNET_SPEED;
-
-        case ALCATEL_AOS:
-        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-        case CADANT:
-        case CISCO_ASA:
-        case CISCO_IOS:
-        case CISCO_IOS_XR:
-        case FORCE10:
-        case FOUNDRY:
-          return DEFAULT_IOS_ETHERNET_SPEED;
-
-        case AWS:
-        case BLADENETWORK:
-        case EMPTY:
-        case F5:
-        case FLAT_JUNIPER:
-        case FLAT_VYOS:
-        case HOST:
-        case IGNORED:
-        case IPTABLES:
-        case JUNIPER:
-        case JUNIPER_SWITCH:
-        case MRV:
-        case MRV_COMMANDS:
-        case MSS:
-        case UNKNOWN:
-        case VXWORKS:
-        case VYOS:
-        default:
-          throw new BatfishException("Unuspported format: " + format);
-      }
+      return DEFAULT_ARISTA_ETHERNET_SPEED;
     } else if (name.startsWith("FastEthernet")) {
       return DEFAULT_FAST_ETHERNET_SPEED;
     } else if (name.startsWith("GigabitEthernet")) {

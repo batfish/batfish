@@ -93,7 +93,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -1474,10 +1473,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
-    newIface.setSpeed(
-        firstNonNull(
-            iface.getSpeed(),
-            Interface.getDefaultSpeed(iface.getName(), c.getConfigurationFormat())));
+    newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
     newIface.setBandwidth(
         firstNonNull(
             iface.getBandwidth(),
@@ -1661,18 +1657,6 @@ public final class AristaConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(routingPolicyName);
     }
 
-    if (_vendor == ConfigurationFormat.CISCO_ASA) {
-      newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
-      newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
-      newIface.setIncomingFilter(null);
-      newIface.setOutgoingFilter((IpAccessList) null);
-
-      // Assume each interface has its own session info (sessions are not shared by interfaces).
-      // That is, return flows can only enter the interface the forward flow exited in order to
-      // match the session setup by the forward flow.
-      newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(true, ImmutableSet.of(newIface.getName()), null, null));
-    }
     return newIface;
   }
 
@@ -1965,28 +1949,19 @@ public final class AristaConfiguration extends VendorConfiguration {
       ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
     }
 
-    // Do not redistribute the default route on Cisco. For Arista, no such restriction exists
-    if (_vendor != ConfigurationFormat.ARISTA) {
-      ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
-    }
-
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
 
     // Set the metric type and value.
     ospfExportStatements.add(new SetOspfMetricType(policy.getMetricType()));
     long metric =
-        policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(_vendor, protocol);
+        policy.getMetric() != null ? policy.getMetric() : proc.getEffectiveDefaultMetric();
     // On Arista, the default route gets a special metric of 1.
     // https://www.arista.com/en/um-eos/eos-section-30-5-ospfv2-commands#ww1153059
-    if (_vendor == ConfigurationFormat.ARISTA) {
-      ospfExportStatements.add(
-          new If(
-              Common.matchDefaultRoute(),
-              ImmutableList.of(new SetMetric(new LiteralLong(1L))),
-              ImmutableList.of(new SetMetric(new LiteralLong(metric)))));
-    } else {
-      ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
-    }
+    ospfExportStatements.add(
+        new If(
+            Common.matchDefaultRoute(),
+            ImmutableList.of(new SetMetric(new LiteralLong(1L))),
+            ImmutableList.of(new SetMetric(new LiteralLong(metric)))));
 
     // If only classful routes should be redistributed, filter to classful routes.
     if (policy.getOnlyClassfulRoutes()) {
