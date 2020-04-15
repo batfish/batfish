@@ -42,6 +42,3 @@ coverage*
 # Ignore python cache files
 __pycache__
 .pytest_cache/
-
-# Ignore the pyenv virtualenv configuration file
-.python-version
