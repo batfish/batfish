@@ -1194,9 +1194,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitIp_route(Ip_routeContext ctx) {
+    // If an interface name is parsed, use it.
+    final String next_hop_interface = ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    // If user provides an IP next-hop instead of an interface, use that
+    final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
+
     StaticRoute route =
         new StaticRoute(
-            Prefix.parse(ctx.network.getText()), Ip.parse(ctx.next_hop_ip.getText()), null);
+            Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface);
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {

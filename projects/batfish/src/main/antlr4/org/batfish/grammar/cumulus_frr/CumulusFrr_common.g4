@@ -14,6 +14,12 @@ double_quoted_string
   DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE
 ;
 
+interface_name
+// Interfaces come like eth0, eth1-1, null0, vlan1.100
+:
+  name = word
+;
+
 ip_address
 :
   IP_ADDRESS
