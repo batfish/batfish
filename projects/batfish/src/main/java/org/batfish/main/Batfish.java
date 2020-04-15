@@ -1627,20 +1627,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
   }
 
+  /** Parse AWS configurations for a single account (possibly with multiple regions) */
   @VisibleForTesting
+  @Nonnull
   public static AwsConfiguration parseAwsConfigurations(
       Map<Path, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
     AwsConfiguration config = new AwsConfiguration();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path path = configFile.getKey();
-      int pathLength = configFile.getKey().getNameCount();
-      String fileText = configFile.getValue();
+
+      // Find the place in the path where "aws_configs" starts
+      int awsRootIndex = 0;
+      for (Path value : path) {
+        if (value.toString().equals(BfConsts.RELPATH_AWS_CONFIGS_DIR)) {
+          break;
+        }
+        awsRootIndex++;
+      }
+      int pathLength = path.getNameCount();
       String regionName = path.getName(pathLength - 2).toString(); // parent dir name
-      String fileName = path.subpath(pathLength - 3, pathLength).toString();
+      String fileName = path.subpath(awsRootIndex, pathLength).toString();
       pvcae.getFileMap().put(BfConsts.RELPATH_AWS_CONFIGS_FILE, fileName);
 
       try {
-        JsonNode json = BatfishObjectMapper.mapper().readTree(fileText);
+        JsonNode json = BatfishObjectMapper.mapper().readTree(configFile.getValue());
         config.addConfigElement(regionName, json, fileName, pvcae);
       } catch (IOException e) {
         pvcae.addRedFlagWarning(
@@ -2315,21 +2325,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void serializeAwsConfigs(
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement pvcae) {
     _logger.info("\n*** READING AWS CONFIGS ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR), _logger);
-    AwsConfiguration config;
+
+    Path awsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
+    // sortedness guarantees serialization order
+    SortedMap<String, AwsConfiguration> awsConfigs = new TreeMap<>();
     try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
       assert parseAwsConfigsSpan != null; // avoid unused warning
-      config = parseAwsConfigurations(configurationData, pvcae);
+      Path multiAccountPath = awsPath.resolve(BfConsts.RELPATH_AWS_ACCOUNTS_DIR);
+      if (multiAccountPath.toFile().exists()) {
+        try {
+          // Parse one vendor configuration per account
+          Files.list(multiAccountPath)
+              .filter(Files::isDirectory)
+              .forEach(
+                  p ->
+                      awsConfigs.put(
+                          // account name
+                          p.getName(p.getNameCount() - 1).toString(),
+                          parseAwsConfigurations(readAllFiles(p, _logger), pvcae)));
+        } catch (IOException e) {
+          _logger.errorf("Failed to process AWS configs: %s", e);
+          pvcae.addRedFlagWarning(
+              BfConsts.RELPATH_AWS_CONFIGS_FILE,
+              new Warning(String.format("Failed to process folder %s", multiAccountPath), "AWS"));
+        }
+      } else {
+        awsConfigs.put(BfConsts.RELPATH_AWS_CONFIGS_FILE, parseAwsConfigurations(readAllFiles(awsPath, _logger), pvcae));
+      }
     }
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     outputPath.toFile().mkdirs();
-    Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_FILE);
-    _logger.debugf("Serializing AWS to \"%s\"...", currentOutputPath);
-    serializeObject(config, currentOutputPath);
+    awsConfigs.forEach(
+        (fname, config) -> {
+          Path currentOutputPath = outputPath.resolve(fname);
+          _logger.debugf("Serializing AWS to \"%s\"...", currentOutputPath);
+          serializeObject(config, currentOutputPath);
+        });
     _logger.debug("OK\n");
     _logger.printElapsedTime();
   }
