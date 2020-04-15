@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -313,7 +312,6 @@ public class Interface implements Serializable {
     // Switchport defaults
     _switchportMode = SwitchportMode.NONE;
     _switchport = false;
-    _vlanTrunkGroups = ImmutableSet.of();
     _spanningTreePortfast = c.getSpanningTreePortfastDefault();
   }
 
