@@ -636,7 +636,6 @@ gk_null
       GW_TYPE_PREFIX
       | LRQ
       | SHUTDOWN
-      | ZONE
    ) null_rest_of_line
 ;
 
@@ -2361,14 +2360,6 @@ fsm_mode
    MODE RANDOM ONE_OUT_OF DEC NEWLINE
 ;
 
-s_gatekeeper
-:
-   GATEKEEPER NEWLINE
-   (
-      gk_null
-   )*
-;
-
 s_global_port_security
 :
    GLOBAL_PORT_SECURITY NEWLINE
@@ -3452,7 +3443,6 @@ stanza
    | s_flow
    | s_flow_sampler_map
    | s_foundry_mac_access_list
-   | s_gatekeeper
    | s_global_port_security
    | s_guest_access_email
    | s_hardware

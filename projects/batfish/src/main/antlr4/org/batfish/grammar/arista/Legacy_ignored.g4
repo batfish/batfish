@@ -63,7 +63,6 @@ null_block
       | FEATURE_SET
       | FEX
       | FPD
-      | GATEKEEPER
       | GATEWAY
       | GLOBAL_PORT_SECURITY
       | GROUP_POLICY

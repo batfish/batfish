@@ -4980,11 +4980,6 @@ G729
    'g729'
 ;
 
-GATEKEEPER
-:
-   'gatekeeper'
-;
-
 GATEWAY
 :
    'gateway'
