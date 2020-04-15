@@ -202,7 +202,6 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
@@ -971,8 +970,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements BatfishListener, ControlPlaneExtractor {
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
-
-  @VisibleForTesting static final String SERIAL_LINE = "serial";
 
   @Override
   public String getInputText() {
@@ -7495,14 +7492,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return _configuration.canonicalizeInterfaceName(ifaceName);
   }
 
-  public AristaConfiguration getConfiguration() {
-    return _configuration;
-  }
-
-  private String getLocation(ParserRuleContext ctx) {
-    return ctx.getStart().getLine() + ":" + ctx.getStart().getCharPositionInLine() + ": ";
-  }
-
   private int getPortNumber(PortContext ctx) {
     if (ctx.DEC() != null) {
       return toInteger(ctx.DEC());
@@ -7510,10 +7499,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       NamedPort namedPort = toNamedPort(ctx);
       return namedPort.number();
     }
-  }
-
-  public String getText() {
-    return _text;
   }
 
   @Override

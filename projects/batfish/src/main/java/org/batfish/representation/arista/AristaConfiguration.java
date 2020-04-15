@@ -329,28 +329,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeBgpDefaultRouteExportPolicyName(
-      boolean ipv4, String vrf, String peer) {
-    return String.format(
-        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
-  }
-
-  public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
-    return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
-  }
-
-  public static @Nonnull String computeCommunitySetMatchAnyName(String name) {
-    return String.format("~MATCH_ANY~%s~", name);
-  }
-
-  public static @Nonnull String computeCommunitySetMatchEveryName(String name) {
-    return String.format("~MATCH_EVERY~%s~", name);
-  }
-
-  public static String computeIcmpObjectGroupAclName(String name) {
-    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
-  }
-
   /**
    * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
    * Filters out the interfaces having no primary {@link ConcreteInterfaceAddress}
@@ -364,18 +342,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public static String computeOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
     return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
-  }
-
-  public static String computeProtocolObjectGroupAclName(String name) {
-    return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
-  }
-
-  public static String computeServiceObjectAclName(String name) {
-    return String.format("~SERVICE_OBJECT~%s~", name);
-  }
-
-  public static String computeServiceObjectGroupAclName(String name) {
-    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
 
   @Override
@@ -422,8 +388,6 @@ public final class AristaConfiguration extends VendorConfiguration {
   @Nullable private AristaBgpProcess _aristaBgp;
 
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
-
-  private final Map<String, AsPathSet> _asPathSets;
 
   private final CiscoFamily _cf;
 
@@ -550,7 +514,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public AristaConfiguration() {
     _asPathAccessLists = new TreeMap<>();
-    _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
     _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
@@ -680,10 +643,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _asPathAccessLists;
   }
 
-  public Map<String, AsPathSet> getAsPathSets() {
-    return _asPathSets;
-  }
-
   public CiscoFamily getCf() {
     return _cf;
   }
@@ -694,10 +653,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public Map<String, NamedRsaPubKey> getCryptoNamedRsaPubKeys() {
     return _cryptoNamedRsaPubKeys;
-  }
-
-  public Vrf getDefaultVrf() {
-    return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
   }
 
   public List<Ip> getDhcpRelayServers() {
@@ -1421,23 +1376,6 @@ public final class AristaConfiguration extends VendorConfiguration {
       }
     }
     return null;
-  }
-
-  /**
-   * Get the {@link OspfProcess} corresponding to the specified {@link Interface}
-   *
-   * <p>Returns {@code null} if the {@link Interface} does not have an {@link OspfProcess}
-   * explicitly associated with it and does not overlap with an {@link OspfNetwork} in any {@link
-   * OspfProcess} in the specified {@link Vrf}
-   */
-  private static @Nullable OspfProcess getOspfProcessForInterface(Vrf vrf, Interface iface) {
-    if (iface.getOspfProcess() != null) {
-      return vrf.getOspfProcesses().get(iface.getOspfProcess());
-    }
-    return vrf.getOspfProcesses().values().stream()
-        .filter(p -> getOspfNetworkForInterface(iface, p) != null)
-        .findFirst()
-        .orElse(null);
   }
 
   private org.batfish.datamodel.Interface toInterface(
@@ -2544,12 +2482,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     // convert as path access lists to vendor independent format
     for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
       AsPathAccessList apList = Conversions.toAsPathAccessList(pathList);
-      c.getAsPathAccessLists().put(apList.getName(), apList);
-    }
-
-    // convert as-path-sets to vendor independent format
-    for (AsPathSet asPathSet : _asPathSets.values()) {
-      AsPathAccessList apList = Conversions.toAsPathAccessList(asPathSet);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
