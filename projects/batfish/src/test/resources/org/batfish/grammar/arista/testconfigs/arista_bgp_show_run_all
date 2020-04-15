@@ -5,32 +5,32 @@ hostname arista_bgp_show_run_all
 router bgp 64900
    ! TODO bgp trace neighbor all
    ! TODO bgp trace route-key all
-   ! TODO bgp asn notation asplain
+   bgp asn notation asplain
    ! TODO bgp labeled-unicast rib tunnel
    ! TODO no shutdown
-   ! TODO router-id 192.0.2.1
+   router-id 192.0.2.1
    ! TODO bgp convergence time 300
    ! TODO bgp convergence slow-peer time 90
    ! TODO no bgp confederation identifier
    ! TODO no update wait-for-convergence
    ! TODO no update wait-install
-   ! TODO bgp log-neighbor-changes
+   bgp log-neighbor-changes
    ! TODO bgp default ipv4-unicast
    ! TODO no bgp default ipv4-unicast transport ipv6
    ! TODO no bgp default ipv6-unicast
    ! TODO no bgp missing-policy direction in action
    ! TODO no bgp missing-policy direction out action
-   ! TODO timers bgp 60 180
-   ! TODO distance bgp 200 200 200
-   ! TODO graceful-restart restart-time 300
-   ! TODO graceful-restart stalepath-time 300
+   timers bgp 60 180
+   distance bgp 200 200 200
+   graceful-restart restart-time 300
+   graceful-restart stalepath-time 300
    ! TODO no bgp allowas-in
    ! TODO no bgp cluster-id
    ! TODO bgp client-to-client reflection
    ! TODO no graceful-restart
-   ! TODO graceful-restart-helper
+   graceful-restart-helper
    ! TODO bgp peer-mac-resolution-timeout 0
-   ! TODO bgp enforce-first-as
+   bgp enforce-first-as
    ! TODO no bgp route install-map
    ! TODO no ip access-group
    ! TODO no ipv6 access-group
@@ -41,14 +41,14 @@ router bgp 64900
    ! TODO no bgp bestpath med confed
    ! TODO no bgp route-reflector preserve-attributes
    ! TODO maximum-paths 32 ecmp 32
-   ! TODO bgp additional-paths receive
+   bgp additional-paths receive
    ! TODO no bgp additional-paths send any
    ! TODO ucmp mode 1 128 5.0
    ! TODO ucmp link-bandwidth update-delay 0
    ! TODO no ucmp link-bandwidth encoding-weighted
    ! TODO ucmp fec threshold trigger 50 clear 40 warning-only
    ! TODO bgp listen limit 1000
-   ! TODO bgp bestpath as-path multipath-relax
+   bgp bestpath as-path multipath-relax
    ! TODO no bgp bestpath as-path ignore
    ! TODO no bgp aspath-cmp-include-nexthop
    ! TODO bgp bestpath ecmp-fast
@@ -84,26 +84,26 @@ router bgp 64900
    ! TODO default neighbor SOME_GROUP monitoring
    ! TODO no neighbor SOME_GROUP next-hop-v6-addr
    ! TODO no neighbor SOME_GROUP description
-   ! TODO neighbor SOME_GROUP allowas-in 1
-   ! TODO neighbor SOME_GROUP soft-reconfiguration inbound
+   neighbor SOME_GROUP allowas-in 1
+   neighbor SOME_GROUP soft-reconfiguration inbound
    ! TODO no neighbor SOME_GROUP ebgp-multihop
    ! TODO no neighbor SOME_GROUP ttl maximum-hops
    ! TODO no neighbor SOME_GROUP route-reflector-client
-   ! TODO neighbor SOME_GROUP timers 4 12
-   ! TODO neighbor SOME_GROUP route-map SOME_MAP in
+   neighbor SOME_GROUP timers 4 12
+   neighbor SOME_GROUP route-map SOME_MAP in
    ! TODO no neighbor SOME_GROUP graceful-restart
    ! TODO neighbor SOME_GROUP graceful-restart-helper
    ! TODO neighbor SOME_GROUP additional-paths receive
    ! TODO no neighbor SOME_GROUP additional-paths send any
    ! TODO neighbor SOME_GROUP route-to-peer
-   ! TODO neighbor SOME_GROUP route-map SOME_MAP out
+   neighbor SOME_GROUP route-map SOME_MAP out
    ! TODO no neighbor SOME_GROUP password
    ! TODO no neighbor SOME_GROUP default-originate
    ! TODO no neighbor SOME_GROUP enforce-first-as
    ! TODO no neighbor SOME_GROUP metric-out
    ! TODO no neighbor SOME_GROUP idle-restart-timer
-   ! TODO neighbor SOME_GROUP send-community
-   ! TODO neighbor SOME_GROUP maximum-routes 12000
+   neighbor SOME_GROUP send-community
+   neighbor SOME_GROUP maximum-routes 12000
    ! TODO no neighbor SOME_GROUP maximum-accepted-routes
    ! TODO no neighbor SOME_GROUP link-bandwidth
    neighbor 192.0.2.7 peer-group SOME_GROUP
@@ -112,7 +112,7 @@ router bgp 64900
    ! TODO neighbor 192.0.2.7 local-v6-addr 2001:db8::
    neighbor 192.0.2.7 description some-desc
    ! TODO bgp redistribute-internal
-   ! TODO redistribute connected route-map REDISTRIBUTE_CONNECTED
+   redistribute connected route-map REDISTRIBUTE_CONNECTED
    ! TODO no redistribute isis
    ! TODO no redistribute ospf match internal
    ! TODO no redistribute ospf match external
@@ -120,7 +120,7 @@ router bgp 64900
    ! TODO no redistribute ospf3 match internal
    ! TODO no redistribute ospf3 match external
    ! TODO no redistribute ospf3 match nssa-external
-   ! TODO redistribute static route-map REDISTRIBUTE_STATIC
+   redistribute static route-map REDISTRIBUTE_STATIC
    ! TODO no redistribute rip
    ! TODO no redistribute aggregate
    ! TODO no monitoring port
