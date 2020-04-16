@@ -376,6 +376,7 @@ eos_rb_af_no_neighbor_common
   eos_rbafnonc_activate
   | eos_rbafnonc_additional_paths
   | eos_rbafnonc_default_originate
+  | eos_rbafnonc_next_hop
   | eos_rbafnonc_next_hop_unchanged
   | eos_rbafnonc_prefix_list
   | eos_rbafnonc_route_map
@@ -394,6 +395,11 @@ eos_rbafnonc_additional_paths
 eos_rbafnonc_default_originate
 :
   DEFAULT_ORIGINATE NEWLINE
+;
+
+eos_rbafnonc_next_hop
+:
+  NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
 ;
 
 eos_rbafnonc_next_hop_unchanged
