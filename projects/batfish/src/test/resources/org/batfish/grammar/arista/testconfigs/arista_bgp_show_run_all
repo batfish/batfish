@@ -163,13 +163,13 @@ router bgp 64900
       ! TODO no neighbor SOME_GROUP next-hop-self source-interface
       ! TODO default neighbor 192.0.2.7 activate
    !
-   ! TODO address-family ipv6
+   address-family ipv6
       ! TODO no bgp additional-paths install
       ! TODO bgp additional-paths receive
       ! TODO no bgp additional-paths send any
       ! TODO no bgp route install-map
-      ! TODO neighbor SOME_GROUP activate
-      ! TODO neighbor SOME_GROUP additional-paths receive
+      neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
       ! TODO no neighbor SOME_GROUP route-map in
       ! TODO no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
@@ -178,4 +178,5 @@ router bgp 64900
       ! TODO no neighbor SOME_GROUP additional-paths send any
       ! TODO no neighbor SOME_GROUP next-hop-unchanged
       ! TODO default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6_IN in
 !
