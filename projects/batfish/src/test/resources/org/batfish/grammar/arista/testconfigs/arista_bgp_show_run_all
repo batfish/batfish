@@ -164,10 +164,10 @@ router bgp 64900
       ! TODO default neighbor 192.0.2.7 activate
    !
    address-family ipv6
-      ! TODO no bgp additional-paths install
+      no bgp additional-paths install
       ! TODO bgp additional-paths receive
-      ! TODO no bgp additional-paths send any
-      ! TODO no bgp route install-map
+      no bgp additional-paths send any
+      no bgp route install-map
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       ! TODO no neighbor SOME_GROUP route-map in

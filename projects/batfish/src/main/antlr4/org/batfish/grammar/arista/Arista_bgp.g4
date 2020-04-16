@@ -206,12 +206,33 @@ eos_rb_af_ipv6
 eos_rb_af_ipv6_unicast
 :
   NEWLINE
-  eos_rbafipv6u_neighbor*
+  (
+//    eos_rbafipv6u_bgp
+//    | eos_rbafipv6u_default
+//    | eos_rbafipv6u_graceful_restart
+    eos_rbafipv6u_neighbor
+    | eos_rbafipv6u_no
+//    | eos_rbafipv6u_network
+//    | eos_rbafipv64u_redistribute
+  )*
 ;
 
 eos_rbafipv6u_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
+;
+
+eos_rbafipv6u_no
+:
+  NO
+  (
+    eos_rbafipv6u_no_bgp
+  )
+;
+
+eos_rbafipv6u_no_bgp
+:
+  BGP eos_rb_af_no_bgp_common
 ;
 
 eos_rb_af_evpn
