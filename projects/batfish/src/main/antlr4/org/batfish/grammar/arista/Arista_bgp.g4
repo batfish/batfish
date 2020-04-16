@@ -374,6 +374,7 @@ eos_rbafnobc_additional_paths
 eos_rb_af_no_neighbor_common
 :
   eos_rbafnonc_activate
+  | eos_rbafnonc_additional_paths
   | eos_rbafnonc_default_originate
   | eos_rbafnonc_next_hop_unchanged
   | eos_rbafnonc_prefix_list
@@ -383,6 +384,11 @@ eos_rb_af_no_neighbor_common
 eos_rbafnonc_activate
 :
   ACTIVATE NEWLINE
+;
+
+eos_rbafnonc_additional_paths
+:
+  ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
 ;
 
 eos_rbafnonc_default_originate
