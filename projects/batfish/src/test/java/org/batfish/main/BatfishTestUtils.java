@@ -299,7 +299,7 @@ public class BatfishTestUtils {
             outputDirectory.toFile().mkdirs();
             Path fpath = Paths.get(filename);
             if (fpath.getNameCount() > 1) {
-              outputDirectory.resolve(fpath.subpath(0, fpath.getNameCount()-1)).toFile().mkdirs();
+              outputDirectory.resolve(fpath.subpath(0, fpath.getNameCount() - 1)).toFile().mkdirs();
             }
             CommonUtil.writeFile(outputDirectory.resolve(filename), text);
           });
