@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 public class AristaBgpNeighborAddressFamily implements Serializable {
   @Nullable private Boolean _activate;
   @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
+  @Nullable private AristaBgpNeighborDefaultOriginate _defaultOriginate;
   @Nullable private Boolean _nextHopUnchanged;
   @Nullable private String _prefixListIn;
   @Nullable private String _prefixListOut;
@@ -35,6 +36,15 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
       _additionalPaths = new AristaBgpAdditionalPathsConfig();
     }
     return _additionalPaths;
+  }
+
+  @Nullable
+  public AristaBgpNeighborDefaultOriginate getDefaultOriginate() {
+    return _defaultOriginate;
+  }
+
+  public void setDefaultOriginate(@Nullable AristaBgpNeighborDefaultOriginate defaultOriginate) {
+    _defaultOriginate = defaultOriginate;
   }
 
   @Nullable

@@ -447,6 +447,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_next_hop_unchangedCont
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnobc_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_activateContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_default_originateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbi_default_metricContext;
@@ -938,6 +939,7 @@ import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
 import org.batfish.representation.arista.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpNeighborDefaultOriginate;
 import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.arista.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
@@ -2055,6 +2057,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbafnonc_activate(Eos_rbafnonc_activateContext ctx) {
     _currentAristaBgpNeighborAddressFamily.setActivate(false);
+  }
+
+  @Override
+  public void exitEos_rbafnonc_default_originate(Eos_rbafnonc_default_originateContext ctx) {
+    _currentAristaBgpNeighborAddressFamily.setDefaultOriginate(
+        AristaBgpNeighborDefaultOriginate.disabled());
   }
 
   @Override

@@ -148,7 +148,7 @@ router bgp 64900
       no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
       ! TODO no neighbor SOME_GROUP prefix-list out
-      ! TODO no neighbor SOME_GROUP default-originate
+      no neighbor SOME_GROUP default-originate
       ! TODO no neighbor SOME_GROUP additional-paths send any
       ! TODO no neighbor SOME_GROUP next-hop address-family ipv6
       no neighbor SOME_GROUP next-hop-unchanged
