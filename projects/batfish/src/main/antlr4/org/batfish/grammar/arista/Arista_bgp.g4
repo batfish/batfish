@@ -172,7 +172,13 @@ eos_rbafipv4u_no_bgp
   BGP
   (
     eos_rb_af_no_bgp_common
+    | eos_rbafipv4u_no_bgp_next_hop
   )
+;
+
+eos_rbafipv4u_no_bgp_next_hop
+:
+  NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
 ;
 
 eos_rbafipv4u_no_neighbor

@@ -138,7 +138,7 @@ router bgp 64900
    !
    address-family ipv4
       no bgp additional-paths install
-      ! TODO no bgp next-hop address-family ipv6
+      no bgp next-hop address-family ipv6
       bgp additional-paths receive
       no bgp additional-paths send any
       ! TODO no bgp route install-map
