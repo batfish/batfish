@@ -165,7 +165,7 @@ router bgp 64900
    !
    address-family ipv6
       no bgp additional-paths install
-      ! TODO bgp additional-paths receive
+      bgp additional-paths receive
       no bgp additional-paths send any
       no bgp route install-map
       neighbor SOME_GROUP activate
