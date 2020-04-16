@@ -177,6 +177,6 @@ router bgp 64900
       no neighbor SOME_GROUP default-originate
       no neighbor SOME_GROUP additional-paths send any
       no neighbor SOME_GROUP next-hop-unchanged
-      ! TODO default neighbor 192.0.2.7 activate
+      default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map IPV6_IN in
 !

@@ -191,7 +191,7 @@ eos_rb_af_ipv6_unicast
   NEWLINE
   (
     eos_rbafipv6u_bgp
-//    | eos_rbafipv6u_default
+    | eos_rbafipv6u_default
 //    | eos_rbafipv6u_graceful_restart
     | eos_rbafipv6u_neighbor
     | eos_rbafipv6u_no
@@ -203,6 +203,19 @@ eos_rb_af_ipv6_unicast
 eos_rbafipv6u_bgp
 :
   BGP eos_rb_af_bgp_common
+;
+
+eos_rbafipv6u_default
+:
+  DEFAULT
+  (
+    eos_rbafipv6ud_neighbor
+  )
+;
+
+eos_rbafipv6ud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_default_neighbor_common
 ;
 
 eos_rbafipv6u_neighbor
