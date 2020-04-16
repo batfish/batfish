@@ -153,6 +153,7 @@ router bgp 64900
       ! TODO no neighbor SOME_GROUP next-hop address-family ipv6
       no neighbor SOME_GROUP next-hop-unchanged
       default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 default-originate ORIG_MAP
       neighbor 192.0.2.7 route-map IPV4_IN in
    !
    ! TODO address-family ipv4 labeled-unicast

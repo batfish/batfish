@@ -311,6 +311,7 @@ eos_rb_af_neighbor_common
   (
     eos_rbafnc_activate
     | eos_rbafnc_additional_paths
+    | eos_rbafnc_default_originate
     | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
@@ -336,6 +337,11 @@ eos_rbafnc_activate
 eos_rbafnc_additional_paths
 :
   ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
+;
+
+eos_rbafnc_default_originate
+:
+  DEFAULT_ORIGINATE (name = variable)? NEWLINE
 ;
 
 eos_rbafnc_graceful_restart

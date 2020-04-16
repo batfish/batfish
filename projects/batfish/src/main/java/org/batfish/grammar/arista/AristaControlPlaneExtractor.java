@@ -443,6 +443,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ud_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv6u_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_activateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_additional_pathsContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_default_originateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnobc_additional_pathsContext;
@@ -2011,6 +2012,17 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
     if (ctx.SEND() != null) {
       addPaths.setSend(SendType.ANY);
+    }
+  }
+
+  @Override
+  public void exitEos_rbafnc_default_originate(Eos_rbafnc_default_originateContext ctx) {
+    String map = ctx.name == null ? null : ctx.name.getText();
+    _currentAristaBgpNeighborAddressFamily.setDefaultOriginate(
+        AristaBgpNeighborDefaultOriginate.routeMap(map));
+    if (map != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
     }
   }
 
