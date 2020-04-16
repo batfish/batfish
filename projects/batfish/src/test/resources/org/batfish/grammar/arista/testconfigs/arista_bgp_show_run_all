@@ -136,23 +136,25 @@ router bgp 64900
       default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map EVPN_IN in
    !
-   ! TODO address-family ipv4
-      ! TODO no bgp additional-paths install
-      ! TODO no bgp next-hop address-family ipv6
-      ! TODO bgp additional-paths receive
-      ! TODO no bgp additional-paths send any
-      ! TODO no bgp route install-map
-      ! TODO neighbor SOME_GROUP activate
-      ! TODO neighbor SOME_GROUP additional-paths receive
-      ! TODO no neighbor SOME_GROUP route-map in
-      ! TODO no neighbor SOME_GROUP route-map out
+   address-family ipv4
+      no bgp additional-paths install
+      no bgp next-hop address-family ipv6
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp route install-map
+      neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
       ! TODO no neighbor SOME_GROUP prefix-list out
-      ! TODO no neighbor SOME_GROUP default-originate
-      ! TODO no neighbor SOME_GROUP additional-paths send any
-      ! TODO no neighbor SOME_GROUP next-hop address-family ipv6
-      ! TODO no neighbor SOME_GROUP next-hop-unchanged
-      ! TODO default neighbor 192.0.2.7 activate
+      no neighbor SOME_GROUP default-originate
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop address-family ipv6
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 default-originate ORIG_MAP
+      neighbor 192.0.2.7 route-map IPV4_IN in
    !
    ! TODO address-family ipv4 labeled-unicast
       ! TODO bgp additional-paths receive
@@ -161,19 +163,20 @@ router bgp 64900
       ! TODO no neighbor SOME_GROUP next-hop-self source-interface
       ! TODO default neighbor 192.0.2.7 activate
    !
-   ! TODO address-family ipv6
-      ! TODO no bgp additional-paths install
-      ! TODO bgp additional-paths receive
-      ! TODO no bgp additional-paths send any
-      ! TODO no bgp route install-map
-      ! TODO neighbor SOME_GROUP activate
-      ! TODO neighbor SOME_GROUP additional-paths receive
-      ! TODO no neighbor SOME_GROUP route-map in
-      ! TODO no neighbor SOME_GROUP route-map out
+   address-family ipv6
+      no bgp additional-paths install
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp route install-map
+      neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
       ! TODO no neighbor SOME_GROUP prefix-list out
-      ! TODO no neighbor SOME_GROUP default-originate
-      ! TODO no neighbor SOME_GROUP additional-paths send any
-      ! TODO no neighbor SOME_GROUP next-hop-unchanged
-      ! TODO default neighbor 192.0.2.7 activate
+      no neighbor SOME_GROUP default-originate
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6_IN in
 !

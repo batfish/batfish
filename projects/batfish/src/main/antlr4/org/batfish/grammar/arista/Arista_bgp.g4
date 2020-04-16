@@ -91,7 +91,7 @@ eos_rb_af_ipv4_unicast
     | eos_rbafipv4u_default
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
-    | eos_rbafipv4_no
+    | eos_rbafipv4u_no
     | eos_rbafipv4u_network
 //    | eos_rbafipv4u_redistribute
   )*
@@ -101,33 +101,16 @@ eos_rbafipv4u_bgp
 :
   BGP
   (
-    eos_rbafipv4ub_additional_paths
+    eos_rb_af_bgp_common
     | eos_rbafipv4ub_next_hop
-    | eos_rbafipv4ub_next_hop_unchanged
     | eos_rbafipv4ub_redistribute_internal
     | eos_rbafipv4ub_route
   )
 ;
 
-eos_rbafipv4ub_additional_paths
-:
-  ADDITIONAL_PATHS
-  (
-    INSTALL
-    | RECEIVE
-    | SEND ANY
-  )
-  NEWLINE
-;
-
 eos_rbafipv4ub_next_hop
 :
   NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
-;
-
-eos_rbafipv4ub_next_hop_unchanged
-:
-  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbafipv4ub_redistribute_internal
@@ -158,15 +141,30 @@ eos_rbafipv4u_neighbor
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
 ;
 
-eos_rbafipv4_no
+eos_rbafipv4u_no
 :
   NO
   (
-    eos_rbafipv4_no_neighbor
+    eos_rbafipv4u_no_bgp
+    | eos_rbafipv4u_no_neighbor
   )
 ;
 
-eos_rbafipv4_no_neighbor
+eos_rbafipv4u_no_bgp
+:
+  BGP
+  (
+    eos_rb_af_no_bgp_common
+    | eos_rbafipv4u_no_bgp_next_hop
+  )
+;
+
+eos_rbafipv4u_no_bgp_next_hop
+:
+  NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
+;
+
+eos_rbafipv4u_no_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
@@ -191,12 +189,57 @@ eos_rb_af_ipv6
 eos_rb_af_ipv6_unicast
 :
   NEWLINE
-  eos_rbafipv6u_neighbor*
+  (
+    eos_rbafipv6u_bgp
+    | eos_rbafipv6u_default
+//    | eos_rbafipv6u_graceful_restart
+    | eos_rbafipv6u_neighbor
+    | eos_rbafipv6u_no
+//    | eos_rbafipv6u_network
+//    | eos_rbafipv64u_redistribute
+  )*
+;
+
+eos_rbafipv6u_bgp
+:
+  BGP eos_rb_af_bgp_common
+;
+
+eos_rbafipv6u_default
+:
+  DEFAULT
+  (
+    eos_rbafipv6ud_neighbor
+  )
+;
+
+eos_rbafipv6ud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_default_neighbor_common
 ;
 
 eos_rbafipv6u_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
+;
+
+eos_rbafipv6u_no
+:
+  NO
+  (
+    eos_rbafipv6u_no_bgp
+    | eos_rbafipv6u_no_neighbor
+  )
+;
+
+eos_rbafipv6u_no_bgp
+:
+  BGP eos_rb_af_no_bgp_common
+;
+
+eos_rbafipv6u_no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
 
 eos_rb_af_evpn
@@ -302,6 +345,7 @@ eos_rb_af_neighbor_common
   (
     eos_rbafnc_activate
     | eos_rbafnc_additional_paths
+    | eos_rbafnc_default_originate
     | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
@@ -329,6 +373,11 @@ eos_rbafnc_additional_paths
   ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
 ;
 
+eos_rbafnc_default_originate
+:
+  DEFAULT_ORIGINATE (name = variable)? NEWLINE
+;
+
 eos_rbafnc_graceful_restart
 :
   GRACEFUL_RESTART NEWLINE
@@ -344,11 +393,56 @@ eos_rbafnc_route_map
   ROUTE_MAP name = variable (IN | OUT) NEWLINE
 ;
 
+// Common to ipv4/ipv6 unicast > bgp. Other address families should just use the rbafbc rules.
+eos_rb_af_bgp_common
+:
+  eos_rbafbc_additional_paths
+  | eos_rbafbc_next_hop_unchanged
+;
+
+eos_rbafbc_additional_paths
+:
+  ADDITIONAL_PATHS
+  (
+    INSTALL
+    | RECEIVE
+    | SEND ANY
+  )
+  NEWLINE
+;
+
+eos_rbafbc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+// Common to ipv4/ipv6 unicast > no bgp. Other address families should just use the rbafnobc rules.
+eos_rb_af_no_bgp_common
+:
+  eos_rbafnobc_additional_paths
+  | eos_rbafnobc_bgp_route
+
+;
+
+eos_rbafnobc_additional_paths
+:
+  ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbafnobc_bgp_route
+:
+  ROUTE INSTALL_MAP NEWLINE
+;
+
 // Common to ipv4/ipv6 unicast. Other address families should just use the rbafnonc rules.
 eos_rb_af_no_neighbor_common
 :
   eos_rbafnonc_activate
+  | eos_rbafnonc_additional_paths
+  | eos_rbafnonc_default_originate
+  | eos_rbafnonc_next_hop
   | eos_rbafnonc_next_hop_unchanged
+  | eos_rbafnonc_prefix_list
   | eos_rbafnonc_route_map
 ;
 
@@ -357,9 +451,29 @@ eos_rbafnonc_activate
   ACTIVATE NEWLINE
 ;
 
+eos_rbafnonc_additional_paths
+:
+  ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
+;
+
+eos_rbafnonc_default_originate
+:
+  DEFAULT_ORIGINATE NEWLINE
+;
+
+eos_rbafnonc_next_hop
+:
+  NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
+;
+
 eos_rbafnonc_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnonc_prefix_list
+:
+  PREFIX_LIST (IN | OUT) NEWLINE
 ;
 
 eos_rbafnonc_route_map
