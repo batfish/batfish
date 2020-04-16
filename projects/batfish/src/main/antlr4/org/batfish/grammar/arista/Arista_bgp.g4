@@ -369,6 +369,7 @@ eos_rb_af_no_neighbor_common
 :
   eos_rbafnonc_activate
   | eos_rbafnonc_next_hop_unchanged
+  | eos_rbafnonc_prefix_list
   | eos_rbafnonc_route_map
 ;
 
@@ -380,6 +381,11 @@ eos_rbafnonc_activate
 eos_rbafnonc_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnonc_prefix_list
+:
+  PREFIX_LIST (IN | OUT) NEWLINE
 ;
 
 eos_rbafnonc_route_map
