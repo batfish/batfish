@@ -215,12 +215,18 @@ eos_rbafipv6u_no
   NO
   (
     eos_rbafipv6u_no_bgp
+    | eos_rbafipv6u_no_neighbor
   )
 ;
 
 eos_rbafipv6u_no_bgp
 :
   BGP eos_rb_af_no_bgp_common
+;
+
+eos_rbafipv6u_no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id eos_rb_af_no_neighbor_common
 ;
 
 eos_rb_af_evpn

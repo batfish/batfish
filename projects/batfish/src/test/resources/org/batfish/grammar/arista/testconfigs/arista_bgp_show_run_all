@@ -170,13 +170,13 @@ router bgp 64900
       no bgp route install-map
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
-      ! TODO no neighbor SOME_GROUP route-map in
-      ! TODO no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
       ! TODO no neighbor SOME_GROUP prefix-list in
       ! TODO no neighbor SOME_GROUP prefix-list out
-      ! TODO no neighbor SOME_GROUP default-originate
-      ! TODO no neighbor SOME_GROUP additional-paths send any
-      ! TODO no neighbor SOME_GROUP next-hop-unchanged
+      no neighbor SOME_GROUP default-originate
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
       ! TODO default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map IPV6_IN in
 !
