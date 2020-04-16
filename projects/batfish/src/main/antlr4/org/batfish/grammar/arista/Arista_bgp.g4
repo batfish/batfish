@@ -103,7 +103,6 @@ eos_rbafipv4u_bgp
   (
     eos_rb_af_bgp_common
     | eos_rbafipv4ub_next_hop
-    | eos_rbafipv4ub_next_hop_unchanged
     | eos_rbafipv4ub_redistribute_internal
     | eos_rbafipv4ub_route
   )
@@ -112,11 +111,6 @@ eos_rbafipv4u_bgp
 eos_rbafipv4ub_next_hop
 :
   NEXT_HOP ADDRESS_FAMILY IPV6 NEWLINE
-;
-
-eos_rbafipv4ub_next_hop_unchanged
-:
-  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbafipv4ub_redistribute_internal
@@ -384,6 +378,7 @@ eos_rbafnc_route_map
 eos_rb_af_bgp_common
 :
   eos_rbafbc_additional_paths
+  | eos_rbafbc_next_hop_unchanged
 ;
 
 eos_rbafbc_additional_paths
@@ -397,6 +392,10 @@ eos_rbafbc_additional_paths
   NEWLINE
 ;
 
+eos_rbafbc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
 
 // Common to ipv4/ipv6 unicast > no bgp. Other address families should just use the rbafnobc rules.
 eos_rb_af_no_bgp_common

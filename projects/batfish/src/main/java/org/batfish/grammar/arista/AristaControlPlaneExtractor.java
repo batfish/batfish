@@ -431,12 +431,12 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_vlan_tail_redistributeCont
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vlan_tail_route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafbc_additional_pathsContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafbc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafdnc_activateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafeb_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4u_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4u_no_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_next_hopContext;
-import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_redistribute_internalContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_routeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ud_neighborContext;
@@ -1857,6 +1857,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbafbc_next_hop_unchanged(Eos_rbafbc_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrfAf.setNextHopUnchanged(true);
+  }
+
+  @Override
   public void exitEos_rbafdnc_activate(Eos_rbafdnc_activateContext ctx) {
     _currentAristaBgpNeighborAddressFamily.setActivate(null);
   }
@@ -1929,11 +1934,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbafipv4ub_next_hop(Eos_rbafipv4ub_next_hopContext ctx) {
     todo(ctx);
-  }
-
-  @Override
-  public void exitEos_rbafipv4ub_next_hop_unchanged(Eos_rbafipv4ub_next_hop_unchangedContext ctx) {
-    _currentAristaBgpVrfAf.setNextHopUnchanged(true);
   }
 
   @Override
