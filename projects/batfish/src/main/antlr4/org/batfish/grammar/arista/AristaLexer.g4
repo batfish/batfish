@@ -6185,6 +6185,11 @@ INSTALL
    'install'
 ;
 
+INSTALL_MAP
+:
+   'install-map'
+;
+
 INSTANCE
 :
    'instance'

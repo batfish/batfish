@@ -365,15 +365,22 @@ eos_rbafnc_route_map
   ROUTE_MAP name = variable (IN | OUT) NEWLINE
 ;
 
-// Common to ipv4/ipv6 unicast. Other address families should just use the rbafnobc rules.
+// Common to ipv4/ipv6 unicast > no bgp. Other address families should just use the rbafnobc rules.
 eos_rb_af_no_bgp_common
 :
   eos_rbafnobc_additional_paths
+  | eos_rbafnobc_bgp_route
+
 ;
 
 eos_rbafnobc_additional_paths
 :
   ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbafnobc_bgp_route
+:
+  ROUTE INSTALL_MAP NEWLINE
 ;
 
 // Common to ipv4/ipv6 unicast. Other address families should just use the rbafnonc rules.

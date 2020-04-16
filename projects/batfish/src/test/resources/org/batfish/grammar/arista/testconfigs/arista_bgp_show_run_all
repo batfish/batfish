@@ -141,7 +141,7 @@ router bgp 64900
       no bgp next-hop address-family ipv6
       bgp additional-paths receive
       no bgp additional-paths send any
-      ! TODO no bgp route install-map
+      no bgp route install-map
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       no neighbor SOME_GROUP route-map in
