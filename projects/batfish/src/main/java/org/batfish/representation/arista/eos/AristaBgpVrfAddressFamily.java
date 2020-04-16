@@ -32,8 +32,12 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
     return _additionalPaths;
   }
 
-  public void setAdditionalPaths(@Nullable AristaBgpAdditionalPathsConfig additionalPaths) {
-    _additionalPaths = additionalPaths;
+  @Nonnull
+  public AristaBgpAdditionalPathsConfig getOrCreateAdditionalPaths() {
+    if (_additionalPaths == null) {
+      _additionalPaths = new AristaBgpAdditionalPathsConfig();
+    }
+    return _additionalPaths;
   }
 
   @Nullable
