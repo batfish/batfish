@@ -53,6 +53,7 @@ eos_bgp_community
 eos_router_bgp_tail
 :
   eos_rb_address_family
+  | eos_rb_bgp
   | eos_rb_inner
   | eos_rb_monitoring
   | eos_rb_vlan
@@ -479,6 +480,31 @@ eos_rbafnonc_prefix_list
 eos_rbafnonc_route_map
 :
   ROUTE_MAP (IN | OUT) NEWLINE
+;
+
+// bgp commands that are only valid at the router level
+eos_rb_bgp
+:
+  BGP eos_rbb_trace
+;
+
+eos_rbb_trace
+:
+  TRACE
+  (
+    eos_rbbt_neighbor
+    | eos_rbbt_route_key
+  )
+;
+
+eos_rbbt_neighbor
+:
+  NEIGHBOR ALL NEWLINE
+;
+
+eos_rbbt_route_key
+:
+  ROUTE_KEY ALL NEWLINE
 ;
 
 eos_rb_inner

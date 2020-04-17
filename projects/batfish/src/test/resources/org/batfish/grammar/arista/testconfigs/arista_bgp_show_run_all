@@ -3,8 +3,8 @@
 hostname arista_bgp_show_run_all
 !
 router bgp 64900
-   ! TODO bgp trace neighbor all
-   ! TODO bgp trace route-key all
+   bgp trace neighbor all
+   bgp trace route-key all
    bgp asn notation asplain
    ! TODO bgp labeled-unicast rib tunnel
    ! TODO no shutdown

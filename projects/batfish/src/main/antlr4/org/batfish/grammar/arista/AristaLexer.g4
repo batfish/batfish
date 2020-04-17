@@ -8390,7 +8390,12 @@ NEGOTIATION
 
 NEIGHBOR
 :
-   'neighbor' -> pushMode ( M_NEIGHBOR )
+   'neighbor'
+   {
+     if (lastTokenType() != TRACE) {
+       pushMode ( M_NEIGHBOR );
+     }
+   }
 ;
 
 NEIGHBOR_DOWN
@@ -10973,6 +10978,11 @@ ROUTE
 ROUTE_CACHE
 :
    'route-cache'
+;
+
+ROUTE_KEY
+:
+   'route-key'
 ;
 
 ROUTE_LOOKUP
