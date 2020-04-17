@@ -18,7 +18,7 @@ router bgp 64900
    bgp log-neighbor-changes
    bgp default ipv4-unicast
    bgp default ipv4-unicast transport ipv6
-   ! TODO bgp default ipv6-unicast
+   bgp default ipv6-unicast
    ! TODO no bgp default ipv4-unicast transport ipv6
    ! TODO no bgp default ipv6-unicast
    ! TODO no bgp missing-policy direction in action

@@ -642,7 +642,10 @@ eos_rbib_convergence
 eos_rbib_default
 :
   DEFAULT
-  eos_rbibd_ipv4_unicast
+  (
+    eos_rbibd_ipv4_unicast
+    | eos_rbibd_ipv6_unicast
+  )
 ;
 
 eos_rbibd_ipv4_unicast
@@ -663,6 +666,11 @@ eos_rbibd_ipv4u_enabled
 eos_rbibd_ipv4u_transport
 :
   TRANSPORT IPV6 NEWLINE
+;
+
+eos_rbibd_ipv6_unicast
+:
+  IPV6_UNICAST NEWLINE
 ;
 
 eos_rbib_enforce_first_as

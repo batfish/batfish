@@ -6372,6 +6372,11 @@ IPV6_ADDRESS_POOL
    'ipv6-address-pool'
 ;
 
+IPV6_UNICAST
+:
+   'ipv6-unicast'
+;
+
 IPV6IP
 :
   'ipv6ip'
