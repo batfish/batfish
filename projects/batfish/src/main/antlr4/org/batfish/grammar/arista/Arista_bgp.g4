@@ -1088,6 +1088,7 @@ eos_rbi_no
     | eos_rbino_redistribute
     | eos_rbino_router_id
     | eos_rbino_shutdown
+    | eos_rbino_ucmp
     | eos_rbino_update
   )
 ;
@@ -1305,6 +1306,31 @@ eos_rbino_router_id
 eos_rbino_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbino_ucmp
+:
+  UCMP
+  (
+    eos_rbino_ucmp_fec
+    | eos_rbino_ucmp_link_bandwidth
+    | eos_rbino_ucmp_mode
+  )
+;
+
+eos_rbino_ucmp_fec
+:
+  FEC THRESHOLD NEWLINE
+;
+
+eos_rbino_ucmp_link_bandwidth
+:
+  LINK_BANDWIDTH (ENCODING_WEIGHTED | RECURSIVE | UPDATE_DELAY) NEWLINE
+;
+
+eos_rbino_ucmp_mode
+:
+  MODE NEWLINE
 ;
 
 eos_rbino_update
