@@ -16,7 +16,9 @@ router bgp 64900
    no update wait-for-convergence
    no update wait-install
    bgp log-neighbor-changes
-   ! TODO bgp default ipv4-unicast
+   bgp default ipv4-unicast
+   bgp default ipv4-unicast transport ipv6
+   ! TODO bgp default ipv6-unicast
    ! TODO no bgp default ipv4-unicast transport ipv6
    ! TODO no bgp default ipv6-unicast
    ! TODO no bgp missing-policy direction in action

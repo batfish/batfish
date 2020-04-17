@@ -563,7 +563,7 @@ eos_rbi_bgp
     | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
     | eos_rbib_convergence
-//    | eos_rbib_default
+    | eos_rbib_default
     | eos_rbib_enforce_first_as
 //    | eos_rbib_host_routes
 //    | eos_rbib_labeled_unicast
@@ -637,6 +637,32 @@ eos_rbib_convergence
     | SLOW_PEER TIME time = DEC
   )
   NEWLINE
+;
+
+eos_rbib_default
+:
+  DEFAULT
+  eos_rbibd_ipv4_unicast
+;
+
+eos_rbibd_ipv4_unicast
+:
+   IPV4_UNICAST
+   (
+     eos_rbibd_ipv4u_enabled
+     | eos_rbibd_ipv4u_transport
+   )
+;
+
+// Nothing after ipv4-unicast means "enabled by default".
+eos_rbibd_ipv4u_enabled
+:
+  NEWLINE
+;
+
+eos_rbibd_ipv4u_transport
+:
+  TRANSPORT IPV6 NEWLINE
 ;
 
 eos_rbib_enforce_first_as

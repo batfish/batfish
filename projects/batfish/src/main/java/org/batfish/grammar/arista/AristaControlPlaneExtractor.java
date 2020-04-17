@@ -476,6 +476,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibbpa_multipath_relaxContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibconf_identifierContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibconf_peersContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbibd_ipv4u_enabledContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibl_limitContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibl_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbin_peer_groupContext;
@@ -2169,6 +2170,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbibconf_peers(Eos_rbibconf_peersContext ctx) {
     _currentAristaBgpVrf.setConfederationPeers(toAsSpace(ctx.asns));
+  }
+
+  @Override
+  public void exitEos_rbibd_ipv4u_enabled(Eos_rbibd_ipv4u_enabledContext ctx) {
+    _currentAristaBgpVrf.setDefaultIpv4Unicast(true);
   }
 
   @Override
