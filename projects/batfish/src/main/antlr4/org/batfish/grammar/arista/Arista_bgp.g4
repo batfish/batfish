@@ -1103,6 +1103,7 @@ eos_rbino_bgp
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
     | eos_rbino_bgp_missing_policy
+    | eos_rbino_bgp_transport
   )
 ;
 
@@ -1199,6 +1200,11 @@ eos_rbino_bgp_default_ipv6_unicast
 eos_rbino_bgp_missing_policy
 :
   MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
+;
+
+eos_rbino_bgp_transport
+:
+  TRANSPORT LISTEN_PORT NEWLINE
 ;
 
 eos_rbino_graceful_restart

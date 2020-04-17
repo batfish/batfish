@@ -44,7 +44,7 @@ router bgp 64900
    ! TODO no bgp route install-map
    no ip access-group
    no ipv6 access-group
-   ! TODO no bgp transport listen-port
+   no bgp transport listen-port
    ! TODO no default-metric
    no bgp always-compare-med
    ! TODO no bgp bestpath med missing-as-worst
