@@ -10,8 +10,8 @@ router bgp 64900
    bgp labeled-unicast rib tunnel
    no shutdown
    router-id 192.0.2.1
-   ! TODO bgp convergence time 300
-   ! TODO bgp convergence slow-peer time 90
+   bgp convergence time 300
+   bgp convergence slow-peer time 90
    ! TODO no bgp confederation identifier
    ! TODO no update wait-for-convergence
    ! TODO no update wait-install
