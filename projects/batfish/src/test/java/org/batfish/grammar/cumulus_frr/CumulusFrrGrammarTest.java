@@ -1654,4 +1654,27 @@ public class CumulusFrrGrammarTest {
                 new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "blackhole"))));
   }
 
+  @Test
+  public void testStaticRouteInterface_defaultVrf() {
+    parseLines("ip route 1.2.3.4/24 eth0");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "eth0"))));
+  }
+
+  @Test
+  public void testStaticRouteInterface_vrf_withDefinition() {
+    _warnings = new Warnings(false, true, false);
+
+    _frr.getVrfs().put("VRF", new Vrf("VRF"));
+    parseLines("ip route 1.2.3.0/24 eth0 vrf VRF");
+
+    assertThat(_warnings.getRedFlagWarnings(), empty());
+
+    assertThat(
+        _frr.getVrfs().get("VRF").getStaticRoutes(),
+        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), null, "eth0")));
+  }
 }
