@@ -503,6 +503,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bc_identifierContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_allowas_inContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_always_compare_medContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_client_to_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_cluster_idContext;
@@ -2485,6 +2486,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbino_bgp_allowas_in(Eos_rbino_bgp_allowas_inContext ctx) {
     _currentAristaBgpVrf.setAllowAsIn(0);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_always_compare_med(Eos_rbino_bgp_always_compare_medContext ctx) {
+    _currentAristaBgpVrf.setAlwaysCompareMed(false);
   }
 
   @Override

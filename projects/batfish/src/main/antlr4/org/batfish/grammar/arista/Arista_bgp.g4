@@ -1096,6 +1096,7 @@ eos_rbino_bgp
   BGP
   (
     eos_rbino_bgp_allowas_in
+    | eos_rbino_bgp_always_compare_med
     | eos_rbino_bgp_bestpath
     | eos_rbino_bgp_client_to_client
     | eos_rbino_bgp_cluster_id
@@ -1108,6 +1109,11 @@ eos_rbino_bgp
 eos_rbino_bgp_allowas_in
 :
   ALLOWAS_IN NEWLINE
+;
+
+eos_rbino_bgp_always_compare_med
+:
+  ALWAYS_COMPARE_MED NEWLINE
 ;
 
 eos_rbino_bgp_bestpath

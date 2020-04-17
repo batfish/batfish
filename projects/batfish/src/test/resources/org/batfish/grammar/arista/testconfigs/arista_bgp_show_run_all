@@ -46,7 +46,7 @@ router bgp 64900
    no ipv6 access-group
    ! TODO no bgp transport listen-port
    ! TODO no default-metric
-   ! TODO no bgp always-compare-med
+   no bgp always-compare-med
    ! TODO no bgp bestpath med missing-as-worst
    ! TODO no bgp bestpath med confed
    ! TODO no bgp route-reflector preserve-attributes
