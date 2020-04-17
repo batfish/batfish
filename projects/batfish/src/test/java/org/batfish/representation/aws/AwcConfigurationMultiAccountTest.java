@@ -1,20 +1,19 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.util.List;
+import java.util.SortedMap;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.SortedMap;
-
-import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
 
 public class AwcConfigurationMultiAccountTest {
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-multi-account";

@@ -2351,7 +2351,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               new Warning(String.format("Failed to process folder %s", multiAccountPath), "AWS"));
         }
       } else {
-        awsConfigs.put(BfConsts.RELPATH_AWS_CONFIGS_FILE, parseAwsConfigurations(readAllFiles(awsPath, _logger), pvcae));
+        awsConfigs.put(
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            parseAwsConfigurations(readAllFiles(awsPath, _logger), pvcae));
       }
     }
 
