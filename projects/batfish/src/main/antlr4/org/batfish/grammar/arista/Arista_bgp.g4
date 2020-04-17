@@ -521,7 +521,7 @@ eos_rbi_bgp
     | eos_rbib_allowas_in
     | eos_rbib_always_compare_med
     | eos_rbib_asn
-//    | eos_rbib_auto_local_addr
+    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
     | eos_rbib_client_to_client
     | eos_rbib_cluster_id
@@ -575,6 +575,11 @@ eos_rbib_always_compare_med
 eos_rbib_asn
 :
   ASN NOTATION (ASDOT | ASPLAIN) NEWLINE
+;
+
+eos_rbib_auto_local_addr
+:
+  AUTO_LOCAL_ADDR NEWLINE
 ;
 
 eos_rbib_confederation
@@ -1105,6 +1110,7 @@ eos_rbino_bgp
     eos_rbino_bgp_advertise_inactive
     | eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_always_compare_med
+    | eos_rbino_bgp_auto_local_addr
     | eos_rbino_bgp_bestpath
     | eos_rbino_bgp_client_to_client
     | eos_rbino_bgp_cluster_id
@@ -1130,6 +1136,11 @@ eos_rbino_bgp_allowas_in
 eos_rbino_bgp_always_compare_med
 :
   ALWAYS_COMPARE_MED NEWLINE
+;
+
+eos_rbino_bgp_auto_local_addr
+:
+  AUTO_LOCAL_ADDR NEWLINE
 ;
 
 eos_rbino_bgp_bestpath
