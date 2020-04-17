@@ -1042,6 +1042,7 @@ eos_rbi_no
     | eos_rbino_neighbor
     | eos_rbino_redistribute
     | eos_rbino_shutdown
+    | eos_rbino_update
   )
 ;
 
@@ -1163,6 +1164,11 @@ eos_rbinor_static
 eos_rbino_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbino_update
+:
+  UPDATE (WAIT_FOR_CONVERGENCE | WAIT_INSTALL) NEWLINE
 ;
 
 // Defining a peer group
