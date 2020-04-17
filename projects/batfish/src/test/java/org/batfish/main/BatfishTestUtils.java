@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
@@ -296,6 +297,10 @@ public class BatfishTestUtils {
       filesText.forEach(
           (filename, text) -> {
             outputDirectory.toFile().mkdirs();
+            Path fpath = Paths.get(filename);
+            if (fpath.getNameCount() > 1) {
+              outputDirectory.resolve(fpath.subpath(0, fpath.getNameCount() - 1)).toFile().mkdirs();
+            }
             CommonUtil.writeFile(outputDirectory.resolve(filename), text);
           });
     }
