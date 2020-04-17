@@ -4436,16 +4436,6 @@ EXIT_AF_TOPOLOGY
    'exit-af-topology'
 ;
 
-EXIT_PEER_POLICY
-:
-   'exit-peer-policy'
-;
-
-EXIT_PEER_SESSION
-:
-   'exit-peer-session'
-;
-
 EXIT_SERVICE_FAMILY
 :
    'exit-service-family'
@@ -9511,16 +9501,6 @@ PEER_LINK
 PEER_MAC_RESOLUTION_TIMEOUT
 :
    'peer-mac-resolution-timeout'
-;
-
-PEER_POLICY
-:
-   'peer-policy'
-;
-
-PEER_SESSION
-:
-   'peer-session'
 ;
 
 PEER_SWITCH
