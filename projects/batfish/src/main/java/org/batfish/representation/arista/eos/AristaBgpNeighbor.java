@@ -21,6 +21,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private Integer _ebgpMultihop;
   @Nullable private Boolean _enforceFirstAs;
   @Nullable private Long _localAs;
+  @Nullable private Boolean _nextHopPeer;
   @Nullable private Boolean _nextHopSelf;
   @Nullable private Boolean _nextHopUnchanged;
   @Nullable private Long _remoteAs;
@@ -107,6 +108,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
 
   public void setLocalAs(@Nullable Long localAs) {
     _localAs = localAs;
+  }
+
+  @Nullable
+  public Boolean getNextHopPeer() {
+    return _nextHopPeer;
+  }
+
+  public void setNextHopPeer(@Nullable Boolean nextHopPeer) {
+    _nextHopPeer = nextHopPeer;
   }
 
   @Nullable
@@ -216,6 +226,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     }
     if (_localAs == null) {
       _localAs = other._localAs;
+    }
+    if (_nextHopPeer == null) {
+      _nextHopPeer = other._nextHopPeer;
     }
     if (_nextHopSelf == null) {
       _nextHopSelf = other._nextHopSelf;

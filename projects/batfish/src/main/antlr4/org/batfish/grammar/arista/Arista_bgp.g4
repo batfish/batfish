@@ -842,6 +842,7 @@ eos_rbi_neighbor6
   )
 ;
 
+// Common to ipv4 ipv6 and peer-groups configured at the vrf level
 eos_rbi_neighbor_common
 :
   (
@@ -866,7 +867,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_maximum_routes
 //    | eos_rbinc_metric_out
 //    | eos_rbinc_monitoring
-//    | eos_rbinc_next_hop_peer
+    | eos_rbinc_next_hop_peer
     | eos_rbinc_next_hop_self
     | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
@@ -980,6 +981,11 @@ eos_rbinc_maximum_routes
     | (WARNING_LIMIT warn_limit = DEC PERCENT_LITERAL?)
   )*
   NEWLINE
+;
+
+eos_rbinc_next_hop_peer
+:
+  NEXT_HOP_PEER NEWLINE
 ;
 
 eos_rbinc_next_hop_self
@@ -1283,9 +1289,22 @@ eos_rbino_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbinon_enforce_first_as
+    eos_rbinon_description
+    | eos_rbinon_enforce_first_as
+    | eos_rbinon_local_as
+    | eos_rbinon_next_hop_peer
+    | eos_rbinon_next_hop_self
+    | eos_rbinon_next_hop_unchanged
     | eos_rbinon_shutdown
+    | eos_rbinon_remote_as
+    | eos_rbinon_remove_private_as
+    | eos_rbinon_update_source
   )
+;
+
+eos_rbinon_description
+:
+  DESCRIPTION NEWLINE
 ;
 
 eos_rbinon_enforce_first_as
@@ -1293,9 +1312,44 @@ eos_rbinon_enforce_first_as
   ENFORCE_FIRST_AS NEWLINE
 ;
 
+eos_rbinon_local_as
+:
+  LOCAL_AS NEWLINE
+;
+
+eos_rbinon_next_hop_peer
+:
+  NEXT_HOP_PEER NEWLINE
+;
+
+eos_rbinon_next_hop_self
+:
+  NEXT_HOP_SELF NEWLINE
+;
+
+eos_rbinon_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbinon_remote_as
+:
+  REMOTE_AS NEWLINE
+;
+
+eos_rbinon_remove_private_as
+:
+  REMOVE_PRIVATE_AS NEWLINE
+;
+
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbinon_update_source
+:
+  UPDATE_SOURCE NEWLINE
 ;
 
 eos_rbino_redistribute

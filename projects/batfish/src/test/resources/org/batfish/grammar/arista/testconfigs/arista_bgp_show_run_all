@@ -74,21 +74,22 @@ router bgp 64900
    bgp monitoring
    no bgp monitoring
    neighbor SOME_GROUP peer-group
-   ! TODO no neighbor SOME_GROUP remote-as
+   no neighbor SOME_GROUP remote-as
    ! TODO no neighbor SOME_GROUP import-localpref
    ! TODO no neighbor SOME_GROUP export-localpref
-   ! TODO no neighbor SOME_GROUP next-hop-self
-   ! TODO no neighbor SOME_GROUP next-hop-peer
-   ! TODO no neighbor SOME_GROUP next-hop-unchanged
-   ! TODO no neighbor SOME_GROUP shutdown
-   ! TODO no neighbor SOME_GROUP remove-private-as
+   no neighbor SOME_GROUP next-hop-self
+   neighbor SOME_GROUP next-hop-peer
+   no neighbor SOME_GROUP next-hop-peer
+   no neighbor SOME_GROUP next-hop-unchanged
+   no neighbor SOME_GROUP shutdown
+   no neighbor SOME_GROUP remove-private-as
    ! TODO no neighbor SOME_GROUP out-delay
    ! TODO no neighbor SOME_GROUP link-bandwidth update-delay
-   ! TODO no neighbor SOME_GROUP local-as
+   no neighbor SOME_GROUP local-as
    ! TODO no neighbor SOME_GROUP weight
    ! TODO no neighbor SOME_GROUP transport connection-mode passive
    ! TODO no neighbor SOME_GROUP transport remote-port
-   ! TODO no neighbor SOME_GROUP update-source
+   no neighbor SOME_GROUP update-source
    ! TODO no neighbor SOME_GROUP dont-capability-negotiate
    ! TODO no neighbor SOME_GROUP fall-over bfd
    ! TODO no neighbor SOME_GROUP local-v4-addr
@@ -96,7 +97,7 @@ router bgp 64900
    ! TODO no neighbor SOME_GROUP auto-local-addr
    ! TODO default neighbor SOME_GROUP monitoring
    ! TODO no neighbor SOME_GROUP next-hop-v6-addr
-   ! TODO no neighbor SOME_GROUP description
+   no neighbor SOME_GROUP description
    neighbor SOME_GROUP allowas-in 1
    neighbor SOME_GROUP soft-reconfiguration inbound
    ! TODO no neighbor SOME_GROUP ebgp-multihop
