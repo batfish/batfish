@@ -9,6 +9,7 @@ router bgp 64900
    bgp labeled-unicast rib ip
    bgp labeled-unicast rib tunnel
    no shutdown
+   no router-id
    router-id 192.0.2.1
    bgp convergence time 300
    bgp convergence slow-peer time 90

@@ -1083,6 +1083,7 @@ eos_rbi_no
     | eos_rbino_graceful_restart_helper
     | eos_rbino_neighbor
     | eos_rbino_redistribute
+    | eos_rbino_router_id
     | eos_rbino_shutdown
     | eos_rbino_update
   )
@@ -1258,6 +1259,11 @@ eos_rbinor_rip
 eos_rbinor_static
 :
   STATIC NEWLINE
+;
+
+eos_rbino_router_id
+:
+  ROUTER_ID NEWLINE
 ;
 
 eos_rbino_shutdown

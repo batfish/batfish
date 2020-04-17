@@ -508,6 +508,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_client_to_clientCon
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_cluster_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4u_enabledContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_router_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
@@ -2569,6 +2570,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinor_static(Eos_rbinor_staticContext ctx) {
     _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.STATIC);
+  }
+
+  @Override
+  public void exitEos_rbino_router_id(Eos_rbino_router_idContext ctx) {
+    _currentAristaBgpVrf.setRouterId(null);
   }
 
   @Override
