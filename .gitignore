@@ -42,3 +42,6 @@ coverage*
 # Ignore python cache files
 __pycache__
 .pytest_cache/
+
+# Ignore Tokens
+*.tokens

@@ -273,7 +273,28 @@ public class CumulusConcatenatedGrammarTest {
                     .setNetwork(Prefix.parse("1.1.1.1/24"))
                     .setNextHopIp(Ip.parse("10.0.0.1"))
                     .setAdministrativeCost(1)
-                    .build())));
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("3.3.3.3/24"))
+                    .setNextHopInterface("null_interface")
+                    .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("4.4.4.4/24"))
+                    .setNextHopInterface("Eth0")
+                    .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("6.6.6.6/24"))
+                    .setNextHopInterface("null_interface")
+                    .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("7.7.7.7/24"))
+                    .setNextHopInterface("null_interface")
+                    .setAdministrativeCost(1)
+                    .build()
+            )));
     assertThat(
         viConfig.getVrfs().get("VRF").getStaticRoutes(),
         equalTo(
@@ -282,7 +303,13 @@ public class CumulusConcatenatedGrammarTest {
                     .setNetwork(Prefix.parse("2.2.2.2/24"))
                     .setNextHopIp(Ip.parse("10.0.0.2"))
                     .setAdministrativeCost(1)
-                    .build())));
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("5.5.5.5/24"))
+                    .setNextHopInterface("eth0-1")
+                    .setAdministrativeCost(1)
+                    .build()
+            )));
   }
 
   @Test

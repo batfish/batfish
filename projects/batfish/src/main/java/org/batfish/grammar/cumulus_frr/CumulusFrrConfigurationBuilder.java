@@ -3,7 +3,6 @@ package org.batfish.grammar.cumulus_frr;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
@@ -876,15 +875,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSv_route(Sv_routeContext ctx) {
+    // If an interface name is parsed, use it.
+    final String next_hop_interface = ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    // If user provides an IP next-hop instead of an interface, use that
+    final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
     Prefix network = Prefix.parse(ctx.prefix().getText());
-    Ip nextHopIp = null;
-    String nextHopInterface = null;
-    if (ctx.BLACKHOLE() != null) {
-      nextHopInterface = NULL_INTERFACE_NAME;
-    } else {
-      nextHopIp = toIp(ctx.ip_address());
-    }
-    _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHopIp, nextHopInterface));
+
+    _currentVrf.getStaticRoutes().add(new StaticRoute(network, next_hop_ip, next_hop_interface));
   }
 
   @Override
@@ -1194,9 +1191,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitIp_route(Ip_routeContext ctx) {
+    // If an interface name is parsed, use it.
+    final String next_hop_interface = ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    // If user provides an IP next-hop instead of an interface, use that
+    final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
+
     StaticRoute route =
         new StaticRoute(
-            Prefix.parse(ctx.network.getText()), Ip.parse(ctx.next_hop_ip.getText()), null);
+            Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface);
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {
