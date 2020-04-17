@@ -71,7 +71,8 @@ router bgp 64900
    no bgp auto-local-addr
    bgp next-hop-unchanged
    no bgp next-hop-unchanged
-   ! TODO no bgp monitoring
+   bgp monitoring
+   no bgp monitoring
    neighbor SOME_GROUP peer-group
    ! TODO no neighbor SOME_GROUP remote-as
    ! TODO no neighbor SOME_GROUP import-localpref

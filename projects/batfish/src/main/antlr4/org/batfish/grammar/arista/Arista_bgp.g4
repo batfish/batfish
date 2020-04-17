@@ -535,7 +535,7 @@ eos_rbi_bgp
     | eos_rbib_listen
     | eos_rbib_log_neighbor_changes
     | eos_rbib_missing_policy
-//    | eos_rbib_monitoring
+    | eos_rbib_monitoring
     | eos_rbib_next_hop_unchanged
     | eos_rbib_peer_mac_resolution_timeout
 //    | eos_rbib_redistribute_internal
@@ -734,6 +734,11 @@ eos_rbib_log_neighbor_changes
 eos_rbib_missing_policy
 :
   MISSING_POLICY DIRECTION (IN | OUT) ACTION (DENY | DENY_IN_OUT | PERMIT) NEWLINE
+;
+
+eos_rbib_monitoring
+:
+  MONITORING NEWLINE
 ;
 
 eos_rbib_next_hop_unchanged
@@ -1117,6 +1122,7 @@ eos_rbino_bgp
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
     | eos_rbino_bgp_missing_policy
+    | eos_rbino_bgp_monitoring
     | eos_rbino_bgp_next_hop_unchanged
     | eos_rbino_bgp_route
     | eos_rbino_bgp_transport
@@ -1226,6 +1232,11 @@ eos_rbino_bgp_default_ipv6_unicast
 eos_rbino_bgp_missing_policy
 :
   MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
+;
+
+eos_rbino_bgp_monitoring
+:
+  MONITORING NEWLINE
 ;
 
 eos_rbino_bgp_next_hop_unchanged
