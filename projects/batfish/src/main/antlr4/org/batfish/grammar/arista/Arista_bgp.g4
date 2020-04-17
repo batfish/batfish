@@ -1050,6 +1050,7 @@ eos_rbino_bgp
   BGP
   (
     eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
   )
 ;
@@ -1078,6 +1079,16 @@ eos_rbino_bgp_bp_as_path
 eos_rbino_bgp_bpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbino_bgp_confederation
+:
+  CONFEDERATION eos_rbino_bc_identifier
+;
+
+eos_rbino_bc_identifier
+:
+  IDENTIFIER NEWLINE
 ;
 
 eos_rbino_bgp_default
