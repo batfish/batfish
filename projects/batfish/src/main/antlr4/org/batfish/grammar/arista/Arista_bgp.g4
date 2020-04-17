@@ -1079,6 +1079,7 @@ eos_rbi_no
   NO
   (
     eos_rbino_bgp
+    | eos_rbino_default_metric
     | eos_rbino_graceful_restart
     | eos_rbino_graceful_restart_helper
     | eos_rbino_ip
@@ -1211,6 +1212,11 @@ eos_rbino_bgp_route
 eos_rbino_bgp_transport
 :
   TRANSPORT LISTEN_PORT NEWLINE
+;
+
+eos_rbino_default_metric
+:
+  DEFAULT_METRIC NEWLINE
 ;
 
 eos_rbino_graceful_restart
