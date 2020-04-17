@@ -25,8 +25,8 @@ router bgp 64900
    bgp missing-policy direction in action deny
    bgp missing-policy direction in action deny-in-out
    bgp missing-policy direction out action permit
-   ! TODO no bgp missing-policy direction in action
-   ! TODO no bgp missing-policy direction out action
+   no bgp missing-policy direction in action
+   no bgp missing-policy direction out action
    timers bgp 60 180
    distance bgp 200 200 200
    graceful-restart restart-time 300

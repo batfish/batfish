@@ -1092,6 +1092,7 @@ eos_rbino_bgp
     eos_rbino_bgp_bestpath
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
+    | eos_rbino_bgp_missing_policy
   )
 ;
 
@@ -1163,6 +1164,11 @@ eos_rbino_bgp_default_ipv4u_transport
 eos_rbino_bgp_default_ipv6_unicast
 :
   IPV6_UNICAST NEWLINE
+;
+
+eos_rbino_bgp_missing_policy
+:
+  MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
 ;
 
 eos_rbino_neighbor
