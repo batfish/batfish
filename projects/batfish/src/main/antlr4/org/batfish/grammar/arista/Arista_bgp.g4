@@ -1081,6 +1081,8 @@ eos_rbi_no
     eos_rbino_bgp
     | eos_rbino_graceful_restart
     | eos_rbino_graceful_restart_helper
+    | eos_rbino_ip
+    | eos_rbino_ipv6
     | eos_rbino_neighbor
     | eos_rbino_redistribute
     | eos_rbino_router_id
@@ -1202,6 +1204,18 @@ eos_rbino_graceful_restart_helper
 :
   GRACEFUL_RESTART_HELPER NEWLINE
 ;
+
+eos_rbino_ip
+:
+  IP ACCESS_GROUP IN? NEWLINE
+;
+
+eos_rbino_ipv6
+:
+  IPV6 ACCESS_GROUP IN? NEWLINE
+;
+
+
 
 eos_rbino_neighbor
 :

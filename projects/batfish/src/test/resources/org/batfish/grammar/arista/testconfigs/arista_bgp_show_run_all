@@ -42,8 +42,8 @@ router bgp 64900
    bgp peer-mac-resolution-timeout 0
    bgp enforce-first-as
    ! TODO no bgp route install-map
-   ! TODO no ip access-group
-   ! TODO no ipv6 access-group
+   no ip access-group
+   no ipv6 access-group
    ! TODO no bgp transport listen-port
    ! TODO no default-metric
    ! TODO no bgp always-compare-med
