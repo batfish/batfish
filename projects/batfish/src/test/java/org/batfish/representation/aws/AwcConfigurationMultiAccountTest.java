@@ -18,7 +18,7 @@ import org.junit.rules.TemporaryFolder;
 public class AwcConfigurationMultiAccountTest {
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-multi-account";
   private static final List<String> fileNames =
-      ImmutableList.of("111/us-west-1/Vpcs.json", "222/us-west-2/Vpcs.json");
+      ImmutableList.of("accounts/111/us-west-1/Vpcs.json", "accounts/222/us-west-2/Vpcs.json");
 
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
 
