@@ -471,6 +471,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbib_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_always_compare_medContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_cluster_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_enforce_first_asContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbib_missing_policyContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibbp_tie_breakContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibbpa_multipath_relaxContext;
@@ -2202,6 +2203,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbibl_limit(Eos_rbibl_limitContext ctx) {
     _currentAristaBgpVrf.setListenLimit(toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitEos_rbib_missing_policy(Eos_rbib_missing_policyContext ctx) {
+    if (ctx.PERMIT() != null) {
+      // this is batfish's default
+      return;
+    }
+    todo(ctx);
   }
 
   @Override

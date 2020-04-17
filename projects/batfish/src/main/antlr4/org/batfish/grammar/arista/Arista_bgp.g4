@@ -569,7 +569,7 @@ eos_rbi_bgp
 //    | eos_rbib_labeled_unicast
     | eos_rbib_listen
     | eos_rbib_log_neighbor_changes
-//    | eos_rbib_missing_policy
+    | eos_rbib_missing_policy
 //    | eos_rbib_monitoring
     | eos_rbib_next_hop_unchanged
 //    | eos_rbib_redistribute_internal
@@ -747,6 +747,11 @@ eos_rbibl_range
 eos_rbib_log_neighbor_changes
 :
   LOG_NEIGHBOR_CHANGES NEWLINE
+;
+
+eos_rbib_missing_policy
+:
+  MISSING_POLICY DIRECTION (IN | OUT) ACTION (DENY | DENY_IN_OUT | PERMIT) NEWLINE
 ;
 
 eos_rbib_next_hop_unchanged

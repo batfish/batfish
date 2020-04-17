@@ -2997,6 +2997,11 @@ DENY
    'deny'
 ;
 
+DENY_IN_OUT
+:
+   'deny-in-out'
+;
+
 DENY_INTER_USER_TRAFFIC
 :
    'deny-inter-user-traffic'
@@ -3390,6 +3395,11 @@ DIRECTED_BROADCAST
 DIRECTED_REQUEST
 :
    'directed-request'
+;
+
+DIRECTION
+:
+   'direction'
 ;
 
 DISABLE
@@ -7960,6 +7970,11 @@ MIRROR
 MISMATCH
 :
    'mismatch'
+;
+
+MISSING_POLICY
+:
+   'missing-policy'
 ;
 
 MLAG
