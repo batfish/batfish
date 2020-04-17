@@ -8,7 +8,7 @@ router bgp 64900
    bgp asn notation asplain
    bgp labeled-unicast rib ip
    bgp labeled-unicast rib tunnel
-   ! TODO no shutdown
+   no shutdown
    router-id 192.0.2.1
    ! TODO bgp convergence time 300
    ! TODO bgp convergence slow-peer time 90

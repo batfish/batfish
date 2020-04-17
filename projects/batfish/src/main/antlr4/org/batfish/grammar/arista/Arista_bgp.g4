@@ -1041,6 +1041,7 @@ eos_rbi_no
     eos_rbino_bgp
     | eos_rbino_neighbor
     | eos_rbino_redistribute
+    | eos_rbino_shutdown
   )
 ;
 
@@ -1146,6 +1147,11 @@ eos_rbinor_rip
 eos_rbinor_static
 :
   STATIC NEWLINE
+;
+
+eos_rbino_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 // Defining a peer group
