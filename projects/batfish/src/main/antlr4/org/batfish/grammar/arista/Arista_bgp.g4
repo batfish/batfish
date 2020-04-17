@@ -1089,11 +1089,18 @@ eos_rbino_bgp
 :
   BGP
   (
-    eos_rbino_bgp_bestpath
+    eos_rbino_bgp_allowas_in
+    | eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_cluster_id
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
     | eos_rbino_bgp_missing_policy
   )
+;
+
+eos_rbino_bgp_allowas_in
+:
+  ALLOWAS_IN NEWLINE
 ;
 
 eos_rbino_bgp_bestpath
@@ -1120,6 +1127,11 @@ eos_rbino_bgp_bp_as_path
 eos_rbino_bgp_bpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbino_bgp_cluster_id
+:
+  CLUSTER_ID NEWLINE
 ;
 
 eos_rbino_bgp_confederation

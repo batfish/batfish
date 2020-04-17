@@ -31,8 +31,8 @@ router bgp 64900
    distance bgp 200 200 200
    graceful-restart restart-time 300
    graceful-restart stalepath-time 300
-   ! TODO no bgp allowas-in
-   ! TODO no bgp cluster-id
+   no bgp allowas-in
+   no bgp cluster-id
    ! TODO bgp client-to-client reflection
    ! TODO no graceful-restart
    graceful-restart-helper
