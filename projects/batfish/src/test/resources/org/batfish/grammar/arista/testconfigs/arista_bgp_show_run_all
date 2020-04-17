@@ -6,7 +6,8 @@ router bgp 64900
    bgp trace neighbor all
    bgp trace route-key all
    bgp asn notation asplain
-   ! TODO bgp labeled-unicast rib tunnel
+   bgp labeled-unicast rib ip
+   bgp labeled-unicast rib tunnel
    ! TODO no shutdown
    router-id 192.0.2.1
    ! TODO bgp convergence time 300

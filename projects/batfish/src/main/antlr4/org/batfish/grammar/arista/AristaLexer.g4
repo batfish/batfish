@@ -10875,6 +10875,11 @@ RFC1583COMPATIBILITY
    'rfc1583compatibility'
 ;
 
+RIB
+:
+   'rib'
+;
+
 RIB_HAS_ROUTE
 :
    'rib-has-route'

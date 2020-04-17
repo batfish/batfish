@@ -485,7 +485,16 @@ eos_rbafnonc_route_map
 // bgp commands that are only valid at the router level
 eos_rb_bgp
 :
-  BGP eos_rbb_trace
+  BGP
+  (
+    eos_rbb_labeled_unicast
+    | eos_rbb_trace
+  )
+;
+
+eos_rbb_labeled_unicast
+:
+  LABELED_UNICAST RIB (IP | TUNNEL) NEWLINE
 ;
 
 eos_rbb_trace
