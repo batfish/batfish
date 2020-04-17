@@ -41,7 +41,7 @@ router bgp 64900
    graceful-restart-helper
    bgp peer-mac-resolution-timeout 0
    bgp enforce-first-as
-   ! TODO no bgp route install-map
+   no bgp route install-map
    no ip access-group
    no ipv6 access-group
    no bgp transport listen-port
