@@ -1482,13 +1482,14 @@ public class WorkMgr extends AbstractCoordinator {
   @Nullable
   @Deprecated
   public Path getTestrigObject(String networkName, String testrigName, String objectName) {
-    Path testrigDir = getdirSnapshot(networkName, testrigName);
-    Path file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName));
+    Path testrigDir = getCanonicalPath(getdirSnapshot(networkName, testrigName));
+    Path file =
+        getCanonicalPath(testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName)));
     /*
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
      */
-    if (!getCanonicalPath(file).startsWith(getCanonicalPath(testrigDir))) {
+    if (!file.startsWith(testrigDir)) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
 
@@ -2246,11 +2247,11 @@ public class WorkMgr extends AbstractCoordinator {
   @Deprecated
   public void putObject(
       String networkName, String snapshotName, String objectName, InputStream fileStream) {
-    Path snapshotDir = getdirSnapshot(networkName, snapshotName);
-    Path file = snapshotDir.resolve(objectName);
+    Path snapshotDir = getCanonicalPath(getdirSnapshot(networkName, snapshotName));
+    Path file = getCanonicalPath(snapshotDir.resolve(objectName));
     // check if we got an object name outside of the testrig folder,
     // perhaps because of ".." in the name; disallow it
-    if (!getCanonicalPath(file).startsWith(getCanonicalPath(snapshotDir))) {
+    if (!file.startsWith(snapshotDir)) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
     Path parentFolder = file.getParent();
