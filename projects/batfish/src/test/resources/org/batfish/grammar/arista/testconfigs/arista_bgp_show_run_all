@@ -3,29 +3,36 @@
 hostname arista_bgp_show_run_all
 !
 router bgp 64900
-   ! TODO bgp trace neighbor all
-   ! TODO bgp trace route-key all
+   bgp trace neighbor all
+   bgp trace route-key all
    bgp asn notation asplain
-   ! TODO bgp labeled-unicast rib tunnel
-   ! TODO no shutdown
+   bgp labeled-unicast rib ip
+   bgp labeled-unicast rib tunnel
+   no shutdown
    router-id 192.0.2.1
-   ! TODO bgp convergence time 300
-   ! TODO bgp convergence slow-peer time 90
-   ! TODO no bgp confederation identifier
-   ! TODO no update wait-for-convergence
-   ! TODO no update wait-install
+   bgp convergence time 300
+   bgp convergence slow-peer time 90
+   no bgp confederation identifier
+   no update wait-for-convergence
+   no update wait-install
    bgp log-neighbor-changes
-   ! TODO bgp default ipv4-unicast
-   ! TODO no bgp default ipv4-unicast transport ipv6
-   ! TODO no bgp default ipv6-unicast
-   ! TODO no bgp missing-policy direction in action
-   ! TODO no bgp missing-policy direction out action
+   bgp default ipv4-unicast
+   bgp default ipv4-unicast transport ipv6
+   bgp default ipv6-unicast
+   no bgp default ipv4-unicast
+   no bgp default ipv4-unicast transport ipv6
+   no bgp default ipv6-unicast
+   bgp missing-policy direction in action deny
+   bgp missing-policy direction in action deny-in-out
+   bgp missing-policy direction out action permit
+   no bgp missing-policy direction in action
+   no bgp missing-policy direction out action
    timers bgp 60 180
    distance bgp 200 200 200
    graceful-restart restart-time 300
    graceful-restart stalepath-time 300
-   ! TODO no bgp allowas-in
-   ! TODO no bgp cluster-id
+   no bgp allowas-in
+   no bgp cluster-id
    ! TODO bgp client-to-client reflection
    ! TODO no graceful-restart
    graceful-restart-helper

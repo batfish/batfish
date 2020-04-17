@@ -53,6 +53,7 @@ eos_bgp_community
 eos_router_bgp_tail
 :
   eos_rb_address_family
+  | eos_rb_bgp
   | eos_rb_inner
   | eos_rb_monitoring
   | eos_rb_vlan
@@ -481,6 +482,40 @@ eos_rbafnonc_route_map
   ROUTE_MAP (IN | OUT) NEWLINE
 ;
 
+// bgp commands that are only valid at the router level
+eos_rb_bgp
+:
+  BGP
+  (
+    eos_rbb_labeled_unicast
+    | eos_rbb_trace
+  )
+;
+
+eos_rbb_labeled_unicast
+:
+  LABELED_UNICAST RIB (IP | TUNNEL) NEWLINE
+;
+
+eos_rbb_trace
+:
+  TRACE
+  (
+    eos_rbbt_neighbor
+    | eos_rbbt_route_key
+  )
+;
+
+eos_rbbt_neighbor
+:
+  NEIGHBOR ALL NEWLINE
+;
+
+eos_rbbt_route_key
+:
+  ROUTE_KEY ALL NEWLINE
+;
+
 eos_rb_inner
 :
   eos_rbi_aggregate_address
@@ -528,13 +563,13 @@ eos_rbi_bgp
     | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
     | eos_rbib_convergence
-//    | eos_rbib_default
+    | eos_rbib_default
     | eos_rbib_enforce_first_as
 //    | eos_rbib_host_routes
 //    | eos_rbib_labeled_unicast
     | eos_rbib_listen
     | eos_rbib_log_neighbor_changes
-//    | eos_rbib_missing_policy
+    | eos_rbib_missing_policy
 //    | eos_rbib_monitoring
     | eos_rbib_next_hop_unchanged
 //    | eos_rbib_redistribute_internal
@@ -602,6 +637,40 @@ eos_rbib_convergence
     | SLOW_PEER TIME time = DEC
   )
   NEWLINE
+;
+
+eos_rbib_default
+:
+  DEFAULT
+  (
+    eos_rbibd_ipv4_unicast
+    | eos_rbibd_ipv6_unicast
+  )
+;
+
+eos_rbibd_ipv4_unicast
+:
+   IPV4_UNICAST
+   (
+     eos_rbibd_ipv4u_enabled
+     | eos_rbibd_ipv4u_transport
+   )
+;
+
+// Nothing after ipv4-unicast means "enabled by default".
+eos_rbibd_ipv4u_enabled
+:
+  NEWLINE
+;
+
+eos_rbibd_ipv4u_transport
+:
+  TRANSPORT IPV6 NEWLINE
+;
+
+eos_rbibd_ipv6_unicast
+:
+  IPV6_UNICAST NEWLINE
 ;
 
 eos_rbib_enforce_first_as
@@ -678,6 +747,11 @@ eos_rbibl_range
 eos_rbib_log_neighbor_changes
 :
   LOG_NEIGHBOR_CHANGES NEWLINE
+;
+
+eos_rbib_missing_policy
+:
+  MISSING_POLICY DIRECTION (IN | OUT) ACTION (DENY | DENY_IN_OUT | PERMIT) NEWLINE
 ;
 
 eos_rbib_next_hop_unchanged
@@ -1006,6 +1080,8 @@ eos_rbi_no
     eos_rbino_bgp
     | eos_rbino_neighbor
     | eos_rbino_redistribute
+    | eos_rbino_shutdown
+    | eos_rbino_update
   )
 ;
 
@@ -1013,9 +1089,18 @@ eos_rbino_bgp
 :
   BGP
   (
-    eos_rbino_bgp_bestpath
+    eos_rbino_bgp_allowas_in
+    | eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_cluster_id
+    | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
+    | eos_rbino_bgp_missing_policy
   )
+;
+
+eos_rbino_bgp_allowas_in
+:
+  ALLOWAS_IN NEWLINE
 ;
 
 eos_rbino_bgp_bestpath
@@ -1044,15 +1129,58 @@ eos_rbino_bgp_bpa_multipath_relax
   MULTIPATH_RELAX NEWLINE
 ;
 
+eos_rbino_bgp_cluster_id
+:
+  CLUSTER_ID NEWLINE
+;
+
+eos_rbino_bgp_confederation
+:
+  CONFEDERATION eos_rbino_bc_identifier
+;
+
+eos_rbino_bc_identifier
+:
+  IDENTIFIER NEWLINE
+;
+
 eos_rbino_bgp_default
 :
   DEFAULT
-  eos_rbino_bgp_default_ipv4_unicast
+  (
+    eos_rbino_bgp_default_ipv4_unicast
+    | eos_rbino_bgp_default_ipv6_unicast
+  )
 ;
 
 eos_rbino_bgp_default_ipv4_unicast
 :
-  IPV4_UNICAST NEWLINE
+  IPV4_UNICAST
+  (
+    eos_rbino_bgp_default_ipv4u_enabled
+    | eos_rbino_bgp_default_ipv4u_transport
+  )
+;
+
+// Nothing after ipv4-unicast means not enabled by default.
+eos_rbino_bgp_default_ipv4u_enabled
+:
+  NEWLINE
+;
+
+eos_rbino_bgp_default_ipv4u_transport
+:
+  TRANSPORT IPV6 NEWLINE
+;
+
+eos_rbino_bgp_default_ipv6_unicast
+:
+  IPV6_UNICAST NEWLINE
+;
+
+eos_rbino_bgp_missing_policy
+:
+  MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
 ;
 
 eos_rbino_neighbor
@@ -1111,6 +1239,16 @@ eos_rbinor_rip
 eos_rbinor_static
 :
   STATIC NEWLINE
+;
+
+eos_rbino_shutdown
+:
+  SHUTDOWN NEWLINE
+;
+
+eos_rbino_update
+:
+  UPDATE (WAIT_FOR_CONVERGENCE | WAIT_INSTALL) NEWLINE
 ;
 
 // Defining a peer group
