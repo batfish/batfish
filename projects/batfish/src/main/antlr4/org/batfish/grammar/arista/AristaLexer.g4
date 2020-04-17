@@ -2997,6 +2997,11 @@ DENY
    'deny'
 ;
 
+DENY_IN_OUT
+:
+   'deny-in-out'
+;
+
 DENY_INTER_USER_TRAFFIC
 :
    'deny-inter-user-traffic'
@@ -3390,6 +3395,11 @@ DIRECTED_BROADCAST
 DIRECTED_REQUEST
 :
    'directed-request'
+;
+
+DIRECTION
+:
+   'direction'
 ;
 
 DISABLE
@@ -6372,6 +6382,11 @@ IPV6_ADDRESS_POOL
    'ipv6-address-pool'
 ;
 
+IPV6_UNICAST
+:
+   'ipv6-unicast'
+;
+
 IPV6IP
 :
   'ipv6ip'
@@ -7957,6 +7972,11 @@ MISMATCH
    'mismatch'
 ;
 
+MISSING_POLICY
+:
+   'missing-policy'
+;
+
 MLAG
 :
    'mlag'
@@ -8390,7 +8410,12 @@ NEGOTIATION
 
 NEIGHBOR
 :
-   'neighbor' -> pushMode ( M_NEIGHBOR )
+   'neighbor'
+   {
+     if (lastTokenType() != TRACE) {
+       pushMode ( M_NEIGHBOR );
+     }
+   }
 ;
 
 NEIGHBOR_DOWN
@@ -10870,6 +10895,11 @@ RFC1583COMPATIBILITY
    'rfc1583compatibility'
 ;
 
+RIB
+:
+   'rib'
+;
+
 RIB_HAS_ROUTE
 :
    'rib-has-route'
@@ -10973,6 +11003,11 @@ ROUTE
 ROUTE_CACHE
 :
    'route-cache'
+;
+
+ROUTE_KEY
+:
+   'route-key'
 ;
 
 ROUTE_LOOKUP
