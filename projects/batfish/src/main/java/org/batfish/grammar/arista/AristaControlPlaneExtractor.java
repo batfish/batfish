@@ -502,7 +502,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bc_identifierContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
-import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4_unicastContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4u_enabledContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
@@ -2479,8 +2479,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitEos_rbino_bgp_default_ipv4_unicast(
-      Eos_rbino_bgp_default_ipv4_unicastContext ctx) {
+  public void exitEos_rbino_bgp_default_ipv4u_enabled(
+      Eos_rbino_bgp_default_ipv4u_enabledContext ctx) {
     _currentAristaBgpVrf.setDefaultIpv4Unicast(false);
   }
 

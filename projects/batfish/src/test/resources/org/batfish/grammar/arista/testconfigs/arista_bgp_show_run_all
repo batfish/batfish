@@ -19,8 +19,9 @@ router bgp 64900
    bgp default ipv4-unicast
    bgp default ipv4-unicast transport ipv6
    bgp default ipv6-unicast
-   ! TODO no bgp default ipv4-unicast transport ipv6
-   ! TODO no bgp default ipv6-unicast
+   no bgp default ipv4-unicast
+   no bgp default ipv4-unicast transport ipv6
+   no bgp default ipv6-unicast
    ! TODO no bgp missing-policy direction in action
    ! TODO no bgp missing-policy direction out action
    timers bgp 60 180

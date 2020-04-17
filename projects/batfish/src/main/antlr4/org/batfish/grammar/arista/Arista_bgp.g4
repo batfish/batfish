@@ -1129,12 +1129,35 @@ eos_rbino_bc_identifier
 eos_rbino_bgp_default
 :
   DEFAULT
-  eos_rbino_bgp_default_ipv4_unicast
+  (
+    eos_rbino_bgp_default_ipv4_unicast
+    | eos_rbino_bgp_default_ipv6_unicast
+  )
 ;
 
 eos_rbino_bgp_default_ipv4_unicast
 :
-  IPV4_UNICAST NEWLINE
+  IPV4_UNICAST
+  (
+    eos_rbino_bgp_default_ipv4u_enabled
+    | eos_rbino_bgp_default_ipv4u_transport
+  )
+;
+
+// Nothing after ipv4-unicast means not enabled by default.
+eos_rbino_bgp_default_ipv4u_enabled
+:
+  NEWLINE
+;
+
+eos_rbino_bgp_default_ipv4u_transport
+:
+  TRANSPORT IPV6 NEWLINE
+;
+
+eos_rbino_bgp_default_ipv6_unicast
+:
+  IPV6_UNICAST NEWLINE
 ;
 
 eos_rbino_neighbor
