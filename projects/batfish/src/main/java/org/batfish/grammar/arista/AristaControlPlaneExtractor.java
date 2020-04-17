@@ -502,12 +502,14 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bc_identifierContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_advertise_inactiveContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_always_compare_medContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_client_to_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_cluster_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4u_enabledContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_router_idContext;
@@ -2485,6 +2487,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbino_bgp_advertise_inactive(Eos_rbino_bgp_advertise_inactiveContext ctx) {
+    _currentAristaBgpVrf.setAdvertiseInactive(false);
+  }
+
+  @Override
   public void exitEos_rbino_bgp_allowas_in(Eos_rbino_bgp_allowas_inContext ctx) {
     _currentAristaBgpVrf.setAllowAsIn(0);
   }
@@ -2518,6 +2525,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitEos_rbino_bgp_default_ipv4u_enabled(
       Eos_rbino_bgp_default_ipv4u_enabledContext ctx) {
     _currentAristaBgpVrf.setDefaultIpv4Unicast(false);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_next_hop_unchanged(Eos_rbino_bgp_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrf.setNextHopUnchanged(false);
   }
 
   @Override

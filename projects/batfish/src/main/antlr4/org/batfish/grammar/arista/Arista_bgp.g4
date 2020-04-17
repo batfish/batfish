@@ -1074,6 +1074,11 @@ eos_rbi_network6
   IPV6_PREFIX (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
+eos_rbi_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
 eos_rbi_no
 :
   NO
@@ -1097,7 +1102,8 @@ eos_rbino_bgp
 :
   BGP
   (
-    eos_rbino_bgp_allowas_in
+    eos_rbino_bgp_advertise_inactive
+    | eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_always_compare_med
     | eos_rbino_bgp_bestpath
     | eos_rbino_bgp_client_to_client
@@ -1105,9 +1111,15 @@ eos_rbino_bgp
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
     | eos_rbino_bgp_missing_policy
+    | eos_rbino_bgp_next_hop_unchanged
     | eos_rbino_bgp_route
     | eos_rbino_bgp_transport
   )
+;
+
+eos_rbino_bgp_advertise_inactive
+:
+  ADVERTISE_INACTIVE NEWLINE
 ;
 
 eos_rbino_bgp_allowas_in
@@ -1203,6 +1215,11 @@ eos_rbino_bgp_default_ipv6_unicast
 eos_rbino_bgp_missing_policy
 :
   MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
+;
+
+eos_rbino_bgp_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbino_bgp_route

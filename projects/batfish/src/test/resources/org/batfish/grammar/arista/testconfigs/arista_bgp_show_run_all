@@ -66,9 +66,10 @@ router bgp 64900
    ! TODO no bgp bestpath tie-break router-id
    ! TODO no bgp bestpath tie-break originator-id
    ! TODO no bgp bestpath tie-break cluster-list-length
-   ! TODO no bgp advertise-inactive
+   no bgp advertise-inactive
    ! TODO no bgp auto-local-addr
-   ! TODO no bgp next-hop-unchanged
+   bgp next-hop-unchanged
+   no bgp next-hop-unchanged
    ! TODO no bgp monitoring
    neighbor SOME_GROUP peer-group
    ! TODO no neighbor SOME_GROUP remote-as
