@@ -9508,6 +9508,11 @@ PEER_LINK
    'peer-link'
 ;
 
+PEER_MAC_RESOLUTION_TIMEOUT
+:
+   'peer-mac-resolution-timeout'
+;
+
 PEER_POLICY
 :
    'peer-policy'
