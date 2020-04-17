@@ -558,7 +558,7 @@ eos_rbi_bgp
     | eos_rbib_asn
 //    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
-//    | eos_rbib_client_to_client
+    | eos_rbib_client_to_client
     | eos_rbib_cluster_id
     | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
@@ -707,6 +707,11 @@ eos_rbibbp_tie_break
 eos_rbibbpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbib_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
 ;
 
 eos_rbib_cluster_id
@@ -1091,6 +1096,7 @@ eos_rbino_bgp
   (
     eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_client_to_client
     | eos_rbino_bgp_cluster_id
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
@@ -1127,6 +1133,11 @@ eos_rbino_bgp_bp_as_path
 eos_rbino_bgp_bpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbino_bgp_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
 ;
 
 eos_rbino_bgp_cluster_id

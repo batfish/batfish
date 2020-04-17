@@ -33,7 +33,8 @@ router bgp 64900
    graceful-restart stalepath-time 300
    no bgp allowas-in
    no bgp cluster-id
-   ! TODO bgp client-to-client reflection
+   no bgp client-to-client reflection
+   bgp client-to-client reflection
    ! TODO no graceful-restart
    graceful-restart-helper
    ! TODO bgp peer-mac-resolution-timeout 0

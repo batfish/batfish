@@ -504,6 +504,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_update_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bc_identifierContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_client_to_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_cluster_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4u_enabledContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
@@ -2488,6 +2489,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbino_bgp_bpa_multipath_relax(Eos_rbino_bgp_bpa_multipath_relaxContext ctx) {
     _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(false);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_client_to_client(Eos_rbino_bgp_client_to_clientContext ctx) {
+    todo(ctx);
   }
 
   @Override
