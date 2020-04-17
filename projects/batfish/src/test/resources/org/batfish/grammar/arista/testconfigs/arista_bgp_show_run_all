@@ -35,7 +35,8 @@ router bgp 64900
    no bgp cluster-id
    no bgp client-to-client reflection
    bgp client-to-client reflection
-   ! TODO no graceful-restart
+   no graceful-restart
+   no graceful-restart-helper
    graceful-restart-helper
    ! TODO bgp peer-mac-resolution-timeout 0
    bgp enforce-first-as

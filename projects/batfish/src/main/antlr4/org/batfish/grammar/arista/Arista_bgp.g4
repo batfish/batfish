@@ -1083,6 +1083,8 @@ eos_rbi_no
   NO
   (
     eos_rbino_bgp
+    | eos_rbino_graceful_restart
+    | eos_rbino_graceful_restart_helper
     | eos_rbino_neighbor
     | eos_rbino_redistribute
     | eos_rbino_shutdown
@@ -1192,6 +1194,16 @@ eos_rbino_bgp_default_ipv6_unicast
 eos_rbino_bgp_missing_policy
 :
   MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
+;
+
+eos_rbino_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbino_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
 ;
 
 eos_rbino_neighbor
