@@ -1634,8 +1634,8 @@ eos_rbino_redistribute
     eos_rbinor_aggregate
     | eos_rbinor_connected
     | eos_rbinor_isis
-    //| eos_rbinor_ospf
-    //| eos_rbinor_ospf3
+    | eos_rbinor_ospf
+    | eos_rbinor_ospf3
     | eos_rbinor_rip
     | eos_rbinor_static
   )
@@ -1654,6 +1654,44 @@ eos_rbinor_connected
 eos_rbinor_isis
 :
   ISIS NEWLINE
+;
+
+eos_rbinor_ospf
+:
+  OSPF
+  (
+    eos_rbinor_ospf_any
+    | eos_rbinor_ospf_match
+  )
+;
+
+eos_rbinor_ospf_any
+:
+  NEWLINE
+;
+
+eos_rbinor_ospf_match
+:
+  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+;
+
+eos_rbinor_ospf3
+:
+  OSPF3
+  (
+    eos_rbinor_ospf3_any
+    | eos_rbinor_ospf3_match
+  )
+;
+
+eos_rbinor_ospf3_any
+:
+  NEWLINE
+;
+
+eos_rbinor_ospf3_match
+:
+  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
 ;
 
 eos_rbinor_rip

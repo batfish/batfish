@@ -130,12 +130,12 @@ router bgp 64900
    bgp redistribute-internal
    redistribute connected route-map REDISTRIBUTE_CONNECTED
    no redistribute isis
-   ! TODO no redistribute ospf match internal
-   ! TODO no redistribute ospf match external
-   ! TODO no redistribute ospf match nssa-external
-   ! TODO no redistribute ospf3 match internal
-   ! TODO no redistribute ospf3 match external
-   ! TODO no redistribute ospf3 match nssa-external
+   no redistribute ospf match internal
+   no redistribute ospf match external
+   no redistribute ospf match nssa-external
+   no redistribute ospf3 match internal
+   no redistribute ospf3 match external
+   no redistribute ospf3 match nssa-external
    redistribute static route-map REDISTRIBUTE_STATIC
    no redistribute rip
    no redistribute aggregate

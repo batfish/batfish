@@ -533,6 +533,8 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_update_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_connectedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_isisContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_ospfContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinor_ospf_matchContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_ripContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinor_staticContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbir_attached_hostContext;
@@ -2684,6 +2686,29 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L1);
     _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L2);
     _currentAristaBgpVrf.removeRedistributionPolicy(AristaRedistributeType.ISIS_L1_L2);
+  }
+
+  @Override
+  public void exitEos_rbinor_ospf(Eos_rbinor_ospfContext ctx) {
+    _currentAristaBgpVrf.removeRedistributionPolicy(OSPF);
+    _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_EXTERNAL);
+    _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_NSSA_EXTERNAL);
+    _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_NSSA_EXTERNAL_TYPE_1);
+    _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_NSSA_EXTERNAL_TYPE_2);
+    _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_INTERNAL);
+  }
+
+  @Override
+  public void exitEos_rbinor_ospf_match(Eos_rbinor_ospf_matchContext ctx) {
+    if (ctx.EXTERNAL() != null) {
+      _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_EXTERNAL);
+    }
+    if (ctx.INTERNAL() != null) {
+      _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_INTERNAL);
+    }
+    if (ctx.NSSA_EXTERNAL() != null) {
+      _currentAristaBgpVrf.removeRedistributionPolicy(OSPF_NSSA_EXTERNAL);
+    }
   }
 
   @Override
