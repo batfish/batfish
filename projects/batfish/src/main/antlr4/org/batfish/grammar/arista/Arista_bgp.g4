@@ -1379,6 +1379,8 @@ eos_rbino_neighbor
     | eos_rbinon_enforce_first_as
     | eos_rbinon_export_localpref
     | eos_rbinon_fall_over
+    | eos_rbinon_graceful_restart
+    | eos_rbinon_graceful_restart_helper
     | eos_rbinon_import_localpref
     | eos_rbinon_link_bandwidth
     | eos_rbinon_local_v4_addr
@@ -1433,6 +1435,16 @@ eos_rbinon_export_localpref
 eos_rbinon_fall_over
 :
   FALL_OVER BFD NEWLINE
+;
+
+eos_rbinon_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbinon_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
 ;
 
 eos_rbinon_import_localpref

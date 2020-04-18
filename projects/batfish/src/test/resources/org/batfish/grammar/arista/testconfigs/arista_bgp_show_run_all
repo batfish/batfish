@@ -105,8 +105,9 @@ router bgp 64900
    no neighbor SOME_GROUP route-reflector-client
    neighbor SOME_GROUP timers 4 12
    neighbor SOME_GROUP route-map SOME_MAP in
-   ! TODO no neighbor SOME_GROUP graceful-restart
-   ! TODO neighbor SOME_GROUP graceful-restart-helper
+   no neighbor SOME_GROUP graceful-restart
+   no neighbor SOME_GROUP graceful-restart-helper
+   neighbor SOME_GROUP graceful-restart-helper
    ! TODO neighbor SOME_GROUP additional-paths receive
    ! TODO no neighbor SOME_GROUP additional-paths send any
    ! TODO neighbor SOME_GROUP route-to-peer
