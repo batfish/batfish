@@ -576,7 +576,6 @@ import org.batfish.grammar.arista.AristaParser.If_channel_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_forwardContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
@@ -3138,13 +3137,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String description = getDescription(ctx.description_line());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setDescription(description);
-    }
-  }
-
-  @Override
-  public void enterIf_ip_forward(If_ip_forwardContext ctx) {
-    if (ctx.NO() != null) {
-      todo(ctx);
     }
   }
 
