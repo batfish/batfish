@@ -52,7 +52,7 @@ router bgp 64900
    no bgp route-reflector preserve-attributes
    maximum-paths 32 ecmp 32
    bgp additional-paths receive
-   ! TODO no bgp additional-paths send any
+   no bgp additional-paths send any
    ucmp mode 1 128 5.0
    ucmp link-bandwidth update-delay 0
    no ucmp link-bandwidth encoding-weighted

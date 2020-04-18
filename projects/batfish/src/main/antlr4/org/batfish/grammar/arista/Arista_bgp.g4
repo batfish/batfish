@@ -1118,7 +1118,8 @@ eos_rbino_bgp
 :
   BGP
   (
-    eos_rbino_bgp_advertise_inactive
+    eos_rbino_bgp_additional_paths
+    | eos_rbino_bgp_advertise_inactive
     | eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_always_compare_med
     | eos_rbino_bgp_auto_local_addr
@@ -1134,6 +1135,11 @@ eos_rbino_bgp
     | eos_rbino_bgp_route_reflector
     | eos_rbino_bgp_transport
   )
+;
+
+eos_rbino_bgp_additional_paths
+:
+  ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
 ;
 
 eos_rbino_bgp_advertise_inactive
