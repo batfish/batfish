@@ -260,6 +260,14 @@ if_ip
     ifip_access_group_eos
     | ifip_address_eos
     | ifip_dhcp_eos
+    | if_ip_helper_address
+    | if_ip_igmp
+    | if_ip_inband_access_group
+    | if_ip_nat_destination
+    | if_ip_nat_inside
+    | if_ip_nat_outside
+    | if_ip_nat_source
+    | if_ip_nbar
     | ifip_null_eos
     | ifip_pim_eos
   )
@@ -320,6 +328,58 @@ ifipdhcpr_information_eos
   INFORMATION OPTION CIRCUIT_ID id = word NEWLINE
 ;
 
+if_ip_helper_address
+:
+   HELPER_ADDRESS address = IP_ADDRESS NEWLINE
+;
+
+if_ip_inband_access_group
+:
+   INBAND ACCESS_GROUP name = variable_permissive NEWLINE
+;
+
+if_ip_igmp
+:
+   IGMP
+   (
+      NEWLINE
+      | ifigmp_access_group
+      | ifigmp_host_proxy
+      | ifigmp_null
+      | ifigmp_static_group
+   )
+;
+
+if_ip_nat_destination
+:
+   NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
+   NEWLINE
+;
+
+if_ip_nat_inside
+:
+   NAT INSIDE NEWLINE
+;
+
+if_ip_nat_outside
+:
+   NAT OUTSIDE NEWLINE
+;
+
+if_ip_nat_source
+:
+   NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
+   (
+     OVERLOAD
+     | POOL pool = variable
+   ) NEWLINE
+;
+
+if_ip_nbar
+:
+   NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
+;
+
 ifip_null_eos
 :
   (
@@ -350,58 +410,6 @@ ifipp_null_eos
 ifipp_neighbor_filter_eos
 :
    NEIGHBOR_FILTER acl = variable NEWLINE
-;
-
-if_ip_helper_address
-:
-   IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-if_ip_inband_access_group
-:
-   IP INBAND ACCESS_GROUP name = variable_permissive NEWLINE
-;
-
-if_ip_igmp
-:
-   IP IGMP
-   (
-      NEWLINE
-      | ifigmp_access_group
-      | ifigmp_host_proxy
-      | ifigmp_null
-      | ifigmp_static_group
-   )
-;
-
-if_ip_nat_destination
-:
-   IP NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
-   NEWLINE
-;
-
-if_ip_nat_inside
-:
-   IP NAT INSIDE NEWLINE
-;
-
-if_ip_nat_outside
-:
-   IP NAT OUTSIDE NEWLINE
-;
-
-if_ip_nat_source
-:
-   IP NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
-   (
-     OVERLOAD
-     | POOL pool = variable
-   ) NEWLINE
-;
-
-if_ip_nbar
-:
-   IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
 ;
 
 if_ip_ospf_area
@@ -1674,14 +1682,6 @@ if_inner
    | if_ip
    | if_ip_proxy_arp
    | if_ip_verify
-   | if_ip_helper_address
-   | if_ip_inband_access_group
-   | if_ip_igmp
-   | if_ip_nat_destination
-   | if_ip_nat_inside
-   | if_ip_nat_outside
-   | if_ip_nat_source
-   | if_ip_nbar
    | if_ip_ospf_area
    | if_ip_ospf_cost
    | if_ip_ospf_dead_interval
