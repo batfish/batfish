@@ -101,8 +101,8 @@ router bgp 64900
    neighbor SOME_GROUP allowas-in 1
    neighbor SOME_GROUP soft-reconfiguration inbound
    no neighbor SOME_GROUP ebgp-multihop
-   ! TODO no neighbor SOME_GROUP ttl maximum-hops
-   ! TODO no neighbor SOME_GROUP route-reflector-client
+   no neighbor SOME_GROUP ttl maximum-hops
+   no neighbor SOME_GROUP route-reflector-client
    neighbor SOME_GROUP timers 4 12
    neighbor SOME_GROUP route-map SOME_MAP in
    ! TODO no neighbor SOME_GROUP graceful-restart
