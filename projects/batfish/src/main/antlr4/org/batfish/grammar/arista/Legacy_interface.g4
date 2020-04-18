@@ -257,10 +257,7 @@ if_ip_access_group
 :
    (
       (
-         (
-            IP
-            | IPV4
-         ) PORT? ACCESS_GROUP
+         IP PORT? ACCESS_GROUP
       )
       |
       (
@@ -281,7 +278,7 @@ if_ip_access_group
 
 if_ip_address
 :
-   (IP | IPV4) ADDRESS
+   IP ADDRESS
    VIRTUAL?
    (
       ip = IP_ADDRESS subnet = IP_ADDRESS
@@ -300,10 +297,7 @@ if_ip_address_dhcp
 
 if_ip_address_secondary
 :
-   (
-      IP
-      | IPV4
-   ) ADDRESS
+   IP ADDRESS
    (
       (
          ip = IP_ADDRESS subnet = IP_ADDRESS
