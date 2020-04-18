@@ -1373,8 +1373,10 @@ eos_rbino_neighbor
   NEIGHBOR nid = eos_neighbor_id
   (
     eos_rbinon_description
+    | eos_rbinon_dont_capability_negotiate
     | eos_rbinon_enforce_first_as
     | eos_rbinon_export_localpref
+    | eos_rbinon_fall_over
     | eos_rbinon_import_localpref
     | eos_rbinon_link_bandwidth
     | eos_rbinon_local_as
@@ -1396,6 +1398,11 @@ eos_rbinon_description
   DESCRIPTION NEWLINE
 ;
 
+eos_rbinon_dont_capability_negotiate
+:
+  DONT_CAPABILITY_NEGOTIATE NEWLINE
+;
+
 eos_rbinon_enforce_first_as
 :
   ENFORCE_FIRST_AS NEWLINE
@@ -1404,6 +1411,11 @@ eos_rbinon_enforce_first_as
 eos_rbinon_export_localpref
 :
   EXPORT_LOCALPREF NEWLINE
+;
+
+eos_rbinon_fall_over
+:
+  FALL_OVER BFD NEWLINE
 ;
 
 eos_rbinon_import_localpref

@@ -90,8 +90,8 @@ router bgp 64900
    no neighbor SOME_GROUP transport connection-mode passive
    no neighbor SOME_GROUP transport remote-port
    no neighbor SOME_GROUP update-source
-   ! TODO no neighbor SOME_GROUP dont-capability-negotiate
-   ! TODO no neighbor SOME_GROUP fall-over bfd
+   no neighbor SOME_GROUP dont-capability-negotiate
+   no neighbor SOME_GROUP fall-over bfd
    ! TODO no neighbor SOME_GROUP local-v4-addr
    ! TODO no neighbor SOME_GROUP local-v6-addr
    ! TODO no neighbor SOME_GROUP auto-local-addr
