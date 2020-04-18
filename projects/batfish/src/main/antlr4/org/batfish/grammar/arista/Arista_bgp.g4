@@ -655,7 +655,7 @@ eos_rbib_bestpath
   BESTPATH
   (
     eos_rbibbp_as_path
-    // eos_rbibbp_ecmp_fast
+    | eos_rbibbp_ecmp_fast
     // eos_rbibbp_med
     // eos_rbibbp_skip
     | eos_rbibbp_tie_break
@@ -669,6 +669,11 @@ eos_rbibbp_as_path
     // eos_rbibbpa_ignore |
     eos_rbibbpa_multipath_relax
   )
+;
+
+eos_rbibbp_ecmp_fast
+:
+  ECMP_FAST NEWLINE
 ;
 
 eos_rbibbp_tie_break
@@ -1167,10 +1172,10 @@ eos_rbino_bgp_bestpath
   BESTPATH
   (
     eos_rbino_bgp_bp_as_path
-    // eos_rbino_bgp_bp_ecmp_fast
+    | eos_rbino_bgp_bp_ecmp_fast
     | eos_rbino_bgp_bp_med
     // eos_rbino_bgp_bp_skip
-    // eos_rbino_bgp_bp_tie_break
+    | eos_rbino_bgp_bp_tie_break
   )
 ;
 
@@ -1178,14 +1183,24 @@ eos_rbino_bgp_bp_as_path
 :
   AS_PATH
   (
-    // eos_rbino_bgp_bpa_ignore |
-    eos_rbino_bgp_bpa_multipath_relax
+    eos_rbino_bgp_bpa_ignore
+    | eos_rbino_bgp_bpa_multipath_relax
   )
+;
+
+eos_rbino_bgp_bpa_ignore
+:
+  IGNORE NEWLINE
 ;
 
 eos_rbino_bgp_bpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbino_bgp_bp_ecmp_fast
+:
+  ECMP_FAST NEWLINE
 ;
 
 eos_rbino_bgp_bp_med
@@ -1205,6 +1220,37 @@ eos_rbino_bgp_bpm_confed
 eos_rbino_bgp_bpm_missing_as_worst
 :
   MISSING_AS_WORST NEWLINE
+;
+
+eos_rbino_bgp_bp_tie_break
+:
+  TIE_BREAK
+  (
+    eos_rbino_bgp_bpt_age
+    | eos_rbino_bgp_bpt_cluster_list_length
+    | eos_rbino_bgp_bpt_originator_id
+    | eos_rbino_bgp_bpt_router_id
+  )
+;
+
+eos_rbino_bgp_bpt_age
+:
+  AGE NEWLINE
+;
+
+eos_rbino_bgp_bpt_cluster_list_length
+:
+  CLUSTER_LIST_LENGTH NEWLINE
+;
+
+eos_rbino_bgp_bpt_originator_id
+:
+  ORIGINATOR_ID NEWLINE
+;
+
+eos_rbino_bgp_bpt_router_id
+:
+  ROUTER_ID NEWLINE
 ;
 
 eos_rbino_bgp_client_to_client

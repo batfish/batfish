@@ -59,13 +59,13 @@ router bgp 64900
    ucmp fec threshold trigger 50 clear 40 warning-only
    bgp listen limit 1000
    bgp bestpath as-path multipath-relax
-   ! TODO no bgp bestpath as-path ignore
+   no bgp bestpath as-path ignore
    ! TODO no bgp aspath-cmp-include-nexthop
-   ! TODO bgp bestpath ecmp-fast
-   ! TODO no bgp bestpath tie-break age
-   ! TODO no bgp bestpath tie-break router-id
-   ! TODO no bgp bestpath tie-break originator-id
-   ! TODO no bgp bestpath tie-break cluster-list-length
+   bgp bestpath ecmp-fast
+   no bgp bestpath tie-break age
+   no bgp bestpath tie-break router-id
+   no bgp bestpath tie-break originator-id
+   no bgp bestpath tie-break cluster-list-length
    no bgp advertise-inactive
    bgp auto-local-addr
    no bgp auto-local-addr

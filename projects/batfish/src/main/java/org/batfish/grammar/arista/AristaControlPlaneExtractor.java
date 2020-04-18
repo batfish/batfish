@@ -507,6 +507,8 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_advertise_inactiveC
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_always_compare_medContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpa_multipath_relaxContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpt_cluster_list_lengthContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_bpt_router_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_client_to_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_cluster_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_bgp_default_ipv4u_enabledContext;
@@ -2520,6 +2522,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbino_bgp_bpa_multipath_relax(Eos_rbino_bgp_bpa_multipath_relaxContext ctx) {
     _currentAristaBgpVrf.setBestpathAsPathMultipathRelax(false);
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_bpt_cluster_list_length(
+      Eos_rbino_bgp_bpt_cluster_list_lengthContext ctx) {
+    if (_currentAristaBgpVrf.getBestpathTieBreaker()
+        == AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH) {
+      _currentAristaBgpVrf.setBestpathTieBreaker(null);
+    }
+  }
+
+  @Override
+  public void exitEos_rbino_bgp_bpt_router_id(Eos_rbino_bgp_bpt_router_idContext ctx) {
+    if (_currentAristaBgpVrf.getBestpathTieBreaker() == AristaBgpBestpathTieBreaker.ROUTER_ID) {
+      _currentAristaBgpVrf.setBestpathTieBreaker(null);
+    }
   }
 
   @Override

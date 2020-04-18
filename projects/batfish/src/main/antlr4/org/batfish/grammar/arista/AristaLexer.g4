@@ -3867,6 +3867,11 @@ ECMP
    'ecmp'
 ;
 
+ECMP_FAST
+:
+   'ecmp-fast'
+;
+
 ECMP_GROUP
 :
    'ecmp-group'
@@ -15758,6 +15763,11 @@ M_AsPath_RP_VARIABLE
 :
    '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
    RP_VARIABLE ) , popMode
+;
+
+M_AsPath_IGNORE
+:
+   'ignore' -> type ( IGNORE ) , popMode
 ;
 
 M_AsPath_IN
