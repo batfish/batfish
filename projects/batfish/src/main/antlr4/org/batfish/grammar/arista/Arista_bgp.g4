@@ -1372,7 +1372,8 @@ eos_rbino_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbinon_auto_local_addr
+    eos_rbinon_additional_paths
+    | eos_rbinon_auto_local_addr
     | eos_rbinon_description
     | eos_rbinon_dont_capability_negotiate
     | eos_rbinon_ebgp_multihop
@@ -1400,6 +1401,11 @@ eos_rbino_neighbor
     | eos_rbinon_update_source
     | eos_rbinon_weight
   )
+;
+
+eos_rbinon_additional_paths
+:
+  ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
 ;
 
 eos_rbinon_auto_local_addr
