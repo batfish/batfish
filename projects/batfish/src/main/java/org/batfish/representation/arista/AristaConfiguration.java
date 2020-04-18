@@ -2649,9 +2649,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
         AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
 
-    // track
-    markConcreteStructure(AristaStructureType.TRACK, AristaStructureUsage.INTERFACE_STANDBY_TRACK);
-
     // VXLAN
     markConcreteStructure(AristaStructureType.VXLAN, AristaStructureUsage.VXLAN_SELF_REF);
 

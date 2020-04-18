@@ -259,6 +259,7 @@ if_ip
   (
     ifip_access_group_eos
     | ifip_address_eos
+    | ifip_dhcp_eos
   )
 ;
 
@@ -293,13 +294,28 @@ ifip_address_virtual_eos
   VIRTUAL addr = interface_address SECONDARY? NEWLINE
 ;
 
-if_ip_dhcp
+ifip_dhcp_eos
 :
-   NO? IP DHCP
-   (
-      ifdhcp_null
-      | ifdhcp_relay
-   )
+   DHCP ifipdhcp_relay_eos
+;
+
+ifipdhcp_relay_eos
+:
+  RELAY
+  (
+    ifipdhcpr_all_subnets_eos
+    | ifipdhcpr_information_eos
+  )
+;
+
+ifipdhcpr_all_subnets_eos
+:
+  ALL_SUBNETS NEWLINE
+;
+
+ifipdhcpr_information_eos
+:
+  INFORMATION OPTION CIRCUIT_ID id = word NEWLINE
 ;
 
 if_ip_flow_monitor
@@ -1518,42 +1534,6 @@ ifvrrpno_preempt
    PREEMPT NEWLINE
 ;
 
-ifdhcp_null
-:
-   (
-      SMART_RELAY
-      | SNOOPING
-   ) null_rest_of_line
-;
-
-ifdhcp_relay
-:
-   RELAY
-   (
-      ifdhcpr_address
-      | ifdhcpr_client
-      | ifdhcpr_null
-   )
-;
-
-ifdhcpr_address
-:
-   ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-ifdhcpr_client
-:
-   CLIENT NEWLINE
-;
-
-ifdhcpr_null
-:
-   (
-      INFORMATION
-      | SUBNET_BROADCAST
-   ) null_rest_of_line
-;
-
 ifigmp_access_group
 :
    ACCESS_GROUP name = variable NEWLINE
@@ -1763,7 +1743,6 @@ if_inner
    | if_ip
    | if_ip_proxy_arp
    | if_ip_verify
-   | if_ip_dhcp
    | if_ip_flow_monitor
    | if_ip_forward
    | if_ip_helper_address

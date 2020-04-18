@@ -159,8 +159,6 @@ public class Interface implements Serializable {
 
   private boolean _spanningTreePortfast;
 
-  private ConcreteInterfaceAddress _standbyAddress;
-
   private boolean _switchport;
 
   private boolean _switchportAccessDynamic;
@@ -394,10 +392,6 @@ public class Interface implements Serializable {
     return _speed;
   }
 
-  public ConcreteInterfaceAddress getStandbyAddress() {
-    return _standbyAddress;
-  }
-
   public Boolean getSwitchport() {
     return _switchport;
   }
@@ -564,10 +558,6 @@ public class Interface implements Serializable {
 
   public void setSpeed(@Nullable Double speed) {
     _speed = speed;
-  }
-
-  public void setStandbyAddress(ConcreteInterfaceAddress standbyAddress) {
-    _standbyAddress = standbyAddress;
   }
 
   public void setSwitchport(boolean switchport) {

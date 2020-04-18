@@ -42,7 +42,8 @@ tokens {
    TEXT,
    VALUE,
    WIRED,
-   WISPR
+   WISPR,
+   WORD
 } 
 
 // Cisco Keywords
@@ -627,6 +628,11 @@ ALL_ALARMS
 ALL_OF_ROUTER
 :
    'all-of-router'
+;
+
+ALL_SUBNETS
+:
+   'all-subnets'
 ;
 
 ALLOCATE
@@ -2034,6 +2040,11 @@ CIPC
 CIR
 :
    'cir'
+;
+
+CIRCUIT_ID
+:
+   'circuit-id' -> pushMode ( M_Word )
 ;
 
 CIRCUIT_TYPE
@@ -16812,6 +16823,23 @@ M_SshKey_NEWLINE
 ;
 
 M_SshKey_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Word;
+
+M_Word_WORD
+:
+   F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_Word_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Word_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;

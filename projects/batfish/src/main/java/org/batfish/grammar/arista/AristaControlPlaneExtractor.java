@@ -624,8 +624,6 @@ import org.batfish.grammar.arista.AristaParser.If_vlanContext;
 import org.batfish.grammar.arista.AristaParser.If_vrfContext;
 import org.batfish.grammar.arista.AristaParser.If_vrf_memberContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
-import org.batfish.grammar.arista.AristaParser.Ifdhcpr_addressContext;
-import org.batfish.grammar.arista.AristaParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
@@ -5211,21 +5209,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_vrrp(If_vrrpContext ctx) {
     _currentVrrpGroupNum = null;
-  }
-
-  @Override
-  public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      Ip address = toIp(ctx.address);
-      iface.getDhcpRelayAddresses().add(address);
-    }
-  }
-
-  @Override
-  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setDhcpRelayClient(true);
-    }
   }
 
   @Override
