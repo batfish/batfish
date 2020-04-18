@@ -260,6 +260,8 @@ if_ip
     ifip_access_group_eos
     | ifip_address_eos
     | ifip_dhcp_eos
+    | ifip_null_eos
+    | ifip_pim_eos
   )
 ;
 
@@ -316,6 +318,38 @@ ifipdhcpr_all_subnets_eos
 ifipdhcpr_information_eos
 :
   INFORMATION OPTION CIRCUIT_ID id = word NEWLINE
+;
+
+ifip_null_eos
+:
+  (
+    MFIB
+  ) null_rest_of_line
+;
+
+ifip_pim_eos
+:
+  PIM
+  (
+    ifipp_neighbor_filter_eos
+    | ifipp_null_eos
+  )
+;
+
+ifipp_null_eos
+:
+  (
+    DR_PRIORITY
+    | JOIN_PRUNE_COUNT
+    | JOIN_PRUNE_INTERVAL
+    | QUERY_COUNT
+    | QUERY_INTERVAL
+  ) null_rest_of_line
+;
+
+ifipp_neighbor_filter_eos
+:
+   NEIGHBOR_FILTER acl = variable NEWLINE
 ;
 
 if_ip_helper_address
@@ -417,11 +451,6 @@ if_ip_ospf_passive_interface
 if_ip_ospf_shutdown
 :
    NO? IP OSPF SHUTDOWN NEWLINE
-;
-
-if_ip_pim_neighbor_filter
-:
-   IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
 ;
 
 if_ip_policy
@@ -690,6 +719,7 @@ if_no_ip_eos
   IP
   (
     if_no_ip_address_eos
+    | if_no_ip_directed_broadcast_eos
     | if_no_ip_local_proxy_arp_eos
     | if_no_ip_null_eos
   )
@@ -698,6 +728,11 @@ if_no_ip_eos
 if_no_ip_address_eos
 :
   ADDRESS NEWLINE
+;
+
+if_no_ip_directed_broadcast_eos
+:
+  DIRECTED_BROADCAST NEWLINE
 ;
 
 if_no_ip_local_proxy_arp_eos
@@ -710,6 +745,10 @@ if_no_ip_null_eos
   (
     ATTACHED_HOSTS
     | IGMP
+    | MULTICAST
+    | PIM
+    | RIP
+    | VERIFY
   ) null_rest_of_line
 ;
 
@@ -848,99 +887,6 @@ if_null_block
       | HOLD_QUEUE
       | IGNORE
       | INGRESS
-      |
-      (
-         IP
-         (
-            ACCOUNTING
-            | ADDRESS
-            (
-               NEGOTIATED
-            )
-            | ARP
-            | BGP
-            | BROADCAST_ADDRESS
-            | CGMP
-            | CONTROL_APPS_USE_MGMT_PORT
-            | DVMRP
-            | DIRECTED_BROADCAST
-            | FLOW
-            | IP_ADDRESS
-            | IRDP
-            | LOAD_SHARING
-            | MASK_REPLY
-            | MFIB
-            | MROUTE_CACHE
-            | MTU
-            | MULTICAST
-            | MULTICAST_BOUNDARY
-            | NHRP
-            |
-            (
-               OSPF
-               (
-                  AUTHENTICATION
-                  | AUTHENTICATION_KEY
-                  | BFD
-                  | DEMAND_CIRCUIT
-                  | MESSAGE_DIGEST_KEY
-                  | MTU_IGNORE
-                  | PRIORITY
-                  | RETRANSMIT_INTERVAL
-                  | TRANSMIT_DELAY
-               )
-            )
-            |
-            (
-               PIM
-               (
-                  BIDIRECTIONAL
-                  | BORDER
-                  | BORDER_ROUTER
-                  | BSR_BORDER
-                  | DENSE_MODE
-                  | DR_PRIORITY
-                  | HELLO_INTERVAL
-                  | JOIN_PRUNE_COUNT
-                  | JOIN_PRUNE_INTERVAL
-                  | NEIGHBOR_FILTER
-                  | PASSIVE
-                  | QUERY_COUNT
-                  | QUERY_INTERVAL
-                  | SNOOPING
-                  | SPARSE_DENSE_MODE
-                  | SPARSE_MODE
-                  | SPARSE_MODE_SSM
-               )
-            )
-            | PIM_SPARSE
-            | PORT_UNREACHABLE
-            | REDIRECT
-            | REDIRECTS
-            | RIP
-            | ROUTE_CACHE
-            | RSVP
-            | SAP
-            | SDR
-            | UNNUMBERED
-            | UNREACHABLES
-            | VERIFY
-            | VIRTUAL_REASSEMBLY
-            | WCCP
-         )
-      )
-      |
-      (
-         IPV4
-         (
-            ICMP
-            | MTU
-            | POINT_TO_POINT
-            | UNNUMBERED
-            | UNREACHABLES
-            | VERIFY
-         )
-      )
       | IPV6
       | ISDN
       |
@@ -1139,7 +1085,6 @@ if_null_single
   (
     BCMC_OPTIMIZATION
     | DOT1X
-    | IP TRAFFIC_EXPORT
     | JUMBO
     | LINKDEBOUNCE
     | MAB
@@ -1745,7 +1690,6 @@ if_inner
    | if_ip_ospf_network
    | if_ip_ospf_passive_interface
    | if_ip_ospf_shutdown
-   | if_ip_pim_neighbor_filter
    | if_ip_policy
    | if_ip_router_isis
    | if_ip_router_ospf_area

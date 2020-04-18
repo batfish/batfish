@@ -590,7 +590,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_ospf_hello_intervalContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_ospf_passive_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_ospf_shutdownContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
@@ -629,6 +628,7 @@ import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_access_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipp_neighbor_filter_eosContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_modeContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_protectionContext;
@@ -4722,6 +4722,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIfipp_neighbor_filter_eos(Ifipp_neighbor_filter_eosContext ctx) {
+    String acl = ctx.acl.getText();
+    int line = ctx.acl.getStart().getLine();
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, INTERFACE_PIM_NEIGHBOR_FILTER, line);
+  }
+
+  @Override
   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip dhcpRelayAddress = toIp(ctx.address);
@@ -4858,13 +4865,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     for (Interface iface : _currentInterfaces) {
       iface.setOspfShutdown(ctx.NO() == null);
     }
-  }
-
-  @Override
-  public void exitIf_ip_pim_neighbor_filter(If_ip_pim_neighbor_filterContext ctx) {
-    String acl = ctx.acl.getText();
-    int line = ctx.acl.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, INTERFACE_PIM_NEIGHBOR_FILTER, line);
   }
 
   @Override
