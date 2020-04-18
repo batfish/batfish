@@ -1382,10 +1382,12 @@ eos_rbino_neighbor
     | eos_rbinon_next_hop_self
     | eos_rbinon_next_hop_unchanged
     | eos_rbinon_out_delay
-    | eos_rbinon_shutdown
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
+    | eos_rbinon_shutdown
+    | eos_rbinon_transport
     | eos_rbinon_update_source
+    | eos_rbinon_weight
   )
 ;
 
@@ -1454,9 +1456,33 @@ eos_rbinon_shutdown
   SHUTDOWN NEWLINE
 ;
 
+eos_rbinon_transport
+:
+  TRANSPORT
+  (
+    eos_rbinon_transport_connection_mode
+    | eos_rbinon_transport_remote_port
+  )
+;
+
+eos_rbinon_transport_connection_mode
+:
+  CONNECTION_MODE PASSIVE NEWLINE
+;
+
+eos_rbinon_transport_remote_port
+:
+  REMOTE_PORT NEWLINE
+;
+
 eos_rbinon_update_source
 :
   UPDATE_SOURCE NEWLINE
+;
+
+eos_rbinon_weight
+:
+  WEIGHT NEWLINE
 ;
 
 eos_rbino_redistribute

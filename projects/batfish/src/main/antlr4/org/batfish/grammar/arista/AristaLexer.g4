@@ -2376,6 +2376,11 @@ CONNECTION
    'connection'
 ;
 
+CONNECTION_MODE
+:
+   'connection-mode'
+;
+
 CONNECTION_REUSE
 :
    'connection-reuse'
