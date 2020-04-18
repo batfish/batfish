@@ -1386,6 +1386,7 @@ eos_rbino_neighbor
     | eos_rbinon_next_hop_peer
     | eos_rbinon_next_hop_self
     | eos_rbinon_next_hop_unchanged
+    | eos_rbinon_next_hop_v6_addr
     | eos_rbinon_out_delay
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
@@ -1474,6 +1475,11 @@ eos_rbinon_remote_as
 eos_rbinon_remove_private_as
 :
   REMOVE_PRIVATE_AS NEWLINE
+;
+
+eos_rbinon_next_hop_v6_addr
+:
+  NEXT_HOP_V6_ADDR NEWLINE
 ;
 
 eos_rbinon_out_delay

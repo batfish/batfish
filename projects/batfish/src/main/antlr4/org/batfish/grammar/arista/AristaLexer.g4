@@ -8653,6 +8653,11 @@ NEXT_HOP_UNCHANGED
    'next-hop-unchanged'
 ;
 
+NEXT_HOP_V6_ADDR
+:
+   'next-hop-v6-addr'
+;
+
 NEXT_SERVER
 :
    'next-server'

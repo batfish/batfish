@@ -96,7 +96,7 @@ router bgp 64900
    no neighbor SOME_GROUP local-v6-addr
    no neighbor SOME_GROUP auto-local-addr
    ! TODO default neighbor SOME_GROUP monitoring
-   ! TODO no neighbor SOME_GROUP next-hop-v6-addr
+   no neighbor SOME_GROUP next-hop-v6-addr
    no neighbor SOME_GROUP description
    neighbor SOME_GROUP allowas-in 1
    neighbor SOME_GROUP soft-reconfiguration inbound
