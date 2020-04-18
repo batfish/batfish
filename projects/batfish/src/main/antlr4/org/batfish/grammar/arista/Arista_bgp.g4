@@ -1127,6 +1127,7 @@ eos_rbino_bgp
     | eos_rbino_bgp_advertise_inactive
     | eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_always_compare_med
+    | eos_rbino_bgp_aspath_cmp_include_nexthop
     | eos_rbino_bgp_auto_local_addr
     | eos_rbino_bgp_bestpath
     | eos_rbino_bgp_client_to_client
@@ -1160,6 +1161,11 @@ eos_rbino_bgp_allowas_in
 eos_rbino_bgp_always_compare_med
 :
   ALWAYS_COMPARE_MED NEWLINE
+;
+
+eos_rbino_bgp_aspath_cmp_include_nexthop
+:
+  ASPATH_CMP_INCLUDE_NEXTHOP NEWLINE
 ;
 
 eos_rbino_bgp_auto_local_addr

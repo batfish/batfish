@@ -921,6 +921,11 @@ AS_PATH
    'as-path' -> pushMode ( M_AsPath )
 ;
 
+ASPATH_CMP_INCLUDE_NEXTHOP
+:
+   'aspath-cmp-include-nexthop'
+;
+
 AS_PATH_SET
 :
    'as-path-set'
