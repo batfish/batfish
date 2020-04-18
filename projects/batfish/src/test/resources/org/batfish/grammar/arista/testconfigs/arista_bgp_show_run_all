@@ -139,7 +139,7 @@ router bgp 64900
    redistribute static route-map REDISTRIBUTE_STATIC
    no redistribute rip
    no redistribute aggregate
-   ! TODO no monitoring port
+   no monitoring port
    !
    address-family evpn
       bgp additional-paths receive
