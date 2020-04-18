@@ -7847,6 +7847,11 @@ METRIC
    'metric'
 ;
 
+METRIC_OUT
+:
+   'metric-out'
+;
+
 METRIC_STYLE
 :
    'metric-style'

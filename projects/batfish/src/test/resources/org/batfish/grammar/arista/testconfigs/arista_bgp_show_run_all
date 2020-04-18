@@ -116,12 +116,12 @@ router bgp 64900
    ! TODO no neighbor SOME_GROUP password
    no neighbor SOME_GROUP default-originate
    no neighbor SOME_GROUP enforce-first-as
-   ! TODO no neighbor SOME_GROUP metric-out
-   ! TODO no neighbor SOME_GROUP idle-restart-timer
+   no neighbor SOME_GROUP metric-out
+   no neighbor SOME_GROUP idle-restart-timer
    neighbor SOME_GROUP send-community
    neighbor SOME_GROUP maximum-routes 12000
-   ! TODO no neighbor SOME_GROUP maximum-accepted-routes
-   ! TODO no neighbor SOME_GROUP link-bandwidth
+   no neighbor SOME_GROUP maximum-accepted-routes
+   no neighbor SOME_GROUP link-bandwidth
    neighbor 192.0.2.7 peer-group SOME_GROUP
    neighbor 192.0.2.7 remote-as 65000
    neighbor 192.0.2.7 update-source Ethernet1/1

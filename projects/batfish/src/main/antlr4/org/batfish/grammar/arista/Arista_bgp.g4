@@ -1388,11 +1388,14 @@ eos_rbino_neighbor
     | eos_rbinon_fall_over
     | eos_rbinon_graceful_restart
     | eos_rbinon_graceful_restart_helper
+    | eos_rbinon_idle_restart_timer
     | eos_rbinon_import_localpref
     | eos_rbinon_link_bandwidth
     | eos_rbinon_local_v4_addr
     | eos_rbinon_local_v6_addr
     | eos_rbinon_local_as
+    | eos_rbinon_maximum_accepted_routes
+    | eos_rbinon_metric_out
     | eos_rbinon_next_hop_peer
     | eos_rbinon_next_hop_self
     | eos_rbinon_next_hop_unchanged
@@ -1465,6 +1468,11 @@ eos_rbinon_graceful_restart_helper
   GRACEFUL_RESTART_HELPER NEWLINE
 ;
 
+eos_rbinon_idle_restart_timer
+:
+  IDLE_RESTART_TIMER NEWLINE
+;
+
 eos_rbinon_import_localpref
 :
   IMPORT_LOCALPREF NEWLINE
@@ -1472,7 +1480,7 @@ eos_rbinon_import_localpref
 
 eos_rbinon_link_bandwidth
 :
-  LINK_BANDWIDTH UPDATE_DELAY NEWLINE
+  LINK_BANDWIDTH UPDATE_DELAY? NEWLINE
 ;
 
 eos_rbinon_local_v4_addr
@@ -1488,6 +1496,16 @@ eos_rbinon_local_v6_addr
 eos_rbinon_local_as
 :
   LOCAL_AS NEWLINE
+;
+
+eos_rbinon_maximum_accepted_routes
+:
+  MAXIMUM_ACCEPTED_ROUTES NEWLINE
+;
+
+eos_rbinon_metric_out
+:
+  METRIC_OUT NEWLINE
 ;
 
 eos_rbinon_next_hop_peer
