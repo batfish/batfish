@@ -1372,13 +1372,16 @@ eos_rbino_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbinon_description
+    eos_rbinon_auto_local_addr
+    | eos_rbinon_description
     | eos_rbinon_dont_capability_negotiate
     | eos_rbinon_enforce_first_as
     | eos_rbinon_export_localpref
     | eos_rbinon_fall_over
     | eos_rbinon_import_localpref
     | eos_rbinon_link_bandwidth
+    | eos_rbinon_local_v4_addr
+    | eos_rbinon_local_v6_addr
     | eos_rbinon_local_as
     | eos_rbinon_next_hop_peer
     | eos_rbinon_next_hop_self
@@ -1391,6 +1394,11 @@ eos_rbino_neighbor
     | eos_rbinon_update_source
     | eos_rbinon_weight
   )
+;
+
+eos_rbinon_auto_local_addr
+:
+  AUTO_LOCAL_ADDR NEWLINE
 ;
 
 eos_rbinon_description
@@ -1426,6 +1434,16 @@ eos_rbinon_import_localpref
 eos_rbinon_link_bandwidth
 :
   LINK_BANDWIDTH UPDATE_DELAY NEWLINE
+;
+
+eos_rbinon_local_v4_addr
+:
+  LOCAL_V4_ADDR NEWLINE
+;
+
+eos_rbinon_local_v6_addr
+:
+  LOCAL_V6_ADDR NEWLINE
 ;
 
 eos_rbinon_local_as

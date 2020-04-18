@@ -7092,6 +7092,11 @@ LOCAL_PROXY_ARP
    'local-proxy-arp'
 ;
 
+LOCAL_V4_ADDR
+:
+   'local-v4-addr'
+;
+
 LOCAL_V6_ADDR
 :
    'local-v6-addr'

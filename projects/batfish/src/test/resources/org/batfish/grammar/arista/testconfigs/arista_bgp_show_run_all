@@ -92,9 +92,9 @@ router bgp 64900
    no neighbor SOME_GROUP update-source
    no neighbor SOME_GROUP dont-capability-negotiate
    no neighbor SOME_GROUP fall-over bfd
-   ! TODO no neighbor SOME_GROUP local-v4-addr
-   ! TODO no neighbor SOME_GROUP local-v6-addr
-   ! TODO no neighbor SOME_GROUP auto-local-addr
+   no neighbor SOME_GROUP local-v4-addr
+   no neighbor SOME_GROUP local-v6-addr
+   no neighbor SOME_GROUP auto-local-addr
    ! TODO default neighbor SOME_GROUP monitoring
    ! TODO no neighbor SOME_GROUP next-hop-v6-addr
    no neighbor SOME_GROUP description
