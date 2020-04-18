@@ -100,7 +100,7 @@ router bgp 64900
    no neighbor SOME_GROUP description
    neighbor SOME_GROUP allowas-in 1
    neighbor SOME_GROUP soft-reconfiguration inbound
-   ! TODO no neighbor SOME_GROUP ebgp-multihop
+   no neighbor SOME_GROUP ebgp-multihop
    ! TODO no neighbor SOME_GROUP ttl maximum-hops
    ! TODO no neighbor SOME_GROUP route-reflector-client
    neighbor SOME_GROUP timers 4 12

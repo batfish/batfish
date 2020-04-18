@@ -1375,6 +1375,7 @@ eos_rbino_neighbor
     eos_rbinon_auto_local_addr
     | eos_rbinon_description
     | eos_rbinon_dont_capability_negotiate
+    | eos_rbinon_ebgp_multihop
     | eos_rbinon_enforce_first_as
     | eos_rbinon_export_localpref
     | eos_rbinon_fall_over
@@ -1410,6 +1411,11 @@ eos_rbinon_description
 eos_rbinon_dont_capability_negotiate
 :
   DONT_CAPABILITY_NEGOTIATE NEWLINE
+;
+
+eos_rbinon_ebgp_multihop
+:
+  EBGP_MULTIHOP NEWLINE
 ;
 
 eos_rbinon_enforce_first_as
