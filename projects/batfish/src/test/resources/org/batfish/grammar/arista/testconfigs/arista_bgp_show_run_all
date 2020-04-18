@@ -127,7 +127,7 @@ router bgp 64900
    neighbor 192.0.2.7 update-source Ethernet1/1
    neighbor 192.0.2.7 local-v6-addr 2001:db8::
    neighbor 192.0.2.7 description some-desc
-   ! TODO bgp redistribute-internal
+   bgp redistribute-internal
    redistribute connected route-map REDISTRIBUTE_CONNECTED
    no redistribute isis
    ! TODO no redistribute ospf match internal

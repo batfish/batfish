@@ -539,7 +539,7 @@ eos_rbi_bgp
     | eos_rbib_monitoring
     | eos_rbib_next_hop_unchanged
     | eos_rbib_peer_mac_resolution_timeout
-//    | eos_rbib_redistribute_internal
+    | eos_rbib_redistribute_internal
 //    | eos_rbib_route
 //    | eos_rbib_route_reflector
     | eos_rbib_trace
@@ -755,6 +755,11 @@ eos_rbib_next_hop_unchanged
 eos_rbib_peer_mac_resolution_timeout
 :
   PEER_MAC_RESOLUTION_TIMEOUT DEC NEWLINE
+;
+
+eos_rbib_redistribute_internal
+:
+  REDISTRIBUTE_INTERNAL NEWLINE
 ;
 
 eos_rbib_trace
