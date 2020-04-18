@@ -1379,6 +1379,7 @@ eos_rbino_neighbor
   (
     eos_rbinon_additional_paths
     | eos_rbinon_auto_local_addr
+    | eos_rbinon_default_originate
     | eos_rbinon_description
     | eos_rbinon_dont_capability_negotiate
     | eos_rbinon_ebgp_multihop
@@ -1417,6 +1418,11 @@ eos_rbinon_additional_paths
 eos_rbinon_auto_local_addr
 :
   AUTO_LOCAL_ADDR NEWLINE
+;
+
+eos_rbinon_default_originate
+:
+  DEFAULT_ORIGINATE NEWLINE
 ;
 
 eos_rbinon_description

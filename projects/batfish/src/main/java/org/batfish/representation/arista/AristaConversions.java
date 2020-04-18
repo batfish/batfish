@@ -426,7 +426,9 @@ final class AristaConversions {
 
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();
-    if (v4Enabled && neighbor.getDefaultOriginate() != null) {
+    if (v4Enabled
+        && neighbor.getDefaultOriginate() != null
+        && neighbor.getDefaultOriginate().getEnabled()) {
       // TODO: fix the export pipeline in VI so that setting the attribute policy is sufficient.
       //   Similarly, "new MatchProtocol(RoutingProtocol.AGGREGATE)" below should go away
       //   https://github.com/batfish/batfish/issues/5375

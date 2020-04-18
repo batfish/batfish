@@ -517,6 +517,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_router_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_default_originateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_ebgp_multihopContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_enforce_first_asContext;
@@ -2335,7 +2336,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, routeMap, BGP_DEFAULT_ORIGINATE_ROUTE_MAP, ctx.getStart().getLine());
     }
-    AristaBgpDefaultOriginate defaultOriginate = new AristaBgpDefaultOriginate(always, routeMap);
+    AristaBgpDefaultOriginate defaultOriginate =
+        new AristaBgpDefaultOriginate(true, always, routeMap);
     _currentAristaBgpNeighbor.setDefaultOriginate(defaultOriginate);
   }
 
@@ -2598,6 +2600,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
     _currentAristaBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitEos_rbinon_default_originate(Eos_rbinon_default_originateContext ctx) {
+    _currentAristaBgpNeighbor.setDefaultOriginate(
+        new AristaBgpDefaultOriginate(false, false, null));
   }
 
   @Override

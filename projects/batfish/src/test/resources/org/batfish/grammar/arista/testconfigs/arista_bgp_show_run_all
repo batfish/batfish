@@ -114,8 +114,8 @@ router bgp 64900
    neighbor SOME_GROUP route-to-peer
    neighbor SOME_GROUP route-map SOME_MAP out
    ! TODO no neighbor SOME_GROUP password
-   ! TODO no neighbor SOME_GROUP default-originate
-   ! TODO no neighbor SOME_GROUP enforce-first-as
+   no neighbor SOME_GROUP default-originate
+   no neighbor SOME_GROUP enforce-first-as
    ! TODO no neighbor SOME_GROUP metric-out
    ! TODO no neighbor SOME_GROUP idle-restart-timer
    neighbor SOME_GROUP send-community
