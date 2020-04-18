@@ -57,7 +57,7 @@ router bgp 64900
    ucmp link-bandwidth update-delay 0
    no ucmp link-bandwidth encoding-weighted
    ucmp fec threshold trigger 50 clear 40 warning-only
-   ! TODO bgp listen limit 1000
+   bgp listen limit 1000
    bgp bestpath as-path multipath-relax
    ! TODO no bgp bestpath as-path ignore
    ! TODO no bgp aspath-cmp-include-nexthop
