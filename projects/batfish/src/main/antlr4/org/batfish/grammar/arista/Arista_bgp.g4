@@ -485,6 +485,7 @@ eos_rb_inner
 :
   eos_rbi_aggregate_address
   | eos_rbi_bgp
+  | eos_rbi_default
   | eos_rbi_default_metric
   | eos_rbi_distance
   | eos_rbi_graceful_restart
@@ -773,6 +774,23 @@ eos_rbibt_neighbor
 eos_rbibt_route_key
 :
   ROUTE_KEY ALL NEWLINE
+;
+
+eos_rbi_default
+:
+  DEFAULT
+  eos_rbid_neighbor
+;
+
+eos_rbid_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbidn_monitoring
+;
+
+eos_rbidn_monitoring
+:
+  MONITORING NEWLINE
 ;
 
 eos_rbi_default_metric
@@ -1401,6 +1419,7 @@ eos_rbino_neighbor
     | eos_rbinon_next_hop_unchanged
     | eos_rbinon_next_hop_v6_addr
     | eos_rbinon_out_delay
+    | eos_rbinon_password
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
     | eos_rbinon_route_reflector_client
@@ -1523,16 +1542,6 @@ eos_rbinon_next_hop_unchanged
   NEXT_HOP_UNCHANGED NEWLINE
 ;
 
-eos_rbinon_remote_as
-:
-  REMOTE_AS NEWLINE
-;
-
-eos_rbinon_remove_private_as
-:
-  REMOVE_PRIVATE_AS NEWLINE
-;
-
 eos_rbinon_next_hop_v6_addr
 :
   NEXT_HOP_V6_ADDR NEWLINE
@@ -1541,6 +1550,21 @@ eos_rbinon_next_hop_v6_addr
 eos_rbinon_out_delay
 :
   OUT_DELAY NEWLINE
+;
+
+eos_rbinon_password
+:
+  PASSWORD NEWLINE
+;
+
+eos_rbinon_remote_as
+:
+  REMOTE_AS NEWLINE
+;
+
+eos_rbinon_remove_private_as
+:
+  REMOVE_PRIVATE_AS NEWLINE
 ;
 
 eos_rbinon_route_reflector_client
