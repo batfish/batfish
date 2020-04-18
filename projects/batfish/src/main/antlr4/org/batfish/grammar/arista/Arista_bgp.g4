@@ -1161,7 +1161,7 @@ eos_rbino_bgp_bestpath
   (
     eos_rbino_bgp_bp_as_path
     // eos_rbino_bgp_bp_ecmp_fast
-    // eos_rbino_bgp_bp_med
+    | eos_rbino_bgp_bp_med
     // eos_rbino_bgp_bp_skip
     // eos_rbino_bgp_bp_tie_break
   )
@@ -1179,6 +1179,25 @@ eos_rbino_bgp_bp_as_path
 eos_rbino_bgp_bpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbino_bgp_bp_med
+:
+  MED
+  (
+    eos_rbino_bgp_bpm_confed
+    | eos_rbino_bgp_bpm_missing_as_worst
+  )
+;
+
+eos_rbino_bgp_bpm_confed
+:
+  CONFED NEWLINE
+;
+
+eos_rbino_bgp_bpm_missing_as_worst
+:
+  MISSING_AS_WORST NEWLINE
 ;
 
 eos_rbino_bgp_client_to_client

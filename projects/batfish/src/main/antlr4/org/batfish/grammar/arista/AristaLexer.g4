@@ -7962,6 +7962,11 @@ MISMATCH
    'mismatch'
 ;
 
+MISSING_AS_WORST
+:
+   'missing-as-worst'
+;
+
 MISSING_POLICY
 :
    'missing-policy'

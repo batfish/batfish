@@ -47,8 +47,8 @@ router bgp 64900
    no bgp transport listen-port
    no default-metric
    no bgp always-compare-med
-   ! TODO no bgp bestpath med missing-as-worst
-   ! TODO no bgp bestpath med confed
+   no bgp bestpath med missing-as-worst
+   no bgp bestpath med confed
    ! TODO no bgp route-reflector preserve-attributes
    maximum-paths 32 ecmp 32
    bgp additional-paths receive
