@@ -270,6 +270,7 @@ if_ip
     | if_ip_nbar
     | ifip_null_eos
     | ifip_pim_eos
+    | ifip_proxy_arp_eos
   )
 ;
 
@@ -412,6 +413,11 @@ ifipp_neighbor_filter_eos
    NEIGHBOR_FILTER acl = variable NEWLINE
 ;
 
+ifip_proxy_arp_eos
+:
+  PROXY_ARP NEWLINE
+;
+
 if_ip_ospf_area
 :
    IP OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
@@ -464,11 +470,6 @@ if_ip_ospf_shutdown
 if_ip_policy
 :
    IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
-;
-
-if_ip_proxy_arp
-:
-   (NO | DEFAULT)? IP PROXY_ARP NEWLINE
 ;
 
 if_ip_router_isis
@@ -730,6 +731,7 @@ if_no_ip_eos
     | if_no_ip_directed_broadcast_eos
     | if_no_ip_local_proxy_arp_eos
     | if_no_ip_null_eos
+    | if_no_ip_proxy_arp_eos
   )
 ;
 
@@ -758,6 +760,11 @@ if_no_ip_null_eos
     | RIP
     | VERIFY
   ) null_rest_of_line
+;
+
+if_no_ip_proxy_arp_eos
+:
+  PROXY_ARP NEWLINE
 ;
 
 if_no_link_debounce_eos
@@ -1680,7 +1687,6 @@ if_inner
    | if_evpn_eos
    | if_flow_sampler
    | if_ip
-   | if_ip_proxy_arp
    | if_ip_verify
    | if_ip_ospf_area
    | if_ip_ospf_cost

@@ -591,7 +591,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_ospf_passive_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_ospf_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_verifyContext;
@@ -603,6 +602,7 @@ import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
 import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
@@ -628,6 +628,7 @@ import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_access_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipp_neighbor_filter_eosContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_modeContext;
@@ -4729,6 +4730,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIfip_proxy_arp_eos(Ifip_proxy_arp_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setProxyArp(true));
+  }
+
+  @Override
   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip dhcpRelayAddress = toIp(ctx.address);
@@ -4879,14 +4885,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
-    boolean enabled = ctx.NO() == null;
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setProxyArp(enabled);
-    }
-  }
-
-  @Override
   public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
@@ -4988,6 +4986,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_no_channel_group_eos(If_no_channel_group_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setChannelGroup(null));
+  }
+
+  @Override
+  public void exitIf_no_ip_proxy_arp_eos(If_no_ip_proxy_arp_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setProxyArp(false));
   }
 
   @Override
