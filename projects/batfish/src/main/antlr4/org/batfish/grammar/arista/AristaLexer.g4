@@ -9920,14 +9920,7 @@ PREFIX_LENGTH
 
 PREFIX_LIST
 :
-   'prefix-list'
-   {
-     if (lastTokenType() == ADDRESS) {
-       pushMode(M_Words);
-     } else {
-       pushMode(M_Name);
-     }
-   }
+   'prefix-list' -> pushMode(M_PrefixList)
 ;
 
 PREFIX_SET
@@ -16612,6 +16605,33 @@ M_NEIGHBOR_VARIABLE
 ;
 
 M_NEIGHBOR_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PrefixList;
+
+M_PrefixList_IN
+:
+   'in' -> type ( IN )
+;
+
+M_PrefixList_OUT
+:
+   'out' -> type ( OUT )
+;
+
+M_PrefixList_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_PrefixList_VARIABLE
+:
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_PrefixList_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
