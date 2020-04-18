@@ -253,6 +253,12 @@ if_flow_sampler
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
 ;
 
+if_ip
+:
+  IP
+  ifip_address_eos
+;
+
 if_ip_access_group
 :
    (
@@ -276,34 +282,30 @@ if_ip_access_group
    )* NEWLINE
 ;
 
-if_ip_address
+ifip_address_eos
 :
-   IP ADDRESS
-   VIRTUAL?
-   (
-      ip = IP_ADDRESS subnet = IP_ADDRESS
-      | prefix = IP_PREFIX
-   )
-   (STANDBY standby_address = IP_ADDRESS)?
-   (ROUTE_PREFERENCE pref=DEC)?
-   (TAG tag=DEC)?
-   NEWLINE
+  ADDRESS
+  (
+    ifip_address_address_eos
+    | ifip_address_dhcp_eos
+    // | ifip_address_unnumbered_eos
+    | ifip_address_virtual_eos
+  )
 ;
 
-if_ip_address_dhcp
+ifip_address_address_eos
 :
-   IP ADDRESS DHCP NEWLINE
+  addr = interface_address SECONDARY? NEWLINE
 ;
 
-if_ip_address_secondary
+ifip_address_dhcp_eos
 :
-   IP ADDRESS
-   (
-      (
-         ip = IP_ADDRESS subnet = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-   ) SECONDARY DHCP_GIADDR? NEWLINE
+   DHCP NEWLINE
+;
+
+ifip_address_virtual_eos
+:
+  VIRTUAL addr = interface_address SECONDARY? NEWLINE
 ;
 
 if_ip_dhcp
@@ -1773,12 +1775,10 @@ if_inner
    | if_eos_mlag
    | if_evpn_eos
    | if_flow_sampler
+   | if_ip
    | if_ip_proxy_arp
    | if_ip_verify
    | if_ip_access_group
-   | if_ip_address
-   | if_ip_address_dhcp
-   | if_ip_address_secondary
    | if_ip_dhcp
    | if_ip_flow_monitor
    | if_ip_forward

@@ -577,8 +577,6 @@ import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_access_groupContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_addressContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_forwardContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
@@ -632,6 +630,8 @@ import org.batfish.grammar.arista.AristaParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_modeContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_protectionContext;
@@ -646,6 +646,7 @@ import org.batfish.grammar.arista.AristaParser.Ike_encryptionContext;
 import org.batfish.grammar.arista.AristaParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.arista.AristaParser.Inspect_protocolContext;
 import org.batfish.grammar.arista.AristaParser.Int_exprContext;
+import org.batfish.grammar.arista.AristaParser.Interface_addressContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_stanzaContext;
@@ -4715,48 +4716,23 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_address(If_ip_addressContext ctx) {
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
+  public void exitIfip_address_address_eos(Ifip_address_address_eosContext ctx) {
+    ConcreteInterfaceAddress addr = toAddress(ctx.addr);
+    if (ctx.SECONDARY() != null) {
+      _currentInterfaces.forEach(i -> i.getSecondaryAddresses().add(addr));
     } else {
-      Ip ip = toIp(ctx.ip);
-      Ip mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask);
-    }
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setAddress(address);
-    }
-    if (ctx.STANDBY() != null) {
-      Ip standbyIp = toIp(ctx.standby_address);
-      ConcreteInterfaceAddress standbyAddress =
-          ConcreteInterfaceAddress.create(standbyIp, address.getNetworkBits());
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setStandbyAddress(standbyAddress);
-      }
-    }
-    if (ctx.ROUTE_PREFERENCE() != null) {
-      warn(ctx, "Unsupported: route-preference declared in interface IP address");
-    }
-    if (ctx.TAG() != null) {
-      warn(ctx, "Unsupported: tag declared in interface IP address");
+      _currentInterfaces.forEach(i -> i.setAddress(addr));
     }
   }
 
   @Override
-  public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
-    Ip ip;
-    Ip mask;
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
+  public void exitIfip_address_virtual_eos(Ifip_address_virtual_eosContext ctx) {
+    // TODO: this should be handled differently, since virtual is present.
+    ConcreteInterfaceAddress addr = toAddress(ctx.addr);
+    if (ctx.SECONDARY() != null) {
+      _currentInterfaces.forEach(i -> i.getSecondaryAddresses().add(addr));
     } else {
-      ip = toIp(ctx.ip);
-      mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask.numSubnetBits());
-    }
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.getSecondaryAddresses().add(address);
+      _currentInterfaces.forEach(i -> i.setAddress(addr));
     }
   }
 
@@ -8519,6 +8495,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
     warn(ctx, convErrorMessage(returnType, ctx));
     return defaultReturnValue;
+  }
+
+  private static @Nonnull ConcreteInterfaceAddress toAddress(Interface_addressContext ctx) {
+    if (ctx.prefix != null) {
+      return ConcreteInterfaceAddress.parse(ctx.prefix.getText());
+    } else {
+      Ip ip = toIp(ctx.ip);
+      Ip mask = toIp(ctx.subnet);
+      return ConcreteInterfaceAddress.create(ip, mask);
+    }
   }
 
   @Nonnull
