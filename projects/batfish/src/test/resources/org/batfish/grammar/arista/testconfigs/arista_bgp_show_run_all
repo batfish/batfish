@@ -75,8 +75,8 @@ router bgp 64900
    no bgp monitoring
    neighbor SOME_GROUP peer-group
    no neighbor SOME_GROUP remote-as
-   ! TODO no neighbor SOME_GROUP import-localpref
-   ! TODO no neighbor SOME_GROUP export-localpref
+   no neighbor SOME_GROUP import-localpref
+   no neighbor SOME_GROUP export-localpref
    no neighbor SOME_GROUP next-hop-self
    neighbor SOME_GROUP next-hop-peer
    no neighbor SOME_GROUP next-hop-peer

@@ -6045,6 +6045,11 @@ IMPORT
    'import'
 ;
 
+IMPORT_LOCALPREF
+:
+   'import-localpref'
+;
+
 IN
 :
    'in'

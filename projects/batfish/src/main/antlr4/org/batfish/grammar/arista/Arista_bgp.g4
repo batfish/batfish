@@ -1374,6 +1374,8 @@ eos_rbino_neighbor
   (
     eos_rbinon_description
     | eos_rbinon_enforce_first_as
+    | eos_rbinon_export_localpref
+    | eos_rbinon_import_localpref
     | eos_rbinon_local_as
     | eos_rbinon_next_hop_peer
     | eos_rbinon_next_hop_self
@@ -1393,6 +1395,16 @@ eos_rbinon_description
 eos_rbinon_enforce_first_as
 :
   ENFORCE_FIRST_AS NEWLINE
+;
+
+eos_rbinon_export_localpref
+:
+  EXPORT_LOCALPREF NEWLINE
+;
+
+eos_rbinon_import_localpref
+:
+  IMPORT_LOCALPREF NEWLINE
 ;
 
 eos_rbinon_local_as
