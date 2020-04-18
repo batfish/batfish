@@ -110,7 +110,8 @@ router bgp 64900
    neighbor SOME_GROUP graceful-restart-helper
    neighbor SOME_GROUP additional-paths receive
    no neighbor SOME_GROUP additional-paths send any
-   ! TODO neighbor SOME_GROUP route-to-peer
+   no neighbor SOME_GROUP route-to-peer
+   neighbor SOME_GROUP route-to-peer
    neighbor SOME_GROUP route-map SOME_MAP out
    ! TODO no neighbor SOME_GROUP password
    ! TODO no neighbor SOME_GROUP default-originate

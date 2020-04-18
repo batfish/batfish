@@ -882,7 +882,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_remove_private_as
     | eos_rbafnc_route_map
     | eos_rbinc_route_reflector_client
-//    | eos_rbinc_route_to_peer
+    | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
     | eos_rbinc_shutdown
     | eos_rbinc_soft_reconfiguration
@@ -1026,6 +1026,11 @@ eos_rbinc_remove_private_as
 eos_rbinc_route_reflector_client
 :
   ROUTE_REFLECTOR_CLIENT NEWLINE
+;
+
+eos_rbinc_route_to_peer
+:
+  ROUTE_TO_PEER NEWLINE
 ;
 
 eos_rbinc_send_community
@@ -1395,6 +1400,7 @@ eos_rbino_neighbor
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
     | eos_rbinon_route_reflector_client
+    | eos_rbinon_route_to_peer
     | eos_rbinon_shutdown
     | eos_rbinon_ttl
     | eos_rbinon_transport
@@ -1516,6 +1522,11 @@ eos_rbinon_out_delay
 eos_rbinon_route_reflector_client
 :
   ROUTE_REFLECTOR_CLIENT NEWLINE
+;
+
+eos_rbinon_route_to_peer
+:
+  ROUTE_TO_PEER NEWLINE
 ;
 
 eos_rbinon_shutdown

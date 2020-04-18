@@ -11078,6 +11078,11 @@ ROUTE_TARGET
    'route-target'
 ;
 
+ROUTE_TO_PEER
+:
+   'route-to-peer'
+;
+
 ROUTE_TYPE
 :
    'route-type'
