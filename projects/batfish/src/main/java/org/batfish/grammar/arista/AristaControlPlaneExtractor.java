@@ -90,13 +90,13 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_B
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
@@ -576,7 +576,6 @@ import org.batfish.grammar.arista.AristaParser.If_channel_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_forwardContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
@@ -630,6 +629,7 @@ import org.batfish.grammar.arista.AristaParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_access_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_destinationContext;
@@ -4696,21 +4696,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
+  public void exitIfip_access_group_eos(Ifip_access_group_eosContext ctx) {
     String name = ctx.name.getText();
-    AristaStructureUsage usage = null;
-    if (ctx.IN() != null || ctx.INGRESS() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setIncomingFilter(name);
-        usage = INTERFACE_INCOMING_FILTER;
-      }
-    } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setOutgoingFilter(name);
-        usage = INTERFACE_OUTGOING_FILTER;
-      }
+    AristaStructureUsage usage;
+    if (ctx.IN() != null) {
+      usage = INTERFACE_IP_ACCESS_GROUP_IN;
+      _currentInterfaces.forEach(currentInterface -> currentInterface.setIncomingFilter(name));
     } else {
-      throw new BatfishException("bad direction");
+      assert ctx.OUT() != null;
+      usage = INTERFACE_IP_ACCESS_GROUP_OUT;
+      _currentInterfaces.forEach(currentInterface -> currentInterface.setOutgoingFilter(name));
     }
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, ctx.name.getStart().getLine());
   }

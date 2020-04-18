@@ -256,30 +256,15 @@ if_flow_sampler
 if_ip
 :
   IP
-  ifip_address_eos
+  (
+    ifip_access_group_eos
+    | ifip_address_eos
+  )
 ;
 
-if_ip_access_group
+ifip_access_group_eos
 :
-   (
-      (
-         IP PORT? ACCESS_GROUP
-      )
-      |
-      (
-         ACCESS_LIST NAME
-      )
-   ) name = variable
-   (
-      EGRESS
-      | IN
-      | INGRESS
-      | OUT
-   )
-   (
-      HARDWARE_COUNT
-      | OPTIMIZED
-   )* NEWLINE
+  ACCESS_GROUP name = variable (IN | OUT) NEWLINE
 ;
 
 ifip_address_eos
@@ -1778,7 +1763,6 @@ if_inner
    | if_ip
    | if_ip_proxy_arp
    | if_ip_verify
-   | if_ip_access_group
    | if_ip_dhcp
    | if_ip_flow_monitor
    | if_ip_forward
