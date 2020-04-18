@@ -9938,6 +9938,11 @@ PREPEND
    'prepend'
 ;
 
+PRESERVE_ATTRIBUTES
+:
+   'preserve-attributes'
+;
+
 PRF
 :
    'prf'
@@ -11016,6 +11021,11 @@ ROUTE_ONLY
 ROUTE_PREFERENCE
 :
    'route-preference'
+;
+
+ROUTE_REFLECTOR
+:
+   'route-reflector'
 ;
 
 ROUTE_REFLECTOR_CLIENT

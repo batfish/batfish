@@ -1131,6 +1131,7 @@ eos_rbino_bgp
     | eos_rbino_bgp_monitoring
     | eos_rbino_bgp_next_hop_unchanged
     | eos_rbino_bgp_route
+    | eos_rbino_bgp_route_reflector
     | eos_rbino_bgp_transport
   )
 ;
@@ -1272,6 +1273,11 @@ eos_rbino_bgp_next_hop_unchanged
 eos_rbino_bgp_route
 :
   ROUTE INSTALL_MAP NEWLINE
+;
+
+eos_rbino_bgp_route_reflector
+:
+  ROUTE_REFLECTOR PRESERVE_ATTRIBUTES NEWLINE
 ;
 
 eos_rbino_bgp_transport
