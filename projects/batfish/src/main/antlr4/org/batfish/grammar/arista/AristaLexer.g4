@@ -9183,6 +9183,11 @@ OUT
    'out'
 ;
 
+OUT_DELAY
+:
+   'out-delay'
+;
+
 OUT_OF_BAND
 :
    'out-of-band'

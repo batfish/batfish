@@ -83,7 +83,7 @@ router bgp 64900
    no neighbor SOME_GROUP next-hop-unchanged
    no neighbor SOME_GROUP shutdown
    no neighbor SOME_GROUP remove-private-as
-   ! TODO no neighbor SOME_GROUP out-delay
+   no neighbor SOME_GROUP out-delay
    ! TODO no neighbor SOME_GROUP link-bandwidth update-delay
    no neighbor SOME_GROUP local-as
    ! TODO no neighbor SOME_GROUP weight
