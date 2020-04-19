@@ -739,13 +739,38 @@ if_no_speed_eos
 if_no_switchport
 :
   SWITCHPORT
-  if_no_switchport_switchport
+  (
+    if_no_switchport_switchport
+    | if_no_switchport_null
+  )
 ;
 
 // "no switchport"
 if_no_switchport_switchport
 :
   NEWLINE
+;
+
+if_no_switchport_null
+:
+  (
+    BACKUP
+    | BLOCK
+    | CAPTURE
+    | DOT1Q
+    | EMPTY
+    | MAC
+    | MODE
+    | MONITOR
+    | NONEGOTIATE
+    | PORT_SECURITY
+    | PRIORITY
+    | TAP
+    | TOOL
+    | TRUNK
+    | VOICE
+    | VLAN
+  ) null_rest_of_line
 ;
 
 if_no_traffic_loopback_eos
@@ -947,30 +972,6 @@ if_null_block
       | STATION_ROLE
       | STBC
       | STORM_CONTROL
-      |
-      (
-         SWITCHPORT
-         (
-            BACKUP
-            | BLOCK
-            | DOT1Q
-            | EMPTY
-            | MAC ADDRESS LEARNING
-            | MODE PRIVATE_VLAN
-            | MONITOR
-            | NONEGOTIATE
-            | PORT_SECURITY
-            | PRIORITY
-            | TAP
-            | TOOL
-            |
-            (
-               TRUNK PRUNING
-            )
-            | VOICE
-            | VLAN
-         )
-      )
       | TAG_SWITCHING
       | TAGGED
       | TAP
@@ -1032,7 +1033,6 @@ if_null_single
     (
       SPEED NONEGOTIATE
     )
-    | SWITCHPORT CAPTURE
     | SUPPRESS_ARP
     | TRIMODE
     | TRUSTED
@@ -1202,8 +1202,20 @@ if_shutdown_eos
 
 if_switchport
 :
-   SWITCHPORT
-   if_switchport_switchport
+  SWITCHPORT
+  (
+    if_switchport_switchport
+    | if_switchport_access
+    | if_switchport_mode
+    | if_switchport_null
+    | if_switchport_private_vlan_association
+    | if_switchport_private_vlan_host_association
+    | if_switchport_private_vlan_mapping
+    | if_switchport_trunk_allowed
+    | if_switchport_trunk_encapsulation
+    | if_switchport_trunk_group_eos
+    | if_switchport_trunk_native
+  )
 ;
 
 // "switchport"
@@ -1214,7 +1226,7 @@ if_switchport_switchport
 
 if_switchport_access
 :
-   SWITCHPORT ACCESS VLAN
+   ACCESS VLAN
    (
       vlan = DEC
       | DYNAMIC
@@ -1223,7 +1235,7 @@ if_switchport_access
 
 if_switchport_mode
 :
-   SWITCHPORT MODE
+   MODE
    (
       ACCESS
       | DOT1Q_TUNNEL
@@ -1237,10 +1249,31 @@ if_switchport_mode
       )
       | FEX_FABRIC
       | if_switchport_mode_monitor
+      | PRIVATE_VLAN
       | TAP
       | TOOL
       | TRUNK
    ) NEWLINE
+;
+
+if_switchport_null
+:
+  (
+    BACKUP
+    | BLOCK
+    | CAPTURE
+    | DOT1Q
+    | EMPTY
+    | MAC
+    | MONITOR
+    | NONEGOTIATE
+    | PORT_SECURITY
+    | PRIORITY
+    | TAP
+    | TOOL
+    | VOICE
+    | VLAN
+  ) null_rest_of_line
 ;
 
 if_switchport_mode_monitor
@@ -1250,25 +1283,25 @@ if_switchport_mode_monitor
 
 if_switchport_private_vlan_association
 :
-   SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
+   PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
    secondary_vlan_id = DEC NEWLINE
 ;
 
 if_switchport_private_vlan_host_association
 :
-   SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
+   PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
    secondary_vlan_id = DEC NEWLINE
 ;
 
 if_switchport_private_vlan_mapping
 :
-   SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
-   secondary_vlan_list = range NEWLINE
+  PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
+  secondary_vlan_list = range NEWLINE
 ;
 
 if_switchport_trunk_allowed
 :
-   SWITCHPORT TRUNK ALLOWED VLAN
+   TRUNK ALLOWED VLAN
    (
       NONE
       |
@@ -1280,17 +1313,17 @@ if_switchport_trunk_allowed
 
 if_switchport_trunk_encapsulation
 :
-   SWITCHPORT TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
+   TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
 ;
 
 if_switchport_trunk_group_eos
 :
-   SWITCHPORT TRUNK GROUP name = variable NEWLINE
+   TRUNK GROUP name = variable NEWLINE
 ;
 
 if_switchport_trunk_native
 :
-   SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
+   TRUNK NATIVE VLAN vlan = DEC NEWLINE
 ;
 
 if_tunnel
@@ -1589,15 +1622,6 @@ if_inner
    | if_spanning_tree
    | if_speed_eos
    | if_switchport
-   | if_switchport_access
-   | if_switchport_mode
-   | if_switchport_private_vlan_association
-   | if_switchport_private_vlan_host_association
-   | if_switchport_private_vlan_mapping
-   | if_switchport_trunk_allowed
-   | if_switchport_trunk_encapsulation
-   | if_switchport_trunk_group_eos
-   | if_switchport_trunk_native
    | if_tunnel
    | if_vlan
    | if_vrf
