@@ -385,12 +385,13 @@ ifip_ospf_eos
   OSPF
   (
     ifipo_area_eos
-    // | ifipo_authentication_eos
+    | ifipo_authentication_eos
     // | ifipo_authentication_key_eos
     | ifipo_cost_eos
     | ifipo_dead_interval_eos
+    | ifipo_hello_interval_eos
     // | ifipo_disabled_eos
-    // | ifipo_message_digest_key_eos
+    | ifipo_message_digest_key_eos
     | ifipo_network_eos
     // | ifipo_retransmit_interval_eos
     // | ifipo_transmit_delay
@@ -400,6 +401,31 @@ ifip_ospf_eos
 ifipo_area_eos
 :
    AREA area = ospf_area NEWLINE
+;
+
+ifipo_authentication_eos
+:
+  AUTHENTICATION
+  (
+    ifipo_authentication_enc_type
+    | ifipo_authentication_message_digest
+    | ifipo_authentication_password
+  )
+;
+
+ifipo_authentication_enc_type
+:
+  type = DEC password = variable NEWLINE
+;
+
+ifipo_authentication_message_digest
+:
+  MESSAGE_DIGEST NEWLINE
+;
+
+ifipo_authentication_password
+:
+  password = variable NEWLINE
 ;
 
 ifipo_cost_eos
@@ -415,6 +441,11 @@ ifipo_dead_interval_eos
 ifipo_hello_interval_eos
 :
    HELLO_INTERVAL seconds = DEC NEWLINE
+;
+
+ifipo_message_digest_key_eos
+:
+  MESSAGE_DIGEST_KEY key = null_rest_of_line
 ;
 
 ifipo_network_eos
@@ -439,6 +470,7 @@ ifipp_null_eos
     | JOIN_PRUNE_INTERVAL
     | QUERY_COUNT
     | QUERY_INTERVAL
+    | SPARSE_MODE
   ) null_rest_of_line
 ;
 
@@ -503,6 +535,7 @@ if_ipv6_null
   (
     ADDRESS
     | ND
+    | OSPF
   ) null_rest_of_line
 ;
 
