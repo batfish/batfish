@@ -591,7 +591,6 @@ import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
-import org.batfish.grammar.arista.AristaParser.If_speed_iosContext;
 import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
@@ -4907,13 +4906,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       throw convError(Double.class, ctx);
     }
-  }
-
-  @Override
-  public void exitIf_speed_ios(If_speed_iosContext ctx) {
-    int mbits = toInteger(ctx.mbits);
-    double speed = mbits * 1E6D;
-    _currentInterfaces.forEach(i -> i.setSpeed(speed));
   }
 
   @Override
