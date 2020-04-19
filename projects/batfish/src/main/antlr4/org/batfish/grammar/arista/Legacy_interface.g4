@@ -273,6 +273,7 @@ if_ip
     | ifip_pim_eos
     | ifip_proxy_arp_eos
     | ifip_verify_eos
+    | if_ip_virtual_router
   )
 ;
 
@@ -488,7 +489,7 @@ ifip_verify_unicast_eos
 
 if_ip_virtual_router
 :
-   IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
+   VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_ipv6
@@ -1612,7 +1613,6 @@ if_inner
    | if_evpn_eos
    | if_flow_sampler
    | if_ip
-   | if_ip_virtual_router
    | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable
