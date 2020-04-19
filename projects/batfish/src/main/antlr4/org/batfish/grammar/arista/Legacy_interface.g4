@@ -600,6 +600,7 @@ if_no
     | if_no_shutdown_eos
     | if_no_spanning_tree
     | if_no_speed_eos
+    | if_no_switchport
     | if_no_traffic_loopback_eos
   )
 ;
@@ -733,6 +734,18 @@ if_no_st_portfast
 if_no_speed_eos
 :
   SPEED NEWLINE
+;
+
+if_no_switchport
+:
+  SWITCHPORT
+  if_no_switchport_switchport
+;
+
+// "no switchport"
+if_no_switchport_switchport
+:
+  NEWLINE
 ;
 
 if_no_traffic_loopback_eos
@@ -1189,7 +1202,14 @@ if_shutdown_eos
 
 if_switchport
 :
-   NO? SWITCHPORT NEWLINE
+   SWITCHPORT
+   if_switchport_switchport
+;
+
+// "switchport"
+if_switchport_switchport
+:
+  NEWLINE
 ;
 
 if_switchport_access

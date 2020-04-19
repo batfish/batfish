@@ -587,14 +587,15 @@ import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_st_portfastContext;
+import org.batfish.grammar.arista.AristaParser.If_no_switchport_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
-import org.batfish.grammar.arista.AristaParser.If_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_modeContext;
+import org.batfish.grammar.arista.AristaParser.If_switchport_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_encapsulationContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_group_eosContext;
@@ -4869,6 +4870,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIf_no_switchport_switchport(If_no_switchport_switchportContext ctx) {
+    _currentInterfaces.forEach(
+        i -> {
+          i.setSwitchport(false);
+          i.setSwitchportMode(SwitchportMode.NONE);
+        });
+  }
+
+  @Override
   public void exitIf_service_policy(If_service_policyContext ctx) {
     // TODO: do something with this.
     String mapname = ctx.policy_map.getText();
@@ -4915,23 +4925,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_switchport(If_switchportContext ctx) {
-    if (ctx.NO() != null) {
-      for (Interface iface : _currentInterfaces) {
-        iface.setSwitchportMode(SwitchportMode.NONE);
-        iface.setSwitchport(false);
-      }
-    } else {
-      for (Interface iface : _currentInterfaces) {
-        iface.setSwitchport(true);
-        // setting the switch port mode only if it is not already set
-        if (iface.getSwitchportMode() == null || iface.getSwitchportMode() == SwitchportMode.NONE) {
-          SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
-          iface.setSwitchportMode(
-              (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                  ? Interface.getUndeclaredDefaultSwitchportMode()
-                  : defaultSwitchportMode);
-        }
+  public void exitIf_switchport_switchport(If_switchport_switchportContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setSwitchport(true);
+      // setting the switch port mode only if it is not already set
+      if (iface.getSwitchportMode() == null || iface.getSwitchportMode() == SwitchportMode.NONE) {
+        SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
+        iface.setSwitchportMode(
+            (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
+                ? Interface.getUndeclaredDefaultSwitchportMode()
+                : defaultSwitchportMode);
       }
     }
   }
