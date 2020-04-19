@@ -99,7 +99,7 @@ if_autostate
 
 if_bandwidth
 :
-   NO? BANDWIDTH DEC KBPS? NEWLINE
+   BANDWIDTH DEC KBPS? NEWLINE
 ;
 
 if_bfd
@@ -246,11 +246,6 @@ if_default_gw
 if_description
 :
    description_line
-;
-
-if_flow_sampler
-:
-   NO? FLOW_SAMPLER variable EGRESS? NEWLINE
 ;
 
 if_ip
@@ -667,6 +662,7 @@ if_no
   NO
   (
     if_no_autostate
+    | if_no_bandwidth
     | if_no_bfd
     | if_no_channel_group_eos
     | if_no_description_eos
@@ -685,6 +681,11 @@ if_no
 if_no_autostate
 :
   AUTOSTATE NEWLINE
+;
+
+if_no_bandwidth
+:
+  BANDWIDTH NEWLINE
 ;
 
 if_no_bfd
@@ -1109,14 +1110,6 @@ if_phy
   PHY MEDIA null_rest_of_line
 ;
 
-if_port_security
-:
-   PORT SECURITY NEWLINE
-   (
-      if_port_security_null
-   )*
-;
-
 if_priority_flow_control
 :
   PRIORITY_FLOW_CONTROL
@@ -1267,18 +1260,6 @@ if_st_portfast
       | network = NETWORK
       | trunk = TRUNK
    )* NEWLINE
-;
-
-if_port_security_null
-:
-   NO?
-   (
-      AGE
-      | ENABLE
-      | MAXIMUM
-      | SECURE_MAC_ADDRESS
-      | VIOLATION
-   ) null_rest_of_line
 ;
 
 if_service_policy
@@ -1757,7 +1738,6 @@ if_inner
    | if_description
    | if_eos_mlag
    | if_evpn_eos
-   | if_flow_sampler
    | if_ip
    | if_ipv6
    | if_isis_circuit_type
@@ -1778,7 +1758,6 @@ if_inner
    | if_mtu
    | if_no
    | if_phy
-   | if_port_security
    | if_priority_flow_control
    | if_private_vlan
    | if_qos

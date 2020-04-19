@@ -582,6 +582,7 @@ import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
 import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
+import org.batfish.grammar.arista.AristaParser.If_no_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_description_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
@@ -4622,12 +4623,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
-    Double newBandwidthBps;
-    if (ctx.NO() != null) {
-      newBandwidthBps = null;
-    } else {
-      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
-    }
+    double newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
@@ -4843,6 +4839,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_no_autostate(If_no_autostateContext ctx) {
     _currentInterfaces.forEach(currentInterface -> currentInterface.setAutoState(false));
+  }
+
+  @Override
+  public void exitIf_no_bandwidth(If_no_bandwidthContext ctx) {
+    _currentInterfaces.forEach(i -> i.setBandwidth(null));
   }
 
   @Override
