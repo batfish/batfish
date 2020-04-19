@@ -53,7 +53,6 @@ eos_bgp_community
 eos_router_bgp_tail
 :
   eos_rb_address_family
-  | eos_rb_bgp
   | eos_rb_inner
   | eos_rb_monitoring
   | eos_rb_vlan
@@ -79,7 +78,7 @@ eos_rb_af_ipv4
   (
     eos_rb_af_ipv4_unicast
 //  | eos_rb_af_ipv4_multicast
-//  | eos_rb_af_ipv4_labeled_multicast
+  | eos_rb_af_ipv4_labeled_unicast
 //  | eos_rb_af_ipv4_sr_te
   )
 ;
@@ -177,6 +176,63 @@ eos_rbafipv4u_network
     eos_rbi_network4
     | eos_rbi_network6
   )
+;
+
+eos_rb_af_ipv4_labeled_unicast
+:
+  LABELED_UNICAST NEWLINE
+  (
+    eos_rbafipv4labu_bgp
+    | eos_rbafipv4labu_default
+    | eos_rbafipv4labu_neighbor
+    | eos_rbafipv4labu_no
+  )*
+;
+
+eos_rbafipv4labu_bgp
+:
+  BGP
+  eos_rbafipv4labub_additional_paths
+;
+
+eos_rbafipv4labub_additional_paths
+:
+  ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbafipv4labu_default
+:
+  DEFAULT
+  eos_rbafipv4labud_neighbor
+;
+
+eos_rbafipv4labud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbafdnc_activate
+;
+
+eos_rbafipv4labu_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbafnc_additional_paths
+;
+
+eos_rbafipv4labu_no
+:
+  NO
+  eos_rbafipv4labuno_neighbor
+;
+
+eos_rbafipv4labuno_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbafipv4labunon_next_hop_self
+;
+
+eos_rbafipv4labunon_next_hop_self
+:
+  NEXT_HOP_SELF SOURCE_INTERFACE NEWLINE
 ;
 
 eos_rb_af_ipv6
@@ -482,44 +538,11 @@ eos_rbafnonc_route_map
   ROUTE_MAP (IN | OUT) NEWLINE
 ;
 
-// bgp commands that are only valid at the router level
-eos_rb_bgp
-:
-  BGP
-  (
-    eos_rbb_labeled_unicast
-    | eos_rbb_trace
-  )
-;
-
-eos_rbb_labeled_unicast
-:
-  LABELED_UNICAST RIB (IP | TUNNEL) NEWLINE
-;
-
-eos_rbb_trace
-:
-  TRACE
-  (
-    eos_rbbt_neighbor
-    | eos_rbbt_route_key
-  )
-;
-
-eos_rbbt_neighbor
-:
-  NEIGHBOR ALL NEWLINE
-;
-
-eos_rbbt_route_key
-:
-  ROUTE_KEY ALL NEWLINE
-;
-
 eos_rb_inner
 :
   eos_rbi_aggregate_address
   | eos_rbi_bgp
+  | eos_rbi_default
   | eos_rbi_default_metric
   | eos_rbi_distance
   | eos_rbi_graceful_restart
@@ -556,9 +579,9 @@ eos_rbi_bgp
     | eos_rbib_allowas_in
     | eos_rbib_always_compare_med
     | eos_rbib_asn
-//    | eos_rbib_auto_local_addr
+    | eos_rbib_auto_local_addr
     | eos_rbib_bestpath
-//    | eos_rbib_client_to_client
+    | eos_rbib_client_to_client
     | eos_rbib_cluster_id
     | eos_rbib_confederation
 //    | eos_rbib_control_plane_filter
@@ -566,15 +589,17 @@ eos_rbi_bgp
     | eos_rbib_default
     | eos_rbib_enforce_first_as
 //    | eos_rbib_host_routes
-//    | eos_rbib_labeled_unicast
+    | eos_rbib_labeled_unicast
     | eos_rbib_listen
     | eos_rbib_log_neighbor_changes
     | eos_rbib_missing_policy
-//    | eos_rbib_monitoring
+    | eos_rbib_monitoring
     | eos_rbib_next_hop_unchanged
-//    | eos_rbib_redistribute_internal
+    | eos_rbib_peer_mac_resolution_timeout
+    | eos_rbib_redistribute_internal
 //    | eos_rbib_route
 //    | eos_rbib_route_reflector
+    | eos_rbib_trace
 //    | eos_rbib_transport
   )
 ;
@@ -608,6 +633,11 @@ eos_rbib_always_compare_med
 eos_rbib_asn
 :
   ASN NOTATION (ASDOT | ASPLAIN) NEWLINE
+;
+
+eos_rbib_auto_local_addr
+:
+  AUTO_LOCAL_ADDR NEWLINE
 ;
 
 eos_rbib_confederation
@@ -683,7 +713,7 @@ eos_rbib_bestpath
   BESTPATH
   (
     eos_rbibbp_as_path
-    // eos_rbibbp_ecmp_fast
+    | eos_rbibbp_ecmp_fast
     // eos_rbibbp_med
     // eos_rbibbp_skip
     | eos_rbibbp_tie_break
@@ -699,6 +729,11 @@ eos_rbibbp_as_path
   )
 ;
 
+eos_rbibbp_ecmp_fast
+:
+  ECMP_FAST NEWLINE
+;
+
 eos_rbibbp_tie_break
 :
   TIE_BREAK (ROUTER_ID | CLUSTER_LIST_LENGTH) NEWLINE
@@ -709,9 +744,19 @@ eos_rbibbpa_multipath_relax
   MULTIPATH_RELAX NEWLINE
 ;
 
+eos_rbib_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
+;
+
 eos_rbib_cluster_id
 :
   CLUSTER_ID ip = IP_ADDRESS NEWLINE
+;
+
+eos_rbib_labeled_unicast
+:
+  LABELED_UNICAST RIB (IP | TUNNEL) NEWLINE
 ;
 
 eos_rbib_listen
@@ -754,9 +799,60 @@ eos_rbib_missing_policy
   MISSING_POLICY DIRECTION (IN | OUT) ACTION (DENY | DENY_IN_OUT | PERMIT) NEWLINE
 ;
 
+eos_rbib_monitoring
+:
+  MONITORING NEWLINE
+;
+
 eos_rbib_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbib_peer_mac_resolution_timeout
+:
+  PEER_MAC_RESOLUTION_TIMEOUT DEC NEWLINE
+;
+
+eos_rbib_redistribute_internal
+:
+  REDISTRIBUTE_INTERNAL NEWLINE
+;
+
+eos_rbib_trace
+:
+  TRACE
+  (
+    eos_rbibt_neighbor
+    | eos_rbibt_route_key
+  )
+;
+
+eos_rbibt_neighbor
+:
+  NEIGHBOR ALL NEWLINE
+;
+
+eos_rbibt_route_key
+:
+  ROUTE_KEY ALL NEWLINE
+;
+
+eos_rbi_default
+:
+  DEFAULT
+  eos_rbid_neighbor
+;
+
+eos_rbid_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbidn_monitoring
+;
+
+eos_rbidn_monitoring
+:
+  MONITORING NEWLINE
 ;
 
 eos_rbi_default_metric
@@ -831,6 +927,7 @@ eos_rbi_neighbor6
   )
 ;
 
+// Common to ipv4 ipv6 and peer-groups configured at the vrf level
 eos_rbi_neighbor_common
 :
   (
@@ -855,7 +952,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_maximum_routes
 //    | eos_rbinc_metric_out
 //    | eos_rbinc_monitoring
-//    | eos_rbinc_next_hop_peer
+    | eos_rbinc_next_hop_peer
     | eos_rbinc_next_hop_self
     | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
@@ -865,7 +962,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_remove_private_as
     | eos_rbafnc_route_map
     | eos_rbinc_route_reflector_client
-//    | eos_rbinc_route_to_peer
+    | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
     | eos_rbinc_shutdown
     | eos_rbinc_soft_reconfiguration
@@ -971,6 +1068,11 @@ eos_rbinc_maximum_routes
   NEWLINE
 ;
 
+eos_rbinc_next_hop_peer
+:
+  NEXT_HOP_PEER NEWLINE
+;
+
 eos_rbinc_next_hop_self
 :
   NEXT_HOP_SELF NEWLINE
@@ -1004,6 +1106,11 @@ eos_rbinc_remove_private_as
 eos_rbinc_route_reflector_client
 :
   ROUTE_REFLECTOR_CLIENT NEWLINE
+;
+
+eos_rbinc_route_to_peer
+:
+  ROUTE_TO_PEER NEWLINE
 ;
 
 eos_rbinc_send_community
@@ -1073,14 +1180,27 @@ eos_rbi_network6
   IPV6_PREFIX (ROUTE_MAP rm = variable)? NEWLINE
 ;
 
+eos_rbi_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
 eos_rbi_no
 :
   NO
   (
     eos_rbino_bgp
+    | eos_rbino_default_metric
+    | eos_rbino_graceful_restart
+    | eos_rbino_graceful_restart_helper
+    | eos_rbino_ip
+    | eos_rbino_ipv6
+    | eos_rbino_monitoring
     | eos_rbino_neighbor
     | eos_rbino_redistribute
+    | eos_rbino_router_id
     | eos_rbino_shutdown
+    | eos_rbino_ucmp
     | eos_rbino_update
   )
 ;
@@ -1089,13 +1209,34 @@ eos_rbino_bgp
 :
   BGP
   (
-    eos_rbino_bgp_allowas_in
+    eos_rbino_bgp_additional_paths
+    | eos_rbino_bgp_advertise_inactive
+    | eos_rbino_bgp_allowas_in
+    | eos_rbino_bgp_always_compare_med
+    | eos_rbino_bgp_aspath_cmp_include_nexthop
+    | eos_rbino_bgp_auto_local_addr
     | eos_rbino_bgp_bestpath
+    | eos_rbino_bgp_client_to_client
     | eos_rbino_bgp_cluster_id
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_default
     | eos_rbino_bgp_missing_policy
+    | eos_rbino_bgp_monitoring
+    | eos_rbino_bgp_next_hop_unchanged
+    | eos_rbino_bgp_route
+    | eos_rbino_bgp_route_reflector
+    | eos_rbino_bgp_transport
   )
+;
+
+eos_rbino_bgp_additional_paths
+:
+  ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbino_bgp_advertise_inactive
+:
+  ADVERTISE_INACTIVE NEWLINE
 ;
 
 eos_rbino_bgp_allowas_in
@@ -1103,15 +1244,30 @@ eos_rbino_bgp_allowas_in
   ALLOWAS_IN NEWLINE
 ;
 
+eos_rbino_bgp_always_compare_med
+:
+  ALWAYS_COMPARE_MED NEWLINE
+;
+
+eos_rbino_bgp_aspath_cmp_include_nexthop
+:
+  ASPATH_CMP_INCLUDE_NEXTHOP NEWLINE
+;
+
+eos_rbino_bgp_auto_local_addr
+:
+  AUTO_LOCAL_ADDR NEWLINE
+;
+
 eos_rbino_bgp_bestpath
 :
   BESTPATH
   (
     eos_rbino_bgp_bp_as_path
-    // eos_rbino_bgp_bp_ecmp_fast
-    // eos_rbino_bgp_bp_med
+    | eos_rbino_bgp_bp_ecmp_fast
+    | eos_rbino_bgp_bp_med
     // eos_rbino_bgp_bp_skip
-    // eos_rbino_bgp_bp_tie_break
+    | eos_rbino_bgp_bp_tie_break
   )
 ;
 
@@ -1119,14 +1275,79 @@ eos_rbino_bgp_bp_as_path
 :
   AS_PATH
   (
-    // eos_rbino_bgp_bpa_ignore |
-    eos_rbino_bgp_bpa_multipath_relax
+    eos_rbino_bgp_bpa_ignore
+    | eos_rbino_bgp_bpa_multipath_relax
   )
+;
+
+eos_rbino_bgp_bpa_ignore
+:
+  IGNORE NEWLINE
 ;
 
 eos_rbino_bgp_bpa_multipath_relax
 :
   MULTIPATH_RELAX NEWLINE
+;
+
+eos_rbino_bgp_bp_ecmp_fast
+:
+  ECMP_FAST NEWLINE
+;
+
+eos_rbino_bgp_bp_med
+:
+  MED
+  (
+    eos_rbino_bgp_bpm_confed
+    | eos_rbino_bgp_bpm_missing_as_worst
+  )
+;
+
+eos_rbino_bgp_bpm_confed
+:
+  CONFED NEWLINE
+;
+
+eos_rbino_bgp_bpm_missing_as_worst
+:
+  MISSING_AS_WORST NEWLINE
+;
+
+eos_rbino_bgp_bp_tie_break
+:
+  TIE_BREAK
+  (
+    eos_rbino_bgp_bpt_age
+    | eos_rbino_bgp_bpt_cluster_list_length
+    | eos_rbino_bgp_bpt_originator_id
+    | eos_rbino_bgp_bpt_router_id
+  )
+;
+
+eos_rbino_bgp_bpt_age
+:
+  AGE NEWLINE
+;
+
+eos_rbino_bgp_bpt_cluster_list_length
+:
+  CLUSTER_LIST_LENGTH NEWLINE
+;
+
+eos_rbino_bgp_bpt_originator_id
+:
+  ORIGINATOR_ID NEWLINE
+;
+
+eos_rbino_bgp_bpt_router_id
+:
+  ROUTER_ID NEWLINE
+;
+
+eos_rbino_bgp_client_to_client
+:
+  CLIENT_TO_CLIENT REFLECTION NEWLINE
 ;
 
 eos_rbino_bgp_cluster_id
@@ -1183,13 +1404,130 @@ eos_rbino_bgp_missing_policy
   MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
 ;
 
+eos_rbino_bgp_monitoring
+:
+  MONITORING NEWLINE
+;
+
+eos_rbino_bgp_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbino_bgp_route
+:
+  ROUTE INSTALL_MAP NEWLINE
+;
+
+eos_rbino_bgp_route_reflector
+:
+  ROUTE_REFLECTOR PRESERVE_ATTRIBUTES NEWLINE
+;
+
+eos_rbino_bgp_transport
+:
+  TRANSPORT LISTEN_PORT NEWLINE
+;
+
+eos_rbino_default_metric
+:
+  DEFAULT_METRIC NEWLINE
+;
+
+eos_rbino_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbino_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
+;
+
+eos_rbino_ip
+:
+  IP ACCESS_GROUP IN? NEWLINE
+;
+
+eos_rbino_ipv6
+:
+  IPV6 ACCESS_GROUP IN? NEWLINE
+;
+
+eos_rbino_monitoring
+:
+  MONITORING PORT NEWLINE
+;
+
 eos_rbino_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbinon_enforce_first_as
+    eos_rbinon_additional_paths
+    | eos_rbinon_auto_local_addr
+    | eos_rbinon_default_originate
+    | eos_rbinon_description
+    | eos_rbinon_dont_capability_negotiate
+    | eos_rbinon_ebgp_multihop
+    | eos_rbinon_enforce_first_as
+    | eos_rbinon_export_localpref
+    | eos_rbinon_fall_over
+    | eos_rbinon_graceful_restart
+    | eos_rbinon_graceful_restart_helper
+    | eos_rbinon_idle_restart_timer
+    | eos_rbinon_import_localpref
+    | eos_rbinon_link_bandwidth
+    | eos_rbinon_local_v4_addr
+    | eos_rbinon_local_v6_addr
+    | eos_rbinon_local_as
+    | eos_rbinon_maximum_accepted_routes
+    | eos_rbinon_metric_out
+    | eos_rbinon_next_hop_peer
+    | eos_rbinon_next_hop_self
+    | eos_rbinon_next_hop_unchanged
+    | eos_rbinon_next_hop_v6_addr
+    | eos_rbinon_out_delay
+    | eos_rbinon_password
+    | eos_rbinon_remote_as
+    | eos_rbinon_remove_private_as
+    | eos_rbinon_route_reflector_client
+    | eos_rbinon_route_to_peer
     | eos_rbinon_shutdown
+    | eos_rbinon_ttl
+    | eos_rbinon_transport
+    | eos_rbinon_update_source
+    | eos_rbinon_weight
   )
+;
+
+eos_rbinon_additional_paths
+:
+  ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbinon_auto_local_addr
+:
+  AUTO_LOCAL_ADDR NEWLINE
+;
+
+eos_rbinon_default_originate
+:
+  DEFAULT_ORIGINATE NEWLINE
+;
+
+eos_rbinon_description
+:
+  DESCRIPTION NEWLINE
+;
+
+eos_rbinon_dont_capability_negotiate
+:
+  DONT_CAPABILITY_NEGOTIATE NEWLINE
+;
+
+eos_rbinon_ebgp_multihop
+:
+  EBGP_MULTIHOP NEWLINE
 ;
 
 eos_rbinon_enforce_first_as
@@ -1197,9 +1535,153 @@ eos_rbinon_enforce_first_as
   ENFORCE_FIRST_AS NEWLINE
 ;
 
+eos_rbinon_export_localpref
+:
+  EXPORT_LOCALPREF NEWLINE
+;
+
+eos_rbinon_fall_over
+:
+  FALL_OVER BFD NEWLINE
+;
+
+eos_rbinon_graceful_restart
+:
+  GRACEFUL_RESTART NEWLINE
+;
+
+eos_rbinon_graceful_restart_helper
+:
+  GRACEFUL_RESTART_HELPER NEWLINE
+;
+
+eos_rbinon_idle_restart_timer
+:
+  IDLE_RESTART_TIMER NEWLINE
+;
+
+eos_rbinon_import_localpref
+:
+  IMPORT_LOCALPREF NEWLINE
+;
+
+eos_rbinon_link_bandwidth
+:
+  LINK_BANDWIDTH UPDATE_DELAY? NEWLINE
+;
+
+eos_rbinon_local_v4_addr
+:
+  LOCAL_V4_ADDR NEWLINE
+;
+
+eos_rbinon_local_v6_addr
+:
+  LOCAL_V6_ADDR NEWLINE
+;
+
+eos_rbinon_local_as
+:
+  LOCAL_AS NEWLINE
+;
+
+eos_rbinon_maximum_accepted_routes
+:
+  MAXIMUM_ACCEPTED_ROUTES NEWLINE
+;
+
+eos_rbinon_metric_out
+:
+  METRIC_OUT NEWLINE
+;
+
+eos_rbinon_next_hop_peer
+:
+  NEXT_HOP_PEER NEWLINE
+;
+
+eos_rbinon_next_hop_self
+:
+  NEXT_HOP_SELF NEWLINE
+;
+
+eos_rbinon_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbinon_next_hop_v6_addr
+:
+  NEXT_HOP_V6_ADDR NEWLINE
+;
+
+eos_rbinon_out_delay
+:
+  OUT_DELAY NEWLINE
+;
+
+eos_rbinon_password
+:
+  PASSWORD NEWLINE
+;
+
+eos_rbinon_remote_as
+:
+  REMOTE_AS NEWLINE
+;
+
+eos_rbinon_remove_private_as
+:
+  REMOVE_PRIVATE_AS NEWLINE
+;
+
+eos_rbinon_route_reflector_client
+:
+  ROUTE_REFLECTOR_CLIENT NEWLINE
+;
+
+eos_rbinon_route_to_peer
+:
+  ROUTE_TO_PEER NEWLINE
+;
+
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbinon_ttl
+:
+  TTL MAXIMUM_HOPS NEWLINE
+;
+
+eos_rbinon_transport
+:
+  TRANSPORT
+  (
+    eos_rbinon_transport_connection_mode
+    | eos_rbinon_transport_remote_port
+  )
+;
+
+eos_rbinon_transport_connection_mode
+:
+  CONNECTION_MODE PASSIVE NEWLINE
+;
+
+eos_rbinon_transport_remote_port
+:
+  REMOTE_PORT NEWLINE
+;
+
+eos_rbinon_update_source
+:
+  UPDATE_SOURCE NEWLINE
+;
+
+eos_rbinon_weight
+:
+  WEIGHT NEWLINE
 ;
 
 eos_rbino_redistribute
@@ -1209,8 +1691,8 @@ eos_rbino_redistribute
     eos_rbinor_aggregate
     | eos_rbinor_connected
     | eos_rbinor_isis
-    //| eos_rbinor_ospf
-    //| eos_rbinor_ospf3
+    | eos_rbinor_ospf
+    | eos_rbinor_ospf3
     | eos_rbinor_rip
     | eos_rbinor_static
   )
@@ -1231,6 +1713,44 @@ eos_rbinor_isis
   ISIS NEWLINE
 ;
 
+eos_rbinor_ospf
+:
+  OSPF
+  (
+    eos_rbinor_ospf_any
+    | eos_rbinor_ospf_match
+  )
+;
+
+eos_rbinor_ospf_any
+:
+  NEWLINE
+;
+
+eos_rbinor_ospf_match
+:
+  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+;
+
+eos_rbinor_ospf3
+:
+  OSPF3
+  (
+    eos_rbinor_ospf3_any
+    | eos_rbinor_ospf3_match
+  )
+;
+
+eos_rbinor_ospf3_any
+:
+  NEWLINE
+;
+
+eos_rbinor_ospf3_match
+:
+  MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+;
+
 eos_rbinor_rip
 :
   RIP NEWLINE
@@ -1241,9 +1761,39 @@ eos_rbinor_static
   STATIC NEWLINE
 ;
 
+eos_rbino_router_id
+:
+  ROUTER_ID NEWLINE
+;
+
 eos_rbino_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbino_ucmp
+:
+  UCMP
+  (
+    eos_rbino_ucmp_fec
+    | eos_rbino_ucmp_link_bandwidth
+    | eos_rbino_ucmp_mode
+  )
+;
+
+eos_rbino_ucmp_fec
+:
+  FEC THRESHOLD NEWLINE
+;
+
+eos_rbino_ucmp_link_bandwidth
+:
+  LINK_BANDWIDTH (ENCODING_WEIGHTED | RECURSIVE | UPDATE_DELAY) NEWLINE
+;
+
+eos_rbino_ucmp_mode
+:
+  MODE NEWLINE
 ;
 
 eos_rbino_update
