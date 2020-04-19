@@ -576,8 +576,6 @@ import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_nat_insideContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
@@ -4756,20 +4754,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
-  }
-
-  @Override
-  public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
-    _configuration
-        .getNatInside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
-  }
-
-  @Override
-  public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
-    _configuration
-        .getNatOutside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
   }
 
   @Override

@@ -55,7 +55,6 @@ import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -386,10 +385,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final @Nonnull Set<String> _natInside;
-
-  private final Set<String> _natOutside;
-
   private String _ntpSourceInterface;
 
   private final Map<String, Prefix6List> _prefix6Lists;
@@ -445,8 +440,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _namedVlans = new HashMap<>();
-    _natInside = new TreeSet<>();
-    _natOutside = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _routeMaps = new TreeMap<>();
@@ -640,14 +633,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
-  }
-
-  public @Nonnull Set<String> getNatInside() {
-    return _natInside;
-  }
-
-  public Set<String> getNatOutside() {
-    return _natOutside;
   }
 
   public String getNtpSourceInterface() {

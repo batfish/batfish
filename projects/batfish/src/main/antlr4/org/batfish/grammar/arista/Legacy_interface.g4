@@ -264,8 +264,6 @@ if_ip
     | if_ip_igmp
     | if_ip_inband_access_group
     | if_ip_nat_destination
-    | if_ip_nat_inside
-    | if_ip_nat_outside
     | if_ip_nat_source
     | if_ip_nbar
     | ifip_null_eos
@@ -358,16 +356,6 @@ if_ip_nat_destination
 :
    NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
    NEWLINE
-;
-
-if_ip_nat_inside
-:
-   NAT INSIDE NEWLINE
-;
-
-if_ip_nat_outside
-:
-   NAT OUTSIDE NEWLINE
 ;
 
 if_ip_nat_source
