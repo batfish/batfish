@@ -597,6 +597,7 @@ if_no
     | if_no_link_debounce_eos
     | if_no_null_eos
     | if_no_routing_dynamic
+    | if_no_shutdown_eos
     | if_no_spanning_tree
     | if_no_speed_eos
     | if_no_traffic_loopback_eos
@@ -690,6 +691,11 @@ if_no_null_eos
 if_no_routing_dynamic
 :
    ROUTING DYNAMIC NEWLINE
+;
+
+if_no_shutdown_eos
+:
+  SHUTDOWN NEWLINE
 ;
 
 if_no_spanning_tree
@@ -1231,13 +1237,9 @@ if_service_policy
    policy_map = variable NEWLINE
 ;
 
-if_shutdown
+if_shutdown_eos
 :
-   NO?
-   (
-      DISABLE
-      | SHUTDOWN
-   ) FORCE? LAN? NEWLINE
+  SHUTDOWN NEWLINE
 ;
 
 if_switchport
@@ -1618,7 +1620,7 @@ if_inner
    | if_routing_dynamic
    | if_service_instance
    | if_service_policy
-   | if_shutdown
+   | if_shutdown_eos
    | if_spanning_tree
    | if_speed_auto
    | if_speed_eos

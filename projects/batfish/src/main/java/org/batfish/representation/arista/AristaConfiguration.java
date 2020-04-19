@@ -1136,7 +1136,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
-    newIface.setActive(iface.getActive());
+    newIface.setActive(!iface.getShutdown());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setAutoState(iface.getAutoState());
@@ -2249,7 +2249,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
-      if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
+      if (!iface.getShutdown() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;

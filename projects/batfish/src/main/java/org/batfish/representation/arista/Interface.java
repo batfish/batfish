@@ -91,7 +91,7 @@ public class Interface implements Serializable {
 
   @Nullable private Integer _accessVlan;
 
-  private boolean _active;
+  private boolean _shutdown;
 
   @Nullable private IntegerSpace _allowedVlans;
 
@@ -188,7 +188,7 @@ public class Interface implements Serializable {
   }
 
   public Interface(String name, AristaConfiguration c) {
-    _active = true;
+    _shutdown = false;
     _autoState = true;
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
@@ -235,8 +235,8 @@ public class Interface implements Serializable {
     return _accessVlan;
   }
 
-  public boolean getActive() {
-    return _active;
+  public boolean getShutdown() {
+    return _shutdown;
   }
 
   @Nullable
@@ -436,8 +436,8 @@ public class Interface implements Serializable {
     _accessVlan = vlan;
   }
 
-  public void setActive(boolean active) {
-    _active = active;
+  public void setShutdown(boolean shutdown) {
+    _shutdown = shutdown;
   }
 
   public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {

@@ -584,10 +584,11 @@ import org.batfish.grammar.arista.AristaParser.If_mtuContext;
 import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
-import org.batfish.grammar.arista.AristaParser.If_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_iosContext;
@@ -4854,6 +4855,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIf_no_shutdown_eos(If_no_shutdown_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setShutdown(false));
+  }
+
+  @Override
   public void exitIf_no_speed_eos(If_no_speed_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setSpeed(null));
   }
@@ -4872,10 +4878,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_shutdown(If_shutdownContext ctx) {
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setActive(ctx.NO() != null);
-    }
+  public void exitIf_shutdown_eos(If_shutdown_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setShutdown(true));
   }
 
   @Override
