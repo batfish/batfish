@@ -921,6 +921,11 @@ AS_PATH
    'as-path' -> pushMode ( M_AsPath )
 ;
 
+ASPATH_CMP_INCLUDE_NEXTHOP
+:
+   'aspath-cmp-include-nexthop'
+;
+
 AS_PATH_SET
 :
    'as-path-set'
@@ -2369,6 +2374,11 @@ CONNECTED
 CONNECTION
 :
    'connection'
+;
+
+CONNECTION_MODE
+:
+   'connection-mode'
 ;
 
 CONNECTION_REUSE
@@ -3867,6 +3877,11 @@ ECMP
    'ecmp'
 ;
 
+ECMP_FAST
+:
+   'ecmp-fast'
+;
+
 ECMP_GROUP
 :
    'ecmp-group'
@@ -4434,16 +4449,6 @@ EXIT_AF_INTERFACE
 EXIT_AF_TOPOLOGY
 :
    'exit-af-topology'
-;
-
-EXIT_PEER_POLICY
-:
-   'exit-peer-policy'
-;
-
-EXIT_PEER_SESSION
-:
-   'exit-peer-session'
 ;
 
 EXIT_SERVICE_FAMILY
@@ -6045,6 +6050,11 @@ IMPORT
    'import'
 ;
 
+IMPORT_LOCALPREF
+:
+   'import-localpref'
+;
+
 IN
 :
    'in'
@@ -7082,6 +7092,11 @@ LOCAL_PROXY_ARP
    'local-proxy-arp'
 ;
 
+LOCAL_V4_ADDR
+:
+   'local-v4-addr'
+;
+
 LOCAL_V6_ADDR
 :
    'local-v6-addr'
@@ -7832,6 +7847,11 @@ METRIC
    'metric'
 ;
 
+METRIC_OUT
+:
+   'metric-out'
+;
+
 METRIC_STYLE
 :
    'metric-style'
@@ -7970,6 +7990,11 @@ MIRROR
 MISMATCH
 :
    'mismatch'
+;
+
+MISSING_AS_WORST
+:
+   'missing-as-worst'
 ;
 
 MISSING_POLICY
@@ -8613,6 +8638,11 @@ NEXT_HOP
    'next-hop'
 ;
 
+NEXT_HOP_PEER
+:
+   'next-hop-peer'
+;
+
 NEXT_HOP_SELF
 :
    'next-hop-self'
@@ -8626,6 +8656,11 @@ NEXT_HOP_THIRD_PARTY
 NEXT_HOP_UNCHANGED
 :
    'next-hop-unchanged'
+;
+
+NEXT_HOP_V6_ADDR
+:
+   'next-hop-v6-addr'
 ;
 
 NEXT_SERVER
@@ -9168,6 +9203,11 @@ OUT
    'out'
 ;
 
+OUT_DELAY
+:
+   'out-delay'
+;
+
 OUT_OF_BAND
 :
    'out-of-band'
@@ -9508,14 +9548,9 @@ PEER_LINK
    'peer-link'
 ;
 
-PEER_POLICY
+PEER_MAC_RESOLUTION_TIMEOUT
 :
-   'peer-policy'
-;
-
-PEER_SESSION
-:
-   'peer-session'
+   'peer-mac-resolution-timeout'
 ;
 
 PEER_SWITCH
@@ -9930,14 +9965,7 @@ PREFIX_LENGTH
 
 PREFIX_LIST
 :
-   'prefix-list'
-   {
-     if (lastTokenType() == ADDRESS) {
-       pushMode(M_Words);
-     } else {
-       pushMode(M_Name);
-     }
-   }
+   'prefix-list' -> pushMode(M_PrefixList)
 ;
 
 PREFIX_SET
@@ -9948,6 +9976,11 @@ PREFIX_SET
 PREPEND
 :
    'prepend'
+;
+
+PRESERVE_ATTRIBUTES
+:
+   'preserve-attributes'
 ;
 
 PRF
@@ -11030,6 +11063,11 @@ ROUTE_PREFERENCE
    'route-preference'
 ;
 
+ROUTE_REFLECTOR
+:
+   'route-reflector'
+;
+
 ROUTE_REFLECTOR_CLIENT
 :
    'route-reflector-client'
@@ -11043,6 +11081,11 @@ ROUTE_SOURCE
 ROUTE_TARGET
 :
    'route-target'
+;
+
+ROUTE_TO_PEER
+:
+   'route-to-peer'
 ;
 
 ROUTE_TYPE
@@ -15762,6 +15805,11 @@ M_AsPath_RP_VARIABLE
    RP_VARIABLE ) , popMode
 ;
 
+M_AsPath_IGNORE
+:
+   'ignore' -> type ( IGNORE ) , popMode
+;
+
 M_AsPath_IN
 :
    'in' -> type ( IN ) , popMode
@@ -16622,6 +16670,33 @@ M_NEIGHBOR_VARIABLE
 ;
 
 M_NEIGHBOR_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_PrefixList;
+
+M_PrefixList_IN
+:
+   'in' -> type ( IN )
+;
+
+M_PrefixList_OUT
+:
+   'out' -> type ( OUT )
+;
+
+M_PrefixList_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_PrefixList_VARIABLE
+:
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_PrefixList_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
