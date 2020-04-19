@@ -471,46 +471,9 @@ if_ip_router_isis
    IP ROUTER ISIS null_rest_of_line
 ;
 
-if_ip_router_ospf_area
-:
-   IP ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
-;
-
 if_ip_rtp
 :
    IP RTP HEADER_COMPRESSION (PASSIVE | IPHC_FORMAT | IETF_FORMAT) PERIODIC_REFRESH? NEWLINE
-;
-
-if_ip_sticky_arp
-:
-   (NO? IP STICKY_ARP NEWLINE)
-   |
-   (IP STICKY_ARP IGNORE NEWLINE)
-;
-
-if_ip_tcp
-:
-   IP TCP
-   (
-      if_ip_tcp_adjust_mss
-      | if_ip_tcp_compression_connections
-      | if_ip_tcp_header_compression
-   )
-;
-
-if_ip_tcp_adjust_mss
-:
-   ADJUST_MSS value = DEC NEWLINE
-;
-
-if_ip_tcp_compression_connections
-:
-   COMPRESSION_CONNECTIONS value = DEC NEWLINE
-;
-
-if_ip_tcp_header_compression
-:
-   HEADER_COMPRESSION ( PASSIVE | IETF_FORMAT )? NEWLINE
 ;
 
 if_ip_verify
@@ -543,31 +506,6 @@ if_ip_verify
 if_ip_virtual_router
 :
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-if_ip_vrf_autoclassify
-:
-   IP VRF AUTOCLASSIFY SOURCE NEWLINE
-;
-
-if_ip_vrf_forwarding
-:
-   IP? VRF FORWARDING vrf = variable (DOWNSTREAM vrf_down = variable)? NEWLINE
-;
-
-if_ip_vrf_receive
-:
-   IP VRF RECEIVE vrf = variable NEWLINE
-;
-
-if_ip_vrf_select
-:
-   IP VRF SELECT SOURCE NEWLINE
-;
-
-if_ip_vrf_sitemap
-:
-   IP VRF SITEMAP map = variable NEWLINE
 ;
 
 if_ipv6
@@ -1437,12 +1375,22 @@ if_vlan
 
 if_vrf
 :
-   VRF name = variable NEWLINE
+   VRF
+   (
+     if_vrf_forwarding
+     | if_vrf_name
+   )
 ;
 
-if_vrf_member
+if_vrf_forwarding
 :
-   VRF MEMBER name = variable NEWLINE
+  // this command is deprecated by 'vrf [VRF_ID]'
+  FORWARDING if_vrf_name
+;
+
+if_vrf_name
+:
+  name = variable NEWLINE
 ;
 
 if_vrrp
@@ -1685,14 +1633,7 @@ if_inner
    | if_ip_policy
    | if_ip_router_isis
    | if_ip_rtp
-   | if_ip_sticky_arp
-   | if_ip_tcp
    | if_ip_virtual_router
-   | if_ip_vrf_autoclassify
-   | if_ip_vrf_forwarding
-   | if_ip_vrf_receive
-   | if_ip_vrf_select
-   | if_ip_vrf_sitemap
    | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable
@@ -1729,7 +1670,6 @@ if_inner
    | if_tunnel
    | if_vlan
    | if_vrf
-   | if_vrf_member
    | if_vrrp
    | if_vrrpno
    // do not rearrange items below

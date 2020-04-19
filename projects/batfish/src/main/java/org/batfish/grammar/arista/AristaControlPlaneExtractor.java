@@ -96,7 +96,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_I
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
@@ -585,8 +584,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_verifyContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_vrf_forwardingContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
@@ -610,8 +607,7 @@ import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_encapsulation
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.arista.AristaParser.If_vlanContext;
-import org.batfish.grammar.arista.AristaParser.If_vrfContext;
-import org.batfish.grammar.arista.AristaParser.If_vrf_memberContext;
+import org.batfish.grammar.arista.AristaParser.If_vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmphp_access_listContext;
@@ -4847,22 +4843,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_vrf_forwarding(If_ip_vrf_forwardingContext ctx) {
-    String name = ctx.vrf.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_vrf_sitemap(If_ip_vrf_sitemapContext ctx) {
-    String map = ctx.map.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, map, INTERFACE_IP_VRF_SITEMAP, ctx.map.getStart().getLine());
-  }
-
-  @Override
   public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
     AristaStructureUsage usage =
         ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
@@ -5113,16 +5093,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_vrf(If_vrfContext ctx) {
-    String name = ctx.name.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
-    }
-  }
-
-  @Override
-  public void exitIf_vrf_member(If_vrf_memberContext ctx) {
+  public void exitIf_vrf_name(If_vrf_nameContext ctx) {
     String name = ctx.name.getText();
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setVrf(name);
