@@ -2564,7 +2564,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
         AristaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         AristaStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP,
         AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
         AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
