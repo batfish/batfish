@@ -1399,12 +1399,11 @@ public final class AristaConfiguration extends VendorConfiguration {
        */
       Interface vsIface = _interfaces.get(iface.getName());
       assert vsIface != null;
-      if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
-        continue;
-      }
+
+      // How many OSPF processes are there in this vrf?
+      boolean multiprocess = _vrfs.get(vrfName).getOspfProcesses().size() > 1;
       OspfNetwork network = getOspfNetworkForInterface(vsIface, proc);
-      if (vsIface.getOspfProcess() == null && network == null) {
-        // Interface is not in an OspfNetwork on this process
+      if (multiprocess && network == null && !proc.getName().equals(iface.getOspfProcess())) {
         continue;
       }
 

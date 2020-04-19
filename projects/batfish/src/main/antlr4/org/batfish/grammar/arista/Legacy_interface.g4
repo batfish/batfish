@@ -269,6 +269,7 @@ if_ip
     | if_ip_nat_source
     | if_ip_nbar
     | ifip_null_eos
+    | ifip_ospf_eos
     | ifip_pim_eos
     | ifip_proxy_arp_eos
   )
@@ -388,6 +389,48 @@ ifip_null_eos
   ) null_rest_of_line
 ;
 
+ifip_ospf_eos
+:
+  OSPF
+  (
+    ifipo_area_eos
+    // | ifipo_authentication_eos
+    // | ifipo_authentication_key_eos
+    | ifipo_cost_eos
+    | ifipo_dead_interval_eos
+    // | ifipo_disabled_eos
+    // | ifipo_message_digest_key_eos
+    | ifipo_network_eos
+    // | ifipo_retransmit_interval_eos
+    // | ifipo_transmit_delay
+  )
+;
+
+ifipo_area_eos
+:
+   AREA area = ospf_area NEWLINE
+;
+
+ifipo_cost_eos
+:
+   COST cost = DEC NEWLINE
+;
+
+ifipo_dead_interval_eos
+:
+   DEAD_INTERVAL seconds = DEC NEWLINE
+;
+
+ifipo_hello_interval_eos
+:
+   HELLO_INTERVAL seconds = DEC NEWLINE
+;
+
+ifipo_network_eos
+:
+   NETWORK POINT_TO_POINT NEWLINE
+;
+
 ifip_pim_eos
 :
   PIM
@@ -416,55 +459,6 @@ ifipp_neighbor_filter_eos
 ifip_proxy_arp_eos
 :
   PROXY_ARP NEWLINE
-;
-
-if_ip_ospf_area
-:
-   IP OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
-;
-
-if_ip_ospf_cost
-:
-   IP? OSPF COST cost = DEC NEWLINE
-;
-
-if_ip_ospf_dead_interval
-:
-   IP OSPF DEAD_INTERVAL seconds = DEC NEWLINE
-;
-
-if_ip_ospf_dead_interval_minimal
-:
-   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
-;
-
-if_ip_ospf_hello_interval
-:
-   IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
-;
-
-if_ip_ospf_network
-:
-   IP OSPF NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
-;
-
-if_ip_ospf_passive_interface
-:
-   NO? IP OSPF PASSIVE_INTERFACE NEWLINE
-;
-
-if_ip_ospf_shutdown
-:
-   NO? IP OSPF SHUTDOWN NEWLINE
 ;
 
 if_ip_policy
@@ -1688,17 +1682,8 @@ if_inner
    | if_flow_sampler
    | if_ip
    | if_ip_verify
-   | if_ip_ospf_area
-   | if_ip_ospf_cost
-   | if_ip_ospf_dead_interval
-   | if_ip_ospf_dead_interval_minimal
-   | if_ip_ospf_hello_interval
-   | if_ip_ospf_network
-   | if_ip_ospf_passive_interface
-   | if_ip_ospf_shutdown
    | if_ip_policy
    | if_ip_router_isis
-   | if_ip_router_ospf_area
    | if_ip_rtp
    | if_ip_sticky_arp
    | if_ip_tcp

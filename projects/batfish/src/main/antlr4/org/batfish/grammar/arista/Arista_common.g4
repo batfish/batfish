@@ -10,6 +10,12 @@ interface_address
   | prefix = IP_PREFIX
 ;
 
+ospf_area
+:
+  id_ip = IP_ADDRESS
+  | id = DEC
+;
+
 word
 :
   WORD
