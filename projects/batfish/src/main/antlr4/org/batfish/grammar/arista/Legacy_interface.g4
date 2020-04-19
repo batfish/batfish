@@ -175,6 +175,12 @@ if_channel_group
    )? NEWLINE
 ;
 
+if_crypto
+:
+  CRYPTO
+  if_crypto_map
+;
+
 if_crypto_map
 :
    CRYPTO MAP name = variable NEWLINE
@@ -505,9 +511,41 @@ if_ipv6_traffic_filter
    TRAFFIC_FILTER acl = variable_aclname (IN | OUT) NEWLINE
 ;
 
+if_isis
+:
+  ISIS
+  (
+    if_isis_circuit_type
+    | if_isis_enable
+    | if_isis_hello_interval
+    | if_isis_metric
+    | if_isis_network
+    | if_isis_null
+    | if_isis_passive
+    | if_isis_tag
+  )
+;
+
+if_isis_null
+:
+  (
+    AUTHENTICATION
+    | CSNP_INTERVAL
+    | DS_HELLO_INTERVAL
+    | HELLO
+    | HELLO_INTERVAL
+    | HELLO_MULTIPLIER
+    | LSP_INTERVAL
+    | POINT_TO_POINT
+    | PROTOCOL
+    | SMALL_HELLO
+    | WIDE_METRIC
+  ) null_rest_of_line
+;
+
 if_isis_circuit_type
 :
-   ISIS CIRCUIT_TYPE
+   CIRCUIT_TYPE
    (
       LEVEL_1
       | LEVEL_2_ONLY
@@ -517,12 +555,12 @@ if_isis_circuit_type
 
 if_isis_enable
 :
-   ISIS ENABLE num = DEC NEWLINE
+   ENABLE num = DEC NEWLINE
 ;
 
 if_isis_hello_interval
 :
-   ISIS HELLO_INTERVAL DEC
+   HELLO_INTERVAL DEC
    (
       LEVEL_1
       | LEVEL_2
@@ -531,7 +569,7 @@ if_isis_hello_interval
 
 if_isis_metric
 :
-   ISIS IPV6? METRIC metric = DEC
+   METRIC metric = DEC
    (
       LEVEL_1
       | LEVEL_2
@@ -540,17 +578,17 @@ if_isis_metric
 
 if_isis_network
 :
-   ISIS NETWORK POINT_TO_POINT NEWLINE
+   NETWORK POINT_TO_POINT NEWLINE
 ;
 
 if_isis_passive
 :
-   ISIS PASSIVE NEWLINE
+   PASSIVE NEWLINE
 ;
 
 if_isis_tag
 :
-   ISIS TAG tag = DEC NEWLINE
+   TAG tag = DEC NEWLINE
 ;
 
 if_lacp
@@ -675,6 +713,7 @@ if_no
     | if_no_speed_eos
     | if_no_switchport
     | if_no_traffic_loopback_eos
+    | if_no_vrrp
   )
 ;
 
@@ -873,6 +912,21 @@ if_no_traffic_loopback_eos
   TRAFFIC_LOOPBACK NEWLINE
 ;
 
+if_no_vrrp
+:
+   VRRP groupnum = DEC
+   (
+      if_no_vrrp_preempt
+   )
+;
+
+if_no_vrrp_preempt
+:
+   PREEMPT NEWLINE
+;
+
+
+
 if_null_block
 :
    (
@@ -900,7 +954,6 @@ if_null_block
       | CLOCK
       | COUNTER
       | CRC
-      | CRYPTO
       | DAMPENING
       | DCB
       | DCB_POLICY
@@ -935,23 +988,6 @@ if_null_block
       | IGNORE
       | INGRESS
       | ISDN
-      |
-      (
-         ISIS
-         (
-            AUTHENTICATION
-            | CSNP_INTERVAL
-            | DS_HELLO_INTERVAL
-            | HELLO
-            | HELLO_INTERVAL
-            | HELLO_MULTIPLIER
-            | LSP_INTERVAL
-            | POINT_TO_POINT
-            | PROTOCOL
-            | SMALL_HELLO
-            | WIDE_METRIC
-         )
-      )
       | KEEPALIVE
       | L2_FILTER
       | L2PROTOCOL_TUNNEL
@@ -961,7 +997,6 @@ if_null_block
       | LINK
       | LINK_FAULT_SIGNALING
       | LOAD_BALANCING
-      | LOAD_INTERVAL
       | LOOPBACK
       | LRE
       | MACRO
@@ -1043,7 +1078,6 @@ if_null_block
       | TRANSPORT_MODE
       | TRUST
       | TUNABLE_OPTIC
-      | TX_QUEUE
       | UC_TX_QUEUE
       | UDLD
       | UNTAGGED
@@ -1089,12 +1123,7 @@ if_null_single
     | JUMBO
     | LINKDEBOUNCE
     | MAB
-    | PHY
     | REDUNDANCY
-    |
-    (
-      SPEED NONEGOTIATE
-    )
     | SUPPRESS_ARP
     | TRIMODE
     | TRUSTED
@@ -1517,19 +1546,6 @@ if_vrrp
    )
 ;
 
-if_vrrpno
-:
-   NO VRRP groupnum = DEC
-   (
-      ifvrrpno_preempt
-   )
-;
-
-ifvrrpno_preempt
-:
-   PREEMPT NEWLINE
-;
-
 ifigmp_access_group
 :
    ACCESS_GROUP name = variable NEWLINE
@@ -1729,7 +1745,7 @@ if_inner
    | if_bandwidth
    | if_bfd
    | if_channel_group
-   | if_crypto_map
+   | if_crypto
    | if_default_eos
    | if_default_gw
    | if_description
@@ -1737,13 +1753,7 @@ if_inner
    | if_evpn_eos
    | if_ip
    | if_ipv6
-   | if_isis_circuit_type
-   | if_isis_enable
-   | if_isis_hello_interval
-   | if_isis_metric
-   | if_isis_network
-   | if_isis_passive
-   | if_isis_tag
+   | if_isis
    | if_lacp
    | if_lldp
    | if_load_interval
@@ -1773,7 +1783,6 @@ if_inner
    | if_vlan
    | if_vrf
    | if_vrrp
-   | if_vrrpno
    // do not rearrange items below
  
    | if_null_single
