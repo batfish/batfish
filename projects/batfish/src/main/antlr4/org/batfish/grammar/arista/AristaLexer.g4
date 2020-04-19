@@ -16390,7 +16390,6 @@ M_Interface_PREFIX
          | '_'
       )*
    )
-   | 'Dot11Radio'
    | [Ee]'1'
    | [Tt]'1'
 ;

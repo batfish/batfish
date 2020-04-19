@@ -1,7 +1,4 @@
-!
-!
-!
-! boot system flash:EOS.swi
+!RANCID-CONTENT-TYPE: cisco
 hostname r4
 !
 interface FastEthernet0/0

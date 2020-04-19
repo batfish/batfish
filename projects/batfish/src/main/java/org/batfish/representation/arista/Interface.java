@@ -23,8 +23,6 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_ARISTA_ETHERNET_SPEED = 1E9D;
 
-  private static final double DEFAULT_FAST_ETHERNET_SPEED = 100E6D;
-
   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
 
   private static final double DEFAULT_VLAN_BANDWIDTH = 1E9D;
@@ -59,21 +57,6 @@ public class Interface implements Serializable {
   public static @Nullable Double getDefaultSpeed(@Nonnull String name) {
     if (name.startsWith("Ethernet")) {
       return DEFAULT_ARISTA_ETHERNET_SPEED;
-    } else if (name.startsWith("FastEthernet")) {
-      return DEFAULT_FAST_ETHERNET_SPEED;
-    } else if (name.startsWith("GigabitEthernet")) {
-      return 1E9D;
-    } else if (name.startsWith("LongReachEthernet")) {
-      return DEFAULT_LONG_REACH_ETHERNET_SPEED;
-    } else if (name.startsWith("TenGigabitEthernet")) {
-      return 10E9D;
-    } else if (name.startsWith("TwentyFiveGigE")) {
-      return 25E9D;
-    } else if (name.startsWith("TwoGigabitEthernet")) {
-      // 2.5 Gbps
-      return 2.5E9D;
-    } else if (name.startsWith("Wlan-GigabitEthernet")) {
-      return 1E9D;
     } else {
       // Bundle-Ethernet
       // Loopback
