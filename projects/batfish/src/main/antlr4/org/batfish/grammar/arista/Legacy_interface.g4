@@ -486,21 +486,6 @@ ifip_verify_unicast_eos
   NEWLINE
 ;
 
-if_ip_policy
-:
-   IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
-;
-
-if_ip_router_isis
-:
-   IP ROUTER ISIS null_rest_of_line
-;
-
-if_ip_rtp
-:
-   IP RTP HEADER_COMPRESSION (PASSIVE | IPHC_FORMAT | IETF_FORMAT) PERIODIC_REFRESH? NEWLINE
-;
-
 if_ip_virtual_router
 :
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
@@ -1627,9 +1612,6 @@ if_inner
    | if_evpn_eos
    | if_flow_sampler
    | if_ip
-   | if_ip_policy
-   | if_ip_router_isis
-   | if_ip_rtp
    | if_ip_virtual_router
    | if_ipv6
    | if_isis_circuit_type

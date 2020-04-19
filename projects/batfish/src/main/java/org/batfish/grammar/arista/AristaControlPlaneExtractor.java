@@ -96,7 +96,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_I
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -580,8 +579,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_insideContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
@@ -4809,24 +4806,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         iface.setAristaNats(new ArrayList<>(1));
       }
       iface.getAristaNats().add(nat);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_policy(If_ip_policyContext ctx) {
-    String policyName = ctx.name.getText();
-    warn(ctx, "PBR is not supported");
-    //    for (Interface currentInterface : _currentInterfaces) {
-    //      currentInterface.setRoutingPolicy(policyName);
-    //    }
-    _configuration.referenceStructure(
-        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
-  }
-
-  @Override
-  public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
     }
   }
 

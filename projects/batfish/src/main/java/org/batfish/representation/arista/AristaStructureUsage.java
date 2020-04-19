@@ -79,7 +79,6 @@ public enum AristaStructureUsage implements StructureUsage {
   INTERFACE_IPV6_TRAFFIC_FILTER_OUT("interface ipv6 traffic-filter out"),
   INTERFACE_MEMBER_INTERFACE("interface member-interface"),
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
-  INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
   INTERFACE_SELF_REF("interface"),
   INTERFACE_SERVICE_POLICY("interface service-policy"),
   INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER("interface service-policy type control subscriber"),
