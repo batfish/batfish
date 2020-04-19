@@ -95,7 +95,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_I
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
@@ -583,7 +582,6 @@ import org.batfish.grammar.arista.AristaParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_verifyContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
@@ -4829,16 +4827,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_verify(If_ip_verifyContext ctx) {
-    if (ctx.acl != null) {
-      String acl = ctx.acl.getText();
-      int line = ctx.acl.getLine();
-      _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, acl, INTERFACE_IP_VERIFY_ACCESS_LIST, line);
     }
   }
 

@@ -2466,7 +2466,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
         AristaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
         AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
-        AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
         AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT,
         AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
         AristaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,

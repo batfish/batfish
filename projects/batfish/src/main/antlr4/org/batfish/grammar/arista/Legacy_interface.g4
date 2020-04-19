@@ -272,6 +272,7 @@ if_ip
     | ifip_ospf_eos
     | ifip_pim_eos
     | ifip_proxy_arp_eos
+    | ifip_verify_eos
   )
 ;
 
@@ -461,6 +462,30 @@ ifip_proxy_arp_eos
   PROXY_ARP NEWLINE
 ;
 
+ifip_verify_eos
+:
+  VERIFY
+  (
+    ifip_verify_source_eos
+    | ifip_verify_unicast_eos
+  )
+;
+
+ifip_verify_source_eos
+:
+  SOURCE NEWLINE
+;
+
+ifip_verify_unicast_eos
+:
+  UNICAST SOURCE REACHABLE_VIA
+  (
+    ANY
+    | RX ALLOW_DEFAULT?
+  )
+  NEWLINE
+;
+
 if_ip_policy
 :
    IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
@@ -474,33 +499,6 @@ if_ip_router_isis
 if_ip_rtp
 :
    IP RTP HEADER_COMPRESSION (PASSIVE | IPHC_FORMAT | IETF_FORMAT) PERIODIC_REFRESH? NEWLINE
-;
-
-if_ip_verify
-:
-   IP VERIFY UNICAST
-   (
-      (
-         NOTIFICATION THRESHOLD DEC
-      )
-      |
-      (
-         REVERSE_PATH ALLOW_SELF_PING? acl = DEC?
-      )
-      |
-      (
-         SOURCE REACHABLE_VIA
-         (
-            ANY
-            | RX
-         )
-         (
-            ALLOW_DEFAULT
-            | ALLOW_SELF_PING
-            | L2_SRC
-         )* acl = DEC?
-      )
-   ) NEWLINE
 ;
 
 if_ip_virtual_router
@@ -1629,7 +1627,6 @@ if_inner
    | if_evpn_eos
    | if_flow_sampler
    | if_ip
-   | if_ip_verify
    | if_ip_policy
    | if_ip_router_isis
    | if_ip_rtp
