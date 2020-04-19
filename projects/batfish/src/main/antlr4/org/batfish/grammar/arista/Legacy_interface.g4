@@ -488,12 +488,21 @@ if_ipv6
 if_ipv6_inner
 :
    if_ipv6_enable
+   | if_ipv6_null
    | if_ipv6_traffic_filter
 ;
 
 if_ipv6_enable
 :
    ENABLE NEWLINE
+;
+
+if_ipv6_null
+:
+  (
+    ADDRESS
+    | ND
+  ) null_rest_of_line
 ;
 
 if_ipv6_traffic_filter
@@ -549,9 +558,65 @@ if_isis_tag
    ISIS TAG tag = DEC NEWLINE
 ;
 
+if_lacp
+:
+  LACP
+  if_lacp_null
+;
+
+if_lacp_null
+:
+  null_rest_of_line
+;
+
+if_lldp
+:
+  LLDP if_lldp_null
+;
+
+if_lldp_null
+:
+  null_rest_of_line
+;
+
 if_load_interval
 :
    LOAD_INTERVAL li = DEC NEWLINE
+;
+
+if_logging
+:
+  LOGGING null_rest_of_line
+;
+
+if_mac
+:
+  MAC
+  (
+    ifmac_access_group
+    | ifmac_security
+    | ifmac_timestamp
+  )
+;
+
+ifmac_access_group
+:
+  ACCESS_GROUP name = variable (IN | OUT) NEWLINE
+;
+
+ifmac_security
+:
+  SECURITY PROFILE null_rest_of_line
+;
+
+ifmac_timestamp
+:
+  TIMESTAMP null_rest_of_line
+;
+
+if_mac_address
+:
+  MAC_ADDRESS addr = MAC_ADDRESS_LITERAL NEWLINE
 ;
 
 if_member_interface
@@ -581,6 +646,17 @@ if_evpn_no_eos
   ) NEWLINE
 ;
 
+if_mpls
+:
+  MPLS
+  if_mpls_null
+;
+
+if_mpls_null
+:
+  null_rest_of_line
+;
+
 if_mtu
 :
    MTU mtu_size = DEC NEWLINE
@@ -593,6 +669,7 @@ if_no
     if_no_autostate
     | if_no_bfd
     | if_no_channel_group_eos
+    | if_no_description_eos
     | if_no_ip_eos
     | if_no_link_debounce_eos
     | if_no_null_eos
@@ -627,6 +704,11 @@ if_no_bfd
 if_no_channel_group_eos
 :
   CHANNEL_GROUP NEWLINE
+;
+
+if_no_description_eos
+:
+  DESCRIPTION NEWLINE
 ;
 
 if_no_ip_eos
@@ -681,11 +763,23 @@ if_no_link_debounce_eos
 if_no_null_eos
 :
   (
-    ERROR_CORRECTION
+    DCBX
+    | ENCAPSULATION
+    | ERROR_CORRECTION
+    | FLOWCONTROL
+    | IPV6
     | L2
     | L2_PROTOCOL
+    | LOGGING
+    | MAC
+    | MAC_ADDRESS
     | MSRP
     | MVRP
+    | PRIORITY_FLOW_CONTROL
+    | QOS
+    | SHAPE
+    | SNMP
+    | STORM_CONTROL
   ) null_rest_of_line
 ;
 
@@ -780,7 +874,6 @@ if_no_traffic_loopback_eos
 
 if_null_block
 :
-   NO?
    (
       ACTIVE
       | AFFINITY
@@ -812,7 +905,6 @@ if_null_block
       | CRYPTO
       | DAMPENING
       | DCB
-      | DCBX
       | DCB_POLICY
       | DELAY
       | DESTINATION
@@ -821,21 +913,15 @@ if_null_block
       | DFS
       | DOWNSTREAM
       | DSL
-      |
-      (
-         DSU BANDWIDTH
-      )
+      | DSU BANDWIDTH
       | DUPLEX
       | ENABLE
-      | ENCAPSULATION
       | ENCRYPTION
       | ETHERNET
       | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
       | FLOW
-      | FLOW_CONTROL
-      | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
       | FRAMING
@@ -850,7 +936,6 @@ if_null_block
       | HOLD_QUEUE
       | IGNORE
       | INGRESS
-      | IPV6
       | ISDN
       |
       (
@@ -875,17 +960,12 @@ if_null_block
       | L2TRANSPORT
       | LANE
       | LAPB
-      | LACP
       | LINK
       | LINK_FAULT_SIGNALING
-      | LLDP
       | LOAD_BALANCING
       | LOAD_INTERVAL
-      | LOGGING
       | LOOPBACK
       | LRE
-      | MAC
-      | MAC_ADDRESS
       | MACRO
       | MANAGEMENT
       | MANAGEMENT_ONLY
@@ -898,18 +978,10 @@ if_null_block
       | MLS
       | MOBILITY
       | MOP
-      | MPLS
       | NAME
       | NEGOTIATE
       | NEGOTIATION
       | NMSP
-      |
-      (
-         NO
-         (
-            DESCRIPTION
-         )
-      )
       |
       (
          NTP
@@ -940,11 +1012,8 @@ if_null_block
       | POWER_LEVEL
       | PPP
       | PREEMPT
-      | PRIORITY
-      | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
       | PVC
-      | QOS
       | QUEUE_MONITOR
       | QUEUE_SET
       | RANDOM_DETECT
@@ -958,20 +1027,16 @@ if_null_block
       | SCRAMBLE
       | SERIAL
       | SERVICE_MODULE
-      | SFLOW
-      | SHAPE
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
       | SOURCE
       | SPEED_DUPLEX
-      | SNMP
       | SRR_QUEUE
       | SSID
       | STACK_MIB
       | STATION_ROLE
       | STBC
-      | STORM_CONTROL
       | TAG_SWITCHING
       | TAGGED
       | TAP
@@ -1020,7 +1085,6 @@ if_null_inner
 
 if_null_single
 :
-  NO?
   (
     BCMC_OPTIMIZATION
     | DOT1X
@@ -1040,6 +1104,11 @@ if_null_single
 
 ;
 
+if_phy
+:
+  PHY MEDIA null_rest_of_line
+;
+
 if_port_security
 :
    PORT SECURITY NEWLINE
@@ -1048,9 +1117,31 @@ if_port_security
    )*
 ;
 
+if_priority_flow_control
+:
+  PRIORITY_FLOW_CONTROL
+  if_priority_flow_control_null
+;
+
+if_priority_flow_control_null
+:
+  null_rest_of_line
+;
+
 if_private_vlan
 :
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
+;
+
+if_qos
+:
+  QOS
+  if_qos_null
+;
+
+if_qos_null
+:
+  null_rest_of_line
 ;
 
 if_routing_dynamic
@@ -1116,6 +1207,17 @@ if_si_rewrite
 if_si_service_policy
 :
     SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
+;
+
+if_snmp
+:
+  SNMP
+  if_snmp_null
+;
+
+if_snmp_null
+:
+  null_rest_of_line
 ;
 
 if_spanning_tree
@@ -1193,6 +1295,28 @@ if_service_policy
    )?
    (INPUT | OUTPUT)?
    policy_map = variable NEWLINE
+;
+
+if_sflow
+:
+  SFLOW
+  if_sflow_enable
+;
+
+if_sflow_enable
+:
+  ENABLE NEWLINE
+;
+
+if_shape
+:
+  SHAPE
+  if_shape_null
+;
+
+if_shape_null
+:
+  null_rest_of_line
 ;
 
 if_shutdown_eos
@@ -1338,6 +1462,40 @@ if_tunnel
        | iftunnel_protection
        | iftunnel_source
    )
+;
+
+if_tx_queue
+:
+  TX_QUEUE num = DEC NEWLINE
+  (
+    if_txq_no
+    | if_txq_null
+  )*
+;
+
+if_txq_no
+:
+  NO if_txq_no_null
+;
+
+if_txq_no_null
+:
+  (
+    BANDWIDTH
+    | PRIORITY
+    | RANDOM_DETECT
+    | SHAPE
+  ) null_rest_of_line
+;
+
+if_txq_null
+:
+  (
+    BANDWIDTH
+    | PRIORITY
+    | RANDOM_DETECT
+    | SHAPE
+  ) null_rest_of_line
 ;
 
 if_vlan
@@ -1609,20 +1767,33 @@ if_inner
    | if_isis_network
    | if_isis_passive
    | if_isis_tag
+   | if_lacp
+   | if_lldp
    | if_load_interval
+   | if_logging
+   | if_mac
+   | if_mac_address
    | if_member_interface
+   | if_mpls
    | if_mtu
    | if_no
+   | if_phy
    | if_port_security
+   | if_priority_flow_control
    | if_private_vlan
+   | if_qos
    | if_routing_dynamic
    | if_service_instance
    | if_service_policy
+   | if_sflow
+   | if_shape
    | if_shutdown_eos
+   | if_snmp
    | if_spanning_tree
    | if_speed_eos
    | if_switchport
    | if_tunnel
+   | if_tx_queue
    | if_vlan
    | if_vrf
    | if_vrrp

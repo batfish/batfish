@@ -583,6 +583,7 @@ import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
 import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_description_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
@@ -4847,6 +4848,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_no_channel_group_eos(If_no_channel_group_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setChannelGroup(null));
+  }
+
+  @Override
+  public void exitIf_no_description_eos(If_no_description_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setDescription(null));
   }
 
   @Override

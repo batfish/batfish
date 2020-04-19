@@ -74,7 +74,7 @@ interface Ethernet1/1
    lldp receive
    no ip multicast static
    ip mfib fastdrop
-   no ip local-proxy-arp !sentinel
+   no ip local-proxy-arp
    mpls ip
    no msrp
    no mvrp
