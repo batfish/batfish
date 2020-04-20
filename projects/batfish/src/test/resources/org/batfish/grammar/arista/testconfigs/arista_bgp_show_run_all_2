@@ -368,12 +368,15 @@ router bgp 64900
       !TODO no neighbor OTHER_GROUP next-hop-self source-interface
       !TODO default neighbor 192.0.2.7 activate
    !
-   !TODO address-family ipv6 sr-te
-      !TODO default neighbor SOME_GROUP activate
-      !TODO no neighbor SOME_GROUP route-map in
-      !TODO default neighbor OTHER_GROUP activate
-      !TODO no neighbor OTHER_GROUP route-map in
-      !TODO default neighbor 192.0.2.7 activate
+   address-family ipv6 sr-te
+      neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP activate
+      default neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP route-map in
+      default neighbor OTHER_GROUP activate
+      no neighbor OTHER_GROUP route-map in
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6SRTE_IN in
    !
    !TODO address-family ipv6 multicast
       !TODO bgp additional-paths receive

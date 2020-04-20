@@ -441,62 +441,114 @@ eos_rbafipv4m_no_neighbor
 ;
 
 eos_rb_af_ipv4_sr_te
-:
-  SR_TE NEWLINE
-  (
-    eos_rbafipv4srte_default
-    | eos_rbafipv4srte_neighbor
-    | eos_rbafipv4srte_no
-  )*
-;
+ :
+   SR_TE NEWLINE
+   (
+     eos_rbafipv4srte_default
+     | eos_rbafipv4srte_neighbor
+     | eos_rbafipv4srte_no
+   )*
+ ;
 
-eos_rbafipv4srte_default
-:
-  DEFAULT
-  (
-    eos_rbafipv4srte_default_neighbor
-  )
-;
+ eos_rbafipv4srte_default
+ :
+   DEFAULT
+   (
+     eos_rbafipv4srte_default_neighbor
+   )
+ ;
 
-eos_rbafipv4srte_default_neighbor
-:
-  NEIGHBOR nid = eos_neighbor_id
-  (
-    eos_rbafdnc_activate
-  )
-;
+ eos_rbafipv4srte_default_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafdnc_activate
+   )
+ ;
 
-eos_rbafipv4srte_neighbor
-:
-  NEIGHBOR nid = eos_neighbor_id
-  (
-    eos_rbafnc_activate
-    | eos_rbafnc_route_map
-  )
-;
+ eos_rbafipv4srte_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnc_activate
+     | eos_rbafnc_route_map
+   )
+ ;
 
-eos_rbafipv4srte_no
-:
-  NO
-  eos_rbafipv4srte_no_neighbor
-;
+ eos_rbafipv4srte_no
+ :
+   NO
+   eos_rbafipv4srte_no_neighbor
+ ;
 
-eos_rbafipv4srte_no_neighbor
-:
-  NEIGHBOR nid = eos_neighbor_id
-  (
-    eos_rbafnonc_activate
-    | eos_rbafnonc_route_map
-  )
-;
+ eos_rbafipv4srte_no_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnonc_activate
+     | eos_rbafnonc_route_map
+   )
+ ;
 
 eos_rb_af_ipv6
 :
   IPV6
-  eos_rb_af_ipv6_unicast
-//  | eos_rb_af_ipv6_labeled_unicast
-//  | eos_rb_af_ipv6_sr_te
+  (
+//    eos_rb_af_ipv6_labeled_unicast
+    eos_rb_af_ipv6_sr_te
+    | eos_rb_af_ipv6_unicast
+  )
 ;
+
+eos_rb_af_ipv6_sr_te
+ :
+   SR_TE NEWLINE
+   (
+     eos_rbafipv6srte_default
+     | eos_rbafipv6srte_neighbor
+     | eos_rbafipv6srte_no
+   )*
+ ;
+
+ eos_rbafipv6srte_default
+ :
+   DEFAULT
+   (
+     eos_rbafipv6srte_default_neighbor
+   )
+ ;
+
+ eos_rbafipv6srte_default_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafdnc_activate
+   )
+ ;
+
+ eos_rbafipv6srte_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnc_activate
+     | eos_rbafnc_route_map
+   )
+ ;
+
+ eos_rbafipv6srte_no
+ :
+   NO
+   eos_rbafipv6srte_no_neighbor
+ ;
+
+ eos_rbafipv6srte_no_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnonc_activate
+     | eos_rbafnonc_route_map
+   )
+ ;
 
 eos_rb_af_ipv6_unicast
 :

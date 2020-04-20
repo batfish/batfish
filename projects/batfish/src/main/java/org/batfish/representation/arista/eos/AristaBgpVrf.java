@@ -51,17 +51,20 @@ public final class AristaBgpVrf implements Serializable {
   @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
   @Nonnull private final Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
 
+  @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
+
   @Nullable private AristaBgpVrfFlowSpecAddressFamily _flowSpecV4Af;
   @Nullable private AristaBgpVrfFlowSpecAddressFamily _flowSpecV6Af;
 
-  // TODO: do these need to be 4 different families, or 1 v4-specific but not unicast-specific?
+  // TODO: do these need to be different families, or 1 v4-specific but not unicast-specific?
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4LabeledUnicastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4MulticastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4SrTeAf;
 
+  // TODO: do these need to be different families, or 1 v4-specific but not unicast-specific?
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
-  @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
+  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6SrTeAf;
 
   public AristaBgpVrf(String name) {
     _name = name;
@@ -407,11 +410,21 @@ public final class AristaBgpVrf implements Serializable {
     return _v4MulticastAf;
   }
 
+  @Nullable
+  public AristaBgpVrfIpv4UnicastAddressFamily getV4MulticastAf() {
+    return _v4MulticastAf;
+  }
+
   @Nonnull
   public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4SrTeAf() {
     if (_v4SrTeAf == null) {
       _v4SrTeAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
+    return _v4SrTeAf;
+  }
+
+  @Nullable
+  public AristaBgpVrfIpv4UnicastAddressFamily getV4SrTeAf() {
     return _v4SrTeAf;
   }
 
@@ -439,6 +452,19 @@ public final class AristaBgpVrf implements Serializable {
       _v4LabeledUnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
     return _v4LabeledUnicastAf;
+  }
+
+  @Nonnull
+  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6SrTeAf() {
+    if (_v6SrTeAf == null) {
+      _v6SrTeAf = new AristaBgpVrfIpv6UnicastAddressFamily();
+    }
+    return _v6SrTeAf;
+  }
+
+  @Nullable
+  public AristaBgpVrfIpv6UnicastAddressFamily getV6SrTeAf() {
+    return _v6SrTeAf;
   }
 
   @Nullable
