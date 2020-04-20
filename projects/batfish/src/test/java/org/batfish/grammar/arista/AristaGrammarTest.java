@@ -1782,6 +1782,11 @@ public class AristaGrammarTest {
       assertThat(fs4.getActivate(), equalTo(Boolean.TRUE));
     }
     {
+      AristaBgpNeighborAddressFamily fs6 = defaultVrf.getFlowSpecV6Af().getNeighbor(neighborIp);
+      assertThat(fs6, notNullValue());
+      assertThat(fs6.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
       AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4UnicastAf().getNeighbor(neighborIp);
       assertThat(ipv4u, notNullValue());
       assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));

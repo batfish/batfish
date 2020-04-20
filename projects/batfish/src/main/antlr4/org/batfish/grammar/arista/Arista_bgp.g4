@@ -78,7 +78,7 @@ eos_rb_af_flow_spec
   FLOW_SPEC
   (
     eos_rb_af_flow_spec_ipv4
-//    | eos_rb_af_flow_spec_ipv6
+    | eos_rb_af_flow_spec_ipv6
   )
 ;
 
@@ -121,6 +121,52 @@ eos_rbaffs4_no
 ;
 
 eos_rbaffs4no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+  )
+;
+
+eos_rb_af_flow_spec_ipv6
+:
+  IPV6 NEWLINE
+  (
+    eos_rbaffs6_default
+    | eos_rbaffs6_neighbor
+    | eos_rbaffs6_no
+  )*
+;
+
+eos_rbaffs6_default
+:
+  DEFAULT
+  eos_rbaffs6_default_neighbor
+;
+
+eos_rbaffs6_default_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbaffs6_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+  )
+;
+
+eos_rbaffs6_no
+:
+  NO
+  eos_rbaffs6no_neighbor
+;
+
+eos_rbaffs6no_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
