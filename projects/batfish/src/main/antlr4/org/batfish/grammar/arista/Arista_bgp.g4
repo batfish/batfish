@@ -584,7 +584,7 @@ eos_rbi_bgp
     | eos_rbib_client_to_client
     | eos_rbib_cluster_id
     | eos_rbib_confederation
-//    | eos_rbib_control_plane_filter
+    | eos_rbib_control_plane_filter
     | eos_rbib_convergence
     | eos_rbib_default
     | eos_rbib_enforce_first_as
@@ -657,6 +657,11 @@ eos_rbibconf_identifier
 eos_rbibconf_peers
 :
   PEERS asns = eos_as_range_list NEWLINE
+;
+
+eos_rbib_control_plane_filter
+:
+  CONTROL_PLANE_FILTER DEFAULT_ALLOW NEWLINE
 ;
 
 eos_rbib_convergence
@@ -1219,6 +1224,7 @@ eos_rbino_bgp
     | eos_rbino_bgp_client_to_client
     | eos_rbino_bgp_cluster_id
     | eos_rbino_bgp_confederation
+    | eos_rbino_bgp_control_plane_filter
     | eos_rbino_bgp_default
     | eos_rbino_bgp_missing_policy
     | eos_rbino_bgp_monitoring
@@ -1363,6 +1369,11 @@ eos_rbino_bgp_confederation
 eos_rbino_bc_identifier
 :
   IDENTIFIER NEWLINE
+;
+
+eos_rbino_bgp_control_plane_filter
+:
+  CONTROL_PLANE_FILTER DEFAULT_ALLOW NEWLINE
 ;
 
 eos_rbino_bgp_default

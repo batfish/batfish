@@ -2462,6 +2462,11 @@ CONTROL_PLANE
    'control-plane'
 ;
 
+CONTROL_PLANE_FILTER
+:
+   'control-plane-filter'
+;
+
 CONTROL_PLANE_SECURITY
 :
    'control-plane-security'
@@ -2860,6 +2865,11 @@ DEFAULT
 DEFAULT_ACTION
 :
    'default-action'
+;
+
+DEFAULT_ALLOW
+:
+   'default-allow'
 ;
 
 DEFAULT_COST

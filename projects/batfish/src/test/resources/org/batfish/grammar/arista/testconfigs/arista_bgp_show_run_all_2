@@ -13,7 +13,8 @@ router bgp 64900
    bgp asn notation asplain
    bgp labeled-unicast rib tunnel
    no shutdown
-   !TODO no bgp control-plane-filter default-allow
+   bgp control-plane-filter default-allow
+   no bgp control-plane-filter default-allow
    router-id 192.0.2.1
    bgp convergence time 300
    bgp convergence slow-peer time 90
