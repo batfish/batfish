@@ -61,7 +61,7 @@ router bgp 64900
    bgp listen limit 1000
    bgp bestpath as-path multipath-relax
    no bgp bestpath as-path ignore
-   !TODO no bgp bestpath skip next-hop igp-cost
+   no bgp bestpath skip next-hop igp-cost
    no bgp aspath-cmp-include-nexthop
    bgp bestpath ecmp-fast
    no bgp bestpath tie-break age

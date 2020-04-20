@@ -1308,7 +1308,7 @@ eos_rbino_bgp_bestpath
     eos_rbino_bgp_bp_as_path
     | eos_rbino_bgp_bp_ecmp_fast
     | eos_rbino_bgp_bp_med
-    // eos_rbino_bgp_bp_skip
+    | eos_rbino_bgp_bp_skip
     | eos_rbino_bgp_bp_tie_break
   )
 ;
@@ -1354,6 +1354,11 @@ eos_rbino_bgp_bpm_confed
 eos_rbino_bgp_bpm_missing_as_worst
 :
   MISSING_AS_WORST NEWLINE
+;
+
+eos_rbino_bgp_bp_skip
+:
+  SKIP_LITERAL NEXT_HOP IGP_COST NEWLINE
 ;
 
 eos_rbino_bgp_bp_tie_break
