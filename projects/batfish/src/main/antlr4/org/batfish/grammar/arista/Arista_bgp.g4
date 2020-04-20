@@ -506,8 +506,9 @@ eos_rb_af_ipv6_unicast
     | eos_rbafipv6u_default
 //    | eos_rbafipv6u_graceful_restart
     | eos_rbafipv6u_neighbor
-    | eos_rbafipv6u_no
 //    | eos_rbafipv6u_network
+    | eos_rbafipv6u_next_hop
+    | eos_rbafipv6u_no
 //    | eos_rbafipv64u_redistribute
   )*
 ;
@@ -533,6 +534,25 @@ eos_rbafipv6ud_neighbor
 eos_rbafipv6u_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
+;
+
+eos_rbafipv6u_next_hop
+:
+  NEXT_HOP
+  (
+    eos_rbafipv6u_next_hop_sixpe
+    | eos_rbafipv6u_next_hop_resolution
+  )
+;
+
+eos_rbafipv6u_next_hop_sixpe
+:
+  SIXPE RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB NEWLINE
+;
+
+eos_rbafipv6u_next_hop_resolution
+:
+  RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_UNICAST_RIB NEWLINE
 ;
 
 eos_rbafipv6u_no

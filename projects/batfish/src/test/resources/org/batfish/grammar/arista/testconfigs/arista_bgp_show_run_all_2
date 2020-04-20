@@ -323,10 +323,10 @@ router bgp 64900
       no bgp additional-paths install
       bgp additional-paths receive
       no bgp additional-paths send any
-      !TODO no bgp next-hop-unchanged
+      no bgp next-hop-unchanged
       no bgp route install-map
-      !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
-      !TODO next-hop 6pe resolution ribs tunnel-rib system-tunnel-rib
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
+      next-hop 6pe resolution ribs tunnel-rib system-tunnel-rib
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       no neighbor SOME_GROUP route-map in

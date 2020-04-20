@@ -12028,6 +12028,11 @@ SITEMAP
    'sitemap'
 ;
 
+SIXPE
+:
+  '6pe'
+;
+
 SIZE
 :
    'size'
