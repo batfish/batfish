@@ -8248,6 +8248,11 @@ MSRPC
    'msrpc'
 ;
 
+MSS
+:
+   'mss'
+;
+
 MST
 :
    'mst'

@@ -600,7 +600,7 @@ eos_rbi_bgp
 //    | eos_rbib_route
 //    | eos_rbib_route_reflector
     | eos_rbib_trace
-//    | eos_rbib_transport
+    | eos_rbib_transport
   )
 ;
 
@@ -841,6 +841,41 @@ eos_rbibt_neighbor
 eos_rbibt_route_key
 :
   ROUTE_KEY ALL NEWLINE
+;
+
+eos_rbib_transport
+:
+  TRANSPORT
+  (
+    eos_rbibtrans_ipv4
+    | eos_rbibtrans_ipv6
+    | eos_rbibtrans_listen_port
+    | eos_rbibtrans_qos
+  )
+;
+
+eos_rbibtrans_ipv4
+:
+//536-16344
+  IPV4 MSS mss = DEC NEWLINE
+;
+
+eos_rbibtrans_ipv6
+:
+//516-16324
+  IPV6 MSS mss = DEC NEWLINE
+;
+
+eos_rbibtrans_listen_port
+:
+// 1-65535
+  LISTEN_PORT lp = DEC NEWLINE
+;
+
+eos_rbibtrans_qos
+:
+// 0-63
+  QOS DSCP dscp = DEC NEWLINE
 ;
 
 eos_rbi_default
@@ -1443,7 +1478,33 @@ eos_rbino_bgp_route_reflector
 
 eos_rbino_bgp_transport
 :
-  TRANSPORT LISTEN_PORT NEWLINE
+  TRANSPORT
+  (
+    eos_rbino_bgptr_ipv4
+    | eos_rbino_bgptr_ipv6
+    | eos_rbino_bgptr_listen_port
+    | eos_rbino_bgptr_qos
+  )
+;
+
+eos_rbino_bgptr_ipv4
+:
+  IPV4 MSS NEWLINE
+;
+
+eos_rbino_bgptr_ipv6
+:
+  IPV6 MSS NEWLINE
+;
+
+eos_rbino_bgptr_listen_port
+:
+  LISTEN_PORT NEWLINE
+;
+
+eos_rbino_bgptr_qos
+:
+  QOS DSCP NEWLINE
 ;
 
 eos_rbino_default_metric

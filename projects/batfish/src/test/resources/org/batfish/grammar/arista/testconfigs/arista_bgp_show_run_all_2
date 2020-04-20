@@ -42,10 +42,14 @@ router bgp 64900
    no bgp route install-map
    no ip access-group
    no ipv6 access-group
+   bgp transport listen-port 17
    no bgp transport listen-port
-   !TODO no bgp transport ipv4 mss
-   !TODO no bgp transport ipv6 mss
-   !TODO bgp transport qos dscp 48
+   bgp transport ipv4 mss 550
+   no bgp transport ipv4 mss
+   bgp transport ipv6 mss 550
+   no bgp transport ipv6 mss
+   no bgp transport qos dscp
+   bgp transport qos dscp 48
    no default-metric
    no bgp always-compare-med
    no bgp bestpath med missing-as-worst

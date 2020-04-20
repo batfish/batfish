@@ -484,6 +484,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbibconf_peersContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibd_ipv4u_enabledContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibl_limitContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbibl_rangeContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbibtrans_listen_portContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbin_peer_groupContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_allowas_inContext;
@@ -2285,11 +2286,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitEos_rbib_next_hop_unchanged(Eos_rbib_next_hop_unchangedContext ctx) {
-    _currentAristaBgpVrf.setNextHopUnchanged(true);
-  }
-
-  @Override
   public void exitEos_rbibl_range(Eos_rbibl_rangeContext ctx) {
     Prefix prefix;
     if (ctx.prefix != null) {
@@ -2309,6 +2305,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.peer_filter != null) {
       warn(ctx, "Peer filters are currently not supported");
     }
+  }
+
+  @Override
+  public void exitEos_rbib_next_hop_unchanged(Eos_rbib_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrf.setNextHopUnchanged(true);
+  }
+
+  @Override
+  public void exitEos_rbibtrans_listen_port(Eos_rbibtrans_listen_portContext ctx) {
+    todo(ctx);
   }
 
   @Override
