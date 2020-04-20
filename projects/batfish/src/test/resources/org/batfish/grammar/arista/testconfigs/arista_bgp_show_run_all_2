@@ -217,7 +217,7 @@ router bgp 64900
       no neighbor OTHER_GROUP additional-paths send any
       no neighbor OTHER_GROUP next-hop-unchanged
       default neighbor 192.0.2.7 activate
-      !TODO host-flap detection window 180.0 threshold 5
+      host-flap detection window 180.0 threshold 5
       neighbor 192.0.2.7 route-map EVPN_IN in
    !
    !TODO address-family flow-spec ipv4
