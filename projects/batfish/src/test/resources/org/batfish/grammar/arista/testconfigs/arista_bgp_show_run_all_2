@@ -202,8 +202,8 @@ router bgp 64900
       bgp additional-paths receive
       no bgp additional-paths send any
       no bgp next-hop-unchanged
-      !TODO neighbor default encapsulation vxlan
-      !TODO no next-hop resolution disabled
+      neighbor default encapsulation vxlan
+      no next-hop resolution disabled
       default neighbor SOME_GROUP activate
       !TODO neighbor SOME_GROUP additional-paths receive
       !TODO no neighbor SOME_GROUP route-map in

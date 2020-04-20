@@ -316,8 +316,8 @@ eos_rb_af_evpn_bgp
 :
   BGP
   (
-    eos_rbafeb_additional_paths
-    | eos_rbafeb_next_hop_unchanged
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
   )
 ;
 
@@ -375,6 +375,7 @@ eos_rb_af_evpn_no:
   (
     eos_rb_af_evpn_no_bgp
     | eos_rb_af_evpn_no_neighbor
+    | eos_rb_af_evpn_no_next_hop
   )
 ;
 
@@ -395,6 +396,11 @@ eos_rb_af_evpn_no_neighbor
     | eos_rbafnonc_next_hop_unchanged
     | eos_rbafnonc_route_map
   )
+;
+
+eos_rb_af_evpn_no_next_hop
+:
+  NEXT_HOP RESOLUTION DISABLED NEWLINE
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.
@@ -420,16 +426,6 @@ eos_rb_af_neighbor_common
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
   )
-;
-
-eos_rbafeb_additional_paths
-:
-  ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
-;
-
-eos_rbafeb_next_hop_unchanged
-:
-  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbafnc_activate

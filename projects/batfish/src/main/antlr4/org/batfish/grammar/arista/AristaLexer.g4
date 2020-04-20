@@ -10813,6 +10813,11 @@ REQUIRE_WPA
    'require-wpa'
 ;
 
+RESOLUTION
+:
+   'resolution'
+;
+
 RESOURCE
 :
    'resource'
