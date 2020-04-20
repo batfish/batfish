@@ -1763,6 +1763,32 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseBgpShowRunAll2() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_2");
+    // Test relies on route-maps configured as the last line of specific address families.
+    assertThat(
+        c.getAristaBgp().getPeerGroups().keySet(), containsInAnyOrder("SOME_GROUP", "OTHER_GROUP"));
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    Ip neighborIp = Ip.parse("192.0.2.7");
+    assertThat(defaultVrf.getV4neighbors().keySet(), contains(neighborIp));
+    {
+      AristaBgpNeighborAddressFamily evpn = defaultVrf.getEvpnAf().getNeighbor(neighborIp);
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getRouteMapIn(), equalTo("EVPN_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
+    }
+  }
+
+  @Test
   public void testParseInterfaceShowRunAll() {
     Configuration c = parseConfig("arista_interface_show_run_all");
     // Test relies on the last line in each interface being this description.
