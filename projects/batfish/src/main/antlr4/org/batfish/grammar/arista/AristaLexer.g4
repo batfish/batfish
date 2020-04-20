@@ -12339,6 +12339,11 @@ SRR_QUEUE
    'srr-queue'
 ;
 
+SR_TE
+:
+  'sr-te'
+;
+
 SRST
 :
   'srst'
