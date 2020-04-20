@@ -266,7 +266,7 @@ router bgp 64900
       no bgp next-hop address-family ipv6
       bgp additional-paths receive
       no bgp additional-paths send any
-      !TODO no bgp next-hop-unchanged
+      no bgp next-hop-unchanged
       no bgp route install-map
       !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
       neighbor SOME_GROUP activate
