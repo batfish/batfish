@@ -1817,6 +1817,7 @@ eos_rbino_redistribute
     | eos_rbinor_isis
     | eos_rbinor_ospf
     | eos_rbinor_ospf3
+    | eos_rbinor_ospfv3
     | eos_rbinor_rip
     | eos_rbinor_static
   )
@@ -1860,6 +1861,8 @@ eos_rbinor_ospf3
 :
   OSPF3
   (
+    // note: rbinor_ospfv3 has same meaning as this but newer syntax. Consider which updates go in
+    //       one or both places.
     eos_rbinor_ospf3_any
     | eos_rbinor_ospf3_match
   )
@@ -1873,6 +1876,17 @@ eos_rbinor_ospf3_any
 eos_rbinor_ospf3_match
 :
   MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+;
+
+eos_rbinor_ospfv3
+:
+  OSPFV3
+  (
+    // note: rbinor_ospf3 has same meaning as this but newer syntax. Consider which updates go in
+    //       one or both places.
+    eos_rbinor_ospf3_any
+    | eos_rbinor_ospf3_match
+  )
 ;
 
 eos_rbinor_rip

@@ -179,9 +179,9 @@ router bgp 64900
    no redistribute ospf match internal
    no redistribute ospf match external
    no redistribute ospf match nssa-external
-   !TODO no redistribute ospfv3 match internal
-   !TODO no redistribute ospfv3 match external
-   !TODO no redistribute ospfv3 match nssa-external
+   no redistribute ospfv3 match internal
+   no redistribute ospfv3 match external
+   no redistribute ospfv3 match nssa-external
    redistribute static route-map REDISTRIBUTE_STATIC
    no redistribute rip
    no redistribute aggregate
