@@ -4875,6 +4875,11 @@ FLOW_SAMPLER_MAP
    'flow-sampler-map'
 ;
 
+FLOW_SPEC
+:
+   'flow-spec'
+;
+
 FLOW_TOP_TALKERS
 :
    'flow-top-talkers'

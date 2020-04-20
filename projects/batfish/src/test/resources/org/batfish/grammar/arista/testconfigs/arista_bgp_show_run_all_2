@@ -220,10 +220,14 @@ router bgp 64900
       host-flap detection window 180.0 threshold 5
       neighbor 192.0.2.7 route-map EVPN_IN in
    !
-   !TODO address-family flow-spec ipv4
-      !TODO default neighbor SOME_GROUP activate
-      !TODO default neighbor OTHER_GROUP activate
-      !TODO default neighbor 192.0.2.7 activate
+   address-family flow-spec ipv4
+      neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP activate
+      default neighbor SOME_GROUP activate
+      default neighbor OTHER_GROUP activate
+      default neighbor 192.0.2.7 activate
+      ! sentinel - no route map, but at least check that it's activate
+      neighbor 192.0.2.7 activate
    !
    !TODO address-family flow-spec ipv6
       !TODO default neighbor SOME_GROUP activate

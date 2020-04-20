@@ -51,7 +51,9 @@ public final class AristaBgpVrf implements Serializable {
   @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
   @Nonnull private final Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
 
-  // TODO: do these need to be 3 different families, or 1 v4-specific but not unicast-specific?
+  @Nullable private AristaBgpVrfFlowSpecAddressFamily _flowSpecV4Af;
+
+  // TODO: do these need to be 4 different families, or 1 v4-specific but not unicast-specific?
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4LabeledUnicastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4MulticastAf;
@@ -219,6 +221,17 @@ public final class AristaBgpVrf implements Serializable {
 
   public void setEvpnAf(@Nullable AristaBgpVrfEvpnAddressFamily evpnAf) {
     _evpnAf = evpnAf;
+  }
+
+  public @Nullable AristaBgpVrfFlowSpecAddressFamily getFlowSpecV4Af() {
+    return _flowSpecV4Af;
+  }
+
+  public @Nonnull AristaBgpVrfFlowSpecAddressFamily getOrCreateFlowSpecV4Af() {
+    if (_flowSpecV4Af == null) {
+      _flowSpecV4Af = new AristaBgpVrfFlowSpecAddressFamily();
+    }
+    return _flowSpecV4Af;
   }
 
   @Nullable

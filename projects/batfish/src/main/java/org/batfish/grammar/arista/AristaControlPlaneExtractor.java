@@ -420,6 +420,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpnContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_neighbor_nidContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_no_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rb_af_flow_spec_ipv4Context;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4_labeled_unicastContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4_multicastContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4_sr_teContext;
@@ -436,6 +437,9 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafbc_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafbc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafdnc_activateContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbaffs4_default_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbaffs4_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbaffs4no_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4labu_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4labud_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4labuno_neighborContext;
@@ -1952,6 +1956,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void enterEos_rb_af_flow_spec_ipv4(Eos_rb_af_flow_spec_ipv4Context ctx) {
+    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateFlowSpecV4Af();
+  }
+
+  @Override
+  public void exitEos_rb_af_flow_spec_ipv4(Eos_rb_af_flow_spec_ipv4Context ctx) {
+    _currentAristaBgpVrfAf = null;
+  }
+
+  @Override
   public void enterEos_rb_af_ipv4_unicast(Eos_rb_af_ipv4_unicastContext ctx) {
     _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
   }
@@ -1999,6 +2013,36 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rb_af_ipv6_unicast(Eos_rb_af_ipv6_unicastContext ctx) {
     _currentAristaBgpVrfAf = null;
+  }
+
+  @Override
+  public void enterEos_rbaffs4_default_neighbor(Eos_rbaffs4_default_neighborContext ctx) {
+    enterCurrentBgpNeighborAddressFamily(ctx, ctx.nid);
+  }
+
+  @Override
+  public void exitEos_rbaffs4_default_neighbor(Eos_rbaffs4_default_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbaffs4_neighbor(Eos_rbaffs4_neighborContext ctx) {
+    enterCurrentBgpNeighborAddressFamily(ctx, ctx.nid);
+  }
+
+  @Override
+  public void exitEos_rbaffs4_neighbor(Eos_rbaffs4_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbaffs4no_neighbor(Eos_rbaffs4no_neighborContext ctx) {
+    enterCurrentBgpNeighborAddressFamily(ctx, ctx.nid);
+  }
+
+  @Override
+  public void exitEos_rbaffs4no_neighbor(Eos_rbaffs4no_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
   }
 
   @Override

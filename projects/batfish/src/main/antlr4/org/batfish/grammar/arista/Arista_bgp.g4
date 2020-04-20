@@ -64,11 +64,67 @@ eos_rb_address_family
 :
   ADDRESS_FAMILY
   (
-    eos_rb_af_ipv4
+    eos_rb_af_flow_spec
+    | eos_rb_af_ipv4
     | eos_rb_af_ipv6
     | eos_rb_af_evpn
 //  | eos_rb_af_vpn_v4
 //  | eos_rb_af_vpn_v6
+  )
+;
+
+eos_rb_af_flow_spec
+:
+  FLOW_SPEC
+  (
+    eos_rb_af_flow_spec_ipv4
+//    | eos_rb_af_flow_spec_ipv6
+  )
+;
+
+eos_rb_af_flow_spec_ipv4
+:
+  IPV4 NEWLINE
+  (
+    eos_rbaffs4_default
+    | eos_rbaffs4_neighbor
+    | eos_rbaffs4_no
+  )*
+;
+
+eos_rbaffs4_default
+:
+  DEFAULT
+  eos_rbaffs4_default_neighbor
+;
+
+eos_rbaffs4_default_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbaffs4_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+  )
+;
+
+eos_rbaffs4_no
+:
+  NO
+  eos_rbaffs4no_neighbor
+;
+
+eos_rbaffs4no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
   )
 ;
 
