@@ -494,10 +494,88 @@ eos_rb_af_ipv6
 :
   IPV6
   (
-//    eos_rb_af_ipv6_labeled_unicast
-    eos_rb_af_ipv6_sr_te
+    eos_rb_af_ipv6_labeled_unicast
+    | eos_rb_af_ipv6_sr_te
     | eos_rb_af_ipv6_unicast
   )
+;
+
+eos_rb_af_ipv6_labeled_unicast
+:
+  LABELED_UNICAST NEWLINE
+  (
+    eos_rbafipv6labu_bgp
+    | eos_rbafipv6labu_default
+    | eos_rbafipv6labu_neighbor
+    | eos_rbafipv6labu_no
+  )*
+;
+
+eos_rbafipv6labu_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv6labu_default
+:
+  DEFAULT
+  eos_rbafipv6labud_neighbor
+;
+
+eos_rbafipv6labud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbafdnc_activate
+;
+
+eos_rbafipv6labu_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafipv6labu_no
+:
+  NO
+  (
+    eos_rbafipv6labuno_bgp
+    | eos_rbafipv6labuno_neighbor
+  )
+;
+
+eos_rbafipv6labuno_bgp
+:
+  BGP
+  (
+     eos_rbafnobc_additional_paths
+     | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv6labuno_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafipv6labunon_next_hop_self
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rbafipv6labunon_next_hop_self
+:
+  NEXT_HOP_SELF SOURCE_INTERFACE NEWLINE
 ;
 
 eos_rb_af_ipv6_sr_te

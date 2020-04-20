@@ -1803,6 +1803,12 @@ public class AristaGrammarTest {
       assertThat(ipv4lu.getRouteMapIn(), equalTo("IPV4LU_IN"));
     }
     {
+      AristaBgpNeighborAddressFamily ipv6lu =
+          defaultVrf.getV6LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6lu, notNullValue());
+      assertThat(ipv6lu.getRouteMapIn(), equalTo("IPV6LU_IN"));
+    }
+    {
       AristaBgpNeighborAddressFamily ipv4sr = defaultVrf.getV4SrTeAf().getNeighbor(neighborIp);
       assertThat(ipv4sr, notNullValue());
       assertThat(ipv4sr.getRouteMapIn(), equalTo("IPV4SRTE_IN"));
