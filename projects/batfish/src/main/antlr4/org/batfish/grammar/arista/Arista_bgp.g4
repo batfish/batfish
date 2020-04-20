@@ -1813,7 +1813,9 @@ eos_rbino_redistribute
   REDISTRIBUTE
   (
     eos_rbinor_aggregate
+    | eos_rbinor_attached_host
     | eos_rbinor_connected
+    | eos_rbinor_dynamic
     | eos_rbinor_isis
     | eos_rbinor_ospf
     | eos_rbinor_ospf3
@@ -1828,9 +1830,19 @@ eos_rbinor_aggregate
   AGGREGATE NEWLINE
 ;
 
+eos_rbinor_attached_host
+:
+  ATTACHED_HOST NEWLINE
+;
+
 eos_rbinor_connected
 :
   CONNECTED NEWLINE
+;
+
+eos_rbinor_dynamic
+:
+  DYNAMIC NEWLINE
 ;
 
 eos_rbinor_isis
