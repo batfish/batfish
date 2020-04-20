@@ -392,7 +392,8 @@ eos_rb_af_evpn_no_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbafnonc_activate
+    eos_rbafnonc_additional_paths
+    | eos_rbafnonc_activate
     | eos_rbafnonc_next_hop_unchanged
     | eos_rbafnonc_route_map
   )
