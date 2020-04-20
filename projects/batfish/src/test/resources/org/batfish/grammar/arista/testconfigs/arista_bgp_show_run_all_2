@@ -205,17 +205,17 @@ router bgp 64900
       neighbor default encapsulation vxlan
       no next-hop resolution disabled
       default neighbor SOME_GROUP activate
-      !TODO neighbor SOME_GROUP additional-paths receive
-      !TODO no neighbor SOME_GROUP route-map in
-      !TODO no neighbor SOME_GROUP route-map out
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
       !TODO no neighbor SOME_GROUP additional-paths send any
-      !TODO no neighbor SOME_GROUP next-hop-unchanged
+      no neighbor SOME_GROUP next-hop-unchanged
       default neighbor OTHER_GROUP activate
-      !TODO neighbor OTHER_GROUP additional-paths receive
-      !TODO no neighbor OTHER_GROUP route-map in
-      !TODO no neighbor OTHER_GROUP route-map out
+      neighbor OTHER_GROUP additional-paths receive
+      no neighbor OTHER_GROUP route-map in
+      no neighbor OTHER_GROUP route-map out
       !TODO no neighbor OTHER_GROUP additional-paths send any
-      !TODO no neighbor OTHER_GROUP next-hop-unchanged
+      no neighbor OTHER_GROUP next-hop-unchanged
       default neighbor 192.0.2.7 activate
       !TODO host-flap detection window 180.0 threshold 5
       neighbor 192.0.2.7 route-map EVPN_IN in
