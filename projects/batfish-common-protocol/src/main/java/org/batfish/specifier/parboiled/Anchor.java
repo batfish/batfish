@@ -241,6 +241,14 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     NODE_TYPE("DEVICE_TYPE", "Device type", "deviceType)", SuggestionType.FUNCTION),
     /** Denotes an operator that ends an expression, e.g., ], ) */
     OPERATOR_END("OPERATOR_END", null, null, SuggestionType.OPERATOR_END),
+    /** Denotes a single application */
+    ONE_APP("ONE_APP", "Single application", null, SuggestionType.UNKNOWN),
+    /** Denotes a single ICMP application */
+    ONE_APP_ICMP("ONE_APP_ICMP", "Single ICMP application", null, SuggestionType.UNKNOWN),
+    /** Denotes a single TCP application */
+    ONE_APP_TCP("ONE_APP_TCP", "Single TCP application", null, SuggestionType.UNKNOWN),
+    /** Denotes a single UDP application */
+    ONE_APP_UDP("ONE_APP_UDP", "Single UDP application", null, SuggestionType.UNKNOWN),
     /** Rule for @addressGroup(book, group) */
     REFERENCE_BOOK_AND_ADDRESS_GROUP(
         "REFERENCE_BOOK_AND_ADDRESS_GROUP",

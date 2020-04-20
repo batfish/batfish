@@ -50,6 +50,7 @@ public enum Grammar {
   OSPF_SESSION_STATUS_SPECIFIER("ospfSessionStatusSpecifier", "ospf-session-status-specifier"),
   ROUTING_POLICY_SPECIFIER("routingPolicySpecifier", "routing-policy-specifier"),
   ROUTING_PROTOCOL_SPECIFIER("routingProtocolSpecifier", "routing-protocol-specifier"),
+  SINGLE_APPLICATION_SPECIFIER("singleApplicationSpecifier", "single-application-specifier"),
   VXLAN_VNI_PROPERTY_SPECIFIER("vxlanVniPropertySpecifier", "vxlan-vni-property-specifier");
 
   static final String BASE_URL =

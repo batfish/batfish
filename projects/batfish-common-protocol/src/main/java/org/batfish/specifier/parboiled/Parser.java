@@ -62,6 +62,10 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NA
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_TCP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_UDP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
@@ -153,6 +157,8 @@ public class Parser extends CommonParser {
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       case ROUTING_POLICY_SPECIFIER:
         return input(RoutingPolicySpec());
+      case SINGLE_APPLICATION_SPECIFIER:
+        return input(OneAppSpec());
       case VXLAN_VNI_PROPERTY_SPECIFIER:
         return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
       default:
@@ -168,7 +174,46 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Application specifier grammar
+   * Single application specifier grammar
+   *
+   * <pre>
+   * appSpec := namedApp | ICMP / number / number | TCP / number | UDP / number
+   *
+   * namedApp := HTTP | HTTPS | …
+   *
+   * </pre>
+   */
+  @Anchor(ONE_APP)
+  public Rule OneAppSpec() {
+    return FirstOf(AppName(), OneAppIcmp(), OneAppTcp(), OneAppUdp());
+  }
+
+  @Anchor(ONE_APP_ICMP)
+  public Rule OneAppIcmp() {
+    return Sequence(
+        IgnoreCase("icmp"),
+        WhiteSpace(),
+        "/ ",
+        Number(),
+        push(new IcmpTypeAppAstNode(Integer.parseInt(match()))),
+        WhiteSpace(),
+        "/ ",
+        Number(),
+        push(IcmpTypeCodeAppAstNode.create(pop(), Integer.parseInt(match()))));
+  }
+
+  @Anchor(ONE_APP_TCP)
+  public Rule OneAppTcp() {
+    return Sequence(IgnoreCase("tcp"), WhiteSpace(), push(new TcpAppAstNode()), "/ ", AppPort());
+  }
+
+  @Anchor(ONE_APP_UDP)
+  public Rule OneAppUdp() {
+    return Sequence(IgnoreCase("udp"), WhiteSpace(), push(new UdpAppAstNode()), "/ ", AppPort());
+  }
+
+  /**
+   * Application set specifier grammar
    *
    * <pre>
    * appSpec := appTerm
