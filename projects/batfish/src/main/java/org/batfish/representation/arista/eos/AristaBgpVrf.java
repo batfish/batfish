@@ -50,8 +50,12 @@ public final class AristaBgpVrf implements Serializable {
   @Nonnull private final Map<Prefix6, AristaBgpAggregateNetwork> _v6aggregates;
   @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
   @Nonnull private final Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
+
+  // TODO: do these need to be 3 different families, or 1 v4-specific but not unicast-specific?
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4LabeledUnicastAf;
+  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4MulticastAf;
+
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
   @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
 
@@ -375,15 +379,19 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   @Nonnull
+  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4MulticastAf() {
+    if (_v4MulticastAf == null) {
+      _v4MulticastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
+    }
+    return _v4MulticastAf;
+  }
+
+  @Nonnull
   public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4UnicastAf() {
     if (_v4UnicastAf == null) {
       _v4UnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
     return _v4UnicastAf;
-  }
-
-  public void setV4UnicastAf(@Nullable AristaBgpVrfIpv4UnicastAddressFamily v4UnicastAf) {
-    _v4UnicastAf = v4UnicastAf;
   }
 
   @Nullable

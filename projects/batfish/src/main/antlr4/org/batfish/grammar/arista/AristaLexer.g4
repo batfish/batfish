@@ -10998,6 +10998,11 @@ RIB_SCALE
    'rib-scale'
 ;
 
+RIBS
+:
+   'ribs'
+;
+
 RING
 :
    'ring'
@@ -12838,7 +12843,7 @@ SYSTEM
 
 SYSTEM_INIT
 :
-   'system-init'
+   'systeminit'
 ;
 
 SYSTEM_MAX
@@ -12859,6 +12864,16 @@ SYSTEM_PROFILE
 SYSTEM_SHUTDOWN
 :
    'system-shutdown'
+;
+
+SYSTEM_TUNNEL_RIB
+:
+   'system-tunnel-rib'
+;
+
+SYSTEM_UNICAST_RIB
+:
+   'system-unicast-rib'
 ;
 
 SYSTEMOWNER
@@ -13819,6 +13834,11 @@ TUNNEL_GROUP_LIST
 TUNNEL_ID
 :
    'tunnel-id'
+;
+
+TUNNEL_RIB
+:
+   'tunnel-rib'
 ;
 
 TUNNELED

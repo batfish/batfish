@@ -268,7 +268,7 @@ router bgp 64900
       no bgp additional-paths send any
       no bgp next-hop-unchanged
       no bgp route install-map
-      !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
       neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       no neighbor SOME_GROUP route-map in
@@ -292,20 +292,21 @@ router bgp 64900
       default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map IPV4_IN in
    !
-   !TODO address-family ipv4 multicast
-      !TODO bgp additional-paths receive
-      !TODO no bgp next-hop-unchanged
-      !TODO default neighbor SOME_GROUP activate
-      !TODO neighbor SOME_GROUP additional-paths receive
-      !TODO no neighbor SOME_GROUP route-map in
-      !TODO no neighbor SOME_GROUP route-map out
-      !TODO no neighbor SOME_GROUP next-hop-unchanged
-      !TODO default neighbor OTHER_GROUP activate
-      !TODO neighbor OTHER_GROUP additional-paths receive
-      !TODO no neighbor OTHER_GROUP route-map in
-      !TODO no neighbor OTHER_GROUP route-map out
-      !TODO no neighbor OTHER_GROUP next-hop-unchanged
-      !TODO default neighbor 192.0.2.7 activate
+   address-family ipv4 multicast
+      bgp additional-paths receive
+      no bgp next-hop-unchanged
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor OTHER_GROUP activate
+      neighbor OTHER_GROUP additional-paths receive
+      no neighbor OTHER_GROUP route-map in
+      no neighbor OTHER_GROUP route-map out
+      no neighbor OTHER_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV4MC_IN in
    !
    address-family ipv6
       no bgp additional-paths install

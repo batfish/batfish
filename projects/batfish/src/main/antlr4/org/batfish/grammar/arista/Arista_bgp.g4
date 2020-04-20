@@ -77,9 +77,9 @@ eos_rb_af_ipv4
   IPV4
   (
     eos_rb_af_ipv4_unicast
-//  | eos_rb_af_ipv4_multicast
-  | eos_rb_af_ipv4_labeled_unicast
-//  | eos_rb_af_ipv4_sr_te
+    | eos_rb_af_ipv4_labeled_unicast
+    | eos_rb_af_ipv4_multicast
+//    | eos_rb_af_ipv4_sr_te
   )
 ;
 
@@ -91,6 +91,7 @@ eos_rb_af_ipv4_unicast
     | eos_rbafipv4u_default
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
+    | eos_rbafipv4u_next_hop
     | eos_rbafipv4u_no
     | eos_rbafipv4u_network
 //    | eos_rbafipv4u_redistribute
@@ -139,6 +140,11 @@ eos_rbafipv4ud_neighbor
 eos_rbafipv4u_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
+;
+
+eos_rbafipv4u_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_UNICAST_RIB NEWLINE
 ;
 
 eos_rbafipv4u_no
@@ -254,6 +260,82 @@ eos_rbafipv4labuno_neighbor
 eos_rbafipv4labunon_next_hop_self
 :
   NEXT_HOP_SELF SOURCE_INTERFACE NEWLINE
+;
+
+eos_rb_af_ipv4_multicast
+:
+  MULTICAST NEWLINE
+  (
+    eos_rbafipv4m_bgp
+    | eos_rbafipv4m_default
+    | eos_rbafipv4m_neighbor
+    | eos_rbafipv4m_no
+  )*
+;
+
+eos_rbafipv4m_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv4m_default
+:
+  DEFAULT
+  (
+    eos_rbafipv4md_neighbor
+  )
+;
+
+eos_rbafipv4md_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbafipv4m_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafipv4m_no
+:
+  NO
+  (
+    eos_rbafipv4m_no_bgp
+    | eos_rbafipv4m_no_neighbor
+  )
+;
+
+eos_rbafipv4m_no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv4m_no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
 ;
 
 eos_rb_af_ipv6
@@ -2247,7 +2329,6 @@ eos_rbv_address_family
   ADDRESS_FAMILY
   (
     eos_rb_af_ipv4
-//  | eos_rb_af_ipv4_multicast
     | eos_rb_af_ipv6
   )
 ;

@@ -420,8 +420,9 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpnContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_neighbor_nidContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_evpn_no_neighborContext;
-import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4Context;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4_labeled_unicastContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4_multicastContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv4_unicastContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv6_unicastContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_afed_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vab_vlanContext;
@@ -437,6 +438,9 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbafdnc_activateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4labu_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4labud_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4labuno_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4m_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4m_no_neighborContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4md_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4u_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4u_no_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafipv4ub_next_hopContext;
@@ -1944,12 +1948,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
+  public void enterEos_rb_af_ipv4_unicast(Eos_rb_af_ipv4_unicastContext ctx) {
     _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateV4UnicastAf();
   }
 
   @Override
-  public void exitEos_rb_af_ipv4(Eos_rb_af_ipv4Context ctx) {
+  public void exitEos_rb_af_ipv4_unicast(Eos_rb_af_ipv4_unicastContext ctx) {
     _currentAristaBgpVrfAf = null;
   }
 
@@ -1960,7 +1964,17 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rb_af_ipv4_labeled_unicast(Eos_rb_af_ipv4_labeled_unicastContext ctx) {
-    _currentAristaBgpNeighborAddressFamily = null;
+    _currentAristaBgpVrfAf = null;
+  }
+
+  @Override
+  public void enterEos_rb_af_ipv4_multicast(Eos_rb_af_ipv4_multicastContext ctx) {
+    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateV4MulticastAf();
+  }
+
+  @Override
+  public void exitEos_rb_af_ipv4_multicast(Eos_rb_af_ipv4_multicastContext ctx) {
+    _currentAristaBgpVrfAf = null;
   }
 
   @Override
@@ -2058,6 +2072,36 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbafipv4labuno_neighbor(Eos_rbafipv4labuno_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbafipv4md_neighbor(Eos_rbafipv4md_neighborContext ctx) {
+    enterCurrentBgpNeighborAddressFamily(ctx, ctx.nid);
+  }
+
+  @Override
+  public void exitEos_rbafipv4md_neighbor(Eos_rbafipv4md_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbafipv4m_neighbor(Eos_rbafipv4m_neighborContext ctx) {
+    enterCurrentBgpNeighborAddressFamily(ctx, ctx.nid);
+  }
+
+  @Override
+  public void exitEos_rbafipv4m_neighbor(Eos_rbafipv4m_neighborContext ctx) {
+    _currentAristaBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void enterEos_rbafipv4m_no_neighbor(Eos_rbafipv4m_no_neighborContext ctx) {
+    enterCurrentBgpNeighborAddressFamily(ctx, ctx.nid);
+  }
+
+  @Override
+  public void exitEos_rbafipv4m_no_neighbor(Eos_rbafipv4m_no_neighborContext ctx) {
     _currentAristaBgpNeighborAddressFamily = null;
   }
 
