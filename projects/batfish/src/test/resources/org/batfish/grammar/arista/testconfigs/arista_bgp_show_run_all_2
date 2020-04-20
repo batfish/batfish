@@ -239,8 +239,8 @@ router bgp 64900
    !
    address-family ipv4 labeled-unicast
       bgp additional-paths receive
-      !TODO no bgp additional-paths send any
-      !TODO no bgp next-hop-unchanged
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
       default neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       !TODO no neighbor SOME_GROUP route-map in

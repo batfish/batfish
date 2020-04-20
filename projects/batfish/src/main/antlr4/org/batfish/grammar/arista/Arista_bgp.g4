@@ -221,7 +221,19 @@ eos_rbafipv4labu_neighbor
 eos_rbafipv4labu_no
 :
   NO
-  eos_rbafipv4labuno_neighbor
+  (
+    eos_rbafipv4labuno_bgp
+    | eos_rbafipv4labuno_neighbor
+  )
+;
+
+eos_rbafipv4labuno_bgp
+:
+  BGP
+  (
+     eos_rbafnobc_additional_paths
+     | eos_rbafnobc_next_hop_unchanged
+  )
 ;
 
 eos_rbafipv4labuno_neighbor
