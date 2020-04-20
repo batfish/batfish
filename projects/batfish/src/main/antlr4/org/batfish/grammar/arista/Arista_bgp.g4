@@ -1567,7 +1567,28 @@ eos_rbinon_import_localpref
 
 eos_rbinon_link_bandwidth
 :
-  LINK_BANDWIDTH UPDATE_DELAY? NEWLINE
+  LINK_BANDWIDTH
+  (
+    eos_rbinon_lb_adjust
+    | eos_rbinon_lb_lb
+    | eos_rbinon_lb_update_delay
+  )
+;
+
+eos_rbinon_lb_adjust
+:
+  ADJUST AUTO NEWLINE
+;
+
+// "no neighbor PG link-bandwidth"
+eos_rbinon_lb_lb
+:
+  NEWLINE
+;
+
+eos_rbinon_lb_update_delay
+:
+  UPDATE_DELAY NEWLINE
 ;
 
 eos_rbinon_local_v4_addr

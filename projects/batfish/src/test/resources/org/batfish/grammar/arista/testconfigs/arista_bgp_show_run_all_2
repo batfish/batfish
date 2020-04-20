@@ -114,7 +114,7 @@ router bgp 64900
    neighbor SOME_GROUP maximum-routes 12000
    no neighbor SOME_GROUP maximum-accepted-routes
    no neighbor SOME_GROUP link-bandwidth
-   !TODO no neighbor SOME_GROUP link-bandwidth adjust auto
+   no neighbor SOME_GROUP link-bandwidth adjust auto
    neighbor OTHER_GROUP peer-group
    no neighbor OTHER_GROUP remote-as
    no neighbor OTHER_GROUP import-localpref
@@ -163,7 +163,7 @@ router bgp 64900
    neighbor OTHER_GROUP maximum-routes 12000
    no neighbor OTHER_GROUP maximum-accepted-routes
    no neighbor OTHER_GROUP link-bandwidth
-   !TODO no neighbor OTHER_GROUP link-bandwidth adjust auto
+   no neighbor OTHER_GROUP link-bandwidth adjust auto
    neighbor 192.0.2.7 peer-group OTHER_GROUP
    neighbor 192.0.2.7 remote-as 64901
    neighbor 192.0.2.7 update-source Ethernet21/1

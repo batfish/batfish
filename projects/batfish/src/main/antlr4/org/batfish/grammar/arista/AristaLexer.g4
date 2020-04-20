@@ -324,6 +324,11 @@ ADJMGR
    'adjmgr'
 ;
 
+ADJUST
+:
+   'adjust'
+;
+
 ADJUST_MSS
 :
    'adjust-mss'
