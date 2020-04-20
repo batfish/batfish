@@ -1792,9 +1792,9 @@ public class AristaGrammarTest {
       assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));
     }
     {
-      AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4MulticastAf().getNeighbor(neighborIp);
-      assertThat(ipv4u, notNullValue());
-      assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4MC_IN"));
+      AristaBgpNeighborAddressFamily ipv4m = defaultVrf.getV4MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv4m, notNullValue());
+      assertThat(ipv4m.getRouteMapIn(), equalTo("IPV4MC_IN"));
     }
     {
       AristaBgpNeighborAddressFamily ipv4lu =
@@ -1809,14 +1809,14 @@ public class AristaGrammarTest {
       assertThat(ipv6lu.getRouteMapIn(), equalTo("IPV6LU_IN"));
     }
     {
+      AristaBgpNeighborAddressFamily ipv6m = defaultVrf.getV6MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv6m, notNullValue());
+      assertThat(ipv6m.getRouteMapIn(), equalTo("IPV6MC_IN"));
+    }
+    {
       AristaBgpNeighborAddressFamily ipv4sr = defaultVrf.getV4SrTeAf().getNeighbor(neighborIp);
       assertThat(ipv4sr, notNullValue());
       assertThat(ipv4sr.getRouteMapIn(), equalTo("IPV4SRTE_IN"));
-    }
-    {
-      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
-      assertThat(ipv6u, notNullValue());
-      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
     }
     {
       AristaBgpNeighborAddressFamily ipv6sr = defaultVrf.getV6SrTeAf().getNeighbor(neighborIp);

@@ -64,6 +64,7 @@ public final class AristaBgpVrf implements Serializable {
 
   // TODO: do these need to be different families, or 1 v4-specific but not unicast-specific?
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6LabeledUnicastAf;
+  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6MulticastAf;
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6SrTeAf;
 
@@ -469,6 +470,19 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   @Nonnull
+  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6MulticastAf() {
+    if (_v6MulticastAf == null) {
+      _v6MulticastAf = new AristaBgpVrfIpv6UnicastAddressFamily();
+    }
+    return _v6MulticastAf;
+  }
+
+  @Nullable
+  public AristaBgpVrfIpv6UnicastAddressFamily getV6MulticastAf() {
+    return _v6MulticastAf;
+  }
+
+  @Nonnull
   public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6SrTeAf() {
     if (_v6SrTeAf == null) {
       _v6SrTeAf = new AristaBgpVrfIpv6UnicastAddressFamily();
@@ -481,16 +495,16 @@ public final class AristaBgpVrf implements Serializable {
     return _v6SrTeAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv6UnicastAddressFamily getV6UnicastAf() {
-    return _v6UnicastAf;
-  }
-
   @Nonnull
   public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6UnicastAf() {
     if (_v6UnicastAf == null) {
       _v6UnicastAf = new AristaBgpVrfIpv6UnicastAddressFamily();
     }
+    return _v6UnicastAf;
+  }
+
+  @Nullable
+  public AristaBgpVrfIpv6UnicastAddressFamily getV6UnicastAf() {
     return _v6UnicastAf;
   }
 }

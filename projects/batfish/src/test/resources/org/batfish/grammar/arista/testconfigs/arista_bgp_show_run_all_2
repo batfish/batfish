@@ -379,20 +379,21 @@ router bgp 64900
       default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map IPV6SRTE_IN in
    !
-   !TODO address-family ipv6 multicast
-      !TODO bgp additional-paths receive
-      !TODO no bgp next-hop-unchanged
-      !TODO default neighbor SOME_GROUP activate
-      !TODO neighbor SOME_GROUP additional-paths receive
-      !TODO no neighbor SOME_GROUP route-map in
-      !TODO no neighbor SOME_GROUP route-map out
-      !TODO no neighbor SOME_GROUP next-hop-unchanged
-      !TODO default neighbor OTHER_GROUP activate
-      !TODO neighbor OTHER_GROUP additional-paths receive
-      !TODO no neighbor OTHER_GROUP route-map in
-      !TODO no neighbor OTHER_GROUP route-map out
-      !TODO no neighbor OTHER_GROUP next-hop-unchanged
-      !TODO default neighbor 192.0.2.7 activate
+   address-family ipv6 multicast
+      bgp additional-paths receive
+      no bgp next-hop-unchanged
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor OTHER_GROUP activate
+      neighbor OTHER_GROUP additional-paths receive
+      no neighbor OTHER_GROUP route-map in
+      no neighbor OTHER_GROUP route-map out
+      no neighbor OTHER_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6MC_IN in
    !
    !TODO address-family vpn-ipv4
       !TODO bgp additional-paths receive
