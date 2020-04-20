@@ -240,7 +240,9 @@ router bgp 64900
    address-family ipv4 labeled-unicast
       bgp additional-paths receive
       no bgp additional-paths send any
+      bgp next-hop-unchanged
       no bgp next-hop-unchanged
+      neighbor SOME_GROUP activate
       no neighbor SOME_GROUP activate
       default neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive

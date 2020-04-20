@@ -192,12 +192,10 @@ eos_rb_af_ipv4_labeled_unicast
 eos_rbafipv4labu_bgp
 :
   BGP
-  eos_rbafipv4labub_additional_paths
-;
-
-eos_rbafipv4labub_additional_paths
-:
-  ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
 ;
 
 eos_rbafipv4labu_default
