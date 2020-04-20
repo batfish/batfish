@@ -68,7 +68,7 @@ public class StaticRoute implements Serializable {
         .setNetwork(_network)
         .setNextHopIp(_nextHopIp)
         .setNextHopInterface(
-            _nextHopInterface != null ? CanonicalizeInterfaceName(_nextHopInterface) : null)
+            _nextHopInterface != null ? canonicalizeInterfaceName(_nextHopInterface) : null)
         .build();
   }
 
@@ -76,7 +76,7 @@ public class StaticRoute implements Serializable {
    * Canonicalizes the many FRR discard interface names into just the standard one
    * supported by the Batfish VI model - "null_interface"
    */
-  public String CanonicalizeInterfaceName(String nextHopInterface) {
+  private String canonicalizeInterfaceName(String nextHopInterface) {
     Matcher matcher = NULL_INTERFACE_PATTERN.matcher(nextHopInterface);
     if (matcher.matches()) {
       return org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
