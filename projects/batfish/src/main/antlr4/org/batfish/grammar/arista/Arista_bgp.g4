@@ -1226,6 +1226,7 @@ eos_rbino_bgp
     | eos_rbino_bgp_confederation
     | eos_rbino_bgp_control_plane_filter
     | eos_rbino_bgp_default
+    | eos_rbino_bgp_fec
     | eos_rbino_bgp_missing_policy
     | eos_rbino_bgp_monitoring
     | eos_rbino_bgp_next_hop_unchanged
@@ -1408,6 +1409,11 @@ eos_rbino_bgp_default_ipv4u_transport
 eos_rbino_bgp_default_ipv6_unicast
 :
   IPV6_UNICAST NEWLINE
+;
+
+eos_rbino_bgp_fec
+:
+  FEC SKIP_LITERAL IN_PLACE UPDATE NEWLINE
 ;
 
 eos_rbino_bgp_missing_policy

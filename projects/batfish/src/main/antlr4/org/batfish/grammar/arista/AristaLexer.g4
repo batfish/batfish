@@ -6075,6 +6075,11 @@ IN
    'in'
 ;
 
+IN_PLACE
+:
+   'in-place'
+;
+
 INACTIVE
 :
    'inactive'
@@ -11991,6 +11996,12 @@ SITEMAP
 SIZE
 :
    'size'
+;
+
+// cannot declare a rule with reserved name SKIP
+SKIP_LITERAL
+:
+   'skip'
 ;
 
 SLA
