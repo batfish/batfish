@@ -453,6 +453,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_default_originateConte
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnobc_additional_pathsContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbafnobc_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_activateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbafnonc_default_originateContext;
@@ -2162,6 +2163,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.SEND() != null) {
       addPaths.setSend(SendType.NONE);
     }
+  }
+
+  @Override
+  public void exitEos_rbafnobc_next_hop_unchanged(Eos_rbafnobc_next_hop_unchangedContext ctx) {
+    _currentAristaBgpVrfAf.setNextHopUnchanged(false);
   }
 
   @Override

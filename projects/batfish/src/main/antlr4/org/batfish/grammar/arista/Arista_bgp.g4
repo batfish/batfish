@@ -372,7 +372,19 @@ eos_rb_af_evpn_neighbor_nid
 
 eos_rb_af_evpn_no:
   NO
-  eos_rb_af_evpn_no_neighbor
+  (
+    eos_rb_af_evpn_no_bgp
+    | eos_rb_af_evpn_no_neighbor
+  )
+;
+
+eos_rb_af_evpn_no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
 ;
 
 eos_rb_af_evpn_no_neighbor
@@ -477,7 +489,8 @@ eos_rbafbc_next_hop_unchanged
 eos_rb_af_no_bgp_common
 :
   eos_rbafnobc_additional_paths
-  | eos_rbafnobc_bgp_route
+  | eos_rbafnobc_route
+  | eos_rbafnobc_next_hop_unchanged
 
 ;
 
@@ -486,7 +499,12 @@ eos_rbafnobc_additional_paths
   ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
 ;
 
-eos_rbafnobc_bgp_route
+eos_rbafnobc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnobc_route
 :
   ROUTE INSTALL_MAP NEWLINE
 ;
