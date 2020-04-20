@@ -215,7 +215,12 @@ eos_rbafipv4labud_neighbor
 eos_rbafipv4labu_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
-  eos_rbafnc_additional_paths
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
 ;
 
 eos_rbafipv4labu_no
@@ -239,7 +244,13 @@ eos_rbafipv4labuno_bgp
 eos_rbafipv4labuno_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
-  eos_rbafipv4labunon_next_hop_self
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafipv4labunon_next_hop_self
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
 ;
 
 eos_rbafipv4labunon_next_hop_self
