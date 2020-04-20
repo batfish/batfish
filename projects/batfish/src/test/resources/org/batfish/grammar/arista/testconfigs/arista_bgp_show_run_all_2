@@ -81,8 +81,8 @@ router bgp 64900
    no neighbor SOME_GROUP shutdown
    no neighbor SOME_GROUP remove-private-as
    no neighbor SOME_GROUP link-bandwidth update-delay
-   !TODO no neighbor SOME_GROUP as-path prepend-own disabled
-   !TODO no neighbor SOME_GROUP as-path remote-as replace out
+   no neighbor SOME_GROUP as-path prepend-own disabled
+   no neighbor SOME_GROUP as-path remote-as replace out
    no neighbor SOME_GROUP local-as
    no neighbor SOME_GROUP weight
    no neighbor SOME_GROUP out-delay
@@ -130,8 +130,8 @@ router bgp 64900
    no neighbor OTHER_GROUP shutdown
    no neighbor OTHER_GROUP remove-private-as
    no neighbor OTHER_GROUP link-bandwidth update-delay
-   !TODO no neighbor OTHER_GROUP as-path prepend-own disabled
-   !TODO no neighbor OTHER_GROUP as-path remote-as replace out
+   no neighbor OTHER_GROUP as-path prepend-own disabled
+   no neighbor OTHER_GROUP as-path remote-as replace out
    no neighbor OTHER_GROUP local-as
    no neighbor OTHER_GROUP weight
    no neighbor OTHER_GROUP out-delay

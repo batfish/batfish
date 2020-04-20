@@ -3437,6 +3437,11 @@ DISABLE_ADVERTISEMENT
    'disable-advertisement'
 ;
 
+DISABLED
+:
+   'disabled'
+;
+
 DISCARD
 :
    'discard'
@@ -10003,6 +10008,11 @@ PREPEND
    'prepend'
 ;
 
+PREPEND_OWN
+:
+   'prepend-own'
+;
+
 PRESERVE_ATTRIBUTES
 :
    'preserve-attributes'
@@ -10756,6 +10766,11 @@ REPCMD
 REPLACE_AS
 :
    'replace-as'
+;
+
+REPLACE
+:
+   'replace'
 ;
 
 REPLY
@@ -15871,6 +15886,11 @@ M_AsPath_PREPEND
    'prepend' -> type ( PREPEND ) , popMode
 ;
 
+M_AsPath_PREPEND_OWN
+:
+   'prepend-own' -> type ( PREPEND_OWN ) , popMode
+;
+
 M_AsPath_ORIGINATES_FROM
 :
    'originates-from' -> type ( ORIGINATES_FROM ) , popMode
@@ -15879,6 +15899,11 @@ M_AsPath_ORIGINATES_FROM
 M_AsPath_REGEX_MODE
 :
    'regex-mode' -> type ( REGEX_MODE ) , popMode
+;
+
+M_AsPath_REMOTE_AS
+:
+   'remote-as' -> type ( REMOTE_AS ) , popMode
 ;
 
 M_AsPath_TAG

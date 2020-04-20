@@ -1547,6 +1547,7 @@ eos_rbino_neighbor
   NEIGHBOR nid = eos_neighbor_id
   (
     eos_rbinon_additional_paths
+    | eos_rbinon_as_path
     | eos_rbinon_auto_local_addr
     | eos_rbinon_default_originate
     | eos_rbinon_description
@@ -1586,6 +1587,25 @@ eos_rbino_neighbor
 eos_rbinon_additional_paths
 :
   ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbinon_as_path
+:
+  AS_PATH
+  (
+    eos_rbinonasp_prepend_own
+    | eos_rbinonasp_remote_as
+  )
+;
+
+eos_rbinonasp_prepend_own
+:
+  PREPEND_OWN DISABLED NEWLINE
+;
+
+eos_rbinonasp_remote_as
+:
+  REMOTE_AS REPLACE OUT NEWLINE
 ;
 
 eos_rbinon_auto_local_addr
