@@ -1088,6 +1088,7 @@ eos_rb_af_neighbor_common
     | eos_rbafnc_default_originate
     | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_prefix_list
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
   )
@@ -1116,6 +1117,11 @@ eos_rbafnc_graceful_restart
 eos_rbafnc_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnc_prefix_list
+:
+  PREFIX_LIST name = variable (IN | OUT) NEWLINE
 ;
 
 eos_rbafnc_route_map
@@ -1224,6 +1230,7 @@ eos_rb_inner
   | eos_rbi_default
   | eos_rbi_default_metric
   | eos_rbi_distance
+  | eos_rbi_dynamic
   | eos_rbi_graceful_restart
   | eos_rbi_graceful_restart_helper
   | eos_rbi_ip
@@ -1255,6 +1262,7 @@ eos_rbi_bgp
   (
     eos_rbib_additional_paths
     | eos_rbib_advertise_inactive
+    | eos_rbib_aggregate_route
     | eos_rbib_allowas_in
     | eos_rbib_always_compare_med
     | eos_rbib_asn
@@ -1297,6 +1305,11 @@ eos_rbib_additional_paths
 eos_rbib_advertise_inactive
 :
   ADVERTISE_INACTIVE NEWLINE
+;
+
+eos_rbib_aggregate_route
+:
+  AGGREGATE_ROUTE COMMUNITY INHERITANCE LOOSE NEWLINE
 ;
 
 eos_rbib_allowas_in
@@ -1529,6 +1542,7 @@ eos_rbib_transport
     eos_rbibtrans_ipv4
     | eos_rbibtrans_ipv6
     | eos_rbibtrans_listen_port
+    | eos_rbibtrans_pmtud
     | eos_rbibtrans_qos
   )
 ;
@@ -1549,6 +1563,11 @@ eos_rbibtrans_listen_port
 :
 // 1-65535
   LISTEN_PORT lp = DEC NEWLINE
+;
+
+eos_rbibtrans_pmtud
+:
+  PMTUD DISABLED? NEWLINE
 ;
 
 eos_rbibtrans_qos
@@ -1592,6 +1611,12 @@ eos_rbi_ip
 eos_rbi_ipv6
 :
   IPV6 ACCESS_GROUP name = variable IN? NEWLINE
+;
+
+eos_rbi_dynamic
+:
+// u32
+  DYNAMIC PEER MAX max = DEC NEWLINE
 ;
 
 eos_rbi_graceful_restart
@@ -1675,11 +1700,13 @@ eos_rbi_neighbor_common
     | eos_rbinc_next_hop_self
     | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
+    | eos_rbinc_passive
     | eos_rbinc_password
-    | eos_rbinc_prefix_list
+    | eos_rbafnc_prefix_list  // intended rbafnc - it affects the generic address family
     | eos_rbinc_remote_as
     | eos_rbinc_remove_private_as
-    | eos_rbafnc_route_map
+    | eos_rbinc_rib_in
+    | eos_rbafnc_route_map // intended rbafnc - it affects the generic address family
     | eos_rbinc_route_reflector_client
     | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
@@ -1802,14 +1829,14 @@ eos_rbinc_next_hop_unchanged
   NEXT_HOP_UNCHANGED NEWLINE
 ;
 
+eos_rbinc_passive
+:
+  PASSIVE NEWLINE
+;
+
 eos_rbinc_password
 :
   PASSWORD (encrypt_level = DEC)? variable NEWLINE
-;
-
-eos_rbinc_prefix_list
-:
-  PREFIX_LIST name = variable (IN | OUT) NEWLINE
 ;
 
 eos_rbinc_remote_as
@@ -1820,6 +1847,11 @@ eos_rbinc_remote_as
 eos_rbinc_remove_private_as
 :
   REMOVE_PRIVATE_AS (ALL REPLACE_AS?)? NEWLINE
+;
+
+eos_rbinc_rib_in
+:
+  RIB_IN PRE_POLICY RETAIN ALL? NEWLINE
 ;
 
 eos_rbinc_route_reflector_client
@@ -1930,6 +1962,7 @@ eos_rbino_bgp
   (
     eos_rbino_bgp_additional_paths
     | eos_rbino_bgp_advertise_inactive
+    | eos_rbino_bgp_aggregate_route
     | eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_always_compare_med
     | eos_rbino_bgp_aspath_cmp_include_nexthop
@@ -1958,6 +1991,11 @@ eos_rbino_bgp_additional_paths
 eos_rbino_bgp_advertise_inactive
 :
   ADVERTISE_INACTIVE NEWLINE
+;
+
+eos_rbino_bgp_aggregate_route
+:
+  AGGREGATE_ROUTE COMMUNITY INHERITANCE LOOSE NEWLINE
 ;
 
 eos_rbino_bgp_allowas_in
@@ -2167,6 +2205,7 @@ eos_rbino_bgp_transport
     eos_rbino_bgptr_ipv4
     | eos_rbino_bgptr_ipv6
     | eos_rbino_bgptr_listen_port
+    | eos_rbino_bgptr_pmtud
     | eos_rbino_bgptr_qos
   )
 ;
@@ -2184,6 +2223,11 @@ eos_rbino_bgptr_ipv6
 eos_rbino_bgptr_listen_port
 :
   LISTEN_PORT NEWLINE
+;
+
+eos_rbino_bgptr_pmtud
+:
+  PMTUD NEWLINE
 ;
 
 eos_rbino_bgptr_qos
@@ -2218,7 +2262,52 @@ eos_rbino_ipv6
 
 eos_rbino_monitoring
 :
-  MONITORING PORT NEWLINE
+  MONITORING
+  (
+    eos_rbino_monitoring_port
+    | eos_rbino_monitoring_received
+  )
+;
+
+eos_rbino_monitoring_port
+:
+  PORT NEWLINE
+;
+
+eos_rbino_monitoring_received
+:
+  RECEIVED eos_rbino_mr_routes
+;
+
+eos_rbino_mr_routes
+:
+  ROUTES
+  (
+    eos_rbino_mrr_address_family
+    | eos_rbino_mrr_post_policy
+    | eos_rbino_mrr_pre_policy
+  )
+;
+
+eos_rbino_mrr_address_family
+:
+  ADDRESS_FAMILY
+  (
+    IPV4 UNICAST
+    | IPV6 UNICAST
+    | IPV6 LABELED_UNICAST
+  )
+  NEWLINE
+;
+
+eos_rbino_mrr_post_policy
+:
+  POST_POLICY NEWLINE
+;
+
+eos_rbino_mrr_pre_policy
+:
+  PRE_POLICY NEWLINE
 ;
 
 eos_rbino_neighbor
@@ -2226,8 +2315,10 @@ eos_rbino_neighbor
   NEIGHBOR nid = eos_neighbor_id
   (
     eos_rbinon_additional_paths
+    | eos_rbinon_allowas_in
     | eos_rbinon_as_path
     | eos_rbinon_auto_local_addr
+    | eos_rbinon_bfd
     | eos_rbinon_default_originate
     | eos_rbinon_description
     | eos_rbinon_dont_capability_negotiate
@@ -2250,12 +2341,17 @@ eos_rbino_neighbor
     | eos_rbinon_next_hop_unchanged
     | eos_rbinon_next_hop_v6_addr
     | eos_rbinon_out_delay
+    | eos_rbinon_passive
     | eos_rbinon_password
+    | eos_rbafnonc_prefix_list  // intended rbafnonc - it affects the generic address family
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
+    | eos_rbafnonc_route_map  // intended rbafnonc - it affects the generic address family
     | eos_rbinon_route_reflector_client
     | eos_rbinon_route_to_peer
+    | eos_rbinon_send_community
     | eos_rbinon_shutdown
+    | eos_rbinon_timers
     | eos_rbinon_ttl
     | eos_rbinon_transport
     | eos_rbinon_update_source
@@ -2266,6 +2362,11 @@ eos_rbino_neighbor
 eos_rbinon_additional_paths
 :
   ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbinon_allowas_in
+:
+  ALLOWAS_IN NEWLINE
 ;
 
 eos_rbinon_as_path
@@ -2290,6 +2391,11 @@ eos_rbinonasp_remote_as
 eos_rbinon_auto_local_addr
 :
   AUTO_LOCAL_ADDR NEWLINE
+;
+
+eos_rbinon_bfd
+:
+  BFD NEWLINE
 ;
 
 eos_rbinon_default_originate
@@ -2423,6 +2529,11 @@ eos_rbinon_out_delay
   OUT_DELAY NEWLINE
 ;
 
+eos_rbinon_passive
+:
+  PASSIVE NEWLINE
+;
+
 eos_rbinon_password
 :
   PASSWORD NEWLINE
@@ -2448,9 +2559,19 @@ eos_rbinon_route_to_peer
   ROUTE_TO_PEER NEWLINE
 ;
 
+eos_rbinon_send_community
+:
+  SEND_COMMUNITY NEWLINE
+;
+
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbinon_timers
+:
+  TIMERS NEWLINE
 ;
 
 eos_rbinon_ttl
@@ -2822,7 +2943,38 @@ eos_rbm_port
 
 eos_rbm_received
 :
-  RECEIVED ROUTES ( POST_POLICY | PRE_POLICY ) NEWLINE
+  RECEIVED  eos_rbm_received_routes
+;
+
+eos_rbm_received_routes
+:
+  ROUTES
+  (
+    eos_rbmrr_address_family
+    | eos_rbmrr_post_policy
+    | eos_rbmrr_pre_policy
+  )
+;
+
+eos_rbmrr_address_family
+:
+  ADDRESS_FAMILY
+  (
+    IPV4 UNICAST
+    | IPV6 LABELED_UNICAST
+    | IPV6 UNICAST
+  )
+  NEWLINE
+;
+
+eos_rbmrr_post_policy
+:
+  POST_POLICY NEWLINE
+;
+
+eos_rbmrr_pre_policy
+:
+  PRE_POLICY NEWLINE
 ;
 
 eos_rbm_station
@@ -2889,8 +3041,26 @@ eos_rbv_address_family
 :
   ADDRESS_FAMILY
   (
-    eos_rb_af_ipv4
-    | eos_rb_af_ipv6
+    eos_rbv_af_ipv4
+    | eos_rbv_af_ipv6
+  )
+;
+
+eos_rbv_af_ipv4
+:
+  IPV4
+  (
+    eos_rb_af_ipv4_multicast
+    | eos_rb_af_ipv4_unicast
+  )
+;
+
+eos_rbv_af_ipv6
+:
+  IPV6
+  (
+    eos_rb_af_ipv6_multicast
+    | eos_rb_af_ipv6_unicast
   )
 ;
 

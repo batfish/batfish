@@ -544,6 +544,11 @@ AGGREGATE_ADDRESS
    'aggregate-address'
 ;
 
+AGGREGATE_ROUTE
+:
+   'aggregate-route'
+;
+
 AGING
 :
    'aging'
@@ -6185,6 +6190,11 @@ INHERIT
    'inherit'
 ;
 
+INHERITANCE
+:
+   'inheritance'
+;
+
 INHERITANCE_DISABLE
 :
    'inheritance-disable'
@@ -7247,6 +7257,11 @@ LOOPGUARD
    'loopguard'
 ;
 
+LOOSE
+:
+   'loose'
+;
+
 LOTUSNOTES
 :
    'lotusnotes'
@@ -7575,6 +7590,11 @@ MATIP_TYPE_A
 MATIP_TYPE_B
 :
    'matip-type-b'
+;
+
+MAX
+:
+   'max'
 ;
 
 MAXAS_LIMIT
@@ -9748,6 +9768,11 @@ PM
    'pm'
 ;
 
+PMTUD
+:
+   'pmtud'
+;
+
 POAP
 :
    'poap'
@@ -10878,6 +10903,11 @@ RESUME
    'resume'
 ;
 
+RETAIN
+:
+   'retain'
+;
+
 RETRANSMIT
 :
    'retransmit'
@@ -10986,6 +11016,11 @@ RIB
 RIB_HAS_ROUTE
 :
    'rib-has-route'
+;
+
+RIB_IN
+:
+   'rib-in'
 ;
 
 RIB_METRIC_AS_EXTERNAL
