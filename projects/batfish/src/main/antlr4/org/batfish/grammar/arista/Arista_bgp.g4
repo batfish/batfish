@@ -2347,6 +2347,7 @@ eos_rbino_neighbor
     | eos_rbinon_route_map
     | eos_rbinon_route_reflector_client
     | eos_rbinon_route_to_peer
+    | eos_rbinon_send_community
     | eos_rbinon_shutdown
     | eos_rbinon_ttl
     | eos_rbinon_transport
@@ -2563,6 +2564,11 @@ eos_rbinon_route_reflector_client
 eos_rbinon_route_to_peer
 :
   ROUTE_TO_PEER NEWLINE
+;
+
+eos_rbinon_send_community
+:
+  SEND_COMMUNITY NEWLINE
 ;
 
 eos_rbinon_shutdown

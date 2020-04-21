@@ -117,7 +117,7 @@ router bgp 64900
    neighbor SOME_GROUP enforce-first-as
    no neighbor SOME_GROUP metric-out
    no neighbor SOME_GROUP idle-restart-timer
-   !TODO no neighbor SOME_GROUP send-community
+   no neighbor SOME_GROUP send-community
    neighbor SOME_GROUP maximum-routes 12000
    no neighbor SOME_GROUP maximum-accepted-routes
    no neighbor SOME_GROUP link-bandwidth
