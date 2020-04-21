@@ -568,6 +568,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_selfContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_passiveContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_peer_groupContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remote_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remove_private_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_route_reflector_clientContext;
@@ -3085,6 +3086,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_passive(Eos_rbinon_passiveContext ctx) {
     _currentAristaBgpNeighbor.setPassive(false);
+  }
+
+  @Override
+  public void exitEos_rbinon_peer_group(Eos_rbinon_peer_groupContext ctx) {
+    assert _currentAristaBgpNeighbor instanceof AristaBgpHasPeerGroup;
+    ((AristaBgpHasPeerGroup) _currentAristaBgpNeighbor).setPeerGroup(null);
   }
 
   @Override
