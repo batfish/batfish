@@ -722,6 +722,20 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case SINGLE_APPLICATION_SPEC:
+          {
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.SINGLE_APPLICATION_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
+            break;
+          }
         case SOURCE_LOCATION:
           {
             suggestions = autoCompleteSourceLocation(query, completionMetadata);

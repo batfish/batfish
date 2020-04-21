@@ -1,5 +1,10 @@
 !RANCID-CONTENT-TYPE: arista
 !
+! Command: show running-config all
+! device: arista_bgp_show_run_all (DCS-7260CX-64, EOS-4.19.1F)
+!
+! boot system flash:/EOS-4.19.1F.swi
+!
 hostname arista_bgp_show_run_all
 !
 router bgp 64900

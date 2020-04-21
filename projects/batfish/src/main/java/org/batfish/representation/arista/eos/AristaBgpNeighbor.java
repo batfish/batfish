@@ -24,6 +24,8 @@ public abstract class AristaBgpNeighbor implements Serializable {
   @Nullable private Boolean _nextHopPeer;
   @Nullable private Boolean _nextHopSelf;
   @Nullable private Boolean _nextHopUnchanged;
+  // Whether this neighbor will initiate a BGP connection. If false, will listen only.
+  @Nullable private Boolean _passive;
   @Nullable private Long _remoteAs;
   @Nullable private RemovePrivateAsMode _removePrivateAsMode;
   @Nullable private Boolean _routeReflectorClient;
@@ -138,6 +140,15 @@ public abstract class AristaBgpNeighbor implements Serializable {
   }
 
   @Nullable
+  public Boolean getPassive() {
+    return _passive;
+  }
+
+  public void setPassive(@Nullable Boolean passive) {
+    _passive = passive;
+  }
+
+  @Nullable
   public Long getRemoteAs() {
     return _remoteAs;
   }
@@ -235,6 +246,9 @@ public abstract class AristaBgpNeighbor implements Serializable {
     }
     if (_nextHopUnchanged == null) {
       _nextHopUnchanged = other._nextHopUnchanged;
+    }
+    if (_passive == null) {
+      _passive = other._passive;
     }
     if (_remoteAs == null) {
       _remoteAs = other._remoteAs;

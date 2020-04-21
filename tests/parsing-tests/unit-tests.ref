@@ -133,7 +133,7 @@
           "configs/asa_ssh"
         ],
         "aws_configs" : [
-          "input/aws_configs/NatGateways.json"
+          "aws_configs/NatGateways.json"
         ],
         "bgp-allow" : [
           "configs/juniper_bgp_allow"
