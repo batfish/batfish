@@ -92,15 +92,12 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_B
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
-import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -620,60 +617,51 @@ import org.batfish.grammar.arista.AristaParser.If_channel_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_access_groupContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_addressContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_address_secondaryContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_forwardContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_nat_insideContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_areaContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_costContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_dead_intervalContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_dead_interval_minimalContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_hello_intervalContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_networkContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_passive_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_ospf_shutdownContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_pim_neighbor_filterContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_policyContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_proxy_arpContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_router_isisContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_router_ospf_areaContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_verifyContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_vrf_forwardingContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.If_mtuContext;
+import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
+import org.batfish.grammar.arista.AristaParser.If_no_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_description_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_st_portfastContext;
+import org.batfish.grammar.arista.AristaParser.If_no_switchport_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
-import org.batfish.grammar.arista.AristaParser.If_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
 import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
-import org.batfish.grammar.arista.AristaParser.If_speed_iosContext;
 import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
-import org.batfish.grammar.arista.AristaParser.If_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_modeContext;
+import org.batfish.grammar.arista.AristaParser.If_switchport_switchportContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_encapsulationContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.arista.AristaParser.If_vlanContext;
-import org.batfish.grammar.arista.AristaParser.If_vrfContext;
-import org.batfish.grammar.arista.AristaParser.If_vrf_memberContext;
+import org.batfish.grammar.arista.AristaParser.If_vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
-import org.batfish.grammar.arista.AristaParser.Ifdhcpr_addressContext;
-import org.batfish.grammar.arista.AristaParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_access_group_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipo_cost_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipo_dead_interval_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipo_hello_interval_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipo_network_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipp_neighbor_filter_eosContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_modeContext;
 import org.batfish.grammar.arista.AristaParser.Iftunnel_protectionContext;
@@ -688,6 +676,7 @@ import org.batfish.grammar.arista.AristaParser.Ike_encryptionContext;
 import org.batfish.grammar.arista.AristaParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.arista.AristaParser.Inspect_protocolContext;
 import org.batfish.grammar.arista.AristaParser.Int_exprContext;
+import org.batfish.grammar.arista.AristaParser.Interface_addressContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_stanzaContext;
@@ -745,6 +734,7 @@ import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Null_as_path_regexContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
+import org.batfish.grammar.arista.AristaParser.Ospf_areaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_is_stanzaContext;
@@ -1055,27 +1045,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public Warnings getWarnings() {
     return _w;
-  }
-
-  @Override
-  public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      if (ctx.POINT_TO_POINT() != null) {
-        iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
-      } else if (ctx.BROADCAST() != null) {
-        iface.setOspfNetworkType(OspfNetworkType.BROADCAST);
-      } else if (ctx.POINT_TO_MULTIPOINT() != null) {
-        if (ctx.NON_BROADCAST() != null) {
-          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST);
-        } else {
-          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT);
-        }
-      } else if (ctx.NON_BROADCAST() != null) {
-        iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
-      } else {
-        warn(ctx, "Cannot determine OSPF network type.");
-      }
-    }
   }
 
   private static String getDescription(Description_lineContext ctx) {
@@ -3583,18 +3552,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIf_ip_forward(If_ip_forwardContext ctx) {
-    if (ctx.NO() != null) {
-      todo(ctx);
-    }
-  }
-
-  @Override
-  public void enterIf_spanning_tree(If_spanning_treeContext ctx) {
-    _no = ctx.NO() != null;
-  }
-
-  @Override
   public void enterIf_vrrp(If_vrrpContext ctx) {
     _currentVrrpGroupNum = toInteger(ctx.groupnum);
   }
@@ -5103,21 +5060,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_autostate(If_autostateContext ctx) {
-    if (ctx.NO() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setAutoState(false);
-      }
-    }
+    _currentInterfaces.forEach(currentInterface -> currentInterface.setAutoState(true));
   }
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
-    Double newBandwidthBps;
-    if (ctx.NO() != null) {
-      newBandwidthBps = null;
-    } else {
-      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
-    }
+    double newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
@@ -5144,69 +5092,85 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
+  public void exitIfip_access_group_eos(Ifip_access_group_eosContext ctx) {
     String name = ctx.name.getText();
-    AristaStructureUsage usage = null;
-    if (ctx.IN() != null || ctx.INGRESS() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setIncomingFilter(name);
-        usage = INTERFACE_INCOMING_FILTER;
-      }
-    } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setOutgoingFilter(name);
-        usage = INTERFACE_OUTGOING_FILTER;
-      }
+    AristaStructureUsage usage;
+    if (ctx.IN() != null) {
+      usage = INTERFACE_IP_ACCESS_GROUP_IN;
+      _currentInterfaces.forEach(currentInterface -> currentInterface.setIncomingFilter(name));
     } else {
-      throw new BatfishException("bad direction");
+      assert ctx.OUT() != null;
+      usage = INTERFACE_IP_ACCESS_GROUP_OUT;
+      _currentInterfaces.forEach(currentInterface -> currentInterface.setOutgoingFilter(name));
     }
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
-  public void exitIf_ip_address(If_ip_addressContext ctx) {
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
+  public void exitIfip_address_address_eos(Ifip_address_address_eosContext ctx) {
+    ConcreteInterfaceAddress addr = toAddress(ctx.addr);
+    if (ctx.SECONDARY() != null) {
+      _currentInterfaces.forEach(i -> i.getSecondaryAddresses().add(addr));
     } else {
-      Ip ip = toIp(ctx.ip);
-      Ip mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask);
-    }
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setAddress(address);
-    }
-    if (ctx.STANDBY() != null) {
-      Ip standbyIp = toIp(ctx.standby_address);
-      ConcreteInterfaceAddress standbyAddress =
-          ConcreteInterfaceAddress.create(standbyIp, address.getNetworkBits());
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setStandbyAddress(standbyAddress);
-      }
-    }
-    if (ctx.ROUTE_PREFERENCE() != null) {
-      warn(ctx, "Unsupported: route-preference declared in interface IP address");
-    }
-    if (ctx.TAG() != null) {
-      warn(ctx, "Unsupported: tag declared in interface IP address");
+      _currentInterfaces.forEach(i -> i.setAddress(addr));
     }
   }
 
   @Override
-  public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
-    Ip ip;
-    Ip mask;
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
+  public void exitIfip_address_virtual_eos(Ifip_address_virtual_eosContext ctx) {
+    // TODO: this should be handled differently, since virtual is present.
+    ConcreteInterfaceAddress addr = toAddress(ctx.addr);
+    if (ctx.SECONDARY() != null) {
+      _currentInterfaces.forEach(i -> i.getSecondaryAddresses().add(addr));
     } else {
-      ip = toIp(ctx.ip);
-      mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask.numSubnetBits());
+      _currentInterfaces.forEach(i -> i.setAddress(addr));
     }
+  }
+
+  @Override
+  public void exitIfipo_area_eos(Ifipo_area_eosContext ctx) {
+    long area = toLong(ctx.area);
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfArea(area);
+    }
+  }
+
+  @Override
+  public void exitIfipo_cost_eos(Ifipo_cost_eosContext ctx) {
+    int cost = toInteger(ctx.cost);
+    _currentInterfaces.forEach(i -> i.setOspfCost(cost));
+  }
+
+  @Override
+  public void exitIfipo_dead_interval_eos(Ifipo_dead_interval_eosContext ctx) {
+    int seconds = toInteger(ctx.seconds);
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.getSecondaryAddresses().add(address);
+      currentInterface.setOspfDeadInterval(seconds);
+      currentInterface.setOspfHelloMultiplier(0);
     }
+  }
+
+  @Override
+  public void exitIfipo_hello_interval_eos(Ifipo_hello_interval_eosContext ctx) {
+    int seconds = toInteger(ctx.seconds);
+    _currentInterfaces.forEach(i -> i.setOspfHelloInterval(seconds));
+  }
+
+  @Override
+  public void exitIfipo_network_eos(Ifipo_network_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Override
+  public void exitIfipp_neighbor_filter_eos(Ifipp_neighbor_filter_eosContext ctx) {
+    String acl = ctx.acl.getText();
+    int line = ctx.acl.getStart().getLine();
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, INTERFACE_PIM_NEIGHBOR_FILTER, line);
+  }
+
+  @Override
+  public void exitIfip_proxy_arp_eos(Ifip_proxy_arp_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setProxyArp(true));
   }
 
   @Override
@@ -5230,20 +5194,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
-  }
-
-  @Override
-  public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
-    _configuration
-        .getNatInside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
-  }
-
-  @Override
-  public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
-    _configuration
-        .getNatOutside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
   }
 
   @Override
@@ -5281,146 +5231,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       }
       iface.getAristaNats().add(nat);
     }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
-    long area;
-    if (ctx.area_dec != null) {
-      area = toInteger(ctx.area_dec);
-    } else {
-      assert ctx.area_ip != null;
-      area = toIp(ctx.area_ip).asLong();
-    }
-    String ospfProcessName = ctx.procname.getText();
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfArea(area);
-      iface.setOspfProcess(ospfProcessName);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_cost(If_ip_ospf_costContext ctx) {
-    int cost = toInteger(ctx.cost);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfCost(cost);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_dead_interval(If_ip_ospf_dead_intervalContext ctx) {
-    int seconds = toInteger(ctx.seconds);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfDeadInterval(seconds);
-      currentInterface.setOspfHelloMultiplier(0);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_dead_interval_minimal(If_ip_ospf_dead_interval_minimalContext ctx) {
-    int multiplier = toInteger(ctx.mult);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfDeadInterval(1);
-      currentInterface.setOspfHelloMultiplier(multiplier);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_hello_interval(If_ip_ospf_hello_intervalContext ctx) {
-    int seconds = toInteger(ctx.seconds);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfHelloInterval(seconds);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_passive_interface(If_ip_ospf_passive_interfaceContext ctx) {
-    boolean passive = ctx.NO() == null;
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfPassive(passive);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_shutdown(If_ip_ospf_shutdownContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfShutdown(ctx.NO() == null);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_pim_neighbor_filter(If_ip_pim_neighbor_filterContext ctx) {
-    String acl = ctx.acl.getText();
-    int line = ctx.acl.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, INTERFACE_PIM_NEIGHBOR_FILTER, line);
-  }
-
-  @Override
-  public void exitIf_ip_policy(If_ip_policyContext ctx) {
-    String policyName = ctx.name.getText();
-    warn(ctx, "PBR is not supported");
-    //    for (Interface currentInterface : _currentInterfaces) {
-    //      currentInterface.setRoutingPolicy(policyName);
-    //    }
-    _configuration.referenceStructure(
-        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
-  }
-
-  @Override
-  public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
-    boolean enabled = ctx.NO() == null;
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setProxyArp(enabled);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
-    long area;
-    if (ctx.area_dec != null) {
-      area = toInteger(ctx.area_dec);
-    } else {
-      assert ctx.area_ip != null;
-      area = toIp(ctx.area_ip).asLong();
-    }
-    String ospfProcessName = ctx.procname.getText();
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfArea(area);
-      iface.setOspfProcess(ospfProcessName);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_verify(If_ip_verifyContext ctx) {
-    if (ctx.acl != null) {
-      String acl = ctx.acl.getText();
-      int line = ctx.acl.getLine();
-      _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, acl, INTERFACE_IP_VERIFY_ACCESS_LIST, line);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_vrf_forwarding(If_ip_vrf_forwardingContext ctx) {
-    String name = ctx.vrf.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_vrf_sitemap(If_ip_vrf_sitemapContext ctx) {
-    String map = ctx.map.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, map, INTERFACE_IP_VRF_SITEMAP, ctx.map.getStart().getLine());
   }
 
   @Override
@@ -5469,13 +5279,52 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIf_no_autostate(If_no_autostateContext ctx) {
+    _currentInterfaces.forEach(currentInterface -> currentInterface.setAutoState(false));
+  }
+
+  @Override
+  public void exitIf_no_bandwidth(If_no_bandwidthContext ctx) {
+    _currentInterfaces.forEach(i -> i.setBandwidth(null));
+  }
+
+  @Override
   public void exitIf_no_channel_group_eos(If_no_channel_group_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setChannelGroup(null));
   }
 
   @Override
+  public void exitIf_no_description_eos(If_no_description_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setDescription(null));
+  }
+
+  @Override
+  public void exitIf_no_ip_proxy_arp_eos(If_no_ip_proxy_arp_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setProxyArp(false));
+  }
+
+  @Override
+  public void exitIf_no_shutdown_eos(If_no_shutdown_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setShutdown(false));
+  }
+
+  @Override
   public void exitIf_no_speed_eos(If_no_speed_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setSpeed(null));
+  }
+
+  @Override
+  public void exitIf_no_st_portfast(If_no_st_portfastContext ctx) {
+    _currentInterfaces.forEach(i -> i.setSpanningTreePortfast(false));
+  }
+
+  @Override
+  public void exitIf_no_switchport_switchport(If_no_switchport_switchportContext ctx) {
+    _currentInterfaces.forEach(
+        i -> {
+          i.setSwitchport(false);
+          i.setSwitchportMode(SwitchportMode.NONE);
+        });
   }
 
   @Override
@@ -5487,10 +5336,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_shutdown(If_shutdownContext ctx) {
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setActive(ctx.NO() != null);
-    }
+  public void exitIf_shutdown_eos(If_shutdown_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setShutdown(true));
   }
 
   @Override
@@ -5521,40 +5368,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_speed_ios(If_speed_iosContext ctx) {
-    int mbits = toInteger(ctx.mbits);
-    double speed = mbits * 1E6D;
-    _currentInterfaces.forEach(i -> i.setSpeed(speed));
-  }
-
-  @Override
   public void exitIf_st_portfast(If_st_portfastContext ctx) {
-    if (!_no) {
-      boolean spanningTreePortfast = ctx.disable == null;
-      for (Interface iface : _currentInterfaces) {
-        iface.setSpanningTreePortfast(spanningTreePortfast);
-      }
-    }
+    boolean spanningTreePortfast = ctx.disable == null;
+    _currentInterfaces.forEach(i -> i.setSpanningTreePortfast(spanningTreePortfast));
   }
 
   @Override
-  public void exitIf_switchport(If_switchportContext ctx) {
-    if (ctx.NO() != null) {
-      for (Interface iface : _currentInterfaces) {
-        iface.setSwitchportMode(SwitchportMode.NONE);
-        iface.setSwitchport(false);
-      }
-    } else {
-      for (Interface iface : _currentInterfaces) {
-        iface.setSwitchport(true);
-        // setting the switch port mode only if it is not already set
-        if (iface.getSwitchportMode() == null || iface.getSwitchportMode() == SwitchportMode.NONE) {
-          SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
-          iface.setSwitchportMode(
-              (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                  ? Interface.getUndeclaredDefaultSwitchportMode()
-                  : defaultSwitchportMode);
-        }
+  public void exitIf_switchport_switchport(If_switchport_switchportContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setSwitchport(true);
+      // setting the switch port mode only if it is not already set
+      if (iface.getSwitchportMode() == null || iface.getSwitchportMode() == SwitchportMode.NONE) {
+        SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
+        iface.setSwitchportMode(
+            (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
+                ? Interface.getUndeclaredDefaultSwitchportMode()
+                : defaultSwitchportMode);
       }
     }
   }
@@ -5663,16 +5492,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_vrf(If_vrfContext ctx) {
-    String name = ctx.name.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
-    }
-  }
-
-  @Override
-  public void exitIf_vrf_member(If_vrf_memberContext ctx) {
+  public void exitIf_vrf_name(If_vrf_nameContext ctx) {
     String name = ctx.name.getText();
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setVrf(name);
@@ -5683,21 +5503,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_vrrp(If_vrrpContext ctx) {
     _currentVrrpGroupNum = null;
-  }
-
-  @Override
-  public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      Ip address = toIp(ctx.address);
-      iface.getDhcpRelayAddresses().add(address);
-    }
-  }
-
-  @Override
-  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setDhcpRelayClient(true);
-    }
   }
 
   @Override
@@ -8962,6 +8767,24 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
     warn(ctx, convErrorMessage(returnType, ctx));
     return defaultReturnValue;
+  }
+
+  private static @Nonnull ConcreteInterfaceAddress toAddress(Interface_addressContext ctx) {
+    if (ctx.prefix != null) {
+      return ConcreteInterfaceAddress.parse(ctx.prefix.getText());
+    } else {
+      Ip ip = toIp(ctx.ip);
+      Ip mask = toIp(ctx.subnet);
+      return ConcreteInterfaceAddress.create(ip, mask);
+    }
+  }
+
+  private static long toLong(Ospf_areaContext ctx) {
+    if (ctx.id_ip != null) {
+      return toIp(ctx.id_ip).asLong();
+    } else {
+      return toLong(ctx.id);
+    }
   }
 
   @Nonnull

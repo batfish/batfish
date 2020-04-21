@@ -114,7 +114,7 @@ public class Conversions {
       String ifaceName = e.getKey();
       Interface iface = e.getValue();
       if (ifaceName.toLowerCase().startsWith("loopback")
-          && iface.getActive()
+          && !iface.getShutdown()
           && iface.getAddress() != null) {
         loopbackInterfaces.put(ifaceName, iface);
       }
@@ -126,7 +126,7 @@ public class Conversions {
     }
     Ip highestIp = Ip.ZERO;
     for (Interface iface : interfacesToCheck.values()) {
-      if (!iface.getActive()) {
+      if (iface.getShutdown()) {
         continue;
       }
       for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
@@ -144,7 +144,7 @@ public class Conversions {
    * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
-      final Configuration c,
+      Configuration c,
       CryptoMapEntry cryptoMapEntry,
       String cryptoMapNameSeqNumber,
       String cryptoMapName,

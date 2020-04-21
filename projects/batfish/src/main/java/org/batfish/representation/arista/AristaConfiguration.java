@@ -55,7 +55,6 @@ import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -207,22 +206,13 @@ public final class AristaConfiguration extends VendorConfiguration {
           .put("Crypto-Engine", "Crypto-Engine")
           .put("cmp-mgmt", "cmp-mgmt")
           .put("Dialer", "Dialer")
-          .put("Dot11Radio", "Dot11Radio")
           .put("Ethernet", "Ethernet")
           .put("Embedded-Service-Engine", "Embedded-Service-Engine")
-          .put("FastEthernet", "FastEthernet")
           .put("fc", "fc")
-          .put("fe", "FastEthernet")
-          .put("fortyGigE", "FortyGigabitEthernet")
-          .put("FortyGigabitEthernet", "FortyGigabitEthernet")
-          .put("GigabitEthernet", "GigabitEthernet")
-          .put("ge", "GigabitEthernet")
           .put("GMPLS", "GMPLS")
-          .put("HundredGigE", "HundredGigabitEthernet")
           .put("ip", "ip")
           .put("Group-Async", "Group-Async")
           .put("lo", "Loopback")
-          .put("LongReachEthernet", "LongReachEthernet")
           .put("Loopback", "Loopback")
           .put("ma", "Management")
           .put("Management", "Management")
@@ -240,24 +230,15 @@ public final class AristaConfiguration extends VendorConfiguration {
           .put("Redundant", "Redundant")
           .put("Serial", "Serial")
           .put("Service-Engine", "Service-Engine")
-          .put("TenGigabitEthernet", "TenGigabitEthernet")
-          .put("TenGigE", "TenGigabitEthernet")
-          .put("te", "TenGigabitEthernet")
           .put("trunk", "trunk")
           .put("Tunnel", "Tunnel")
           .put("tunnel-ip", "tunnel-ip")
           .put("tunnel-te", "tunnel-te")
-          .put("tw", "TwoGigabitEthernet")
-          .put("twe", "TwentyFiveGigE")
-          .put("TwentyFiveGigE", "TwentyFiveGigE")
-          .put("TwoGigabitEthernet", "TwoGigabitEthernet")
           .put("ve", "VirtualEthernet")
           .put("Virtual-Template", "Virtual-Template")
           .put("Vlan", "Vlan")
           .put("Vxlan", "Vxlan")
           .put("Wideband-Cable", "Wideband-Cable")
-          .put("Wlan-ap", "Wlan-ap")
-          .put("Wlan-GigabitEthernet", "Wlan-GigabitEthernet")
           .build();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
@@ -386,10 +367,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final @Nonnull Set<String> _natInside;
-
-  private final Set<String> _natOutside;
-
   private String _ntpSourceInterface;
 
   private final Map<String, Prefix6List> _prefix6Lists;
@@ -445,8 +422,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _namedVlans = new HashMap<>();
-    _natInside = new TreeSet<>();
-    _natOutside = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _routeMaps = new TreeMap<>();
@@ -640,14 +615,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
-  }
-
-  public @Nonnull Set<String> getNatInside() {
-    return _natInside;
-  }
-
-  public Set<String> getNatOutside() {
-    return _natOutside;
   }
 
   public String getNtpSourceInterface() {
@@ -1151,7 +1118,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
-    newIface.setActive(iface.getActive());
+    newIface.setActive(!iface.getShutdown());
     newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setAutoState(iface.getAutoState());
@@ -1399,12 +1366,11 @@ public final class AristaConfiguration extends VendorConfiguration {
        */
       Interface vsIface = _interfaces.get(iface.getName());
       assert vsIface != null;
-      if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
-        continue;
-      }
+
+      // How many OSPF processes are there in this vrf?
+      boolean multiprocess = _vrfs.get(vrfName).getOspfProcesses().size() > 1;
       OspfNetwork network = getOspfNetworkForInterface(vsIface, proc);
-      if (vsIface.getOspfProcess() == null && network == null) {
-        // Interface is not in an OspfNetwork on this process
+      if (multiprocess && network == null && !proc.getName().equals(iface.getOspfProcess())) {
         continue;
       }
 
@@ -2265,7 +2231,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       String name = e.getKey();
       Interface iface = e.getValue();
       Tunnel tunnel = iface.getTunnel();
-      if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
+      if (!iface.getShutdown() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;
@@ -2466,9 +2432,8 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         AristaStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
         AristaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
-        AristaStructureUsage.INTERFACE_INCOMING_FILTER,
-        AristaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
-        AristaStructureUsage.INTERFACE_OUTGOING_FILTER,
+        AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
+        AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT,
         AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
         AristaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
         AristaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
@@ -2504,9 +2469,9 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        AristaStructureUsage.INTERFACE_INCOMING_FILTER,
+        AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
         AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        AristaStructureUsage.INTERFACE_OUTGOING_FILTER,
+        AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT,
         AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         AristaStructureUsage.RIP_DISTRIBUTE_LIST,
@@ -2565,8 +2530,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
         AristaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         AristaStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        AristaStructureUsage.INTERFACE_IP_VRF_SITEMAP,
-        AristaStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
         AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
         AristaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
@@ -2648,9 +2611,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
         AristaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
         AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
-
-    // track
-    markConcreteStructure(AristaStructureType.TRACK, AristaStructureUsage.INTERFACE_STANDBY_TRACK);
 
     // VXLAN
     markConcreteStructure(AristaStructureType.VXLAN, AristaStructureUsage.VXLAN_SELF_REF);
