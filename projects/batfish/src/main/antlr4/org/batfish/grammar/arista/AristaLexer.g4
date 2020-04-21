@@ -12861,6 +12861,11 @@ SYSTEM_INIT
    'systeminit'
 ;
 
+SYSTEM_CONNECTED
+:
+   'system-connected'
+;
+
 SYSTEM_MAX
 :
    'system-max'

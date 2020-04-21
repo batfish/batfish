@@ -893,7 +893,7 @@ eos_rb_af_vpn_v4
     eos_rbafvpn4_bgp
     | eos_rbafvpn4_default
     | eos_rbafvpn4_neighbor
-//    | eos_rbafvpn4_next_hop
+    | eos_rbafvpn4_next_hop
     | eos_rbafvpn4_no
   )*
 ;
@@ -929,6 +929,11 @@ eos_rbafvpn4_neighbor
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_route_map
   )
+;
+
+eos_rbafvpn4_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_CONNECTED NEWLINE
 ;
 
 eos_rbafvpn4_no

@@ -400,7 +400,7 @@ router bgp 64900
       no bgp additional-paths send any
       bgp next-hop-unchanged
       no bgp next-hop-unchanged
-      !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
       default neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       no neighbor SOME_GROUP route-map in
