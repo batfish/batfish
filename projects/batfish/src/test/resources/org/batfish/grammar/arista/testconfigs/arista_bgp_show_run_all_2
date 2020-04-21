@@ -397,8 +397,8 @@ router bgp 64900
    !
    address-family vpn-ipv4
       bgp additional-paths receive
-      !TODO no bgp additional-paths send any
-      !TODO no bgp next-hop-unchanged
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
       !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
       !TODO default neighbor SOME_GROUP activate
       !TODO neighbor SOME_GROUP additional-paths receive

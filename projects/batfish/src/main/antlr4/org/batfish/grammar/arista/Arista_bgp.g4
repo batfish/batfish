@@ -894,8 +894,8 @@ eos_rb_af_vpn_v4
 //    | eos_rbafvpn4_default
 //    | eos_rbafvpn4_neighbor
 //    | eos_rbafvpn4_next_hop
-//    | eos_rbafvpn4_no
-  )
+    | eos_rbafvpn4_no
+  )*
 ;
 
 eos_rbafvpn4_bgp
@@ -905,6 +905,23 @@ eos_rbafvpn4_bgp
     eos_rbafbc_additional_paths
   )
 
+;
+
+eos_rbafvpn4_no
+:
+  NO
+  (
+    eos_rbafvpn4no_bgp
+  )
+;
+
+eos_rbafvpn4no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.

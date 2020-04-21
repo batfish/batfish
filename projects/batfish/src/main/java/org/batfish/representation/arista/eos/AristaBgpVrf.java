@@ -68,6 +68,8 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6SrTeAf;
 
+  @Nullable private AristaBgpVrfVpnAddressFamily _vpnV4Af;
+
   public AristaBgpVrf(String name) {
     _name = name;
     _defaultIpv4Unicast = true;
@@ -506,5 +508,18 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable
   public AristaBgpVrfIpv6UnicastAddressFamily getV6UnicastAf() {
     return _v6UnicastAf;
+  }
+
+  @Nullable
+  public AristaBgpVrfVpnAddressFamily getVpnV4Af() {
+    return _vpnV4Af;
+  }
+
+  @Nonnull
+  public AristaBgpVrfVpnAddressFamily getOrCreateVpnV4Af() {
+    if (_vpnV4Af == null) {
+      _vpnV4Af = new AristaBgpVrfVpnAddressFamily();
+    }
+    return _vpnV4Af;
   }
 }

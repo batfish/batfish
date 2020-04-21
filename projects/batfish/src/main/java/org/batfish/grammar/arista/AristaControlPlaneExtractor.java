@@ -430,6 +430,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv6_labeled_unicastCon
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv6_multicastContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv6_sr_teContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_af_ipv6_unicastContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rb_af_vpn_v4Context;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_afed_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vab_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rb_vlanContext;
@@ -2068,6 +2069,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rb_af_ipv6_unicast(Eos_rb_af_ipv6_unicastContext ctx) {
+    _currentAristaBgpVrfAf = null;
+  }
+
+  @Override
+  public void enterEos_rb_af_vpn_v4(Eos_rb_af_vpn_v4Context ctx) {
+    _currentAristaBgpVrfAf = _currentAristaBgpVrf.getOrCreateVpnV4Af();
+  }
+
+  @Override
+  public void exitEos_rb_af_vpn_v4(Eos_rb_af_vpn_v4Context ctx) {
     _currentAristaBgpVrfAf = null;
   }
 
