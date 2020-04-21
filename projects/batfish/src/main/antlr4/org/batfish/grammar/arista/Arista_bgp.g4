@@ -1088,6 +1088,7 @@ eos_rb_af_neighbor_common
     | eos_rbafnc_default_originate
     | eos_rbafnc_graceful_restart
     | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_prefix_list
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
   )
@@ -1116,6 +1117,11 @@ eos_rbafnc_graceful_restart
 eos_rbafnc_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnc_prefix_list
+:
+  PREFIX_LIST name = variable (IN | OUT) NEWLINE
 ;
 
 eos_rbafnc_route_map
@@ -1696,11 +1702,11 @@ eos_rbi_neighbor_common
 //    | eos_rbinc_out_delay
     | eos_rbinc_passive
     | eos_rbinc_password
-    | eos_rbinc_prefix_list
+    | eos_rbafnc_prefix_list  // intended rbafnc - it affects the generic address family
     | eos_rbinc_remote_as
     | eos_rbinc_remove_private_as
     | eos_rbinc_rib_in
-    | eos_rbinc_route_map
+    | eos_rbafnc_route_map // intended rbafnc - it affects the generic address family
     | eos_rbinc_route_reflector_client
     | eos_rbinc_route_to_peer
     | eos_rbinc_send_community
@@ -1833,11 +1839,6 @@ eos_rbinc_password
   PASSWORD (encrypt_level = DEC)? variable NEWLINE
 ;
 
-eos_rbinc_prefix_list
-:
-  PREFIX_LIST name = variable (IN | OUT) NEWLINE
-;
-
 eos_rbinc_remote_as
 :
   REMOTE_AS asn = bgp_asn NEWLINE
@@ -1851,11 +1852,6 @@ eos_rbinc_remove_private_as
 eos_rbinc_rib_in
 :
   RIB_IN PRE_POLICY RETAIN ALL? NEWLINE
-;
-
-eos_rbinc_route_map
-:
-  ROUTE_MAP name = variable (IN | OUT) NEWLINE
 ;
 
 eos_rbinc_route_reflector_client
@@ -2347,10 +2343,10 @@ eos_rbino_neighbor
     | eos_rbinon_out_delay
     | eos_rbinon_passive
     | eos_rbinon_password
-    | eos_rbinon_prefix_list
+    | eos_rbafnonc_prefix_list  // intended rbafnonc - it affects the generic address family
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
-    | eos_rbinon_route_map
+    | eos_rbafnonc_route_map  // intended rbafnonc - it affects the generic address family
     | eos_rbinon_route_reflector_client
     | eos_rbinon_route_to_peer
     | eos_rbinon_send_community
@@ -2543,11 +2539,6 @@ eos_rbinon_password
   PASSWORD NEWLINE
 ;
 
-eos_rbinon_prefix_list
-:
-  PREFIX_LIST (IN | OUT) NEWLINE
-;
-
 eos_rbinon_remote_as
 :
   REMOTE_AS NEWLINE
@@ -2556,11 +2547,6 @@ eos_rbinon_remote_as
 eos_rbinon_remove_private_as
 :
   REMOVE_PRIVATE_AS NEWLINE
-;
-
-eos_rbinon_route_map
-:
-  ROUTE_MAP (IN | OUT) NEWLINE
 ;
 
 eos_rbinon_route_reflector_client
