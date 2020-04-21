@@ -9753,6 +9753,11 @@ PM
    'pm'
 ;
 
+PMTUD
+:
+   'pmtud'
+;
+
 POAP
 :
    'poap'

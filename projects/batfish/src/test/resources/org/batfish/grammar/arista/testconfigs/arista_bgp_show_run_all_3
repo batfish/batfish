@@ -44,7 +44,7 @@ router bgp 64900
    no bgp transport listen-port
    no bgp transport ipv4 mss
    no bgp transport ipv6 mss
-   !TODO no bgp transport pmtud
+   no bgp transport pmtud
    bgp transport qos dscp 48
    no default-metric
    no bgp always-compare-med
@@ -342,7 +342,7 @@ router bgp 64900
       no bgp transport listen-port
       no bgp transport ipv4 mss
       no bgp transport ipv6 mss
-      !TODO no bgp transport pmtud
+      no bgp transport pmtud
       no default-metric
       no bgp always-compare-med
       no bgp bestpath med missing-as-worst

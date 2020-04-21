@@ -1530,6 +1530,7 @@ eos_rbib_transport
     eos_rbibtrans_ipv4
     | eos_rbibtrans_ipv6
     | eos_rbibtrans_listen_port
+    | eos_rbibtrans_pmtud
     | eos_rbibtrans_qos
   )
 ;
@@ -1550,6 +1551,11 @@ eos_rbibtrans_listen_port
 :
 // 1-65535
   LISTEN_PORT lp = DEC NEWLINE
+;
+
+eos_rbibtrans_pmtud
+:
+  PMTUD DISABLED? NEWLINE
 ;
 
 eos_rbibtrans_qos
@@ -2174,6 +2180,7 @@ eos_rbino_bgp_transport
     eos_rbino_bgptr_ipv4
     | eos_rbino_bgptr_ipv6
     | eos_rbino_bgptr_listen_port
+    | eos_rbino_bgptr_pmtud
     | eos_rbino_bgptr_qos
   )
 ;
@@ -2191,6 +2198,11 @@ eos_rbino_bgptr_ipv6
 eos_rbino_bgptr_listen_port
 :
   LISTEN_PORT NEWLINE
+;
+
+eos_rbino_bgptr_pmtud
+:
+  PMTUD NEWLINE
 ;
 
 eos_rbino_bgptr_qos
