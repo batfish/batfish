@@ -402,16 +402,16 @@ router bgp 64900
       !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
       !TODO default neighbor SOME_GROUP activate
       !TODO neighbor SOME_GROUP additional-paths receive
-      !TODO no neighbor SOME_GROUP route-map in
-      !TODO no neighbor SOME_GROUP route-map out
-      !TODO no neighbor SOME_GROUP additional-paths send any
-      !TODO no neighbor SOME_GROUP next-hop-unchanged
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
       !TODO default neighbor OTHER_GROUP activate
       !TODO neighbor OTHER_GROUP additional-paths receive
-      !TODO no neighbor OTHER_GROUP route-map in
-      !TODO no neighbor OTHER_GROUP route-map out
-      !TODO no neighbor OTHER_GROUP additional-paths send any
-      !TODO no neighbor OTHER_GROUP next-hop-unchanged
+      no neighbor OTHER_GROUP route-map in
+      no neighbor OTHER_GROUP route-map out
+      no neighbor OTHER_GROUP additional-paths send any
+      no neighbor OTHER_GROUP next-hop-unchanged
       !TODO default neighbor 192.0.2.7 activate
       !TODO no next-hop resolution ribs vrf-unicast-rib
       !TODO no mpls label allocation disabled
