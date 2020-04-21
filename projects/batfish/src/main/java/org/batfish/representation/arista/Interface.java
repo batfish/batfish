@@ -29,8 +29,6 @@ public class Interface implements Serializable {
 
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 
-  private static final double DEFAULT_LONG_REACH_ETHERNET_SPEED = 10E6D;
-
   /** Loopback bandwidth */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
 
