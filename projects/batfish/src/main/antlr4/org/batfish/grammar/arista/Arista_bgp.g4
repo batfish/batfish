@@ -64,11 +64,113 @@ eos_rb_address_family
 :
   ADDRESS_FAMILY
   (
-    eos_rb_af_ipv4
+    eos_rb_af_evpn
+    | eos_rb_af_flow_spec
+    | eos_rb_af_ipv4
     | eos_rb_af_ipv6
-    | eos_rb_af_evpn
-//  | eos_rb_af_vpn_v4
-//  | eos_rb_af_vpn_v6
+    | eos_rb_af_vpn_v4
+    | eos_rb_af_vpn_v6
+  )
+;
+
+eos_rb_af_flow_spec
+:
+  FLOW_SPEC
+  (
+    eos_rb_af_flow_spec_ipv4
+    | eos_rb_af_flow_spec_ipv6
+  )
+;
+
+eos_rb_af_flow_spec_ipv4
+:
+  IPV4 NEWLINE
+  (
+    eos_rbaffs4_default
+    | eos_rbaffs4_neighbor
+    | eos_rbaffs4_no
+  )*
+;
+
+eos_rbaffs4_default
+:
+  DEFAULT
+  eos_rbaffs4_default_neighbor
+;
+
+eos_rbaffs4_default_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbaffs4_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+  )
+;
+
+eos_rbaffs4_no
+:
+  NO
+  eos_rbaffs4no_neighbor
+;
+
+eos_rbaffs4no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+  )
+;
+
+eos_rb_af_flow_spec_ipv6
+:
+  IPV6 NEWLINE
+  (
+    eos_rbaffs6_default
+    | eos_rbaffs6_neighbor
+    | eos_rbaffs6_no
+  )*
+;
+
+eos_rbaffs6_default
+:
+  DEFAULT
+  eos_rbaffs6_default_neighbor
+;
+
+eos_rbaffs6_default_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbaffs6_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+  )
+;
+
+eos_rbaffs6_no
+:
+  NO
+  eos_rbaffs6no_neighbor
+;
+
+eos_rbaffs6no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
   )
 ;
 
@@ -77,9 +179,9 @@ eos_rb_af_ipv4
   IPV4
   (
     eos_rb_af_ipv4_unicast
-//  | eos_rb_af_ipv4_multicast
-  | eos_rb_af_ipv4_labeled_unicast
-//  | eos_rb_af_ipv4_sr_te
+    | eos_rb_af_ipv4_labeled_unicast
+    | eos_rb_af_ipv4_multicast
+    | eos_rb_af_ipv4_sr_te
   )
 ;
 
@@ -91,6 +193,7 @@ eos_rb_af_ipv4_unicast
     | eos_rbafipv4u_default
 //    | eos_rbafipv4u_graceful_restart
     | eos_rbafipv4u_neighbor
+    | eos_rbafipv4u_next_hop
     | eos_rbafipv4u_no
     | eos_rbafipv4u_network
 //    | eos_rbafipv4u_redistribute
@@ -139,6 +242,11 @@ eos_rbafipv4ud_neighbor
 eos_rbafipv4u_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
+;
+
+eos_rbafipv4u_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_UNICAST_RIB NEWLINE
 ;
 
 eos_rbafipv4u_no
@@ -192,12 +300,10 @@ eos_rb_af_ipv4_labeled_unicast
 eos_rbafipv4labu_bgp
 :
   BGP
-  eos_rbafipv4labub_additional_paths
-;
-
-eos_rbafipv4labub_additional_paths
-:
-  ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
 ;
 
 eos_rbafipv4labu_default
@@ -215,19 +321,42 @@ eos_rbafipv4labud_neighbor
 eos_rbafipv4labu_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
-  eos_rbafnc_additional_paths
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
 ;
 
 eos_rbafipv4labu_no
 :
   NO
-  eos_rbafipv4labuno_neighbor
+  (
+    eos_rbafipv4labuno_bgp
+    | eos_rbafipv4labuno_neighbor
+  )
+;
+
+eos_rbafipv4labuno_bgp
+:
+  BGP
+  (
+     eos_rbafnobc_additional_paths
+     | eos_rbafnobc_next_hop_unchanged
+  )
 ;
 
 eos_rbafipv4labuno_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
-  eos_rbafipv4labunon_next_hop_self
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafipv4labunon_next_hop_self
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
 ;
 
 eos_rbafipv4labunon_next_hop_self
@@ -235,13 +364,346 @@ eos_rbafipv4labunon_next_hop_self
   NEXT_HOP_SELF SOURCE_INTERFACE NEWLINE
 ;
 
+eos_rb_af_ipv4_multicast
+:
+  MULTICAST NEWLINE
+  (
+    eos_rbafipv4m_bgp
+    | eos_rbafipv4m_default
+    | eos_rbafipv4m_neighbor
+    | eos_rbafipv4m_no
+  )*
+;
+
+eos_rbafipv4m_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv4m_default
+:
+  DEFAULT
+  (
+    eos_rbafipv4md_neighbor
+  )
+;
+
+eos_rbafipv4md_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbafipv4m_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafipv4m_no
+:
+  NO
+  (
+    eos_rbafipv4m_no_bgp
+    | eos_rbafipv4m_no_neighbor
+  )
+;
+
+eos_rbafipv4m_no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv4m_no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rb_af_ipv4_sr_te
+ :
+   SR_TE NEWLINE
+   (
+     eos_rbafipv4srte_default
+     | eos_rbafipv4srte_neighbor
+     | eos_rbafipv4srte_no
+   )*
+ ;
+
+ eos_rbafipv4srte_default
+ :
+   DEFAULT
+   (
+     eos_rbafipv4srte_default_neighbor
+   )
+ ;
+
+ eos_rbafipv4srte_default_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafdnc_activate
+   )
+ ;
+
+ eos_rbafipv4srte_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnc_activate
+     | eos_rbafnc_route_map
+   )
+ ;
+
+ eos_rbafipv4srte_no
+ :
+   NO
+   eos_rbafipv4srte_no_neighbor
+ ;
+
+ eos_rbafipv4srte_no_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnonc_activate
+     | eos_rbafnonc_route_map
+   )
+ ;
+
 eos_rb_af_ipv6
 :
   IPV6
-  eos_rb_af_ipv6_unicast
-//  | eos_rb_af_ipv6_labeled_unicast
-//  | eos_rb_af_ipv6_sr_te
+  (
+    eos_rb_af_ipv6_labeled_unicast
+    | eos_rb_af_ipv6_multicast
+    | eos_rb_af_ipv6_sr_te
+    | eos_rb_af_ipv6_unicast
+  )
 ;
+
+eos_rb_af_ipv6_labeled_unicast
+:
+  LABELED_UNICAST NEWLINE
+  (
+    eos_rbafipv6labu_bgp
+    | eos_rbafipv6labu_default
+    | eos_rbafipv6labu_neighbor
+    | eos_rbafipv6labu_no
+  )*
+;
+
+eos_rbafipv6labu_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv6labu_default
+:
+  DEFAULT
+  eos_rbafipv6labud_neighbor
+;
+
+eos_rbafipv6labud_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  eos_rbafdnc_activate
+;
+
+eos_rbafipv6labu_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafipv6labu_no
+:
+  NO
+  (
+    eos_rbafipv6labuno_bgp
+    | eos_rbafipv6labuno_neighbor
+  )
+;
+
+eos_rbafipv6labuno_bgp
+:
+  BGP
+  (
+     eos_rbafnobc_additional_paths
+     | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv6labuno_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafipv6labunon_next_hop_self
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rbafipv6labunon_next_hop_self
+:
+  NEXT_HOP_SELF SOURCE_INTERFACE NEWLINE
+;
+
+eos_rb_af_ipv6_multicast
+:
+  MULTICAST NEWLINE
+  (
+    eos_rbafipv6m_bgp
+    | eos_rbafipv6m_default
+    | eos_rbafipv6m_neighbor
+    | eos_rbafipv6m_no
+  )*
+;
+
+eos_rbafipv6m_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv6m_default
+:
+  DEFAULT
+  (
+    eos_rbafipv6md_neighbor
+  )
+;
+
+eos_rbafipv6md_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+
+eos_rbafipv6m_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafipv6m_no
+:
+  NO
+  (
+    eos_rbafipv6m_no_bgp
+    | eos_rbafipv6m_no_neighbor
+  )
+;
+
+eos_rbafipv6m_no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafipv6m_no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rb_af_ipv6_sr_te
+ :
+   SR_TE NEWLINE
+   (
+     eos_rbafipv6srte_default
+     | eos_rbafipv6srte_neighbor
+     | eos_rbafipv6srte_no
+   )*
+ ;
+
+ eos_rbafipv6srte_default
+ :
+   DEFAULT
+   (
+     eos_rbafipv6srte_default_neighbor
+   )
+ ;
+
+ eos_rbafipv6srte_default_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafdnc_activate
+   )
+ ;
+
+ eos_rbafipv6srte_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnc_activate
+     | eos_rbafnc_route_map
+   )
+ ;
+
+ eos_rbafipv6srte_no
+ :
+   NO
+   eos_rbafipv6srte_no_neighbor
+ ;
+
+ eos_rbafipv6srte_no_neighbor
+ :
+   NEIGHBOR nid = eos_neighbor_id
+   (
+     eos_rbafnonc_activate
+     | eos_rbafnonc_route_map
+   )
+ ;
 
 eos_rb_af_ipv6_unicast
 :
@@ -251,8 +713,9 @@ eos_rb_af_ipv6_unicast
     | eos_rbafipv6u_default
 //    | eos_rbafipv6u_graceful_restart
     | eos_rbafipv6u_neighbor
-    | eos_rbafipv6u_no
 //    | eos_rbafipv6u_network
+    | eos_rbafipv6u_next_hop
+    | eos_rbafipv6u_no
 //    | eos_rbafipv64u_redistribute
   )*
 ;
@@ -278,6 +741,25 @@ eos_rbafipv6ud_neighbor
 eos_rbafipv6u_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id eos_rb_af_neighbor_common
+;
+
+eos_rbafipv6u_next_hop
+:
+  NEXT_HOP
+  (
+    eos_rbafipv6u_next_hop_sixpe
+    | eos_rbafipv6u_next_hop_resolution
+  )
+;
+
+eos_rbafipv6u_next_hop_sixpe
+:
+  SIXPE RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB NEWLINE
+;
+
+eos_rbafipv6u_next_hop_resolution
+:
+  RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_UNICAST_RIB NEWLINE
 ;
 
 eos_rbafipv6u_no
@@ -316,8 +798,8 @@ eos_rb_af_evpn_bgp
 :
   BGP
   (
-    eos_rbafeb_additional_paths
-    | eos_rbafeb_next_hop_unchanged
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
   )
 ;
 
@@ -372,17 +854,218 @@ eos_rb_af_evpn_neighbor_nid
 
 eos_rb_af_evpn_no:
   NO
-  eos_rb_af_evpn_no_neighbor
+  (
+    eos_rb_af_evpn_no_bgp
+    | eos_rb_af_evpn_no_neighbor
+    | eos_rb_af_evpn_no_next_hop
+  )
+;
+
+eos_rb_af_evpn_no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
 ;
 
 eos_rb_af_evpn_no_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
   (
-    eos_rbafnonc_activate
+    eos_rbafnonc_additional_paths
+    | eos_rbafnonc_activate
     | eos_rbafnonc_next_hop_unchanged
     | eos_rbafnonc_route_map
   )
+;
+
+eos_rb_af_evpn_no_next_hop
+:
+  NEXT_HOP RESOLUTION DISABLED NEWLINE
+;
+
+eos_rb_af_vpn_v4
+:
+  VPN_IPV4 NEWLINE
+  (
+    eos_rbafvpn4_bgp
+    | eos_rbafvpn4_default
+    | eos_rbafvpn4_neighbor
+    | eos_rbafvpn4_next_hop
+    | eos_rbafvpn4_no
+  )*
+;
+
+eos_rbafvpn4_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafvpn4_default
+:
+  DEFAULT
+  eos_rbafvpn4d_neighbor
+;
+
+eos_rbafvpn4d_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+eos_rbafvpn4_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafvpn4_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_CONNECTED NEWLINE
+;
+
+eos_rbafvpn4_no
+:
+  NO
+  (
+    eos_rbafvpn4no_bgp
+    | eos_rbafvpn4no_mpls
+    | eos_rbafvpn4no_neighbor
+    | eos_rbafvpn4no_next_hop
+  )
+;
+
+eos_rbafvpn4no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafvpn4no_mpls
+:
+  MPLS LABEL ALLOCATION DISABLED NEWLINE
+;
+
+eos_rbafvpn4no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rbafvpn4no_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS VRF_UNICAST_RIB NEWLINE
+;
+
+eos_rb_af_vpn_v6
+:
+  VPN_IPV6 NEWLINE
+  (
+    eos_rbafvpn6_bgp
+    | eos_rbafvpn6_default
+    | eos_rbafvpn6_neighbor
+    | eos_rbafvpn6_next_hop
+    | eos_rbafvpn6_no
+  )*
+;
+
+eos_rbafvpn6_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafvpn6_default
+:
+  DEFAULT
+  eos_rbafvpn6d_neighbor
+;
+
+eos_rbafvpn6d_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+eos_rbafvpn6_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafvpn6_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_CONNECTED NEWLINE
+;
+
+eos_rbafvpn6_no
+:
+  NO
+  (
+    eos_rbafvpn6no_bgp
+    | eos_rbafvpn6no_mpls
+    | eos_rbafvpn6no_neighbor
+    | eos_rbafvpn6no_next_hop
+  )
+;
+
+eos_rbafvpn6no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafvpn6no_mpls
+:
+  MPLS LABEL ALLOCATION DISABLED NEWLINE
+;
+
+eos_rbafvpn6no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rbafvpn6no_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS VRF_UNICAST_RIB NEWLINE
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.
@@ -408,16 +1091,6 @@ eos_rb_af_neighbor_common
     | eos_rbafnc_route_map
 //    | eos_rbafnc_weight
   )
-;
-
-eos_rbafeb_additional_paths
-:
-  ADDITIONAL_PATHS (SEND ANY | RECEIVE) NEWLINE
-;
-
-eos_rbafeb_next_hop_unchanged
-:
-  NEXT_HOP_UNCHANGED NEWLINE
 ;
 
 eos_rbafnc_activate
@@ -477,7 +1150,8 @@ eos_rbafbc_next_hop_unchanged
 eos_rb_af_no_bgp_common
 :
   eos_rbafnobc_additional_paths
-  | eos_rbafnobc_bgp_route
+  | eos_rbafnobc_route
+  | eos_rbafnobc_next_hop_unchanged
 
 ;
 
@@ -486,7 +1160,12 @@ eos_rbafnobc_additional_paths
   ADDITIONAL_PATHS (INSTALL | RECEIVE | SEND ANY) NEWLINE
 ;
 
-eos_rbafnobc_bgp_route
+eos_rbafnobc_next_hop_unchanged
+:
+  NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbafnobc_route
 :
   ROUTE INSTALL_MAP NEWLINE
 ;
@@ -584,7 +1263,7 @@ eos_rbi_bgp
     | eos_rbib_client_to_client
     | eos_rbib_cluster_id
     | eos_rbib_confederation
-//    | eos_rbib_control_plane_filter
+    | eos_rbib_control_plane_filter
     | eos_rbib_convergence
     | eos_rbib_default
     | eos_rbib_enforce_first_as
@@ -600,7 +1279,7 @@ eos_rbi_bgp
 //    | eos_rbib_route
 //    | eos_rbib_route_reflector
     | eos_rbib_trace
-//    | eos_rbib_transport
+    | eos_rbib_transport
   )
 ;
 
@@ -657,6 +1336,11 @@ eos_rbibconf_identifier
 eos_rbibconf_peers
 :
   PEERS asns = eos_as_range_list NEWLINE
+;
+
+eos_rbib_control_plane_filter
+:
+  CONTROL_PLANE_FILTER DEFAULT_ALLOW NEWLINE
 ;
 
 eos_rbib_convergence
@@ -836,6 +1520,41 @@ eos_rbibt_neighbor
 eos_rbibt_route_key
 :
   ROUTE_KEY ALL NEWLINE
+;
+
+eos_rbib_transport
+:
+  TRANSPORT
+  (
+    eos_rbibtrans_ipv4
+    | eos_rbibtrans_ipv6
+    | eos_rbibtrans_listen_port
+    | eos_rbibtrans_qos
+  )
+;
+
+eos_rbibtrans_ipv4
+:
+//536-16344
+  IPV4 MSS mss = DEC NEWLINE
+;
+
+eos_rbibtrans_ipv6
+:
+//516-16324
+  IPV6 MSS mss = DEC NEWLINE
+;
+
+eos_rbibtrans_listen_port
+:
+// 1-65535
+  LISTEN_PORT lp = DEC NEWLINE
+;
+
+eos_rbibtrans_qos
+:
+// 0-63
+  QOS DSCP dscp = DEC NEWLINE
 ;
 
 eos_rbi_default
@@ -1219,7 +1938,9 @@ eos_rbino_bgp
     | eos_rbino_bgp_client_to_client
     | eos_rbino_bgp_cluster_id
     | eos_rbino_bgp_confederation
+    | eos_rbino_bgp_control_plane_filter
     | eos_rbino_bgp_default
+    | eos_rbino_bgp_fec
     | eos_rbino_bgp_missing_policy
     | eos_rbino_bgp_monitoring
     | eos_rbino_bgp_next_hop_unchanged
@@ -1266,7 +1987,7 @@ eos_rbino_bgp_bestpath
     eos_rbino_bgp_bp_as_path
     | eos_rbino_bgp_bp_ecmp_fast
     | eos_rbino_bgp_bp_med
-    // eos_rbino_bgp_bp_skip
+    | eos_rbino_bgp_bp_skip
     | eos_rbino_bgp_bp_tie_break
   )
 ;
@@ -1312,6 +2033,11 @@ eos_rbino_bgp_bpm_confed
 eos_rbino_bgp_bpm_missing_as_worst
 :
   MISSING_AS_WORST NEWLINE
+;
+
+eos_rbino_bgp_bp_skip
+:
+  SKIP_LITERAL NEXT_HOP IGP_COST NEWLINE
 ;
 
 eos_rbino_bgp_bp_tie_break
@@ -1365,6 +2091,11 @@ eos_rbino_bc_identifier
   IDENTIFIER NEWLINE
 ;
 
+eos_rbino_bgp_control_plane_filter
+:
+  CONTROL_PLANE_FILTER DEFAULT_ALLOW NEWLINE
+;
+
 eos_rbino_bgp_default
 :
   DEFAULT
@@ -1399,6 +2130,11 @@ eos_rbino_bgp_default_ipv6_unicast
   IPV6_UNICAST NEWLINE
 ;
 
+eos_rbino_bgp_fec
+:
+  FEC SKIP_LITERAL IN_PLACE UPDATE NEWLINE
+;
+
 eos_rbino_bgp_missing_policy
 :
   MISSING_POLICY DIRECTION (IN | OUT) ACTION NEWLINE
@@ -1426,7 +2162,33 @@ eos_rbino_bgp_route_reflector
 
 eos_rbino_bgp_transport
 :
-  TRANSPORT LISTEN_PORT NEWLINE
+  TRANSPORT
+  (
+    eos_rbino_bgptr_ipv4
+    | eos_rbino_bgptr_ipv6
+    | eos_rbino_bgptr_listen_port
+    | eos_rbino_bgptr_qos
+  )
+;
+
+eos_rbino_bgptr_ipv4
+:
+  IPV4 MSS NEWLINE
+;
+
+eos_rbino_bgptr_ipv6
+:
+  IPV6 MSS NEWLINE
+;
+
+eos_rbino_bgptr_listen_port
+:
+  LISTEN_PORT NEWLINE
+;
+
+eos_rbino_bgptr_qos
+:
+  QOS DSCP NEWLINE
 ;
 
 eos_rbino_default_metric
@@ -1464,6 +2226,7 @@ eos_rbino_neighbor
   NEIGHBOR nid = eos_neighbor_id
   (
     eos_rbinon_additional_paths
+    | eos_rbinon_as_path
     | eos_rbinon_auto_local_addr
     | eos_rbinon_default_originate
     | eos_rbinon_description
@@ -1503,6 +2266,25 @@ eos_rbino_neighbor
 eos_rbinon_additional_paths
 :
   ADDITIONAL_PATHS (RECEIVE | SEND ANY) NEWLINE
+;
+
+eos_rbinon_as_path
+:
+  AS_PATH
+  (
+    eos_rbinonasp_prepend_own
+    | eos_rbinonasp_remote_as
+  )
+;
+
+eos_rbinonasp_prepend_own
+:
+  PREPEND_OWN DISABLED NEWLINE
+;
+
+eos_rbinonasp_remote_as
+:
+  REMOTE_AS REPLACE OUT NEWLINE
 ;
 
 eos_rbinon_auto_local_addr
@@ -1567,7 +2349,28 @@ eos_rbinon_import_localpref
 
 eos_rbinon_link_bandwidth
 :
-  LINK_BANDWIDTH UPDATE_DELAY? NEWLINE
+  LINK_BANDWIDTH
+  (
+    eos_rbinon_lb_adjust
+    | eos_rbinon_lb_lb
+    | eos_rbinon_lb_update_delay
+  )
+;
+
+eos_rbinon_lb_adjust
+:
+  ADJUST AUTO NEWLINE
+;
+
+// "no neighbor PG link-bandwidth"
+eos_rbinon_lb_lb
+:
+  NEWLINE
+;
+
+eos_rbinon_lb_update_delay
+:
+  UPDATE_DELAY NEWLINE
 ;
 
 eos_rbinon_local_v4_addr
@@ -1689,10 +2492,13 @@ eos_rbino_redistribute
   REDISTRIBUTE
   (
     eos_rbinor_aggregate
+    | eos_rbinor_attached_host
     | eos_rbinor_connected
+    | eos_rbinor_dynamic
     | eos_rbinor_isis
     | eos_rbinor_ospf
     | eos_rbinor_ospf3
+    | eos_rbinor_ospfv3
     | eos_rbinor_rip
     | eos_rbinor_static
   )
@@ -1703,9 +2509,19 @@ eos_rbinor_aggregate
   AGGREGATE NEWLINE
 ;
 
+eos_rbinor_attached_host
+:
+  ATTACHED_HOST NEWLINE
+;
+
 eos_rbinor_connected
 :
   CONNECTED NEWLINE
+;
+
+eos_rbinor_dynamic
+:
+  DYNAMIC NEWLINE
 ;
 
 eos_rbinor_isis
@@ -1736,6 +2552,8 @@ eos_rbinor_ospf3
 :
   OSPF3
   (
+    // note: rbinor_ospfv3 has same meaning as this but newer syntax. Consider which updates go in
+    //       one or both places.
     eos_rbinor_ospf3_any
     | eos_rbinor_ospf3_match
   )
@@ -1749,6 +2567,17 @@ eos_rbinor_ospf3_any
 eos_rbinor_ospf3_match
 :
   MATCH (INTERNAL | EXTERNAL | NSSA_EXTERNAL) NEWLINE
+;
+
+eos_rbinor_ospfv3
+:
+  OSPFV3
+  (
+    // note: rbinor_ospf3 has same meaning as this but newer syntax. Consider which updates go in
+    //       one or both places.
+    eos_rbinor_ospf3_any
+    | eos_rbinor_ospf3_match
+  )
 ;
 
 eos_rbinor_rip
@@ -2061,7 +2890,6 @@ eos_rbv_address_family
   ADDRESS_FAMILY
   (
     eos_rb_af_ipv4
-//  | eos_rb_af_ipv4_multicast
     | eos_rb_af_ipv6
   )
 ;
