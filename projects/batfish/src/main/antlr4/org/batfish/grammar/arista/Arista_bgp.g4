@@ -892,7 +892,7 @@ eos_rb_af_vpn_v4
   (
     eos_rbafvpn4_bgp
 //    | eos_rbafvpn4_default
-//    | eos_rbafvpn4_neighbor
+    | eos_rbafvpn4_neighbor
 //    | eos_rbafvpn4_next_hop
     | eos_rbafvpn4_no
   )*
@@ -905,6 +905,17 @@ eos_rbafvpn4_bgp
     eos_rbafbc_additional_paths
   )
 
+;
+
+eos_rbafvpn4_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
 ;
 
 eos_rbafvpn4_no

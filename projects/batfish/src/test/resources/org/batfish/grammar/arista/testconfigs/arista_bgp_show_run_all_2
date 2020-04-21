@@ -415,6 +415,7 @@ router bgp 64900
       !TODO default neighbor 192.0.2.7 activate
       !TODO no next-hop resolution ribs vrf-unicast-rib
       !TODO no mpls label allocation disabled
+      neighbor 192.0.2.7 route-map VPN4_IN in
    !
    !TODO address-family vpn-ipv6
       !TODO bgp additional-paths receive

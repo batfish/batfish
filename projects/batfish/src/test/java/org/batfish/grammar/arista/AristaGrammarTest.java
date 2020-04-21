@@ -1823,6 +1823,11 @@ public class AristaGrammarTest {
       assertThat(ipv6sr, notNullValue());
       assertThat(ipv6sr.getRouteMapIn(), equalTo("IPV6SRTE_IN"));
     }
+    {
+      AristaBgpNeighborAddressFamily vpn4 = defaultVrf.getVpnV4Af().getNeighbor(neighborIp);
+      assertThat(vpn4, notNullValue());
+      assertThat(vpn4.getRouteMapIn(), equalTo("VPN4_IN"));
+    }
   }
 
   @Test
