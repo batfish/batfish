@@ -1224,6 +1224,7 @@ eos_rb_inner
   | eos_rbi_default
   | eos_rbi_default_metric
   | eos_rbi_distance
+  | eos_rbi_dynamic
   | eos_rbi_graceful_restart
   | eos_rbi_graceful_restart_helper
   | eos_rbi_ip
@@ -1592,6 +1593,12 @@ eos_rbi_ip
 eos_rbi_ipv6
 :
   IPV6 ACCESS_GROUP name = variable IN? NEWLINE
+;
+
+eos_rbi_dynamic
+:
+// u32
+  DYNAMIC PEER MAX max = DEC NEWLINE
 ;
 
 eos_rbi_graceful_restart

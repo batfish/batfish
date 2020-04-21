@@ -7577,6 +7577,11 @@ MATIP_TYPE_B
    'matip-type-b'
 ;
 
+MAX
+:
+   'max'
+;
+
 MAXAS_LIMIT
 :
    'maxas-limit'

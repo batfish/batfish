@@ -55,7 +55,7 @@ router bgp 64900
    no bgp additional-paths install
    bgp additional-paths receive
    no bgp additional-paths send any
-   !TODO dynamic peer max 1000
+   dynamic peer max 1000
    bgp bestpath as-path multipath-relax
    no bgp bestpath as-path ignore
    no bgp bestpath skip next-hop igp-cost
@@ -352,7 +352,7 @@ router bgp 64900
       no bgp additional-paths install
       bgp additional-paths receive
       no bgp additional-paths send any
-      !TODO dynamic peer max 1000
+      dynamic peer max 1000
       bgp bestpath as-path multipath-relax
       no bgp bestpath as-path ignore
       no bgp bestpath skip next-hop igp-cost
