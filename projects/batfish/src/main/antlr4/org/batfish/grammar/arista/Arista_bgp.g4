@@ -64,12 +64,12 @@ eos_rb_address_family
 :
   ADDRESS_FAMILY
   (
-    eos_rb_af_flow_spec
+    eos_rb_af_evpn
+    | eos_rb_af_flow_spec
     | eos_rb_af_ipv4
     | eos_rb_af_ipv6
-    | eos_rb_af_evpn
-//  | eos_rb_af_vpn_v4
-//  | eos_rb_af_vpn_v6
+    | eos_rb_af_vpn_v4
+//    | eos_rb_af_vpn_v6
   )
 ;
 
@@ -884,6 +884,27 @@ eos_rb_af_evpn_no_neighbor
 eos_rb_af_evpn_no_next_hop
 :
   NEXT_HOP RESOLUTION DISABLED NEWLINE
+;
+
+eos_rb_af_vpn_v4
+:
+  VPN_IPV4 NEWLINE
+  (
+    eos_rbafvpn4_bgp
+//    | eos_rbafvpn4_default
+//    | eos_rbafvpn4_neighbor
+//    | eos_rbafvpn4_next_hop
+//    | eos_rbafvpn4_no
+  )
+;
+
+eos_rbafvpn4_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+  )
+
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.

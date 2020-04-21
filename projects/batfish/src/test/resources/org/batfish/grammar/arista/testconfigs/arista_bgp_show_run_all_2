@@ -395,8 +395,8 @@ router bgp 64900
       default neighbor 192.0.2.7 activate
       neighbor 192.0.2.7 route-map IPV6MC_IN in
    !
-   !TODO address-family vpn-ipv4
-      !TODO bgp additional-paths receive
+   address-family vpn-ipv4
+      bgp additional-paths receive
       !TODO no bgp additional-paths send any
       !TODO no bgp next-hop-unchanged
       !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
