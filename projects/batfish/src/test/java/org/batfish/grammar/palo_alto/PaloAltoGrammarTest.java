@@ -2722,7 +2722,7 @@ public final class PaloAltoGrammarTest {
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
     assertThat(
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
-        containsInAnyOrder("dns", "ssh"));
+        containsInAnyOrder("dns", "app1"));
   }
 
   @Test
