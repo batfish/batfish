@@ -401,13 +401,13 @@ router bgp 64900
       no bgp next-hop-unchanged
       !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
       !TODO default neighbor SOME_GROUP activate
-      !TODO neighbor SOME_GROUP additional-paths receive
+      neighbor SOME_GROUP additional-paths receive
       no neighbor SOME_GROUP route-map in
       no neighbor SOME_GROUP route-map out
       no neighbor SOME_GROUP additional-paths send any
       no neighbor SOME_GROUP next-hop-unchanged
       !TODO default neighbor OTHER_GROUP activate
-      !TODO neighbor OTHER_GROUP additional-paths receive
+      neighbor OTHER_GROUP additional-paths receive
       no neighbor OTHER_GROUP route-map in
       no neighbor OTHER_GROUP route-map out
       no neighbor OTHER_GROUP additional-paths send any
