@@ -2255,7 +2255,52 @@ eos_rbino_ipv6
 
 eos_rbino_monitoring
 :
-  MONITORING PORT NEWLINE
+  MONITORING
+  (
+    eos_rbino_monitoring_port
+    | eos_rbino_monitoring_received
+  )
+;
+
+eos_rbino_monitoring_port
+:
+  PORT NEWLINE
+;
+
+eos_rbino_monitoring_received
+:
+  RECEIVED eos_rbino_mr_routes
+;
+
+eos_rbino_mr_routes
+:
+  ROUTES
+  (
+    eos_rbino_mrr_address_family
+    | eos_rbino_mrr_post_policy
+    | eos_rbino_mrr_pre_policy
+  )
+;
+
+eos_rbino_mrr_address_family
+:
+  ADDRESS_FAMILY
+  (
+    IPV4 UNICAST
+    | IPV6 UNICAST
+    | IPV6 LABELED_UNICAST
+  )
+  NEWLINE
+;
+
+eos_rbino_mrr_post_policy
+:
+  POST_POLICY NEWLINE
+;
+
+eos_rbino_mrr_pre_policy
+:
+  PRE_POLICY NEWLINE
 ;
 
 eos_rbino_neighbor
@@ -2865,7 +2910,38 @@ eos_rbm_port
 
 eos_rbm_received
 :
-  RECEIVED ROUTES ( POST_POLICY | PRE_POLICY ) NEWLINE
+  RECEIVED  eos_rbm_received_routes
+;
+
+eos_rbm_received_routes
+:
+  ROUTES
+  (
+    eos_rbmrr_address_family
+    | eos_rbmrr_post_policy
+    | eos_rbmrr_pre_policy
+  )
+;
+
+eos_rbmrr_address_family
+:
+  ADDRESS_FAMILY
+  (
+    IPV4 UNICAST
+    | IPV6 LABELED_UNICAST
+    | IPV6 UNICAST
+  )
+  NEWLINE
+;
+
+eos_rbmrr_post_policy
+:
+  POST_POLICY NEWLINE
+;
+
+eos_rbmrr_pre_policy
+:
+  PRE_POLICY NEWLINE
 ;
 
 eos_rbm_station

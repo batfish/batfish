@@ -142,9 +142,9 @@ router bgp 64900
    no monitoring port
    monitoring received routes pre-policy
    monitoring received routes post-policy
-   !TODO monitoring received routes address-family ipv4 unicast
-   !TODO monitoring received routes address-family ipv6 unicast
-   !TODO no monitoring received routes address-family ipv6 labeled-unicast
+   monitoring received routes address-family ipv4 unicast
+   monitoring received routes address-family ipv6 unicast
+   no monitoring received routes address-family ipv6 labeled-unicast
    monitoring timestamp send-time
    no bgp monitoring
    !
