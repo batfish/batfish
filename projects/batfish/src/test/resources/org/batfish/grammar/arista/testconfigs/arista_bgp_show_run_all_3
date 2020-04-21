@@ -68,7 +68,7 @@ router bgp 64900
    no bgp advertise-inactive
    no bgp auto-local-addr
    no bgp next-hop-unchanged
-   !TODO no bgp aggregate-route community inheritance loose
+   no bgp aggregate-route community inheritance loose
    neighbor SOME_GROUP peer group
    no neighbor SOME_GROUP remote-as
    no neighbor SOME_GROUP import-localpref
@@ -365,7 +365,7 @@ router bgp 64900
       no bgp advertise-inactive
       no bgp auto-local-addr
       no bgp next-hop-unchanged
-      !TODO no bgp aggregate-route community inheritance loose
+      no bgp aggregate-route community inheritance loose
       neighbor 192.0.2.8 peer group OTHER_GROUP
       bgp redistribute-internal
       no redistribute connected

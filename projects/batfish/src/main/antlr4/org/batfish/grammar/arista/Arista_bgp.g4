@@ -1256,6 +1256,7 @@ eos_rbi_bgp
   (
     eos_rbib_additional_paths
     | eos_rbib_advertise_inactive
+    | eos_rbib_aggregate_route
     | eos_rbib_allowas_in
     | eos_rbib_always_compare_med
     | eos_rbib_asn
@@ -1298,6 +1299,11 @@ eos_rbib_additional_paths
 eos_rbib_advertise_inactive
 :
   ADVERTISE_INACTIVE NEWLINE
+;
+
+eos_rbib_aggregate_route
+:
+  AGGREGATE_ROUTE COMMUNITY INHERITANCE LOOSE NEWLINE
 ;
 
 eos_rbib_allowas_in
@@ -1943,6 +1949,7 @@ eos_rbino_bgp
   (
     eos_rbino_bgp_additional_paths
     | eos_rbino_bgp_advertise_inactive
+    | eos_rbino_bgp_aggregate_route
     | eos_rbino_bgp_allowas_in
     | eos_rbino_bgp_always_compare_med
     | eos_rbino_bgp_aspath_cmp_include_nexthop
@@ -1971,6 +1978,11 @@ eos_rbino_bgp_additional_paths
 eos_rbino_bgp_advertise_inactive
 :
   ADVERTISE_INACTIVE NEWLINE
+;
+
+eos_rbino_bgp_aggregate_route
+:
+  AGGREGATE_ROUTE COMMUNITY INHERITANCE LOOSE NEWLINE
 ;
 
 eos_rbino_bgp_allowas_in

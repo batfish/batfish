@@ -544,6 +544,11 @@ AGGREGATE_ADDRESS
    'aggregate-address'
 ;
 
+AGGREGATE_ROUTE
+:
+   'aggregate-route'
+;
+
 AGING
 :
    'aging'
@@ -6185,6 +6190,11 @@ INHERIT
    'inherit'
 ;
 
+INHERITANCE
+:
+   'inheritance'
+;
+
 INHERITANCE_DISABLE
 :
    'inheritance-disable'
@@ -7245,6 +7255,11 @@ LOOPBACK
 LOOPGUARD
 :
    'loopguard'
+;
+
+LOOSE
+:
+   'loose'
 ;
 
 LOTUSNOTES
