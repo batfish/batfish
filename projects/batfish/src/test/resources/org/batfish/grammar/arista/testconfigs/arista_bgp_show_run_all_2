@@ -416,7 +416,7 @@ router bgp 64900
       no neighbor OTHER_GROUP additional-paths send any
       no neighbor OTHER_GROUP next-hop-unchanged
       default neighbor 192.0.2.7 activate
-      !TODO no next-hop resolution ribs vrf-unicast-rib
+      no next-hop resolution ribs vrf-unicast-rib
       !TODO no mpls label allocation disabled
       neighbor 192.0.2.7 route-map VPN4_IN in
    !

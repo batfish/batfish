@@ -942,6 +942,7 @@ eos_rbafvpn4_no
   (
     eos_rbafvpn4no_bgp
     | eos_rbafvpn4no_neighbor
+    | eos_rbafvpn4no_next_hop
   )
 ;
 
@@ -963,6 +964,11 @@ eos_rbafvpn4no_neighbor
     | eos_rbafnonc_next_hop_unchanged
     | eos_rbafnonc_route_map
   )
+;
+
+eos_rbafvpn4no_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS VRF_UNICAST_RIB NEWLINE
 ;
 
 // Common to ipv4 unicast and ipv6 unicast. Others should just copy the relevant afdnc rules.

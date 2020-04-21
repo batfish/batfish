@@ -14753,6 +14753,11 @@ VRF_ALSO
    'vrf-also'
 ;
 
+VRF_UNICAST_RIB
+:
+   'vrf-unicast-rib'
+;
+
 VRRP
 :
    'vrrp'
