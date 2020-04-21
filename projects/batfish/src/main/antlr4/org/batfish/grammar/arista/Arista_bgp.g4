@@ -2343,6 +2343,7 @@ eos_rbino_neighbor
     | eos_rbinon_out_delay
     | eos_rbinon_passive
     | eos_rbinon_password
+    | eos_rbinon_peer_group
     | eos_rbafnonc_prefix_list  // intended rbafnonc - it affects the generic address family
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
@@ -2537,6 +2538,11 @@ eos_rbinon_passive
 eos_rbinon_password
 :
   PASSWORD NEWLINE
+;
+
+eos_rbinon_peer_group
+:
+  (PEER GROUP | PEER_GROUP) NEWLINE
 ;
 
 eos_rbinon_remote_as

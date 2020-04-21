@@ -127,6 +127,8 @@ router bgp 64900
    neighbor SOME_GROUP maximum-routes 12000
    no neighbor SOME_GROUP maximum-accepted-routes
    no neighbor SOME_GROUP link-bandwidth
+   no neighbor 192.0.2.7 peer-group
+   no neighbor 192.0.2.7 peer group
    neighbor 192.0.2.7 peer-group SOME_GROUP
    neighbor 192.0.2.7 remote-as 65000
    neighbor 192.0.2.7 update-source Ethernet1/1
