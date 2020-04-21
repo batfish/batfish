@@ -62,7 +62,7 @@ public final class AristaBgpVrf implements Serializable {
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4MulticastAf;
   @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4SrTeAf;
 
-  // TODO: do these need to be different families, or 1 v4-specific but not unicast-specific?
+  // TODO: do these need to be different families, or 1 v6-specific but not unicast-specific?
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6LabeledUnicastAf;
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6MulticastAf;
   @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
