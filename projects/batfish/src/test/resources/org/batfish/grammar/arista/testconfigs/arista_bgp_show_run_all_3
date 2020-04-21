@@ -1,0 +1,426 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! Command: show running-config all
+! device: arista_bgp_show_run_all_3 (vEOS, EOS-4.23.0.1F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+hostname arista_bgp_show_run_all_3
+!
+router bgp 64900
+   bgp trace neighbor all
+   bgp trace route-key all
+   bgp asn notation asplain
+   bgp labeled-unicast rib tunnel
+   no shutdown
+   no bgp control-plane-filter default-allow
+   no router-id
+   bgp convergence time 300
+   bgp convergence slow-peer time 90
+   no bgp confederation identifier
+   no update wait-for-convergence
+   no update wait-install
+   bgp log-neighbor-changes
+   bgp default ipv4-unicast
+   no bgp default ipv4-unicast transport ipv6
+   no bgp default ipv6-unicast
+   no bgp missing-policy direction in action
+   no bgp missing-policy direction out action
+   timers bgp 60 180
+   distance bgp 200 200 200
+   graceful-restart restart-time 300
+   graceful-restart stalepath-time 300
+   no bgp allowas-in
+   no bgp cluster-id
+   bgp client-to-client reflection
+   no graceful-restart
+   graceful-restart-helper
+   bgp peer-mac-resolution-timeout 0
+   bgp enforce-first-as
+   no bgp fec skip in-place update
+   no bgp route install-map
+   no ip access-group
+   no ipv6 access-group
+   no bgp transport listen-port
+   no bgp transport ipv4 mss
+   no bgp transport ipv6 mss
+   no bgp transport pmtud
+   bgp transport qos dscp 48
+   no default-metric
+   no bgp always-compare-med
+   no bgp bestpath med missing-as-worst
+   no bgp bestpath med confed
+   no bgp route-reflector preserve-attributes
+   maximum-paths 1 ecmp 128
+   no bgp additional-paths install
+   bgp additional-paths receive
+   no bgp additional-paths send any
+   dynamic peer max 1000
+   bgp bestpath as-path multipath-relax
+   no bgp bestpath as-path ignore
+   no bgp bestpath skip next-hop igp-cost
+   no bgp aspath-cmp-include-nexthop
+   bgp bestpath ecmp-fast
+   no bgp bestpath tie-break age
+   no bgp bestpath tie-break router-id
+   no bgp bestpath tie-break originator-id
+   no bgp bestpath tie-break cluster-list-length
+   no bgp advertise-inactive
+   no bgp auto-local-addr
+   no bgp next-hop-unchanged
+   no bgp aggregate-route community inheritance loose
+   neighbor SOME_GROUP peer group
+   no neighbor SOME_GROUP remote-as
+   no neighbor SOME_GROUP import-localpref
+   no neighbor SOME_GROUP export-localpref
+   no neighbor SOME_GROUP next-hop-self
+   no neighbor SOME_GROUP next-hop-peer
+   no neighbor SOME_GROUP next-hop-unchanged
+   no neighbor SOME_GROUP shutdown
+   no neighbor SOME_GROUP remove-private-as
+   no neighbor SOME_GROUP link-bandwidth update-delay
+   no neighbor SOME_GROUP as-path prepend-own disabled
+   no neighbor SOME_GROUP as-path remote-as replace out
+   no neighbor SOME_GROUP local-as
+   no neighbor SOME_GROUP weight
+   no neighbor SOME_GROUP out-delay
+   neighbor SOME_GROUP passive
+   no neighbor SOME_GROUP passive
+   no neighbor SOME_GROUP transport remote-port
+   no neighbor SOME_GROUP update-source
+   no neighbor SOME_GROUP dont-capability-negotiate
+   no neighbor SOME_GROUP bfd
+   no neighbor SOME_GROUP local-v4-addr
+   no neighbor SOME_GROUP local-v6-addr
+   no neighbor SOME_GROUP auto-local-addr
+   default neighbor SOME_GROUP monitoring
+   no neighbor SOME_GROUP next-hop-v6-addr
+   no neighbor SOME_GROUP description
+   no neighbor SOME_GROUP allowas-in
+   neighbor SOME_GROUP rib-in pre-policy retain all
+   neighbor SOME_GROUP rib-in pre-policy retain
+   no neighbor SOME_GROUP ebgp-multihop
+   no neighbor SOME_GROUP ttl maximum-hops
+   no neighbor SOME_GROUP route-reflector-client
+   no neighbor SOME_GROUP timers
+   neighbor SOME_GROUP prefix-list FOO in
+   no neighbor SOME_GROUP prefix-list in
+   neighbor SOME_GROUP route-map BAR in
+   no neighbor SOME_GROUP route-map in
+   no neighbor SOME_GROUP graceful-restart
+   neighbor SOME_GROUP graceful-restart-helper
+   neighbor SOME_GROUP additional-paths receive
+   no neighbor SOME_GROUP additional-paths send any
+   neighbor SOME_GROUP route-to-peer
+   no neighbor SOME_GROUP route-map out
+   no neighbor SOME_GROUP password
+   no neighbor SOME_GROUP default-originate
+   neighbor SOME_GROUP enforce-first-as
+   no neighbor SOME_GROUP metric-out
+   no neighbor SOME_GROUP idle-restart-timer
+   no neighbor SOME_GROUP send-community
+   neighbor SOME_GROUP maximum-routes 12000
+   no neighbor SOME_GROUP maximum-accepted-routes
+   no neighbor SOME_GROUP link-bandwidth
+   no neighbor SOME_GROUP link-bandwidth adjust auto
+   neighbor 192.0.2.7 peer group SOME_GROUP
+   bgp redistribute-internal
+   no redistribute connected
+   no redistribute isis
+   no redistribute ospf match internal
+   no redistribute ospf match external
+   no redistribute ospf match nssa-external
+   no redistribute ospfv3 match internal
+   no redistribute ospfv3 match external
+   no redistribute ospfv3 match nssa-external
+   no redistribute static
+   no redistribute rip
+   no redistribute aggregate
+   no redistribute attached-host
+   no redistribute dynamic
+   no ucmp mode
+   ucmp link-bandwidth update-delay 0
+   no ucmp link-bandwidth encoding-weighted
+   no ucmp link-bandwidth recursive
+   ucmp fec threshold trigger 50 clear 40 warning-only
+   no monitoring port
+   monitoring received routes pre-policy
+   monitoring received routes post-policy
+   monitoring received routes address-family ipv4 unicast
+   monitoring received routes address-family ipv6 unicast
+   no monitoring received routes address-family ipv6 labeled-unicast
+   monitoring timestamp send-time
+   no bgp monitoring
+   !
+   address-family evpn
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      neighbor default encapsulation vxlan
+      no next-hop resolution disabled
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      host-flap detection window 180.0 threshold 5
+      neighbor 192.0.2.7 route-map EVPN_IN in
+   !
+   address-family flow-spec ipv4
+      default neighbor SOME_GROUP activate
+      neighbor 192.0.2.7 activate
+   !
+   address-family flow-spec ipv6
+      default neighbor SOME_GROUP activate
+      neighbor 192.0.2.7 activate
+   !
+   address-family ipv4 sr-te
+      default neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP route-map in
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV4SRTE_IN in
+   !
+   address-family ipv4 labeled-unicast
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      no neighbor SOME_GROUP next-hop-self source-interface
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV4LU_IN in
+   !
+   address-family ipv4
+      no bgp next-hop address-family ipv6
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      no bgp route install-map
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP prefix-list in
+      no neighbor SOME_GROUP prefix-list out
+      no neighbor SOME_GROUP default-originate
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop address-family ipv6
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV4_IN in
+   !
+   address-family ipv4 multicast
+      bgp additional-paths receive
+      no bgp next-hop-unchanged
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV4MC_IN in
+   !
+   address-family ipv6
+      no bgp additional-paths install
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      no bgp route install-map
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
+      next-hop 6pe resolution ribs tunnel-rib system-tunnel-rib
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP prefix-list in
+      no neighbor SOME_GROUP prefix-list out
+      no neighbor SOME_GROUP default-originate
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6_IN in
+   !
+   address-family ipv6 labeled-unicast
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      no neighbor SOME_GROUP next-hop-self source-interface
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6LU_IN in
+   !
+   address-family ipv6 sr-te
+      default neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP route-map in
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6SRTE_IN in
+   !
+   address-family ipv6 multicast
+      bgp additional-paths receive
+      no bgp next-hop-unchanged
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      neighbor 192.0.2.7 route-map IPV6MC_IN in
+   !
+   address-family vpn-ipv4
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      no next-hop resolution ribs vrf-unicast-rib
+      no mpls label allocation disabled
+      neighbor 192.0.2.7 route-map VPN4_IN in
+   !
+   address-family vpn-ipv6
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      no bgp next-hop-unchanged
+      next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
+      default neighbor SOME_GROUP activate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP additional-paths send any
+      no neighbor SOME_GROUP next-hop-unchanged
+      default neighbor 192.0.2.7 activate
+      no next-hop resolution ribs vrf-unicast-rib
+      no mpls label allocation disabled
+      neighbor 192.0.2.7 route-map VPN6_IN in
+   !
+   vrf a
+      bgp trace neighbor all
+      bgp trace route-key all
+      bgp labeled-unicast rib tunnel
+      local-as 64900
+      no shutdown
+      no bgp control-plane-filter default-allow
+      no router-id
+      bgp convergence time 300
+      bgp convergence slow-peer time 90
+      no bgp confederation identifier
+      no update wait-for-convergence
+      no update wait-install
+      bgp log-neighbor-changes
+      bgp default ipv4-unicast
+      no bgp default ipv4-unicast transport ipv6
+      no bgp default ipv6-unicast
+      no bgp missing-policy direction in action
+      no bgp missing-policy direction out action
+      timers bgp 60 180
+      distance bgp 200 200 200
+      graceful-restart restart-time 300
+      graceful-restart stalepath-time 300
+      no bgp allowas-in
+      no bgp cluster-id
+      bgp client-to-client reflection
+      no graceful-restart
+      graceful-restart-helper
+      bgp peer-mac-resolution-timeout 0
+      bgp enforce-first-as
+      no bgp fec skip in-place update
+      no bgp route install-map
+      no ip access-group
+      no ipv6 access-group
+      no bgp transport listen-port
+      no bgp transport ipv4 mss
+      no bgp transport ipv6 mss
+      no bgp transport pmtud
+      no default-metric
+      no bgp always-compare-med
+      no bgp bestpath med missing-as-worst
+      no bgp bestpath med confed
+      no bgp route-reflector preserve-attributes
+      maximum-paths 1 ecmp 128
+      no bgp additional-paths install
+      bgp additional-paths receive
+      no bgp additional-paths send any
+      dynamic peer max 1000
+      bgp bestpath as-path multipath-relax
+      no bgp bestpath as-path ignore
+      no bgp bestpath skip next-hop igp-cost
+      no bgp aspath-cmp-include-nexthop
+      bgp bestpath ecmp-fast
+      no bgp bestpath tie-break age
+      no bgp bestpath tie-break router-id
+      no bgp bestpath tie-break originator-id
+      no bgp bestpath tie-break cluster-list-length
+      no bgp advertise-inactive
+      no bgp auto-local-addr
+      no bgp next-hop-unchanged
+      no bgp aggregate-route community inheritance loose
+      neighbor 192.0.2.8 peer group OTHER_GROUP
+      bgp redistribute-internal
+      no redistribute connected
+      no redistribute isis
+      no redistribute ospf match internal
+      no redistribute ospf match external
+      no redistribute ospf match nssa-external
+      no redistribute ospfv3 match internal
+      no redistribute ospfv3 match external
+      no redistribute ospfv3 match nssa-external
+      no redistribute static
+      no redistribute rip
+      no redistribute aggregate
+      no redistribute attached-host
+      no redistribute dynamic
+      no ucmp mode
+      ucmp link-bandwidth update-delay 0
+      no ucmp link-bandwidth encoding-weighted
+      no ucmp link-bandwidth recursive
+      ucmp fec threshold trigger 50 clear 40 warning-only
+      !
+      address-family ipv4
+         no bgp next-hop address-family ipv6
+         bgp additional-paths receive
+         no bgp additional-paths send any
+         no bgp next-hop-unchanged
+         no bgp route install-map
+         next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
+         default neighbor 192.0.2.8 activate
+         neighbor 192.0.2.8 route-map A-IPV4_IN in
+      !
+      address-family ipv4 multicast
+         bgp additional-paths receive
+         no bgp next-hop-unchanged
+         default neighbor 192.0.2.8 activate
+         neighbor 192.0.2.8 route-map A-IPV4MC_IN in
+      !
+      address-family ipv6
+         no bgp additional-paths install
+         bgp additional-paths receive
+         no bgp additional-paths send any
+         no bgp next-hop-unchanged
+         no bgp route install-map
+         next-hop resolution ribs tunnel-rib system-tunnel-rib system-unicast-rib
+         default neighbor 192.0.2.8 activate
+         neighbor 192.0.2.8 route-map A-IPV6_IN in
+      !
+      address-family ipv6 multicast
+         bgp additional-paths receive
+         no bgp next-hop-unchanged
+         default neighbor 192.0.2.8 activate
+         neighbor 192.0.2.8 route-map A-IPV6MC_IN in
+!

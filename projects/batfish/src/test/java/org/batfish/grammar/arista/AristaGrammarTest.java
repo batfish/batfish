@@ -1809,6 +1809,11 @@ public class AristaGrammarTest {
       assertThat(ipv6lu.getRouteMapIn(), equalTo("IPV6LU_IN"));
     }
     {
+      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
+    }
+    {
       AristaBgpNeighborAddressFamily ipv6m = defaultVrf.getV6MulticastAf().getNeighbor(neighborIp);
       assertThat(ipv6m, notNullValue());
       assertThat(ipv6m.getRouteMapIn(), equalTo("IPV6MC_IN"));
@@ -1832,6 +1837,108 @@ public class AristaGrammarTest {
       AristaBgpNeighborAddressFamily vpn6 = defaultVrf.getVpnV6Af().getNeighbor(neighborIp);
       assertThat(vpn6, notNullValue());
       assertThat(vpn6.getRouteMapIn(), equalTo("VPN6_IN"));
+    }
+  }
+
+  @Test
+  public void testParseBgpShowRunAll3() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_3");
+    // Test relies on route-maps configured as the last line of specific address families.
+    assertThat(c.getAristaBgp().getVrfs().keySet(), containsInAnyOrder("default", "a"));
+    assertThat(c.getAristaBgp().getPeerGroups().keySet(), containsInAnyOrder("SOME_GROUP"));
+    Ip neighborIp = Ip.parse("192.0.2.7");
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    assertThat(defaultVrf.getV4neighbors().keySet(), contains(neighborIp));
+    {
+      AristaBgpNeighborAddressFamily evpn = defaultVrf.getEvpnAf().getNeighbor(neighborIp);
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getRouteMapIn(), equalTo("EVPN_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily fs4 = defaultVrf.getFlowSpecV4Af().getNeighbor(neighborIp);
+      assertThat(fs4, notNullValue());
+      assertThat(fs4.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
+      AristaBgpNeighborAddressFamily fs6 = defaultVrf.getFlowSpecV6Af().getNeighbor(neighborIp);
+      assertThat(fs6, notNullValue());
+      assertThat(fs6.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4m = defaultVrf.getV4MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv4m, notNullValue());
+      assertThat(ipv4m.getRouteMapIn(), equalTo("IPV4MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4lu =
+          defaultVrf.getV4LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4lu, notNullValue());
+      assertThat(ipv4lu.getRouteMapIn(), equalTo("IPV4LU_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6lu =
+          defaultVrf.getV6LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6lu, notNullValue());
+      assertThat(ipv6lu.getRouteMapIn(), equalTo("IPV6LU_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6m = defaultVrf.getV6MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv6m, notNullValue());
+      assertThat(ipv6m.getRouteMapIn(), equalTo("IPV6MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4sr = defaultVrf.getV4SrTeAf().getNeighbor(neighborIp);
+      assertThat(ipv4sr, notNullValue());
+      assertThat(ipv4sr.getRouteMapIn(), equalTo("IPV4SRTE_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6sr = defaultVrf.getV6SrTeAf().getNeighbor(neighborIp);
+      assertThat(ipv6sr, notNullValue());
+      assertThat(ipv6sr.getRouteMapIn(), equalTo("IPV6SRTE_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily vpn4 = defaultVrf.getVpnV4Af().getNeighbor(neighborIp);
+      assertThat(vpn4, notNullValue());
+      assertThat(vpn4.getRouteMapIn(), equalTo("VPN4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily vpn6 = defaultVrf.getVpnV6Af().getNeighbor(neighborIp);
+      assertThat(vpn6, notNullValue());
+      assertThat(vpn6.getRouteMapIn(), equalTo("VPN6_IN"));
+    }
+    /// vrf
+    AristaBgpVrf vrfA = c.getAristaBgp().getVrfs().get("a");
+    Ip neighborIpA = Ip.parse("192.0.2.8");
+    assertThat(vrfA.getV4neighbors().keySet(), contains(neighborIpA));
+    {
+      AristaBgpNeighborAddressFamily ipv4u = vrfA.getV4UnicastAf().getNeighbor(neighborIpA);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("A-IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4m = vrfA.getV4MulticastAf().getNeighbor(neighborIpA);
+      assertThat(ipv4m, notNullValue());
+      assertThat(ipv4m.getRouteMapIn(), equalTo("A-IPV4MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = vrfA.getV6UnicastAf().getNeighbor(neighborIpA);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("A-IPV6_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6m = vrfA.getV6MulticastAf().getNeighbor(neighborIpA);
+      assertThat(ipv6m, notNullValue());
+      assertThat(ipv6m.getRouteMapIn(), equalTo("A-IPV6MC_IN"));
     }
   }
 
