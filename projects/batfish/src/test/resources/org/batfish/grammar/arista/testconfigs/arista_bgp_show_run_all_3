@@ -97,11 +97,12 @@ router bgp 64900
    no neighbor SOME_GROUP next-hop-v6-addr
    no neighbor SOME_GROUP description
    no neighbor SOME_GROUP allowas-in
-   !TODO neighbor SOME_GROUP rib-in pre-policy retain
+   neighbor SOME_GROUP rib-in pre-policy retain all
+   neighbor SOME_GROUP rib-in pre-policy retain
    no neighbor SOME_GROUP ebgp-multihop
    no neighbor SOME_GROUP ttl maximum-hops
    no neighbor SOME_GROUP route-reflector-client
-   !TODO no neighbor SOME_GROUP timers
+   no neighbor SOME_GROUP timers
    neighbor SOME_GROUP prefix-list FOO in
    no neighbor SOME_GROUP prefix-list in
    neighbor SOME_GROUP route-map BAR in

@@ -10903,6 +10903,11 @@ RESUME
    'resume'
 ;
 
+RETAIN
+:
+   'retain'
+;
+
 RETRANSMIT
 :
    'retransmit'
@@ -11011,6 +11016,11 @@ RIB
 RIB_HAS_ROUTE
 :
    'rib-has-route'
+;
+
+RIB_IN
+:
+   'rib-in'
 ;
 
 RIB_METRIC_AS_EXTERNAL

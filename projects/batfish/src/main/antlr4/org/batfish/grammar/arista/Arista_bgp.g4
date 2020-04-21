@@ -1699,6 +1699,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_prefix_list
     | eos_rbinc_remote_as
     | eos_rbinc_remove_private_as
+    | eos_rbinc_rib_in
     | eos_rbinc_route_map
     | eos_rbinc_route_reflector_client
     | eos_rbinc_route_to_peer
@@ -1845,6 +1846,11 @@ eos_rbinc_remote_as
 eos_rbinc_remove_private_as
 :
   REMOVE_PRIVATE_AS (ALL REPLACE_AS?)? NEWLINE
+;
+
+eos_rbinc_rib_in
+:
+  RIB_IN PRE_POLICY RETAIN ALL? NEWLINE
 ;
 
 eos_rbinc_route_map
@@ -2349,6 +2355,7 @@ eos_rbino_neighbor
     | eos_rbinon_route_to_peer
     | eos_rbinon_send_community
     | eos_rbinon_shutdown
+    | eos_rbinon_timers
     | eos_rbinon_ttl
     | eos_rbinon_transport
     | eos_rbinon_update_source
@@ -2574,6 +2581,11 @@ eos_rbinon_send_community
 eos_rbinon_shutdown
 :
   SHUTDOWN NEWLINE
+;
+
+eos_rbinon_timers
+:
+  TIMERS NEWLINE
 ;
 
 eos_rbinon_ttl
