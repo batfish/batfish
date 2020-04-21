@@ -96,7 +96,7 @@ router bgp 64900
    default neighbor SOME_GROUP monitoring
    no neighbor SOME_GROUP next-hop-v6-addr
    no neighbor SOME_GROUP description
-   !TODO no neighbor SOME_GROUP allowas-in
+   no neighbor SOME_GROUP allowas-in
    !TODO neighbor SOME_GROUP rib-in pre-policy retain
    no neighbor SOME_GROUP ebgp-multihop
    no neighbor SOME_GROUP ttl maximum-hops

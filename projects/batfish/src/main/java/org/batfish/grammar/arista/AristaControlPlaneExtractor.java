@@ -559,6 +559,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbino_default_metricContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_neighborContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_router_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbino_shutdownContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_default_originateContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_ebgp_multihopContext;
@@ -3056,6 +3057,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbino_neighbor(Eos_rbino_neighborContext ctx) {
     _currentAristaBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitEos_rbinon_allowas_in(Eos_rbinon_allowas_inContext ctx) {
+    _currentAristaBgpNeighbor.setAllowAsIn(0);
   }
 
   @Override
