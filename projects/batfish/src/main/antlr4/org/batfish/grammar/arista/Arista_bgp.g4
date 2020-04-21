@@ -891,7 +891,7 @@ eos_rb_af_vpn_v4
   VPN_IPV4 NEWLINE
   (
     eos_rbafvpn4_bgp
-//    | eos_rbafvpn4_default
+    | eos_rbafvpn4_default
     | eos_rbafvpn4_neighbor
 //    | eos_rbafvpn4_next_hop
     | eos_rbafvpn4_no
@@ -905,9 +905,21 @@ eos_rbafvpn4_bgp
     eos_rbafbc_additional_paths
     | eos_rbafbc_next_hop_unchanged
   )
-
 ;
 
+eos_rbafvpn4_default
+:
+  DEFAULT
+  eos_rbafvpn4d_neighbor
+;
+
+eos_rbafvpn4d_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
 eos_rbafvpn4_neighbor
 :
   NEIGHBOR nid = eos_neighbor_id
