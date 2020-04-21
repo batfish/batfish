@@ -190,6 +190,7 @@ public final class ParboiledAutoComplete {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
+      case ONE_APP_ICMP:
       case APP_ICMP_TYPE:
       case APP_ICMP_TYPE_CODE:
         // don't help with numbers
