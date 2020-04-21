@@ -941,6 +941,7 @@ eos_rbafvpn4_no
   NO
   (
     eos_rbafvpn4no_bgp
+    | eos_rbafvpn4no_mpls
     | eos_rbafvpn4no_neighbor
     | eos_rbafvpn4no_next_hop
   )
@@ -953,6 +954,11 @@ eos_rbafvpn4no_bgp
     eos_rbafnobc_additional_paths
     | eos_rbafnobc_next_hop_unchanged
   )
+;
+
+eos_rbafvpn4no_mpls
+:
+  MPLS LABEL ALLOCATION DISABLED NEWLINE
 ;
 
 eos_rbafvpn4no_neighbor
