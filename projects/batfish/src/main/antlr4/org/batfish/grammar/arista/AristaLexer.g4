@@ -324,6 +324,11 @@ ADJMGR
    'adjmgr'
 ;
 
+ADJUST
+:
+   'adjust'
+;
+
 ADJUST_MSS
 :
    'adjust-mss'
@@ -2457,6 +2462,11 @@ CONTROL_PLANE
    'control-plane'
 ;
 
+CONTROL_PLANE_FILTER
+:
+   'control-plane-filter'
+;
+
 CONTROL_PLANE_SECURITY
 :
    'control-plane-security'
@@ -2855,6 +2865,11 @@ DEFAULT
 DEFAULT_ACTION
 :
    'default-action'
+;
+
+DEFAULT_ALLOW
+:
+   'default-allow'
 ;
 
 DEFAULT_COST
@@ -3420,6 +3435,11 @@ DISABLE
 DISABLE_ADVERTISEMENT
 :
    'disable-advertisement'
+;
+
+DISABLED
+:
+   'disabled'
 ;
 
 DISCARD
@@ -4855,6 +4875,11 @@ FLOW_SAMPLER_MAP
    'flow-sampler-map'
 ;
 
+FLOW_SPEC
+:
+   'flow-spec'
+;
+
 FLOW_TOP_TALKERS
 :
    'flow-top-talkers'
@@ -6058,6 +6083,11 @@ IMPORT_LOCALPREF
 IN
 :
    'in'
+;
+
+IN_PLACE
+:
+   'in-place'
 ;
 
 INACTIVE
@@ -8228,6 +8258,11 @@ MSRPC
    'msrpc'
 ;
 
+MSS
+:
+   'mss'
+;
+
 MST
 :
    'mst'
@@ -9978,6 +10013,11 @@ PREPEND
    'prepend'
 ;
 
+PREPEND_OWN
+:
+   'prepend-own'
+;
+
 PRESERVE_ATTRIBUTES
 :
    'preserve-attributes'
@@ -10733,6 +10773,11 @@ REPLACE_AS
    'replace-as'
 ;
 
+REPLACE
+:
+   'replace'
+;
+
 REPLY
 :
    'reply'
@@ -10771,6 +10816,11 @@ REQUEST_DATA_SIZE
 REQUIRE_WPA
 :
    'require-wpa'
+;
+
+RESOLUTION
+:
+   'resolution'
 ;
 
 RESOURCE
@@ -10951,6 +11001,11 @@ RIB_METRIC_AS_INTERNAL
 RIB_SCALE
 :
    'rib-scale'
+;
+
+RIBS
+:
+   'ribs'
 ;
 
 RING
@@ -11973,9 +12028,20 @@ SITEMAP
    'sitemap'
 ;
 
+SIXPE
+:
+  '6pe'
+;
+
 SIZE
 :
    'size'
+;
+
+// cannot declare a rule with reserved name SKIP
+SKIP_LITERAL
+:
+   'skip'
 ;
 
 SLA
@@ -12281,6 +12347,11 @@ SRLG
 SRR_QUEUE
 :
    'srr-queue'
+;
+
+SR_TE
+:
+  'sr-te'
 ;
 
 SRST
@@ -12787,7 +12858,12 @@ SYSTEM
 
 SYSTEM_INIT
 :
-   'system-init'
+   'systeminit'
+;
+
+SYSTEM_CONNECTED
+:
+   'system-connected'
 ;
 
 SYSTEM_MAX
@@ -12808,6 +12884,16 @@ SYSTEM_PROFILE
 SYSTEM_SHUTDOWN
 :
    'system-shutdown'
+;
+
+SYSTEM_TUNNEL_RIB
+:
+   'system-tunnel-rib'
+;
+
+SYSTEM_UNICAST_RIB
+:
+   'system-unicast-rib'
 ;
 
 SYSTEMOWNER
@@ -13770,6 +13856,11 @@ TUNNEL_ID
    'tunnel-id'
 ;
 
+TUNNEL_RIB
+:
+   'tunnel-rib'
+;
+
 TUNNELED
 :
    'tunneled'
@@ -14660,6 +14751,11 @@ VRF
 VRF_ALSO
 :
    'vrf-also'
+;
+
+VRF_UNICAST_RIB
+:
+   'vrf-unicast-rib'
 ;
 
 VRRP
@@ -15840,6 +15936,11 @@ M_AsPath_PREPEND
    'prepend' -> type ( PREPEND ) , popMode
 ;
 
+M_AsPath_PREPEND_OWN
+:
+   'prepend-own' -> type ( PREPEND_OWN ) , popMode
+;
+
 M_AsPath_ORIGINATES_FROM
 :
    'originates-from' -> type ( ORIGINATES_FROM ) , popMode
@@ -15848,6 +15949,11 @@ M_AsPath_ORIGINATES_FROM
 M_AsPath_REGEX_MODE
 :
    'regex-mode' -> type ( REGEX_MODE ) , popMode
+;
+
+M_AsPath_REMOTE_AS
+:
+   'remote-as' -> type ( REMOTE_AS ) , popMode
 ;
 
 M_AsPath_TAG
