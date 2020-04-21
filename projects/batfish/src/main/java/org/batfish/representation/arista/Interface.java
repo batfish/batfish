@@ -23,15 +23,11 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_ARISTA_ETHERNET_SPEED = 1E9D;
 
-  private static final double DEFAULT_FAST_ETHERNET_SPEED = 100E6D;
-
   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
 
   private static final double DEFAULT_VLAN_BANDWIDTH = 1E9D;
 
   private static final int DEFAULT_INTERFACE_MTU = 1500;
-
-  private static final double DEFAULT_LONG_REACH_ETHERNET_SPEED = 10E6D;
 
   /** Loopback bandwidth */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
@@ -59,21 +55,6 @@ public class Interface implements Serializable {
   public static @Nullable Double getDefaultSpeed(@Nonnull String name) {
     if (name.startsWith("Ethernet")) {
       return DEFAULT_ARISTA_ETHERNET_SPEED;
-    } else if (name.startsWith("FastEthernet")) {
-      return DEFAULT_FAST_ETHERNET_SPEED;
-    } else if (name.startsWith("GigabitEthernet")) {
-      return 1E9D;
-    } else if (name.startsWith("LongReachEthernet")) {
-      return DEFAULT_LONG_REACH_ETHERNET_SPEED;
-    } else if (name.startsWith("TenGigabitEthernet")) {
-      return 10E9D;
-    } else if (name.startsWith("TwentyFiveGigE")) {
-      return 25E9D;
-    } else if (name.startsWith("TwoGigabitEthernet")) {
-      // 2.5 Gbps
-      return 2.5E9D;
-    } else if (name.startsWith("Wlan-GigabitEthernet")) {
-      return 1E9D;
     } else {
       // Bundle-Ethernet
       // Loopback
@@ -91,7 +72,7 @@ public class Interface implements Serializable {
 
   @Nullable private Integer _accessVlan;
 
-  private boolean _active;
+  private boolean _shutdown;
 
   @Nullable private IntegerSpace _allowedVlans;
 
@@ -159,8 +140,6 @@ public class Interface implements Serializable {
 
   private boolean _spanningTreePortfast;
 
-  private ConcreteInterfaceAddress _standbyAddress;
-
   private boolean _switchport;
 
   private boolean _switchportAccessDynamic;
@@ -190,7 +169,7 @@ public class Interface implements Serializable {
   }
 
   public Interface(String name, AristaConfiguration c) {
-    _active = true;
+    _shutdown = false;
     _autoState = true;
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
@@ -237,8 +216,8 @@ public class Interface implements Serializable {
     return _accessVlan;
   }
 
-  public boolean getActive() {
-    return _active;
+  public boolean getShutdown() {
+    return _shutdown;
   }
 
   @Nullable
@@ -394,10 +373,6 @@ public class Interface implements Serializable {
     return _speed;
   }
 
-  public ConcreteInterfaceAddress getStandbyAddress() {
-    return _standbyAddress;
-  }
-
   public Boolean getSwitchport() {
     return _switchport;
   }
@@ -442,8 +417,8 @@ public class Interface implements Serializable {
     _accessVlan = vlan;
   }
 
-  public void setActive(boolean active) {
-    _active = active;
+  public void setShutdown(boolean shutdown) {
+    _shutdown = shutdown;
   }
 
   public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {
@@ -564,10 +539,6 @@ public class Interface implements Serializable {
 
   public void setSpeed(@Nullable Double speed) {
     _speed = speed;
-  }
-
-  public void setStandbyAddress(ConcreteInterfaceAddress standbyAddress) {
-    _standbyAddress = standbyAddress;
   }
 
   public void setSwitchport(boolean switchport) {

@@ -8,7 +8,7 @@ hostname arista_advertiser
 interface Ethernet1
    no switchport
    ip address 1.2.3.5/24
-   ip ospf 1 area 1
+   ip ospf area 1
 !
 ip route 0.0.0.0/0 Null0
 !

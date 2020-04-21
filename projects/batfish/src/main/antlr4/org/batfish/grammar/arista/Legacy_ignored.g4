@@ -190,7 +190,6 @@ null_block
       | PORT_PROFILE
       | POWEROFF
       | POWER_MGR
-      | PRIORITY_FLOW_CONTROL
       | PSEUDOWIRE_CLASS
       | PTP
       | QOS_POLICY

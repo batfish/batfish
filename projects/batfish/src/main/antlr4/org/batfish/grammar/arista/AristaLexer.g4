@@ -42,7 +42,8 @@ tokens {
    TEXT,
    VALUE,
    WIRED,
-   WISPR
+   WISPR,
+   WORD
 } 
 
 // Cisco Keywords
@@ -639,6 +640,11 @@ ALL_OF_ROUTER
    'all-of-router'
 ;
 
+ALL_SUBNETS
+:
+   'all-subnets'
+;
+
 ALLOCATE
 :
    'allocate'
@@ -1046,6 +1052,11 @@ ATTACHED_HOSTS
    'attached-hosts'
 ;
 
+ATTACHED_ROUTES
+:
+   'attached-routes'
+;
+
 ATM
 :
    'atm'
@@ -1404,66 +1415,6 @@ BASE
 BASH
 :
    'bash'
-;
-
-BASIC_1_0
-:
-  'basic-1.0'
-;
-
-BASIC_2_0
-:
-  'basic-2.0'
-;
-
-BASIC_5_5
-:
-  'basic-5.5'
-;
-
-BASIC_6_0
-:
-  'basic-6.0'
-;
-
-BASIC_9_0
-:
-  'basic-9.0'
-;
-
-BASIC_11_0
-:
-  'basic-11.0'
-;
-
-BASIC_12_0
-:
-  'basic-12.0'
-;
-
-BASIC_18_0
-:
-  'basic-18.0'
-;
-
-BASIC_24_0
-:
-  'basic-24.0'
-;
-
-BASIC_36_0
-:
-  'basic-36.0'
-;
-
-BASIC_48_0
-:
-  'basic-48.0'
-;
-
-BASIC_54_0
-:
-  'basic-54.0'
 ;
 
 BATCH_SIZE
@@ -2044,6 +1995,11 @@ CIPC
 CIR
 :
    'cir'
+;
+
+CIRCUIT_ID
+:
+   'circuit-id' -> pushMode ( M_Word )
 ;
 
 CIRCUIT_TYPE
@@ -7307,96 +7263,6 @@ LT
    'lt'
 ;
 
-M0_7
-:
-  'm0-7'
-;
-
-M0_DOT
-:
-  'm0.'
-;
-
-M1_DOT
-:
-  'm1.'
-;
-
-M2_DOT
-:
-  'm2.'
-;
-
-M3_DOT
-:
-  'm3.'
-;
-
-M4_DOT
-:
-  'm4.'
-;
-
-M5_DOT
-:
-  'm5.'
-;
-
-M6_DOT
-:
-  'm6.'
-;
-
-M7_DOT
-:
-  'm7.'
-;
-
-M8_DOT
-:
-  'm8.'
-;
-
-M8_15
-:
-  'm8-15'
-;
-
-M9_DOT
-:
-  'm9.'
-;
-
-M10_DOT
-:
-  'm10.'
-;
-
-M11_DOT
-:
-  'm11.'
-;
-
-M12_DOT
-:
-  'm12.'
-;
-
-M13_DOT
-:
-  'm13.'
-;
-
-M14_DOT
-:
-  'm14.'
-;
-
-M15_DOT
-:
-  'm15.'
-;
-
 MAB
 :
    'mab'
@@ -9013,16 +8879,6 @@ ODMR
   'odmr'
 ;
 
-OFDM
-:
-  'ofdm'
-;
-
-OFDM_THROUGHPUT
-:
-  'ofdm-throughput'
-;
-
 OFFSET_LIST
 :
    'offset-list'
@@ -9681,6 +9537,11 @@ PFC
 PFS
 :
    'pfs'
+;
+
+PHONE
+:
+  'phone'
 ;
 
 PHONE_CONTACT
@@ -16680,7 +16541,6 @@ M_Interface_PREFIX
          | '_'
       )*
    )
-   | 'Dot11Radio'
    | [Ee]'1'
    | [Tt]'1'
 ;
@@ -16953,6 +16813,23 @@ M_SshKey_NEWLINE
 ;
 
 M_SshKey_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Word;
+
+M_Word_WORD
+:
+   F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_Word_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Word_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
