@@ -102,13 +102,16 @@ router bgp 64900
    no neighbor SOME_GROUP ttl maximum-hops
    no neighbor SOME_GROUP route-reflector-client
    !TODO no neighbor SOME_GROUP timers
-   !TODO no neighbor SOME_GROUP route-map in
+   neighbor SOME_GROUP prefix-list FOO in
+   no neighbor SOME_GROUP prefix-list in
+   neighbor SOME_GROUP route-map BAR in
+   no neighbor SOME_GROUP route-map in
    no neighbor SOME_GROUP graceful-restart
    neighbor SOME_GROUP graceful-restart-helper
    neighbor SOME_GROUP additional-paths receive
    no neighbor SOME_GROUP additional-paths send any
    neighbor SOME_GROUP route-to-peer
-   !TODO no neighbor SOME_GROUP route-map out
+   no neighbor SOME_GROUP route-map out
    no neighbor SOME_GROUP password
    no neighbor SOME_GROUP default-originate
    neighbor SOME_GROUP enforce-first-as

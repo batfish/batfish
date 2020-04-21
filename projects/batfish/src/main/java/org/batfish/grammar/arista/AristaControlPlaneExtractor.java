@@ -50,9 +50,11 @@ import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGA
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGATE_MATCH_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP;
@@ -540,6 +542,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_passiveContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_prefix_listContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_remove_private_asContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinc_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_route_reflector_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_send_communityContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_shutdownContext;
@@ -569,8 +572,10 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_selfContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_unchangedContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_passiveContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_prefix_listContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remote_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remove_private_asContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_route_mapContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_route_reflector_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_route_to_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_shutdownContext;
@@ -2870,12 +2875,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListIn(name);
       _configuration.referenceStructure(
           PREFIX_LIST, name, BGP_INBOUND_PREFIX_LIST, ctx.getStart().getLine());
-    } else if (ctx.OUT() != null) {
+    } else {
+      assert ctx.OUT() != null;
       _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListOut(name);
       _configuration.referenceStructure(
           PREFIX_LIST, name, BGP_OUTBOUND_PREFIX_LIST, ctx.getStart().getLine());
-    } else {
-      _w.addWarning(ctx, ctx.getText(), _parser, "Unknown prefix list direction");
     }
   }
 
@@ -2893,6 +2897,21 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.ALL);
     } else {
       _currentAristaBgpNeighbor.setRemovePrivateAsMode(AristaBgpNeighbor.RemovePrivateAsMode.BASIC);
+    }
+  }
+
+  @Override
+  public void exitEos_rbinc_route_map(Eos_rbinc_route_mapContext ctx) {
+    String name = ctx.name.getText();
+    if (ctx.IN() != null) {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListIn(name);
+      _configuration.referenceStructure(
+          ROUTE_MAP, name, BGP_INBOUND_ROUTE_MAP, ctx.getStart().getLine());
+    } else {
+      assert ctx.OUT() != null;
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListOut(name);
+      _configuration.referenceStructure(
+          ROUTE_MAP, name, BGP_OUTBOUND_ROUTE_MAP, ctx.getStart().getLine());
     }
   }
 
@@ -3111,6 +3130,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbinon_prefix_list(Eos_rbinon_prefix_listContext ctx) {
+    if (ctx.IN() == null) {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListIn(null);
+    } else {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setPrefixListOut(null);
+    }
+  }
+
+  @Override
   public void exitEos_rbinon_remote_as(Eos_rbinon_remote_asContext ctx) {
     _currentAristaBgpNeighbor.setRemoteAs(null);
   }
@@ -3118,6 +3146,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_remove_private_as(Eos_rbinon_remove_private_asContext ctx) {
     _currentAristaBgpNeighbor.setRemovePrivateAsMode(RemovePrivateAsMode.NONE);
+  }
+
+  @Override
+  public void exitEos_rbinon_route_map(Eos_rbinon_route_mapContext ctx) {
+    if (ctx.IN() == null) {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setRouteMapIn(null);
+    } else {
+      _currentAristaBgpNeighbor.getGenericAddressFamily().setRouteMapOut(null);
+    }
   }
 
   @Override
