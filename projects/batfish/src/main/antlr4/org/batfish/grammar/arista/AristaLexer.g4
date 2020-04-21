@@ -1052,6 +1052,11 @@ ATTACHED_HOSTS
    'attached-hosts'
 ;
 
+ATTACHED_ROUTES
+:
+   'attached-routes'
+;
+
 ATM
 :
    'atm'
@@ -9532,6 +9537,11 @@ PFC
 PFS
 :
    'pfs'
+;
+
+PHONE
+:
+  'phone'
 ;
 
 PHONE_CONTACT

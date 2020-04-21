@@ -1948,6 +1948,28 @@ public class AristaGrammarTest {
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
     assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
+    assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
+    assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll2() {
+    Configuration c = parseConfig("arista_interface_show_run_all_2");
+    // Test relies on the last line in each interface being this description.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
+    assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
+    assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll3() {
+    Configuration c = parseConfig("arista_interface_show_run_all_3");
+    // Test relies on the last line in each interface being this description.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
+    assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
+    assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
   }
 
   @Test

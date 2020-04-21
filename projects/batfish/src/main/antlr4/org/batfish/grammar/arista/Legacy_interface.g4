@@ -233,7 +233,9 @@ ifd_null_eos
     | LOAD_INTERVAL
     | LOGGING
     | NTP
+    | PIM
     | QOS
+    | SFLOW
     | UNIDIRECTIONAL
   ) null_rest_of_line
 ;
@@ -254,11 +256,18 @@ if_description
    description_line
 ;
 
+if_igmp
+:
+// 10-31744
+  IGMP QUERY_MAX_RESPONSE_TIME decisecs = DEC NEWLINE
+;
+
 if_ip
 :
   IP
   (
     ifip_access_group_eos
+    | ifip_attached_routes_eos
     | ifip_address_eos
     | ifip_dhcp_eos
     | if_ip_helper_address
@@ -279,6 +288,11 @@ if_ip
 ifip_access_group_eos
 :
   ACCESS_GROUP name = variable (IN | OUT) NEWLINE
+;
+
+ifip_attached_routes_eos
+:
+  ATTACHED_ROUTES NEWLINE
 ;
 
 ifip_address_eos
@@ -515,14 +529,12 @@ if_ip_virtual_router
 
 if_ipv6
 :
-   IPV6 if_ipv6_inner
-;
-
-if_ipv6_inner
-:
-   if_ipv6_enable
-   | if_ipv6_null
-   | if_ipv6_traffic_filter
+   IPV6
+   (
+     if_ipv6_enable
+     | if_ipv6_null
+     | if_ipv6_traffic_filter
+   )
 ;
 
 if_ipv6_enable
@@ -534,6 +546,7 @@ if_ipv6_null
 :
   (
     ADDRESS
+    | ATTACHED_ROUTES
     | ND
     | OSPF
   ) null_rest_of_line
@@ -709,7 +722,30 @@ if_evpn_no_eos
     DESIGNATED_FORWARDER ELECTION HOLD_TIME
     | IDENTIFIER
     | REDUNDANCY
+    | ROUTE_TARGET IMPORT
   ) NEWLINE
+;
+
+if_mfib
+:
+  MFIB
+  if_mfib_null
+;
+
+if_mfib_null
+:
+  null_rest_of_line
+;
+
+if_mld
+:
+  MLD
+  if_mld_null
+;
+
+if_mld_null
+:
+  null_rest_of_line
 ;
 
 if_mpls
@@ -790,6 +826,7 @@ if_no_ip_eos
   (
     if_no_ip_address_eos
     | if_no_ip_directed_broadcast_eos
+    | if_no_ip_helper_address_eos
     | if_no_ip_local_proxy_arp_eos
     | if_no_ip_null_eos
     | if_no_ip_proxy_arp_eos
@@ -806,6 +843,11 @@ if_no_ip_directed_broadcast_eos
   DIRECTED_BROADCAST NEWLINE
 ;
 
+if_no_ip_helper_address_eos
+:
+  HELPER_ADDRESS NEWLINE
+;
+
 if_no_ip_local_proxy_arp_eos
 :
   LOCAL_PROXY_ARP NEWLINE
@@ -814,7 +856,8 @@ if_no_ip_local_proxy_arp_eos
 if_no_ip_null_eos
 :
   (
-    ATTACHED_HOSTS
+    ATTACHED_HOST
+    | ATTACHED_HOSTS
     | IGMP
     | MULTICAST
     | PIM
@@ -836,23 +879,35 @@ if_no_link_debounce_eos
 if_no_null_eos
 :
   (
-    DCBX
+    ARP
+    | BFD
+    | DCBX
+    | DHCP
     | ENCAPSULATION
     | ERROR_CORRECTION
+    | FLOW
+    | FLOW_SPEC
     | FLOWCONTROL
     | IPV6
     | L2
     | L2_PROTOCOL
+    | LLDP
     | LOGGING
     | MAC
     | MAC_ADDRESS
+    | MLD
     | MSRP
+    | MULTICAST
     | MVRP
+    | PHY
+    | PIM
     | PRIORITY_FLOW_CONTROL
     | QOS
+    | RIP
     | SHAPE
     | SNMP
     | STORM_CONTROL
+    | TCP
   ) null_rest_of_line
 ;
 
@@ -930,6 +985,7 @@ if_no_switchport_null
     | MODE
     | MONITOR
     | NONEGOTIATE
+    | PHONE
     | PORT_SECURITY
     | PRIORITY
     | TAP
@@ -1167,6 +1223,17 @@ if_null_single
 if_phy
 :
   PHY MEDIA null_rest_of_line
+;
+
+if_pim
+:
+  PIM
+  if_pim_null
+;
+
+if_pim_null
+:
+  null_rest_of_line
 ;
 
 if_priority_flow_control
@@ -1784,6 +1851,7 @@ if_inner
    | if_description
    | if_eos_mlag
    | if_evpn_eos
+   | if_igmp
    | if_ip
    | if_ipv6
    | if_isis
@@ -1794,10 +1862,13 @@ if_inner
    | if_mac
    | if_mac_address
    | if_member_interface
+   | if_mfib
+   | if_mld
    | if_mpls
    | if_mtu
    | if_no
    | if_phy
+   | if_pim
    | if_priority_flow_control
    | if_private_vlan
    | if_qos
