@@ -2715,4 +2715,13 @@ public final class PaloAltoGrammarTest {
     assertThat(descr6, equalTo(""));
     assertThat(descr7, equalTo(""));
   }
+
+  @Test
+  public void testApplicationGroup() {
+    String hostname = "application-group";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
+        containsInAnyOrder("dns", "ssh"));
+  }
 }

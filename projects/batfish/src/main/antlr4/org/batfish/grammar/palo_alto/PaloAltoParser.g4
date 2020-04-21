@@ -87,7 +87,8 @@ statement_config_devices
  */
 statement_config_general
 :
-    s_null
+    s_application_group
+    | s_null
     | s_shared
 ;
 

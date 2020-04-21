@@ -1,0 +1,4 @@
+set deviceconfig system hostname application-group
+#
+set application-group
+set application-group foo members [ dns ssh ]
