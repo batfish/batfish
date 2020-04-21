@@ -206,4 +206,41 @@ public class InputValidationUtilsTest {
       assertEquals(Validity.INVALID, notes.getValidity());
     }
   }
+
+  @Test
+  public void testSingleApplicationSpec() {
+    // fully matched named application
+    assertEquals(Validity.VALID, validateQuery("DNS", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // partially matched named application
+    assertEquals(Validity.INVALID, validateQuery("DN", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // matched named application with extra characters
+    assertEquals(
+        Validity.INVALID, validateQuery("DNS,", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // tcp with port
+    assertEquals(
+        Validity.VALID, validateQuery("tcp/80", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // tcp with slash
+    assertEquals(
+        Validity.INVALID, validateQuery("tcp/", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // tcp without slash
+    assertEquals(
+        Validity.INVALID, validateQuery("tcp", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // icmp with type and code
+    assertEquals(
+        Validity.VALID, validateQuery("icmp/0/0", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // icmp with type
+    assertEquals(
+        Validity.INVALID, validateQuery("icmp/0", Type.SINGLE_APPLICATION_SPEC).getValidity());
+
+    // icmp without type
+    assertEquals(
+        Validity.INVALID, validateQuery("icmp", Type.SINGLE_APPLICATION_SPEC).getValidity());
+  }
 }
