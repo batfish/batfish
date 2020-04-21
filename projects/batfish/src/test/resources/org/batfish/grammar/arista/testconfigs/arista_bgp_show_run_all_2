@@ -398,13 +398,16 @@ router bgp 64900
    address-family vpn-ipv4
       bgp additional-paths receive
       no bgp additional-paths send any
+      bgp next-hop-unchanged
       no bgp next-hop-unchanged
       !TODO next-hop resolution ribs tunnel-rib system-tunnel-rib system-connected
       !TODO default neighbor SOME_GROUP activate
       neighbor SOME_GROUP additional-paths receive
       no neighbor SOME_GROUP route-map in
       no neighbor SOME_GROUP route-map out
+      neighbor SOME_GROUP additional-paths send any
       no neighbor SOME_GROUP additional-paths send any
+      neighbor SOME_GROUP next-hop-unchanged
       no neighbor SOME_GROUP next-hop-unchanged
       !TODO default neighbor OTHER_GROUP activate
       neighbor OTHER_GROUP additional-paths receive

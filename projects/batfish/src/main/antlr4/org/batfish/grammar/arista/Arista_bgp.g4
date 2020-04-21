@@ -903,6 +903,7 @@ eos_rbafvpn4_bgp
   BGP
   (
     eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
   )
 
 ;
