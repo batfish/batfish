@@ -2715,4 +2715,31 @@ public final class PaloAltoGrammarTest {
     assertThat(descr6, equalTo(""));
     assertThat(descr7, equalTo(""));
   }
+
+  @Test
+  public void testApplicationGroup() {
+    String hostname = "application-group";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
+        containsInAnyOrder("dns", "app1"));
+  }
+
+  @Test
+  public void testApplicationGroupReference() throws IOException {
+    String hostname = "application-group";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference count is correct for applications
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            PaloAltoStructureType.APPLICATION,
+            computeObjectName(DEFAULT_VSYS_NAME, "app1"),
+            1));
+  }
 }
