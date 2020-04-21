@@ -3014,8 +3014,26 @@ eos_rbv_address_family
 :
   ADDRESS_FAMILY
   (
-    eos_rb_af_ipv4
-    | eos_rb_af_ipv6
+    eos_rbv_af_ipv4
+    | eos_rbv_af_ipv6
+  )
+;
+
+eos_rbv_af_ipv4
+:
+  IPV4
+  (
+    eos_rb_af_ipv4_multicast
+    | eos_rb_af_ipv4_unicast
+  )
+;
+
+eos_rbv_af_ipv6
+:
+  IPV6
+  (
+    eos_rb_af_ipv6_multicast
+    | eos_rb_af_ipv6_unicast
   )
 ;
 
