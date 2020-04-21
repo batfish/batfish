@@ -2724,4 +2724,22 @@ public final class PaloAltoGrammarTest {
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
         containsInAnyOrder("dns", "ssh"));
   }
+
+  @Test
+  public void testApplicationGroupReference() throws IOException {
+    String hostname = "application-group";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference count is correct for applications
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            PaloAltoStructureType.APPLICATION,
+            computeObjectName(DEFAULT_VSYS_NAME, "app1"),
+            1));
+  }
 }
