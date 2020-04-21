@@ -69,7 +69,7 @@ eos_rb_address_family
     | eos_rb_af_ipv4
     | eos_rb_af_ipv6
     | eos_rb_af_vpn_v4
-//    | eos_rb_af_vpn_v6
+    | eos_rb_af_vpn_v6
   )
 ;
 
@@ -973,6 +973,97 @@ eos_rbafvpn4no_neighbor
 ;
 
 eos_rbafvpn4no_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS VRF_UNICAST_RIB NEWLINE
+;
+
+eos_rb_af_vpn_v6
+:
+  VPN_IPV6 NEWLINE
+  (
+    eos_rbafvpn6_bgp
+    | eos_rbafvpn6_default
+    | eos_rbafvpn6_neighbor
+    | eos_rbafvpn6_next_hop
+    | eos_rbafvpn6_no
+  )*
+;
+
+eos_rbafvpn6_bgp
+:
+  BGP
+  (
+    eos_rbafbc_additional_paths
+    | eos_rbafbc_next_hop_unchanged
+  )
+;
+
+eos_rbafvpn6_default
+:
+  DEFAULT
+  eos_rbafvpn6d_neighbor
+;
+
+eos_rbafvpn6d_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafdnc_activate
+  )
+;
+eos_rbafvpn6_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnc_activate
+    | eos_rbafnc_additional_paths
+    | eos_rbafnc_next_hop_unchanged
+    | eos_rbafnc_route_map
+  )
+;
+
+eos_rbafvpn6_next_hop
+:
+  NEXT_HOP RESOLUTION RIBS TUNNEL_RIB SYSTEM_TUNNEL_RIB SYSTEM_CONNECTED NEWLINE
+;
+
+eos_rbafvpn6_no
+:
+  NO
+  (
+    eos_rbafvpn6no_bgp
+    | eos_rbafvpn6no_mpls
+    | eos_rbafvpn6no_neighbor
+    | eos_rbafvpn6no_next_hop
+  )
+;
+
+eos_rbafvpn6no_bgp
+:
+  BGP
+  (
+    eos_rbafnobc_additional_paths
+    | eos_rbafnobc_next_hop_unchanged
+  )
+;
+
+eos_rbafvpn6no_mpls
+:
+  MPLS LABEL ALLOCATION DISABLED NEWLINE
+;
+
+eos_rbafvpn6no_neighbor
+:
+  NEIGHBOR nid = eos_neighbor_id
+  (
+    eos_rbafnonc_activate
+    | eos_rbafnonc_additional_paths
+    | eos_rbafnonc_next_hop_unchanged
+    | eos_rbafnonc_route_map
+  )
+;
+
+eos_rbafvpn6no_next_hop
 :
   NEXT_HOP RESOLUTION RIBS VRF_UNICAST_RIB NEWLINE
 ;
