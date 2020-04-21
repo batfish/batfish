@@ -84,7 +84,8 @@ router bgp 64900
    no neighbor SOME_GROUP local-as
    no neighbor SOME_GROUP weight
    no neighbor SOME_GROUP out-delay
-   !TODO no neighbor SOME_GROUP passive
+   neighbor SOME_GROUP passive
+   no neighbor SOME_GROUP passive
    no neighbor SOME_GROUP transport remote-port
    no neighbor SOME_GROUP update-source
    no neighbor SOME_GROUP dont-capability-negotiate

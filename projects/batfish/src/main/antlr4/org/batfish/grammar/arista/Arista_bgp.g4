@@ -1694,6 +1694,7 @@ eos_rbi_neighbor_common
     | eos_rbinc_next_hop_self
     | eos_rbinc_next_hop_unchanged
 //    | eos_rbinc_out_delay
+    | eos_rbinc_passive
     | eos_rbinc_password
     | eos_rbinc_prefix_list
     | eos_rbinc_remote_as
@@ -1819,6 +1820,11 @@ eos_rbinc_next_hop_self
 eos_rbinc_next_hop_unchanged
 :
   NEXT_HOP_UNCHANGED NEWLINE
+;
+
+eos_rbinc_passive
+:
+  PASSIVE NEWLINE
 ;
 
 eos_rbinc_password
@@ -2281,6 +2287,7 @@ eos_rbino_neighbor
     | eos_rbinon_next_hop_unchanged
     | eos_rbinon_next_hop_v6_addr
     | eos_rbinon_out_delay
+    | eos_rbinon_passive
     | eos_rbinon_password
     | eos_rbinon_remote_as
     | eos_rbinon_remove_private_as
@@ -2452,6 +2459,11 @@ eos_rbinon_next_hop_v6_addr
 eos_rbinon_out_delay
 :
   OUT_DELAY NEWLINE
+;
+
+eos_rbinon_passive
+:
+  PASSIVE NEWLINE
 ;
 
 eos_rbinon_password

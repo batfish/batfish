@@ -536,6 +536,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinc_maximum_routesContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_next_hop_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_next_hop_selfContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_next_hop_unchangedContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinc_passiveContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_prefix_listContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_remote_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinc_remove_private_asContext;
@@ -566,6 +567,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbinon_local_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_peerContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_selfContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_next_hop_unchangedContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbinon_passiveContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remote_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_remove_private_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbinon_route_reflector_clientContext;
@@ -2855,6 +2857,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbinc_passive(Eos_rbinc_passiveContext ctx) {
+    _currentAristaBgpNeighbor.setPassive(true);
+    todo(ctx);
+  }
+
+  @Override
   public void exitEos_rbinc_prefix_list(Eos_rbinc_prefix_listContext ctx) {
     String name = ctx.name.getText();
     if (ctx.IN() != null) {
@@ -3089,6 +3097,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitEos_rbinon_next_hop_unchanged(Eos_rbinon_next_hop_unchangedContext ctx) {
     _currentAristaBgpNeighbor.setNextHopUnchanged(false);
+  }
+
+  @Override
+  public void exitEos_rbinon_passive(Eos_rbinon_passiveContext ctx) {
+    _currentAristaBgpNeighbor.setPassive(false);
   }
 
   @Override
