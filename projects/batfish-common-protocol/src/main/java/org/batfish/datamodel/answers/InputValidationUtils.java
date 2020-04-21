@@ -173,6 +173,13 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case SINGLE_APPLICATION_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.SINGLE_APPLICATION_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case SOURCE_LOCATION:
         return validateSourceLocation(query, completionMetadata);
       case VXLAN_VNI_PROPERTY_SPEC:
