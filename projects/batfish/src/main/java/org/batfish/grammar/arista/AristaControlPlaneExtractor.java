@@ -613,7 +613,6 @@ import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_tailCon
 import org.batfish.grammar.arista.AristaParser.If_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_bfd_templateContext;
-import org.batfish.grammar.arista.AristaParser.If_channel_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
@@ -649,6 +648,8 @@ import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_nativeContext
 import org.batfish.grammar.arista.AristaParser.If_vlanContext;
 import org.batfish.grammar.arista.AristaParser.If_vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
+import org.batfish.grammar.arista.AristaParser.Ifcg_num_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifcg_recirculation_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Ifigmpsg_aclContext;
@@ -5076,10 +5077,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_channel_group(If_channel_groupContext ctx) {
+  public void exitIfcg_num_eos(Ifcg_num_eosContext ctx) {
     int num = toInteger(ctx.num);
     String name = computeAggregatedInterfaceName(num);
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
+  }
+
+  @Override
+  public void exitIfcg_recirculation_eos(Ifcg_recirculation_eosContext ctx) {
+    todo(ctx);
   }
 
   @Override

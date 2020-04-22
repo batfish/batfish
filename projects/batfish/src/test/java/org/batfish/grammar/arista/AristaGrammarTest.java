@@ -1424,6 +1424,7 @@ public class AristaGrammarTest {
     Configuration c = parseConfig("arista_interface");
     assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
+    assertThat(c, hasInterface("UnconnectedEthernet5"));
   }
 
   @Test

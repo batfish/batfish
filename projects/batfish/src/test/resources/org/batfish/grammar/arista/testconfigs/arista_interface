@@ -15,3 +15,14 @@ interface Ethernet2
   !! Old vrf syntax, before EOS 4.23
   vrf forwarding VRF_2
   ip address 1.1.1.2/31
+!
+interface Recirc-Channel1
+   description Arista Vxlan Encap Channel
+   no switchport
+   switchport recirculation features vxlan
+!
+interface UnconnectedEthernet5
+  description Arista Vxlan ReCirculation Channel
+  traffic-loopback source system device mac
+  channel-group recirculation 1
+!
