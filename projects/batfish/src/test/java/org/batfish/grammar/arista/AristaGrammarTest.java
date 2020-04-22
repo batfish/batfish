@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
@@ -1422,7 +1423,10 @@ public class AristaGrammarTest {
   @Test
   public void testInterfaceConversion() {
     Configuration c = parseConfig("arista_interface");
-    assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1", allOf(hasVrf(hasName(equalTo("VRF_1"))), hasEncapsulationVlan(7))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
     assertThat(c, hasInterface("UnconnectedEthernet5"));
   }

@@ -734,6 +734,17 @@ if_eos_mlag
    MLAG id = DEC NEWLINE
 ;
 
+if_encapsulation_eos
+:
+  ENCAPSULATION
+  if_encapsulation_dot1q_eos
+;
+
+if_encapsulation_dot1q_eos
+:
+  DOT1Q VLAN id = DEC NEWLINE
+;
+
 if_evpn_eos
 :
   EVPN ETHERNET_SEGMENT NEWLINE
@@ -1666,11 +1677,6 @@ if_txq_null
   ) null_rest_of_line
 ;
 
-if_vlan
-:
-  VLAN vlan = vlan_id NEWLINE
-;
-
 if_vrf
 :
    VRF
@@ -1911,6 +1917,7 @@ if_inner
    | if_default_gw
    | if_description
    | if_eos_mlag
+   | if_encapsulation_eos
    | if_evpn_eos
    | if_igmp
    | if_ip
@@ -1948,7 +1955,6 @@ if_inner
    | if_traffic_loopback_eos
    | if_tunnel
    | if_tx_queue
-   | if_vlan
    | if_vrf
    | if_vrrp
    // do not rearrange items below
