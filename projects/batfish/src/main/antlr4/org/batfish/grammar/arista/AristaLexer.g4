@@ -10439,6 +10439,11 @@ RECEIVED
    'received'
 ;
 
+RECIRCULATION
+:
+   'recirculation'
+;
+
 RECONNECT_INTERVAL
 :
    'reconnect-interval'
