@@ -84,8 +84,11 @@ interface Ethernet1/1
    no msrp
    no mvrp
    default ntp serve
+   ip pim sparse-mode
    no ip pim sparse-mode
+   ip pim bidirectional
    no ip pim bidirectional
+   ip pim border-router
    no ip pim border-router
    ip pim query-interval 30
    ip pim query-count 3.5
