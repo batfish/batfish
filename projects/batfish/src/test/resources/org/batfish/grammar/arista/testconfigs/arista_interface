@@ -5,6 +5,7 @@ hostname arista_interface
 interface Ethernet1
   !! New vrf syntax, EOS 4.23 and later
   vrf VRF_1
+  encapsulation dot1q vlan 7
   ip address 1.1.1.1/31
   ip ospf priority 150
   no queue-monitor length

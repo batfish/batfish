@@ -615,6 +615,7 @@ import org.batfish.grammar.arista.AristaParser.If_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_bfd_templateContext;
 import org.batfish.grammar.arista.AristaParser.If_crypto_mapContext;
 import org.batfish.grammar.arista.AristaParser.If_descriptionContext;
+import org.batfish.grammar.arista.AristaParser.If_encapsulation_dot1q_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
@@ -645,7 +646,6 @@ import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_allowedContex
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_encapsulationContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_trunk_nativeContext;
-import org.batfish.grammar.arista.AristaParser.If_vlanContext;
 import org.batfish.grammar.arista.AristaParser.If_vrf_nameContext;
 import org.batfish.grammar.arista.AristaParser.If_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Ifcg_num_eosContext;
@@ -5093,6 +5093,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentInterfaces.forEach(i -> i.setCryptoMap(ctx.name.getText()));
   }
 
+  @Override
+  public void exitIf_encapsulation_dot1q_eos(If_encapsulation_dot1q_eosContext ctx) {
+    int vlanId = toInteger(ctx.id);
+    _currentInterfaces.forEach(i -> i.setEncapsulationVlan(vlanId));
+  }
+
   private @Nullable String computeAggregatedInterfaceName(int num) {
     return String.format("Port-Channel%d", num);
   }
@@ -5489,12 +5495,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setNativeVlan(vlan);
     }
-  }
-
-  @Override
-  public void exitIf_vlan(If_vlanContext ctx) {
-    int vlan = toInteger(ctx.vlan);
-    _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
   }
 
   @Override
