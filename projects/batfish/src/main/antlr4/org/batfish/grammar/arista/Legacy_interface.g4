@@ -403,10 +403,13 @@ ifip_ospf_eos
     // | ifipo_authentication_key_eos
     | ifipo_cost_eos
     | ifipo_dead_interval_eos
-    | ifipo_hello_interval_eos
     // | ifipo_disabled_eos
+    | ifipo_hello_interval_eos
     | ifipo_message_digest_key_eos
+    // | ifipo_mtu_ignore_eos
+    // | ifipo_neighbor_eos
     | ifipo_network_eos
+    | ifipo_priority_eos
     // | ifipo_retransmit_interval_eos
     // | ifipo_transmit_delay
   )
@@ -465,6 +468,12 @@ ifipo_message_digest_key_eos
 ifipo_network_eos
 :
    NETWORK POINT_TO_POINT NEWLINE
+;
+
+ifipo_priority_eos
+:
+// 0-255
+  PRIORITY pri = DEC NEWLINE
 ;
 
 ifip_pim_eos

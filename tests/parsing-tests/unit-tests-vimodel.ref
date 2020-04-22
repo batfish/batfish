@@ -1176,17 +1176,40 @@
         }
       },
       "arista_ospf" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet1" : {
+            "name" : "Ethernet1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Ethernet1"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_ospf",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_ospf"
           }
         },
         "vrfs" : {

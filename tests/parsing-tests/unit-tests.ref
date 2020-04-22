@@ -2204,12 +2204,30 @@
         },
         "configs/arista_ospf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
             "      VARIABLE:'arista_ospf'",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip",
+            "          IP:'ip'",
+            "          (ifip_ospf_eos",
+            "            OSPF:'ospf'",
+            "            (ifipo_priority_eos",
+            "              PRIORITY:'priority'",
+            "              pri = DEC:'150'",
+            "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
@@ -78480,7 +78498,17 @@
             }
           }
         },
-        "configs/arista_ospf" : { },
+        "configs/arista_ospf" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/arista_queue_monitor" : { },
         "configs/arista_username" : { },
         "configs/arista_vrf" : { },
@@ -87444,6 +87472,15 @@
             "pool1" : {
               "ip nat source pool" : [
                 14
+              ]
+            }
+          }
+        },
+        "configs/arista_ospf" : {
+          "interface" : {
+            "Ethernet1" : {
+              "interface" : [
+                5
               ]
             }
           }
