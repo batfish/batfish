@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -126,6 +127,11 @@ public class ConfigurationMatchers {
   public static HasIkePhase1Proposal hasIkePhase1Proposal(
       @Nonnull String name, @Nonnull Matcher<? super IkePhase1Proposal> subMatcher) {
     return new HasIkePhase1Proposal(name, subMatcher);
+  }
+
+  /** Provides a matcher that matches if the configuration has an interface with the given name. */
+  public static HasInterface hasInterface(@Nonnull String name) {
+    return hasInterface(name, any(Interface.class));
   }
 
   /**

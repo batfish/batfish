@@ -156,23 +156,23 @@ if_bfd_template
   TEMPLATE name = variable_permissive NEWLINE
 ;
 
-if_channel_group
+if_channel_group_eos
 :
-   CHANNEL_GROUP num = DEC
-   (
-      MODE
-      (
-         ACTIVE
-         | DESIRABLE
-         | AUTO
-         | ON
-         | PASSIVE
-      )
-      (
-        NON_SILENT
-        | SILENT
-      )?
-   )? NEWLINE
+  CHANNEL_GROUP
+  (
+    ifcg_num_eos
+    | ifcg_recirculation_eos
+  )
+;
+
+ifcg_num_eos
+:
+  num = DEC MODE mode_val = (ACTIVE | ON | PASSIVE) NEWLINE
+;
+
+ifcg_recirculation_eos
+:
+  RECIRCULATION num = DEC NEWLINE
 ;
 
 if_crypto
@@ -1549,6 +1549,7 @@ if_switchport_null
     | NONEGOTIATE
     | PORT_SECURITY
     | PRIORITY
+    | RECIRCULATION
     | TAP
     | TOOL
     | VOICE
@@ -1604,6 +1605,17 @@ if_switchport_trunk_group_eos
 if_switchport_trunk_native
 :
    TRUNK NATIVE VLAN vlan = DEC NEWLINE
+;
+
+if_traffic_loopback_eos
+:
+  TRAFFIC_LOOPBACK
+  if_traffic_loopback_null_eos
+;
+
+if_traffic_loopback_null_eos
+:
+  null_rest_of_line
 ;
 
 if_tunnel
@@ -1893,7 +1905,7 @@ if_inner
    if_autostate
    | if_bandwidth
    | if_bfd
-   | if_channel_group
+   | if_channel_group_eos
    | if_crypto
    | if_default_eos
    | if_default_gw
@@ -1933,6 +1945,7 @@ if_inner
    | if_spanning_tree
    | if_speed_eos
    | if_switchport
+   | if_traffic_loopback_eos
    | if_tunnel
    | if_tx_queue
    | if_vlan
