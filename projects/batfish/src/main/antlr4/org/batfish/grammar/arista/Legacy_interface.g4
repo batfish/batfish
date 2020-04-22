@@ -911,7 +911,9 @@ if_no_null_eos
     | PHY
     | PIM
     | PRIORITY_FLOW_CONTROL
+    | PTP
     | QOS
+    | QUEUE_MONITOR
     | RIP
     | SHAPE
     | SNMP
@@ -1145,7 +1147,6 @@ if_null_block
       | PREEMPT
       | PRIORITY_QUEUE
       | PVC
-      | QUEUE_MONITOR
       | QUEUE_SET
       | RANDOM_DETECT
       | RATE_LIMIT
@@ -1261,6 +1262,17 @@ if_private_vlan
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
 ;
 
+if_ptp_eos
+:
+  PTP
+  if_ptp_null_eos
+;
+
+if_ptp_null_eos
+:
+  null_rest_of_line
+;
+
 if_qos
 :
   QOS
@@ -1268,6 +1280,17 @@ if_qos
 ;
 
 if_qos_null
+:
+  null_rest_of_line
+;
+
+if_queue_monitor_eos
+:
+  QUEUE_MONITOR
+  if_queue_monitor_null_eos
+;
+
+if_queue_monitor_null_eos
 :
   null_rest_of_line
 ;
@@ -1880,7 +1903,9 @@ if_inner
    | if_pim
    | if_priority_flow_control
    | if_private_vlan
+   | if_ptp_eos
    | if_qos
+   | if_queue_monitor_eos
    | if_routing_dynamic
    | if_service_instance
    | if_service_policy
