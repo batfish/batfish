@@ -480,9 +480,27 @@ ifip_pim_eos
 :
   PIM
   (
-    ifipp_neighbor_filter_eos
+    ifipp_bidirectional_eos
+    | ifipp_border_router_eos
+    | ifipp_neighbor_filter_eos
     | ifipp_null_eos
+    | ifipp_sparse_mode_eos
   )
+;
+
+ifipp_bidirectional_eos
+:
+  BIDIRECTIONAL NEWLINE
+;
+
+ifipp_border_router_eos
+:
+  BORDER_ROUTER NEWLINE
+;
+
+ifipp_neighbor_filter_eos
+:
+  NEIGHBOR_FILTER acl = variable NEWLINE
 ;
 
 ifipp_null_eos
@@ -493,13 +511,12 @@ ifipp_null_eos
     | JOIN_PRUNE_INTERVAL
     | QUERY_COUNT
     | QUERY_INTERVAL
-    | SPARSE_MODE
   ) null_rest_of_line
 ;
 
-ifipp_neighbor_filter_eos
+ifipp_sparse_mode_eos
 :
-   NEIGHBOR_FILTER acl = variable NEWLINE
+  SPARSE_MODE NEWLINE
 ;
 
 ifip_proxy_arp_eos
