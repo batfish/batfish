@@ -6,14 +6,13 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import java.nio.file.Paths;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
 import org.batfish.storage.FileBasedStorage;
 import org.junit.Test;
-
-import java.nio.file.Paths;
 
 /** Test for {@link org.batfish.config.Settings} */
 public class SettingsTest {
