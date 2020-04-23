@@ -46,6 +46,8 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
+
 public class BfCoordWorkHelper {
 
   private final String _coordWorkMgr;
@@ -512,6 +514,52 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getObject from %s using (%s, %s)\n",
           _coordWorkMgr, snapshotName, objectName);
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
+      return null;
+    }
+  }
+
+  public @Nullable String getWorkLog(String networkName, String snapshotName, String workId) {
+    try {
+      WebTarget webTarget =
+          getTargetV2(
+              Lists.newArrayList(
+                  CoordConstsV2.RSC_NETWORKS,
+                  networkName,
+                  CoordConstsV2.RSC_SNAPSHOTS,
+                  snapshotName,
+                  RSC_WORK_LOG,
+                  workId));
+
+      Response response =
+          webTarget
+              .request(MediaType.APPLICATION_JSON)
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+              .get();
+
+      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
+        _logger.debugf(
+            "GetWorkLog: Did not get an OK response for %s -> %s->%s\n",
+            networkName, snapshotName, workId);
+        return null;
+      }
+
+      File inFile = response.readEntity(File.class);
+
+      File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
+      tmpOutFile.deleteOnExit();
+
+      FileUtils.copyFile(inFile, tmpOutFile);
+      if (!inFile.delete()) {
+        throw new BatfishException("Failed to delete temporary file: " + inFile.getAbsolutePath());
+      }
+      return tmpOutFile.getAbsolutePath();
+    } catch (Exception e) {
+      _logger.errorf(
+          "Exception in getWorkLog from %s using (%s, %s)\n", _coordWorkMgr, snapshotName, workId);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
