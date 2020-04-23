@@ -93,8 +93,8 @@ import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionMatchExpr;
+import org.batfish.datamodel.flow.SessionScopeUtils;
 import org.batfish.datamodel.flow.SetupSessionStep;
-import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -770,14 +770,18 @@ class FlowTracer {
    */
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
-    if (inputIfaceName == null) {
-      // Sessions only exist when entering an interface.
-      return false;
+    Collection<FirewallSessionTraceInfo> sessions;
+    String currentNodeName = _currentNode.getName();
+    if (inputIfaceName != null) {
+      // Check for sessions for entering an interface
+      sessions =
+          _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName);
+    } else {
+      // If ingress interface is null, ingress vrf must be nonnull
+      assert _vrfName != null;
+      sessions = _tracerouteContext.getSessionsForOriginatingVrf(currentNodeName, _vrfName);
     }
 
-    String currentNodeName = _currentNode.getName();
-    Collection<FirewallSessionTraceInfo> sessions =
-        _tracerouteContext.getSessions(currentNodeName, inputIfaceName);
     if (sessions.isEmpty()) {
       return false;
     }
@@ -794,19 +798,14 @@ class FlowTracer {
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
-    MatchSessionStepDetail.Builder matchDetail =
-        MatchSessionStepDetail.builder()
-            .setIncomingInterfaces(session.getIncomingInterfaces())
+    MatchSessionStepDetail.Builder<?, ?> matchDetail =
+        SessionScopeUtils.getMatchSessionStepDetailBuilder(session.getSessionScope())
             .setSessionAction(session.getAction())
             .setMatchCriteria(session.getMatchCriteria());
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
-    Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
-    checkState(
-        incomingInterface.getFirewallSessionInterfaceInfo() != null,
-        "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
 
     // compute transformation. it will be applied after applying incoming ACL
     Transformation transformation = session.getTransformation();
@@ -820,12 +819,18 @@ class FlowTracer {
 
     _steps.add(new MatchSessionStep(matchDetail.build()));
 
-    // apply incoming ACL
-    String incomingAclName =
-        incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
-    if (incomingAclName != null
-        && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
-      return true;
+    // apply incoming ACL if any
+    if (inputIfaceName != null) {
+      Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
+      checkState(
+          incomingInterface.getFirewallSessionInterfaceInfo() != null,
+          "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+      String incomingAclName =
+          incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
+      if (incomingAclName != null
+          && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
+        return true;
+      }
     }
 
     // apply transformation
@@ -841,6 +846,8 @@ class FlowTracer {
             new SessionActionVisitor<Void>() {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
+                // TODO Confirm sessions with action Accept can't be scoped to an originating vrf
+                assert inputIfaceName != null;
                 buildAcceptTrace(inputIfaceName); // ingressInterface, guaranteed nonnull.
                 return null;
               }
@@ -890,17 +897,22 @@ class FlowTracer {
                   String outgoingInterfaceName = forwardOutInterface.getOutgoingInterface();
                   Interface outgoingInterface =
                       config.getAllInterfaces().get(outgoingInterfaceName);
+                  FirewallSessionInterfaceInfo sessionInterfaceInfo =
+                      outgoingInterface.getFirewallSessionInterfaceInfo();
                   checkState(
-                      outgoingInterface.getFirewallSessionInterfaceInfo() != null,
-                      "Cannot have a session exiting an interface without FirewallSessionInterfaceInfo");
+                      sessionInterfaceInfo != null
+                          || outgoingInterface.getVrf().hasFirewallSession(),
+                      "No session is associated with outgoing interface %s",
+                      outgoingInterfaceName);
 
-                  // apply outgoing ACL
-                  String outgoingAclName =
-                      outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
-                  if (outgoingAclName != null
-                      && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER)
-                          == DENIED) {
-                    return null;
+                  // apply outgoing ACL if any
+                  if (sessionInterfaceInfo != null) {
+                    String outgoingAclName = sessionInterfaceInfo.getOutgoingAclName();
+                    if (outgoingAclName != null
+                        && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER)
+                            == DENIED) {
+                      return null;
+                    }
                   }
 
                   // add ExitOutIfaceStep
@@ -989,6 +1001,7 @@ class FlowTracer {
     }
 
     // setup session if necessary
+    // TODO: Check for session info on VRF as well as outgoing interface
     FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
         outgoingInterface.getFirewallSessionInterfaceInfo();
     if (firewallSessionInterfaceInfo != null) {
@@ -999,8 +1012,7 @@ class FlowTracer {
         _newSessions.add(session);
         _steps.add(
             new SetupSessionStep(
-                SetupSessionStepDetail.builder()
-                    .setIncomingInterfaces(session.getIncomingInterfaces())
+                SessionScopeUtils.getSetupSessionStepDetailBuilder(session.getSessionScope())
                     .setMatchCriteria(session.getMatchCriteria())
                     .setSessionAction(session.getAction())
                     .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))

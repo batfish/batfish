@@ -76,6 +76,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
   private static final String PROP_DESCRIPTION = "description";
+  private static final String PROP_HAS_FIREWALL_SESSION = "hasFirewallSession";
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
   private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
   private static final String PROP_CROSS_VRF_IMPORT_VRFS = "crossVrfImportVrfs";
@@ -98,6 +99,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;
   private BgpProcess _bgpProcess;
   private String _description;
+  private boolean _hasFirewallSession;
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
@@ -156,6 +158,12 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_DESCRIPTION)
   public String getDescription() {
     return _description;
+  }
+
+  /** Whether this VRF sets up firewall sessions for accepted traffic. */
+  @JsonProperty(PROP_HAS_FIREWALL_SESSION)
+  public boolean hasFirewallSession() {
+    return _hasFirewallSession;
   }
 
   /** Generated IPV6 routes for this VRF. */
@@ -268,6 +276,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_DESCRIPTION)
   public void setDescription(String description) {
     _description = description;
+  }
+
+  @JsonProperty(PROP_HAS_FIREWALL_SESSION)
+  public void setHasFirewallSession(boolean hasFirewallSession) {
+    _hasFirewallSession = hasFirewallSession;
   }
 
   public void setGeneratedIpv6Routes(NavigableSet<GeneratedRoute6> generatedIpv6Routes) {

@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
@@ -19,48 +20,23 @@ import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 @JsonTypeName("MatchSession")
 public class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
-  public static final class MatchSessionStepDetail {
-    private static final String PROP_INCOMING_INTERFACES = "incomingInterfaces";
-    private static final String PROP_SESSION_ACTION = "sessionAction";
-    private static final String PROP_MATCH_CRITERIA = "matchCriteria";
-    private static final String PROP_TRANSFORMATION = "transformation";
+  @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+  public abstract static class MatchSessionStepDetail {
+    static final String PROP_SESSION_ACTION = "sessionAction";
+    static final String PROP_MATCH_CRITERIA = "matchCriteria";
+    static final String PROP_TRANSFORMATION = "transformation";
 
-    @Nonnull private final Set<String> _incomingInterfaces;
     @Nonnull private final SessionAction _sessionAction;
     @Nonnull private final SessionMatchExpr _matchCriteria;
     private final Set<FlowDiff> _transformation;
 
     private MatchSessionStepDetail(
-        @Nonnull Set<String> incomingInterfaces,
         @Nonnull SessionAction sessionAction,
         @Nonnull SessionMatchExpr matchCriteria,
         @Nonnull Set<FlowDiff> transformation) {
-      _incomingInterfaces = ImmutableSet.copyOf(incomingInterfaces);
       _sessionAction = sessionAction;
       _matchCriteria = matchCriteria;
       _transformation = ImmutableSet.copyOf(transformation);
-    }
-
-    @JsonCreator
-    private static MatchSessionStepDetail jsonCreator(
-        @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces,
-        @JsonProperty(PROP_SESSION_ACTION) SessionAction sessionAction,
-        @JsonProperty(PROP_MATCH_CRITERIA) SessionMatchExpr matchCriteria,
-        @JsonProperty(PROP_TRANSFORMATION) Set<FlowDiff> transformation) {
-      checkArgument(incomingInterfaces != null, "Missing %s", PROP_INCOMING_INTERFACES);
-      checkArgument(sessionAction != null, "Missing %s", PROP_SESSION_ACTION);
-      checkArgument(matchCriteria != null, "Missing %s", PROP_MATCH_CRITERIA);
-      return new MatchSessionStepDetail(
-          incomingInterfaces,
-          sessionAction,
-          matchCriteria,
-          firstNonNull(transformation, ImmutableSet.of()));
-    }
-
-    @JsonProperty(PROP_INCOMING_INTERFACES)
-    @Nonnull
-    public Set<String> getIncomingInterfaces() {
-      return _incomingInterfaces;
     }
 
     @JsonProperty(PROP_SESSION_ACTION)
@@ -80,25 +56,166 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
       return _transformation;
     }
 
+    public abstract static class Builder<
+        T extends Builder<T, U>, U extends MatchSessionStepDetail> {
+      @Nullable SessionAction _sessionAction;
+      @Nullable SessionMatchExpr _matchCriteria;
+      @Nullable Set<FlowDiff> _transformation;
+
+      abstract T getThis();
+
+      public abstract U build();
+
+      public T setSessionAction(SessionAction sessionAction) {
+        _sessionAction = sessionAction;
+        return getThis();
+      }
+
+      public T setMatchCriteria(SessionMatchExpr matchCriteria) {
+        _matchCriteria = matchCriteria;
+        return getThis();
+      }
+
+      public T setTransformation(Set<FlowDiff> transformation) {
+        _transformation = transformation;
+        return getThis();
+      }
+    }
+  }
+
+  public static final class MatchOriginationSessionStepDetail extends MatchSessionStepDetail {
+    static final String PROP_ORIGINATING_VRF = "originatingVrf";
+    @Nonnull private final String _originatingVrf;
+
+    private MatchOriginationSessionStepDetail(
+        @Nonnull String originatingVrf,
+        @Nonnull SessionAction sessionAction,
+        @Nonnull SessionMatchExpr matchCriteria,
+        @Nonnull Set<FlowDiff> transformation) {
+      super(sessionAction, matchCriteria, transformation);
+      _originatingVrf = originatingVrf;
+    }
+
+    @JsonCreator
+    private static MatchOriginationSessionStepDetail jsonCreator(
+        @Nullable @JsonProperty(PROP_ORIGINATING_VRF) String originatingVrf,
+        @Nullable @JsonProperty(PROP_SESSION_ACTION) SessionAction sessionAction,
+        @Nullable @JsonProperty(PROP_MATCH_CRITERIA) SessionMatchExpr matchCriteria,
+        @Nullable @JsonProperty(PROP_TRANSFORMATION) Set<FlowDiff> transformation) {
+      checkArgument(originatingVrf != null, "Missing %s", PROP_ORIGINATING_VRF);
+      checkArgument(sessionAction != null, "Missing %s", PROP_SESSION_ACTION);
+      checkArgument(matchCriteria != null, "Missing %s", PROP_MATCH_CRITERIA);
+      return new MatchOriginationSessionStepDetail(
+          originatingVrf,
+          sessionAction,
+          matchCriteria,
+          firstNonNull(transformation, ImmutableSet.of()));
+    }
+
+    @JsonProperty(PROP_ORIGINATING_VRF)
+    @Nonnull
+    public String getOriginatingVrf() {
+      return _originatingVrf;
+    }
+
     public static Builder builder() {
       return new Builder();
     }
 
-    /** Chained builder to create a {@link MatchSessionStepDetail} object */
-    public static class Builder {
-      private @Nullable Set<String> _incomingInterfaces;
-      private @Nullable SessionAction _sessionAction;
-      private @Nullable SessionMatchExpr _matchCriteria;
-      private @Nullable Set<FlowDiff> _transformation;
+    public static class Builder
+        extends MatchSessionStepDetail.Builder<Builder, MatchOriginationSessionStepDetail> {
+      private @Nullable String _originatingVrf;
 
-      public MatchSessionStepDetail build() {
+      @Override
+      Builder getThis() {
+        return this;
+      }
+
+      @Override
+      public MatchOriginationSessionStepDetail build() {
         checkNotNull(
             _sessionAction,
-            "Cannot build MatchSessionStepDetail without specifying session action");
+            "Cannot build MatchOriginationSessionStepDetail without specifying session action");
         checkNotNull(
             _matchCriteria,
-            "Cannot build MatchSessionStepDetail without specifying match criteria");
-        return new MatchSessionStepDetail(
+            "Cannot build MatchOriginationSessionStepDetail without specifying match criteria");
+        checkNotNull(
+            _originatingVrf,
+            "Cannot build MatchOriginationSessionStepDetail without specifying originating VRF");
+        return new MatchOriginationSessionStepDetail(
+            _originatingVrf,
+            _sessionAction,
+            _matchCriteria,
+            firstNonNull(_transformation, ImmutableSet.of()));
+      }
+
+      public Builder setOriginatingVrf(String originatingVrf) {
+        _originatingVrf = originatingVrf;
+        return this;
+      }
+
+      /** Only for use by {@link MatchOriginationSessionStepDetail#builder()}. */
+      private Builder() {}
+    }
+  }
+
+  public static final class MatchIncomingSessionStepDetail extends MatchSessionStepDetail {
+    static final String PROP_INCOMING_INTERFACES = "incomingInterfaces";
+    @Nonnull private final Set<String> _incomingInterfaces;
+
+    private MatchIncomingSessionStepDetail(
+        @Nonnull Set<String> incomingInterfaces,
+        @Nonnull SessionAction sessionAction,
+        @Nonnull SessionMatchExpr matchCriteria,
+        @Nonnull Set<FlowDiff> transformation) {
+      super(sessionAction, matchCriteria, transformation);
+      _incomingInterfaces = ImmutableSet.copyOf(incomingInterfaces);
+    }
+
+    @JsonCreator
+    private static MatchIncomingSessionStepDetail jsonCreator(
+        @Nullable @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces,
+        @Nullable @JsonProperty(PROP_SESSION_ACTION) SessionAction sessionAction,
+        @Nullable @JsonProperty(PROP_MATCH_CRITERIA) SessionMatchExpr matchCriteria,
+        @Nullable @JsonProperty(PROP_TRANSFORMATION) Set<FlowDiff> transformation) {
+      checkArgument(incomingInterfaces != null, "Missing %s", PROP_INCOMING_INTERFACES);
+      checkArgument(sessionAction != null, "Missing %s", PROP_SESSION_ACTION);
+      checkArgument(matchCriteria != null, "Missing %s", PROP_MATCH_CRITERIA);
+      return new MatchIncomingSessionStepDetail(
+          incomingInterfaces,
+          sessionAction,
+          matchCriteria,
+          firstNonNull(transformation, ImmutableSet.of()));
+    }
+
+    @JsonProperty(PROP_INCOMING_INTERFACES)
+    @Nonnull
+    public Set<String> getIncomingInterfaces() {
+      return _incomingInterfaces;
+    }
+
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    public static class Builder
+        extends MatchSessionStepDetail.Builder<Builder, MatchIncomingSessionStepDetail> {
+      private @Nullable Set<String> _incomingInterfaces;
+
+      @Override
+      Builder getThis() {
+        return this;
+      }
+
+      @Override
+      public MatchIncomingSessionStepDetail build() {
+        checkNotNull(
+            _sessionAction,
+            "Cannot build MatchIncomingSessionStepDetail without specifying session action");
+        checkNotNull(
+            _matchCriteria,
+            "Cannot build MatchIncomingSessionStepDetail without specifying match criteria");
+        return new MatchIncomingSessionStepDetail(
             firstNonNull(_incomingInterfaces, ImmutableSet.of()),
             _sessionAction,
             _matchCriteria,
@@ -110,22 +227,7 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
         return this;
       }
 
-      public Builder setSessionAction(SessionAction sessionAction) {
-        _sessionAction = sessionAction;
-        return this;
-      }
-
-      public Builder setMatchCriteria(SessionMatchExpr matchCriteria) {
-        _matchCriteria = matchCriteria;
-        return this;
-      }
-
-      public Builder setTransformation(Set<FlowDiff> transformation) {
-        _transformation = transformation;
-        return this;
-      }
-
-      /** Only for use by {@link MatchSessionStepDetail#builder()}. */
+      /** Only for use by {@link MatchIncomingSessionStepDetail#builder()}. */
       private Builder() {}
     }
   }

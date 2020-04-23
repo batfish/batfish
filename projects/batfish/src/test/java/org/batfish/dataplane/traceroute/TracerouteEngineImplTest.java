@@ -1639,11 +1639,12 @@ public class TracerouteEngineImplTest {
               .build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      Set<String> incomingInterfaces = ImmutableSet.of(i2Name);
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
               new ForwardOutInterface(i1Name, null),
-              ImmutableSet.of(i2Name),
+              incomingInterfaces,
               matchSessionReturnFlow(flow),
               null);
       assertThat(
@@ -1671,8 +1672,7 @@ public class TracerouteEngineImplTest {
                   hasProperty(
                       "detail",
                       allOf(
-                          hasProperty(
-                              "incomingInterfaces", equalTo(session.getIncomingInterfaces())),
+                          hasProperty("incomingInterfaces", equalTo(incomingInterfaces)),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
                           hasProperty("transformation", hasSize(0)))))));
@@ -1740,11 +1740,12 @@ public class TracerouteEngineImplTest {
       Flow transformedFlow = flow.toBuilder().setSrcIp(poolIp).setSrcPort(poolPort).build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      Set<String> incomingInterfaces = ImmutableSet.of(i4Name);
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c1.getHostname(),
               new ForwardOutInterface(i1Name, null),
-              ImmutableSet.of(i4Name),
+              incomingInterfaces,
               matchSessionReturnFlow(transformedFlow),
               always()
                   .apply(assignDestinationIp(srcIp, srcIp), assignDestinationPort(srcPort, srcPort))
@@ -1773,8 +1774,7 @@ public class TracerouteEngineImplTest {
                   hasProperty(
                       "detail",
                       allOf(
-                          hasProperty(
-                              "incomingInterfaces", equalTo(session.getIncomingInterfaces())),
+                          hasProperty("incomingInterfaces", equalTo(incomingInterfaces)),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
                           hasProperty(
@@ -1853,11 +1853,12 @@ public class TracerouteEngineImplTest {
               .build();
       List<TraceAndReverseFlow> traces =
           tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      Set<String> incomingInterfaces = ImmutableSet.of(c2i2Name);
       FirewallSessionTraceInfo session =
           new FirewallSessionTraceInfo(
               c2.getHostname(),
               new ForwardOutInterface(c2i1Name, NodeInterfacePair.of(c1.getHostname(), c1i1Name)),
-              ImmutableSet.of(c2i2Name),
+              incomingInterfaces,
               matchSessionReturnFlow(flow),
               null);
       assertThat(
@@ -1884,8 +1885,7 @@ public class TracerouteEngineImplTest {
                   hasProperty(
                       "detail",
                       allOf(
-                          hasProperty(
-                              "incomingInterfaces", equalTo(session.getIncomingInterfaces())),
+                          hasProperty("incomingInterfaces", equalTo(incomingInterfaces)),
                           hasProperty("sessionAction", equalTo(session.getAction())),
                           hasProperty("matchCriteria", equalTo(session.getMatchCriteria())),
                           hasProperty("transformation", hasSize(0)))))));
