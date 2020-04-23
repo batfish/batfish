@@ -7,8 +7,13 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
+import org.batfish.storage.FileBasedStorage;
 import org.junit.Test;
+
+import java.nio.file.Paths;
 
 /** Test for {@link org.batfish.config.Settings} */
 public class SettingsTest {
@@ -68,9 +73,15 @@ public class SettingsTest {
     // Only main testrig
     Settings settings =
         new Settings(new String[] {"-storagebase=/path", "-container=foo", "-testrig=main"});
-    settings.setTaskId("tid");
+    String taskId = "tid";
+    settings.setTaskId(taskId);
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
+    assertThat(
+        settings.getLogFile(),
+        equalTo(
+            FileBasedStorage.getWorkLogPath(
+                    Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
+                .toString()));
 
     // Delta testrig present
     settings =
@@ -80,7 +91,12 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/delta/output/tid.log"));
+    assertThat(
+        settings.getLogFile(),
+        equalTo(
+            FileBasedStorage.getWorkLogPath(
+                    Paths.get("/path"), new NetworkId("foo"), new SnapshotId("delta"), taskId)
+                .toString()));
 
     // Delta testrig present, but the question is differential
     settings =
@@ -94,7 +110,12 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
+    assertThat(
+        settings.getLogFile(),
+        equalTo(
+            FileBasedStorage.getWorkLogPath(
+                    Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
+                .toString()));
   }
 
   @Test
