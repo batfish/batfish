@@ -38,7 +38,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -206,7 +205,7 @@ class FlowTracer {
   private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
   private final Set<FirewallSessionTraceInfo> _newSessions;
   private final Flow _originalFlow;
-  private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
   // Mutable list of hops in the current trace
   private final List<Hop> _hops;
@@ -300,7 +299,7 @@ class FlowTracer {
       NodeInterfacePair lastHopNodeAndOutgoingInterface,
       Set<FirewallSessionTraceInfo> newSessions,
       Flow originalFlow,
-      String vrfName,
+      @Nonnull String vrfName,
       List<Hop> hops,
       List<Step<?>> steps,
       Stack<Breadcrumb> breadcrumbs,
@@ -491,10 +490,8 @@ class FlowTracer {
     Ip dstIp = _currentFlow.getDstIp();
 
     // Accept if the flow is destined for this vrf on this host.
-    Optional<String> acceptingInterface =
-        _tracerouteContext.interfaceAcceptingIp(currentNodeName, _vrfName, dstIp);
-    if (acceptingInterface.isPresent()) {
-      buildAcceptTrace(acceptingInterface.get());
+    if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
+      buildAcceptTrace();
       return;
     }
 
@@ -621,10 +618,8 @@ class FlowTracer {
       private boolean isAcceptedAtCurrentVrf() {
         String currentNodeName = _currentNode.getName();
         Ip dstIp = result.getFinalFlow().getDstIp();
-        Optional<String> acceptingInterface =
-            _tracerouteContext.interfaceAcceptingIp(currentNodeName, _vrfName, dstIp);
-        if (acceptingInterface.isPresent()) {
-          buildAcceptTrace(acceptingInterface.get());
+        if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
+          buildAcceptTrace();
           return true;
         }
         return false;
@@ -843,9 +838,7 @@ class FlowTracer {
             new SessionActionVisitor<Void>() {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
-                // TODO Confirm sessions with action Accept can't be scoped to an originating vrf
-                assert inputIfaceName != null;
-                buildAcceptTrace(inputIfaceName); // ingressInterface, guaranteed nonnull.
+                buildAcceptTrace();
                 return null;
               }
 
@@ -1102,7 +1095,15 @@ class FlowTracer {
         forwardFlow.getSrcPort());
   }
 
-  private void buildAcceptTrace(@Nonnull String acceptingInterface) {
+  private void buildAcceptTrace() {
+    // Choose accepting interface based on dst IP
+    String acceptingInterface =
+        _tracerouteContext
+            .interfaceAcceptingIp(_currentNode.getName(), _vrfName, _currentFlow.getDstIp())
+            .orElseGet(
+                // If no interface in VRF owns dst IP, choose arbitrary accepting interface.
+                // Currently we will only resort to this if a session is matched.
+                () -> _currentConfig.getActiveInterfaces(_vrfName).keySet().iterator().next());
     InboundStep inboundStep =
         InboundStep.builder().setDetail(new InboundStepDetail(acceptingInterface)).build();
     _steps.add(inboundStep);
