@@ -1,7 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -742,9 +741,7 @@ public class CumulusFrrGrammarTest {
     parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
     assertThat(
         vrf.getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                new StaticRoute(Prefix.parse("1.0.0.0/8"), null, NULL_INTERFACE_NAME))));
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.0.0.0/8"), null, "blackhole"))));
   }
 
   @Test
@@ -1623,5 +1620,51 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("1.1.1.1").getBgpNeighborSource(),
         equalTo(new BgpNeighborSourceInterface("lo")));
+  }
+
+  @Test
+  public void testStaticRouteNull0_defaultVrf() {
+    parseLines("ip route 1.2.3.4/24 Null0");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "Null0"))));
+  }
+
+  @Test
+  public void testStaticRouteReject_defaultVrf() {
+    parseLines("ip route 1.2.3.4/24 reject");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "reject"))));
+  }
+
+  @Test
+  public void testStaticRouteBlackhole_defaultVrf() {
+    parseLines("ip route 1.2.3.4/24 blackhole");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "blackhole"))));
+  }
+
+  @Test
+  public void testStaticRouteInterface_defaultVrf() {
+    parseLines("ip route 1.2.3.4/24 eth0");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "eth0"))));
+  }
+
+  @Test
+  public void testStaticRouteInterface_vrf_withDefinition() {
+    _warnings = new Warnings(false, true, false);
+
+    _frr.getVrfs().put("VRF", new Vrf("VRF"));
+    parseLines("ip route 1.2.3.0/24 eth0 vrf VRF");
+
+    assertThat(_warnings.getRedFlagWarnings(), empty());
+
+    assertThat(
+        _frr.getVrfs().get("VRF").getStaticRoutes(),
+        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), null, "eth0")));
   }
 }
