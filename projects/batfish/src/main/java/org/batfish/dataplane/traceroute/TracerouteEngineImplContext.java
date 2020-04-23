@@ -181,6 +181,12 @@ public class TracerouteEngineImplContext {
         .findAny(); // Should be zero or one.
   }
 
+  /** Returns true if the given VRF will accept traffic to the given IP. */
+  @Nonnull
+  boolean vrfAcceptsIp(String node, String vrf, Ip ip) {
+    return interfaceAcceptingIp(node, vrf, ip).isPresent();
+  }
+
   /**
    * Returns true if the next node and interface responds for ARP request for given arpIp
    *
