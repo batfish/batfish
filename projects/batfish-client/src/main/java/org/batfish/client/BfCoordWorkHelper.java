@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Throwables;
@@ -45,8 +47,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-
-import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
 public class BfCoordWorkHelper {
 
