@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -49,8 +48,10 @@ import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.IncomingSessionScope;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.RouteInfo;
-import org.batfish.datamodel.flow.SessionScopeUtils;
+import org.batfish.datamodel.flow.SessionScopeVisitor;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TransformationStep;
@@ -244,11 +245,29 @@ public final class TracerouteUtils {
         ImmutableMultimap.builder();
     sessions.forEach(
         session ->
-            SessionScopeUtils.toIncomingInterfaces(session.getSessionScope())
-                .forEach(
-                    incomingIface ->
-                        builder.put(
-                            NodeInterfacePair.of(session.getHostname(), incomingIface), session)));
+            session
+                .getSessionScope()
+                .accept(
+                    new SessionScopeVisitor<Void>() {
+                      @Override
+                      public Void visitIncomingSessionScope(
+                          IncomingSessionScope incomingSessionScope) {
+                        incomingSessionScope
+                            .getIncomingInterfaces()
+                            .forEach(
+                                incomingIface ->
+                                    builder.put(
+                                        NodeInterfacePair.of(session.getHostname(), incomingIface),
+                                        session));
+                        return null;
+                      }
+
+                      @Override
+                      public Void visitOriginatingSessionScope(
+                          OriginatingSessionScope originatingSessionScope) {
+                        return null;
+                      }
+                    }));
     return builder.build();
   }
 
@@ -262,13 +281,26 @@ public final class TracerouteUtils {
         new HashMap<>();
     sessions.forEach(
         session ->
-            Optional.ofNullable(SessionScopeUtils.toOriginatingVrf(session.getSessionScope()))
-                .ifPresent(
-                    vrf ->
+            session
+                .getSessionScope()
+                .accept(
+                    new SessionScopeVisitor<Void>() {
+                      @Override
+                      public Void visitIncomingSessionScope(
+                          IncomingSessionScope incomingSessionScope) {
+                        return null;
+                      }
+
+                      @Override
+                      public Void visitOriginatingSessionScope(
+                          OriginatingSessionScope originatingSessionScope) {
                         builder
                             .computeIfAbsent(
                                 session.getHostname(), k -> ImmutableMultimap.builder())
-                            .put(vrf, session)));
+                            .put(originatingSessionScope.getOriginatingVrf(), session);
+                        return null;
+                      }
+                    }));
     return builder.entrySet().stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().build()));
   }

@@ -92,8 +92,8 @@ import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionMatchExpr;
-import org.batfish.datamodel.flow.SessionScopeUtils;
 import org.batfish.datamodel.flow.SetupSessionStep;
+import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -766,12 +766,10 @@ class FlowTracer {
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
     String currentNodeName = _currentNode.getName();
-
-    // exactly one of _ingressInterface or _vrfName must be non-null
-    assert _ingressInterface == null ^ _vrfName == null;
     Collection<FirewallSessionTraceInfo> sessions =
         _ingressInterface != null
             ? _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName)
+            // Flow originated here; check for sessions to match flows originating in current VRF
             : _tracerouteContext.getSessionsForOriginatingVrf(currentNodeName, _vrfName);
 
     if (sessions.isEmpty()) {
@@ -790,8 +788,9 @@ class FlowTracer {
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
-    MatchSessionStepDetail.Builder<?, ?> matchDetail =
-        SessionScopeUtils.getMatchSessionStepDetailBuilder(session.getSessionScope())
+    MatchSessionStepDetail.Builder matchDetail =
+        MatchSessionStepDetail.builder()
+            .setSessionScope(session.getSessionScope())
             .setSessionAction(session.getAction())
             .setMatchCriteria(session.getMatchCriteria());
 
@@ -887,22 +886,17 @@ class FlowTracer {
                   String outgoingInterfaceName = forwardOutInterface.getOutgoingInterface();
                   Interface outgoingInterface =
                       config.getAllInterfaces().get(outgoingInterfaceName);
-                  FirewallSessionInterfaceInfo sessionInterfaceInfo =
-                      outgoingInterface.getFirewallSessionInterfaceInfo();
                   checkState(
-                      sessionInterfaceInfo != null
-                          || outgoingInterface.getVrf().hasFirewallSession(),
-                      "No session is associated with outgoing interface %s",
-                      outgoingInterfaceName);
+                      outgoingInterface.getFirewallSessionInterfaceInfo() != null,
+                      "Cannot have a session exiting an interface without FirewallSessionInterfaceInfo");
 
-                  // apply outgoing ACL if any
-                  if (sessionInterfaceInfo != null) {
-                    String outgoingAclName = sessionInterfaceInfo.getOutgoingAclName();
-                    if (outgoingAclName != null
-                        && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER)
-                            == DENIED) {
-                      return null;
-                    }
+                  // apply outgoing ACL
+                  String outgoingAclName =
+                      outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
+                  if (outgoingAclName != null
+                      && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER)
+                          == DENIED) {
+                    return null;
                   }
 
                   // add ExitOutIfaceStep
@@ -1001,7 +995,8 @@ class FlowTracer {
         _newSessions.add(session);
         _steps.add(
             new SetupSessionStep(
-                SessionScopeUtils.getSetupSessionStepDetailBuilder(session.getSessionScope())
+                SetupSessionStepDetail.builder()
+                    .setSessionScope(session.getSessionScope())
                     .setMatchCriteria(session.getMatchCriteria())
                     .setSessionAction(session.getAction())
                     .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))
