@@ -5,8 +5,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Represents a session that can match flows entering a given set of interfaces */
 @ParametersAreNonnullByDefault
-public class IncomingSessionScope implements SessionScope {
+public final class IncomingSessionScope implements SessionScope {
   private final @Nonnull Set<String> _incomingInterfaces;
 
   public IncomingSessionScope(Set<String> incomingInterfaces) {

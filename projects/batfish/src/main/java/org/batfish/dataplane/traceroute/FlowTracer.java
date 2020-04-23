@@ -770,17 +770,14 @@ class FlowTracer {
    */
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
-    Collection<FirewallSessionTraceInfo> sessions;
     String currentNodeName = _currentNode.getName();
-    if (inputIfaceName != null) {
-      // Check for sessions for entering an interface
-      sessions =
-          _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName);
-    } else {
-      // If ingress interface is null, ingress vrf must be nonnull
-      assert _vrfName != null;
-      sessions = _tracerouteContext.getSessionsForOriginatingVrf(currentNodeName, _vrfName);
-    }
+
+    // exactly one of _ingressInterface or _vrfName must be non-null
+    assert _ingressInterface == null ^ _vrfName == null;
+    Collection<FirewallSessionTraceInfo> sessions =
+        _ingressInterface != null
+            ? _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName)
+            : _tracerouteContext.getSessionsForOriginatingVrf(currentNodeName, _vrfName);
 
     if (sessions.isEmpty()) {
       return false;
@@ -1001,7 +998,6 @@ class FlowTracer {
     }
 
     // setup session if necessary
-    // TODO: Check for session info on VRF as well as outgoing interface
     FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
         outgoingInterface.getFirewallSessionInterfaceInfo();
     if (firewallSessionInterfaceInfo != null) {
