@@ -1,5 +1,6 @@
 package org.batfish.config;
 
+import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -11,7 +12,6 @@ import org.batfish.common.CleanBatfishException;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
-import org.batfish.storage.FileBasedStorage;
 import org.junit.Test;
 
 /** Test for {@link org.batfish.config.Settings} */
@@ -78,8 +78,7 @@ public class SettingsTest {
     assertThat(
         settings.getLogFile(),
         equalTo(
-            FileBasedStorage.getWorkLogPath(
-                    Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
+            getWorkLogPath(Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
                 .toString()));
 
     // Delta testrig present
@@ -93,7 +92,7 @@ public class SettingsTest {
     assertThat(
         settings.getLogFile(),
         equalTo(
-            FileBasedStorage.getWorkLogPath(
+            getWorkLogPath(
                     Paths.get("/path"), new NetworkId("foo"), new SnapshotId("delta"), taskId)
                 .toString()));
 
@@ -112,8 +111,7 @@ public class SettingsTest {
     assertThat(
         settings.getLogFile(),
         equalTo(
-            FileBasedStorage.getWorkLogPath(
-                    Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
+            getWorkLogPath(Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
                 .toString()));
   }
 
