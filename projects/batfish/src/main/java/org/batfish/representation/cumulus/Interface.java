@@ -14,8 +14,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 @ParametersAreNonnullByDefault
 public class Interface implements Serializable {
 
-  static final Pattern NULL_INTERFACE_PATTERN = Pattern.compile("Null0|blackhole|reject",
-      Pattern.CASE_INSENSITIVE);
+  static final Pattern NULL_INTERFACE_PATTERN =
+      Pattern.compile("Null0|blackhole|reject", Pattern.CASE_INSENSITIVE);
 
   private @Nullable String _alias;
   private @Nullable InterfaceBridgeSettings _bridge;

@@ -876,7 +876,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSv_route(Sv_routeContext ctx) {
     // If an interface name is parsed, use it.
-    final String next_hop_interface = ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    final String next_hop_interface =
+        ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
     // If user provides an IP next-hop instead of an interface, use that
     final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
     Prefix network = Prefix.parse(ctx.prefix().getText());
@@ -1192,13 +1193,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitIp_route(Ip_routeContext ctx) {
     // If an interface name is parsed, use it.
-    final String next_hop_interface = ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    final String next_hop_interface =
+        ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
     // If user provides an IP next-hop instead of an interface, use that
     final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
 
     StaticRoute route =
-        new StaticRoute(
-            Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface);
+        new StaticRoute(Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface);
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {

@@ -73,8 +73,8 @@ public class StaticRoute implements Serializable {
   }
 
   /**
-   * Canonicalizes the many FRR discard interface names into just the standard one
-   * supported by the Batfish VI model - "null_interface"
+   * Canonicalizes the many FRR discard interface names into just the standard one supported by the
+   * Batfish VI model - "null_interface"
    */
   private String canonicalizeInterfaceName(String nextHopInterface) {
     Matcher matcher = NULL_INTERFACE_PATTERN.matcher(nextHopInterface);

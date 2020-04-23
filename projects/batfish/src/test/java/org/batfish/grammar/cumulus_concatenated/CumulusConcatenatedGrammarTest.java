@@ -293,8 +293,7 @@ public class CumulusConcatenatedGrammarTest {
                     .setNetwork(Prefix.parse("7.7.7.7/24"))
                     .setNextHopInterface("null_interface")
                     .setAdministrativeCost(1)
-                    .build()
-            )));
+                    .build())));
     assertThat(
         viConfig.getVrfs().get("VRF").getStaticRoutes(),
         equalTo(
@@ -308,8 +307,7 @@ public class CumulusConcatenatedGrammarTest {
                     .setNetwork(Prefix.parse("5.5.5.5/24"))
                     .setNextHopInterface("eth0-1")
                     .setAdministrativeCost(1)
-                    .build()
-            )));
+                    .build())));
   }
 
   @Test
