@@ -215,7 +215,8 @@ public final class FileBasedStorageTest {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
     String workId = "workid";
-    Path logFile = _storage.getWorkLogPath(_containerDir.getParent(), network, snapshot, workId);
+    Path logFile =
+        FileBasedStorage.getWorkLogPath(_containerDir.getParent(), network, snapshot, workId);
     final boolean mkdirs = logFile.getParent().toFile().mkdirs();
     assertThat(mkdirs, equalTo(true));
     CommonUtil.writeFile(logFile, "testoutput");
