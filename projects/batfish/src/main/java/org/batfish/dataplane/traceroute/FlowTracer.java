@@ -765,14 +765,13 @@ class FlowTracer {
    */
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
-    if (inputIfaceName == null) {
-      // Sessions only exist when entering an interface.
-      return false;
-    }
-
     String currentNodeName = _currentNode.getName();
     Collection<FirewallSessionTraceInfo> sessions =
-        _tracerouteContext.getSessions(currentNodeName, inputIfaceName);
+        _ingressInterface != null
+            ? _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName)
+            // Flow originated here; check for sessions to match flows originating in current VRF
+            : _tracerouteContext.getSessionsForOriginatingVrf(currentNodeName, _vrfName);
+
     if (sessions.isEmpty()) {
       return false;
     }
@@ -791,17 +790,13 @@ class FlowTracer {
 
     MatchSessionStepDetail.Builder matchDetail =
         MatchSessionStepDetail.builder()
-            .setIncomingInterfaces(session.getIncomingInterfaces())
+            .setSessionScope(session.getSessionScope())
             .setSessionAction(session.getAction())
             .setMatchCriteria(session.getMatchCriteria());
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
-    Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
-    checkState(
-        incomingInterface.getFirewallSessionInterfaceInfo() != null,
-        "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
 
     // compute transformation. it will be applied after applying incoming ACL
     Transformation transformation = session.getTransformation();
@@ -815,12 +810,18 @@ class FlowTracer {
 
     _steps.add(new MatchSessionStep(matchDetail.build()));
 
-    // apply incoming ACL
-    String incomingAclName =
-        incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
-    if (incomingAclName != null
-        && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
-      return true;
+    // apply incoming ACL if any
+    if (inputIfaceName != null) {
+      Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
+      checkState(
+          incomingInterface.getFirewallSessionInterfaceInfo() != null,
+          "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+      String incomingAclName =
+          incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
+      if (incomingAclName != null
+          && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
+        return true;
+      }
     }
 
     // apply transformation
@@ -995,7 +996,7 @@ class FlowTracer {
         _steps.add(
             new SetupSessionStep(
                 SetupSessionStepDetail.builder()
-                    .setIncomingInterfaces(session.getIncomingInterfaces())
+                    .setSessionScope(session.getSessionScope())
                     .setMatchCriteria(session.getMatchCriteria())
                     .setSessionAction(session.getAction())
                     .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))

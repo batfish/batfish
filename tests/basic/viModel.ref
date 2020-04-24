@@ -1274,7 +1274,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -2577,7 +2578,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -3005,7 +3007,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4406,7 +4409,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5741,7 +5745,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -6424,7 +6429,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7036,7 +7042,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8075,7 +8082,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8913,7 +8921,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -9751,7 +9760,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -10939,7 +10949,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12079,7 +12090,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12688,7 +12700,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13016,6 +13029,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -13352,6 +13366,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
