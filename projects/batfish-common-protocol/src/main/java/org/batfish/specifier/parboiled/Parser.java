@@ -64,6 +64,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_TCP;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_UDP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
@@ -191,25 +192,26 @@ public class Parser extends CommonParser {
   @Anchor(ONE_APP_ICMP)
   public Rule OneAppIcmp() {
     return Sequence(
-        IgnoreCase("icmp"),
-        WhiteSpace(),
-        "/ ",
+        IgnoreCase("icmp/"),
         Number(),
         push(new IcmpTypeAppAstNode(Integer.parseInt(match()))),
-        WhiteSpace(),
-        "/ ",
-        Number(),
-        push(IcmpTypeCodeAppAstNode.create(pop(), Integer.parseInt(match()))));
+        OneAppIcmpType());
+  }
+
+  @Anchor(ONE_APP_ICMP_TYPE)
+  public Rule OneAppIcmpType() {
+    return Sequence(
+        "/ ", Number(), push(IcmpTypeCodeAppAstNode.create(pop(), Integer.parseInt(match()))));
   }
 
   @Anchor(ONE_APP_TCP)
   public Rule OneAppTcp() {
-    return Sequence(IgnoreCase("tcp"), WhiteSpace(), push(new TcpAppAstNode()), "/ ", AppPort());
+    return Sequence(IgnoreCase("tcp/"), push(new TcpAppAstNode()), AppPort());
   }
 
   @Anchor(ONE_APP_UDP)
   public Rule OneAppUdp() {
-    return Sequence(IgnoreCase("udp"), WhiteSpace(), push(new UdpAppAstNode()), "/ ", AppPort());
+    return Sequence(IgnoreCase("udp/"), push(new UdpAppAstNode()), AppPort());
   }
 
   /**
