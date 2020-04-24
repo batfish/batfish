@@ -2851,7 +2851,8 @@
               }
             },
             "tieBreaker" : "ARRIVAL_ORDER"
-          }
+          },
+          "hasFirewallSession" : false
         },
         "structType" : "Vrf"
       }
