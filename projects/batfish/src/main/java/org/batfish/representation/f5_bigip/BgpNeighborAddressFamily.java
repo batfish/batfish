@@ -10,6 +10,7 @@ public abstract class BgpNeighborAddressFamily implements Serializable {
 
   private boolean _activate;
 
+  private @Nullable String _routeMapIn;
   private @Nullable String _routeMapOut;
 
   public BgpNeighborAddressFamily() {
@@ -20,12 +21,20 @@ public abstract class BgpNeighborAddressFamily implements Serializable {
     return _activate;
   }
 
-  public @Nullable String getRouteMapOut() {
-    return _routeMapOut;
-  }
-
   public void setActivate(boolean activate) {
     _activate = activate;
+  }
+
+  public @Nullable String getRouteMapIn() {
+    return _routeMapIn;
+  }
+
+  public void setRouteMapIn(@Nullable String routeMapIn) {
+    _routeMapIn = routeMapIn;
+  }
+
+  public @Nullable String getRouteMapOut() {
+    return _routeMapOut;
   }
 
   public void setRouteMapOut(@Nullable String routeMapOut) {

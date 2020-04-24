@@ -34,9 +34,14 @@ route-map MY_IPV4_OUT permit 10
  match ip address ipv4acl
  set community 2:2
 !
+route-map MY_IPV4_IN permit 10
+ match ip address ipv4acl
+ set community 3:3
+!
 router bgp 123
  redistribute kernel route-map MY_KERNEL_OUT
  neighbor 192.0.2.1 remote-as 456
  neighbor 192.0.2.1 route-map MY_IPV4_OUT out
+ neighbor 192.0.2.1 route-map MY_IPV4_IN in
  neighbor 192.0.2.1 description Cool IPv4 BGP neighbor description
 !

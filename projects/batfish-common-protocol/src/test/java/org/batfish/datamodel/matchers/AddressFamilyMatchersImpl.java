@@ -18,6 +18,17 @@ final class AddressFamilyMatchersImpl {
     }
   }
 
+  static final class HasImportPolicy extends FeatureMatcher<AddressFamily, String> {
+    HasImportPolicy(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An AddressFamily with importPolicy:", "importPolicy");
+    }
+
+    @Override
+    protected String featureValueOf(AddressFamily actual) {
+      return actual.getImportPolicy();
+    }
+  }
+
   static final class HasAddressFamilyCapabilities
       extends FeatureMatcher<AddressFamily, AddressFamilyCapabilities> {
     HasAddressFamilyCapabilities(@Nonnull Matcher<? super AddressFamilyCapabilities> subMatcher) {

@@ -64,7 +64,7 @@ rbn_common
     | rbn_null
     | rbn_soft_reconfiguration
     | rbn_remote_as
-    | rbn_route_map_out
+    | rbn_route_map
     | rbn_password
     | rbn_update_source
   )
@@ -115,9 +115,9 @@ rbn_remote_as
   REMOTE_AS remoteas = uint32 NEWLINE
 ;
 
-rbn_route_map_out
+rbn_route_map
 :
-  ROUTE_MAP name = word OUT NEWLINE
+  ROUTE_MAP name = word (IN | OUT) NEWLINE
 ;
 
 rbn_update_source
