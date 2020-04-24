@@ -76,6 +76,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.HeaderSpace;
@@ -83,6 +84,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -107,6 +109,9 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.AggregateAddress;
+import org.batfish.representation.f5_bigip.BgpNeighbor;
+import org.batfish.representation.f5_bigip.BgpNeighborIpv4AddressFamily;
+import org.batfish.representation.f5_bigip.BgpPeerGroup;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.ImishInterface;
 import org.batfish.representation.f5_bigip.OspfInterface;
@@ -179,7 +184,11 @@ public final class F5BigipImishGrammarTest {
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname.toLowerCase());
+    Map<String, Configuration> configs = parseTextConfigs(hostname);
+    assertThat(configs, hasKey(hostname.toLowerCase()));
+    Configuration c = configs.get(hostname.toLowerCase());
+    assertThat(c.getConfigurationFormat(), equalTo(ConfigurationFormat.F5_BIGIP_STRUCTURED));
+    return c;
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -638,6 +647,63 @@ public final class F5BigipImishGrammarTest {
         "Ensure next-hop-self is unset",
         vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf(),
         nullValue());
+  }
+
+  @Test
+  public void testBgpProcessExtractionGh5721() {
+    String hostname = "f5_bigip_imish_bgp_gh_5721";
+    F5BigipConfiguration c = parseVendorConfig(hostname);
+    assertThat(c.getBgpProcesses(), hasKey("11111"));
+    org.batfish.representation.f5_bigip.BgpProcess p = c.getBgpProcesses().get("11111");
+    assertThat(p.getPeerGroups().keySet(), containsInAnyOrder("spines"));
+    BgpPeerGroup spines = p.getPeerGroups().get("spines");
+    assertThat(spines.getRemoteAs(), equalTo(22222L));
+    BgpNeighborIpv4AddressFamily spinesv4 = spines.getIpv4AddressFamily();
+    assertThat(spinesv4.getRouteMapIn(), equalTo("V4-SPINE-TO-EBIGIP"));
+    assertThat(spinesv4.getRouteMapOut(), equalTo("V4-EBIGIP-TO-SPINE"));
+    assertThat(
+        p.getNeighbors().keySet(),
+        containsInAnyOrder(
+            "10.10.13.16", "10.10.106.36", "10.10.106.100", "10.10.106.164", "10.10.106.228"));
+    BgpNeighbor neighbor16 = p.getNeighbors().get("10.10.13.16");
+    assertThat(neighbor16.getAddress(), equalTo(Ip.parse("10.10.13.16")));
+    assertThat(neighbor16.getPeerGroup(), nullValue());
+    assertThat(neighbor16.getIpv4AddressFamily().getRouteMapIn(), nullValue());
+    assertThat(neighbor16.getIpv4AddressFamily().getRouteMapOut(), equalTo("ebigip-to-agg"));
+    BgpNeighbor neighbor36 = p.getNeighbors().get("10.10.106.36");
+    assertThat(neighbor36.getAddress(), equalTo(Ip.parse("10.10.106.36")));
+    assertThat(neighbor36.getPeerGroup(), equalTo("spines"));
+    assertThat(neighbor36.getIpv4AddressFamily().getRouteMapIn(), nullValue());
+    assertThat(neighbor36.getIpv4AddressFamily().getRouteMapOut(), nullValue());
+  }
+
+  @Test
+  public void testBgpProcessConversionGh5721() throws IOException {
+    String hostname = "f5_bigip_imish_bgp_gh_5721";
+    Configuration c = parseConfig(hostname);
+    BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    assertThat(p, notNullValue());
+    assertThat(
+        p.getActiveNeighbors(),
+        hasKeys(
+            Prefix.parse("10.10.13.16/32"),
+            Prefix.parse("10.10.106.36/32"),
+            Prefix.parse("10.10.106.100/32"),
+            Prefix.parse("10.10.106.164/32"),
+            Prefix.parse("10.10.106.228/32")));
+    BgpActivePeerConfig neighbor16 = p.getActiveNeighbors().get(Prefix.parse("10.10.13.16/32"));
+    assertThat(neighbor16.getRemoteAsns(), equalTo(LongSpace.of(33333)));
+    assertThat(neighbor16.getDescription(), equalTo("agg1-dc1"));
+    assertThat(neighbor16.getIpv4UnicastAddressFamily(), notNullValue());
+    assertThat(neighbor16.getIpv4UnicastAddressFamily().getImportPolicy(), nullValue());
+    assertThat(neighbor16.getIpv4UnicastAddressFamily().getExportPolicy(), notNullValue());
+    BgpActivePeerConfig neighbor36 = p.getActiveNeighbors().get(Prefix.parse("10.10.106.36/32"));
+    assertThat(neighbor36.getRemoteAsns(), equalTo(LongSpace.of(22222)));
+    assertThat(neighbor36.getDescription(), equalTo("spine5-dc1"));
+    assertThat(neighbor36.getIpv4UnicastAddressFamily(), notNullValue());
+    assertThat(
+        neighbor36.getIpv4UnicastAddressFamily().getImportPolicy(), equalTo("V4-SPINE-TO-EBIGIP"));
+    assertThat(neighbor36.getIpv4UnicastAddressFamily().getExportPolicy(), notNullValue());
   }
 
   @Test

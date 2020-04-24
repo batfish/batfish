@@ -22,6 +22,9 @@ public final class BgpNeighbor extends AbstractBgpNeighbor {
 
   private void applyIpv4AddressFamily(BgpNeighborIpv4AddressFamily parent) {
     BgpNeighborIpv4AddressFamily af = getIpv4AddressFamily();
+    if (af.getRouteMapIn() == null) {
+      af.setRouteMapIn(parent.getRouteMapIn());
+    }
     if (af.getRouteMapOut() == null) {
       af.setRouteMapOut(parent.getRouteMapOut());
     }
@@ -29,6 +32,9 @@ public final class BgpNeighbor extends AbstractBgpNeighbor {
 
   private void applyIpv6AddressFamily(BgpNeighborIpv6AddressFamily parent) {
     BgpNeighborIpv6AddressFamily af = getIpv6AddressFamily();
+    if (af.getRouteMapIn() == null) {
+      af.setRouteMapIn(parent.getRouteMapIn());
+    }
     if (af.getRouteMapOut() == null) {
       af.setRouteMapOut(parent.getRouteMapOut());
     }

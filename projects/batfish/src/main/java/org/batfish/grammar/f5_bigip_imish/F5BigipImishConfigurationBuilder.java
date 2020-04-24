@@ -44,6 +44,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv6Con
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbbc_identifierContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbbc_peersContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_default_originateContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_next_hop_selfContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_passwordContext;
@@ -55,6 +56,8 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_update_source_i
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_update_source_ipContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_connectedContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_kernelContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_staticContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_as_pathContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_address_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
@@ -69,7 +72,9 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Router_bgpContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Router_ospfContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_access_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_interfaceContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_as_pathContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_prefix_listContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_routeContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint32Context;
@@ -424,6 +429,16 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitRbr_static(Rbr_staticContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRbn_default_originate(Rbn_default_originateContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitRbn_description(Rbn_descriptionContext ctx) {
     if (_currentAbstractNeighbor == null) {
       _w.redFlag(
@@ -600,6 +615,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitRmm_as_path(Rmm_as_pathContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitRmm_ip_address(Rmm_ip_addressContext ctx) {
     String name = ctx.name.getText();
     _c.referenceStructure(
@@ -666,6 +686,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitS_ip_as_path(S_ip_as_pathContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitS_ip_prefix_list(S_ip_prefix_listContext ctx) {
     String name = ctx.name.getText();
     long num = toLong(ctx.num);
@@ -717,6 +742,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     entry.setPrefix(prefix);
     entry.setLengthRange(range);
     _c.getPrefixLists().computeIfAbsent(name, PrefixList::new).getEntries().put(num, entry);
+  }
+
+  @Override
+  public void exitS_ip_route(S_ip_routeContext ctx) {
+    todo(ctx);
   }
 
   @Override
