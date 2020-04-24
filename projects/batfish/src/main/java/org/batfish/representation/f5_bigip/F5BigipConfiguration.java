@@ -327,6 +327,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 "Ignoring reference to missing outbound route-map: %s", outboundRouteMapName));
       }
     }
+    // If there is an inbound route-map configured, and it exists, set the v4 BGP import policy.
+    Optional<String> inboundPolicy =
+        Optional.ofNullable(neighbor.getIpv4AddressFamily().getRouteMapIn())
+            .filter(_routeMaps::containsKey);
     LongSpace remoteAsns =
         Optional.ofNullable(neighbor.getRemoteAs()).map(LongSpace::of).orElse(LongSpace.EMPTY);
 
@@ -344,6 +348,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
                     .setExportPolicy(peerExportPolicy.build().getName())
+                    .setImportPolicy(inboundPolicy.orElse(null))
                     .build());
     builder.build();
   }

@@ -9,6 +9,8 @@ import org.batfish.vendor.StructureUsage;
 public enum F5BigipStructureUsage implements StructureUsage {
   BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP(
       "bgp address-family redistribute kernel route-map"),
+  BGP_NEIGHBOR_IPV4_ROUTE_MAP_IN("bgp neighbor address-family ipv4 route-map in"),
+  BGP_NEIGHBOR_IPV6_ROUTE_MAP_IN("bgp neighbor address-family ipv6 route-map in"),
   BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT("bgp neighbor address-family ipv4 route-map out"),
   BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT("bgp neighbor address-family ipv6 route-map out"),
   BGP_NEIGHBOR_PEER_GROUP("neighbor peer-group"),
@@ -31,6 +33,7 @@ public enum F5BigipStructureUsage implements StructureUsage {
   MONITOR_HTTPS_SSL_PROFILE("monitor https ssl-profile"),
   MONITOR_LDAP_DEFAULTS_FROM("monitor ldap defaults-from"),
   MONITOR_TCP_DEFAULTS_FROM("monitor tcp defaults-from"),
+  BGP_PEER_GROUP_ROUTE_MAP_IN("neighbor peer-group route-map in"),
   BGP_PEER_GROUP_ROUTE_MAP_OUT("neighbor peer-group route-map out"),
   OSPF_PASSIVE_INTERFACE("router ospf passive-interface"),
   OSPF_PROCESS_SELF_REFERENCE("router ospf self-reference"),
