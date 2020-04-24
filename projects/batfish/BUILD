@@ -29,8 +29,6 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_imish",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/iptables",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
@@ -45,7 +43,6 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_nclu",
-        "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_imish",
         "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
@@ -124,8 +121,6 @@ junit_tests(
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",
-        "@maven//:org_antlr_antlr4_runtime",
-        "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
