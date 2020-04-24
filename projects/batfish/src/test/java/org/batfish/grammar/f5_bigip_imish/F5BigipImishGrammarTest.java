@@ -5,7 +5,9 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasImportPolicy;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
@@ -30,6 +32,7 @@ import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBg
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -652,7 +655,9 @@ public final class F5BigipImishGrammarTest {
             hasBgpProcess(
                 hasActiveNeighbor(
                     Prefix.strict("192.0.2.1/32"),
-                    hasDescription("Cool IPv4 BGP neighbor description")))));
+                    allOf(
+                        hasDescription("Cool IPv4 BGP neighbor description"),
+                        hasIpv4UnicastAddressFamily(hasImportPolicy("MY_IPV4_IN")))))));
     assertThat(
         c,
         hasDefaultVrf(

@@ -1,5 +1,12 @@
 package org.batfish.grammar.f5_bigip_imish;
 
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_IN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_IN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PEER_GROUP_ROUTE_MAP_IN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PEER_GROUP_ROUTE_MAP_OUT;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +50,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_passwordContext
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assignContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
-import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_mapContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_update_source_interfaceContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_update_source_ipContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbr_connectedContext;
@@ -532,36 +539,27 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
-  public void exitRbn_route_map_out(Rbn_route_map_outContext ctx) {
+  public void exitRbn_route_map(Rbn_route_mapContext ctx) {
     String routeMapName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     boolean ipv4;
     boolean ipv6;
+    F5BigipStructureUsage usage;
+    boolean in = ctx.IN() != null;
     if (Ip.tryParse(_currentNeighborName).isPresent()) {
-      _c.referenceStructure(
-          F5BigipStructureType.ROUTE_MAP,
-          routeMapName,
-          F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT,
-          line);
+      usage = in ? BGP_NEIGHBOR_IPV4_ROUTE_MAP_IN : BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
       ipv4 = true;
       ipv6 = false;
     } else if (Ip6.tryParse(_currentNeighborName).isPresent()) {
-      _c.referenceStructure(
-          F5BigipStructureType.ROUTE_MAP,
-          routeMapName,
-          F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT,
-          line);
+      usage = in ? BGP_NEIGHBOR_IPV6_ROUTE_MAP_IN : BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
       ipv4 = false;
       ipv6 = true;
     } else {
-      _c.referenceStructure(
-          F5BigipStructureType.ROUTE_MAP,
-          routeMapName,
-          F5BigipStructureUsage.BGP_PEER_GROUP_ROUTE_MAP_OUT,
-          line);
+      usage = in ? BGP_PEER_GROUP_ROUTE_MAP_IN : BGP_PEER_GROUP_ROUTE_MAP_OUT;
       ipv4 = true;
       ipv6 = true;
     }
+    _c.referenceStructure(F5BigipStructureType.ROUTE_MAP, routeMapName, usage, line);
     if (_currentAbstractNeighbor == null) {
       _w.redFlag(
           String.format(
@@ -570,10 +568,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       return;
     }
     if (ipv4) {
-      _currentAbstractNeighbor.getIpv4AddressFamily().setRouteMapOut(routeMapName);
+      if (in) {
+        _currentAbstractNeighbor.getIpv4AddressFamily().setRouteMapIn(routeMapName);
+      } else {
+        _currentAbstractNeighbor.getIpv4AddressFamily().setRouteMapOut(routeMapName);
+      }
     }
     if (ipv6) {
-      _currentAbstractNeighbor.getIpv6AddressFamily().setRouteMapOut(routeMapName);
+      if (in) {
+        _currentAbstractNeighbor.getIpv6AddressFamily().setRouteMapIn(routeMapName);
+      } else {
+        _currentAbstractNeighbor.getIpv6AddressFamily().setRouteMapOut(routeMapName);
+      }
     }
   }
 
