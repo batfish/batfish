@@ -2086,21 +2086,6 @@ public class Client extends AbstractClient implements IClient {
         }
       }
     }
-    // get and print the log when in debugging mode
-    if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
-      _logger.output("---------------- Service Log --------------\n");
-      String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-      String downloadedFileStr =
-          _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), logFileName);
-
-      if (downloadedFileStr == null) {
-        _logger.errorf("Failed to get log file %s\n", logFileName);
-        return false;
-      } else {
-        Path downloadedFile = Paths.get(downloadedFileStr);
-        outputFileLines(downloadedFile, _logger::output);
-      }
-    }
     return true;
   }
 

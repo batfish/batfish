@@ -1,12 +1,16 @@
 package org.batfish.config;
 
+import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import java.nio.file.Paths;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
 import org.junit.Test;
 
@@ -68,9 +72,14 @@ public class SettingsTest {
     // Only main testrig
     Settings settings =
         new Settings(new String[] {"-storagebase=/path", "-container=foo", "-testrig=main"});
-    settings.setTaskId("tid");
+    String taskId = "tid";
+    settings.setTaskId(taskId);
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
+    assertThat(
+        settings.getLogFile(),
+        equalTo(
+            getWorkLogPath(Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
+                .toString()));
 
     // Delta testrig present
     settings =
@@ -80,7 +89,12 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/delta/output/tid.log"));
+    assertThat(
+        settings.getLogFile(),
+        equalTo(
+            getWorkLogPath(
+                    Paths.get("/path"), new NetworkId("foo"), new SnapshotId("delta"), taskId)
+                .toString()));
 
     // Delta testrig present, but the question is differential
     settings =
@@ -94,7 +108,11 @@ public class SettingsTest {
             });
     settings.setTaskId("tid");
 
-    assertThat(settings.getLogFile(), equalTo("/path/foo/snapshots/main/output/tid.log"));
+    assertThat(
+        settings.getLogFile(),
+        equalTo(
+            getWorkLogPath(Paths.get("/path"), new NetworkId("foo"), new SnapshotId("main"), taskId)
+                .toString()));
   }
 
   @Test
