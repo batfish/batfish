@@ -4,18 +4,36 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.batfish.dataplane.traceroute.FlowTracer.matchSessionReturnFlow;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIngressInterface;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOriginatingVrf;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getTcpFlagsForReverse;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import java.util.Map;
+import java.util.Set;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.IncomingSessionScope;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.SessionAction;
+import org.batfish.datamodel.flow.SessionMatchExpr;
+import org.batfish.datamodel.flow.SessionScope;
 import org.batfish.datamodel.transformation.Transformation;
 import org.junit.Test;
 
@@ -179,5 +197,101 @@ public final class TracerouteUtilsTest {
                     assignDestinationPort(srcPort1, srcPort1)),
                 null,
                 null)));
+  }
+
+  @Test
+  public void testBuildSessionsByIngressInterface() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode("n1")
+            .setIngressInterface("i1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(22)
+            .setDstPort(22)
+            .setSrcIp(Ip.parse("1.1.1.1"))
+            .setDstIp(Ip.parse("2.2.2.2"))
+            .build();
+    SessionMatchExpr matchExpr = matchSessionReturnFlow(flow);
+    SessionScope incomingI1 = new IncomingSessionScope(ImmutableSet.of("i1"));
+    // need two different actions to differentiate two sessions with same node and ingress interface
+    SessionAction action1 = new ForwardOutInterface("i1", null);
+    SessionAction action2 = new ForwardOutInterface("i2", null);
+
+    // Incoming interface based sessions: should appear in sessions by ingress interface map
+    FirewallSessionTraceInfo n1i1Session =
+        new FirewallSessionTraceInfo("n1", action1, incomingI1, matchExpr, null);
+    FirewallSessionTraceInfo n1i1i2Session =
+        new FirewallSessionTraceInfo(
+            "n1", action2, new IncomingSessionScope(ImmutableSet.of("i1", "i2")), matchExpr, null);
+    FirewallSessionTraceInfo n2i1Session =
+        new FirewallSessionTraceInfo("n2", action1, incomingI1, matchExpr, null);
+
+    // VRF-originated session: should not affect ingress interfaces map
+    FirewallSessionTraceInfo originatingVrfSession =
+        new FirewallSessionTraceInfo(
+            "n1", action1, new OriginatingSessionScope("vrf"), matchExpr, null);
+
+    Set<FirewallSessionTraceInfo> sessions =
+        ImmutableSet.of(n1i1Session, n1i1i2Session, n2i1Session, originatingVrfSession);
+    Multimap<NodeInterfacePair, FirewallSessionTraceInfo> ifaceSessionsMap =
+        buildSessionsByIngressInterface(sessions);
+
+    NodeInterfacePair n1i1 = NodeInterfacePair.of("n1", "i1");
+    NodeInterfacePair n1i2 = NodeInterfacePair.of("n1", "i2");
+    NodeInterfacePair n2i1 = NodeInterfacePair.of("n2", "i1");
+    Multimap<NodeInterfacePair, FirewallSessionTraceInfo> expected =
+        ImmutableMultimap.of(
+            n1i1, n1i1Session, n1i1, n1i1i2Session, n1i2, n1i1i2Session, n2i1, n2i1Session);
+    assertEquals(ifaceSessionsMap, expected);
+  }
+
+  @Test
+  public void testBuildSessionsByOriginatingVrf() {
+    Flow flow =
+        Flow.builder()
+            .setIngressNode("n1")
+            .setIngressInterface("i1")
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(22)
+            .setDstPort(22)
+            .setSrcIp(Ip.parse("1.1.1.1"))
+            .setDstIp(Ip.parse("2.2.2.2"))
+            .build();
+    SessionMatchExpr matchExpr = matchSessionReturnFlow(flow);
+    SessionScope originatingVrf1 = new OriginatingSessionScope("vrf1");
+    SessionScope originatingVrf2 = new OriginatingSessionScope("vrf2");
+    // need two different actions to differentiate two sessions on the same node and vrf
+    SessionAction action1 = new ForwardOutInterface("i1", null);
+    SessionAction action2 = new ForwardOutInterface("i2", null);
+
+    // VRF-originated sessions: should appear in sessions by originating vrf map
+    FirewallSessionTraceInfo n1Vrf1Session1 =
+        new FirewallSessionTraceInfo("n1", action1, originatingVrf1, matchExpr, null);
+    FirewallSessionTraceInfo n1Vrf1Session2 =
+        new FirewallSessionTraceInfo("n1", action2, originatingVrf1, matchExpr, null);
+    FirewallSessionTraceInfo n1Vrf2Session =
+        new FirewallSessionTraceInfo("n1", action1, originatingVrf2, matchExpr, null);
+    FirewallSessionTraceInfo n2Vrf1Session =
+        new FirewallSessionTraceInfo("n2", action1, originatingVrf1, matchExpr, null);
+
+    // Incoming interface based session: should not affect originating vrf map
+    FirewallSessionTraceInfo incomingSession =
+        new FirewallSessionTraceInfo(
+            "n1", action1, new IncomingSessionScope(ImmutableSet.of("i1")), matchExpr, null);
+
+    Set<FirewallSessionTraceInfo> sessions =
+        ImmutableSet.of(
+            n1Vrf1Session1, n1Vrf1Session2, n1Vrf2Session, n2Vrf1Session, incomingSession);
+    Map<String, Multimap<String, FirewallSessionTraceInfo>> vrfSessionsMap =
+        buildSessionsByOriginatingVrf(sessions);
+
+    Map<String, Multimap<String, FirewallSessionTraceInfo>> expected =
+        ImmutableMap.of(
+            "n1",
+            ImmutableMultimap.of(
+                "vrf1", n1Vrf1Session1, "vrf1", n1Vrf1Session2, "vrf2", n1Vrf2Session),
+            "n2",
+            ImmutableMultimap.of("vrf1", n2Vrf1Session));
+    assertEquals(vrfSessionsMap, expected);
   }
 }
