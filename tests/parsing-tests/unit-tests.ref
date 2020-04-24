@@ -94386,6 +94386,29 @@
             }
           }
         },
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : {
+          "pool" : {
+            "/Common/p1" : {
+              "ha-group pool" : [
+                10
+              ]
+            },
+            "/Common/p2" : {
+              "ha-group pool" : [
+                13
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "IMISH interface" : {
+            "us1" : {
+              "bgp neighbor update-source" : [
+                56
+              ]
+            }
+          }
+        },
         "configs/foundry_bgp" : {
           "interface" : {
             "Loopback1" : {
