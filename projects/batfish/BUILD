@@ -45,6 +45,8 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_nclu",
+        "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_imish",
+        "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
