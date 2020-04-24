@@ -1,6 +1,5 @@
 package org.batfish.client;
 
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Throwables;
