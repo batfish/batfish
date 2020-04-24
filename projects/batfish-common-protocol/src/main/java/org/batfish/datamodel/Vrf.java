@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -76,7 +77,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
   private static final String PROP_DESCRIPTION = "description";
-  private static final String PROP_HAS_FIREWALL_SESSION = "hasFirewallSession";
+  private static final String PROP_HAS_ORIGINATING_SESSIONS = "hasOriginatingSessions";
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
   private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
   private static final String PROP_CROSS_VRF_IMPORT_VRFS = "crossVrfImportVrfs";
@@ -99,7 +100,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;
   private BgpProcess _bgpProcess;
   private String _description;
-  private boolean _hasFirewallSession;
+  private boolean _hasOriginatingSessions;
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
@@ -160,10 +161,12 @@ public class Vrf extends ComparableStructure<String> {
     return _description;
   }
 
-  /** Whether this VRF sets up firewall sessions for accepted traffic. */
-  @JsonProperty(PROP_HAS_FIREWALL_SESSION)
-  public boolean hasFirewallSession() {
-    return _hasFirewallSession;
+  /**
+   * Whether this VRF sets up sessions with an {@link OriginatingSessionScope} for accepted traffic.
+   */
+  @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
+  public boolean hasOriginatingSessions() {
+    return _hasOriginatingSessions;
   }
 
   /** Generated IPV6 routes for this VRF. */
@@ -278,9 +281,9 @@ public class Vrf extends ComparableStructure<String> {
     _description = description;
   }
 
-  @JsonProperty(PROP_HAS_FIREWALL_SESSION)
-  public void setHasFirewallSession(boolean hasFirewallSession) {
-    _hasFirewallSession = hasFirewallSession;
+  @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
+  public void setHasOriginatingSessions(boolean hasOriginatingSessions) {
+    _hasOriginatingSessions = hasOriginatingSessions;
   }
 
   public void setGeneratedIpv6Routes(NavigableSet<GeneratedRoute6> generatedIpv6Routes) {

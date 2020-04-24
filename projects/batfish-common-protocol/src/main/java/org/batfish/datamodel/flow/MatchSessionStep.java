@@ -60,6 +60,10 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
           firstNonNull(transformation, ImmutableSet.of()));
     }
 
+    /**
+     * Preserved to maintain compatibility with clients. May be deleted when ready to drop support
+     * for versions of clients that expect MatchSessionStepDetail to have incomingInterfaces.
+     */
     @Deprecated
     @JsonProperty(PROP_INCOMING_INTERFACES)
     @Nonnull

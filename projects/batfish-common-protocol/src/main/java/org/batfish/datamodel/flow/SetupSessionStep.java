@@ -59,6 +59,10 @@ public final class SetupSessionStep extends Step<SetupSessionStepDetail> {
           firstNonNull(transformation, ImmutableSet.of()));
     }
 
+    /**
+     * Preserved to maintain compatibility with clients. May be deleted when ready to drop support
+     * for versions of clients that expect SetupSessionStepDetail to have incomingInterfaces.
+     */
     @Deprecated
     @JsonProperty(PROP_INCOMING_INTERFACES)
     @Nonnull
