@@ -10,7 +10,6 @@ junit_tests(
     srcs = glob(["*Test.java"]),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],
