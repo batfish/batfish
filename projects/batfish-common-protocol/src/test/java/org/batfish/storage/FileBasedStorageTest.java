@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -214,13 +215,14 @@ public final class FileBasedStorageTest {
     // setup: pretend a worker logger has written a file
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
-    Path dir = _storage.getDirectoryProvider().getSnapshotOutputDir(network, snapshot);
-    final boolean mkdirs = dir.toFile().mkdirs();
+    String workId = "workid";
+    Path logFile = getWorkLogPath(_containerDir.getParent(), network, snapshot, workId);
+    final boolean mkdirs = logFile.getParent().toFile().mkdirs();
     assertThat(mkdirs, equalTo(true));
-    CommonUtil.writeFile(dir.resolve("workid.log"), "testoutput");
+    CommonUtil.writeFile(logFile, "testoutput");
 
     // Test: read log using storage API
-    assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
+    assertThat(_storage.loadWorkLog(network, snapshot, workId), equalTo("testoutput"));
   }
 
   @Test

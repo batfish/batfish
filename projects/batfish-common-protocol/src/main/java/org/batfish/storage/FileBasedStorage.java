@@ -319,7 +319,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Nonnull
   public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    Path filePath = getWorkLoadPath(network, snapshot, workId);
+    Path filePath = getWorkLogPath(network, snapshot, workId);
     if (!Files.exists(filePath)) {
       throw new FileNotFoundException(
           String.format("Could not find log file for work ID: %s", workId));
@@ -985,9 +985,19 @@ public final class FileBasedStorage implements StorageProvider {
         .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
   }
 
+  /**
+   * Returns path of work log for a given baseDir, network, snapshot, and workId. This function is a
+   * temporary helper until file-based logging in batfish worker is abstracted away.
+   */
+  public static @Nonnull Path getWorkLogPath(
+      Path baseDir, NetworkId network, SnapshotId snapshot, String workId) {
+    return new FileBasedStorage(baseDir, null).getWorkLogPath(network, snapshot, workId);
+  }
+
   @Nonnull
-  private Path getWorkLoadPath(NetworkId network, SnapshotId snapshot, String workId) {
-    return _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
+  private Path getWorkLogPath(NetworkId network, SnapshotId snapshot, String workId) {
+    return _d.getSnapshotOutputDir(network, snapshot)
+        .resolve(toBase64(workId) + BfConsts.SUFFIX_LOG_FILE);
   }
 
   @Override
@@ -1023,7 +1033,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    writeStringToFile(getWorkLoadPath(network, snapshot, workId), logOutput, UTF_8);
+    writeStringToFile(getWorkLogPath(network, snapshot, workId), logOutput, UTF_8);
   }
 
   @Override
