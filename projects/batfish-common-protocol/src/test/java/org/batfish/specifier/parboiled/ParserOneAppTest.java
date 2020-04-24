@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP;
+import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_ICMP_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_TCP;
 import static org.batfish.specifier.parboiled.Anchor.Type.ONE_APP_UDP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -56,9 +57,9 @@ public class ParserOneAppTest {
             CommonParser.namedApplications.stream()
                 .map(app -> new ParboiledAutoCompleteSuggestion(app, insertionIndex, APP_NAME))
                 .collect(ImmutableSet.toImmutableSet()))
-        .add(new ParboiledAutoCompleteSuggestion("icmp", insertionIndex, ONE_APP_ICMP))
-        .add(new ParboiledAutoCompleteSuggestion("tcp", insertionIndex, ONE_APP_TCP))
-        .add(new ParboiledAutoCompleteSuggestion("udp", insertionIndex, ONE_APP_UDP))
+        .add(new ParboiledAutoCompleteSuggestion("icmp/", insertionIndex, ONE_APP_ICMP))
+        .add(new ParboiledAutoCompleteSuggestion("tcp/", insertionIndex, ONE_APP_TCP))
+        .add(new ParboiledAutoCompleteSuggestion("udp/", insertionIndex, ONE_APP_UDP))
         .build();
   }
 
@@ -108,25 +109,25 @@ public class ParserOneAppTest {
   public void testCompletionPartialProtocolName() {
     assertThat(
         getPAC("ud").run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("udp", 0, ONE_APP_UDP)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("udp/", 0, ONE_APP_UDP)));
   }
 
   @Test
   public void testCompletionFullProtocolName() {
     assertThat(
         getPAC("udp").run(),
-        equalTo(ImmutableSet.of(new ParboiledAutoCompleteSuggestion("/", 3, ONE_APP_UDP))));
+        equalTo(ImmutableSet.of(new ParboiledAutoCompleteSuggestion("udp/", 0, ONE_APP_UDP))));
   }
 
   @Test
   public void testCompletionPortProtocolName() {
     // nothing to autocomplete since we don't have useful suggestions for port numbers
-    assertThat(getPAC("udp / ").run(), equalTo(ImmutableSet.of()));
+    assertThat(getPAC("udp/").run(), equalTo(ImmutableSet.of()));
   }
 
   @Test
   public void testCompletionProtocolPort() {
-    String query = "udp / 2";
+    String query = "udp/2";
     assertThat(getPAC(query).run(), equalTo(ImmutableSet.of()));
   }
 
@@ -135,7 +136,7 @@ public class ParserOneAppTest {
     String query = "icmp";
     assertThat(
         getPAC(query).run(),
-        equalTo(ImmutableSet.of(new ParboiledAutoCompleteSuggestion("/", 4, ONE_APP_ICMP))));
+        equalTo(ImmutableSet.of(new ParboiledAutoCompleteSuggestion("icmp/", 0, ONE_APP_ICMP))));
   }
 
   @Test
@@ -151,7 +152,7 @@ public class ParserOneAppTest {
         getPAC(query).run(),
         equalTo(
             ImmutableSet.of(
-                new ParboiledAutoCompleteSuggestion("/", query.length(), ONE_APP_ICMP))));
+                new ParboiledAutoCompleteSuggestion("/", query.length(), ONE_APP_ICMP_TYPE))));
   }
 
   @Test
@@ -162,7 +163,7 @@ public class ParserOneAppTest {
 
   @Test
   public void testCompletionIcmpSlashTypeCode() {
-    String query = "icmp / 0 / 0 ";
+    String query = "icmp/0/0";
     assertThat(getPAC(query).run(), equalTo(ImmutableSet.of()));
   }
 
@@ -185,9 +186,7 @@ public class ParserOneAppTest {
   @Test
   public void testParseIcmpTypeCode() {
     IcmpTypeCodeAppAstNode expectedAst = new IcmpTypeCodeAppAstNode(8, 0);
-
     assertThat(ParserUtils.getAst(getRunner().run("icmp/8/0")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" icmp / 8 / 0 ")), equalTo(expectedAst));
   }
 
   @Test
@@ -202,7 +201,7 @@ public class ParserOneAppTest {
     TcpAppAstNode expectedAst = new TcpAppAstNode(ImmutableList.of(SubRange.singleton(80)));
 
     assertThat(ParserUtils.getAst(getRunner().run("tcp/80")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp / 80 ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" tcp/80")), equalTo(expectedAst));
   }
 
   @Test
