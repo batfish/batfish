@@ -710,7 +710,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
           _w.redFlag(
               String.format(
                   "ge (min) arg '%d' less than prefix-length '%d' in: %s",
-                  ge, prefixLength, getFullText(ctx)));
+                  ge, prefixLength, getFullText(ctx.getParent())));
         } else {
           low = ge;
         }
@@ -721,14 +721,14 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
           _w.redFlag(
               String.format(
                   "le (max) arg '%d' less than prefix-length '%d' in: %s",
-                  le, prefixLength, getFullText(ctx)));
+                  le, prefixLength, getFullText(ctx.getParent())));
           return;
         } else if (ge != null && le < ge) {
           // Invalid and cannot match anything, so warn and do not add
           _w.redFlag(
               String.format(
                   "le (max) arg '%d' less than ge (min) arg '%d' in: %s",
-                  le, ge, getFullText(ctx)));
+                  le, ge, getFullText(ctx.getParent())));
           return;
         } else {
           high = le;
