@@ -60,6 +60,11 @@ AREA
   'area'
 ;
 
+AS_PATH
+:
+  'as-path'
+;
+
 AS_SET
 :
   'as-set'
@@ -93,6 +98,11 @@ CON
 CONFEDERATION
 :
   'confederation'
+;
+
+DEFAULT_ORIGINATE
+:
+  'default-originate'
 ;
 
 DENY
@@ -305,6 +315,11 @@ REMOTE_AS
   'remote-as'
 ;
 
+ROUTE
+:
+  'route'
+;
+
 ROUTE_MAP
 :
   'route-map'
@@ -338,6 +353,11 @@ SET
 SOFT_RECONFIGURATION
 :
   'soft-reconfiguration'
+;
+
+STATIC
+:
+  'static'
 ;
 
 SUMMARY_ONLY

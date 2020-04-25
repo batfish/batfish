@@ -59,7 +59,8 @@ rb_neighbor_peer_group
 rbn_common
 :
   (
-    rbn_description
+    rbn_default_originate
+    | rbn_description
     | rbn_next_hop_self
     | rbn_null
     | rbn_soft_reconfiguration
@@ -68,6 +69,11 @@ rbn_common
     | rbn_password
     | rbn_update_source
   )
+;
+
+rbn_default_originate
+:
+  DEFAULT_ORIGINATE ROUTE_MAP name = word NEWLINE
 ;
 
 rbn_description
@@ -149,6 +155,7 @@ rb_redistribute
   (
     rbr_kernel
     | rbr_connected
+    | rbr_static
   )
 ;
 
@@ -164,6 +171,15 @@ rbr_kernel
 rbr_connected
 :
   CONNECTED
+  (
+    ROUTE_MAP rm = word
+  )?
+  NEWLINE
+;
+
+rbr_static
+:
+  STATIC
   (
     ROUTE_MAP rm = word
   )?
