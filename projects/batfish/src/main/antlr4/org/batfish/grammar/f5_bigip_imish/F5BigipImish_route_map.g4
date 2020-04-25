@@ -17,9 +17,15 @@ rm_match
 :
   MATCH
   (
-    rmm_ip_address
+    rmm_as_path
+    | rmm_ip_address
     | rmm_ip_address_prefix_list
   )
+;
+
+rmm_as_path
+:
+  AS_PATH name = word NEWLINE
 ;
 
 rmm_ip_address

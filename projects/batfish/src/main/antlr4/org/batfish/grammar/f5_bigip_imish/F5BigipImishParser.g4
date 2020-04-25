@@ -29,14 +29,34 @@ s_end
   END NEWLINE
 ;
 
+s_ip
+:
+  IP
+  (
+    s_ip_as_path
+    | s_ip_prefix_list
+    | s_ip_route
+  )
+;
+
+s_ip_as_path
+:
+  AS_PATH ACCESS_LIST name = word (PERMIT | DENY) value = word NEWLINE
+;
+
 s_ip_prefix_list
 :
-  IP PREFIX_LIST name = word SEQ num = uint32 action = line_action prefix =
+  PREFIX_LIST name = word SEQ num = uint32 action = line_action prefix =
   ip_prefix
   (
     LE le = ip_prefix_length
     | GE ge = ip_prefix_length
   )* NEWLINE
+;
+
+s_ip_route
+:
+  ROUTE prefix = ip_prefix nhip = ip_address NEWLINE
 ;
 
 s_line
@@ -78,7 +98,7 @@ statement
   | s_interface
   | s_line
   | s_null
-  | s_ip_prefix_list
+  | s_ip
   | s_route_map
   | s_router
   | s_end
