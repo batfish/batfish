@@ -92,6 +92,12 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
+  @Nonnull
+  @Override
+  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
   @Override
   public void storeMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig) {
@@ -306,6 +312,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeWorkLog(
       String logOutput, NetworkId network, SnapshotId snapshot, String workId) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeWorkJson(
+      String jsonOutput, NetworkId network, SnapshotId snapshot, String workId) {
     throw new UnsupportedOperationException();
   }
 

@@ -328,6 +328,18 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @Nonnull
+  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
+    Path filePath = getWorkJsonPath(network, snapshot, workId);
+    if (!Files.exists(filePath)) {
+      throw new FileNotFoundException(
+          String.format("Could not find work json for work ID: %s", workId));
+    }
+    return readFileToString(filePath, UTF_8);
+  }
+
+  @Override
   public @Nullable MajorIssueConfig loadMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType) {
     Path path = _d.getMajorIssueConfigDir(network, majorIssueType);
@@ -1000,6 +1012,12 @@ public final class FileBasedStorage implements StorageProvider {
         .resolve(toBase64(workId) + BfConsts.SUFFIX_LOG_FILE);
   }
 
+  @Nonnull
+  private Path getWorkJsonPath(NetworkId network, SnapshotId snapshot, String workId) {
+    return _d.getSnapshotOutputDir(network, snapshot)
+        .resolve(toBase64(workId) + BfConsts.SUFFIX_ANSWER_JSON_FILE);
+  }
+
   @Override
   public @Nonnull String loadInitialTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
@@ -1034,6 +1052,12 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
     writeStringToFile(getWorkLogPath(network, snapshot, workId), logOutput, UTF_8);
+  }
+
+  @Override
+  public void storeWorkJson(
+      String jsonOutput, NetworkId network, SnapshotId snapshot, String workId) throws IOException {
+    writeStringToFile(getWorkJsonPath(network, snapshot, workId), jsonOutput, UTF_8);
   }
 
   @Override

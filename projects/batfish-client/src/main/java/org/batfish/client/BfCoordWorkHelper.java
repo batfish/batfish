@@ -517,6 +517,53 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
+  public String getWorkJson(String networkName, String snapshotName, UUID workId) {
+    try {
+      WebTarget webTarget =
+          getTargetV2(
+              Arrays.asList(
+                  CoordConstsV2.RSC_NETWORKS,
+                  networkName,
+                  CoordConstsV2.RSC_SNAPSHOTS,
+                  snapshotName,
+                  CoordConstsV2.RSC_WORK_JSON,
+                  workId.toString()));
+
+      Response response =
+          webTarget
+              .request(MediaType.TEXT_PLAIN)
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+              .get();
+
+      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
+        _logger.debugf(
+            "getWorkJson: Did not get an OK response for %s -> %s->%s\n",
+            networkName, snapshotName, workId);
+        return null;
+      }
+
+      File inFile = response.readEntity(File.class);
+
+      File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
+      tmpOutFile.deleteOnExit();
+
+      FileUtils.copyFile(inFile, tmpOutFile);
+      if (!inFile.delete()) {
+        throw new BatfishException("Failed to delete temporary file: " + inFile.getAbsolutePath());
+      }
+      return tmpOutFile.getAbsolutePath();
+    } catch (Exception e) {
+      _logger.errorf(
+          "Exception in getWorkJson from %s using (%s, %s)\n", _coordWorkMgr, snapshotName, workId);
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
+      return null;
+    }
+  }
+
   /**
    * Gets the questions configured at the coordinator
    *

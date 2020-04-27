@@ -2058,11 +2058,11 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     // get the answer
-    String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
     String downloadedAnsFile =
-        _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), ansFileName);
+        _workHelper.getWorkJson(wItem.getNetwork(), wItem.getSnapshot(), wItem.getId());
     if (downloadedAnsFile == null) {
-      _logger.errorf("Failed to get answer file %s. (Was work killed?)\n", ansFileName);
+      _logger.errorf(
+          "Failed to get answer file for work ID %s. (Was work killed?)\n", wItem.getId());
     } else {
       String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
 
