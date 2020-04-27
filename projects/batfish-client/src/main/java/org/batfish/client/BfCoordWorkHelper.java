@@ -555,6 +555,40 @@ public class BfCoordWorkHelper {
     }
   }
 
+  /** Returns the JSON-encoded POJO topology for a snapshot. */
+  @Nullable
+  public String getPojoTopology(String networkName, String snapshotName) {
+    try {
+      WebTarget webTarget =
+          getTargetV2(
+              Arrays.asList(
+                  CoordConstsV2.RSC_NETWORKS,
+                  networkName,
+                  CoordConstsV2.RSC_SNAPSHOTS,
+                  snapshotName,
+                  CoordConstsV2.RSC_POJO_TOPOLOGY));
+      Response response =
+          webTarget
+              .request(MediaType.APPLICATION_JSON)
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+              .get();
+      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
+        _logger.debugf(
+            "getPojoTopology: Did not get an OK response for %s -> %s\n",
+            networkName, snapshotName);
+        return null;
+      }
+      return response.readEntity(String.class);
+    } catch (Exception e) {
+      _logger.errorf(
+          "Exception in getPojoTopology from %s using %s\n", _coordWorkMgr, snapshotName);
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
+      return null;
+    }
+  }
+
   /**
    * Gets the questions configured at the coordinator
    *
