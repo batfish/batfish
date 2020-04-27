@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -130,40 +129,25 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
    * the cidr blocks that are local (so they are not sent over the connection -- more specific
    * routes that belong to subnets were inserted during subnet processing).
    */
-  void createConnection(
-      Map<String, Region> regions, ConvertedConfiguration awsConfiguration, Warnings warnings) {
-    Vpc accepterVpc =
-        regions.values().stream()
-            .flatMap(r -> r.getVpcs().values().stream())
-            .filter(vpc -> vpc.getId().equals(_accepterVpcId))
-            .findFirst()
-            .orElse(null);
-    Vpc requesterVpc =
-        regions.values().stream()
-            .flatMap(r -> r.getVpcs().values().stream())
-            .filter(vpc -> vpc.getId().equals(_accepterVpcId))
-            .findFirst()
-            .orElse(null);
-
-    if (accepterVpc == null) {
+  void createConnection(ConvertedConfiguration awsConfiguration, Warnings warnings) {
+    Configuration accepterCfg =
+        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_accepterVpcId));
+    if (accepterCfg == null) {
       warnings.redFlag(
           String.format(
               "Accepter VPC %s not found for connection %s. Will not create the connection.",
               _accepterVpcId, _vpcPeeringConnectionId));
       return;
     }
-    if (requesterVpc == null) {
+    Configuration requesterCfg =
+        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_requesterVpcId));
+    if (requesterCfg == null) {
       warnings.redFlag(
           String.format(
               "Requested VPC %s not found for connection %s. Will not create the connection.",
               _requesterVpcId, _vpcPeeringConnectionId));
       return;
     }
-
-    Configuration accepterCfg =
-        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_accepterVpcId));
-    Configuration requesterCfg =
-        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_requesterVpcId));
 
     String vrfName = Vpc.vrfNameForLink(_vpcPeeringConnectionId);
 
