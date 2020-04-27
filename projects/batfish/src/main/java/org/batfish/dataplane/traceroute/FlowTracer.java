@@ -1099,6 +1099,31 @@ class FlowTracer {
                 // If no interface in VRF owns dst IP, choose arbitrary accepting interface.
                 // Currently we will only resort to this if a session is matched.
                 () -> _currentConfig.getActiveInterfaces(_vrfName).keySet().iterator().next());
+
+    if (_currentConfig.getVrfs().get(_vrfName).hasOriginatingSessions()) {
+      FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
+          _currentConfig
+              .getActiveInterfaces()
+              .get(acceptingInterface)
+              .getFirewallSessionInterfaceInfo();
+      // Interfaces in session-originating VRFs must always have firewall session interface info
+      assert firewallSessionInterfaceInfo != null;
+      @Nullable
+      FirewallSessionTraceInfo session =
+          buildFirewallSessionTraceInfo(firewallSessionInterfaceInfo);
+      if (session != null) {
+        _newSessions.add(session);
+        _steps.add(
+            new SetupSessionStep(
+                SetupSessionStepDetail.builder()
+                    .setSessionScope(session.getSessionScope())
+                    .setMatchCriteria(session.getMatchCriteria())
+                    .setSessionAction(session.getAction())
+                    .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))
+                    .build()));
+      }
+    }
+
     InboundStep inboundStep =
         InboundStep.builder().setDetail(new InboundStepDetail(acceptingInterface)).build();
     _steps.add(inboundStep);
