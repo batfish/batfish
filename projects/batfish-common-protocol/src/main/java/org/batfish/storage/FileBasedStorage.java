@@ -1009,13 +1009,13 @@ public final class FileBasedStorage implements StorageProvider {
   @Nonnull
   private Path getWorkLogPath(NetworkId network, SnapshotId snapshot, String workId) {
     return _d.getSnapshotOutputDir(network, snapshot)
-        .resolve(toBase64(workId) + BfConsts.SUFFIX_LOG_FILE);
+        .resolve(toBase64(workId + BfConsts.SUFFIX_LOG_FILE));
   }
 
   @Nonnull
   private Path getWorkJsonPath(NetworkId network, SnapshotId snapshot, String workId) {
     return _d.getSnapshotOutputDir(network, snapshot)
-        .resolve(toBase64(workId) + BfConsts.SUFFIX_ANSWER_JSON_FILE);
+        .resolve(toBase64(workId + BfConsts.SUFFIX_ANSWER_JSON_FILE));
   }
 
   @Override
