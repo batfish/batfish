@@ -1363,6 +1363,20 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean getPojoTopology(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
+    Command command = Command.GET_POJO_TOPOLOGY;
+    if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
+      return false;
+    }
+    if (!isSetTestrig() || !isSetContainer(true)) {
+      return false;
+    }
+    String json = _workHelper.getPojoTopology(_currContainerName, _currTestrig);
+    logOutput(outWriter, json + "\n");
+    return true;
+  }
+
   /**
    * Returns the name from a JSON representing a question
    *
@@ -2219,6 +2233,8 @@ public class Client extends AbstractClient implements IClient {
         return getObject(outWriter, options, parameters, false);
       case GET_OBJECT_REFERENCE:
         return getObject(outWriter, options, parameters, false);
+      case GET_POJO_TOPOLOGY:
+        return getPojoTopology(outWriter, options, parameters);
       case GET_QUESTION_TEMPLATES:
         return getQuestionTemplates(options, parameters);
       case GET_WORK_STATUS:

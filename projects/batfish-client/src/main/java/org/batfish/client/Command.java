@@ -32,6 +32,7 @@ public enum Command {
   GET_NETWORK("get-network"),
   GET_OBJECT("get-object"),
   GET_OBJECT_REFERENCE("get-reference-object"),
+  GET_POJO_TOPOLOGY("get-pojo-topology"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
   GET_WORK_STATUS("get-work-status"),
   HELP("help"),
@@ -162,6 +163,8 @@ public enum Command {
     descs.put(
         GET_OBJECT_REFERENCE,
         new CommandUsage("<object path>", "Get the object from reference snapshot"));
+    descs.put(
+        GET_POJO_TOPOLOGY, new CommandUsage("", "Get the POJO topology for the current snapshot"));
     descs.put(
         GET_QUESTION_TEMPLATES, new CommandUsage("", "Get question templates from coordinator"));
     descs.put(
