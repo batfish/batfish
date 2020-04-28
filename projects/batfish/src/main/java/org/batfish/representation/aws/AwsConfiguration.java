@@ -87,8 +87,7 @@ public class AwsConfiguration extends VendorConfiguration {
         _regions.values().stream()
             .flatMap(r -> r.getVpcPeeringConnections().values().stream())
             .collect(ImmutableSet.toImmutableSet());
-    vpcPeeringConnections.forEach(
-        c -> c.createConnection(_regions, _convertedConfiguration, getWarnings()));
+    vpcPeeringConnections.forEach(c -> c.createConnection(_convertedConfiguration, getWarnings()));
   }
 
   @Override
