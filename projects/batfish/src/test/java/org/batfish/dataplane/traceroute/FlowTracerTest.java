@@ -3,7 +3,9 @@ package org.batfish.dataplane.traceroute;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
+import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
@@ -21,9 +23,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +56,7 @@ import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -76,6 +81,7 @@ import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
@@ -264,6 +270,126 @@ public final class FlowTracerTest {
             // Inbound step should show accepting interface, not ingress interface
             hasProperty("detail", hasProperty("interface", equalTo(acceptingIfaceName)))));
     assertThat(newSessions, contains(expectedNewSession));
+  }
+
+  @Test
+  public void testOriginatingFlowMatchesInboundSession() {
+    /* Simulates a reverse flow originating in a VRF where a session has been set up. */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    vrf.setHasOriginatingSessions(true);
+    String ifaceName = "ifaceName";
+    nf.interfaceBuilder()
+        .setOwner(c)
+        .setVrf(vrf)
+        .setName(ifaceName)
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(false, ImmutableSet.of(ifaceName), null, null))
+        .build();
+
+    // To match session, return flow must have same protocol and port and swapped src/dst IPs
+    Ip srcIp = Ip.parse("1.1.1.1");
+    Ip dstIp = Ip.parse("2.2.2.2");
+    int srcPort = 22;
+    int dstPort = 40;
+    Flow returnFlow =
+        Flow.builder()
+            .setSrcIp(dstIp)
+            .setDstIp(srcIp)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(dstPort)
+            .setDstPort(srcPort)
+            .build();
+    SessionMatchExpr flowMatchingNewSession =
+        new SessionMatchExpr(IpProtocol.TCP, dstIp, srcIp, dstPort, srcPort);
+    FirewallSessionTraceInfo inboundSession =
+        new FirewallSessionTraceInfo(
+            c.getHostname(),
+            // Matching flows should be forwarded out original ingress interface
+            new ForwardOutInterface(ifaceName, null),
+            new OriginatingSessionScope(vrf.getName()),
+            flowMatchingNewSession,
+            null);
+
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setConfigs(ImmutableMap.of(c.getHostname(), c))
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder()
+                        .setAcceptedIps(
+                            ImmutableMap.of(
+                                c.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of())))
+                        .build())
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(inboundSession),
+            ImmutableSet.of(),
+            ImmutableMap.of(
+                c.getHostname(), ImmutableMap.of(vrf.getName(), MockFib.builder().build())),
+            false);
+
+    {
+      // Return flow matches session
+      List<TraceAndReverseFlow> traces = new ArrayList<>();
+      FlowTracer flowTracer =
+          new FlowTracer(
+              ctxt,
+              c,
+              null,
+              new Node(c.getHostname()),
+              traces::add,
+              null,
+              new HashSet<>(),
+              returnFlow,
+              vrf.getName(),
+              new ArrayList<>(),
+              new ArrayList<>(),
+              new Stack<>(),
+              returnFlow);
+      flowTracer.processHop();
+
+      // Reverse trace should match session and get forwarded out original ingress interface
+      TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
+      Trace trace = traceAndReverseFlow.getTrace();
+      assertThat(trace, hasDisposition(EXITS_NETWORK));
+      assertThat(trace.getHops().get(0).getSteps(), hasItem(instanceOf(MatchSessionStep.class)));
+      assertThat(traceAndReverseFlow.getNewFirewallSessions(), empty());
+    }
+
+    {
+      // Return flow does not match session
+      Flow nonMatchingReturnFlow = returnFlow.toBuilder().setIpProtocol(IpProtocol.UDP).build();
+      List<TraceAndReverseFlow> traces = new ArrayList<>();
+      FlowTracer flowTracer =
+          new FlowTracer(
+              ctxt,
+              c,
+              null,
+              new Node(c.getHostname()),
+              traces::add,
+              null,
+              new HashSet<>(),
+              nonMatchingReturnFlow,
+              vrf.getName(),
+              new ArrayList<>(),
+              new ArrayList<>(),
+              new Stack<>(),
+              nonMatchingReturnFlow);
+      flowTracer.processHop();
+
+      // Reverse trace should not match session, so should be dropped (FIB has no routes)
+      TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
+      Trace trace = traceAndReverseFlow.getTrace();
+      assertThat(trace, hasDisposition(NO_ROUTE));
+      assertThat(
+          trace.getHops().get(0).getSteps(), not(hasItem(instanceOf(MatchSessionStep.class))));
+      assertThat(traceAndReverseFlow.getNewFirewallSessions(), empty());
+    }
   }
 
   @Test
