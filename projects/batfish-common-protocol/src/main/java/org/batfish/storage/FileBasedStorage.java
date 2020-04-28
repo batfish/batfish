@@ -25,9 +25,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -430,8 +430,7 @@ public final class FileBasedStorage implements StorageProvider {
 
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
-    mkdirs(ccaePath);
-    deleteIfExists(ccaePath);
+    mkdirs(ccaePath.getParent());
     serializeObject(convertAnswerElement, ccaePath);
 
     // Save the synthesized layer1 topology
@@ -1104,11 +1103,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private static void deleteIfExists(Path path) throws IOException {
-    try {
-      Files.delete(path);
-    } catch (NoSuchFileException e) {
-      return;
-    }
+    Files.deleteIfExists(path);
   }
 
   private static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
@@ -1120,8 +1115,7 @@ public final class FileBasedStorage implements StorageProvider {
     try {
       FileUtils.write(tmpFile.toFile(), data, charset);
       mkdirs(file.getParent());
-      deleteIfExists(file);
-      Files.move(tmpFile, file);
+      Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING);
     } finally {
       deleteIfExists(tmpFile);
     }
@@ -1133,8 +1127,7 @@ public final class FileBasedStorage implements StorageProvider {
     try {
       FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
       mkdirs(file.getParent());
-      deleteIfExists(file);
-      Files.move(tmpFile, file);
+      Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING);
     } finally {
       deleteIfExists(tmpFile);
     }
