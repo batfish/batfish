@@ -188,6 +188,8 @@ public final class FlowTracerTest {
 
     Ip srcIp = Ip.parse("1.1.1.1");
     Ip dstIp = Ip.parse("2.2.2.2");
+    int srcPort = 22;
+    int dstPort = 40;
     Flow flow =
         Flow.builder()
             .setSrcIp(srcIp)
@@ -195,8 +197,8 @@ public final class FlowTracerTest {
             .setIngressNode(c.getHostname())
             .setIngressInterface(iface.getName())
             .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(22)
-            .setDstPort(22)
+            .setSrcPort(srcPort)
+            .setDstPort(dstPort)
             .build();
 
     // Accepting interface should be the one that owns the dst IP, not necessarily ingress interface
@@ -240,7 +242,7 @@ public final class FlowTracerTest {
 
     // To match session, return flow must have same protocol and port and swapped src/dst IPs
     SessionMatchExpr flowMatchingNewSession =
-        new SessionMatchExpr(IpProtocol.TCP, dstIp, srcIp, 22, 22);
+        new SessionMatchExpr(IpProtocol.TCP, dstIp, srcIp, dstPort, srcPort);
     FirewallSessionTraceInfo expectedNewSession =
         new FirewallSessionTraceInfo(
             c.getHostname(),
