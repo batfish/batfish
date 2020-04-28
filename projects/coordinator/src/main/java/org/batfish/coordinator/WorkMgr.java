@@ -94,7 +94,6 @@ import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
@@ -1477,42 +1476,6 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     return retStringBuilder.toString();
-  }
-
-  @Nullable
-  @Deprecated
-  public Path getTestrigObject(String networkName, String testrigName, String objectName) {
-    Path testrigDir = getCanonicalPath(getdirSnapshot(networkName, testrigName));
-    Path file =
-        getCanonicalPath(testrigDir.resolve(Paths.get(BfConsts.RELPATH_OUTPUT, objectName)));
-    /*
-     * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
-     * name; disallow it
-     */
-    if (!file.startsWith(testrigDir)) {
-      throw new BatfishException("Illegal object name: '" + objectName + "'");
-    }
-
-    // Check in output then input directories for backward compatibility
-    // Since inputs and outputs used to be stored together, in the testrig dir
-    if (!file.toFile().exists()) {
-      file = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT, objectName));
-    }
-
-    if (Files.isRegularFile(file)) {
-      return file;
-    } else if (Files.isDirectory(file)) {
-      Path zipfile = Paths.get(file + ".zip");
-      if (Files.exists(zipfile)) {
-        CommonUtil.deleteIfExists(zipfile);
-      }
-      ZipUtility.zipFiles(file, zipfile);
-
-      // TODO: delete the zipfile
-
-      return zipfile;
-    }
-    return null;
   }
 
   /** Checks if the specified snapshot exists. */
