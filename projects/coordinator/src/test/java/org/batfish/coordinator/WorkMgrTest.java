@@ -145,16 +145,16 @@ public final class WorkMgrTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private WorkMgr _manager;
-
   private StorageProvider _storage;
-
   private IdManager _idManager;
+  private SnapshotMetadataMgr _snapshotMetadataManager;
 
   @Before
   public void initManager() {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
     _idManager = _manager.getIdManager();
+    _snapshotMetadataManager = _manager.getSnapshotMetadataManager();
     _storage = _manager.getStorage();
   }
 
@@ -162,7 +162,7 @@ public final class WorkMgrTest {
     NetworkId networkId = _idManager.getNetworkId(network);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    SnapshotMetadataMgr.writeMetadata(
+    _snapshotMetadataManager.writeMetadata(
         new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
   }
 

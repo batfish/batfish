@@ -98,7 +98,8 @@ public final class SnapshotMetadata {
         .toString();
   }
 
-  public @Nonnull SnapshotMetadata updateStatus(ProcessingStatus status, String errMessage) {
+  public @Nonnull SnapshotMetadata updateStatus(
+      ProcessingStatus status, @Nullable String errMessage) {
     return new SnapshotMetadata(
         _creationTimestamp,
         _initializationMetadata.updateStatus(status, errMessage),

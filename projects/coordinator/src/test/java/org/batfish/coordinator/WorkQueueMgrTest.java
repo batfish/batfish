@@ -48,6 +48,8 @@ public final class WorkQueueMgrTest {
   private static final String REFERENCE_SNAPSHOT = "referenceSnapshot";
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+  private SnapshotMetadataMgr _snapshotMetadataManager;
+  private WorkQueueMgr _workQueueMgr;
 
   private enum ActionType {
     ASSIGN_ERROR,
@@ -69,8 +71,6 @@ public final class WorkQueueMgrTest {
       this.work = work;
     }
   }
-
-  private WorkQueueMgr _workQueueMgr;
 
   private QueuedWork doAction(Action action) throws Exception {
 
@@ -138,11 +138,12 @@ public final class WorkQueueMgrTest {
   public void init() {
     Main.mainInit(new String[0]);
     Main.setLogger(new BatfishLogger("debug", false));
-    _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());
     WorkMgrTestUtils.initWorkManager(_folder);
     Main.getWorkMgr().initNetwork(NETWORK, null);
     _idManager = Main.getWorkMgr().getIdManager();
+    _snapshotMetadataManager = Main.getWorkMgr().getSnapshotMetadataManager();
     _networkId = _idManager.getNetworkId(NETWORK);
+    _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger(), _snapshotMetadataManager);
   }
 
   private void initSnapshotMetadata(String snapshot, ProcessingStatus status) throws IOException {
@@ -152,8 +153,12 @@ public final class WorkQueueMgrTest {
   private void initSnapshotMetadata(String network, String snapshot, ProcessingStatus status)
       throws IOException {
     WorkMgrTestUtils.initSnapshotWithTopology(NETWORK, snapshot, ImmutableSet.of());
-    SnapshotMetadataMgr.writeMetadata(
-        new SnapshotMetadata(Instant.now(), null).updateStatus(status, null), network, snapshot);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    _snapshotMetadataManager.writeMetadata(
+        new SnapshotMetadata(Instant.now(), null).updateStatus(status, null),
+        networkId,
+        snapshotId);
   }
 
   private void queueWork(String snapshot, WorkType wType) throws Exception {
@@ -1174,7 +1179,9 @@ public final class WorkQueueMgrTest {
     // work2 should be left with terminatedqueuefail status and the testrig in parsing_fail state
     assertThat(work2.getStatus(), equalTo(WorkStatusCode.REQUEUEFAILURE));
     assertThat(
-        SnapshotMetadataMgr.getInitializationMetadata(_networkId, snapshotId).getProcessingStatus(),
+        _snapshotMetadataManager
+            .getInitializationMetadata(_networkId, snapshotId)
+            .getProcessingStatus(),
         equalTo(ProcessingStatus.PARSING_FAIL));
   }
 
