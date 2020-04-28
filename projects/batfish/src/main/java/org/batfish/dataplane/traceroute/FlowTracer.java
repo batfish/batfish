@@ -205,7 +205,7 @@ class FlowTracer {
   private final @Nullable String _ingressInterface;
   private final Node _currentNode;
   private final Consumer<TraceAndReverseFlow> _flowTraces;
-  private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
+  private final @Nullable NodeInterfacePair _lastHopNodeAndOutgoingInterface;
   private final Set<FirewallSessionTraceInfo> _newSessions;
   private final Flow _originalFlow;
   private final @Nonnull String _vrfName;
@@ -299,7 +299,7 @@ class FlowTracer {
       @Nullable String ingressInterface,
       Node currentNode,
       Consumer<TraceAndReverseFlow> flowTraces,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface,
+      @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface,
       Set<FirewallSessionTraceInfo> newSessions,
       Flow originalFlow,
       @Nonnull String vrfName,
@@ -1086,7 +1086,7 @@ class FlowTracer {
   static SessionAction getSessionAction(
       boolean fibLookup,
       @Nullable String ingressInterface,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface) {
+      @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
     return fibLookup
         ? org.batfish.datamodel.flow.FibLookup.INSTANCE
         : ingressInterface != null
