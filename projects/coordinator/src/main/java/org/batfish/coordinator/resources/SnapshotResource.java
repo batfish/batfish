@@ -7,6 +7,7 @@ import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_POJO_TOPOLOGY;
 import static org.batfish.common.CoordConstsV2.RSC_TOPOLOGY;
+import static org.batfish.common.CoordConstsV2.RSC_WORK_JSON;
 import static org.batfish.common.CoordConstsV2.RSC_WORK_LOG;
 
 import java.io.IOException;
@@ -128,5 +129,16 @@ public final class SnapshotResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.status(Status.OK).entity(log).build();
+  }
+
+  @Path(RSC_WORK_JSON + "/{workid}")
+  @Produces(MediaType.TEXT_PLAIN)
+  @GET
+  public Response getWorkJson(@PathParam("workid") String workId) throws IOException {
+    String json = Main.getWorkMgr().getWorkJson(_network, _snapshot, workId);
+    if (json == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.status(Status.OK).entity(json).build();
   }
 }

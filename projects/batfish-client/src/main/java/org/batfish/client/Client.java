@@ -2057,14 +2057,13 @@ public class Client extends AbstractClient implements IClient {
     if (!pollResult) {
       return false;
     }
-    // get the answer
-    String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
-    String downloadedAnsFile =
-        _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), ansFileName);
-    if (downloadedAnsFile == null) {
-      _logger.errorf("Failed to get answer file %s. (Was work killed?)\n", ansFileName);
+    // get the JSON log of the work performed
+    String answerString =
+        _workHelper.getWorkJson(wItem.getNetwork(), wItem.getSnapshot(), wItem.getId());
+    if (answerString == null) {
+      _logger.errorf(
+          "Failed to get JSON answer for work ID %s. (Was work killed?)\n", wItem.getId());
     } else {
-      String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
 
       logOutput(outWriter, answerString);
 
