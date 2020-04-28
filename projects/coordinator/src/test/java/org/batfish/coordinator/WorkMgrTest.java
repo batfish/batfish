@@ -1886,54 +1886,6 @@ public final class WorkMgrTest {
   }
 
   @Test
-  @Deprecated
-  public void testGetObjectInput() throws IOException {
-    String network = "network";
-    String snapshot = "snapshot";
-    String fileName = "test.cfg";
-
-    _manager.initNetwork(network, null);
-    uploadTestSnapshot(network, snapshot, fileName);
-    // We know the config file will be written under 'configs/' in the snapshot zip
-    Path object = _manager.getTestrigObject(network, snapshot, "configs/" + fileName);
-
-    // Confirm object is found in the input directory
-    assertThat(object, is(not(nullValue())));
-    assertThat(object.toFile(), anExistingFile());
-  }
-
-  @Test
-  @Deprecated
-  public void testGetObjectOutput() throws IOException {
-    String network = "network";
-    String snapshot = "snapshot";
-    String fileName = BfConsts.RELPATH_METADATA_FILE;
-
-    _manager.initNetwork(network, null);
-    createSnapshotWithMetadata(network, snapshot);
-    Path object = _manager.getTestrigObject(network, snapshot, fileName);
-
-    // Confirm metadata file is found (lives in the output directory)
-    assertThat(object, is(not(nullValue())));
-    assertThat(object.toFile(), anExistingFile());
-  }
-
-  @Test
-  @Deprecated
-  public void testGetObjectMissing() throws IOException {
-    String network = "network";
-    String snapshot = "snapshot";
-    String fileName = "missing.file";
-
-    _manager.initNetwork(network, null);
-    createSnapshotWithMetadata(network, snapshot);
-    Path object = _manager.getTestrigObject(network, snapshot, fileName);
-
-    // Confirm the bogus file is not found
-    assertThat(object, is(nullValue()));
-  }
-
-  @Test
   public void testGenerateDateString() {
     assertThat(
         generateFileDateString("foo", Instant.parse("2018-04-19T12:34:56Z")),

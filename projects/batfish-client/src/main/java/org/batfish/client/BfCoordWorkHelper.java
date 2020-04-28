@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +25,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.commons.io.FileUtils;
 import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -452,66 +450,6 @@ public class BfCoordWorkHelper {
       return retMap;
     } catch (Exception e) {
       _logger.errorf("Exception in getInfo from %s\n", _coordWorkMgr);
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return null;
-    }
-  }
-
-  @Nullable
-  public String getObject(String networkName, String snapshotName, String objectName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_OBJECT);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_OBJECT_NAME, objectName);
-
-      Response response =
-          webTarget
-              .request(MediaType.APPLICATION_OCTET_STREAM)
-              .post(Entity.entity(multiPart, multiPart.getMediaType()));
-
-      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
-
-      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
-        _logger.debugf(
-            "GetObject: Did not get an OK response for %s -> %s->%s\n",
-            networkName, snapshotName, objectName);
-        return null;
-      }
-
-      // see if we have a filename header
-      // String outFileStr = objectName;
-      //
-      // MultivaluedMap<String, String> headers =
-      // response.getStringHeaders();
-      //
-      // if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
-      // String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
-      // if (value != null && !value.equals("")) {
-      // outFileStr = value;
-      // }
-      // }
-
-      File inFile = response.readEntity(File.class);
-
-      File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
-      tmpOutFile.deleteOnExit();
-
-      FileUtils.copyFile(inFile, tmpOutFile);
-      if (!inFile.delete()) {
-        throw new BatfishException("Failed to delete temporary file: " + inFile.getAbsolutePath());
-      }
-      return tmpOutFile.getAbsolutePath();
-    } catch (Exception e) {
-      _logger.errorf(
-          "Exception in getObject from %s using (%s, %s)\n",
-          _coordWorkMgr, snapshotName, objectName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
