@@ -3323,15 +3323,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throws IOException {
     // Write log of WorkItem task to the configured path for logs
     if (logString != null && _settings.getTaskId() != null) {
-      Path jsonPath =
-          _settings
-              .getStorageBase()
-              .resolve(_settings.getContainer().getId())
-              .resolve(BfConsts.RELPATH_SNAPSHOTS_DIR)
-              .resolve(_settings.getTestrig().getId())
-              .resolve(BfConsts.RELPATH_OUTPUT)
-              .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
-      CommonUtil.writeFile(jsonPath, logString);
+      _storage.storeWorkJson(
+          logString, _settings.getContainer(), _settings.getTestrig(), _settings.getTaskId());
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {

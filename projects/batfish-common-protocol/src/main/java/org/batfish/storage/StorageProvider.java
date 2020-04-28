@@ -124,6 +124,15 @@ public interface StorageProvider {
   String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
 
   /**
+   * Load the answer JSON file for a given work item ID.
+   *
+   * @throws FileNotFoundException if the log file is not found.
+   * @throws IOException if there is an error reading the log file.
+   */
+  @Nonnull
+  String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
+
+  /**
    * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
    * {@link MajorIssueConfig}s
    *
@@ -489,6 +498,10 @@ public interface StorageProvider {
 
   /** Store a given string as a log file for a given work item ID. */
   void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException;
+
+  /** Store a given string as an answer JSON file for a given work item ID. */
+  void storeWorkJson(String jsonOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException;
 
   /**

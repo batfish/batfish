@@ -36,4 +36,5 @@ public class CoordConstsV2 {
   public static final String RSC_VERSION = "version";
   public static final String RSC_WORK = "work";
   public static final String RSC_WORK_LOG = "worklog";
+  public static final String RSC_WORK_JSON = "workjson";
 }
