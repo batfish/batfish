@@ -81,10 +81,12 @@ import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
+import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
 import org.batfish.datamodel.flow.RoutingStep;
@@ -92,6 +94,7 @@ import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionMatchExpr;
+import org.batfish.datamodel.flow.SessionScope;
 import org.batfish.datamodel.flow.SetupSessionStep;
 import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
@@ -1033,46 +1036,62 @@ class FlowTracer {
     }
   }
 
+  /**
+   * Creates {@link FirewallSessionTraceInfo} scoped to the {@link
+   * FirewallSessionInterfaceInfo#getSessionInterfaces() interfaces} defined in the given {@code
+   * firewallSessionInterfaceInfo}
+   */
   @Nullable
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    SessionAction action =
+        getSessionAction(
+            firewallSessionInterfaceInfo.getFibLookup(),
+            _ingressInterface,
+            _lastHopNodeAndOutgoingInterface);
     return buildFirewallSessionTraceInfo(
-        _ingressInterface,
-        _lastHopNodeAndOutgoingInterface,
-        _currentNode.getName(),
-        _currentFlow,
-        _originalFlow,
-        firewallSessionInterfaceInfo);
+        action, new IncomingSessionScope(firewallSessionInterfaceInfo.getSessionInterfaces()));
+  }
+
+  @Nullable
+  private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+      @Nonnull SessionAction sessionAction, @Nonnull SessionScope sessionScope) {
+    return buildFirewallSessionTraceInfo(
+        _currentNode.getName(), _currentFlow, _originalFlow, sessionAction, sessionScope);
   }
 
   @VisibleForTesting
   @Nullable
   static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
-      @Nullable String ingressInterface,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface,
       String currentNode,
       Flow currentFlow,
       Flow originalFlow,
-      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+      @Nonnull SessionAction sessionAction,
+      @Nonnull SessionScope sessionScope) {
     IpProtocol ipProtocol = currentFlow.getIpProtocol();
     if (!IpProtocol.IP_PROTOCOLS_WITH_SESSIONS.contains(ipProtocol)) {
       // TODO verify only protocols with ports can have sessions
       return null;
     }
-
-    SessionAction action =
-        firewallSessionInterfaceInfo.getFibLookup()
-            ? org.batfish.datamodel.flow.FibLookup.INSTANCE
-            : ingressInterface != null
-                ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
-                : Accept.INSTANCE;
-
     return new FirewallSessionTraceInfo(
         currentNode,
-        action,
-        firewallSessionInterfaceInfo.getSessionInterfaces(),
+        sessionAction,
+        sessionScope,
         matchSessionReturnFlow(currentFlow),
         sessionTransformation(originalFlow, currentFlow));
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  static SessionAction getSessionAction(
+      boolean fibLookup,
+      @Nullable String ingressInterface,
+      NodeInterfacePair lastHopNodeAndOutgoingInterface) {
+    return fibLookup
+        ? org.batfish.datamodel.flow.FibLookup.INSTANCE
+        : ingressInterface != null
+            ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
+            : Accept.INSTANCE;
   }
 
   @VisibleForTesting
@@ -1090,7 +1109,8 @@ class FlowTracer {
         forwardFlow.getSrcPort());
   }
 
-  private void buildAcceptTrace() {
+  @VisibleForTesting
+  void buildAcceptTrace() {
     // Choose accepting interface based on dst IP
     String acceptingInterface =
         _tracerouteContext
@@ -1101,16 +1121,16 @@ class FlowTracer {
                 () -> _currentConfig.getActiveInterfaces(_vrfName).keySet().iterator().next());
 
     if (_currentConfig.getVrfs().get(_vrfName).hasOriginatingSessions()) {
-      FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
-          _currentConfig
-              .getActiveInterfaces()
-              .get(acceptingInterface)
-              .getFirewallSessionInterfaceInfo();
-      // Interfaces in session-originating VRFs must always have firewall session interface info
-      assert firewallSessionInterfaceInfo != null;
+      // Set up a session that will match return traffic originating from this VRF. Typically we
+      // expect the ingress interface to be nonnull in this case, because normally the session will
+      // get set up as a response to external traffic coming in. But it's not strictly guaranteed;
+      // technically the current node could originate traffic destined for itself and set up a
+      // session upon receiving it.
+      SessionAction action =
+          getSessionAction(false, _ingressInterface, _lastHopNodeAndOutgoingInterface);
       @Nullable
       FirewallSessionTraceInfo session =
-          buildFirewallSessionTraceInfo(firewallSessionInterfaceInfo);
+          buildFirewallSessionTraceInfo(action, new OriginatingSessionScope(_vrfName));
       if (session != null) {
         _newSessions.add(session);
         _steps.add(
