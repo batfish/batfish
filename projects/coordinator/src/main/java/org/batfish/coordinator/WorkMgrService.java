@@ -11,7 +11,6 @@ import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1265,71 +1264,6 @@ public class WorkMgrService {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:getInfo exception: %s", stackTrace);
       return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * Fetches the specified object from the specified network, snapshot
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The network in which the object resides
-   * @param snapshotName The snapshot in which the object resides
-   * @param objectName The name of the object
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_GET_OBJECT)
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  @Deprecated
-  public Response getObject(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName) {
-    try {
-      _logger.infof("WMS:getObject %s --> %s\n", snapshotName, objectName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-      checkStringParam(objectName, "Object name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      java.nio.file.Path file =
-          Main.getWorkMgr().getTestrigObject(networkName, snapshotName, objectName);
-
-      if (file == null || !Files.exists(file)) {
-        return Response.status(Response.Status.NOT_FOUND)
-            .entity("File not found")
-            .type(MediaType.TEXT_PLAIN)
-            .build();
-      }
-
-      String filename = file.getFileName().toString();
-      return Response.ok(file.toFile(), MediaType.APPLICATION_OCTET_STREAM)
-          .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
-          .header(CoordConsts.SVC_FILENAME_HDR, filename)
-          .build();
-    } catch (IllegalArgumentException | AccessControlException e) {
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity(e.getMessage())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:getObject exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-          .entity(e.getCause())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
     }
   }
 

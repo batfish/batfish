@@ -1340,29 +1340,6 @@ public class Client extends AbstractClient implements IClient {
     return _logger;
   }
 
-  private boolean getObject(
-      @Nullable FileWriter outWriter,
-      List<String> options,
-      List<String> parameters,
-      boolean delta) {
-    Command command = delta ? Command.GET_OBJECT_REFERENCE : Command.GET_OBJECT;
-    if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
-      return false;
-    }
-    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isDeltaReady())) {
-      return false;
-    }
-
-    String testrig = delta ? _currDeltaTestrig : _currTestrig;
-    String objectName = parameters.get(0);
-    String tmpPath = _workHelper.getObject(_currContainerName, testrig, objectName);
-    String objectString = CommonUtil.readFile(Paths.get(tmpPath));
-
-    logOutput(outWriter, objectString + "\n");
-
-    return true;
-  }
-
   private boolean getPojoTopology(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     Command command = Command.GET_POJO_TOPOLOGY;
@@ -2229,10 +2206,6 @@ public class Client extends AbstractClient implements IClient {
         return getAnswer(outWriter, options, parameters, false, true);
       case GET_NETWORK:
         return getNetwork(options, parameters);
-      case GET_OBJECT:
-        return getObject(outWriter, options, parameters, false);
-      case GET_OBJECT_REFERENCE:
-        return getObject(outWriter, options, parameters, false);
       case GET_POJO_TOPOLOGY:
         return getPojoTopology(outWriter, options, parameters);
       case GET_QUESTION_TEMPLATES:

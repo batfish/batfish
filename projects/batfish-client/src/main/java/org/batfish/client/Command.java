@@ -30,8 +30,6 @@ public enum Command {
   GET_ANSWER_REFERENCE("get-answer-reference"),
   GET_CONFIGURATION("get-configuration"),
   GET_NETWORK("get-network"),
-  GET_OBJECT("get-object"),
-  GET_OBJECT_REFERENCE("get-reference-object"),
   GET_POJO_TOPOLOGY("get-pojo-topology"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
   GET_WORK_STATUS("get-work-status"),
@@ -159,10 +157,6 @@ public enum Command {
             "Get the file content of the configuration file"));
     descs.put(
         GET_NETWORK, new CommandUsage("<network-name>", "Get the information of the network"));
-    descs.put(GET_OBJECT, new CommandUsage("<object path>", "Get the object"));
-    descs.put(
-        GET_OBJECT_REFERENCE,
-        new CommandUsage("<object path>", "Get the object from reference snapshot"));
     descs.put(
         GET_POJO_TOPOLOGY, new CommandUsage("", "Get the POJO topology for the current snapshot"));
     descs.put(
