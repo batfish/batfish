@@ -62,13 +62,14 @@ public final class WorkMgrTestUtils {
   public static void initSnapshotWithTopology(String network, String snapshot, Set<String> nodes)
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
+    SnapshotMetadataMgr ssmManager = Main.getWorkMgr().getSnapshotMetadataManager();
     NetworkId networkId = idManager.getNetworkId(network);
     SnapshotId snapshotId =
         idManager.hasSnapshotId(snapshot, networkId)
             ? idManager.getSnapshotId(snapshot, networkId)
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    SnapshotMetadataMgr.writeMetadata(
+    ssmManager.writeMetadata(
         new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
     Topology pojoTopology = new Topology(snapshot);
     pojoTopology.setNodes(nodes.stream().map(Node::new).collect(Collectors.toSet()));

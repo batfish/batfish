@@ -22,6 +22,7 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
+import org.batfish.coordinator.queues.WorkQueue.Type;
 import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.identifiers.NetworkId;
@@ -43,6 +44,7 @@ public class WorkQueueMgr {
   private Set<UUID> _blockingWork;
 
   private BatfishLogger _logger;
+  private SnapshotMetadataMgr _snapshotMetadataManager;
 
   @GuardedBy("this")
   private WorkQueue _queueCompletedWork;
@@ -50,13 +52,14 @@ public class WorkQueueMgr {
   @GuardedBy("this")
   private WorkQueue _queueIncompleteWork;
 
-  WorkQueueMgr(BatfishLogger logger) {
-    this(Main.getSettings().getQueueType(), logger);
+  WorkQueueMgr(BatfishLogger logger, SnapshotMetadataMgr snapshotMetadataManager) {
+    this(Main.getSettings().getQueueType(), logger, snapshotMetadataManager);
   }
 
-  WorkQueueMgr(WorkQueue.Type wqType, BatfishLogger logger) {
+  WorkQueueMgr(Type wqType, BatfishLogger logger, SnapshotMetadataMgr snapshotMetadataManager) {
     _blockingWork = new HashSet<>();
     _logger = logger;
+    _snapshotMetadataManager = snapshotMetadataManager;
     switch (wqType) {
       case memory:
         _queueCompletedWork = new MemoryQueue();
@@ -70,14 +73,14 @@ public class WorkQueueMgr {
   private void cleanUpInitMetaDataIfNeeded(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     InitializationMetadata metadata =
-        SnapshotMetadataMgr.getInitializationMetadata(networkId, snapshotId);
+        _snapshotMetadataManager.getInitializationMetadata(networkId, snapshotId);
     if (metadata.getProcessingStatus() == ProcessingStatus.PARSING
         && getIncompleteWork(networkId, snapshotId, WorkType.PARSING) == null) {
-      SnapshotMetadataMgr.updateInitializationStatus(
+      _snapshotMetadataManager.updateInitializationStatus(
           networkId, snapshotId, ProcessingStatus.PARSING_FAIL, null);
     } else if (metadata.getProcessingStatus() == ProcessingStatus.DATAPLANING
         && getIncompleteWork(networkId, snapshotId, WorkType.DATAPLANING) == null) {
-      SnapshotMetadataMgr.updateInitializationStatus(
+      _snapshotMetadataManager.updateInitializationStatus(
           networkId, snapshotId, ProcessingStatus.DATAPLANING_FAIL, null);
     }
   }
@@ -107,7 +110,7 @@ public class WorkQueueMgr {
         getIncompleteWork(wDetails.getNetworkId(), wDetails.getSnapshotId(), WorkType.PARSING);
 
     InitializationMetadata metadata =
-        SnapshotMetadataMgr.getInitializationMetadata(
+        _snapshotMetadataManager.getInitializationMetadata(
             wDetails.getNetworkId(), wDetails.getSnapshotId());
 
     switch (metadata.getProcessingStatus()) {
@@ -149,7 +152,7 @@ public class WorkQueueMgr {
     NetworkId networkId = work.getDetails().getNetworkId();
 
     InitializationMetadata metadata =
-        SnapshotMetadataMgr.getInitializationMetadata(networkId, snapshotId);
+        _snapshotMetadataManager.getInitializationMetadata(networkId, snapshotId);
 
     QueuedWork parsingWork = getIncompleteWork(networkId, snapshotId, WorkType.PARSING);
 
@@ -206,7 +209,7 @@ public class WorkQueueMgr {
     NetworkId networkId = work.getDetails().getNetworkId();
 
     InitializationMetadata metadata =
-        SnapshotMetadataMgr.getInitializationMetadata(networkId, snapshotId);
+        _snapshotMetadataManager.getInitializationMetadata(networkId, snapshotId);
 
     QueuedWork parsingWork = getIncompleteWork(networkId, snapshotId, WorkType.PARSING);
 
@@ -396,10 +399,10 @@ public class WorkQueueMgr {
     // update testrig metadata
     WorkDetails wDetails = work.getDetails();
     if (wDetails.getWorkType() == WorkType.PARSING) {
-      SnapshotMetadataMgr.updateInitializationStatus(
+      _snapshotMetadataManager.updateInitializationStatus(
           wDetails.getNetworkId(), wDetails.getSnapshotId(), ProcessingStatus.PARSING, null);
     } else if (wDetails.getWorkType() == WorkType.DATAPLANING) {
-      SnapshotMetadataMgr.updateInitializationStatus(
+      _snapshotMetadataManager.updateInitializationStatus(
           wDetails.getNetworkId(), wDetails.getSnapshotId(), ProcessingStatus.DATAPLANING, null);
     }
   }
@@ -438,19 +441,19 @@ public class WorkQueueMgr {
             } else {
               status = ProcessingStatus.PARSING_FAIL;
             }
-            SnapshotMetadataMgr.updateInitializationStatus(
+            _snapshotMetadataManager.updateInitializationStatus(
                 wDetails.getNetworkId(), wDetails.getSnapshotId(), status, task.getErrMessage());
           } else if (wDetails.getWorkType() == WorkType.DATAPLANING) {
             // no change in status needed if task.getStatus() is RequeueFailure
             if (task.getStatus() == TaskStatus.TerminatedAbnormally
                 || task.getStatus() == TaskStatus.TerminatedByUser) {
-              SnapshotMetadataMgr.updateInitializationStatus(
+              _snapshotMetadataManager.updateInitializationStatus(
                   wDetails.getNetworkId(),
                   wDetails.getSnapshotId(),
                   ProcessingStatus.DATAPLANING_FAIL,
                   task.getErrMessage());
             } else if (task.getStatus() == TaskStatus.TerminatedNormally) {
-              SnapshotMetadataMgr.updateInitializationStatus(
+              _snapshotMetadataManager.updateInitializationStatus(
                   wDetails.getNetworkId(),
                   wDetails.getSnapshotId(),
                   ProcessingStatus.DATAPLANED,
@@ -513,7 +516,7 @@ public class WorkQueueMgr {
             if (wDetails.getWorkType() == WorkType.PARSING
                 || wDetails.getWorkType() == WorkType.DATAPLANING) {
               InitializationMetadata metadata =
-                  SnapshotMetadataMgr.getInitializationMetadata(
+                  _snapshotMetadataManager.getInitializationMetadata(
                       wDetails.getNetworkId(), wDetails.getSnapshotId());
               if (wDetails.getWorkType() == WorkType.PARSING) {
                 if (metadata.getProcessingStatus() != ProcessingStatus.PARSING) {
@@ -521,7 +524,7 @@ public class WorkQueueMgr {
                       "Unexpected status %s when parsing failed for %s",
                       metadata.getProcessingStatus(), wDetails.getSnapshotId());
                 } else {
-                  SnapshotMetadataMgr.updateInitializationStatus(
+                  _snapshotMetadataManager.updateInitializationStatus(
                       wDetails.getNetworkId(),
                       wDetails.getSnapshotId(),
                       ProcessingStatus.UNINITIALIZED,
@@ -533,7 +536,7 @@ public class WorkQueueMgr {
                       "Unexpected status %s when dataplaning failed for %s",
                       metadata.getProcessingStatus(), wDetails.getSnapshotId());
                 } else {
-                  SnapshotMetadataMgr.updateInitializationStatus(
+                  _snapshotMetadataManager.updateInitializationStatus(
                       wDetails.getNetworkId(),
                       wDetails.getSnapshotId(),
                       ProcessingStatus.PARSED,
@@ -630,7 +633,7 @@ public class WorkQueueMgr {
       throw new BatfishException("Cannot queue parsing work while other work is incomplete");
     } else {
       InitializationMetadata metadata =
-          SnapshotMetadataMgr.getInitializationMetadata(
+          _snapshotMetadataManager.getInitializationMetadata(
               wDetails.getNetworkId(), wDetails.getSnapshotId());
       if (metadata.getProcessingStatus() == ProcessingStatus.PARSING) {
         throw new BatfishException(
