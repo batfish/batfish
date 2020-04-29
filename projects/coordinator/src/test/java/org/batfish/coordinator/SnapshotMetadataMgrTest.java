@@ -4,13 +4,12 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
@@ -60,9 +59,8 @@ public class SnapshotMetadataMgrTest {
     // Start a background reader thread, which will do nothing but read continuously asserting
     // invariants over the read metadata.
     final AtomicBoolean done = new AtomicBoolean(false);
-    ListeningExecutorService pollerService =
-        MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
-    ListenableFuture<Long> loops =
+    ExecutorService pollerService = Executors.newSingleThreadExecutor();
+    Future<Long> loops =
         pollerService.submit(
             () -> {
               long count = 0;
