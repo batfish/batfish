@@ -1,5 +1,6 @@
 package org.batfish.datamodel.flow;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -17,6 +18,7 @@ public final class FirewallSessionTraceInfo {
   private final @Nonnull SessionScope _sessionScope;
   private final @Nullable Transformation _transformation;
 
+  @VisibleForTesting
   public FirewallSessionTraceInfo(
       String hostname,
       SessionAction action,
