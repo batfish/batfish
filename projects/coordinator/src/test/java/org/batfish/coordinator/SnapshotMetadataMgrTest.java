@@ -83,7 +83,7 @@ public class SnapshotMetadataMgrTest {
 
     // Declare the test done so the reader stops.
     done.set(true);
-    // 1. If there was an invariant in the background thread, the loops.get() call will throw.
+    // 1. If there was an invariant violated in the reader thread, the loops.get() call will throw.
     // 2. The loop must have run at least once. This mainly guards against an error in the test.
     assertThat(loops.get(), greaterThanOrEqualTo(1L));
 
