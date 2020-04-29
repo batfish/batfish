@@ -9,6 +9,7 @@ import java.time.Instant;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.GuardedBy;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
@@ -34,13 +35,13 @@ public final class SnapshotMetadataMgr {
     }
   }
 
-  public SnapshotMetadata readMetadata(NetworkId networkId, SnapshotId snapshotId)
+  public synchronized SnapshotMetadata readMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     return BatfishObjectMapper.mapper()
         .readValue(_storage.loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class);
   }
 
-  public synchronized void updateInitializationStatus(
+  public void updateInitializationStatus(
       NetworkId networkId,
       SnapshotId snapshotId,
       ProcessingStatus status,
@@ -52,8 +53,8 @@ public final class SnapshotMetadataMgr {
         snapshotId);
   }
 
-  public void writeMetadata(SnapshotMetadata metadata, NetworkId networkId, SnapshotId snapshotId)
-      throws IOException {
+  public synchronized void writeMetadata(
+      SnapshotMetadata metadata, NetworkId networkId, SnapshotId snapshotId) throws IOException {
     _storage.storeSnapshotMetadata(metadata, networkId, snapshotId);
   }
 
@@ -61,5 +62,6 @@ public final class SnapshotMetadataMgr {
     _storage = storage;
   }
 
+  @GuardedBy("this")
   private @Nonnull StorageProvider _storage;
 }
