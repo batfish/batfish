@@ -33,7 +33,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "net.sourceforge.pmd:pmd-java:6.14.0",
     "org.antlr:antlr4-runtime:4.7.2",
     "org.apache.commons:commons-collections4:4.4",
-    "org.apache.commons:commons-configuration2:2.6",
+    "org.apache.commons:commons-configuration2:2.7",
     "org.apache.commons:commons-lang3:3.9",
     "org.apache.commons:commons-text:1.8",
     "org.apache.httpcomponents:httpclient:4.3.5",
