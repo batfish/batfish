@@ -139,6 +139,15 @@ public class BDDReachabilityAnalysis {
     return getIngressLocationBDDs(reverseReachableStates);
   }
 
+  /**
+   * Like {@link #getIngressLocationReachableBDDs()}, but for only the specified states (with
+   * initial BDDs).
+   */
+  public Map<IngressLocation, BDD> getIngressLocationReachableBDDs(Map<StateExpr, BDD> roots) {
+    Map<StateExpr, BDD> reverseReachableStates = computeReverseReachableStates(roots);
+    return getIngressLocationBDDs(reverseReachableStates);
+  }
+
   /** Map of all src {@link Location} to {@link BDD} of successful flows from that location */
   public Map<Location, BDD> getSrcLocationBdds() {
     Map<StateExpr, BDD> reverseReachableStates = computeReverseReachableStates();
