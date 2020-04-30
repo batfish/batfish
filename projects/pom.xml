@@ -65,7 +65,6 @@
     <guava.version>28.1-jre</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
     <hamcrest.version>2.2</hamcrest.version>
-    <httpclient.version>4.3.5</httpclient.version>
     <icu4j.version>63.1</icu4j.version>
     <jackson.version>2.9.10.20200411</jackson.version>
     <javax-activation.version>1.1</javax-activation.version>
@@ -90,6 +89,10 @@
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <z3.version>2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf</z3.version>
+
+    <!-- Transitive dependencies managed up for security reasons. -->
+    <httpclient.version>4.3.5</httpclient.version>
+    <okhttp.version>3.14.8</okhttp.version>
 
     <!--
       Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
@@ -719,6 +722,12 @@
         <groupId>com.microsoft.z3</groupId>
         <artifactId>z3</artifactId>
         <version>${z3.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>${okhttp.version}</version>
       </dependency>
 
       <dependency>

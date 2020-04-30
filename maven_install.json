@@ -838,68 +838,68 @@
                 "sha256": "5d80043f522ff1ecb2d2c726ea7805f678a559cf40dd100460834637373b3f5a"
             },
             {
-                "coord": "com.squareup.okhttp3:okhttp:3.8.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1.jar",
+                "coord": "com.squareup.okhttp3:okhttp:3.14.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar",
                 "directDependencies": [
-                    "com.squareup.okio:okio:1.13.0"
+                    "com.squareup.okio:okio:1.17.2"
                 ],
                 "dependencies": [
-                    "com.squareup.okio:okio:1.13.0"
+                    "com.squareup.okio:okio:1.17.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar"
                 ],
-                "sha256": "c1d57f913f74f61d424d4250a92723ba9a61affc12a0ab194d84cc179b472841"
+                "sha256": "4b92f68c881f3d3a4445297eed9d1fe26ce97194b37e5269f75c9952bd0cb0a3"
             },
             {
-                "coord": "com.squareup.okhttp3:okhttp:jar:sources:3.8.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1-sources.jar",
+                "coord": "com.squareup.okhttp3:okhttp:jar:sources:3.14.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar",
                 "directDependencies": [
-                    "com.squareup.okio:okio:jar:sources:1.13.0"
+                    "com.squareup.okio:okio:jar:sources:1.17.2"
                 ],
                 "dependencies": [
-                    "com.squareup.okio:okio:jar:sources:1.13.0"
+                    "com.squareup.okio:okio:jar:sources:1.17.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1-sources.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.1/okhttp-3.8.1-sources.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar"
                 ],
-                "sha256": "6f5de3ef89478f72707f6b491c8b186b4cf06d47edcd0abe1c7b76c4304253c2"
+                "sha256": "b6100960c6a67794a71e16127ec30be37a307ae9992ca9a95ffd545f888ae247"
             },
             {
-                "coord": "com.squareup.okio:okio:1.13.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar",
+                "coord": "com.squareup.okio:okio:1.17.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar"
                 ],
-                "sha256": "734269c3ebc5090e3b23566db558f421f0b4027277c79ad5d176b8ec168bb850"
+                "sha256": "f80ce42d2ffac47ad4c47e1d6f980d604d247ceb1a886705cf4581ab0c9fe2b8"
             },
             {
-                "coord": "com.squareup.okio:okio:jar:sources:1.13.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0-sources.jar",
+                "coord": "com.squareup.okio:okio:jar:sources:1.17.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2-sources.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0-sources.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.13.0/okio-1.13.0-sources.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2-sources.jar"
                 ],
-                "sha256": "b0305445ad4001639413951837a2248c5e9ca28386fbae2e31e1556f7710c5a8"
+                "sha256": "f96949004bdc5951c27256b96c33667d3dbd5369c467a8fa0d4157dba98b4252"
             },
             {
                 "coord": "com.uber.jaeger:jaeger-core:0.21.0",
@@ -907,8 +907,8 @@
                 "directDependencies": [
                     "io.opentracing:opentracing-api:0.30.0",
                     "com.uber.jaeger:jaeger-thrift:0.21.0",
-                    "com.squareup.okhttp3:okhttp:3.8.1",
                     "org.slf4j:slf4j-api:1.7.25",
+                    "com.squareup.okhttp3:okhttp:3.14.8",
                     "com.google.code.gson:gson:2.8.5",
                     "io.opentracing:opentracing-util:0.30.0"
                 ],
@@ -918,12 +918,12 @@
                     "commons-logging:commons-logging:1.2",
                     "com.uber.jaeger:jaeger-thrift:0.21.0",
                     "io.opentracing:opentracing-noop:0.30.0",
-                    "com.squareup.okhttp3:okhttp:3.8.1",
                     "org.slf4j:slf4j-api:1.7.25",
                     "org.apache.httpcomponents:httpcore:4.3.2",
+                    "com.squareup.okhttp3:okhttp:3.14.8",
                     "org.apache.thrift:libthrift:0.9.2",
-                    "com.squareup.okio:okio:1.13.0",
                     "com.google.code.gson:gson:2.8.5",
+                    "com.squareup.okio:okio:1.17.2",
                     "io.opentracing:opentracing-util:0.30.0",
                     "commons-codec:commons-codec:1.6"
                 ],
@@ -941,9 +941,9 @@
                 "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0-sources.jar",
                 "directDependencies": [
                     "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                    "com.squareup.okhttp3:okhttp:jar:sources:3.8.1",
                     "com.google.code.gson:gson:jar:sources:2.8.5",
                     "io.opentracing:opentracing-api:jar:sources:0.30.0",
+                    "com.squareup.okhttp3:okhttp:jar:sources:3.14.8",
                     "io.opentracing:opentracing-util:jar:sources:0.30.0",
                     "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0"
                 ],
@@ -952,15 +952,15 @@
                     "org.slf4j:slf4j-api:jar:sources:1.7.25",
                     "org.apache.thrift:libthrift:jar:sources:0.9.2",
                     "commons-logging:commons-logging:jar:sources:1.2",
-                    "com.squareup.okio:okio:jar:sources:1.13.0",
-                    "com.squareup.okhttp3:okhttp:jar:sources:3.8.1",
                     "com.google.code.gson:gson:jar:sources:2.8.5",
                     "io.opentracing:opentracing-api:jar:sources:0.30.0",
                     "io.opentracing:opentracing-noop:jar:sources:0.30.0",
+                    "com.squareup.okhttp3:okhttp:jar:sources:3.14.8",
                     "io.opentracing:opentracing-util:jar:sources:0.30.0",
                     "org.apache.httpcomponents:httpclient:jar:sources:4.3.5",
                     "commons-codec:commons-codec:jar:sources:1.6",
-                    "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0"
+                    "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0",
+                    "com.squareup.okio:okio:jar:sources:1.17.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
@@ -4146,6 +4146,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -130729295
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 817819550
     }
 }
