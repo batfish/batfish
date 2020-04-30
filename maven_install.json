@@ -914,16 +914,16 @@
                 ],
                 "dependencies": [
                     "io.opentracing:opentracing-api:0.30.0",
-                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "org.apache.httpcomponents:httpclient:4.3.5",
                     "commons-logging:commons-logging:1.2",
                     "com.uber.jaeger:jaeger-thrift:0.21.0",
                     "io.opentracing:opentracing-noop:0.30.0",
                     "com.squareup.okhttp3:okhttp:3.8.1",
                     "org.slf4j:slf4j-api:1.7.25",
+                    "org.apache.httpcomponents:httpcore:4.3.2",
                     "org.apache.thrift:libthrift:0.9.2",
                     "com.squareup.okio:okio:1.13.0",
                     "com.google.code.gson:gson:2.8.5",
-                    "org.apache.httpcomponents:httpclient:4.2.5",
                     "io.opentracing:opentracing-util:0.30.0",
                     "commons-codec:commons-codec:1.6"
                 ],
@@ -948,9 +948,8 @@
                     "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0"
                 ],
                 "dependencies": [
+                    "org.apache.httpcomponents:httpcore:jar:sources:4.3.2",
                     "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                    "org.apache.httpcomponents:httpclient:jar:sources:4.2.5",
-                    "org.apache.httpcomponents:httpcore:jar:sources:4.2.4",
                     "org.apache.thrift:libthrift:jar:sources:0.9.2",
                     "commons-logging:commons-logging:jar:sources:1.2",
                     "com.squareup.okio:okio:jar:sources:1.13.0",
@@ -959,6 +958,7 @@
                     "io.opentracing:opentracing-api:jar:sources:0.30.0",
                     "io.opentracing:opentracing-noop:jar:sources:0.30.0",
                     "io.opentracing:opentracing-util:jar:sources:0.30.0",
+                    "org.apache.httpcomponents:httpclient:jar:sources:4.3.5",
                     "commons-codec:commons-codec:jar:sources:1.6",
                     "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0"
                 ],
@@ -978,11 +978,11 @@
                     "org.apache.thrift:libthrift:0.9.2"
                 ],
                 "dependencies": [
-                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "org.apache.httpcomponents:httpclient:4.3.5",
                     "commons-logging:commons-logging:1.2",
                     "org.slf4j:slf4j-api:1.7.25",
+                    "org.apache.httpcomponents:httpcore:4.3.2",
                     "org.apache.thrift:libthrift:0.9.2",
-                    "org.apache.httpcomponents:httpclient:4.2.5",
                     "commons-codec:commons-codec:1.6"
                 ],
                 "exclusions": [
@@ -1001,11 +1001,11 @@
                     "org.apache.thrift:libthrift:jar:sources:0.9.2"
                 ],
                 "dependencies": [
+                    "org.apache.httpcomponents:httpcore:jar:sources:4.3.2",
                     "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                    "org.apache.httpcomponents:httpclient:jar:sources:4.2.5",
-                    "org.apache.httpcomponents:httpcore:jar:sources:4.2.4",
                     "org.apache.thrift:libthrift:jar:sources:0.9.2",
                     "commons-logging:commons-logging:jar:sources:1.2",
+                    "org.apache.httpcomponents:httpclient:jar:sources:4.3.5",
                     "commons-codec:commons-codec:jar:sources:1.6"
                 ],
                 "exclusions": [
@@ -2124,90 +2124,90 @@
                 "sha256": "5ae0583a8a56fbded1c94d527ae20c9dbc03e7a0d72bc9310099739647cd2cdd"
             },
             {
-                "coord": "org.apache.httpcomponents:httpclient:4.2.5",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar",
+                "coord": "org.apache.httpcomponents:httpclient:4.3.5",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar",
                 "directDependencies": [
                     "commons-codec:commons-codec:1.6",
                     "commons-logging:commons-logging:1.2",
-                    "org.apache.httpcomponents:httpcore:4.2.4"
+                    "org.apache.httpcomponents:httpcore:4.3.2"
                 ],
                 "dependencies": [
+                    "org.apache.httpcomponents:httpcore:4.3.2",
                     "commons-codec:commons-codec:1.6",
-                    "commons-logging:commons-logging:1.2",
-                    "org.apache.httpcomponents:httpcore:4.2.4"
+                    "commons-logging:commons-logging:1.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar"
+                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5.jar"
                 ],
-                "sha256": "c7fb05b793a586633d2d801a889e0846f3f21c7f8dc3dab776421383f49ebb8c"
+                "sha256": "b184521bce85de3f7f57a9d6afba133b323c8752857723031ec5468d4feef8c6"
             },
             {
-                "coord": "org.apache.httpcomponents:httpclient:jar:sources:4.2.5",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5-sources.jar",
+                "coord": "org.apache.httpcomponents:httpclient:jar:sources:4.3.5",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5-sources.jar",
                 "directDependencies": [
                     "commons-codec:commons-codec:jar:sources:1.6",
                     "commons-logging:commons-logging:jar:sources:1.2",
-                    "org.apache.httpcomponents:httpcore:jar:sources:4.2.4"
+                    "org.apache.httpcomponents:httpcore:jar:sources:4.3.2"
                 ],
                 "dependencies": [
-                    "org.apache.httpcomponents:httpcore:jar:sources:4.2.4",
+                    "org.apache.httpcomponents:httpcore:jar:sources:4.3.2",
                     "commons-logging:commons-logging:jar:sources:1.2",
                     "commons-codec:commons-codec:jar:sources:1.6"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5-sources.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5-sources.jar"
+                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.3.5/httpclient-4.3.5-sources.jar"
                 ],
-                "sha256": "361cf5d50a34bf3eb43fe0f8f6fa0768175b7be269485773179c4aa0872665b5"
+                "sha256": "0f8d35096551aa63f5777314a6856a88618b2d34c969bc8725049bf4c96f69d5"
             },
             {
-                "coord": "org.apache.httpcomponents:httpcore:4.2.4",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar",
+                "coord": "org.apache.httpcomponents:httpcore:4.3.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar"
+                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar"
                 ],
-                "sha256": "bda2b9e0464f7a0e122d5e9bff7b384f3bc3a91af18ad51e029deaaa599e5db3"
+                "sha256": "abd02320e2356f89d054dae4cf02306bef20a9cf7865b3ac94ec7552b4f1528b"
             },
             {
-                "coord": "org.apache.httpcomponents:httpcore:jar:sources:4.2.4",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4-sources.jar",
+                "coord": "org.apache.httpcomponents:httpcore:jar:sources:4.3.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2-sources.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4-sources.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4-sources.jar"
+                    "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2-sources.jar"
                 ],
-                "sha256": "663ae9b27c70e5b028216bc2f0595ef9cdbd31eae307413d72adc4ed3a9a7a08"
+                "sha256": "947b7078b3ff3dfa21d9fc2a3e451feacd30fa6f5df8e699c508b24845886c5b"
             },
             {
                 "coord": "org.apache.thrift:libthrift:0.9.2",
                 "file": "v1/https/repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar",
                 "directDependencies": [
-                    "org.apache.httpcomponents:httpclient:4.2.5",
-                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "org.apache.httpcomponents:httpclient:4.3.5",
+                    "org.apache.httpcomponents:httpcore:4.3.2",
                     "org.slf4j:slf4j-api:1.7.25"
                 ],
                 "dependencies": [
-                    "org.apache.httpcomponents:httpcore:4.2.4",
+                    "org.apache.httpcomponents:httpclient:4.3.5",
                     "commons-logging:commons-logging:1.2",
                     "org.slf4j:slf4j-api:1.7.25",
-                    "org.apache.httpcomponents:httpclient:4.2.5",
+                    "org.apache.httpcomponents:httpcore:4.3.2",
                     "commons-codec:commons-codec:1.6"
                 ],
                 "exclusions": [
@@ -4146,6 +4146,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -155779672
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -130729295
     }
 }
