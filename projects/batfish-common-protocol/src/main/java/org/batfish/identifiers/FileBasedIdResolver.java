@@ -1,7 +1,10 @@
 package org.batfish.identifiers;
 
 import static java.util.Optional.ofNullable;
+import static org.batfish.storage.FileBasedStorage.fromBase64;
+import static org.batfish.storage.FileBasedStorage.toBase64;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -17,6 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
 /**
@@ -46,15 +50,24 @@ public class FileBasedIdResolver implements IdResolver {
     return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
   }
 
-  private static @Nonnull Set<String> listResolvableNames(Path idsDir) {
+  @VisibleForTesting
+  static @Nonnull Set<String> listResolvableNames(Path idsDir) {
     if (!Files.exists(idsDir)) {
       return ImmutableSet.of();
     }
     try (Stream<Path> files = Files.list(idsDir)) {
       return files
-          .filter(path -> path.toString().endsWith(ID_EXTENSION))
+          .filter(
+              path -> {
+                try {
+                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
+                } catch (IllegalArgumentException e) {
+                  return false;
+                }
+              })
           .map(Path::getFileName)
           .map(Path::toString)
+          .map(FileBasedStorage::fromBase64)
           .map(
               nameWithExtension ->
                   nameWithExtension.substring(
@@ -81,7 +94,8 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   protected @Nonnull Path getAnalysisIdPath(String analysis, NetworkId networkId) {
-    return getAnalysisIdsDir(networkId).resolve(String.format("%s%s", analysis, ID_EXTENSION));
+    return getAnalysisIdsDir(networkId)
+        .resolve(toBase64(String.format("%s%s", analysis, ID_EXTENSION)));
   }
 
   protected @Nonnull Path getAnalysisIdsDir(NetworkId networkId) {
@@ -134,7 +148,7 @@ public class FileBasedIdResolver implements IdResolver {
 
   protected @Nonnull Path getIssueSettingsIdPath(String majorIssueType, NetworkId networkId) {
     return getIssueSettingsIdsDir(networkId)
-        .resolve(String.format("%s%s", majorIssueType, ID_EXTENSION));
+        .resolve(toBase64(String.format("%s%s", majorIssueType, ID_EXTENSION)));
   }
 
   protected @Nonnull Path getIssueSettingsIdsDir(NetworkId networkId) {
@@ -151,7 +165,7 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   protected @Nonnull Path getNetworkIdPath(String network) {
-    return getNetworkIdsDir().resolve(String.format("%s%s", network, ID_EXTENSION));
+    return getNetworkIdsDir().resolve(toBase64(String.format("%s%s", network, ID_EXTENSION)));
   }
 
   protected @Nonnull Path getNetworkIdsDir() {
@@ -183,7 +197,7 @@ public class FileBasedIdResolver implements IdResolver {
   protected @Nonnull Path getQuestionIdPath(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
     return getQuestionIdsDir(networkId, analysisId)
-        .resolve(String.format("%s%s", question, ID_EXTENSION));
+        .resolve(toBase64(String.format("%s%s", question, ID_EXTENSION)));
   }
 
   protected @Nonnull Path getQuestionIdsDir(NetworkId networkId, @Nullable AnalysisId analysisId) {
@@ -209,7 +223,7 @@ public class FileBasedIdResolver implements IdResolver {
 
   protected @Nonnull Path getQuestionSettingsIdPath(String questionClassId, NetworkId networkId) {
     return getQuestionSettingsIdsDir(networkId)
-        .resolve(String.format("%s%s", questionClassId, ID_EXTENSION));
+        .resolve(toBase64(String.format("%s%s", questionClassId, ID_EXTENSION)));
   }
 
   protected @Nonnull Path getQuestionSettingsIdsDir(NetworkId networkId) {
@@ -226,7 +240,8 @@ public class FileBasedIdResolver implements IdResolver {
   }
 
   protected @Nonnull Path getSnapshotIdPath(String snapshot, NetworkId networkId) {
-    return getSnapshotIdsDir(networkId).resolve(String.format("%s%s", snapshot, ID_EXTENSION));
+    return getSnapshotIdsDir(networkId)
+        .resolve(toBase64(String.format("%s%s", snapshot, ID_EXTENSION)));
   }
 
   protected @Nonnull Path getSnapshotIdsDir(NetworkId networkId) {

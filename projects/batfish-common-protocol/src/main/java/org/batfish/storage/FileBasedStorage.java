@@ -841,11 +841,11 @@ public final class FileBasedStorage implements StorageProvider {
     return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
   }
 
-  private static @Nonnull String toBase64(String key) {
+  public static @Nonnull String toBase64(String key) {
     return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
-  private static @Nonnull String fromBase64(String key) {
+  public static @Nonnull String fromBase64(String key) {
     return new String(Base64.getUrlDecoder().decode(key), StandardCharsets.UTF_8);
   }
 
