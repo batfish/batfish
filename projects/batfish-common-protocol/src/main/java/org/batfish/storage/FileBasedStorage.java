@@ -1106,7 +1106,11 @@ public final class FileBasedStorage implements StorageProvider {
     Files.deleteIfExists(path);
   }
 
-  private static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
+  /**
+   * Reads file into a String. All FileBasedStorage-family classes should use this function for this
+   * operation.
+   */
+  public static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
     return FileUtils.readFileToString(file.toFile(), charset);
   }
 
@@ -1121,8 +1125,11 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private static void writeStringToFile(Path file, String data, Charset charset)
-      throws IOException {
+  /**
+   * Writes a String to a file. All FileBasedStorage-family classes should use this function for
+   * this operation.
+   */
+  public static void writeStringToFile(Path file, String data, Charset charset) throws IOException {
     Path tmpFile = Files.createTempFile(null, null);
     try {
       FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);

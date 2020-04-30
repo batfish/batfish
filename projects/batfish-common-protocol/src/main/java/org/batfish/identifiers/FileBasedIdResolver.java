@@ -1,7 +1,9 @@
 package org.batfish.identifiers;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.ofNullable;
 import static org.batfish.storage.FileBasedStorage.fromBase64;
+import static org.batfish.storage.FileBasedStorage.readFileToString;
 import static org.batfish.storage.FileBasedStorage.toBase64;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -10,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.hash.Hashing;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -19,7 +21,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
@@ -46,8 +47,16 @@ public class FileBasedIdResolver implements IdResolver {
 
   private static final String RELPATH_SNAPSHOT_IDS = "snapshot_ids";
 
+  private static @Nonnull String readIdFile(Path file) {
+    try {
+      return readFileToString(file, UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   private static @Nonnull String hash(String input) {
-    return Hashing.murmur3_128().hashString(input, StandardCharsets.UTF_8).toString();
+    return Hashing.murmur3_128().hashString(input, UTF_8).toString();
   }
 
   @VisibleForTesting
@@ -90,7 +99,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent analysis %s", analysis));
     }
-    return new AnalysisId(CommonUtil.readFile(getAnalysisIdPath(analysis, networkId)));
+    return new AnalysisId(readIdFile(getAnalysisIdPath(analysis, networkId)));
   }
 
   protected @Nonnull Path getAnalysisIdPath(String analysis, NetworkId networkId) {
@@ -142,8 +151,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-configured majorIssueType %s", majorIssueType));
     }
-    return new IssueSettingsId(
-        CommonUtil.readFile(getIssueSettingsIdPath(majorIssueType, networkId)));
+    return new IssueSettingsId(readIdFile(getIssueSettingsIdPath(majorIssueType, networkId)));
   }
 
   protected @Nonnull Path getIssueSettingsIdPath(String majorIssueType, NetworkId networkId) {
@@ -161,7 +169,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent network %s", network));
     }
-    return new NetworkId(CommonUtil.readFile(getNetworkIdPath(network)));
+    return new NetworkId(readIdFile(getNetworkIdPath(network)));
   }
 
   protected @Nonnull Path getNetworkIdPath(String network) {
@@ -177,7 +185,7 @@ public class FileBasedIdResolver implements IdResolver {
     if (!hasNetworkNodeRolesId(networkId)) {
       throw new IllegalArgumentException("No assigned node-roles ID");
     }
-    return new NodeRolesId(CommonUtil.readFile(getNetworkNodeRolesIdPath(networkId)));
+    return new NodeRolesId(readIdFile(getNetworkNodeRolesIdPath(networkId)));
   }
 
   protected @Nonnull Path getNetworkNodeRolesIdPath(NetworkId networkId) {
@@ -191,7 +199,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent question '%s'", question));
     }
-    return new QuestionId(CommonUtil.readFile(getQuestionIdPath(question, networkId, analysisId)));
+    return new QuestionId(readIdFile(getQuestionIdPath(question, networkId, analysisId)));
   }
 
   protected @Nonnull Path getQuestionIdPath(
@@ -218,7 +226,7 @@ public class FileBasedIdResolver implements IdResolver {
           String.format("No ID assigned to non-configured questionClassId '%s'", questionClassId));
     }
     return new QuestionSettingsId(
-        CommonUtil.readFile(getQuestionSettingsIdPath(questionClassId, networkId)));
+        readIdFile(getQuestionSettingsIdPath(questionClassId, networkId)));
   }
 
   protected @Nonnull Path getQuestionSettingsIdPath(String questionClassId, NetworkId networkId) {
@@ -236,7 +244,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent snapshot '%s'", snapshot));
     }
-    return new SnapshotId(CommonUtil.readFile(getSnapshotIdPath(snapshot, networkId)));
+    return new SnapshotId(readIdFile(getSnapshotIdPath(snapshot, networkId)));
   }
 
   protected @Nonnull Path getSnapshotIdPath(String snapshot, NetworkId networkId) {

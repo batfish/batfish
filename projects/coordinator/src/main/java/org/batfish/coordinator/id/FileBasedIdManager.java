@@ -1,13 +1,19 @@
 package org.batfish.coordinator.id;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.storage.FileBasedStorage.writeStringToFile;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.FileBasedIdResolver;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -31,11 +37,27 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
     super(baseDir);
   }
 
+  private static void writeIdFile(Path file, Id id) {
+    try {
+      writeStringToFile(file, id.getId(), UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static void deleteIdFile(Path file) {
+    try {
+      Files.delete(file);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   @Override
   public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
     Path idFile = getAnalysisIdPath(analysis, networkId);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, analysisId.getId());
+    writeIdFile(idFile, analysisId);
   }
 
   @Override
@@ -43,21 +65,21 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
       String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
     Path idFile = getIssueSettingsIdPath(majorIssueType, networkId);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, issueSettingsId.getId());
+    writeIdFile(idFile, issueSettingsId);
   }
 
   @Override
   public void assignNetwork(String network, NetworkId networkId) {
     Path idFile = getNetworkIdPath(network);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, networkId.getId());
+    writeIdFile(idFile, networkId);
   }
 
   @Override
   public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
     Path idFile = getNetworkNodeRolesIdPath(networkId);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, networkNodeRolesId.getId());
+    writeIdFile(idFile, networkNodeRolesId);
   }
 
   @Override
@@ -65,7 +87,7 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
       String question, NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
     Path idFile = getQuestionIdPath(question, networkId, analysisId);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, questionId.getId());
+    writeIdFile(idFile, questionId);
   }
 
   @Override
@@ -73,35 +95,35 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
       String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
     Path idFile = getQuestionSettingsIdPath(questionClassId, networkId);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, questionSettingsId.getId());
+    writeIdFile(idFile, questionSettingsId);
   }
 
   @Override
   public void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId) {
     Path idFile = getSnapshotIdPath(snapshot, networkId);
     idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, snapshotId.getId());
+    writeIdFile(idFile, snapshotId);
   }
 
   @Override
   public void deleteAnalysis(String analysis, NetworkId networkId) {
-    CommonUtil.delete(getAnalysisIdPath(analysis, networkId));
+    deleteIdFile(getAnalysisIdPath(analysis, networkId));
   }
 
   @Override
   public void deleteNetwork(String network) {
-    CommonUtil.delete(getNetworkIdPath(network));
+    deleteIdFile(getNetworkIdPath(network));
   }
 
   @Override
   public void deleteQuestion(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    CommonUtil.delete(getQuestionIdPath(question, networkId, analysisId));
+    deleteIdFile(getQuestionIdPath(question, networkId, analysisId));
   }
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    CommonUtil.delete(getSnapshotIdPath(snapshot, networkId));
+    deleteIdFile(getSnapshotIdPath(snapshot, networkId));
   }
 
   @Override
