@@ -359,11 +359,12 @@ public class WorkMgr extends AbstractCoordinator {
           assigned = true;
           Span postAssignmentSpan =
               GlobalTracer.get().buildSpan("Post-assignment task operations").start();
-          try (Scope postAssignmentScope = GlobalTracer.get().scopeManager().activate(span)) {
+          try (Scope postAssignmentScope =
+              GlobalTracer.get().scopeManager().activate(postAssignmentSpan)) {
             assert postAssignmentScope != null;
             work.setPostAssignmentContext(postAssignmentSpan.context());
           } finally {
-            span.finish();
+            postAssignmentSpan.finish();
           }
         }
       }

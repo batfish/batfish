@@ -768,6 +768,12 @@
       </dependency>
 
       <dependency>
+        <groupId>io.jaegertracing</groupId>
+        <artifactId>jaeger-thrift</artifactId>
+        <version>${jaeger.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
         <version>${beanutils.version}</version>
