@@ -84,27 +84,18 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: ":mvn: PMD"
-    depends_on:
-      - format
-      - template
-    command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
-    plugins:
-      - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
-          always-pull: true
 EOF
 
 ###### Ensure the code still compiles with Bazel
 cat <<EOF
-  - label: ":bazel: Bazel"
+  - label: ":bazel: Bazel build and test"
     depends_on:
       - format
       - template
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
-      - "bazel build -- //..."
+      - "bazel test -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
