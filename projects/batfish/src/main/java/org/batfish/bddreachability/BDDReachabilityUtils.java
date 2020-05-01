@@ -93,7 +93,7 @@ public final class BDDReachabilityUtils {
   }
 
   @VisibleForTesting
-  static IngressLocation toIngressLocation(StateExpr stateExpr) {
+  public static IngressLocation toIngressLocation(StateExpr stateExpr) {
     checkArgument(stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
 
     if (stateExpr instanceof OriginateVrf) {
