@@ -26,6 +26,7 @@ java_library(
     ],
     runtime_deps = [
         "//projects/question",
+        "@maven//:io_jaegertracing_jaeger_thrift",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
