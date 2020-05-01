@@ -115,6 +115,7 @@ junit_tests(
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/identifiers",
         "//projects/bdd",
         "//projects/symbolic",
         "@maven//:com_google_code_findbugs_jsr305",
