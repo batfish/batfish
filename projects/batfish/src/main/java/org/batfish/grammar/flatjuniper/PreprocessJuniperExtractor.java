@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -52,77 +53,106 @@ public final class PreprocessJuniperExtractor {
       FlatJuniperCombinedParser parser,
       Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("FlatJuniper::Deleter").startActive()) {
-      assert span != null; // avoid unused warning
+    Span deleterSpan = GlobalTracer.get().buildSpan("FlatJuniper::Deleter").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(deleterSpan)) {
+      assert scope != null; // avoid unused warning
       Deleter d = new Deleter();
       walker.walk(d, tree);
+    } finally {
+      deleterSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::DeactivateTreeBuilder").startActive()) {
-      assert span != null; // avoid unused warning
+    Span treeBuilderSpan =
+        GlobalTracer.get().buildSpan("FlatJuniper::DeactivateTreeBuilder").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(treeBuilderSpan)) {
+      assert scope != null; // avoid unused warning
       DeactivateTreeBuilder dtb = new DeactivateTreeBuilder(hierarchy);
       walker.walk(dtb, tree);
+    } finally {
+      treeBuilderSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::DeactivateLinePruner").startActive()) {
-      assert span != null; // avoid unused warning
+    Span linePrunerSpan = GlobalTracer.get().buildSpan("FlatJuniper::DeactivateLinePruner").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(linePrunerSpan)) {
+      assert scope != null; // avoid unused warning
       DeactivateLinePruner dp = new DeactivateLinePruner();
       walker.walk(dp, tree);
+    } finally {
+      linePrunerSpan.finish();
     }
     DeactivatedLinePruner dlp = new DeactivatedLinePruner(hierarchy);
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::DeactivatedLinePruner").startActive()) {
-      assert span != null; // avoid unused warning
+    Span dlpSpan = GlobalTracer.get().buildSpan("FlatJuniper::DeactivatedLinePruner").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(dlpSpan)) {
+      assert scope != null; // avoid unused warning
       walker.walk(dlp, tree);
+    } finally {
+      dlpSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").startActive()) {
-      assert span != null; // avoid unused warning
+    Span treeSpan = GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(treeSpan)) {
+      assert scope != null; // avoid unused warning
       InitialTreeBuilder tb = new InitialTreeBuilder(hierarchy);
       walker.walk(tb, tree);
+    } finally {
+      treeSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::GroupTreeBuilder").startActive()) {
-      assert span != null; // avoid unused warning
+    Span groupTreeSpan = GlobalTracer.get().buildSpan("FlatJuniper::GroupTreeBuilder").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(groupTreeSpan)) {
+      assert scope != null; // avoid unused warning
       GroupTreeBuilder gb = new GroupTreeBuilder(parser, hierarchy);
       walker.walk(gb, tree);
+    } finally {
+      groupTreeSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::ApplyGroupsApplicator").startActive()) {
-      assert span != null; // avoid unused warning
+    Span applicatorSpan =
+        GlobalTracer.get().buildSpan("FlatJuniper::ApplyGroupsApplicator").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(applicatorSpan)) {
+      assert scope != null; // avoid unused warning
       ApplyGroupsApplicator hb;
       do {
         hb = new ApplyGroupsApplicator(hierarchy, w);
         walker.walk(hb, tree);
       } while (hb.getChanged());
+    } finally {
+      applicatorSpan.finish();
     }
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("FlatJuniper::GroupPruner").startActive()) {
-      assert span != null; // avoid unused warning
+    Span prunerSpan = GlobalTracer.get().buildSpan("FlatJuniper::GroupPruner").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(prunerSpan)) {
+      assert scope != null; // avoid unused warning
       GroupPruner gp = new GroupPruner();
       walker.walk(gp, tree);
+    } finally {
+      prunerSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::WildcardApplicator").startActive()) {
-      assert span != null; // avoid unused warning
+    Span wildcardAppSpan = GlobalTracer.get().buildSpan("FlatJuniper::WildcardApplicator").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(wildcardAppSpan)) {
+      assert scope != null; // avoid unused warning
       WildcardApplicator wa = new WildcardApplicator(hierarchy);
       walker.walk(wa, tree);
+    } finally {
+      wildcardAppSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::WildcardPruner").startActive()) {
-      assert span != null; // avoid unused warning
+    Span wdPrunerSpan = GlobalTracer.get().buildSpan("FlatJuniper::WildcardPruner").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(wdPrunerSpan)) {
+      assert scope != null; // avoid unused warning
       WildcardPruner wp = new WildcardPruner();
       walker.walk(wp, tree);
+    } finally {
+      wdPrunerSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::DeactivatedLinePruner again").startActive()) {
-      assert span != null; // avoid unused warning
+    Span prunerAgainSpan =
+        GlobalTracer.get().buildSpan("FlatJuniper::DeactivatedLinePruner again").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(prunerAgainSpan)) {
+      assert scope != null; // avoid unused warning
       walker.walk(dlp, tree);
+    } finally {
+      prunerAgainSpan.finish();
     }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::ApplyPathApplicator").startActive()) {
-      assert span != null; // avoid unused warning
+    Span apApplictorSpan = GlobalTracer.get().buildSpan("FlatJuniper::ApplyPathApplicator").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(applicatorSpan)) {
+      assert scope != null; // avoid unused warning
       ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, w);
       walker.walk(ap, tree);
+    } finally {
+      apApplictorSpan.finish();
     }
   }
 
@@ -149,11 +179,13 @@ public final class PreprocessJuniperExtractor {
   public void processParseTree(ParserRuleContext tree) {
     preprocess(tree, new Hierarchy(), _text, _parser, _w);
     Hierarchy finalHierarchy = new Hierarchy();
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       InitialTreeBuilder tb = new InitialTreeBuilder(finalHierarchy);
       new BatfishParseTreeWalker(_parser).walk(tb, tree);
+    } finally {
+      span.finish();
     }
     _preprocessedConfigurationText = finalHierarchy.toSetLines(HEADER);
   }

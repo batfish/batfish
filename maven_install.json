@@ -1,7 +1,9 @@
 {
     "dependency_tree": {
         "conflict_resolution": {
-            "com.google.errorprone:error_prone_annotations:2.3.1": "com.google.errorprone:error_prone_annotations:2.3.2"
+            "com.google.errorprone:error_prone_annotations:2.3.1": "com.google.errorprone:error_prone_annotations:2.3.2",
+            "com.squareup.okhttp3:okhttp:3.14.8": "com.squareup.okhttp3:okhttp:4.2.2",
+            "org.slf4j:slf4j-api:1.7.25": "org.slf4j:slf4j-api:1.7.28"
         },
         "dependencies": [
             {
@@ -525,32 +527,32 @@
                 "sha256": "1c9e85e272d0708c6a591dc74828c71603053b48cc75ae83cce56912a2aa063b"
             },
             {
-                "coord": "com.google.code.gson:gson:2.8.5",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar",
+                "coord": "com.google.code.gson:gson:2.8.6",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar"
+                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar"
                 ],
-                "sha256": "233a0149fc365c9f6edbd683cfe266b19bdc773be98eabdaf6b3c924b48e7d81"
+                "sha256": "c8fb4839054d280b3033f800d1f5a97de2f028eb8ba2eb458ad287e536f3f25f"
             },
             {
-                "coord": "com.google.code.gson:gson:jar:sources:2.8.5",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5-sources.jar",
+                "coord": "com.google.code.gson:gson:jar:sources:2.8.6",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6-sources.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5-sources.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5-sources.jar"
+                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6-sources.jar"
                 ],
-                "sha256": "512b4bf6927f4864acc419b8c5109c23361c30ed1f5798170248d33040de068e"
+                "sha256": "da4d787939dc8de214724a20d88614b70ef8c3a4931d9c694300b5d9098ed9bc"
             },
             {
                 "coord": "com.google.errorprone:error_prone_annotations:2.3.2",
@@ -838,184 +840,92 @@
                 "sha256": "5d80043f522ff1ecb2d2c726ea7805f678a559cf40dd100460834637373b3f5a"
             },
             {
-                "coord": "com.squareup.okhttp3:okhttp:3.14.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar",
+                "coord": "com.squareup.okhttp3:okhttp:4.2.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.2.2/okhttp-4.2.2.jar",
                 "directDependencies": [
-                    "com.squareup.okio:okio:1.17.2"
+                    "com.squareup.okio:okio:2.2.2",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
                 ],
                 "dependencies": [
-                    "com.squareup.okio:okio:1.17.2"
+                    "org.jetbrains:annotations:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.3.50",
+                    "com.squareup.okio:okio:2.2.2",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.50"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.2.2/okhttp-4.2.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.2.2/okhttp-4.2.2.jar"
                 ],
-                "sha256": "4b92f68c881f3d3a4445297eed9d1fe26ce97194b37e5269f75c9952bd0cb0a3"
+                "sha256": "5064182cff40b100ce57fbf3ce985e12e38cf4433724e81b175c1843eaecbb75"
             },
             {
-                "coord": "com.squareup.okhttp3:okhttp:jar:sources:3.14.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar",
+                "coord": "com.squareup.okhttp3:okhttp:jar:sources:4.2.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.2.2/okhttp-4.2.2-sources.jar",
                 "directDependencies": [
-                    "com.squareup.okio:okio:jar:sources:1.17.2"
+                    "com.squareup.okio:okio:jar:sources:2.2.2",
+                    "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.3.50"
                 ],
                 "dependencies": [
-                    "com.squareup.okio:okio:jar:sources:1.17.2"
+                    "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.3.50",
+                    "com.squareup.okio:okio:jar:sources:2.2.2",
+                    "org.jetbrains:annotations:jar:sources:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:jar:sources:1.3.50"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.2.2/okhttp-4.2.2-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/4.2.2/okhttp-4.2.2-sources.jar"
                 ],
-                "sha256": "b6100960c6a67794a71e16127ec30be37a307ae9992ca9a95ffd545f888ae247"
+                "sha256": "7c93b7255e61963df942722515af2b06c8e9de259c68098fd166ece3d0c1c081"
             },
             {
-                "coord": "com.squareup.okio:okio:1.17.2",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "exclusions": [
-                    "org.hamcrest:hamcrest-core"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar"
-                ],
-                "sha256": "f80ce42d2ffac47ad4c47e1d6f980d604d247ceb1a886705cf4581ab0c9fe2b8"
-            },
-            {
-                "coord": "com.squareup.okio:okio:jar:sources:1.17.2",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2-sources.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "exclusions": [
-                    "org.hamcrest:hamcrest-core"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2-sources.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/1.17.2/okio-1.17.2-sources.jar"
-                ],
-                "sha256": "f96949004bdc5951c27256b96c33667d3dbd5369c467a8fa0d4157dba98b4252"
-            },
-            {
-                "coord": "com.uber.jaeger:jaeger-core:0.21.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0.jar",
+                "coord": "com.squareup.okio:okio:2.2.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/2.2.2/okio-2.2.2.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "com.uber.jaeger:jaeger-thrift:0.21.0",
-                    "org.slf4j:slf4j-api:1.7.25",
-                    "com.squareup.okhttp3:okhttp:3.14.8",
-                    "com.google.code.gson:gson:2.8.5",
-                    "io.opentracing:opentracing-util:0.30.0"
+                    "com.squareup.okio:okio:2.2.2",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "commons-logging:commons-logging:1.2",
-                    "org.apache.httpcomponents:httpcore:4.3.3",
-                    "com.uber.jaeger:jaeger-thrift:0.21.0",
-                    "io.opentracing:opentracing-noop:0.30.0",
-                    "org.apache.httpcomponents:httpclient:4.3.6",
-                    "org.slf4j:slf4j-api:1.7.25",
-                    "com.squareup.okhttp3:okhttp:3.14.8",
-                    "org.apache.thrift:libthrift:0.9.2",
-                    "com.google.code.gson:gson:2.8.5",
-                    "com.squareup.okio:okio:1.17.2",
-                    "io.opentracing:opentracing-util:0.30.0",
-                    "commons-codec:commons-codec:1.6"
+                    "org.jetbrains:annotations:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.3.50",
+                    "com.squareup.okio:okio:2.2.2",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.50"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/2.2.2/okio-2.2.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/2.2.2/okio-2.2.2.jar"
                 ],
-                "sha256": "bd6506c790993f5b5138cc1aa1f7a75bb20ce8fd6645e9227ca0897f4360c91c"
+                "sha256": "e58c97406a6bb1138893750299ac63c6aa04b38b6b49eae1bfcad1a63ef9ba1b"
             },
             {
-                "coord": "com.uber.jaeger:jaeger-core:jar:sources:0.21.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0-sources.jar",
+                "coord": "com.squareup.okio:okio:jar:sources:2.2.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/okio/okio/2.2.2/okio-2.2.2-sources.jar",
                 "directDependencies": [
-                    "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                    "com.google.code.gson:gson:jar:sources:2.8.5",
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "com.squareup.okhttp3:okhttp:jar:sources:3.14.8",
-                    "io.opentracing:opentracing-util:jar:sources:0.30.0",
-                    "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0"
+                    "com.squareup.okio:okio:jar:sources:2.2.2",
+                    "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.3.50"
                 ],
                 "dependencies": [
-                    "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                    "org.apache.httpcomponents:httpclient:jar:sources:4.3.6",
-                    "org.apache.thrift:libthrift:jar:sources:0.9.2",
-                    "commons-logging:commons-logging:jar:sources:1.2",
-                    "com.google.code.gson:gson:jar:sources:2.8.5",
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "org.apache.httpcomponents:httpcore:jar:sources:4.3.3",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0",
-                    "com.squareup.okhttp3:okhttp:jar:sources:3.14.8",
-                    "io.opentracing:opentracing-util:jar:sources:0.30.0",
-                    "commons-codec:commons-codec:jar:sources:1.6",
-                    "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0",
-                    "com.squareup.okio:okio:jar:sources:1.17.2"
+                    "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.3.50",
+                    "com.squareup.okio:okio:jar:sources:2.2.2",
+                    "org.jetbrains:annotations:jar:sources:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:jar:sources:1.3.50"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0-sources.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/okio/okio/2.2.2/okio-2.2.2-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-core/0.21.0/jaeger-core-0.21.0-sources.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/okio/okio/2.2.2/okio-2.2.2-sources.jar"
                 ],
-                "sha256": "279a90bef2e027fa2da373d1917f089b37f0d7cbc2b4c383b7dcbda22906f657"
-            },
-            {
-                "coord": "com.uber.jaeger:jaeger-thrift:0.21.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0.jar",
-                "directDependencies": [
-                    "org.apache.thrift:libthrift:0.9.2"
-                ],
-                "dependencies": [
-                    "commons-logging:commons-logging:1.2",
-                    "org.apache.httpcomponents:httpcore:4.3.3",
-                    "org.apache.httpcomponents:httpclient:4.3.6",
-                    "org.slf4j:slf4j-api:1.7.25",
-                    "org.apache.thrift:libthrift:0.9.2",
-                    "commons-codec:commons-codec:1.6"
-                ],
-                "exclusions": [
-                    "org.hamcrest:hamcrest-core"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0.jar"
-                ],
-                "sha256": "22128fc46504703c3b282b32e42886d7defa20f495fa29ac31d3b2e791d4645b"
-            },
-            {
-                "coord": "com.uber.jaeger:jaeger-thrift:jar:sources:0.21.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0-sources.jar",
-                "directDependencies": [
-                    "org.apache.thrift:libthrift:jar:sources:0.9.2"
-                ],
-                "dependencies": [
-                    "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                    "org.apache.httpcomponents:httpclient:jar:sources:4.3.6",
-                    "org.apache.thrift:libthrift:jar:sources:0.9.2",
-                    "commons-logging:commons-logging:jar:sources:1.2",
-                    "org.apache.httpcomponents:httpcore:jar:sources:4.3.3",
-                    "commons-codec:commons-codec:jar:sources:1.6"
-                ],
-                "exclusions": [
-                    "org.hamcrest:hamcrest-core"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0-sources.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/uber/jaeger/jaeger-thrift/0.21.0/jaeger-thrift-0.21.0-sources.jar"
-                ],
-                "sha256": "9bee2bc40e97275d70619cbcfde2211b4d1a1da817b68cf2e901de4ec69cd8f8"
+                "sha256": "ecf3a2b274a5c5d6f808b80c39feb6d52011c3885200070471232de64bfbcf2c"
             },
             {
                 "coord": "com.vaadin.external.google:android-json:0.0.20131108.vaadin1",
@@ -1262,278 +1172,404 @@
                 "sha256": "c8a541edf4a7d340a0efa51c4d20ee6bd3619436e716a963af8218a5c8920486"
             },
             {
-                "coord": "io.opentracing.contrib:opentracing-concurrent:0.0.1",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1.jar",
+                "coord": "io.jaegertracing:jaeger-core:1.2.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/jaegertracing/jaeger-core/1.2.0/jaeger-core-1.2.0.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "com.google.code.gson:gson:2.8.6",
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-util:0.33.0",
+                    "org.slf4j:slf4j-api:1.7.28"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "org.slf4j:slf4j-api:1.7.28",
+                    "com.google.code.gson:gson:2.8.6",
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-util:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1.jar",
+                "url": "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-core/1.2.0/jaeger-core-1.2.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1.jar"
+                    "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-core/1.2.0/jaeger-core-1.2.0.jar"
                 ],
-                "sha256": "39b16086190e5c163ead48edd8f1fa45772cf577ca8c5c9d17ffd747d55647da"
+                "sha256": "55706e5c01b25147eabb47754e7b89d09de616ac53b5ae0679d65907c28a724a"
             },
             {
-                "coord": "io.opentracing.contrib:opentracing-concurrent:jar:sources:0.0.1",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1-sources.jar",
+                "coord": "io.jaegertracing:jaeger-core:jar:sources:1.2.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/jaegertracing/jaeger-core/1.2.0/jaeger-core-1.2.0-sources.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "com.google.code.gson:gson:jar:sources:2.8.6",
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0",
+                    "com.google.code.gson:gson:jar:sources:2.8.6",
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-core/1.2.0/jaeger-core-1.2.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.0.1/opentracing-concurrent-0.0.1-sources.jar"
+                    "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-core/1.2.0/jaeger-core-1.2.0-sources.jar"
                 ],
-                "sha256": "f760c5071fd53d4b68b7992177e631c6b0710ab8577f563365748b5e2cf00c8f"
+                "sha256": "9905c4f16ec81b9c7f6c1c018690beeaacc1aef02e4a2e76f4c25a07a61411d8"
             },
             {
-                "coord": "io.opentracing.contrib:opentracing-jaxrs2:0.0.9",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9.jar",
+                "coord": "io.jaegertracing:jaeger-thrift:1.2.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/jaegertracing/jaeger-thrift/1.2.0/jaeger-thrift-1.2.0.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing.contrib:opentracing-concurrent:0.0.1",
-                    "io.opentracing.contrib:opentracing-web-servlet-filter:0.0.9"
+                    "com.squareup.okhttp3:okhttp:4.2.2",
+                    "io.jaegertracing:jaeger-core:1.2.0",
+                    "org.apache.thrift:libthrift:0.13.0",
+                    "org.slf4j:slf4j-api:1.7.28"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing.contrib:opentracing-concurrent:0.0.1",
-                    "io.opentracing:opentracing-noop:0.30.0",
-                    "io.opentracing.contrib:opentracing-web-servlet-filter:0.0.9",
-                    "io.opentracing:opentracing-util:0.30.0"
+                    "com.squareup.okio:okio:2.2.2",
+                    "org.slf4j:slf4j-api:1.7.28",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.3.50",
+                    "com.google.code.gson:gson:2.8.6",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.50",
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "org.apache.thrift:libthrift:0.13.0",
+                    "io.opentracing:opentracing-util:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0",
+                    "com.squareup.okhttp3:okhttp:4.2.2",
+                    "org.jetbrains:annotations:13.0",
+                    "io.jaegertracing:jaeger-core:1.2.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9.jar",
+                "url": "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-thrift/1.2.0/jaeger-thrift-1.2.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9.jar"
+                    "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-thrift/1.2.0/jaeger-thrift-1.2.0.jar"
                 ],
-                "sha256": "98be8f937ee8cbf026b16986f1783e489cf4f09ba75717fa6eaa7112f542079b"
+                "sha256": "9d267f9d528333631149777eca3aada4cd6c79562a7a549d388e2433186b7ae0"
             },
             {
-                "coord": "io.opentracing.contrib:opentracing-jaxrs2:jar:sources:0.0.9",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9-sources.jar",
+                "coord": "io.jaegertracing:jaeger-thrift:jar:sources:1.2.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/jaegertracing/jaeger-thrift/1.2.0/jaeger-thrift-1.2.0-sources.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing.contrib:opentracing-concurrent:jar:sources:0.0.1",
-                    "io.opentracing.contrib:opentracing-web-servlet-filter:jar:sources:0.0.9"
+                    "com.squareup.okhttp3:okhttp:jar:sources:4.2.2",
+                    "io.jaegertracing:jaeger-core:jar:sources:1.2.0",
+                    "org.apache.thrift:libthrift:jar:sources:0.13.0",
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
                 ],
                 "dependencies": [
-                    "io.opentracing.contrib:opentracing-concurrent:jar:sources:0.0.1",
-                    "io.opentracing.contrib:opentracing-web-servlet-filter:jar:sources:0.0.9",
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-util:jar:sources:0.30.0"
+                    "com.squareup.okhttp3:okhttp:jar:sources:4.2.2",
+                    "org.jetbrains:annotations:jar:sources:13.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:jar:sources:1.3.50",
+                    "io.jaegertracing:jaeger-core:jar:sources:1.2.0",
+                    "com.squareup.okio:okio:jar:sources:2.2.2",
+                    "com.google.code.gson:gson:jar:sources:2.8.6",
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.3.50",
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                    "org.apache.thrift:libthrift:jar:sources:0.13.0",
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28",
+                    "javax.annotation:javax.annotation-api:jar:sources:1.3.2"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-thrift/1.2.0/jaeger-thrift-1.2.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/0.0.9/opentracing-jaxrs2-0.0.9-sources.jar"
+                    "https://repo1.maven.org/maven2/io/jaegertracing/jaeger-thrift/1.2.0/jaeger-thrift-1.2.0-sources.jar"
                 ],
-                "sha256": "956e28f0a6a66cdaf3ca2a61184f7f2caed19adb418c9a533a6c46f71350f0ab"
+                "sha256": "594f023b9276033a83bc9be20ff5b62412c56057df2770f2c20a4e6cbcf167ed"
             },
             {
-                "coord": "io.opentracing.contrib:opentracing-web-servlet-filter:0.0.9",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9.jar",
+                "coord": "io.opentracing.contrib:opentracing-concurrent:0.4.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.4.0/opentracing-concurrent-0.4.0.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-util:0.30.0"
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-util:0.30.0",
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "io.opentracing:opentracing-noop:0.33.0",
+                    "io.opentracing:opentracing-api:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.4.0/opentracing-concurrent-0.4.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.4.0/opentracing-concurrent-0.4.0.jar"
                 ],
-                "sha256": "73c0d15ae89ca6db88210c4a98b7e6fd7f0feacfa5f0fe1eae19f8df23124abf"
+                "sha256": "261bfc94feecd0f0e7f1443fa9040409ed9a1f7fbe122f34fee0c11ac295cdc5"
             },
             {
-                "coord": "io.opentracing.contrib:opentracing-web-servlet-filter:jar:sources:0.0.9",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9-sources.jar",
+                "coord": "io.opentracing.contrib:opentracing-concurrent:jar:sources:0.4.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.4.0/opentracing-concurrent-0.4.0-sources.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-util:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-util:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.4.0/opentracing-concurrent-0.4.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.0.9/opentracing-web-servlet-filter-0.0.9-sources.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-concurrent/0.4.0/opentracing-concurrent-0.4.0-sources.jar"
                 ],
-                "sha256": "71fdc2a81c026214d7aac5c28304dbfd1f852249090142ed3444c9d675ce3de6"
+                "sha256": "3bdf6c32eaba007277db5157219e3f98aeeb9636c650e09d518441ecdfeb7c14"
             },
             {
-                "coord": "io.opentracing:opentracing-api:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0.jar",
+                "coord": "io.opentracing.contrib:opentracing-jaxrs2:1.0.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/1.0.0/opentracing-jaxrs2-1.0.0.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing.contrib:opentracing-concurrent:0.4.0",
+                    "io.opentracing.contrib:opentracing-web-servlet-filter:0.4.0",
+                    "org.eclipse.microprofile.opentracing:microprofile-opentracing-api:1.3"
+                ],
+                "dependencies": [
+                    "io.opentracing.contrib:opentracing-web-servlet-filter:0.4.0",
+                    "io.opentracing.contrib:opentracing-concurrent:0.4.0",
+                    "org.osgi:org.osgi.annotation.versioning:1.0.0",
+                    "org.eclipse.microprofile.opentracing:microprofile-opentracing-api:1.3",
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-util:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/1.0.0/opentracing-jaxrs2-1.0.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/1.0.0/opentracing-jaxrs2-1.0.0.jar"
+                ],
+                "sha256": "392e96ca07210b6aee2322993780389cb44bd0bdc4aee49b7258cfe7cfa33b13"
+            },
+            {
+                "coord": "io.opentracing.contrib:opentracing-jaxrs2:jar:sources:1.0.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/1.0.0/opentracing-jaxrs2-1.0.0-sources.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing.contrib:opentracing-concurrent:jar:sources:0.4.0",
+                    "io.opentracing.contrib:opentracing-web-servlet-filter:jar:sources:0.4.0",
+                    "org.eclipse.microprofile.opentracing:microprofile-opentracing-api:jar:sources:1.3"
+                ],
+                "dependencies": [
+                    "org.osgi:org.osgi.annotation.versioning:jar:sources:1.0.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0",
+                    "org.eclipse.microprofile.opentracing:microprofile-opentracing-api:jar:sources:1.3",
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                    "io.opentracing.contrib:opentracing-web-servlet-filter:jar:sources:0.4.0",
+                    "io.opentracing.contrib:opentracing-concurrent:jar:sources:0.4.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/1.0.0/opentracing-jaxrs2-1.0.0-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-jaxrs2/1.0.0/opentracing-jaxrs2-1.0.0-sources.jar"
+                ],
+                "sha256": "c2b797708c65bed29173772bec09605e14d3a406f4e56001a0225cf613534cb8"
+            },
+            {
+                "coord": "io.opentracing.contrib:opentracing-web-servlet-filter:0.4.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.4.0/opentracing-web-servlet-filter-0.4.0.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-util:0.33.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-util:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0",
+                    "io.opentracing:opentracing-api:0.33.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.4.0/opentracing-web-servlet-filter-0.4.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.4.0/opentracing-web-servlet-filter-0.4.0.jar"
+                ],
+                "sha256": "4e1ce92d88ba2d60f8614acc7f803d64b38282499ba0046bece07a74e429d58a"
+            },
+            {
+                "coord": "io.opentracing.contrib:opentracing-web-servlet-filter:jar:sources:0.4.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.4.0/opentracing-web-servlet-filter-0.4.0-sources.jar",
+                "directDependencies": [
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0"
+                ],
+                "dependencies": [
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.4.0/opentracing-web-servlet-filter-0.4.0-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/opentracing/contrib/opentracing-web-servlet-filter/0.4.0/opentracing-web-servlet-filter-0.4.0-sources.jar"
+                ],
+                "sha256": "e24c42abc9f0843b45f33291ce7ad7f1fb09e558e754602de61175801e20a01d"
+            },
+            {
+                "coord": "io.opentracing:opentracing-api:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-api/0.33.0/opentracing-api-0.33.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.33.0/opentracing-api-0.33.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.33.0/opentracing-api-0.33.0.jar"
                 ],
-                "sha256": "c04b450e587879b8cfd5f4ec6f93d430c167bde8e30495b6adc0562830868636"
+                "sha256": "4534541b8e9f41a17bcdf1d09affe45b98c13574db6e529a93a58264b9472c7c"
             },
             {
-                "coord": "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0-sources.jar",
+                "coord": "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-api/0.33.0/opentracing-api-0.33.0-sources.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.33.0/opentracing-api-0.33.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.30.0/opentracing-api-0.30.0-sources.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-api/0.33.0/opentracing-api-0.33.0-sources.jar"
                 ],
-                "sha256": "f0082d97fe0f431e2e27973070cd2d9c50000f9547549413d9aa476ca5865c96"
+                "sha256": "fcecb13dc6a852079886de440fd1d24c9bc19e862f653b207cba17e3b4050961"
             },
             {
-                "coord": "io.opentracing:opentracing-mock:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0.jar",
+                "coord": "io.opentracing:opentracing-mock:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.33.0/opentracing-mock-0.33.0.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0",
+                    "io.opentracing:opentracing-util:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "io.opentracing:opentracing-util:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0",
+                    "io.opentracing:opentracing-api:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.33.0/opentracing-mock-0.33.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.33.0/opentracing-mock-0.33.0.jar"
                 ],
-                "sha256": "0ff34d32b9239fc90cc4efa35ae60915c9b4027804f83a51737e3441cb3e52f1"
+                "sha256": "295f55eb6d29cd99b8b45a46eab47fb3098f65fc302668d9ea0294377d467c9a"
             },
             {
-                "coord": "io.opentracing:opentracing-mock:jar:sources:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0-sources.jar",
+                "coord": "io.opentracing:opentracing-mock:jar:sources:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.33.0/opentracing-mock-0.33.0-sources.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.33.0/opentracing-mock-0.33.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.30.0/opentracing-mock-0.30.0-sources.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-mock/0.33.0/opentracing-mock-0.33.0-sources.jar"
                 ],
-                "sha256": "84cfb7fabe61a4c921f958962665615590578dafe3f26ad66285b06fc7a816b3"
+                "sha256": "0fa3f2cc4b700b95bb4cdeafc1a7555a8ae0b3b9509f676c03e2756a3152d92e"
             },
             {
-                "coord": "io.opentracing:opentracing-noop:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0.jar",
+                "coord": "io.opentracing:opentracing-noop:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.33.0/opentracing-noop-0.33.0.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0"
+                    "io.opentracing:opentracing-api:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:0.30.0"
+                    "io.opentracing:opentracing-api:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.33.0/opentracing-noop-0.33.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.33.0/opentracing-noop-0.33.0.jar"
                 ],
-                "sha256": "53017404723b06c93c327a8e88e751814faab41e7c7d6ebccedd04be9b9916ee"
+                "sha256": "8529f91e10047b2b94cb21b50086a3d3913fa4da43594eddbd9ecf5917efe040"
             },
             {
-                "coord": "io.opentracing:opentracing-noop:jar:sources:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0-sources.jar",
+                "coord": "io.opentracing:opentracing-noop:jar:sources:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.33.0/opentracing-noop-0.33.0-sources.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.33.0/opentracing-noop-0.33.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.30.0/opentracing-noop-0.30.0-sources.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-noop/0.33.0/opentracing-noop-0.33.0-sources.jar"
                 ],
-                "sha256": "2f29caac75dc834437c11e3e2c5e5723171cb1a3af58223d661903ff84575e9f"
+                "sha256": "f92d87a877b4466a7e7913d3d8bb74902af0630924d6963609fca813e36dc505"
             },
             {
-                "coord": "io.opentracing:opentracing-util:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0.jar",
+                "coord": "io.opentracing:opentracing-util:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-util/0.33.0/opentracing-util-0.33.0.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "io.opentracing:opentracing-api:0.33.0",
+                    "io.opentracing:opentracing-noop:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:0.30.0",
-                    "io.opentracing:opentracing-noop:0.30.0"
+                    "io.opentracing:opentracing-noop:0.33.0",
+                    "io.opentracing:opentracing-api:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.33.0/opentracing-util-0.33.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.33.0/opentracing-util-0.33.0.jar"
                 ],
-                "sha256": "0dcdb996c8e2f739b5fe6a7a5f789696e755fbc6bb9bec7ee5e48cbe2ac8225f"
+                "sha256": "22c5dfbb9b0e2f08f7371bf3d68372c7604c804d3129499b43f37a8877c4379e"
             },
             {
-                "coord": "io.opentracing:opentracing-util:jar:sources:0.30.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0-sources.jar",
+                "coord": "io.opentracing:opentracing-util:jar:sources:0.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/opentracing/opentracing-util/0.33.0/opentracing-util-0.33.0-sources.jar",
                 "directDependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0"
                 ],
                 "dependencies": [
-                    "io.opentracing:opentracing-api:jar:sources:0.30.0",
-                    "io.opentracing:opentracing-noop:jar:sources:0.30.0"
+                    "io.opentracing:opentracing-api:jar:sources:0.33.0",
+                    "io.opentracing:opentracing-noop:jar:sources:0.33.0"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0-sources.jar",
+                "url": "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.33.0/opentracing-util-0.33.0-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.30.0/opentracing-util-0.30.0-sources.jar"
+                    "https://repo1.maven.org/maven2/io/opentracing/opentracing-util/0.33.0/opentracing-util-0.33.0-sources.jar"
                 ],
-                "sha256": "d5442158e25de16a7fdc840ff233916ba3ed1bf521c15c0e73f96ec34ab366dd"
+                "sha256": "020f8456bd1c6569c68352562e88cb7af27877a9a9b277c62f36b63237434888"
             },
             {
                 "coord": "javax.activation:activation:1.1",
@@ -1794,8 +1830,8 @@
                     "org.antlr:antlr4-runtime:4.7.2",
                     "commons-io:commons-io:2.6",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "com.google.code.gson:gson:2.8.6",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
-                    "com.google.code.gson:gson:2.8.5",
                     "net.java.dev.javacc:javacc:5.0",
                     "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1",
@@ -1805,8 +1841,8 @@
                     "org.antlr:antlr4-runtime:4.7.2",
                     "commons-io:commons-io:2.6",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "com.google.code.gson:gson:2.8.6",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
-                    "com.google.code.gson:gson:2.8.5",
                     "net.java.dev.javacc:javacc:5.0",
                     "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1",
@@ -1830,8 +1866,8 @@
                     "org.apache.commons:commons-lang3:jar:sources:3.9",
                     "commons-io:commons-io:jar:sources:2.6",
                     "net.sourceforge.saxon:saxon:jar:sources:9.1.0.8",
+                    "com.google.code.gson:gson:jar:sources:2.8.6",
                     "org.ow2.asm:asm:jar:sources:7.1",
-                    "com.google.code.gson:gson:jar:sources:2.8.5",
                     "com.beust:jcommander:jar:sources:1.72"
                 ],
                 "dependencies": [
@@ -1840,8 +1876,8 @@
                     "org.apache.commons:commons-lang3:jar:sources:3.9",
                     "commons-io:commons-io:jar:sources:2.6",
                     "net.sourceforge.saxon:saxon:jar:sources:9.1.0.8",
+                    "com.google.code.gson:gson:jar:sources:2.8.6",
                     "org.ow2.asm:asm:jar:sources:7.1",
-                    "com.google.code.gson:gson:jar:sources:2.8.5",
                     "com.beust:jcommander:jar:sources:1.72"
                 ],
                 "exclusions": [
@@ -1870,8 +1906,8 @@
                     "commons-io:commons-io:2.6",
                     "net.sourceforge.pmd:pmd-core:6.14.0",
                     "net.sourceforge.saxon:saxon:9.1.0.8",
+                    "com.google.code.gson:gson:2.8.6",
                     "net.sourceforge.saxon:saxon:jar:dom:9.1.0.8",
-                    "com.google.code.gson:gson:2.8.5",
                     "net.java.dev.javacc:javacc:5.0",
                     "org.apache.commons:commons-lang3:3.9",
                     "org.ow2.asm:asm:7.1",
@@ -1903,8 +1939,8 @@
                     "org.apache.commons:commons-lang3:jar:sources:3.9",
                     "commons-io:commons-io:jar:sources:2.6",
                     "net.sourceforge.saxon:saxon:jar:sources:9.1.0.8",
+                    "com.google.code.gson:gson:jar:sources:2.8.6",
                     "org.ow2.asm:asm:jar:sources:7.1",
-                    "com.google.code.gson:gson:jar:sources:2.8.5",
                     "com.beust:jcommander:jar:sources:1.72",
                     "net.sourceforge.pmd:pmd-core:jar:sources:6.14.0"
                 ],
@@ -2196,28 +2232,48 @@
                 "sha256": "6135f9e03308adcb48e1e3fd4257d57045b70d0eda1ee976d35951136714e057"
             },
             {
-                "coord": "org.apache.thrift:libthrift:0.9.2",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar",
+                "coord": "org.apache.thrift:libthrift:0.13.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/thrift/libthrift/0.13.0/libthrift-0.13.0.jar",
                 "directDependencies": [
-                    "org.apache.httpcomponents:httpclient:4.3.6",
-                    "org.apache.httpcomponents:httpcore:4.3.3",
-                    "org.slf4j:slf4j-api:1.7.25"
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.slf4j:slf4j-api:1.7.28"
                 ],
                 "dependencies": [
-                    "commons-logging:commons-logging:1.2",
-                    "org.apache.httpcomponents:httpcore:4.3.3",
-                    "org.apache.httpcomponents:httpclient:4.3.6",
-                    "org.slf4j:slf4j-api:1.7.25",
-                    "commons-codec:commons-codec:1.6"
+                    "javax.annotation:javax.annotation-api:1.3.2",
+                    "org.slf4j:slf4j-api:1.7.28"
                 ],
                 "exclusions": [
+                    "org.apache.httpcomponents:httpcore",
+                    "org.apache.httpcomponents:httpclient",
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.13.0/libthrift-0.13.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar"
+                    "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.13.0/libthrift-0.13.0.jar"
                 ],
-                "sha256": "d7f37db17a5418c151258dd03b604cdfd3e2aa55cdba34528f86a2478c46fe8f"
+                "sha256": "f261ec1cfb7452e25c584cb4440389dffce59a6d38dfe91d12ec790594629b6e"
+            },
+            {
+                "coord": "org.apache.thrift:libthrift:jar:sources:0.13.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/thrift/libthrift/0.13.0/libthrift-0.13.0-sources.jar",
+                "directDependencies": [
+                    "javax.annotation:javax.annotation-api:jar:sources:1.3.2",
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
+                ],
+                "dependencies": [
+                    "javax.annotation:javax.annotation-api:jar:sources:1.3.2",
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
+                ],
+                "exclusions": [
+                    "org.apache.httpcomponents:httpcore",
+                    "org.apache.httpcomponents:httpclient",
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.13.0/libthrift-0.13.0-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/apache/thrift/libthrift/0.13.0/libthrift-0.13.0-sources.jar"
+                ],
+                "sha256": "6e7b54c1b9ba8a4eface827e8757209f7a5248cbd225cc14b1f974aeea79d81d"
             },
             {
                 "coord": "org.checkerframework:checker-qual:2.8.1",
@@ -2342,6 +2398,42 @@
                     "https://repo1.maven.org/maven2/org/eclipse/jgit/org.eclipse.jgit/4.4.1.201607150455-r/org.eclipse.jgit-4.4.1.201607150455-r-sources.jar"
                 ],
                 "sha256": "c9ad79998548090d580bf8f659d7e6cbdc54676a7f3174a9f819cdede5e5eb34"
+            },
+            {
+                "coord": "org.eclipse.microprofile.opentracing:microprofile-opentracing-api:1.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/eclipse/microprofile/opentracing/microprofile-opentracing-api/1.3/microprofile-opentracing-api-1.3.jar",
+                "directDependencies": [
+                    "org.osgi:org.osgi.annotation.versioning:1.0.0"
+                ],
+                "dependencies": [
+                    "org.osgi:org.osgi.annotation.versioning:1.0.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/eclipse/microprofile/opentracing/microprofile-opentracing-api/1.3/microprofile-opentracing-api-1.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/eclipse/microprofile/opentracing/microprofile-opentracing-api/1.3/microprofile-opentracing-api-1.3.jar"
+                ],
+                "sha256": "329f39c4804a0c32ff0b3f8054559e8cf474c883e6ea9bd44bac080833fb619b"
+            },
+            {
+                "coord": "org.eclipse.microprofile.opentracing:microprofile-opentracing-api:jar:sources:1.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/eclipse/microprofile/opentracing/microprofile-opentracing-api/1.3/microprofile-opentracing-api-1.3-sources.jar",
+                "directDependencies": [
+                    "org.osgi:org.osgi.annotation.versioning:jar:sources:1.0.0"
+                ],
+                "dependencies": [
+                    "org.osgi:org.osgi.annotation.versioning:jar:sources:1.0.0"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/eclipse/microprofile/opentracing/microprofile-opentracing-api/1.3/microprofile-opentracing-api-1.3-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/eclipse/microprofile/opentracing/microprofile-opentracing-api/1.3/microprofile-opentracing-api-1.3-sources.jar"
+                ],
+                "sha256": "b8b05aa74b9dfdf16df0a785955895dabffe2123ee15d9b2e03bb1ffe93f02dc"
             },
             {
                 "coord": "org.glassfish.grizzly:grizzly-framework:2.4.3",
@@ -3643,6 +3735,102 @@
                 "sha256": "999ed881671d9e7f5263722c68b870f30f21b76de36a8dd59c0f30cac95d9a10"
             },
             {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.50",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.3.50/kotlin-stdlib-common-1.3.50.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.3.50/kotlin-stdlib-common-1.3.50.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.3.50/kotlin-stdlib-common-1.3.50.jar"
+                ],
+                "sha256": "8ce678e88e4ba018b66dacecf952471e4d7dfee156a8a819760a5a5ff29d323c"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib-common:jar:sources:1.3.50",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.3.50/kotlin-stdlib-common-1.3.50-sources.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.3.50/kotlin-stdlib-common-1.3.50-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.3.50/kotlin-stdlib-common-1.3.50-sources.jar"
+                ],
+                "sha256": "34199658f3ab0b1f50f858e2636371271fa4d783833e6e1b5a0ea3f6d7d3655b"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib:1.3.50",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50.jar",
+                "directDependencies": [
+                    "org.jetbrains:annotations:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.50"
+                ],
+                "dependencies": [
+                    "org.jetbrains:annotations:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.50"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50.jar"
+                ],
+                "sha256": "e6f05746ee0366d0b52825a090fac474dcf44082c9083bbb205bd16976488d6c"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.3.50",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50-sources.jar",
+                "directDependencies": [
+                    "org.jetbrains:annotations:jar:sources:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:jar:sources:1.3.50"
+                ],
+                "dependencies": [
+                    "org.jetbrains:annotations:jar:sources:13.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:jar:sources:1.3.50"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50-sources.jar"
+                ],
+                "sha256": "8452552d2012686eb20466804c8b54c38673040527756f10d2d13e1db8d17380"
+            },
+            {
+                "coord": "org.jetbrains:annotations:13.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+                ],
+                "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"
+            },
+            {
+                "coord": "org.jetbrains:annotations:jar:sources:13.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
+                ],
+                "sha256": "42a5e144b8e81d50d6913d1007b695e62e614705268d8cf9f13dbdc478c2c68e"
+            },
+            {
                 "coord": "org.jgrapht:jgrapht-core:1.3.1",
                 "file": "v1/https/repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.3.1/jgrapht-core-1.3.1.jar",
                 "directDependencies": [
@@ -3789,6 +3977,34 @@
                     "https://repo1.maven.org/maven2/org/lz4/lz4-java/1.6.0/lz4-java-1.6.0-sources.jar"
                 ],
                 "sha256": "db7727c82c150cec38a422b9692f6431150ea2c0c0d0c723bdf7fe6946149041"
+            },
+            {
+                "coord": "org.osgi:org.osgi.annotation.versioning:1.0.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0.jar"
+                ],
+                "sha256": "b299b3ca50b3a57504e131fddd34d5f3e10a581a6c81e74b6d8fba81c6e055a7"
+            },
+            {
+                "coord": "org.osgi:org.osgi.annotation.versioning:jar:sources:1.0.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0-sources.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0-sources.jar"
+                ],
+                "sha256": "7cb84314f59f5c0f0e38d281e87c88762dd00848158f49c4bbc7b053f789600b"
             },
             {
                 "coord": "org.ow2.asm:asm-analysis:7.1",
@@ -4053,41 +4269,41 @@
                 "sha256": "36f15b95de76a67acdc16511d891243e903199462d6ab88813ad3a3c900f605e"
             },
             {
-                "coord": "org.slf4j:slf4j-api:1.7.25",
-                "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar",
+                "coord": "org.slf4j:slf4j-api:1.7.28",
+                "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar",
+                "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"
+                    "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28.jar"
                 ],
-                "sha256": "18c4a0095d5c1da6b817592e767bb23d29dd2f560ad74df75ff3961dbde25b79"
+                "sha256": "fb6e4f67a2a4689e3e713584db17a5d1090c1ebe6eec30e9e0349a6ee118141e"
             },
             {
-                "coord": "org.slf4j:slf4j-api:jar:sources:1.7.25",
-                "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25-sources.jar",
+                "coord": "org.slf4j:slf4j-api:jar:sources:1.7.28",
+                "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28-sources.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25-sources.jar",
+                "url": "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28-sources.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25-sources.jar"
+                    "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.28/slf4j-api-1.7.28-sources.jar"
                 ],
-                "sha256": "c4bc93180a4f0aceec3b057a2514abe04a79f06c174bbed910a2afb227b79366"
+                "sha256": "b1b8bfa4f2709684606001685d09ef905adc1b72ec53444ade90f44bfbcebcff"
             },
             {
                 "coord": "org.slf4j:slf4j-jdk14:1.7.25",
                 "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-jdk14/1.7.25/slf4j-jdk14-1.7.25.jar",
                 "directDependencies": [
-                    "org.slf4j:slf4j-api:1.7.25"
+                    "org.slf4j:slf4j-api:1.7.28"
                 ],
                 "dependencies": [
-                    "org.slf4j:slf4j-api:1.7.25"
+                    "org.slf4j:slf4j-api:1.7.28"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
@@ -4102,10 +4318,10 @@
                 "coord": "org.slf4j:slf4j-jdk14:jar:sources:1.7.25",
                 "file": "v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-jdk14/1.7.25/slf4j-jdk14-1.7.25-sources.jar",
                 "directDependencies": [
-                    "org.slf4j:slf4j-api:jar:sources:1.7.25"
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
                 ],
                 "dependencies": [
-                    "org.slf4j:slf4j-api:jar:sources:1.7.25"
+                    "org.slf4j:slf4j-api:jar:sources:1.7.28"
                 ],
                 "exclusions": [
                     "org.hamcrest:hamcrest-core"
@@ -4146,6 +4362,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -569689396
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1845770343
     }
 }

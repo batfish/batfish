@@ -8,7 +8,8 @@ import com.google.common.collect.Table.Cell;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.List;
@@ -177,15 +178,17 @@ public final class VxlanTopologyUtils {
       VxlanTopology initialVxlanTopology,
       Map<String, Configuration> configurations,
       TracerouteEngine tracerouteEngine) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("VxlanTopologyUtils.prunedVxlanTopology").startActive()) {
-      assert span != null;
+    Span span = GlobalTracer.get().buildSpan("VxlanTopologyUtils.prunedVxlanTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null;
       NetworkConfigurations nc = NetworkConfigurations.of(configurations);
       MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
       initialVxlanTopology.getGraph().edges().stream()
           .filter(edge -> reachableEdge(edge, nc, tracerouteEngine))
           .forEach(edge -> graph.putEdge(edge.nodeU(), edge.nodeV()));
       return new VxlanTopology(graph);
+    } finally {
+      span.finish();
     }
   }
 

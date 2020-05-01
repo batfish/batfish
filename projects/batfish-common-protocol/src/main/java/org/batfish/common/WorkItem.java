@@ -6,12 +6,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
-import io.opentracing.propagation.TextMapExtractAdapter;
-import io.opentracing.propagation.TextMapInjectAdapter;
+import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +86,7 @@ public class WorkItem {
 
   @VisibleForTesting
   SpanContext getSourceSpan(Tracer tracer) {
-    return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
+    return tracer.extract(Builtin.TEXT_MAP, new TextMapAdapter(_spanData));
   }
 
   @JsonProperty(PROP_SNAPSHOT)
@@ -113,19 +112,19 @@ public class WorkItem {
   }
 
   /**
-   * Takes an {@link ActiveSpan} and attaches it to the {@link WorkItem} which can be fetched later
+   * Takes an Active {@link Span} and attaches it to the {@link WorkItem} which can be fetched later
    * using {@link WorkItem#getSourceSpan()}
    */
-  public void setSourceSpan(@Nullable ActiveSpan activeSpan) {
+  public void setSourceSpan(@Nullable Span activeSpan) {
     setSourceSpan(activeSpan, GlobalTracer.get());
   }
 
   @VisibleForTesting
-  void setSourceSpan(@Nullable ActiveSpan activeSpan, Tracer tracer) {
+  void setSourceSpan(@Nullable Span activeSpan, Tracer tracer) {
     if (activeSpan == null) {
       return;
     }
-    tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
+    tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapAdapter(_spanData));
   }
 
   @Override

@@ -6,10 +6,10 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.uber.jaeger.Configuration;
-import com.uber.jaeger.Configuration.ReporterConfiguration;
-import com.uber.jaeger.Configuration.SamplerConfiguration;
-import com.uber.jaeger.samplers.ConstSampler;
+import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -314,17 +314,17 @@ public class Main {
   }
 
   private static void initTracer() {
-    GlobalTracer.register(
-        new Configuration(
-                _settings.getServiceName(),
-                new SamplerConfiguration(ConstSampler.TYPE, 1),
-                new ReporterConfiguration(
-                    false,
-                    _settings.getTracingAgentHost(),
-                    _settings.getTracingAgentPort(),
-                    /* flush interval in ms */ 1000,
-                    /* max buffered Spans */ 10000))
-            .getTracer());
+    Configuration config =
+        new Configuration(_settings.getServiceName())
+            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
+            .withReporter(
+                new ReporterConfiguration()
+                    .withSender(
+                        SenderConfiguration.fromEnv()
+                            .withAgentHost(_settings.getTracingAgentHost())
+                            .withAgentPort(_settings.getTracingAgentPort()))
+                    .withLogSpans(false));
+    GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
   private static void initWorkManager(BindPortFutures bindPortFutures) {

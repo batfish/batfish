@@ -14,7 +14,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.Map;
@@ -78,11 +79,10 @@ public final class BidirectionalReachabilityAnalysis {
       Set<String> requiredTransitNodes,
       Set<String> forwardPassFinalNodes,
       Set<FlowDisposition> forwardPassActions) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("Constructs BidirectionalReachabilityAnalysis")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("Constructs BidirectionalReachabilityAnalysis").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _bddPacket = bddPacket;
       _configs = configs;
       _factory =
@@ -148,6 +148,8 @@ public final class BidirectionalReachabilityAnalysis {
           Suppliers.memoize(this::computeForwardPassStartLocationToReturnPassFailureBdds);
       _forwardPassStartLocationToReturnPassSuccessBdds =
           Suppliers.memoize(this::computeForwardPassStartLocationToReturnPassSuccessBdds);
+    } finally {
+      span.finish();
     }
   }
 

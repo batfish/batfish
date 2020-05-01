@@ -70,7 +70,7 @@
     <jackson.version>2.9.10.20200411</jackson.version>
     <javax-activation.version>1.1</javax-activation.version>
     <javax-annotation-api.version>1.3.2</javax-annotation-api.version>
-    <jaeger.version>0.21.0</jaeger.version>
+    <jaeger.version>1.2.0</jaeger.version>
     <jaxb-api.version>2.3.0</jaxb-api.version>
     <jaxrs.version>2.1.1</jaxrs.version>
     <jdk-eea.version>0.0.1</jdk-eea.version>
@@ -82,8 +82,8 @@
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <lz4.version>1.6.0</lz4.version>
-    <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
-    <opentracing.version>0.30.0</opentracing.version>
+    <opentracing-jaxrs2.version>1.0.0</opentracing-jaxrs2.version>
+    <opentracing.version>0.33.0</opentracing.version>
     <parboiled.version>1.3.1</parboiled.version>
     <re2j.version>1.3</re2j.version>
     <servlet.version>4.0.0</servlet.version>
@@ -415,7 +415,8 @@
           <version>${maven-license-plugin.version}</version>
           <configuration>
             <licenseMerges>
-              <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0
+              <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0|Apache License,
+                Version 2.0|Apache 2.0|Apache License 2.0|Apache 2|Apache License, 2.0
               </licenseMerge>
               <licenseMerge>MIT|MIT License|MIT license|The MIT License</licenseMerge>
             </licenseMerges>
@@ -754,17 +755,6 @@
         <version>${okhttp.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>com.uber.jaeger</groupId>
-        <artifactId>jaeger-core</artifactId>
-        <version>${jaeger.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
 
       <dependency>
         <groupId>commons-beanutils</groupId>
@@ -782,6 +772,24 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jaegertracing</groupId>
+        <artifactId>jaeger-core</artifactId>
+        <version>${jaeger.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jaegertracing</groupId>
+        <artifactId>jaeger-thrift</artifactId>
+        <version>${jaeger.version}</version>
       </dependency>
 
       <dependency>
