@@ -320,13 +320,13 @@
     </dependency>
 
     <dependency>
-      <groupId>com.uber.jaeger</groupId>
-      <artifactId>jaeger-core</artifactId>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
+      <groupId>io.jaegertracing</groupId>
+      <artifactId>jaeger-core</artifactId>
     </dependency>
 
     <dependency>

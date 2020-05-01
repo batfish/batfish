@@ -8,7 +8,8 @@ import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 import java.util.Optional;
@@ -47,9 +48,9 @@ public final class IsisTopology {
   /** Initialize the IS-IS topology as a directed graph. */
   public static @Nonnull IsisTopology initIsisTopology(
       Map<String, Configuration> configurations, Topology topology) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("IsisTopology.initIsisTopology").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("IsisTopology.initIsisTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       Set<IsisEdge> edges =
           topology.getEdges().stream()
@@ -68,6 +69,8 @@ public final class IsisTopology {
       nodes.build().forEach(graph::addNode);
       edges.forEach(edge -> graph.addEdge(edge.getNode1(), edge.getNode2(), edge));
       return new IsisTopology(graph);
+    } finally {
+      span.finish();
     }
   }
 

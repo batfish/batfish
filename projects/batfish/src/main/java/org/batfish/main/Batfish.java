@@ -40,8 +40,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
-import io.opentracing.ActiveSpan;
 import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
@@ -552,14 +553,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 QuestionId questionId =
                     _idResolver.getQuestionId(questionName, containerName, analysisName);
                 _settings.setQuestionName(questionId);
+
                 Answer currentAnswer;
-                try (ActiveSpan analysisQuestionSpan =
-                    GlobalTracer.get()
-                        .buildSpan("Getting answer to analysis question")
-                        .startActive()) {
-                  assert analysisQuestionSpan != null; // make span not show up as unused
-                  analysisQuestionSpan.setTag("analysis-name", analysisName.getId());
+                Span span =
+                    GlobalTracer.get().buildSpan("Getting answer to analysis question").start();
+                try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+                  assert scope != null; // avoid unused warning
+                  span.setTag("analysis-name", analysisName.getId());
                   currentAnswer = answer();
+                } finally {
+                  span.finish();
                 }
                 // Ensuring that question was parsed successfully
                 if (currentAnswer.getQuestion() != null) {
@@ -611,9 +614,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Question question = null;
 
     // return right away if we cannot parse the question successfully
-    try (ActiveSpan parseQuestionSpan =
-        GlobalTracer.get().buildSpan("Parse question").startActive()) {
-      assert parseQuestionSpan != null; // avoid not used warning
+    Span span = GlobalTracer.get().buildSpan("Parse question span").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       String rawQuestionStr;
       try {
         rawQuestionStr =
@@ -635,10 +638,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answer.addAnswerElement(exception.getBatfishStackTrace());
         return answer;
       }
+    } finally {
+      span.finish();
     }
 
-    if (GlobalTracer.get().activeSpan() != null) {
-      ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+    if (GlobalTracer.get().scopeManager().activeSpan() != null) {
+      Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
       activeSpan
           .setTag("container-name", getContainerName().getId())
           .setTag("testrig_name", getSnapshot().getSnapshot().getId());
@@ -658,16 +663,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     loadConfigurations(getSnapshot());
     // TODO: why doesn't this check diff and load diff configurations?
 
-    try (ActiveSpan initQuestionEnvSpan =
-        GlobalTracer.get().buildSpan("Init question environment").startActive()) {
-      assert initQuestionEnvSpan != null; // avoid not used warning
+    Span initQuestionSpan = GlobalTracer.get().buildSpan("Init question env").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       prepareToAnswerQuestions(diff, dp);
+    } finally {
+      initQuestionSpan.finish();
     }
 
     AnswerElement answerElement = null;
     BatfishException exception = null;
-    try (ActiveSpan getAnswerSpan = GlobalTracer.get().buildSpan("Get answer").startActive()) {
-      assert getAnswerSpan != null; // avoid not used warning
+    Span getAnswerSpan = GlobalTracer.get().buildSpan("Get answer").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       if (question.getDifferential()) {
         answerElement =
             Answerer.create(question, this).answerDiff(getSnapshot(), getReferenceSnapshot());
@@ -676,6 +684,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     } catch (Exception e) {
       exception = new BatfishException("Failed to answer question", e);
+    } finally {
+      getAnswerSpan.finish();
     }
 
     Answer answer = new Answer();
@@ -818,9 +828,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
-    try (ActiveSpan writeDataplane =
-        GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
-      assert writeDataplane != null; // avoid unused warning
+    Span writeDataplane = GlobalTracer.get().buildSpan("Writing data plane").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(writeDataplane)) {
+      assert scope != null; // avoid unused warning
       serializeObject(result._dataPlane, getTestrigSettings(snapshot).getDataPlanePath());
       serializeObject(result._answerElement, getTestrigSettings(snapshot).getDataPlaneAnswerPath());
       TopologyContainer topologies = result._topologies;
@@ -832,6 +842,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _storage.storeVxlanTopology(topologies.getVxlanTopology(), snapshot);
     } catch (IOException e) {
       throw new BatfishException("Failed to save data plane", e);
+    } finally {
+      writeDataplane.finish();
     }
     _logger.printElapsedTime();
   }
@@ -1333,8 +1345,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("Load configurations").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Load configurations").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _logger.debugf("Loading configurations for %s\n", snapshot);
       // Do we already have configurations in the cache?
       SortedMap<String, Configuration> configurations =
@@ -1357,6 +1370,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       _cachedConfigurations.put(snapshot, configurations);
       return configurations;
+    } finally {
+      span.finish();
     }
   }
 
@@ -1397,8 +1412,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("Load data plane").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Load data plane").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
@@ -1406,6 +1422,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _cachedDataPlanes.put(snapshot, dp);
       }
       return dp;
+    } finally {
+      span.finish();
     }
   }
 
@@ -1485,9 +1503,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Load vendor configurations").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Load vendor configurations").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _logger.debugf("Loading vendor configurations for %s\n", snapshot);
       // Do we already have configurations in the cache?
       Map<String, VendorConfiguration> vendorConfigurations =
@@ -1500,6 +1518,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _cachedVendorConfigurations.put(snapshot, vendorConfigurations);
       }
       return vendorConfigurations;
+    } finally {
+      span.finish();
     }
   }
 
@@ -2274,11 +2294,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getAnswer()) {
-      try (ActiveSpan questionSpan =
-          GlobalTracer.get().buildSpan("Getting answer to question").startActive()) {
-        assert questionSpan != null; // avoid unused warning
+      Span span = GlobalTracer.get().buildSpan("Getting answer to question").start();
+      try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+        assert scope != null; // avoid unused warning
         answer.append(answer());
         action = true;
+      } finally {
+        span.finish();
       }
     }
 
@@ -2329,9 +2351,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path awsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
     // sortedness guarantees serialization order
     SortedMap<String, AwsConfiguration> awsConfigs = new TreeMap<>();
-    try (ActiveSpan parseAwsConfigsSpan =
-        GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
-      assert parseAwsConfigsSpan != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Parse AWS configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Path multiAccountPath = awsPath.resolve(BfConsts.RELPATH_AWS_ACCOUNTS_DIR);
       if (multiAccountPath.toFile().exists()) {
         try {
@@ -2355,6 +2377,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
             parseAwsConfigurations(readAllFiles(awsPath, _logger), pvcae));
       }
+    } finally {
+      span.finish();
     }
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
@@ -2418,12 +2442,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations;
-    try (ActiveSpan parseHostConfigsSpan =
-        GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
-      assert parseHostConfigsSpan != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Parse host configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       allHostConfigurations =
           parseVendorConfigurations(
               snapshot, keyedHostText, answerElement, ConfigurationFormat.HOST);
+    } finally {
+      span.finish();
     }
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
@@ -2485,9 +2511,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Answer serializeIndependentConfigs(NetworkSnapshot snapshot, Path vendorConfigPath) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Serialize vendor-independent configs").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("serializeIndependentConfigs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
       answerElement.setVersion(BatfishVersion.getVersionStatic());
@@ -2501,13 +2527,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
               EMPTY_SNAPSHOT_RUNTIME_DATA);
       Map<String, VendorConfiguration> vendorConfigs;
       Map<String, Configuration> configurations;
-      try (ActiveSpan convertSpan =
-          GlobalTracer.get()
-              .buildSpan("Convert vendor-specific configs to vendor-independent configs")
-              .startActive()) {
-        assert convertSpan != null; // avoid unused warning
+      Span convertSpan = GlobalTracer.get().buildSpan("convert VS to VI").start();
+      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
+        assert childScope != null; // avoid unused warning
         vendorConfigs = deserializeVendorConfigurations(vendorConfigPath);
         configurations = getConfigurations(vendorConfigs, runtimeData, answerElement);
+      } finally {
+        convertSpan.finish();
       }
 
       Set<Layer1Edge> layer1Edges =
@@ -2525,9 +2551,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
-      try (ActiveSpan storeSpan =
-          GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
-        assert storeSpan != null; // avoid unused warning
+      Span storeSpan = GlobalTracer.get().buildSpan("store VI configs").start();
+      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
+        assert childScope != null; // avoid unused warning
         try {
           _storage.storeConfigurations(
               configurations,
@@ -2540,20 +2566,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
         } catch (IOException e) {
           throw new BatfishException("Could not store vendor independent configs to disk: %s", e);
         }
+      } finally {
+        storeSpan.finish();
       }
 
-      try (ActiveSpan ppSpan =
-          GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
-        assert ppSpan != null; // avoid unused warning
+      Span ppSpan = GlobalTracer.get().buildSpan("Post-process vendor-independent configs").start();
+      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
+        assert childScope != null; // avoid unused warning
         postProcessSnapshot(snapshot, configurations);
+      } finally {
+        ppSpan.finish();
       }
 
-      try (ActiveSpan metadataSpan =
-          GlobalTracer.get().buildSpan("Compute and store completion metadata").startActive()) {
-        assert metadataSpan != null; // avoid unused warning
+      Span metadataSpan =
+          GlobalTracer.get().buildSpan("Compute and store completion metadata").start();
+      try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
+        assert childScope != null; // avoid unused warning
         computeAndStoreCompletionMetadata(snapshot, configurations);
+      } finally {
+        metadataSpan.finish();
       }
       return answer;
+    } finally {
+      span.finish();
     }
   }
 
@@ -2639,12 +2674,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationJob job, @Nullable SpanContext span, GrammarSettings settings) {
     String filename = job.getFilename();
     String filetext = job.getFileText();
-    try (ActiveSpan parseNetworkConfigsSpan =
+    Span parseNetworkConfigsSpan =
         GlobalTracer.get()
             .buildSpan("Parse " + job.getFilename())
             .addReference(References.FOLLOWS_FROM, span)
-            .startActive()) {
-      assert parseNetworkConfigsSpan != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
+      assert scope != null; // avoid unused warning
 
       // Short-circuit all cache-related code.
       if (!_settings.getParseReuse()) {
@@ -2698,6 +2734,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       long elapsed = System.currentTimeMillis() - startTime;
       return job.fromResult(result, elapsed);
+    } finally {
+      parseNetworkConfigsSpan.finish();
     }
   }
 
@@ -2724,14 +2762,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
     List<ParseVendorConfigurationResult> parseResults;
-    try (ActiveSpan parseNetworkConfigsSpan =
-        GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
-      assert parseNetworkConfigsSpan != null; // avoid unused warning
+    Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
+      assert scope != null; // avoid unused warning
 
       List<ParseVendorConfigurationJob> jobs;
-      try (ActiveSpan makeJobsSpan =
-          GlobalTracer.get().buildSpan("Read files and make jobs").startActive()) {
-        assert makeJobsSpan != null; // avoid unused warning
+      Span makeJobsSpan = GlobalTracer.get().buildSpan("Read files and make jobs").start();
+      try (Scope makeJobsScope = GlobalTracer.get().scopeManager().activate(makeJobsSpan)) {
+        assert makeJobsScope != null; // avoid unused warning
         // user filename (configs/foo) -> text of configs/foo
         Map<String, String> keyedConfigText =
             readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
@@ -2742,6 +2780,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         jobs =
             makeParseVendorConfigurationsJobs(
                 snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
+      } finally {
+        makeJobsSpan.finish();
       }
 
       AtomicInteger batch = newBatch("Parse network configs", jobs.size());
@@ -2755,6 +2795,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     return result;
                   })
               .collect(ImmutableList.toImmutableList());
+    } finally {
+      parseNetworkConfigsSpan.finish();
     }
 
     if (_settings.getHaltOnParseError()
@@ -2774,10 +2816,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     /* Assemble answer. */
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
-
-    try (ActiveSpan serializeNetworkConfigsSpan =
-        GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
-      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+    Span serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Serialize network configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {
+      assert scope != null; // avoid unused warning
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       _logger.resetTimer();
       createDirectories(outputPath);
@@ -2801,6 +2843,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       serializeObjects(output);
       _logger.printElapsedTime();
+    } finally {
+      serializeNetworkConfigsSpan.finish();
     }
   }
 
@@ -2813,9 +2857,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
     Map<String, VendorConfiguration> vendorConfigurations;
-    try (ActiveSpan parseNetworkConfigsSpan =
-        GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
-      assert parseNetworkConfigsSpan != null; // avoid unused warning
+    Span parseNetworkConfigsSpan = GlobalTracer.get().buildSpan("Parse network configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseNetworkConfigsSpan)) {
+      assert scope != null; // avoid unused warning
       Map<String, String> keyedConfigText =
           readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
               .entrySet().stream()
@@ -2825,14 +2869,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       vendorConfigurations =
           parseVendorConfigurations(
               snapshot, keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
+    } finally {
+      parseNetworkConfigsSpan.finish();
     }
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
         snapshot.getSnapshot(), snapshot.getNetwork(), vendorConfigurations.size());
 
-    try (ActiveSpan serializeNetworkConfigsSpan =
-        GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
-      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+    Span serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Serialize network configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {
+      assert scope != null; // avoid unused warning
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       _logger.resetTimer();
       createDirectories(outputPath);
@@ -2868,6 +2915,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       serializeObjects(output);
       _logger.printElapsedTime();
+    } finally {
+      serializeNetworkConfigsSpan.finish();
     }
   }
 
@@ -2991,8 +3040,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public AnswerElement bddSingleReachability(
       NetworkSnapshot snapshot, ReachabilityParameters parameters) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("bddSingleReachability").startActive()) {
-      assert span != null; // avoid not used warning
+    Span span = GlobalTracer.get().buildSpan("bddSingleReachability").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       ResolvedReachabilityParameters params;
       try {
         params = resolveReachabilityParameters(this, parameters, snapshot);
@@ -3046,13 +3096,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .collect(ImmutableSet.toImmutableSet());
 
       return new TraceWrapperAsAnswerElement(buildFlows(snapshot, flows, ignoreFilters));
+    } finally {
+      span.finish();
     }
   }
 
   @Override
   public Set<Flow> bddLoopDetection(NetworkSnapshot snapshot) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("bddLoopDetection").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("bddLoopDetection").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       BDDPacket pkt = new BDDPacket();
       // TODO add ignoreFilters parameter
       boolean ignoreFilters = false;
@@ -3063,9 +3116,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               getAllSourcesInferFromLocationIpSpaceAssignment(snapshot));
       Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
-      try (ActiveSpan span1 =
-          GlobalTracer.get().buildSpan("bddLoopDetection.computeResultFlows").startActive()) {
-        assert span1 != null; // avoid unused warning
+      Span span1 = GlobalTracer.get().buildSpan("bddLoopDetection.computeResultFlows").start();
+      try (Scope scope1 = GlobalTracer.get().scopeManager().activate(span)) {
+        assert scope1 != null; // avoid unused warning
         return loopBDDs.entrySet().stream()
             .map(
                 entry ->
@@ -3089,15 +3142,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             }))
             .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
             .collect(ImmutableSet.toImmutableSet());
+      } finally {
+        span1.finish();
       }
+    } finally {
+      span.finish();
     }
   }
 
   @Override
   public Set<Flow> bddMultipathConsistency(
       NetworkSnapshot snapshot, MultipathConsistencyParameters parameters) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("bddMultipathConsistency").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("bddMultipathConsistency").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       BDDPacket pkt = new BDDPacket();
       // TODO add ignoreFilters parameter
       boolean ignoreFilters = false;
@@ -3139,6 +3197,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               failureDispositions);
 
       return ImmutableSet.copyOf(computeMultipathInconsistencies(pkt, successBdds, failureBdds));
+    } finally {
+      span.finish();
     }
   }
 
@@ -3157,9 +3217,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
       NetworkSnapshot snapshot, BDDPacket pkt, boolean ignoreFilters) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("getBddReachabilityAnalysisFactory").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("getBddReachabilityAnalysisFactory").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       DataPlane dataPlane = loadDataPlane(snapshot);
       return new BDDReachabilityAnalysisFactory(
           pkt,
@@ -3168,6 +3228,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
           ignoreFilters,
           false);
+    } finally {
+      span.finish();
     }
   }
 
@@ -3203,9 +3265,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot,
       NetworkSnapshot reference,
       DifferentialReachabilityParameters parameters) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("bddDifferentialReachability").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("bddDifferentialReachability").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       checkArgument(
           !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
       BDDPacket pkt = new BDDPacket();
@@ -3249,6 +3311,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Set<Flow> increasedFlows =
           getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs);
       return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
+    } finally {
+      span.finish();
     }
   }
 

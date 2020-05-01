@@ -4,7 +4,8 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_L
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import net.sf.javabdd.BDD;
@@ -51,9 +52,9 @@ public final class BDDFlowConstraintGenerator {
   private final List<BDD> _ipConstraints;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _bddPacket = pkt;
       _bddOps = new BDDOps(pkt.getFactory());
       _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);

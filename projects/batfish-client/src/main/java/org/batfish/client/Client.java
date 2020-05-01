@@ -17,10 +17,12 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
-import com.uber.jaeger.Configuration.ReporterConfiguration;
-import com.uber.jaeger.Configuration.SamplerConfiguration;
-import com.uber.jaeger.samplers.ConstSampler;
-import io.opentracing.ActiveSpan;
+import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
 import java.io.File;
@@ -1150,7 +1152,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean execute(WorkItem wItem, @Nullable FileWriter outWriter) {
     _logger.infof("work-id is %s\n", wItem.getId());
-    ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+    Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
     if (activeSpan != null) {
       activeSpan.setTag("work-id", wItem.getId().toString());
     }
@@ -1599,17 +1601,17 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private void initTracer() {
-    GlobalTracer.register(
-        new com.uber.jaeger.Configuration(
-                _settings.getServiceName(),
-                new SamplerConfiguration(ConstSampler.TYPE, 1),
-                new ReporterConfiguration(
-                    false,
-                    _settings.getTracingAgentHost(),
-                    _settings.getTracingAgentPort(),
-                    /* flush interval in ms */ 1000,
-                    /* max buffered Spans */ 10000))
-            .getTracer());
+    Configuration config =
+        new Configuration(_settings.getServiceName())
+            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
+            .withReporter(
+                new ReporterConfiguration()
+                    .withSender(
+                        SenderConfiguration.fromEnv()
+                            .withAgentHost(_settings.getTracingAgentHost())
+                            .withAgentPort(_settings.getTracingAgentPort()))
+                    .withLogSpans(false));
+    GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
   private boolean isSetContainer(boolean printError) {
@@ -2000,9 +2002,9 @@ public class Client extends AbstractClient implements IClient {
   private boolean pollWork(UUID wItemId) {
 
     WorkResult response;
-    try (ActiveSpan workStatusSpan =
-        GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
-      assert workStatusSpan != null; // avoid unused warning
+    Span workStatusSpan = GlobalTracer.get().buildSpan("Waiting for work status").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(workStatusSpan)) {
+      assert scope != null; // avoid unused warning
       // Poll the work item until it finishes or fails.
       response = _workHelper.getWorkStatus(wItemId);
       if (response == null) {
@@ -2025,6 +2027,8 @@ public class Client extends AbstractClient implements IClient {
         status = response.getStatus();
       }
       printWorkStatusResponse(response, false);
+    } finally {
+      workStatusSpan.finish();
     }
     return true;
   }
@@ -2148,13 +2152,15 @@ public class Client extends AbstractClient implements IClient {
 
     List<String> options = getCommandOptions(words);
     List<String> parameters = getCommandParameters(words, options.size());
-
-    try (ActiveSpan span = GlobalTracer.get().buildSpan(command.commandName()).startActive()) {
-      assert span != null; // make span not show up as unused.
+    Span span = GlobalTracer.get().buildSpan(command.commandName()).start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return processCommand(command, words, outWriter, options, parameters);
     } catch (Exception e) {
       e.printStackTrace();
       return false;
+    } finally {
+      span.finish();
     }
   }
 

@@ -11,7 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collections;
 import java.util.Comparator;
@@ -102,9 +103,9 @@ public final class IpOwners {
   @VisibleForTesting
   static Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
       Map<String, Configuration> configs, boolean excludeInactive) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("IpOwners.computeInterfaceHostSubnetIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("IpOwners.computeInterfaceHostSubnetIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           configs,
           Entry::getKey, /* hostname */
@@ -122,6 +123,8 @@ public final class IpOwners {
                                   .map(Prefix::toHostIpSpace)
                                   .collect(ImmutableList.toImmutableList())),
                           EmptyIpSpace.INSTANCE)));
+    } finally {
+      span.finish();
     }
   }
 
@@ -176,11 +179,12 @@ public final class IpOwners {
    */
   public static Map<Ip, Set<String>> computeIpNodeOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("TopologyUtil.computeIpNodeOwners excludeInactive=" + excludeInactive)
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       return toImmutableMap(
           computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
@@ -188,6 +192,8 @@ public final class IpOwners {
           ipInterfaceOwnersEntry ->
               /* project away interfaces */
               ipInterfaceOwnersEntry.getValue().keySet());
+    } finally {
+      span.finish();
     }
   }
 
