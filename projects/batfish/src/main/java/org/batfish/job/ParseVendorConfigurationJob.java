@@ -4,8 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import io.opentracing.ActiveSpan;
 import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.nio.file.Paths;
@@ -118,8 +119,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   @VisibleForTesting
   static ConfigurationFormat detectFormat(
       String fileText, Settings settings, ConfigurationFormat format) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("Detecting file format").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Detecting file format").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       if (WHITESPACE_ONLY.matcher(fileText).matches()) {
         return ConfigurationFormat.EMPTY;
@@ -134,6 +136,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       }
 
       return format;
+    } finally {
+      span.finish();
     }
   }
 
@@ -151,8 +155,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     BatfishCombinedParser<?, ?> combinedParser = null;
     ControlPlaneExtractor extractor = null;
     FlattenerLineMap lineMap = null;
-    try (ActiveSpan parseSpan = GlobalTracer.get().buildSpan("Creating parser").startActive()) {
-      assert parseSpan != null; // avoid unused warning
+    Span parseSpan = GlobalTracer.get().buildSpan("Creating parser").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(parseSpan)) {
+      assert scope != null; // avoid unused warning
 
       switch (format) {
         case ARISTA:
@@ -328,11 +333,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           throw new BatfishException(
               String.format("File format %s is neither unsupported nor handled", format));
       }
+    } finally {
+      parseSpan.finish();
     }
 
     ParserRuleContext tree;
-    try (ActiveSpan parseSpan = GlobalTracer.get().buildSpan("Parsing").startActive()) {
-      assert parseSpan != null; // avoid unused warning
+    Span parsingSpan = GlobalTracer.get().buildSpan("Parsing").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(parsingSpan)) {
+      assert scope != null; // avoid unused warning
       _logger.info("\tParsing...");
       tree = Batfish.parse(combinedParser, _logger, _settings);
 
@@ -347,11 +355,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                 "Configuration file: '%s' contains unrecognized lines:\n%s",
                 _filename, String.join("\n", combinedParser.getErrors())));
       }
+    } finally {
+      parsingSpan.finish();
     }
 
-    try (ActiveSpan postProcessSpan =
-        GlobalTracer.get().buildSpan("Post-processing").startActive()) {
-      assert postProcessSpan != null; // avoid unused warning
+    Span postProcessSpan = GlobalTracer.get().buildSpan("Post-processing").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(postProcessSpan)) {
+      assert scope != null; // avoid unused warning
       _logger.info("\tPost-processing...");
 
       try {
@@ -364,6 +374,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       _logger.info("OK\n");
     } finally {
       Batfish.logWarnings(_logger, _warnings);
+      postProcessSpan.finish();
     }
 
     VendorConfiguration vc = extractor.getVendorConfiguration();
@@ -480,17 +491,20 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   @Override
   public ParseVendorConfigurationResult call() {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ParseVendorConfigurationJob for " + _filename)
             .addReference(References.FOLLOWS_FROM, _spanContext)
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       _logger.infof("Processing: '%s'\n", _filename);
       long startTime = System.currentTimeMillis();
       ParseResult result = parse();
       return fromResult(result, System.currentTimeMillis() - startTime);
+    } finally {
+      span.finish();
     }
   }
 

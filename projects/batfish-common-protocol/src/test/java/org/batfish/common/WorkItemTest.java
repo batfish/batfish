@@ -6,17 +6,15 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import io.opentracing.ActiveSpan;
-import io.opentracing.NoopActiveSpanSource.NoopActiveSpan;
-import io.opentracing.NoopTracerFactory;
 import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockSpan.MockContext;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.mock.MockTracer.Propagator;
-import io.opentracing.util.ThreadLocalActiveSpan;
-import io.opentracing.util.ThreadLocalActiveSpanSource;
+import io.opentracing.noop.NoopSpan;
+import io.opentracing.noop.NoopTracerFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +33,7 @@ public class WorkItemTest {
 
   @BeforeClass
   public static void initTracer() {
-    _mockTracer = new MockTracer(new ThreadLocalActiveSpanSource(), Propagator.TEXT_MAP);
+    _mockTracer = new MockTracer();
     _noopTracer = NoopTracerFactory.create();
   }
 
@@ -43,46 +41,56 @@ public class WorkItemTest {
   public void testNullActiveSpanNoop() {
     _workItem.setSourceSpan(null, _noopTracer);
     SpanContext sourceSpanContext = _workItem.getSourceSpan(_noopTracer);
-
-    try (ActiveSpan childSpan =
+    Span childSpan =
         _noopTracer
             .buildSpan("test dangling child")
             .addReference(References.FOLLOWS_FROM, sourceSpanContext)
-            .startActive()) {
-
+            .start();
+    try (Scope scope = _noopTracer.scopeManager().activate(childSpan)) {
+      assert scope != null;
       assertThat(childSpan, notNullValue());
-      assertThat(childSpan, instanceOf(NoopActiveSpan.class));
+      assertThat(childSpan, instanceOf(NoopSpan.class));
+    }
+    {
+      childSpan.finish();
     }
   }
 
   @Test
   public void testExtractOnlyNoop() {
     SpanContext sourceSpanContext = _workItem.getSourceSpan(_noopTracer);
-
-    try (ActiveSpan childSpan =
+    Span childSpan =
         _noopTracer
             .buildSpan("test dangling child")
             .addReference(References.FOLLOWS_FROM, sourceSpanContext)
-            .startActive()) {
+            .start();
+    try (Scope scope = _noopTracer.scopeManager().activate(childSpan)) {
+      assert scope != null;
 
       assertThat(childSpan, notNullValue());
-      assertThat(childSpan, instanceOf(NoopActiveSpan.class));
+      assertThat(childSpan, instanceOf(NoopSpan.class));
     }
   }
 
   @Test
   public void testInjectExtractNoop() {
-    ActiveSpan activeSpan = _noopTracer.buildSpan("test span").startActive();
-    _workItem.setSourceSpan(activeSpan, _noopTracer);
-
-    try (ActiveSpan childSpan =
-        _noopTracer
-            .buildSpan("test span")
-            .addReference(References.FOLLOWS_FROM, _workItem.getSourceSpan(_noopTracer))
-            .startActive()) {
-
-      assertThat(childSpan, notNullValue());
-      assertThat(childSpan, instanceOf(NoopActiveSpan.class));
+    Span activeSpan = _noopTracer.buildSpan("test span").start();
+    try (Scope scope = _noopTracer.scopeManager().activate(activeSpan)) {
+      assert scope != null;
+      _workItem.setSourceSpan(activeSpan, _noopTracer);
+      Span childSpan =
+          _noopTracer
+              .buildSpan("test span")
+              .addReference(References.FOLLOWS_FROM, _workItem.getSourceSpan(_noopTracer))
+              .start();
+      try (Scope childScope = _noopTracer.scopeManager().activate(childSpan)) {
+        assert childScope != null;
+        assertThat(childSpan, notNullValue());
+        assertThat(childSpan, instanceOf(NoopSpan.class));
+      }
+      childSpan.finish();
+    } finally {
+      activeSpan.finish();
     }
   }
 
@@ -92,15 +100,16 @@ public class WorkItemTest {
     SpanContext sourceSpanContext = _workItem.getSourceSpan(_mockTracer);
 
     assertThat(sourceSpanContext, nullValue());
-
-    try (ActiveSpan childSpan =
+    Span childSpan =
         _mockTracer
             .buildSpan("test dangling child")
             .addReference(References.FOLLOWS_FROM, sourceSpanContext)
-            .startActive()) {
-
+            .start();
+    try (Scope childScope = _mockTracer.scopeManager().activate(childSpan)) {
+      assert childScope != null;
       assertThat(childSpan, notNullValue());
-      assertThat(childSpan, instanceOf(ThreadLocalActiveSpan.class));
+      // check the instance
+      assertThat(childSpan, instanceOf(Span.class));
     }
   }
 
@@ -110,22 +119,24 @@ public class WorkItemTest {
 
     assertThat(sourceSpanContext, nullValue());
 
-    try (ActiveSpan childSpan =
+    Span childSpan =
         _mockTracer
             .buildSpan("test dangling child")
             .addReference(References.FOLLOWS_FROM, sourceSpanContext)
-            .startActive()) {
-
+            .start();
+    try (Scope childScope = _mockTracer.scopeManager().activate(childSpan)) {
+      assert childScope != null;
       assertThat(childSpan, notNullValue());
-      assertThat(childSpan, instanceOf(ThreadLocalActiveSpan.class));
+      assertThat(childSpan, instanceOf(Span.class));
     }
   }
 
   @Test
   public void testInjectExtract() {
     MockContext sourceContext;
-
-    try (ActiveSpan activeSpan = _mockTracer.buildSpan("test span").startActive()) {
+    Span activeSpan = _mockTracer.buildSpan("test span").start();
+    try (Scope childScope = _mockTracer.scopeManager().activate(activeSpan)) {
+      assert childScope != null;
       SpanContext sourceContextTmp = activeSpan.context();
       assertThat(sourceContextTmp, instanceOf(MockContext.class));
       sourceContext = (MockContext) sourceContextTmp;

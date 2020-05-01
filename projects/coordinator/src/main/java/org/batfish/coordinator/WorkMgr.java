@@ -28,8 +28,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentracing.ActiveSpan;
 import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
@@ -297,12 +298,13 @@ public class WorkMgr extends AbstractCoordinator {
 
     Client client = null;
     SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
-    try (ActiveSpan assignWorkSpan =
+    Span span =
         GlobalTracer.get()
-            .buildSpan("Assign Work")
+            .buildSpan("Assign work")
             .addReference(References.FOLLOWS_FROM, queueWorkSpan)
-            .startActive()) {
-      assert assignWorkSpan != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       // get the task and add other standard stuff
       JSONObject task = new JSONObject(work.resolveRequestParams());
       task.put(
@@ -355,9 +357,13 @@ public class WorkMgr extends AbstractCoordinator {
           assignmentError = true;
         } else {
           assigned = true;
-          try (ActiveSpan postAssignmentSpan =
-              GlobalTracer.get().buildSpan("Post-assignment task operations").startActive()) {
+          Span postAssignmentSpan =
+              GlobalTracer.get().buildSpan("Post-assignment task operations").start();
+          try (Scope postAssignmentScope = GlobalTracer.get().scopeManager().activate(span)) {
+            assert postAssignmentScope != null;
             work.setPostAssignmentContext(postAssignmentSpan.context());
+          } finally {
+            span.finish();
           }
         }
       }
@@ -368,6 +374,7 @@ public class WorkMgr extends AbstractCoordinator {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
     } finally {
+      span.finish();
       if (client != null) {
         client.close();
       }
@@ -463,12 +470,13 @@ public class WorkMgr extends AbstractCoordinator {
     Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
-    try (ActiveSpan checkTaskSpan =
+    Span span =
         GlobalTracer.get()
             .buildSpan("Checking Task Status")
             .addReference(References.FOLLOWS_FROM, work.getPostAssignmentContext())
-            .startActive()) {
-      assert checkTaskSpan != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
@@ -519,6 +527,7 @@ public class WorkMgr extends AbstractCoordinator {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
     } finally {
+      span.finish();
       if (client != null) {
         client.close();
       }
@@ -2025,12 +2034,9 @@ public class WorkMgr extends AbstractCoordinator {
     boolean killed = false;
 
     SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
-    try (ActiveSpan killTaskSpan =
-        GlobalTracer.get()
-            .buildSpan("Killing task")
-            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
-            .startActive()) {
-      assert killTaskSpan != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Killing task").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
@@ -2083,6 +2089,7 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (Exception e) {
       _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     } finally {
+      span.finish();
       if (client != null) {
         client.close();
       }
@@ -2259,7 +2266,7 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getNetwork()));
     boolean success;
     try {
-      workItem.setSourceSpan(GlobalTracer.get().activeSpan());
+      workItem.setSourceSpan(GlobalTracer.get().scopeManager().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
       _snapshotMetadataManager.getInitializationMetadata(networkId, workDetails.getSnapshotId());
       if (workDetails.isDifferential()) {

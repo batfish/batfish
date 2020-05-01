@@ -10,7 +10,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraphBuilder;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.Map;
@@ -97,9 +98,9 @@ public final class BgpTopologyUtils {
     checkArgument(
         !checkReachability || tracerouteEngine != null,
         "Cannot check reachability without a traceroute engine");
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BgpTopologyUtils.initBgpTopology").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BgpTopologyUtils.initBgpTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       // TODO: handle duplicate ips on different vrfs
 
@@ -177,6 +178,8 @@ public final class BgpTopologyUtils {
         }
       }
       return new BgpTopology(graph);
+    } finally {
+      span.finish();
     }
   }
 

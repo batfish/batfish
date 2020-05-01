@@ -3,11 +3,12 @@ package org.batfish.main;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.uber.jaeger.Configuration.ReporterConfiguration;
-import com.uber.jaeger.Configuration.SamplerConfiguration;
-import com.uber.jaeger.samplers.ConstSampler;
-import io.opentracing.ActiveSpan;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
 import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
@@ -163,17 +164,17 @@ public class Driver {
   }
 
   private static void initTracer() {
-    GlobalTracer.register(
-        new com.uber.jaeger.Configuration(
-                _mainSettings.getServiceName(),
-                new SamplerConfiguration(ConstSampler.TYPE, 1),
-                new ReporterConfiguration(
-                    false,
-                    _mainSettings.getTracingAgentHost(),
-                    _mainSettings.getTracingAgentPort(),
-                    /* flush interval in ms */ 1000,
-                    /* max buffered Spans */ 10000))
-            .getTracer());
+    io.jaegertracing.Configuration config =
+        new io.jaegertracing.Configuration(_mainSettings.getServiceName())
+            .withSampler(SamplerConfiguration.fromEnv().withType("const").withParam(1))
+            .withReporter(
+                ReporterConfiguration.fromEnv()
+                    .withSender(
+                        SenderConfiguration.fromEnv()
+                            .withAgentHost(_mainSettings.getTracingAgentHost())
+                            .withAgentPort(_mainSettings.getTracingAgentPort()))
+                    .withLogSpans(false));
+    GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
   public static synchronized Task killTask(String taskId) {
@@ -393,19 +394,20 @@ public class Driver {
 
       @Nullable
       SpanContext runBatfishSpanContext =
-          GlobalTracer.get().activeSpan() == null
+          GlobalTracer.get().scopeManager().activeSpan() == null
               ? null
-              : GlobalTracer.get().activeSpan().context();
+              : GlobalTracer.get().scopeManager().activeSpan().context();
 
       Thread thread =
           new Thread(
               () -> {
-                try (ActiveSpan runBatfishSpan =
+                Span runBatfishSpan =
                     GlobalTracer.get()
                         .buildSpan("Run Batfish job in a new thread and get the answer")
                         .addReference(References.FOLLOWS_FROM, runBatfishSpanContext)
-                        .startActive()) {
-                  assert runBatfishSpan != null;
+                        .start();
+                try (Scope scope = GlobalTracer.get().scopeManager().activate(runBatfishSpan)) {
+                  assert scope != null; // avoid unused warning
                   Answer answer = null;
                   NetworkSnapshot snapshot =
                       new NetworkSnapshot(settings.getContainer(), settings.getTestrig());
@@ -453,9 +455,11 @@ public class Driver {
                     answer.addAnswerElement(
                         new BatfishException("Batfish job failed", e).getBatfishStackTrace());
                   } finally {
-                    try (ActiveSpan outputAnswerSpan =
-                        GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
-                      assert outputAnswerSpan != null;
+                    Span outputAnswerSpan =
+                        GlobalTracer.get().buildSpan("Outputting answer").start();
+                    try (Scope answerScope =
+                        GlobalTracer.get().scopeManager().activate(outputAnswerSpan)) {
+                      assert answerScope != null; // avoid unused warning
                       if (settings.getTaskId() != null) {
                         batfish.outputAnswerWithLog(answer);
                         batfish.outputAnswerMetadata(answer);
@@ -467,8 +471,12 @@ public class Driver {
                           snapshot.getNetwork(), snapshot.getSnapshot(), stackTrace);
                       batfish.setTerminatingExceptionMessage(
                           e.getClass().getName() + ": " + e.getMessage());
+                    } finally {
+                      outputAnswerSpan.finish();
                     }
                   }
+                } finally {
+                  runBatfishSpan.finish();
                 }
               });
 
@@ -535,12 +543,13 @@ public class Driver {
       Thread thread =
           new Thread(
               () -> {
-                try (ActiveSpan runBatfishSpan =
+                Span runBatfishSpan =
                     GlobalTracer.get()
                         .buildSpan("Initialize Batfish in a new thread")
                         .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
-                        .startActive()) {
-                  assert runBatfishSpan != null; // avoid unused warning
+                        .start();
+                try (Scope scope = GlobalTracer.get().scopeManager().activate(runBatfishSpan)) {
+                  assert scope != null; // avoid unused warning
                   task.setStatus(TaskStatus.InProgress);
                   String errMsg = runBatfish(settings);
                   if (errMsg == null) {
@@ -552,6 +561,8 @@ public class Driver {
                   task.setTerminated(new Date());
                   jobLogger.close();
                   makeIdle();
+                } finally {
+                  runBatfishSpan.finish();
                 }
               });
 

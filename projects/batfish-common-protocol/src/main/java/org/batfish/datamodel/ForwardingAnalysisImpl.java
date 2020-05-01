@@ -13,7 +13,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.HashMap;
@@ -76,9 +77,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Fib>> fibs,
       Topology topology,
       Map<Location, LocationInfo> locationInfo) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Construct ForwardingAnalysisImpl").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Construct ForwardingAnalysis").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       // TODO accept IpSpaceToBDD as parameter
       IpSpaceToBDD ipSpaceToBDD =
@@ -284,6 +285,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               externalIps);
 
       assert sanityCheck(ipSpaceToBDD, configurations);
+    } finally {
+      span.finish();
     }
   }
 
@@ -313,9 +316,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces,
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       Map<String, Map<String, IpSpace>> routableIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpReplies").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpReplies").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           configurations,
           Entry::getKey,
@@ -327,6 +330,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 ipsRoutedOutInterfaces.get(hostname),
                 interfaceOwnedIps);
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -358,9 +363,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdge(
       Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp,
       Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdge").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdge").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           arpTrueEdgeDestIp,
           Entry::getKey, // node
@@ -378,6 +383,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 Function.identity(),
                                 edge -> AclIpSpace.union(dstIp.get(edge), nextHopIp.get(edge))));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
@@ -386,11 +393,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge,
       Map<String, Map<String, IpSpace>> arpReplies) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeDestIp")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeDestIp").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithDestIpEdge,
           Entry::getKey, // node
@@ -417,6 +423,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 .thenPermitting(recvReplies)
                                 .build();
                           })));
+    } finally {
+      span.finish();
     }
   }
 
@@ -424,11 +432,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdgeNextHopIp(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeNextHopIp")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeNextHopIp").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithNextHopIpArpTrue,
           Entry::getKey, // node
@@ -448,6 +455,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     return computeRouteMatchConditions(
                                         routes, matchingIps.get(hostname).get(vrf));
                                   }))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -512,11 +521,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, Map<String, IpSpace>>> computeIpsRoutedOutInterfaces(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithNextHop,
           Entry::getKey /* hostname */,
@@ -545,6 +555,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -553,11 +565,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp,
       Map<String, Map<String, IpSpace>> someoneReplies) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeArpFalseDestIp")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpFalseDestIp").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWhereDstIpCanBeArpIp,
           Entry::getKey /* hostname */,
@@ -591,6 +602,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               }));
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -598,11 +611,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, Map<String, IpSpace>>> computeArpFalseNextHopIp(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeArpFalseNextHopIp")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpFalseNextHopIp").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return routesWithNextHopIpArpFalse.entrySet().stream()
           .collect(
               ImmutableMap.toImmutableMap(
@@ -631,6 +643,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                                       matchingIps.get(hostname).get(vrf))));
                                 }));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
@@ -638,9 +652,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, IpSpace>> computeNullRoutedIps(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Fib>> fibs) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNullRoutedIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNullRoutedIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return fibs.entrySet().stream()
           .collect(
               ImmutableMap.toImmutableMap(
@@ -666,6 +680,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                   return computeRouteMatchConditions(nullRoutes, vrfMatchingIps);
                                 }));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
@@ -673,9 +689,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, Map<String, IpSpace>>> computeNextVrfIpsByNodeVrf(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Fib>> fibs) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNextVrfIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNextVrfIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return fibs.entrySet().stream()
           .collect(
               ImmutableMap.toImmutableMap(
@@ -693,6 +709,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                             .get(hostname)
                                             .get(fibsByVrfEntry.getKey()) /* matchingIps */)));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
@@ -715,9 +733,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @VisibleForTesting
   static Map<String, Map<String, IpSpace>> computeRoutableIps(Map<String, Map<String, Fib>> fibs) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           fibs,
           Entry::getKey, // node
@@ -733,15 +751,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                   fibEntry ->
                                       IpWildcard.create(fibEntry.getTopLevelRoute().getNetwork()))
                               .collect(ImmutableSortedSet.toImmutableSortedSet(natural())))));
+    } finally {
+      span.finish();
     }
   }
 
   @VisibleForTesting
   static Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
       Map<String, Map<String, Fib>> fibs) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeMatchingIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeMatchingIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           fibs,
           Entry::getKey, // node
@@ -750,6 +770,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   nodeEntry.getValue(),
                   Entry::getKey, // vrf
                   vrfEntry -> vrfEntry.getValue().getMatchingIps()));
+    } finally {
+      span.finish();
     }
   }
 
@@ -777,11 +799,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
               nextHopInterfacesByNodeVrf,
           Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeRoutesWhereDstIpCanBeArpIp")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithNextHop,
           Entry::getKey /* hostname */,
@@ -815,6 +835,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       });
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -822,11 +844,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   static Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> computeRoutesWithDestIpEdge(
       Topology topology,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeRoutesWithDestIpEdge")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutesWithDestIpEdge").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       return toImmutableMap(
           routesWhereDstIpCanBeArpIp,
@@ -848,6 +869,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                             Maps.immutableEntry(new Edge(out, receiver), routes));
                               })
                           .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -856,11 +879,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   @VisibleForTesting
   static Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
       Map<String, Map<String, Fib>> fibs) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHop")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHop").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           fibs,
           Entry::getKey,
@@ -877,6 +899,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                       ((FibForward) fibEntry.getAction()).getInterfaceName(),
                                   Collectors.mapping(
                                       FibEntry::getTopLevelRoute, Collectors.toSet())))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -884,11 +908,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       computeRoutesWithNextHopIpArpFalseFilter(
           Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse,
           Function<AbstractRoute, Boolean> routeFilter) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseFilter")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithNextHopIpArpFalse,
           Entry::getKey /* hostname */,
@@ -904,6 +929,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               routesWithNextHopByOutInterfaceEntry.getValue().stream()
                                   .filter(routeFilter::apply)
                                   .collect(Collectors.toSet()))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -914,11 +941,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               nextHopInterfacesByNodeVrf,
           Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
           Map<String, Map<String, IpSpace>> someoneReplies) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalse")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithNextHop,
           Entry::getKey /* hostname */,
@@ -944,6 +972,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       });
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -971,11 +1001,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Topology topology,
       Map<String, Map<String, IpSpace>> arpReplies,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithNextHop,
           Entry::getKey, // node
@@ -1029,17 +1060,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                             })
                         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
   @VisibleForTesting
   static Map<String, Map<String, IpSpace>> computeSomeoneReplies(
       Topology topology, Map<String, Map<String, IpSpace>> arpReplies) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeSomeoneReplies")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeSomeoneReplies").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Map<String, Map<String, AclIpSpace.Builder>> someoneRepliesByNode = new HashMap<>();
       topology
           .getEdges()
@@ -1060,6 +1092,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                   Entry::getKey /* interface */,
                                   someoneRepliesByInterfaceEntry ->
                                       someoneRepliesByInterfaceEntry.getValue().build()))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1101,11 +1135,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private static Map<String, Map<String, BDD>> computeInterfaceExternalArpIpBDDs(
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps, IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeInterfaceHostSubnetIpBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .buildSpan("ForwardingAnalysisImpl.computeInterfaceExternalArpIpBDDs")
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           interfaceExternalArpIps,
           Entry::getKey /* host name */,
@@ -1114,15 +1149,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   .collect(
                       ImmutableMap.toImmutableMap(
                           Entry::getKey, ifaceEntry -> ipSpaceToBDD.visit(ifaceEntry.getValue()))));
+    } finally {
+      span.finish();
     }
   }
 
   static Map<String, Map<String, Map<String, IpSpace>>> union(
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.union").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("construct union").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       checkArgument(
           ipSpaces1.keySet().equals(ipSpaces2.keySet()),
@@ -1161,20 +1198,24 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               ifaceEntry.getValue(), vrfIpSpaces2.get(ifaceEntry.getKey())));
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
   private static IpSpace computeInternalIps(
       Map<String, Map<String, IpSpace>> interfaceHostSubnetIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeInternalIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeInternalIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return firstNonNull(
           AclIpSpace.union(
               interfaceHostSubnetIps.values().stream()
                   .flatMap(ifaceSubnetIps -> ifaceSubnetIps.values().stream())
                   .collect(Collectors.toList())),
           EmptyIpSpace.INSTANCE);
+    } finally {
+      span.finish();
     }
   }
 
@@ -1187,11 +1228,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeDeliveredToSubnet")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeDeliveredToSubnet").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           arpFalseDestIp,
           Entry::getKey,
@@ -1211,6 +1251,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                           .get(nodeEntry.getKey())
                                           .get(ifaceEntry.getKey())),
                                   ownedIps))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1228,9 +1270,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDstIp,
       IpSpace externalIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeExitsNetwork").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeExitsNetwork").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           dstIpsWithUnownedNextHopIpArpFalse,
           Entry::getKey,
@@ -1267,6 +1309,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       });
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -1295,11 +1339,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithOwnedNextHopIpArpFalse,
       IpSpace internalIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeInsufficientInfo")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeInsufficientInfo").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       return toImmutableMap(
           arpFalseDestIp,
@@ -1358,6 +1401,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 ipSpaceInternalDstIpUnownedNexthopIp,
                                 ipSpaceOwnedNextHopIp);
                           })));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1373,11 +1418,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeNeighborUnreachable")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNeighborUnreachable").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           arpFalse,
           Entry::getKey,
@@ -1403,6 +1447,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     ownedIps)
                                 : ifaceArpFalse;
                           })));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1414,11 +1460,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   /** hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot */
   private static Map<String, Set<String>> computeInterfacesWithMissingDevices(
       Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs, BDD unownedIpsBDD) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeInterfacesWithMissingDevices")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           interfaceExternalArpIpBDDs,
           Entry::getKey,
@@ -1427,6 +1474,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   .filter(ifaceEntry -> ifaceEntry.getValue().andSat(unownedIpsBDD))
                   .map(Entry::getKey)
                   .collect(ImmutableSet.toImmutableSet()));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1440,11 +1489,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
           Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
               routesWithOwnedNextHopIpArpFalse) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeDstIpsWithOwnedNextHopIpArpFalse")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithOwnedNextHopIpArpFalse,
           Entry::getKey,
@@ -1461,6 +1511,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         ifaceEntry ->
                             computeRouteMatchConditions(ifaceEntry.getValue(), vrfMatchingIps));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1469,11 +1521,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
           Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
               routesWithUnownedNextHopIpArpFalse) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeDstIpsWithUnownedNextHopIpArpFalse")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           routesWithUnownedNextHopIpArpFalse,
           Entry::getKey,
@@ -1490,13 +1543,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                         ifaceEntry ->
                             computeRouteMatchConditions(ifaceEntry.getValue(), vrfMatchingIps));
                   }));
+    } finally {
+      span.finish();
     }
   }
 
   private static IpSpace computeOwnedIps(Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeOwnedIps").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeOwnedIps").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return IpWildcardSetIpSpace.builder()
           .including(
               interfaceOwnedIps.values().stream()
@@ -1505,6 +1560,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   .map(IpWildcard::create)
                   .collect(Collectors.toList()))
           .build();
+    } finally {
+      span.finish();
     }
   }
 
@@ -1649,11 +1706,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   private static Map<
           String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
       computeNextHopInterfacesByNodeVrf(Map<String, Map<String, Fib>> fibsByNode) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeNextHopInterfacesByNodeVrf")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           fibsByNode,
           Entry::getKey,
@@ -1662,6 +1720,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   fibsByNodeEntry.getValue(),
                   Entry::getKey,
                   fibsByVrfEntry -> computeNextHopInterfaces(fibsByVrfEntry.getValue())));
+    } finally {
+      span.finish();
     }
   }
 
