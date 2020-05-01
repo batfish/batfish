@@ -288,6 +288,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
         listeners,
         region,
         warnings);
+    viIface.getVrf().setHasOriginatingSessions(true);
 
     IpAccessList defaultFilter =
         computeNotForwardedFilter(networkInterface.get().getPrivateIpAddresses());

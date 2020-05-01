@@ -14330,7 +14330,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
+            "hasOriginatingSessions" : true,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19348,7 +19348,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
+            "hasOriginatingSessions" : true,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",

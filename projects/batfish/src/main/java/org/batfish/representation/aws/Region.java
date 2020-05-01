@@ -829,6 +829,9 @@ public final class Region implements Serializable {
                   new FirewallSessionInterfaceInfo(
                       false, ImmutableList.of(iface.getName()), null, null));
             });
+
+    // Allowing sessions to be created upon accepting a packet into a VRF
+    configuration.getVrfs().values().forEach(vrf -> vrf.setHasOriginatingSessions(true));
   }
 
   @VisibleForTesting

@@ -195,6 +195,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     ifaceToSubnet.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
             false, ImmutableList.of(ifaceToSubnet.getName()), null, null));
+    ifaceToSubnet.getVrf().setHasOriginatingSessions(true);
 
     // post transformation filter on the interface to the subnet
     IpAccessList postTransformationFilter =
@@ -229,6 +230,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
               ImmutableList.of(ifaceToVpc.getName()),
               null,
               egressAcl == null ? null : egressAcl.getName()));
+      ifaceToVpc.getVrf().setHasOriginatingSessions(true);
     }
 
     // Create LocationInfo the interface
