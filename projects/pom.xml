@@ -755,23 +755,6 @@
         <version>${okhttp.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>io.jaegertracing</groupId>
-        <artifactId>jaeger-core</artifactId>
-        <version>${jaeger.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>io.jaegertracing</groupId>
-        <artifactId>jaeger-thrift</artifactId>
-        <version>${jaeger.version}</version>
-      </dependency>
 
       <dependency>
         <groupId>commons-beanutils</groupId>
@@ -789,6 +772,24 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jaegertracing</groupId>
+        <artifactId>jaeger-core</artifactId>
+        <version>${jaeger.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jaegertracing</groupId>
+        <artifactId>jaeger-thrift</artifactId>
+        <version>${jaeger.version}</version>
       </dependency>
 
       <dependency>

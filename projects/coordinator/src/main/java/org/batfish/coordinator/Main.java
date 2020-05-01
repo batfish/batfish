@@ -316,9 +316,9 @@ public class Main {
   private static void initTracer() {
     Configuration config =
         new Configuration(_settings.getServiceName())
-            .withSampler(SamplerConfiguration.fromEnv().withType("const").withParam(1))
+            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
             .withReporter(
-                ReporterConfiguration.fromEnv()
+                new ReporterConfiguration()
                     .withSender(
                         SenderConfiguration.fromEnv()
                             .withAgentHost(_settings.getTracingAgentHost())

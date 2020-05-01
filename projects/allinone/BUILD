@@ -37,7 +37,7 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/coordinator",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_uber_jaeger_jaeger_core",
+        "@maven//:io_jaegertracing_jaeger_core",
         "@maven//:io_opentracing_opentracing_util",
     ],
 )

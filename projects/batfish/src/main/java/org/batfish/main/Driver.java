@@ -166,9 +166,9 @@ public class Driver {
   private static void initTracer() {
     io.jaegertracing.Configuration config =
         new io.jaegertracing.Configuration(_mainSettings.getServiceName())
-            .withSampler(SamplerConfiguration.fromEnv().withType("const").withParam(1))
+            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
             .withReporter(
-                ReporterConfiguration.fromEnv()
+                new ReporterConfiguration()
                     .withSender(
                         SenderConfiguration.fromEnv()
                             .withAgentHost(_mainSettings.getTracingAgentHost())

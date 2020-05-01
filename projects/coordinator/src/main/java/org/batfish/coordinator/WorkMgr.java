@@ -2034,7 +2034,6 @@ public class WorkMgr extends AbstractCoordinator {
     Client client = null;
     boolean killed = false;
 
-    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
     Span span = GlobalTracer.get().buildSpan("Killing task").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
