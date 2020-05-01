@@ -1,11 +1,7 @@
 package org.batfish.coordinator.id;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.storage.FileBasedStorage.writeStringToFile;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import javax.annotation.Nonnull;
@@ -20,6 +16,7 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.storage.FileBasedStorage;
 
 /**
  * Filesystem based {@link IdManager} capable of writing mappings used by {@link
@@ -33,21 +30,21 @@ public class FileBasedIdManager extends FileBasedIdResolver implements IdManager
     return UUID.randomUUID().toString();
   }
 
-  public FileBasedIdManager(Path baseDir) {
-    super(baseDir);
+  public FileBasedIdManager(FileBasedStorage s) {
+    super(s);
   }
 
-  private static void writeIdFile(Path file, Id id) {
+  private void deleteIdFile(Path file) {
     try {
-      writeStringToFile(file, id.getId(), UTF_8);
+      _s.deleteIdFile(file);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
-  private static void deleteIdFile(Path file) {
+  private void writeIdFile(Path file, Id id) {
     try {
-      Files.delete(file);
+      _s.writeIdFile(file, id);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

@@ -3,7 +3,6 @@ package org.batfish.identifiers;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.ofNullable;
 import static org.batfish.storage.FileBasedStorage.fromBase64;
-import static org.batfish.storage.FileBasedStorage.readFileToString;
 import static org.batfish.storage.FileBasedStorage.toBase64;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -47,16 +46,16 @@ public class FileBasedIdResolver implements IdResolver {
 
   private static final String RELPATH_SNAPSHOT_IDS = "snapshot_ids";
 
-  private static @Nonnull String readIdFile(Path file) {
+  private static @Nonnull String hash(String input) {
+    return Hashing.murmur3_128().hashString(input, UTF_8).toString();
+  }
+
+  private @Nonnull String readIdFile(Path file) {
     try {
-      return readFileToString(file, UTF_8);
+      return _s.readIdFile(file);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-  }
-
-  private static @Nonnull String hash(String input) {
-    return Hashing.murmur3_128().hashString(input, UTF_8).toString();
   }
 
   @VisibleForTesting
@@ -87,10 +86,12 @@ public class FileBasedIdResolver implements IdResolver {
     }
   }
 
+  protected final FileBasedStorage _s;
   protected final FileBasedStorageDirectoryProvider _d;
 
-  public FileBasedIdResolver(Path storageBase) {
-    _d = new FileBasedStorageDirectoryProvider(storageBase);
+  public FileBasedIdResolver(FileBasedStorage s) {
+    _s = s;
+    _d = s.getDirectoryProvider();
   }
 
   @Override

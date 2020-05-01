@@ -31,6 +31,7 @@ import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Batfish.TestrigSettings;
+import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.rules.TemporaryFolder;
@@ -46,7 +47,7 @@ public class BatfishTestUtils {
   private static class TestFileBasedIdResolver extends FileBasedIdResolver {
 
     public TestFileBasedIdResolver(Path storageBase) {
-      super(storageBase);
+      super(new FileBasedStorage(storageBase, null));
     }
   }
 

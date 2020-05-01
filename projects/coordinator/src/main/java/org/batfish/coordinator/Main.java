@@ -328,12 +328,8 @@ public class Main {
   }
 
   private static void initWorkManager(BindPortFutures bindPortFutures) {
-    _workManager =
-        new WorkMgr(
-            _settings,
-            _logger,
-            new FileBasedIdManager(_settings.getContainersLocation()),
-            new FileBasedStorage(_settings.getContainersLocation(), _logger));
+    FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
+    _workManager = new WorkMgr(_settings, _logger, new FileBasedIdManager(fbs), fbs);
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(

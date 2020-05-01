@@ -49,12 +49,8 @@ public final class WorkMgrTestUtils {
     Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr workMgr =
-        new WorkMgr(
-            Main.getSettings(),
-            logger,
-            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+    FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
+    WorkMgr workMgr = new WorkMgr(Main.getSettings(), logger, new FileBasedIdManager(fbs), fbs);
     // Setup some test version data
     Main.setWorkMgr(workMgr);
   }

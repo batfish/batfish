@@ -103,12 +103,8 @@ public class WorkMgrServiceTest {
         });
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr manager =
-        new WorkMgr(
-            settings,
-            logger,
-            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+    FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
+    WorkMgr manager = new WorkMgr(settings, logger, new FileBasedIdManager(fbs), fbs);
     Main.setWorkMgr(manager);
     manager.initNetwork(_networkName, null);
     manager.getIdManager().assignNetwork(_networkName, _networkId);

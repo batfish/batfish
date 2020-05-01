@@ -10,6 +10,7 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.batfish.storage.FileBasedStorage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +25,7 @@ public final class FileBasedIdResolverTest {
 
   @Before
   public void setup() {
-    _resolver = new FileBasedIdResolver(_folder.getRoot().toPath());
+    _resolver = new FileBasedIdResolver(new FileBasedStorage(_folder.getRoot().toPath(), null));
   }
 
   private static void assertLastComponentBase64Encoded(Path idPath) {

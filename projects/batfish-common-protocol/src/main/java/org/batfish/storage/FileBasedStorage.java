@@ -75,6 +75,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -101,9 +102,8 @@ public final class FileBasedStorage implements StorageProvider {
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
   private FileBasedStorageDirectoryProvider _d;
 
-  @VisibleForTesting
-  @Nonnull
-  FileBasedStorageDirectoryProvider getDirectoryProvider() {
+  /** Returns directory provider for clients tied specifically to {@link FileBasedStorage}. */
+  public @Nonnull FileBasedStorageDirectoryProvider getDirectoryProvider() {
     return _d;
   }
 
@@ -1106,11 +1106,7 @@ public final class FileBasedStorage implements StorageProvider {
     Files.deleteIfExists(path);
   }
 
-  /**
-   * Reads file into a String. All FileBasedStorage-family classes should use this function for this
-   * operation.
-   */
-  public static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
+  private static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
     return FileUtils.readFileToString(file.toFile(), charset);
   }
 
@@ -1125,11 +1121,8 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  /**
-   * Writes a String to a file. All FileBasedStorage-family classes should use this function for
-   * this operation.
-   */
-  public static void writeStringToFile(Path file, String data, Charset charset) throws IOException {
+  private static void writeStringToFile(Path file, String data, Charset charset)
+      throws IOException {
     Path tmpFile = Files.createTempFile(null, null);
     try {
       FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
@@ -1255,5 +1248,32 @@ public final class FileBasedStorage implements StorageProvider {
     Path sl1tPath = getSynthesizedLayer1TopologyPath(network, snapshot);
     mkdirs(sl1tPath.getParent());
     writeFile(sl1tPath, BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
+  }
+
+  /**
+   * Read the contents of an ID file.
+   *
+   * @throws IOException if there is an error
+   */
+  public @Nonnull String readIdFile(Path file) throws IOException {
+    return readFileToString(file, UTF_8);
+  }
+
+  /**
+   * Write an ID to the given file.
+   *
+   * @throws IOException if there is an error
+   */
+  public void writeIdFile(Path file, Id id) throws IOException {
+    writeStringToFile(file, id.getId(), UTF_8);
+  }
+
+  /**
+   * Delete the given ID file.
+   *
+   * @throws IOException if there is an error
+   */
+  public void deleteIdFile(Path file) throws IOException {
+    Files.delete(file);
   }
 }
