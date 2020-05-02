@@ -270,11 +270,7 @@ public class SubnetTest {
   }
 
   private static void testProcessRouteHelper(
-      RouteV4 route,
-      String linkId,
-      Configuration vpcCfg,
-      Configuration subnetCfg,
-      Prefix subnetPrefix) {
+      RouteV4 route, String linkId, Configuration vpcCfg, Configuration subnetCfg) {
     // there should be a VRF on the VPC node
     String vrfName = vrfNameForLink(linkId);
     assertThat(vpcCfg, hasVrf(vrfName, any(Vrf.class)));
@@ -334,7 +330,7 @@ public class SubnetTest {
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, igw, null, awsConfiguration, new Warnings());
 
-    testProcessRouteHelper(route, igw.getId(), vpcCfg, subnetCfg, subnet.getCidrBlock());
+    testProcessRouteHelper(route, igw.getId(), vpcCfg, subnetCfg);
   }
 
   /** Tests that we do the right thing when processing a route for an Internet gateway. */
@@ -372,7 +368,7 @@ public class SubnetTest {
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, null, vgw, awsConfiguration, new Warnings());
 
-    testProcessRouteHelper(route, vgw.getId(), vpcCfg, subnetCfg, subnet.getCidrBlock());
+    testProcessRouteHelper(route, vgw.getId(), vpcCfg, subnetCfg);
   }
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
@@ -411,7 +407,7 @@ public class SubnetTest {
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
 
-    testProcessRouteHelper(route, connectionId, vpcCfg, subnetCfg, subnetPrefix);
+    testProcessRouteHelper(route, connectionId, vpcCfg, subnetCfg);
   }
 
   /** Tests that we do the right thing when processing a route for transit gateway. */
@@ -460,7 +456,7 @@ public class SubnetTest {
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
 
-    testProcessRouteHelper(route, linkId, vpcCfg, subnetCfg, subnetPrefix);
+    testProcessRouteHelper(route, linkId, vpcCfg, subnetCfg);
   }
 
   /**
