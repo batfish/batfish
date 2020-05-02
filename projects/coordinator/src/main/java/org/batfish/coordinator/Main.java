@@ -41,7 +41,7 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
-import org.batfish.coordinator.id.FileBasedIdManager;
+import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONException;
@@ -329,7 +329,7 @@ public class Main {
 
   private static void initWorkManager(BindPortFutures bindPortFutures) {
     FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
-    _workManager = new WorkMgr(_settings, _logger, new FileBasedIdManager(fbs), fbs);
+    _workManager = new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs);
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(

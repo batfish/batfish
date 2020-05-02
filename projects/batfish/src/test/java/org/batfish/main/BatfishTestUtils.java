@@ -26,10 +26,10 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
-import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.main.Batfish.TestrigSettings;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
@@ -44,9 +44,9 @@ public class BatfishTestUtils {
   public static final NetworkSnapshot TEST_REFERENCE_SNAPSHOT =
       new NetworkSnapshot(new NetworkId("testnet"), new SnapshotId("testrefss"));
 
-  private static class TestFileBasedIdResolver extends FileBasedIdResolver {
+  private static class TestStorageBasedIdResolver extends StorageBasedIdResolver {
 
-    public TestFileBasedIdResolver(Path storageBase) {
+    public TestStorageBasedIdResolver(Path storageBase) {
       super(new FileBasedStorage(storageBase, null));
     }
   }
@@ -90,7 +90,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeVendorConfigurationCache(),
             null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
+            new TestStorageBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
       batfish.initializeTopology(batfish.getSnapshot());
     }
@@ -124,7 +124,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeVendorConfigurationCache(),
             null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
+            new TestStorageBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       batfish.initializeTopology(TEST_SNAPSHOT);
@@ -184,7 +184,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeVendorConfigurationCache(),
             null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
+            new TestStorageBasedIdResolver(settings.getStorageBase()));
     TestrigSettings snapshotTr = batfish.getSnapshotTestrigSettings();
     Path testrigPath = snapshotTr.getInputPath();
     snapshotTr.getOutputPath().toFile().mkdirs();

@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
-import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
@@ -18,21 +17,22 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.storage.StorageProvider;
 
 /**
- * Storage-based {@link IdManager} capable of writing mappings used by {@link FileBasedIdResolver},
- * from which it inherits. Intended to be used together with {@link
+ * Storage-based {@link IdManager} capable of writing mappings used by {@link
+ * StorageBasedIdResolver}, from which it inherits. Intended to be used together with {@link
  * org.batfish.storage.StorageProvider}.
  */
 @ParametersAreNonnullByDefault
-public class FileBasedIdManager extends FileBasedIdResolver implements IdManager {
+public class StorageBasedIdManager extends StorageBasedIdResolver implements IdManager {
 
   private static @Nonnull String uuid() {
     return UUID.randomUUID().toString();
   }
 
-  public FileBasedIdManager(StorageProvider s) {
+  public StorageBasedIdManager(StorageProvider s) {
     super(s);
   }
 

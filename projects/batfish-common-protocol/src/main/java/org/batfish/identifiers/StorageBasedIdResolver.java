@@ -18,7 +18,7 @@ import org.batfish.storage.StorageProvider;
 /**
  * Storage-based {@link IdResolver} that reads IDs via {@link org.batfish.storage.StorageProvider}.
  */
-public class FileBasedIdResolver implements IdResolver {
+public class StorageBasedIdResolver implements IdResolver {
 
   public static final String NETWORK_NODE_ROLES = "network_node_roles";
 
@@ -44,7 +44,7 @@ public class FileBasedIdResolver implements IdResolver {
 
   protected final StorageProvider _s;
 
-  public FileBasedIdResolver(StorageProvider s) {
+  public StorageBasedIdResolver(StorageProvider s) {
     _s = s;
   }
 

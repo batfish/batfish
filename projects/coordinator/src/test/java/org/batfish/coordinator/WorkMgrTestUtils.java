@@ -19,8 +19,8 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
-import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -50,7 +50,7 @@ public final class WorkMgrTestUtils {
     Main.setLogger(logger);
     Main.initAuthorizer();
     FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
-    WorkMgr workMgr = new WorkMgr(Main.getSettings(), logger, new FileBasedIdManager(fbs), fbs);
+    WorkMgr workMgr = new WorkMgr(Main.getSettings(), logger, new StorageBasedIdManager(fbs), fbs);
     // Setup some test version data
     Main.setWorkMgr(workMgr);
   }
