@@ -191,12 +191,12 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         ImmutableList.of(_vgw),
         _batfish);
 
-    // The private subnet does not point to the VGW, so its (private) address space is not available
-    // via the VGW
+    // The public subnet does not point to the VGW for outgoing traffic, but it's private space must
+    // still accessible via the VGW since the VPC announces the whole space
     testTrace(
         getAnyFlow(_vgw, _publicInstancePrivateIp, _batfish),
-        FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_vgw, _vpc),
+        FlowDisposition.DENIED_IN,
+        ImmutableList.of(_vgw, _vpc, _publicSubnet, _publicInstance),
         _batfish);
 
     testTrace(

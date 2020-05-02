@@ -368,8 +368,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     String vrfNameOnTgw = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
 
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
-      vpc.initializeVrf(vrf);
+      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId()));
+      return;
     }
 
     // the VRF will exist if this routing table has been encountered before
