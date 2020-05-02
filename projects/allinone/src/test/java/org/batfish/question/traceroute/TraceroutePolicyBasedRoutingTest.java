@@ -3,6 +3,7 @@ package org.batfish.question.traceroute;
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
 import static org.batfish.datamodel.matchers.HopMatchers.hasOutputInterface;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.Matchers.everyItem;
@@ -18,6 +19,7 @@ import java.util.SortedMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -29,6 +31,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.If;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
@@ -91,7 +94,14 @@ public class TraceroutePolicyBasedRoutingTest {
                                       .setDstIps(Ip.parse("9.9.9.9").toIpSpace())
                                       .build())),
                           ImmutableList.of(
-                              new Return(new FibLookup(new LiteralVrfName(v2.getName())))))),
+                              new Return(new FibLookup(new LiteralVrfName(v2.getName()))))),
+                      new If(
+                          new PacketMatchExpr(
+                              new MatchHeaderSpace(
+                                  HeaderSpace.builder()
+                                      .setDstIps(Ip.parse("10.10.10.10").toIpSpace())
+                                      .build())),
+                          ImmutableList.of(new Return(Drop.instance())))),
                   new Return(new FibLookup(new LiteralVrfName(v1.getName()))))));
       ingressIface.setRoutingPolicy(ROUTING_POLICY_NAME);
     }
@@ -174,6 +184,29 @@ public class TraceroutePolicyBasedRoutingTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasLastHop(hasOutputInterface(NodeInterfacePair.of("c1", "i2")))),
+                Schema.set(Schema.TRACE))));
+  }
+
+  @Test
+  public void testMatchesPolicyIfThenDropDrop() throws IOException {
+    SortedMap<String, Configuration> configs = pbrNetwork(true);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    PacketHeaderConstraints header =
+        PacketHeaderConstraints.builder().setSrcIp("1.1.1.222").setDstIp("10.10.10.10").build();
+
+    TracerouteQuestion question =
+        new TracerouteQuestion(SOURCE_LOCATION_STR, header, false, DEFAULT_MAX_TRACES);
+
+    TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(batfish.getSnapshot());
+    assertThat(answer.getRows().getData(), hasSize(1));
+    assertThat(
+        answer.getRows().getData(),
+        everyItem(
+            hasColumn(
+                COL_TRACES,
+                everyItem(hasDisposition(FlowDisposition.DENIED_IN)),
                 Schema.set(Schema.TRACE))));
   }
 
