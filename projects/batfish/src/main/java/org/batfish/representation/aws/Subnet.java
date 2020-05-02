@@ -208,21 +208,23 @@ public class Subnet implements AwsVpcEntity, Serializable {
         .values()
         .forEach(
             vrf -> {
+              String interfaceSuffix = vrf.getName().equals(DEFAULT_VRF_NAME) ? "" : vrf.getName();
               connect(
                   awsConfiguration,
                   cfgNode,
                   DEFAULT_VRF_NAME,
                   vpcConfigNode,
                   vrf.getName(),
-                  vrf.getName().equals(DEFAULT_VRF_NAME) ? "" : vrf.getName());
+                  interfaceSuffix);
 
               // add a static route on the vpc router for this subnet;
               addStaticRoute(
                   vrf,
                   toStaticRoute(
                       _cidrBlock,
-                      interfaceNameToRemote(cfgNode),
-                      getInterfaceLinkLocalIp(cfgNode, _vpcId)));
+                      interfaceNameToRemote(cfgNode, interfaceSuffix),
+                      getInterfaceLinkLocalIp(
+                          cfgNode, interfaceNameToRemote(vpcConfigNode, interfaceSuffix))));
             });
 
     Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);

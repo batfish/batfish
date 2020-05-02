@@ -11,6 +11,7 @@ import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
 import static org.batfish.representation.aws.Utils.connect;
+import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.nodeName;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
@@ -213,6 +215,58 @@ public class SubnetTest {
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC));
+  }
+
+  /**
+   * Test that the subnet connects to all the VRFs on the VPC, and the VPC has a static route to the
+   * subnet prefix inside all VRFs
+   */
+  @Test
+  public void testToConfigurationNodeConnectAllVpcVrfs() {
+    Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "domain");
+
+    // add a connection-based VRF (in addition to the default VRF)
+    String connectionVrf = "vrf-connection";
+    vpcCfg
+        .getVrfs()
+        .put(connectionVrf, Vrf.builder().setName(connectionVrf).setOwner(vpcCfg).build());
+
+    Prefix subnetPrefix = Prefix.parse("1.1.1.1/32");
+    Subnet subnet =
+        new Subnet(subnetPrefix, "subnet", vpcCfg.getHostname(), "az", ImmutableMap.of());
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+
+    Configuration subnetCfg =
+        subnet.toConfigurationNode(awsConfiguration, new Region("r1"), new Warnings());
+
+    assertThat(
+        subnetCfg.getAllInterfaces().keySet(),
+        equalTo(
+            ImmutableSet.of(
+                instancesInterfaceName(subnet.getId()), // to instances
+                interfaceNameToRemote(vpcCfg), // default VRF
+                interfaceNameToRemote(vpcCfg, connectionVrf)))); // connection-based VRF
+
+    assertThat(
+        vpcCfg.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    subnetPrefix,
+                    interfaceNameToRemote(subnetCfg),
+                    getInterfaceLinkLocalIp(subnetCfg, vpcCfg.getHostname())))));
+
+    assertThat(
+        vpcCfg.getVrfs().get(connectionVrf).getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    subnetPrefix,
+                    interfaceNameToRemote(subnetCfg, connectionVrf),
+                    getInterfaceLinkLocalIp(
+                        subnetCfg, interfaceNameToRemote(vpcCfg, connectionVrf))))));
   }
 
   private static void testProcessRouteHelper(

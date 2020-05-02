@@ -192,7 +192,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         _batfish);
 
     // The public subnet does not point to the VGW for outgoing traffic, but it's private space must
-    // still accessible via the VGW since the VPC announces the whole space
+    // still be accessible via the VGW since the VPC announces the whole space
     testTrace(
         getAnyFlow(_vgw, _publicInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN,

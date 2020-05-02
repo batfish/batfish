@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.Utils.checkNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -172,34 +173,18 @@ final class Vpc implements AwsVpcEntity, Serializable {
         vrfName.equals(DEFAULT_VRF_NAME)
             ? vpcCfg.getDefaultVrf()
             : Vrf.builder().setOwner(vpcCfg).setName(vrfName).build();
-    _cidrBlockAssociations.forEach(
-        cb ->
-            vrf.getStaticRoutes()
-                .add(
-                    StaticRoute.builder()
-                        .setAdministrativeCost(255)
-                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                        .setNetwork(cb)
-                        .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-                        .build()));
+    _cidrBlockAssociations.forEach(cb -> vrf.getStaticRoutes().add(staticRouteToVpcPrefix(cb)));
   }
 
-  private static String subnetFacingIfaceName(String subnetId, String vrfName) {
-    return vrfName.equals(DEFAULT_VRF_NAME) ? subnetId : subnetId + "-" + vrfName;
+  @VisibleForTesting
+  static StaticRoute staticRouteToVpcPrefix(Prefix prefix) {
+    return StaticRoute.builder()
+        .setAdministrativeCost(255)
+        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .setNetwork(prefix)
+        .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+        .build();
   }
-
-  //  void initializeVrf(Vrf vrf) {
-  //    _cidrBlockAssociations.forEach(
-  //        cb ->
-  //            vrf.getStaticRoutes()
-  //                .add(
-  //                    StaticRoute.builder()
-  //                        .setAdministrativeCost(255)
-  //                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-  //                        .setNetwork(cb)
-  //                        .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-  //                        .build()));
-  //  }
 
   /** Return the hostname used for a VPC Id */
   static String nodeName(String vpcId) {
