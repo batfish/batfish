@@ -20,7 +20,7 @@ import org.batfish.storage.StorageProvider;
  */
 public class StorageBasedIdResolver implements IdResolver {
 
-  public static final String NETWORK_NODE_ROLES = "network_node_roles";
+  protected static final String NETWORK_NODE_ROLES = "network_node_roles";
 
   private static @Nonnull String hash(String input) {
     return Hashing.murmur3_128().hashString(input, UTF_8).toString();
