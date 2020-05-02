@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -32,6 +33,8 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
+import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -644,4 +647,41 @@ public interface StorageProvider {
    */
   void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot)
       throws IOException;
+
+  /**
+   * Read the value of an ID corresponding to given ancestor IDs, ID type, and user-provided name.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  String readId(List<Id> ancestors, IdType type, String name) throws IOException;
+
+  /**
+   * Write an name-ID mapping corresponding to given ancestor IDs and user-provided name.
+   *
+   * @throws IOException if there is an error
+   */
+  void writeId(List<Id> ancestors, Id id, String name) throws IOException;
+
+  /**
+   * Delete the name-ID mapping corresponding to the given ancestor IDs, ID type, and user-provided
+   * name.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) throws IOException;
+
+  /**
+   * Returns true iff there is a name-ID mapping corresponding to given ancestor IDs and
+   * user-provided name.
+   */
+  boolean hasId(List<Id> ancestors, IdType type, String name);
+
+  /**
+   * Lists the resolvable names corresponding to the given ancestor IDs and ID type.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Set<String> listResolvableNames(List<Id> ancestors, IdType type) throws IOException;
 }

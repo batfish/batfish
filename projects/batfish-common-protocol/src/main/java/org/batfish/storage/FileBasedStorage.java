@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
+import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -88,6 +91,7 @@ import org.batfish.role.NodeRolesData;
 @ParametersAreNonnullByDefault
 public final class FileBasedStorage implements StorageProvider {
 
+  private static final String ID_EXTENSION = ".id";
   private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
   private static final String RELPATH_BGP_TOPOLOGY = "bgp_topology.json";
   private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
@@ -102,8 +106,9 @@ public final class FileBasedStorage implements StorageProvider {
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
   private FileBasedStorageDirectoryProvider _d;
 
-  /** Returns directory provider for clients tied specifically to {@link FileBasedStorage}. */
-  public @Nonnull FileBasedStorageDirectoryProvider getDirectoryProvider() {
+  @VisibleForTesting
+  @Nonnull
+  FileBasedStorageDirectoryProvider getDirectoryProvider() {
     return _d;
   }
 
@@ -1250,30 +1255,90 @@ public final class FileBasedStorage implements StorageProvider {
     writeFile(sl1tPath, BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
   }
 
-  /**
-   * Read the contents of an ID file.
-   *
-   * @throws IOException if there is an error
-   */
-  public @Nonnull String readIdFile(Path file) throws IOException {
-    return readFileToString(file, UTF_8);
+  @Override
+  public @Nonnull String readId(List<Id> ancestors, IdType type, String name) throws IOException {
+    return readFileToString(getIdFile(ancestors, type, name), UTF_8);
   }
 
-  /**
-   * Write an ID to the given file.
-   *
-   * @throws IOException if there is an error
-   */
-  public void writeIdFile(Path file, Id id) throws IOException {
+  @Override
+  public void writeId(List<Id> ancestors, Id id, String name) throws IOException {
+    Path file = getIdFile(ancestors, id.getType(), name);
+    mkdirs(file.getParent());
     writeStringToFile(file, id.getId(), UTF_8);
   }
 
-  /**
-   * Delete the given ID file.
-   *
-   * @throws IOException if there is an error
-   */
-  public void deleteIdFile(Path file) throws IOException {
-    Files.delete(file);
+  @Override
+  public void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) throws IOException {
+    Files.delete(getIdFile(ancestors, type, name));
+  }
+
+  @Override
+  public boolean hasId(List<Id> ancestors, IdType type, String name) {
+    return Files.exists(getIdFile(ancestors, type, name));
+  }
+
+  @Override
+  public @Nonnull Set<String> listResolvableNames(List<Id> ancestors, IdType type)
+      throws IOException {
+    Path idsDir = getIdsDir(ancestors, type);
+    if (!Files.exists(idsDir)) {
+      return ImmutableSet.of();
+    }
+    try (Stream<Path> files = Files.list(idsDir)) {
+      return files
+          .filter(
+              path -> {
+                try {
+                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
+                } catch (IllegalArgumentException e) {
+                  return false;
+                }
+              })
+          .map(Path::getFileName)
+          .map(Path::toString)
+          .map(FileBasedStorage::fromBase64)
+          .map(
+              nameWithExtension ->
+                  nameWithExtension.substring(
+                      0, nameWithExtension.length() - ID_EXTENSION.length()))
+          .collect(ImmutableSet.toImmutableSet());
+    } catch (IOException e) {
+      throw new IOException("Could not list files in '" + idsDir + "'", e);
+    }
+  }
+
+  private static String toIdDirName(IdType type) {
+    switch (type) {
+      case NETWORK:
+        return "network_ids";
+      case SNAPSHOT:
+        return "snapshot_ids";
+      case ANALYSIS:
+        return "analysis_ids";
+      case ANSWER:
+        return "answer_ids";
+      case QUESTION:
+        return "question_ids";
+      case QUESTION_SETTINGS:
+        return "question_settings_ids";
+      case NODE_ROLES:
+        return "node_roles_ids";
+      case ISSUE_SETTINGS:
+        return "issue_settings_ids";
+      default:
+        throw new IllegalArgumentException(String.format("Unsupported IdType: %s", type));
+    }
+  }
+
+  private @Nonnull Path getIdsDir(List<Id> ancestors, IdType type) {
+    Path file = _d.getStorageBase().resolve("ids");
+    for (Id id : ancestors) {
+      file = file.resolve(toIdDirName(id.getType())).resolve(id.getId());
+    }
+    return file.resolve(toIdDirName(type));
+  }
+
+  private @Nonnull Path getIdFile(List<Id> ancestors, IdType type, String name) {
+    return getIdsDir(ancestors, type).resolve(toBase64(name + ID_EXTENSION));
   }
 }

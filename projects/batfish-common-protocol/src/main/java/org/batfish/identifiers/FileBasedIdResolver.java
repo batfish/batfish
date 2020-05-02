@@ -2,96 +2,50 @@ package org.batfish.identifiers;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.ofNullable;
-import static org.batfish.storage.FileBasedStorage.fromBase64;
-import static org.batfish.storage.FileBasedStorage.toBase64;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.hash.Hashing;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
-import org.batfish.storage.FileBasedStorage;
-import org.batfish.storage.FileBasedStorageDirectoryProvider;
+import org.batfish.storage.StorageProvider;
 
 /**
- * Filesystem-based {@link IdResolver} that reads IDs from directories compatible with {@link
- * FileBasedStorageDirectoryProvider}. Intended to be used together with {@link
- * org.batfish.storage.FileBasedStorage}.
+ * Storage-based {@link IdResolver} that reads IDs via {@link org.batfish.storage.StorageProvider}.
  */
 public class FileBasedIdResolver implements IdResolver {
 
-  private static final String ID_EXTENSION = ".id";
-
-  private static final String RELPATH_ANALYSIS_IDS = "analysis_ids";
-
-  private static final String RELPATH_ISSUE_SETTINGS_IDS = "analysis_ids";
-
-  private static final String RELPATH_NETWORK_IDS = "network_ids";
-
-  private static final String RELPATH_NETWORK_NODE_ROLES_ID = "network_node_roles.id";
-
-  private static final String RELPATH_QUESTION_IDS = "question_ids";
-
-  private static final String RELPATH_QUESTION_SETTINGS_IDS = "question_settings_ids";
-
-  private static final String RELPATH_SNAPSHOT_IDS = "snapshot_ids";
+  public static final String NETWORK_NODE_ROLES = "network_node_roles";
 
   private static @Nonnull String hash(String input) {
     return Hashing.murmur3_128().hashString(input, UTF_8).toString();
   }
 
-  private @Nonnull String readIdFile(Path file) {
+  private @Nonnull Set<String> listResolvableNames(List<Id> ancestors, IdType type) {
     try {
-      return _s.readIdFile(file);
+      return _s.listResolvableNames(ancestors, type);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
-  @VisibleForTesting
-  static @Nonnull Set<String> listResolvableNames(Path idsDir) {
-    if (!Files.exists(idsDir)) {
-      return ImmutableSet.of();
-    }
-    try (Stream<Path> files = Files.list(idsDir)) {
-      return files
-          .filter(
-              path -> {
-                try {
-                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
-                } catch (IllegalArgumentException e) {
-                  return false;
-                }
-              })
-          .map(Path::getFileName)
-          .map(Path::toString)
-          .map(FileBasedStorage::fromBase64)
-          .map(
-              nameWithExtension ->
-                  nameWithExtension.substring(
-                      0, nameWithExtension.length() - ID_EXTENSION.length()))
-          .collect(ImmutableSet.toImmutableSet());
+  private @Nonnull String readId(List<Id> ancestors, IdType type, String name) {
+    try {
+      return _s.readId(ancestors, type, name);
     } catch (IOException e) {
-      throw new BatfishException("Could not list files in '" + idsDir + "'", e);
+      throw new UncheckedIOException(e);
     }
   }
 
-  protected final FileBasedStorage _s;
-  protected final FileBasedStorageDirectoryProvider _d;
+  protected final StorageProvider _s;
 
-  public FileBasedIdResolver(FileBasedStorage s) {
+  public FileBasedIdResolver(StorageProvider s) {
     _s = s;
-    _d = s.getDirectoryProvider();
   }
 
   @Override
@@ -100,16 +54,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent analysis %s", analysis));
     }
-    return new AnalysisId(readIdFile(getAnalysisIdPath(analysis, networkId)));
-  }
-
-  protected @Nonnull Path getAnalysisIdPath(String analysis, NetworkId networkId) {
-    return getAnalysisIdsDir(networkId)
-        .resolve(toBase64(String.format("%s%s", analysis, ID_EXTENSION)));
-  }
-
-  protected @Nonnull Path getAnalysisIdsDir(NetworkId networkId) {
-    return _d.getNetworkDir(networkId).resolve(RELPATH_ANALYSIS_IDS);
+    return new AnalysisId(readId(ImmutableList.of(networkId), IdType.ANALYSIS, analysis));
   }
 
   @Override
@@ -152,16 +97,8 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-configured majorIssueType %s", majorIssueType));
     }
-    return new IssueSettingsId(readIdFile(getIssueSettingsIdPath(majorIssueType, networkId)));
-  }
-
-  protected @Nonnull Path getIssueSettingsIdPath(String majorIssueType, NetworkId networkId) {
-    return getIssueSettingsIdsDir(networkId)
-        .resolve(toBase64(String.format("%s%s", majorIssueType, ID_EXTENSION)));
-  }
-
-  protected @Nonnull Path getIssueSettingsIdsDir(NetworkId networkId) {
-    return _d.getNetworkDir(networkId).resolve(RELPATH_ISSUE_SETTINGS_IDS);
+    return new IssueSettingsId(
+        readId(ImmutableList.of(networkId), IdType.ISSUE_SETTINGS, majorIssueType));
   }
 
   @Override
@@ -170,15 +107,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent network %s", network));
     }
-    return new NetworkId(readIdFile(getNetworkIdPath(network)));
-  }
-
-  protected @Nonnull Path getNetworkIdPath(String network) {
-    return getNetworkIdsDir().resolve(toBase64(String.format("%s%s", network, ID_EXTENSION)));
-  }
-
-  protected @Nonnull Path getNetworkIdsDir() {
-    return _d.getStorageBase().resolve(RELPATH_NETWORK_IDS);
+    return new NetworkId(readId(ImmutableList.of(), IdType.NETWORK, network));
   }
 
   @Override
@@ -186,11 +115,8 @@ public class FileBasedIdResolver implements IdResolver {
     if (!hasNetworkNodeRolesId(networkId)) {
       throw new IllegalArgumentException("No assigned node-roles ID");
     }
-    return new NodeRolesId(readIdFile(getNetworkNodeRolesIdPath(networkId)));
-  }
-
-  protected @Nonnull Path getNetworkNodeRolesIdPath(NetworkId networkId) {
-    return _d.getNetworkDir(networkId).resolve(RELPATH_NETWORK_NODE_ROLES_ID);
+    return new NodeRolesId(
+        readId(ImmutableList.of(networkId), IdType.NODE_ROLES, NETWORK_NODE_ROLES));
   }
 
   @Override
@@ -200,23 +126,9 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent question '%s'", question));
     }
-    return new QuestionId(readIdFile(getQuestionIdPath(question, networkId, analysisId)));
-  }
-
-  protected @Nonnull Path getQuestionIdPath(
-      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    return getQuestionIdsDir(networkId, analysisId)
-        .resolve(toBase64(String.format("%s%s", question, ID_EXTENSION)));
-  }
-
-  protected @Nonnull Path getQuestionIdsDir(NetworkId networkId, @Nullable AnalysisId analysisId) {
-    if (analysisId != null) {
-      return _d.getAnalysisQuestionsDir(networkId, analysisId)
-          .getParent()
-          .resolve(RELPATH_QUESTION_IDS);
-    } else {
-      return _d.getNetworkDir(networkId).resolve(RELPATH_QUESTION_IDS);
-    }
+    List<Id> ancestors =
+        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
+    return new QuestionId(readId(ancestors, IdType.QUESTION, question));
   }
 
   @Override
@@ -227,16 +139,7 @@ public class FileBasedIdResolver implements IdResolver {
           String.format("No ID assigned to non-configured questionClassId '%s'", questionClassId));
     }
     return new QuestionSettingsId(
-        readIdFile(getQuestionSettingsIdPath(questionClassId, networkId)));
-  }
-
-  protected @Nonnull Path getQuestionSettingsIdPath(String questionClassId, NetworkId networkId) {
-    return getQuestionSettingsIdsDir(networkId)
-        .resolve(toBase64(String.format("%s%s", questionClassId, ID_EXTENSION)));
-  }
-
-  protected @Nonnull Path getQuestionSettingsIdsDir(NetworkId networkId) {
-    return _d.getNetworkDir(networkId).resolve(RELPATH_QUESTION_SETTINGS_IDS);
+        readId(ImmutableList.of(networkId), IdType.QUESTION_SETTINGS, questionClassId));
   }
 
   @Override
@@ -245,16 +148,7 @@ public class FileBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent snapshot '%s'", snapshot));
     }
-    return new SnapshotId(readIdFile(getSnapshotIdPath(snapshot, networkId)));
-  }
-
-  protected @Nonnull Path getSnapshotIdPath(String snapshot, NetworkId networkId) {
-    return getSnapshotIdsDir(networkId)
-        .resolve(toBase64(String.format("%s%s", snapshot, ID_EXTENSION)));
-  }
-
-  protected @Nonnull Path getSnapshotIdsDir(NetworkId networkId) {
-    return _d.getNetworkDir(networkId).resolve(RELPATH_SNAPSHOT_IDS);
+    return new SnapshotId(readId(ImmutableList.of(networkId), IdType.SNAPSHOT, snapshot));
   }
 
   @Override
@@ -264,56 +158,61 @@ public class FileBasedIdResolver implements IdResolver {
 
   @Override
   public boolean hasAnalysisId(String analysis, NetworkId networkId) {
-    return Files.exists(getAnalysisIdPath(analysis, networkId));
+    return _s.hasId(ImmutableList.of(networkId), IdType.ANALYSIS, analysis);
   }
 
   @Override
   public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    return Files.exists(getIssueSettingsIdPath(majorIssueType, networkId));
+    return _s.hasId(ImmutableList.of(networkId), IdType.ISSUE_SETTINGS, majorIssueType);
   }
 
   @Override
   public boolean hasNetworkId(String network) {
-    return Files.exists(getNetworkIdPath(network));
+    return _s.hasId(ImmutableList.of(), IdType.NETWORK, network);
   }
 
   @Override
   public boolean hasNetworkNodeRolesId(NetworkId networkId) {
-    return Files.exists(getNetworkNodeRolesIdPath(networkId));
+    return _s.hasId(ImmutableList.of(networkId), IdType.NODE_ROLES, NETWORK_NODE_ROLES);
   }
 
   @Override
-  public boolean hasQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
-    return Files.exists(getQuestionIdPath(question, networkId, analysisId));
+  public boolean hasQuestionId(
+      String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
+    List<Id> ancestors =
+        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
+    return _s.hasId(ancestors, IdType.QUESTION, question);
   }
 
   @Override
   public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-    return Files.exists(getQuestionSettingsIdPath(questionClassId, networkId));
+    return _s.hasId(ImmutableList.of(networkId), IdType.QUESTION_SETTINGS, questionClassId);
   }
 
   @Override
   public boolean hasSnapshotId(String snapshot, NetworkId networkId) {
-    return Files.exists(getSnapshotIdPath(snapshot, networkId));
+    return _s.hasId(ImmutableList.of(networkId), IdType.SNAPSHOT, snapshot);
   }
 
   @Override
   public @Nonnull Set<String> listAnalyses(NetworkId networkId) {
-    return listResolvableNames(getAnalysisIdsDir(networkId));
+    return listResolvableNames(ImmutableList.of(networkId), IdType.ANALYSIS);
   }
 
   @Override
   public @Nonnull Set<String> listNetworks() {
-    return listResolvableNames(getNetworkIdsDir());
+    return listResolvableNames(ImmutableList.of(), IdType.NETWORK);
   }
 
   @Override
   public @Nonnull Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
-    return listResolvableNames(getQuestionIdsDir(networkId, analysisId));
+    List<Id> ancestors =
+        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
+    return listResolvableNames(ancestors, IdType.QUESTION);
   }
 
   @Override
   public @Nonnull Set<String> listSnapshots(NetworkId networkId) {
-    return listResolvableNames(getSnapshotIdsDir(networkId));
+    return listResolvableNames(ImmutableList.of(networkId), IdType.SNAPSHOT);
   }
 }

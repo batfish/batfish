@@ -15,6 +15,8 @@ public abstract class Id {
     _id = id;
   }
 
+  public abstract IdType getType();
+
   @Override
   public final boolean equals(@Nullable Object obj) {
     if (this == obj) {

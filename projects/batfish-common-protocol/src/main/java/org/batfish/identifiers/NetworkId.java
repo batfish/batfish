@@ -8,4 +8,9 @@ public class NetworkId extends Id {
   public NetworkId(String id) {
     super(id);
   }
+
+  @Override
+  public IdType getType() {
+    return IdType.NETWORK;
+  }
 }

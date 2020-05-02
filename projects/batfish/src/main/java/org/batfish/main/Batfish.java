@@ -511,18 +511,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _terminatingExceptionMessage = null;
     _answererCreators = new HashMap<>();
     _dataPlanePlugins = new HashMap<>();
-    if (alternateStorageProvider != null) {
-      checkArgument(
-          alternateIdResolver != null,
-          "Must supply alternate ID resolver when supplying alternate storage provider");
-      _storage = alternateStorageProvider;
-      _idResolver = alternateIdResolver;
-    } else {
-      FileBasedStorage fbs =
-          new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
-      _storage = fbs;
-      _idResolver = new FileBasedIdResolver(fbs);
-    }
+    _storage =
+        alternateStorageProvider != null
+            ? alternateStorageProvider
+            : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
+    _idResolver =
+        alternateIdResolver != null ? alternateIdResolver : new FileBasedIdResolver(_storage);
     _topologyProvider = new TopologyProviderImpl(this, _storage);
     loadPlugins();
   }

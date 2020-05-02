@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -29,6 +30,8 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
+import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -395,6 +398,33 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public String readId(List<Id> ancestors, IdType type, String name) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void writeId(List<Id> ancestors, Id id, String name) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasId(List<Id> ancestors, IdType type, String name) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Set<String> listResolvableNames(List<Id> ancestors, IdType type) throws IOException {
     throw new UnsupportedOperationException();
   }
 }

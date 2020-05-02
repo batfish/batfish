@@ -13,6 +13,11 @@ public final class SnapshotId extends Id {
     super(id);
   }
 
+  @Override
+  public IdType getType() {
+    return IdType.SNAPSHOT;
+  }
+
   @JsonCreator
   private static SnapshotId jsonCreator(@Nullable String id) {
     checkArgument(!isNullOrEmpty(id), "Id must be provided");
