@@ -544,6 +544,7 @@ class FlowTracer {
       @Override
       public Boolean visitDrop(@Nonnull Drop drop) {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), DENIED));
+        buildDeniedTrace(FlowDisposition.DENIED_IN);
         return true;
       }
 
