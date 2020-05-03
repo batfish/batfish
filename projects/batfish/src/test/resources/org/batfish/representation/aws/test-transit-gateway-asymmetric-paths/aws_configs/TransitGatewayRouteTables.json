@@ -1,0 +1,50 @@
+{
+ "TransitGatewayRouteTables": [
+  {
+   "CreationTime": "2020-05-03 01:38:22+00:00",
+   "DefaultAssociationRouteTable": true,
+   "DefaultPropagationRouteTable": true,
+   "State": "available",
+   "Tags": [],
+   "TransitGatewayId": "tgw-0a33c739a4f8978a8",
+   "TransitGatewayRouteTableId": "tgw-rtb-03b5bb634bbf99cc0"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:11+00:00",
+   "DefaultAssociationRouteTable": false,
+   "DefaultPropagationRouteTable": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-fish-rtb"
+    }
+   ],
+   "TransitGatewayId": "tgw-0a33c739a4f8978a8",
+   "TransitGatewayRouteTableId": "tgw-rtb-061e69b98b99d5da8"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:09+00:00",
+   "DefaultAssociationRouteTable": false,
+   "DefaultPropagationRouteTable": false,
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-bat-rtb"
+    }
+   ],
+   "TransitGatewayId": "tgw-01e19888e3ba041ac",
+   "TransitGatewayRouteTableId": "tgw-rtb-0ac69a6cb81e20019"
+  },
+  {
+   "CreationTime": "2020-05-03 01:38:22+00:00",
+   "DefaultAssociationRouteTable": true,
+   "DefaultPropagationRouteTable": true,
+   "State": "available",
+   "Tags": [],
+   "TransitGatewayId": "tgw-01e19888e3ba041ac",
+   "TransitGatewayRouteTableId": "tgw-rtb-0c6f3779372260b6b"
+  }
+ ]
+}

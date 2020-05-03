@@ -6,10 +6,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
+import static org.batfish.representation.aws.TransitGateway.connectVpc;
 import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
 import static org.batfish.representation.aws.TransitGateway.supportedVpnBgpConfiguration;
+import static org.batfish.representation.aws.TransitGateway.vrfNameForRouteTable;
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -124,6 +127,10 @@ public class TransitGatewayTest {
             .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
             .setTransitGatewayVpcAttachments(ImmutableMap.of(vpcAttachment.getId(), vpcAttachment))
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTableId,
+                    new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
             .build();
 
     ConvertedConfiguration awsConfiguration =
@@ -134,23 +141,23 @@ public class TransitGatewayTest {
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrfs exist
-    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
-    assertTrue(vpcCfg.getVrfs().containsKey(Vpc.vrfNameForLink(tgwAttachment.getId())));
+    assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
+    assertTrue(vpcCfg.getVrfs().containsKey(vrfNameForLink(tgwAttachment.getId())));
 
     // check that interfaces are created in the right VRFs
     Interface tgwInterface =
-        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, tgwAttachment.getId()));
+        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, routeTableId));
     Interface vpcInterface =
-        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()));
-    assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
-    assertThat(vpcInterface, hasVrfName(Vpc.vrfNameForLink(tgwAttachment.getId())));
+        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, routeTableId));
+    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(vpcInterface, hasVrfName(vrfNameForLink(tgwAttachment.getId())));
 
     // check that VRFs have the right static routes
     assertThat(
-        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
         equalTo(ImmutableSet.of()));
     assertThat(
-        vpcCfg.getVrfs().get(Vpc.vrfNameForLink(tgwAttachment.getId())).getStaticRoutes(),
+        vpcCfg.getVrfs().get(vrfNameForLink(tgwAttachment.getId())).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
@@ -159,8 +166,135 @@ public class TransitGatewayTest {
                     .build(),
                 toStaticRoute(
                     Prefix.ZERO,
-                    Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()),
+                    Utils.interfaceNameToRemote(tgwCfg, routeTableId),
                     tgwInterface.getLinkLocalAddress().getIp()))));
+  }
+
+  /** Test that the VPC-TGW are correctly linked for the associated route table. */
+  @Test
+  public void testConnectVpc_associatedTable() {
+    String tgwId = "tgw";
+    String routeTableId = "tgw-rtb";
+
+    Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
+    Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwId)).build();
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment(
+            "tgw-attach",
+            tgwId,
+            ResourceType.VPC,
+            vpc.getId(),
+            new Association(routeTableId, STATE_ASSOCIATED));
+
+    Region region =
+        Region.builder("region")
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTableId, new TransitGatewayRouteTable(routeTableId, tgwId, true, true)))
+            .build();
+
+    Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
+    Vrf.builder().setName(vrfNameForRouteTable(routeTableId)).setOwner(tgwCfg).build();
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    connectVpc(tgwCfg, tgwAttachment, awsConfiguration, region, new Warnings());
+
+    // check that interfaces are created in the right VRFs
+    Interface tgwInterface =
+        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, routeTableId));
+    Interface vpcInterface =
+        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, routeTableId));
+    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(vpcInterface, hasVrfName(vrfNameForLink(tgwAttachment.getId())));
+
+    // check that VRFs have the right static routes
+    assertThat(
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        equalTo(ImmutableSet.of()));
+    assertThat(
+        vpcCfg.getVrfs().get(vrfNameForLink(tgwAttachment.getId())).getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
+                    .toBuilder()
+                    .setAdministrativeCost(255)
+                    .build(),
+                toStaticRoute(
+                    Prefix.ZERO,
+                    Utils.interfaceNameToRemote(tgwCfg, routeTableId),
+                    tgwInterface.getLinkLocalAddress().getIp()))));
+  }
+
+  /**
+   * Test that the VPC-TGW are correctly linked for propagated tables. There is no association table
+   * in this test.
+   */
+  @Test
+  public void testConnectVpc_progagatedTables() {
+    String tgwId = "tgw";
+    String routeTableId1 = "tgw-rtb1";
+    String routeTableId2 = "tgw-rtb2";
+
+    Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
+    Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwId)).build();
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment("tgw-attach", tgwId, ResourceType.VPC, vpc.getId(), null);
+
+    Region region =
+        Region.builder("region")
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTableId1,
+                    new TransitGatewayRouteTable(routeTableId1, tgwId, true, true),
+                    routeTableId2,
+                    new TransitGatewayRouteTable(routeTableId2, tgwId, false, false)))
+            .setTransitGatewayPropagations(
+                ImmutableMap.of(
+                    routeTableId1,
+                    new TransitGatewayPropagations(
+                        routeTableId1,
+                        ImmutableList.of(
+                            new Propagation(
+                                tgwAttachment.getId(), ResourceType.VPC, vpc.getId(), true))),
+                    routeTableId2,
+                    new TransitGatewayPropagations(
+                        routeTableId2,
+                        ImmutableList.of(
+                            new Propagation(
+                                tgwAttachment.getId(), ResourceType.VPC, vpc.getId(), true)))))
+            .build();
+
+    Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
+    Vrf.builder().setName(vrfNameForRouteTable(routeTableId1)).setOwner(tgwCfg).build();
+    Vrf.builder().setName(vrfNameForRouteTable(routeTableId2)).setOwner(tgwCfg).build();
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    connectVpc(tgwCfg, tgwAttachment, awsConfiguration, region, new Warnings());
+
+    // check that interfaces are created and in the right VRFs
+    assertThat(
+        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, routeTableId1)),
+        hasVrfName(vrfNameForRouteTable(routeTableId1)));
+    assertThat(
+        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, routeTableId1)),
+        hasVrfName(vrfNameForLink(tgwAttachment.getId())));
+
+    assertThat(
+        tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, routeTableId2)),
+        hasVrfName(vrfNameForRouteTable(routeTableId2)));
+    assertThat(
+        vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, routeTableId2)),
+        hasVrfName(vrfNameForLink(tgwAttachment.getId())));
   }
 
   @Test
@@ -198,6 +332,10 @@ public class TransitGatewayTest {
             .setTransitGateways(ImmutableMap.of(tgw.getId(), tgw))
             .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
             .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTableId,
+                    new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
             .build();
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
@@ -207,14 +345,14 @@ public class TransitGatewayTest {
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
-    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
     // if applyGateway was called with the right params, such an interface must exist
     Interface tgwInterface =
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
   }
 
   @Test
@@ -260,6 +398,10 @@ public class TransitGatewayTest {
             .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
             .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
             .setTransitGatewayPropagations(ImmutableMap.of(routeTableId, associatedPropagation))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTableId,
+                    new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
             .build();
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
@@ -270,19 +412,18 @@ public class TransitGatewayTest {
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
-    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
     // check that BGP process exists
     assertThat(
-        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getBgpProcess(),
-        notNullValue());
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTableId)).getBgpProcess(), notNullValue());
 
     // if applyGateway was called with the right params, such an interface must exist
     Interface tgwInterface =
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
   }
 
   @Test
@@ -321,7 +462,7 @@ public class TransitGatewayTest {
             tgw.getId(),
             ResourceType.VPC,
             vpc.getId(),
-            new Association("tgw-rtb-assoc", STATE_ASSOCIATED));
+            new Association(routeTableId, STATE_ASSOCIATED));
 
     TransitGatewayVpcAttachment vpcAttachment =
         new TransitGatewayVpcAttachment(
@@ -355,22 +496,22 @@ public class TransitGatewayTest {
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrf exists
-    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
     // check that VRFs have the right static routes
     assertThat(
-        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     vpcPrefix,
                     tgwCfg
                         .getAllInterfaces()
-                        .get(Utils.interfaceNameToRemote(vpcCfg, tgwAttachment.getId()))
+                        .get(Utils.interfaceNameToRemote(vpcCfg, routeTableId))
                         .getName(),
                     vpcCfg
                         .getAllInterfaces()
-                        .get(Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()))
+                        .get(Utils.interfaceNameToRemote(tgwCfg, routeTableId))
                         .getLinkLocalAddress()
                         .getIp()))));
   }
@@ -437,18 +578,18 @@ public class TransitGatewayTest {
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrf exists
-    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
     // check that VRFs have the right static routes
     assertThat(
-        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     activeRoutePrefix,
-                    Utils.interfaceNameToRemote(vpcCfg, tgwAttachment.getId()),
+                    Utils.interfaceNameToRemote(vpcCfg, routeTableId),
                     Utils.getInterfaceLinkLocalIp(
-                        vpcCfg, Utils.interfaceNameToRemote(tgwCfg, tgwAttachment.getId()))),
+                        vpcCfg, Utils.interfaceNameToRemote(tgwCfg, routeTableId))),
                 toStaticRoute(blackholeRoutePrefix, NULL_INTERFACE_NAME))));
   }
 
@@ -512,10 +653,10 @@ public class TransitGatewayTest {
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
-    assertTrue(tgwCfg.getVrfs().containsKey(TransitGateway.vrfNameForRouteTable(routeTableId)));
+    assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
     assertThat(
-        tgwCfg.getVrfs().get(TransitGateway.vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTableId)).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(toStaticRoute(activeRoutePrefix, _ipsecTunnel.getCgwInsideAddress()))));
   }
