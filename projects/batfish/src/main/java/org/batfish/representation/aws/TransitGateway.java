@@ -372,8 +372,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
     String vrfNameOnVpc = Vpc.vrfNameForLink(attachment.getId());
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
-      vpc.initializeVrf(vrf);
+      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId()));
+      return;
     }
 
     String associatedRouteTable =

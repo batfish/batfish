@@ -17,9 +17,9 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  * E2e tests for transit gateway. The configuration was pulled after creating two VPCs A and B and
- * connecting them via a transit gateway. VPC A has two subnets in different availability zones,
- * only one of which is connected to the VPC's attachment to the gateway. VPC B has only one subnet,
- * which is connected to the attachment.
+ * connecting them via a transit gateway. VPC A has two subnets in different availability zones; the
+ * routing table of only of those points to the transit gateway attachment. VPC B has only one
+ * subnet, which is connected to the attachment.
  */
 public class AwsConfigurationTransitGatewayTest {
 
@@ -51,7 +51,7 @@ public class AwsConfigurationTransitGatewayTest {
   private static String _vpcB = "vpc-00a31ce9d0c06675c";
 
   private static String _subnetA = "subnet-006a19c846f047bd7";
-  private static String _subnetA2 = "subnet-0b5b8ddd5a69fcfcd"; // not connected to the gateway
+  private static String _subnetA2 = "subnet-0b5b8ddd5a69fcfcd"; // does not point to the gateway
   private static String _subnetB = "subnet-0ebf6378a79a3e534";
 
   private static String _instanceA = "i-06ba034d88c84ef07";
@@ -101,13 +101,16 @@ public class AwsConfigurationTransitGatewayTest {
         _batfish);
   }
 
-  /** Test connectivity from B to A2 -- should die at the VPC */
+  /**
+   * Test connectivity from B to A2 -- should get to A2. A2 not pointing to the TGW only impacts
+   * outgoing traffic, not incoming traffic.
+   */
   @Test
   public void testFromBtoA2() {
     testTrace(
         getAnyFlow(_instanceB, _instanceA2Ip, _batfish),
-        FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(_instanceB, _subnetB, _vpcB, _tgw, _vpcA),
+        FlowDisposition.DENIED_IN,
+        ImmutableList.of(_instanceB, _subnetB, _vpcB, _tgw, _vpcA, _subnetA2, _instanceA2),
         _batfish);
   }
 }

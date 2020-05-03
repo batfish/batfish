@@ -107,7 +107,6 @@ public class TransitGatewayTest {
 
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
-    Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
@@ -132,6 +131,9 @@ public class TransitGatewayTest {
                     routeTableId,
                     new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
             .build();
+
+    Configuration vpcCfg =
+        vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
@@ -454,7 +456,6 @@ public class TransitGatewayTest {
 
     Prefix vpcPrefix = Prefix.parse("2.2.2.2/32");
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of()); // no prefix
-    Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
@@ -488,6 +489,8 @@ public class TransitGatewayTest {
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
             .build();
 
+    Configuration vpcCfg =
+        vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
 
@@ -526,7 +529,6 @@ public class TransitGatewayTest {
             ImmutableMap.of());
 
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of()); // no prefix
-    Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
@@ -570,6 +572,8 @@ public class TransitGatewayTest {
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
             .build();
 
+    Configuration vpcCfg =
+        vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
 

@@ -2,11 +2,13 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -116,8 +118,8 @@ final class Vpc implements AwsVpcEntity, Serializable {
   /**
    * Returns {@link Configuration} corresponding to this VPC node.
    *
-   * <p>We only create the node here. Interfaces are added when we traverse its neighbors such as
-   * subnets and internet gateways
+   * <p>We create the VI node and VRFs here. Interfaces and links are added when we traverse its
+   * neighbors such as subnets and internet gateways
    */
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
@@ -126,7 +128,31 @@ final class Vpc implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
 
-    initializeVrf(cfgNode.getDefaultVrf());
+    initializeVrf(DEFAULT_VRF_NAME, cfgNode);
+
+    region.getInternetGateways().values().stream()
+        .filter(igw -> igw.getAttachmentVpcIds().contains(_vpcId))
+        .forEach(igw -> initializeVrf(vrfNameForLink(igw.getId()), cfgNode));
+
+    region.getVpnGateways().values().stream()
+        .filter(vgw -> vgw.getAttachmentVpcIds().contains(_vpcId))
+        .forEach(vgw -> initializeVrf(vrfNameForLink(vgw.getId()), cfgNode));
+
+    region.getNatGateways().values().stream()
+        .filter(ngw -> ngw.getVpcId().equals(_vpcId))
+        .forEach(ngw -> initializeVrf(vrfNameForLink(ngw.getId()), cfgNode));
+
+    region.getTransitGatewayVpcAttachments().values().stream()
+        .filter(attachment -> attachment.getVpcId().equals(_vpcId))
+        .forEach(attachment -> initializeVrf(vrfNameForLink(attachment.getId()), cfgNode));
+
+    region.getVpcPeeringConnections().values().stream()
+        .filter(
+            connection ->
+                connection.getAccepterVpcId().equals(_vpcId)
+                    || connection.getRequesterVpcId().equals(_vpcId))
+        .forEach(connection -> initializeVrf(vrfNameForLink(connection.getId()), cfgNode));
+
     return cfgNode;
   }
 
@@ -142,17 +168,22 @@ final class Vpc implements AwsVpcEntity, Serializable {
    *       will get the traffic, rather than ECMP.
    * </ul>
    */
-  void initializeVrf(Vrf vrf) {
-    _cidrBlockAssociations.forEach(
-        cb ->
-            vrf.getStaticRoutes()
-                .add(
-                    StaticRoute.builder()
-                        .setAdministrativeCost(255)
-                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                        .setNetwork(cb)
-                        .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-                        .build()));
+  void initializeVrf(String vrfName, Configuration vpcCfg) {
+    Vrf vrf =
+        vrfName.equals(DEFAULT_VRF_NAME)
+            ? vpcCfg.getDefaultVrf()
+            : Vrf.builder().setOwner(vpcCfg).setName(vrfName).build();
+    _cidrBlockAssociations.forEach(cb -> vrf.getStaticRoutes().add(staticRouteToVpcPrefix(cb)));
+  }
+
+  @VisibleForTesting
+  static StaticRoute staticRouteToVpcPrefix(Prefix prefix) {
+    return StaticRoute.builder()
+        .setAdministrativeCost(255)
+        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+        .setNetwork(prefix)
+        .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+        .build();
   }
 
   /** Return the hostname used for a VPC Id */
