@@ -62,7 +62,7 @@ public class AwsConfigurationTransitGatewayAsymmetricPaths {
   private static String _instanceBat = "i-04bbbcaefdd1937f9";
   private static String _instanceFish = "i-0973ce90749865a7f";
 
-  private static Ip _instanceBatIp = Ip.parse("10.2.1.100");
+  private static Ip _instanceBatIp = Ip.parse("10.1.1.100");
   private static Ip _instanceFishIp = Ip.parse("10.2.1.100");
 
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();

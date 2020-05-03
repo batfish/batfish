@@ -384,7 +384,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     if (associatedRouteTable != null) {
       connectVpcToRouteTable(
-          tgwCfg, associatedRouteTable, vpcCfg, vrfNameOnVpc, true, awsConfiguration);
+          tgwCfg, associatedRouteTable, vpcCfg, vrfNameOnVpc, true, awsConfiguration, warnings);
     }
 
     // link to additional tables used for propagation
@@ -404,7 +404,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         .forEach(
             table ->
                 connectVpcToRouteTable(
-                    tgwCfg, table.getId(), vpcCfg, vrfNameOnVpc, false, awsConfiguration));
+                    tgwCfg,
+                    table.getId(),
+                    vpcCfg,
+                    vrfNameOnVpc,
+                    false,
+                    awsConfiguration,
+                    warnings));
   }
 
   private static void connectVpcToRouteTable(
@@ -413,8 +419,14 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       Configuration vpcCfg,
       String vrfNameOnVpc,
       boolean associatedTable,
-      ConvertedConfiguration awsConfiguration) {
+      ConvertedConfiguration awsConfiguration,
+      Warnings warnings) {
     String vrfNameOnTgw = vrfNameForRouteTable(routeTableId);
+    if (!tgwCfg.getVrfs().containsKey(vrfNameOnTgw)) {
+      warnings.redFlag(
+          String.format("VRF %s not found on TGW %s", vrfNameOnTgw, tgwCfg.getHostname()));
+      return;
+    }
     connect(awsConfiguration, tgwCfg, vrfNameOnTgw, vpcCfg, vrfNameOnVpc, routeTableId);
     if (associatedTable) {
       addStaticRoute(
@@ -445,6 +457,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
 
     String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
+    if (!tgwCfg.getVrfs().containsKey(vrfName)) {
+      warnings.redFlag(String.format("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname()));
+      return;
+    }
     Vrf vrf = tgwCfg.getVrfs().get(vrfName);
 
     if (vpnConnection.isBgpConnection()) {
@@ -460,11 +476,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
 
     vpnConnection.applyToGateway(
-        tgwCfg,
-        tgwCfg.getVrfs().get(vrfName),
-        bgpExportPolicyName(vrfName),
-        bgpImportPolicyName(vrfName),
-        warnings);
+        tgwCfg, vrf, bgpExportPolicyName(vrfName), bgpImportPolicyName(vrfName), warnings);
   }
 
   /**
@@ -602,12 +614,24 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
 
     String vrfName = vrfNameForRouteTable(table.getId());
+    Vrf tgwVrf = tgwCfg.getVrfs().get(vrfName);
+    if (tgwVrf == null) {
+      warnings.redFlag(String.format("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname()));
+      return;
+    }
+
+    if (!localIface.getVrfName().equals(vrfName)) {
+      warnings.redFlag(
+          String.format(
+              "Unexpected interface VRF %s. Expected %s", localIface.getVrfName(), vrfName));
+      return;
+    }
 
     vpc.getCidrBlockAssociations()
         .forEach(
             pfx ->
                 addStaticRoute(
-                    tgwCfg.getVrfs().get(vrfName),
+                    tgwVrf,
                     toStaticRoute(
                         pfx, localIface.getName(), remoteIface.getLinkLocalAddress().getIp())));
   }

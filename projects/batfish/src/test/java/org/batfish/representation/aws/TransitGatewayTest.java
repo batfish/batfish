@@ -181,7 +181,7 @@ public class TransitGatewayTest {
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
-    Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwId)).build();
+    Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
@@ -199,8 +199,8 @@ public class TransitGatewayTest {
                     routeTableId, new TransitGatewayRouteTable(routeTableId, tgwId, true, true)))
             .build();
 
-    Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId)).setOwner(tgwCfg).build();
+    Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwAttachment.getId())).build();
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
@@ -222,10 +222,6 @@ public class TransitGatewayTest {
         vpcCfg.getVrfs().get(vrfNameForLink(tgwAttachment.getId())).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
-                    .toBuilder()
-                    .setAdministrativeCost(255)
-                    .build(),
                 toStaticRoute(
                     Prefix.ZERO,
                     Utils.interfaceNameToRemote(tgwCfg, routeTableId),
@@ -245,7 +241,7 @@ public class TransitGatewayTest {
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
-    Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwId)).build();
+    Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment("tgw-attach", tgwId, ResourceType.VPC, vpc.getId(), null);
@@ -275,9 +271,9 @@ public class TransitGatewayTest {
                                 tgwAttachment.getId(), ResourceType.VPC, vpc.getId(), true)))))
             .build();
 
-    Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId1)).setOwner(tgwCfg).build();
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId2)).setOwner(tgwCfg).build();
+    Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwAttachment.getId())).build();
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
