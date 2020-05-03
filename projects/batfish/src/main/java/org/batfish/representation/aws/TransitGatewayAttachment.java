@@ -85,7 +85,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _resourceId;
 
-  @Nonnull private final Association _association;
+  @Nullable private final Association _association;
 
   @JsonCreator
   private static TransitGatewayAttachment create(
@@ -100,7 +100,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     checkArgument(
         resourceType != null, "Resource type cannot be null for transit gateway attachment");
     checkArgument(resourceId != null, "Resource id cannot be null for transit gateway attachment");
-    checkArgument(association != null, "Association cannot be null for transit gateway attachment");
+    // association can be null
 
     return new TransitGatewayAttachment(
         attachmentId,
@@ -115,7 +115,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
       String gatewayId,
       ResourceType resourceType,
       String resourceId,
-      Association association) {
+      @Nullable Association association) {
     _attachmentId = attachmentId;
     _gatewayId = gatewayId;
     _resourceType = resourceType;
@@ -123,7 +123,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     _association = association;
   }
 
-  @Nonnull
+  @Nullable
   public Association getAssociation() {
     return _association;
   }
