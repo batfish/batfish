@@ -354,11 +354,12 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
               attachment.getResourceId(), attachment.getId(), region.getName()));
       return;
     }
-    if (!attachment.getAssociation().getState().equals(STATE_ASSOCIATED)) {
+    if (attachment.getAssociation() == null
+        || !attachment.getAssociation().getState().equals(STATE_ASSOCIATED)) {
       warnings.redFlag(
           String.format(
-              "Skipped VPC %s as attachment because it is in (non-associated) state '%s'",
-              attachment.getResourceId(), attachment.getAssociation().getState()));
+              "Skipped VPC %s as attachment because it is not associated",
+              attachment.getResourceId()));
       return;
     }
 
@@ -396,6 +397,15 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       Region region,
       Warnings warnings) {
 
+    if (attachment.getAssociation() == null
+        || !attachment.getAssociation().getState().equals(STATE_ASSOCIATED)) {
+      warnings.redFlag(
+          String.format(
+              "Skipped VPN %s as attachment because it is not associated",
+              attachment.getResourceId()));
+      return;
+    }
+
     String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
     if (!tgwCfg.getVrfs().containsKey(vrfName)) {
       Vrf.builder().setOwner(tgwCfg).setName(vrfName).build();
@@ -431,6 +441,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   static Optional<String> supportedVpnBgpConfiguration(
       TransitGatewayAttachment attachment, VpnConnection vpnConnection, Region region) {
+    if (attachment.getAssociation() == null) {
+      return Optional.empty();
+    }
     String associatedRoutingTableId = attachment.getAssociation().getRouteTableId();
     Set<String> propagatedRoutingTableIds =
         region.getTransitGatewayPropagations().values().stream()
