@@ -568,8 +568,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                   propagation.getResourceId(), propagation.getAttachmentId(), region.getName()));
           return;
         }
-        propagateRoutesVpc(
-            tgwCfg, table, propagation.getAttachmentId(), vpc, awsConfiguration, warnings);
+        propagateRoutesVpc(tgwCfg, table, vpc, awsConfiguration, warnings);
         return;
       case VPN:
         /*
@@ -588,7 +587,6 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private static void propagateRoutesVpc(
       Configuration tgwCfg,
       TransitGatewayRouteTable table,
-      String attachmentId,
       Vpc vpc,
       ConvertedConfiguration awsConfiguration,
       Warnings warnings) {

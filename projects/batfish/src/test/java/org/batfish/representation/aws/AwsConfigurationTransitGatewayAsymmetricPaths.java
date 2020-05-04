@@ -22,8 +22,8 @@ import org.junit.rules.TemporaryFolder;
  * vpc-bat associates to a routing table of tgw-bat, does NOT propagate to any routing table on
  * tgw-bat, and propagates to a routing table on tgw-fish. Vpc-fish is analogously configured.
  *
- * <p>The configuration was pulled * manually after deployment using {@link
- * #TESTCONFIGS_DIR/setup.tf}.
+ * <p>The configuration was pulled * manually after deployment using the setup.tf file in {@link
+ * #TESTCONFIGS_DIR}.
  */
 public class AwsConfigurationTransitGatewayAsymmetricPaths {
 
