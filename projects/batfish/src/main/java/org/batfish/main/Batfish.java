@@ -1669,7 +1669,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String accountName = path.getName(pathLength - 3).toString(); // account dir name
       // If we are processing old-style packaging, just put everything in to one "default" account.
       if (accountName.equalsIgnoreCase(BfConsts.RELPATH_AWS_CONFIGS_DIR)
-          || accountName.equalsIgnoreCase("input")) {
+          || accountName.equalsIgnoreCase(BfConsts.RELPATH_INPUT)) {
         accountName = AwsConfiguration.DEFAULT_ACCOUNT_NAME;
       }
       String fileName = path.subpath(awsRootIndex, pathLength).toString();
