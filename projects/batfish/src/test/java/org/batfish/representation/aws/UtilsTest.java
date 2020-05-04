@@ -1,6 +1,5 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
@@ -24,6 +23,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
@@ -110,6 +110,11 @@ public class UtilsTest {
     Region region =
         Region.builder("r1").setVpcs(ImmutableMap.of(vpcCfg.getHostname(), vpc)).build();
 
+    String vrfNameOnVpc = vrfNameForLink(gatewayCfg.getHostname());
+    vpcCfg
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcCfg).build());
+
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
 
@@ -155,10 +160,6 @@ public class UtilsTest {
         vpcCfg.getVrfs().get(vrfNameForLink(gatewayCfg.getHostname())).getStaticRoutes(),
         equalTo(
             ImmutableSortedSet.of(
-                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
-                    .toBuilder()
-                    .setAdministrativeCost(255)
-                    .build(), // via Vpc.initializeVrf
                 toStaticRoute(
                     Prefix.ZERO,
                     vpcIface.getName(),

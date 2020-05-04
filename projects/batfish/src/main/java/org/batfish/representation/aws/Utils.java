@@ -339,8 +339,8 @@ final class Utils {
 
     String vrfNameOnVpc = Vpc.vrfNameForLink(gatewayId);
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
-      vpc.initializeVrf(vrf);
+      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpcId));
+      return null;
     }
 
     connect(awsConfiguration, gatewayCfg, DEFAULT_VRF_NAME, vpcCfg, vrfNameOnVpc, "");

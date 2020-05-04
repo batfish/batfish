@@ -22,6 +22,7 @@ import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_
 import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -52,6 +53,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -111,6 +113,11 @@ public class InternetGatewayTest {
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
             .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
             .build();
+
+    String vrfNameOnVpc = vrfNameForLink(internetGateway.getId());
+    vpcConfig
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
