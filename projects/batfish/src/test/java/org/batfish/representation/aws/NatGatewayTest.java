@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME
 import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
 import static org.batfish.representation.aws.NatGateway.installIncomingFilter;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -121,6 +122,11 @@ public class NatGatewayTest {
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
     awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
 
+    String vrfNameOnVpc = vrfNameForLink(ngw.getId());
+    vpcCfg
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcCfg).build());
+
     Configuration ngwConfig = ngw.toConfigurationNode(awsConfiguration, region, new Warnings());
 
     // test the basics
@@ -192,7 +198,11 @@ public class NatGatewayTest {
     ngwConfig.getVrfs().put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
 
     Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
-    Region region = Region.builder("r1").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
+    Region region =
+        Region.builder("r1")
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setNatGateways(ImmutableMap.of(ngw.getId(), ngw))
+            .build();
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
     awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);

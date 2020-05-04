@@ -9,6 +9,7 @@ java_binary(
     main_class = "org.batfish.client.Main",
     runtime_deps = [
         ":client",
+        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )

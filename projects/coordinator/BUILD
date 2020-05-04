@@ -21,6 +21,7 @@ java_library(
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
         "//projects/question",
+        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:javax_activation_activation",
         "@maven//:javax_xml_bind_jaxb_api",
         "@maven//:org_glassfish_jersey_inject_jersey_hk2",

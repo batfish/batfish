@@ -39,6 +39,22 @@
           "Value": "tgw-vpcB"
         }
       ]
+    },
+    {
+      "CreationTime": "2020-05-03 01:39:10+00:00",
+      "ResourceId": "vpc-0de868624d5f787db",
+      "ResourceOwnerId": "554773406868",
+      "ResourceType": "vpc",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "tgw-bat-vpc-fish-att"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-0ce5cf730c95980d9",
+      "TransitGatewayId": "tgw-01e19888e3ba041ac",
+      "TransitGatewayOwnerId": "554773406868"
     }
   ]
 }

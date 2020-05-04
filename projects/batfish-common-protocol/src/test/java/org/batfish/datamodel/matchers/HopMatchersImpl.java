@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -57,7 +57,7 @@ final class HopMatchersImpl {
               .filter(step -> step instanceof ExitOutputIfaceStep)
               .collect(ImmutableList.toImmutableList());
 
-      assertThat(steps.size(), equalTo(1));
+      assertThat(steps, hasSize(1));
 
       ExitOutputIfaceStep lastStep = (ExitOutputIfaceStep) steps.get(0);
 
