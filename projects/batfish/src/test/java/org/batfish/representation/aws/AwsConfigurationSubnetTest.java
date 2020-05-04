@@ -8,15 +8,18 @@ import static org.batfish.representation.aws.Region.SG_INGRESS_ACL_NAME;
 import static org.batfish.representation.aws.Region.instanceEgressAclName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.Trace;
 import org.junit.BeforeClass;
@@ -112,5 +115,14 @@ public class AwsConfigurationSubnetTest {
 
     // network acl is applied when leaving the subnet
     assertFilterAtHop(trace, 1, getAclName(_networkAcl, false));
+  }
+
+  @Test
+  public void testInstanceHasOriginatingVrf() {
+    // Instances should allow originating sessions (sessions can be established by inbound packets)
+    Configuration instance1 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_instance1);
+    Configuration instance2 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_instance2);
+    assertTrue(instance1.getVrfs().values().stream().allMatch(Vrf::hasOriginatingSessions));
+    assertTrue(instance2.getVrfs().values().stream().allMatch(Vrf::hasOriginatingSessions));
   }
 }
