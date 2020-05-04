@@ -1,0 +1,88 @@
+{
+ "TransitGatewayVpcAttachments": [
+  {
+   "CreationTime": "2020-05-03 01:39:10+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-0156c57e17070dd17"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-bat-vpc-bat-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-07a32b62ffae8f8e8",
+   "TransitGatewayId": "tgw-01e19888e3ba041ac",
+   "VpcId": "vpc-0c7ecdaddf451b56d",
+   "VpcOwnerId": "554773406868"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:10+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-0b7957a706be58c47"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-bat-vpc-fish-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-0ce5cf730c95980d9",
+   "TransitGatewayId": "tgw-01e19888e3ba041ac",
+   "VpcId": "vpc-0de868624d5f787db",
+   "VpcOwnerId": "554773406868"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:11+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-0b7957a706be58c47"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-fish-vpc-fish-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-04d2f0c5c910e15d3",
+   "TransitGatewayId": "tgw-0a33c739a4f8978a8",
+   "VpcId": "vpc-0de868624d5f787db",
+   "VpcOwnerId": "554773406868"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:11+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-0156c57e17070dd17"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-fish-vpc-bat-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-054bc7a8b8058e0b6",
+   "TransitGatewayId": "tgw-0a33c739a4f8978a8",
+   "VpcId": "vpc-0c7ecdaddf451b56d",
+   "VpcOwnerId": "554773406868"
+  }
+ ]
+}

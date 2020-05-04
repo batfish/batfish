@@ -1,0 +1,24 @@
+{
+ "TransitGatewayStaticRoutes": [
+  {
+   "AdditionalRoutesAvailable": false,
+   "Routes": [],
+   "TransitGatewayRouteTableId": "tgw-rtb-03b5bb634bbf99cc0"
+  },
+  {
+   "AdditionalRoutesAvailable": false,
+   "Routes": [],
+   "TransitGatewayRouteTableId": "tgw-rtb-061e69b98b99d5da8"
+  },
+  {
+   "AdditionalRoutesAvailable": false,
+   "Routes": [],
+   "TransitGatewayRouteTableId": "tgw-rtb-0ac69a6cb81e20019"
+  },
+  {
+   "AdditionalRoutesAvailable": false,
+   "Routes": [],
+   "TransitGatewayRouteTableId": "tgw-rtb-0c6f3779372260b6b"
+  }
+ ]
+}

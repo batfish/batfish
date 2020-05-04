@@ -1,0 +1,76 @@
+{
+ "TransitGatewayAttachments": [
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-0ac69a6cb81e20019"
+   },
+   "CreationTime": "2020-05-03 01:39:10+00:00",
+   "ResourceId": "vpc-0c7ecdaddf451b56d",
+   "ResourceOwnerId": "554773406868",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-bat-vpc-bat-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-07a32b62ffae8f8e8",
+   "TransitGatewayId": "tgw-01e19888e3ba041ac",
+   "TransitGatewayOwnerId": "554773406868"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:10+00:00",
+   "ResourceId": "vpc-0de868624d5f787db",
+   "ResourceOwnerId": "554773406868",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-bat-vpc-fish-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-0ce5cf730c95980d9",
+   "TransitGatewayId": "tgw-01e19888e3ba041ac",
+   "TransitGatewayOwnerId": "554773406868"
+  },
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-061e69b98b99d5da8"
+   },
+   "CreationTime": "2020-05-03 01:39:11+00:00",
+   "ResourceId": "vpc-0de868624d5f787db",
+   "ResourceOwnerId": "554773406868",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-fish-vpc-fish-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-04d2f0c5c910e15d3",
+   "TransitGatewayId": "tgw-0a33c739a4f8978a8",
+   "TransitGatewayOwnerId": "554773406868"
+  },
+  {
+   "CreationTime": "2020-05-03 01:39:11+00:00",
+   "ResourceId": "vpc-0c7ecdaddf451b56d",
+   "ResourceOwnerId": "554773406868",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-fish-vpc-bat-att"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-054bc7a8b8058e0b6",
+   "TransitGatewayId": "tgw-0a33c739a4f8978a8",
+   "TransitGatewayOwnerId": "554773406868"
+  }
+ ]
+}
