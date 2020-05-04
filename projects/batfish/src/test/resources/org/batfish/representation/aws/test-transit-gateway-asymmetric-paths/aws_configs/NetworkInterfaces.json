@@ -1,0 +1,234 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Attachment": {
+    "AttachmentId": "ela-attach-04b2060e",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "Network Interface for Transit Gateway Attachment tgw-attach-04d2f0c5c910e15d3",
+   "Groups": [],
+   "InterfaceType": "transit_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:c3:bf:e8:10:3f",
+   "NetworkInterfaceId": "eni-0a45822da60501baf",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-2-1-93.ec2.internal",
+   "PrivateIpAddress": "10.2.1.93",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-2-1-93.ec2.internal",
+     "PrivateIpAddress": "10.2.1.93"
+    }
+   ],
+   "RequesterId": "936118442230",
+   "RequesterManaged": false,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-0b7957a706be58c47",
+   "TagSet": [],
+   "VpcId": "vpc-0de868624d5f787db"
+  },
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-34-238-249-24.compute-1.amazonaws.com",
+    "PublicIp": "34.238.249.24"
+   },
+   "Attachment": {
+    "AttachTime": "2020-05-03 01:38:00+00:00",
+    "AttachmentId": "eni-attach-0d768468c0b74e3cc",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-04bbbcaefdd1937f9",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-002171e90685d74fa",
+     "GroupName": "bat_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:0c:d2:51:95:39",
+   "NetworkInterfaceId": "eni-0d19a87aebdb8525e",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-1-100.ec2.internal",
+   "PrivateIpAddress": "10.1.1.100",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-34-238-249-24.compute-1.amazonaws.com",
+      "PublicIp": "34.238.249.24"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-1-100.ec2.internal",
+     "PrivateIpAddress": "10.1.1.100"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-0156c57e17070dd17",
+   "TagSet": [],
+   "VpcId": "vpc-0c7ecdaddf451b56d"
+  },
+  {
+   "Attachment": {
+    "AttachmentId": "ela-attach-a8bc08a2",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "Network Interface for Transit Gateway Attachment tgw-attach-07a32b62ffae8f8e8",
+   "Groups": [],
+   "InterfaceType": "transit_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:12:13:92:58:f5",
+   "NetworkInterfaceId": "eni-0e6a4853d2aaa5f35",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-1-95.ec2.internal",
+   "PrivateIpAddress": "10.1.1.95",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-1-95.ec2.internal",
+     "PrivateIpAddress": "10.1.1.95"
+    }
+   ],
+   "RequesterId": "936118442230",
+   "RequesterManaged": false,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-0156c57e17070dd17",
+   "TagSet": [],
+   "VpcId": "vpc-0c7ecdaddf451b56d"
+  },
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-54-152-34-125.compute-1.amazonaws.com",
+    "PublicIp": "54.152.34.125"
+   },
+   "Attachment": {
+    "AttachTime": "2020-05-03 01:38:01+00:00",
+    "AttachmentId": "eni-attach-026915b8b4cacaaef",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-0973ce90749865a7f",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0c6a627999ec6b8df",
+     "GroupName": "fish_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:39:5d:d7:b0:fb",
+   "NetworkInterfaceId": "eni-077bf283bce1e7610",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-2-1-100.ec2.internal",
+   "PrivateIpAddress": "10.2.1.100",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-54-152-34-125.compute-1.amazonaws.com",
+      "PublicIp": "54.152.34.125"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-2-1-100.ec2.internal",
+     "PrivateIpAddress": "10.2.1.100"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-0b7957a706be58c47",
+   "TagSet": [],
+   "VpcId": "vpc-0de868624d5f787db"
+  },
+  {
+   "Attachment": {
+    "AttachmentId": "ela-attach-d6ca7edc",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "Network Interface for Transit Gateway Attachment tgw-attach-054bc7a8b8058e0b6",
+   "Groups": [],
+   "InterfaceType": "transit_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:58:bc:57:23:c1",
+   "NetworkInterfaceId": "eni-0b24f047d0d892bb3",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-1-105.ec2.internal",
+   "PrivateIpAddress": "10.1.1.105",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-1-105.ec2.internal",
+     "PrivateIpAddress": "10.1.1.105"
+    }
+   ],
+   "RequesterId": "936118442230",
+   "RequesterManaged": false,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-0156c57e17070dd17",
+   "TagSet": [],
+   "VpcId": "vpc-0c7ecdaddf451b56d"
+  },
+  {
+   "Attachment": {
+    "AttachmentId": "ela-attach-06b2060c",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "Network Interface for Transit Gateway Attachment tgw-attach-0ce5cf730c95980d9",
+   "Groups": [],
+   "InterfaceType": "transit_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:4a:fa:21:8e:29",
+   "NetworkInterfaceId": "eni-0e58296c9146d6a81",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-2-1-117.ec2.internal",
+   "PrivateIpAddress": "10.2.1.117",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-2-1-117.ec2.internal",
+     "PrivateIpAddress": "10.2.1.117"
+    }
+   ],
+   "RequesterId": "936118442230",
+   "RequesterManaged": false,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-0b7957a706be58c47",
+   "TagSet": [],
+   "VpcId": "vpc-0de868624d5f787db"
+  }
+ ]
+}
