@@ -1,3 +1,8 @@
+## this TF file was used to create the AWS deployment used in the test
+## the deployed configuration was then pulled manually using https://github.com/ratulm/bf-aws-snapshot
+
+## to recreate the deployment, change the profile below to something usable.
+
 #################### common ####################
 variable "vpc_region_ohio" {
   description = "VPC Region"
@@ -6,7 +11,7 @@ variable "vpc_region_ohio" {
 # change profile as necessary. Generally profile is "default"
 variable "profile" {
   description = "account profile"
-  default     = "ratul.org"
+  default     = "ratul.org"  ## change this
 }
 
 # change ssh pub key path as appropriate
@@ -22,11 +27,6 @@ variable "instance_type_t2_micro" {
   description = "type for aws EC2 instance"
   default     = "t2.micro"
 }
-variable "update-server" {
-  description = "update server and install nmap and nc"
-  default = "./update-server.sh"
-}
-
 #################### bat ####################
 variable "bat" {
   description = "VPC Name"
@@ -180,7 +180,6 @@ resource "aws_instance" "bat_web01" {
   private_ip                  = "10.1.1.100"
   subnet_id = aws_subnet.bat_public_subnet.id
   vpc_security_group_ids = [aws_security_group.bat_sg.id]
-  user_data = file(var.update-server)
   tags = {
     Name =  format("%s-web01", var.bat)
   }
@@ -325,7 +324,6 @@ resource "aws_instance" "fish_web01" {
   private_ip                  = "10.2.1.100"
   subnet_id = aws_subnet.fish_public_subnet.id
   vpc_security_group_ids = [aws_security_group.fish_sg.id]
-  user_data = file(var.update-server)
   tags = {
     Name =  format("%s-web01", var.fish)
   }
@@ -370,10 +368,6 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "tgw-bat-vpc-fish-att" {
   }
 }
 # Propogation and association
-#resource "aws_ec2_transit_gateway_route_table_propagation" "tgw-bat-vpc-bat-prop" {
-#  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-bat-vpc-bat-att.id
-#  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-bat-rtb.id
-#}
 resource "aws_ec2_transit_gateway_route_table_association" "tgw-bat-vpc-bat-asctn" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-bat-vpc-bat-att.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-bat-rtb.id
@@ -382,10 +376,6 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "tgw-bat-vpc-fish-pro
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-bat-vpc-fish-att.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-bat-rtb.id
 }
-#resource "aws_ec2_transit_gateway_route_table_association" "tgw-bat-vpc-fish-asctn" {
-#  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-bat-vpc-fish-att.id
-#  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-bat-rtb.id
-#}
 
 
 #################### TGW fish ####################
@@ -432,14 +422,6 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "tgw-fish-vpc-bat-pro
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-fish-vpc-bat-att.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-fish-rtb.id
 }
-#resource "aws_ec2_transit_gateway_route_table_association" "tgw-fish-vpc-bat-asctn" {
-#  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-fish-vpc-bat-att.id
-#  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-fish-rtb.id
-#}
-#resource "aws_ec2_transit_gateway_route_table_propagation" "tgw-fish-vpc-fish-prop" {
-#  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-fish-vpc-fish-att.id
-#  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-fish-rtb.id
-#}
 resource "aws_ec2_transit_gateway_route_table_association" "tgw-fish-vpc-fish-asctn" {
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.tgw-fish-vpc-fish-att.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw-fish-rtb.id
