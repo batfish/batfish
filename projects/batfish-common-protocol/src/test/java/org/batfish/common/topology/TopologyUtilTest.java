@@ -295,6 +295,62 @@ public final class TopologyUtilTest {
   }
 
   @Test
+  public void testComputeLayer2Topology_self_edge_optimization() {
+    String c1Name = "c1";
+    String c2Name = "c2";
+
+    String c1i1Name = "c1i1";
+    String c2i1Name = "c2i1";
+    String c2i2Name = "c2i2";
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    _ib.setName(c1i1Name).build();
+    Configuration c2 = _cb.setHostname(c2Name).build();
+    Vrf v2 = _vb.setOwner(c2).build();
+    _ib.setOwner(c2).setVrf(v2);
+    Interface c2i1 = _ib.setName(c2i1Name).build();
+    c2i1.setSwitchport(true);
+    c2i1.setSwitchportMode(SwitchportMode.ACCESS);
+    c2i1.setAccessVlan(1);
+    Interface c2i2 = _ib.setName(c2i2Name).build();
+    c2i2.setSwitchport(true);
+    c2i2.setSwitchportMode(SwitchportMode.ACCESS);
+    c2i2.setAccessVlan(1);
+    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+    {
+      // c1i1 and c2i1 are connected in layer1.
+      Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c2Name, c2i1Name);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
+      // self edges inside c2 should be computed because c2 has at least 1 edge in L1 topology
+      assertTrue(
+          "c2:i1 and c2:i2 are in the same broadcast domain",
+          layer2Topology.inSameBroadcastDomain(
+              new Layer2Node(c2Name, c2i1Name, 1), new Layer2Node(c2Name, c2i2Name, 1)));
+    }
+    {
+      // c1i1 is only connected to c3i1, leaving c2 without layer1 edges
+      String c3Name = "c3";
+      String c3i1Name = "c3i1";
+      Configuration c3 = _cb.setHostname(c3Name).build();
+      Vrf v3 = _vb.setOwner(c3).build();
+      _ib.setOwner(c3).setVrf(v3).setActive(true);
+      _ib.setName(c3i1Name).build();
+
+      Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c3Name, c3i1Name);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
+      // self edges inside c2 should NOT be computed because c2 has no edges in L1 topology (nor
+      // VXLAN topology)
+      assertFalse(
+          "c2:i1 and c2:i2 are NOT in the same broadcast domain",
+          layer2Topology.inSameBroadcastDomain(
+              new Layer2Node(c2Name, c2i1Name, 1), new Layer2Node(c2Name, c2i2Name, 1)));
+    }
+  }
+
+  @Test
   public void testComputeLayer2Topology_layer1() {
     String c1Name = "c1";
     String c2Name = "c2";

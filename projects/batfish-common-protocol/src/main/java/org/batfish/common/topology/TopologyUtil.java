@@ -341,8 +341,25 @@ public final class TopologyUtil {
                 computeLayer2EdgesForLayer1Edge(
                     layer1Edge, configurations, l2TopologyBuilder::addEdge, parentChildrenMap));
 
+    Set<String> nodesWithL1Edge =
+        layer1LogicalTopology.getGraph().edges().stream()
+            .flatMap(edge -> Stream.of(edge.getNode1(), edge.getNode2()))
+            .map(Layer1Node::getHostname)
+            .collect(ImmutableSet.toImmutableSet());
+    Set<String> nodesWithVxlan =
+        vxlanTopology.getGraph().edges().stream()
+            .flatMap(edge -> Stream.of(edge.nodeU(), edge.nodeV()))
+            .map(VxlanNode::getHostname)
+            .collect(ImmutableSet.toImmutableSet());
+    Set<String> nodesWithUsefulL2SelfEdges =
+        ImmutableSet.<String>builder().addAll(nodesWithL1Edge).addAll(nodesWithVxlan).build();
+
     // Then add edges within each node to connect switchports and VNIs on the same VLAN(s).
-    configurations.values().forEach(c -> computeLayer2SelfEdges(c, l2TopologyBuilder::addEdge));
+    configurations.values().stream()
+        // Optimization: skip nodes with neither L1 nor VXLAN edges, since their L2 self-edges will
+        // not contribute to broadcast domains.
+        .filter(c -> nodesWithUsefulL2SelfEdges.contains(c.getHostname()))
+        .forEach(c -> computeLayer2SelfEdges(c, l2TopologyBuilder::addEdge));
 
     // Finally add edges between connected VNIs on different nodes
     computeVniInterNodeEdges(vxlanTopology).forEach(l2TopologyBuilder::addEdge);
