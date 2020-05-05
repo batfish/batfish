@@ -44,4 +44,18 @@ public class LoadBalancerListenerTest {
                             Protocol.TCP,
                             80))))));
   }
+
+  @Test
+  public void testDeserializationDefaultAction_nullOrder() throws IOException {
+    String text = CommonUtil.readResource("org/batfish/representation/aws/DefaultAction.json");
+
+    DefaultAction defaultAction = BatfishObjectMapper.mapper().readValue(text, DefaultAction.class);
+    assertThat(
+        defaultAction,
+        equalTo(
+            new DefaultAction(
+                null,
+                "arn:aws:elasticloadbalancing:us-east-2:554773406868:targetgroup/target1/10b6be82e58c40a8",
+                ActionType.FORWARD)));
+  }
 }
