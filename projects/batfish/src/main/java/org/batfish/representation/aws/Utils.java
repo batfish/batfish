@@ -331,7 +331,7 @@ final class Utils {
       return null;
     }
 
-    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
       warnings.redFlag(String.format("Configuration for VPC with id %s not found", vpcId));
       return null;

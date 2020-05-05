@@ -201,8 +201,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
         instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
     // connect to the VPC on each of its VRFs. add static routes on the VPC to this subnet.
-    Configuration vpcConfigNode =
-        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_vpcId));
+    Configuration vpcConfigNode = awsConfiguration.getNode(Vpc.nodeName(_vpcId));
     vpcConfigNode
         .getVrfs()
         .values()
@@ -458,8 +457,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
               cfgNode,
               sr.setNextHopIp(natGateway.getPrivateIp())
                   .setNextHopInterface(
-                      interfaceNameToRemote(
-                          awsConfiguration.getConfigurationNodes().get(natGateway.getId())))
+                      interfaceNameToRemote(awsConfiguration.getNode(natGateway.getId())))
                   .build());
         } else {
           addStaticRoute(

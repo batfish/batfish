@@ -369,7 +369,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return;
     }
 
-    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     String vrfNameOnVpc = Vpc.vrfNameForLink(attachment.getId());
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
       warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId()));
@@ -591,7 +591,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       ConvertedConfiguration awsConfiguration,
       Warnings warnings) {
 
-    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
       warnings.redFlag(String.format("VPC configuration node for VPC %s not found", vpc.getId()));
       return;
@@ -684,9 +684,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       case VPC:
         {
           Configuration vpcCfg =
-              awsConfiguration
-                  .getConfigurationNodes()
-                  .get(Vpc.nodeName(tgwAttachment.getResourceId()));
+              awsConfiguration.getNode(Vpc.nodeName(tgwAttachment.getResourceId()));
           addStaticRoute(
               vrf,
               toStaticRoute(
