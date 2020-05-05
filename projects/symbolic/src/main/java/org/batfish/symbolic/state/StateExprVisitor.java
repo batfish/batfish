@@ -62,8 +62,6 @@ public interface StateExprVisitor<R> {
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
 
-  R visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession);
-
   R visitPreOutInterfaceDeliveredToSubnet(
       PreOutInterfaceDeliveredToSubnet preOutInterfaceDeliveredToSubnet);
 

@@ -24,7 +24,6 @@ import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
-import org.batfish.symbolic.state.PreOutEdgeSession;
 import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
@@ -199,11 +198,6 @@ public final class OriginationStateExprToLocation implements StateExprVisitor<Op
 
   @Override
   public Optional<Location> visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface) {
-    return Optional.empty();
-  }
-
-  @Override
-  public Optional<Location> visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession) {
     return Optional.empty();
   }
 
