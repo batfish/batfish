@@ -5,6 +5,7 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressLocatio
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -182,5 +183,9 @@ public class BDDReachabilityAnalysis {
 
   public Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {
     return _forwardEdgeTable.rowMap();
+  }
+
+  public Table<StateExpr, StateExpr, Transition> getForwardEdgeTable() {
+    return ImmutableTable.copyOf(_forwardEdgeTable);
   }
 }
