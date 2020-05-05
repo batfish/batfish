@@ -197,8 +197,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
     // post transformation filter on the interface to the subnet
     IpAccessList postTransformationFilter =
-        computePostTransformationIllegalPacketFilter(
-            getPrivateIp(), ifaceToSubnet.getPrimaryNetwork());
+        computePostTransformationIllegalPacketFilter(getPrivateIp(), subnet.getCidrBlock());
     cfgNode.getIpAccessLists().put(postTransformationFilter.getName(), postTransformationFilter);
     ifaceToSubnet.setPostTransformationIncomingFilter(postTransformationFilter);
 

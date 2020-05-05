@@ -315,21 +315,23 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       List<Listener> listeners,
       Region region,
       Warnings warnings) {
-    List<LoadBalancerTransformation> listenerTransformations =
-        listeners.stream()
-            .map(
-                listener ->
-                    computeListenerTransformation(
-                        listener,
-                        lbAvailabilityZoneName,
-                        viIface.getConcreteAddress().getIp(),
-                        crossZoneLoadBalancing,
-                        region,
-                        warnings))
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList());
+    if (viIface.getConcreteAddress() != null) { // May be null if we couldn't find a usable address
+      List<LoadBalancerTransformation> listenerTransformations =
+          listeners.stream()
+              .map(
+                  listener ->
+                      computeListenerTransformation(
+                          listener,
+                          lbAvailabilityZoneName,
+                          viIface.getConcreteAddress().getIp(),
+                          crossZoneLoadBalancing,
+                          region,
+                          warnings))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
 
-    viIface.setIncomingTransformation(chainListenerTransformations(listenerTransformations));
+      viIface.setIncomingTransformation(chainListenerTransformations(listenerTransformations));
+    }
     viIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(viIface.getName()), null, null));
   }
