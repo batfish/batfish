@@ -1,0 +1,25 @@
+{
+ "Subnets": [
+  {
+   "AssignIpv6AddressOnCreation": false,
+   "AvailabilityZone": "us-east-1a",
+   "AvailabilityZoneId": "use1-az4",
+   "AvailableIpAddressCount": 250,
+   "CidrBlock": "10.2.1.0/24",
+   "DefaultForAz": false,
+   "Ipv6CidrBlockAssociationSet": [],
+   "MapPublicIpOnLaunch": true,
+   "OwnerId": "951601349076",
+   "State": "available",
+   "SubnetArn": "arn:aws:ec2:us-east-1:951601349076:subnet/subnet-088d6408a3a6129fa",
+   "SubnetId": "subnet-088d6408a3a6129fa",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "fish_10.2.1.0/24"
+    }
+   ],
+   "VpcId": "vpc-05951c91977125d2e"
+  }
+ ]
+}

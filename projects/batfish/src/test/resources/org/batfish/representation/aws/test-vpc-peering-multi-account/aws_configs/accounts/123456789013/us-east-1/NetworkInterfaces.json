@@ -1,0 +1,53 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-54-82-106-49.compute-1.amazonaws.com",
+    "PublicIp": "54.82.106.49"
+   },
+   "Attachment": {
+    "AttachTime": "2020-04-28 19:03:40+00:00",
+    "AttachmentId": "eni-attach-05f4821141e5f2264",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-066ce0b1efbb5602c",
+    "InstanceOwnerId": "951601349076",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0ca8413f923260084",
+     "GroupName": "fish_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "0a:bf:3c:4a:80:05",
+   "NetworkInterfaceId": "eni-0b9f8c68d6cb974a6",
+   "OwnerId": "951601349076",
+   "PrivateDnsName": "ip-10-2-1-252.ec2.internal",
+   "PrivateIpAddress": "10.2.1.252",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-54-82-106-49.compute-1.amazonaws.com",
+      "PublicIp": "54.82.106.49"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-2-1-252.ec2.internal",
+     "PrivateIpAddress": "10.2.1.252"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-088d6408a3a6129fa",
+   "TagSet": [],
+   "VpcId": "vpc-05951c91977125d2e"
+  }
+ ]
+}

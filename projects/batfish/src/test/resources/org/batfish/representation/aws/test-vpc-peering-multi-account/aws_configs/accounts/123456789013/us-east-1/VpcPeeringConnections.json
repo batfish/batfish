@@ -1,0 +1,90 @@
+{
+ "VpcPeeringConnections": [
+  {
+   "AccepterVpcInfo": {
+    "OwnerId": "951601349076",
+    "Region": "us-east-1",
+    "VpcId": "vpc-02faa96cfaac1c17f"
+   },
+   "RequesterVpcInfo": {
+    "OwnerId": "028403472736",
+    "Region": "us-east-1",
+    "VpcId": "vpc-0fecddf1419087c57"
+   },
+   "Status": {
+    "Code": "deleted",
+    "Message": "Deleted by 028403472736"
+   },
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "pcx-bat-fish-a"
+    }
+   ],
+   "VpcPeeringConnectionId": "pcx-00eeab4f3bd2a40da"
+  },
+  {
+   "AccepterVpcInfo": {
+    "CidrBlock": "10.2.0.0/16",
+    "CidrBlockSet": [
+     {
+      "CidrBlock": "10.2.0.0/16"
+     }
+    ],
+    "OwnerId": "951601349076",
+    "PeeringOptions": {
+     "AllowDnsResolutionFromRemoteVpc": false,
+     "AllowEgressFromLocalClassicLinkToRemoteVpc": false,
+     "AllowEgressFromLocalVpcToRemoteClassicLink": false
+    },
+    "Region": "us-east-1",
+    "VpcId": "vpc-05951c91977125d2e"
+   },
+   "RequesterVpcInfo": {
+    "CidrBlock": "10.1.0.0/16",
+    "CidrBlockSet": [
+     {
+      "CidrBlock": "10.1.0.0/16"
+     }
+    ],
+    "OwnerId": "028403472736",
+    "Region": "us-east-1",
+    "VpcId": "vpc-0f44fae3468d2b998"
+   },
+   "Status": {
+    "Code": "active",
+    "Message": "Active"
+   },
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "pcx-bat-fish-a"
+    }
+   ],
+   "VpcPeeringConnectionId": "pcx-0040f7640e10191f4"
+  },
+  {
+   "AccepterVpcInfo": {
+    "OwnerId": "951601349076",
+    "Region": "us-east-1",
+    "VpcId": "vpc-0b4e14880aac9155f"
+   },
+   "RequesterVpcInfo": {
+    "OwnerId": "028403472736",
+    "Region": "us-east-1",
+    "VpcId": "vpc-082cf3bfeb6d2e821"
+   },
+   "Status": {
+    "Code": "deleted",
+    "Message": "Deleted by 028403472736"
+   },
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "pcx-bat-fish-a"
+    }
+   ],
+   "VpcPeeringConnectionId": "pcx-07d8d712b329b9337"
+  }
+ ]
+}
