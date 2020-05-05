@@ -21,7 +21,6 @@ import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
-import org.batfish.symbolic.state.PreOutEdgeSession;
 import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
@@ -222,11 +221,6 @@ public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<No
 
   @Override
   public NodeInterfacePair visitPostInVrfSession(PostInVrfSession postInVrfSession) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession) {
     return null;
   }
 
