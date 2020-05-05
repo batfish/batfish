@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +49,6 @@ import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
-import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
 import org.batfish.representation.aws.LoadBalancerListener.Listener;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
@@ -359,7 +357,6 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       Optional<TransformationStep> transformationStep =
           listener.getDefaultActions().stream()
               .filter(defaultAction -> defaultAction.getType() == ActionType.FORWARD)
-              .sorted(Comparator.comparing(DefaultAction::getOrder))
               .map(
                   action ->
                       computeTargetGroupTransformationStep(
