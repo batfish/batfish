@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.aws.Utils.checkNonNull;
+import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,7 +39,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   static class DefaultAction implements Serializable {
 
-    private final int _order;
+    @Nullable private final Integer _order;
 
     @Nonnull private final String _targetGroupArn;
 
@@ -48,12 +50,13 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
         @Nullable @JsonProperty(JSON_KEY_ORDER) Integer order,
         @Nullable @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) String targetGroupArn,
         @Nullable @JsonProperty(JSON_KEY_TYPE) String type) {
-      checkNonNull(order, JSON_KEY_ORDER, "Load balancer listener");
       checkNonNull(targetGroupArn, JSON_KEY_TARGET_GROUP_ARN, "Load balancer listener");
       checkNonNull(type, JSON_KEY_TARGET_TYPE, "Load balancer listener");
 
       return new DefaultAction(
-          order, targetGroupArn, ActionType.valueOf(type.toUpperCase().replace('-', '_')));
+          firstNonNull(order, Integer.MIN_VALUE),
+          targetGroupArn,
+          ActionType.valueOf(type.toUpperCase().replace('-', '_')));
     }
 
     DefaultAction(int order, String targetGroupArn, ActionType type) {
@@ -62,7 +65,8 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
       _type = type;
     }
 
-    public int getOrder() {
+    @Nullable
+    public Integer getOrder() {
       return _order;
     }
 
@@ -85,7 +89,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
         return false;
       }
       DefaultAction that = (DefaultAction) o;
-      return _order == that._order
+      return Objects.equals(_order, that._order)
           && _targetGroupArn.equals(that._targetGroupArn)
           && _type == that._type;
     }
@@ -118,6 +122,8 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
       checkNonNull(defaultActions, JSON_KEY_DEFAULT_ACTIONS, "LoadBalancer listener");
       checkNonNull(protocol, JSON_KEY_PROTOCOL, "LoadBalancer listener");
       checkNonNull(port, JSON_KEY_PORT, "LoadBalancer listener");
+
+      checkDefaultActions(defaultActions);
 
       return new Listener(
           listenerArn, defaultActions, Protocol.valueOf(protocol.toUpperCase()), port);
@@ -155,6 +161,40 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
                   "Cannot get matching header space for listener protocol %s", _protocol));
       }
       return matchHeaderSpace.build();
+    }
+
+    /**
+     * Checks for the sanity of the list of default actions, based on criteria at
+     * https://boto3.amazonaws.com/v1/documentation/api/1.9.42/reference/services/elbv2.html
+     */
+    private static void checkDefaultActions(List<DefaultAction> defaultActions) {
+      // The order for the action. This value is required for rules with multiple actions.
+      boolean nullOrderExists = defaultActions.stream().anyMatch(da -> da.getOrder() == null);
+      checkArgument(
+          !nullOrderExists || defaultActions.size() == 1,
+          "Order cannot be null if multiple DefaultActions exist");
+
+      // Each rule must include exactly one of the following types of actions: forward ,
+      // fixed-response , or redirect .
+      long count =
+          defaultActions.stream()
+              .filter(
+                  da ->
+                      da.getType() == ActionType.FORWARD
+                          || da.getType() == ActionType.FIXED_RESPONSE
+                          || da.getType() == ActionType.REDIRECT)
+              .count();
+      checkArgument(
+          count == 1L,
+          "There must be exactly 1 action of type 'forward', 'fixed-response', or 'redirect'. Found %d",
+          count);
+
+      // The final action to be performed must be a forward or a fixed-response action
+      DefaultAction lastAction = defaultActions.get(defaultActions.size() - 1);
+      checkArgument(
+          lastAction.getType() == ActionType.FORWARD
+              || lastAction.getType() == ActionType.FIXED_RESPONSE,
+          "Last action must be 'forward' or 'fixed-response'");
     }
 
     @Override
