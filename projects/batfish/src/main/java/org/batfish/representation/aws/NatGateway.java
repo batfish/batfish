@@ -265,7 +265,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       return null;
     }
 
-    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
       warnings.redFlag(
           String.format(

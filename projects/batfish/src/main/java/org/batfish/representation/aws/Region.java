@@ -733,7 +733,7 @@ public final class Region implements Serializable {
     for (LoadBalancer loadBalancer : getLoadBalancers().values()) {
       List<Configuration> cfgNodes =
           loadBalancer.toConfigurationNodes(awsConfiguration, this, warnings);
-      cfgNodes.forEach(cfgNode -> awsConfiguration.addNode(cfgNode));
+      cfgNodes.forEach(awsConfiguration::addNode);
     }
 
     for (Subnet subnet : getSubnets().values()) {
@@ -748,10 +748,10 @@ public final class Region implements Serializable {
 
     // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
 
-    applyInstanceInterfaceAcls(awsConfiguration.getConfigurationNodes(), warnings);
+    applyInstanceInterfaceAcls(awsConfiguration, warnings);
 
     // TODO: for now, set all interfaces to have the same bandwidth
-    for (Configuration cfgNode : awsConfiguration.getConfigurationNodes().values()) {
+    for (Configuration cfgNode : awsConfiguration.getAllNodes()) {
       for (Interface iface : cfgNode.getAllInterfaces().values()) {
         iface.setBandwidth(1E12d);
       }
@@ -760,9 +760,9 @@ public final class Region implements Serializable {
 
   /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
   @VisibleForTesting
-  void applyInstanceInterfaceAcls(Map<String, Configuration> cfgNodes, Warnings warnings) {
+  void applyInstanceInterfaceAcls(ConvertedConfiguration cfg, Warnings warnings) {
     for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
-      Configuration cfgNode = cfgNodes.get(entry.getKey());
+      Configuration cfgNode = cfg.getNode(entry.getKey());
       List<AclLine> inAclAclLines =
           computeSecurityGroupAclLines(entry.getValue(), true, cfgNode, warnings);
       List<AclLine> outAclAclLines =

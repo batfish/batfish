@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -154,9 +153,10 @@ public class RegionTest {
             .setOwner(c)
             .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
             .build();
-    Map<String, Configuration> configurationMap = ImmutableMap.of(c.getHostname(), c);
+    ConvertedConfiguration cfg = new ConvertedConfiguration();
+    cfg.addNode(c);
     Region region = createTestRegion();
-    region.applyInstanceInterfaceAcls(configurationMap, new Warnings());
+    region.applyInstanceInterfaceAcls(cfg, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-1~sg-001~"));
@@ -196,9 +196,10 @@ public class RegionTest {
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
         .build();
-    Map<String, Configuration> configurationMap = ImmutableMap.of(c.getHostname(), c);
     Region region = createTestRegion();
-    region.applyInstanceInterfaceAcls(configurationMap, new Warnings());
+    ConvertedConfiguration cfg = new ConvertedConfiguration();
+    cfg.addNode(c);
+    region.applyInstanceInterfaceAcls(cfg, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
 
     Flow permittedFlow =
