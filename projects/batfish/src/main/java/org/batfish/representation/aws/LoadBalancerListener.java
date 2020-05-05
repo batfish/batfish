@@ -56,7 +56,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
           order, targetGroupArn, ActionType.valueOf(type.toUpperCase().replace('-', '_')));
     }
 
-    DefaultAction(int order, String targetGroupArn, ActionType type) {
+    DefaultAction(@Nullable Integer order, String targetGroupArn, ActionType type) {
       _order = order;
       _targetGroupArn = targetGroupArn;
       _type = type;
