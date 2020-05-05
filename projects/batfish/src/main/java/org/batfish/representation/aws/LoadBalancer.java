@@ -49,6 +49,7 @@ import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
+import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
 import org.batfish.representation.aws.LoadBalancerListener.Listener;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
@@ -354,31 +355,34 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     try {
       HeaderSpace matchHeaderSpace = listener.getMatchingHeaderSpace();
 
-      Optional<TransformationStep> transformationStep =
+      Optional<DefaultAction> forwardingAction =
           listener.getDefaultActions().stream()
               .filter(defaultAction -> defaultAction.getType() == ActionType.FORWARD)
-              .map(
-                  action ->
-                      computeTargetGroupTransformationStep(
-                          action.getTargetGroupArn(),
-                          lbAvailabilityZoneName,
-                          loadBalancerIp,
-                          crossZoneLoadBalancing,
-                          region,
-                          warnings))
-              .filter(Objects::nonNull)
               .findFirst();
-
-      if (!transformationStep.isPresent()) {
+      if (!forwardingAction.isPresent()) {
         warnings.redFlag(
             String.format(
-                "No valid transformation step could be built for listener %s of load balancer %s (%s)",
+                "No forwarding action found for listener %s of load balancer %s (%s)",
                 listener, _arn, _name));
         return null;
       }
 
+      TransformationStep transformationStep =
+          computeTargetGroupTransformationStep(
+              forwardingAction.get().getTargetGroupArn(),
+              lbAvailabilityZoneName,
+              loadBalancerIp,
+              crossZoneLoadBalancing,
+              region,
+              warnings);
+
+      if (transformationStep == null) {
+        // no need to warn here. computerTargetGroupTransformationStep does it
+        return null;
+      }
+
       return new LoadBalancerTransformation(
-          new MatchHeaderSpace(matchHeaderSpace), transformationStep.get());
+          new MatchHeaderSpace(matchHeaderSpace), transformationStep);
     } catch (Exception e) {
       warnings.redFlag(e.getMessage());
       return null;
@@ -415,19 +419,36 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       return null;
     }
 
-    Set<TransformationStep> transformationSteps =
+    Set<TargetHealthDescription> validTargets =
         targetHealths.getTargetHealthDescriptions().stream()
             .filter(
                 desc ->
                     isValidTarget(
                         desc, targetGroup, lbAvailabilityZoneName, crossZoneLoadBalancing, region))
+            .collect(ImmutableSet.toImmutableSet());
+    if (validTargets.isEmpty()) {
+      warnings.redFlag(
+          String.format(
+              "No healthy targets found in matching availability zone(s) for target group ARN %s",
+              targetGroupArn));
+      return null;
+    }
+
+    Set<TransformationStep> transformationSteps =
+        validTargets.stream()
             .map(
                 desc ->
                     computeTargetTransformationStep(
-                        desc.getTarget(), targetGroup.getTargetType(), loadBalancerIp, region))
+                        desc.getTarget(),
+                        targetGroup.getTargetType(),
+                        loadBalancerIp,
+                        region,
+                        warnings))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet());
+
     if (transformationSteps.isEmpty()) {
+      // warning logged by computeTargetTransformationStep
       return null;
     }
 
@@ -446,13 +467,15 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       LoadBalancerTarget target,
       TargetGroup.Type targetGroupType,
       Ip loadBalancerIp,
-      Region region) {
+      Region region,
+      Warnings warnings) {
     Ip targetIp =
         targetGroupType.equals(TargetGroup.Type.IP)
             ? Ip.parse(target.getId())
             // instance must exist since this target is valid (see isValidTarget)
             : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();
     if (targetIp == null) {
+      warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
       return null;
     }
     return new ApplyAll(

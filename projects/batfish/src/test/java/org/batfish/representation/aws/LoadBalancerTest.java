@@ -330,7 +330,7 @@ public class LoadBalancerTest {
   /** Test that we skip over bad actions and create the right transformation for the good one */
   @Test
   public void testComputeListenerTransformation() {
-    DefaultAction actionBad = new DefaultAction(1, "tgArnBad", ActionType.FORWARD);
+    DefaultAction actionBad = new DefaultAction(1, "tgArnBad", ActionType.AUTHENTICATE_OIDC);
     TargetGroup targetGroupBad =
         new TargetGroup(
             "tgArnBad", ImmutableList.of(), Protocol.TCP, 80, "tgNameBad", TargetGroup.Type.IP);
@@ -451,9 +451,17 @@ public class LoadBalancerTest {
         equalTo(
             new ApplyAny(
                 computeTargetTransformationStep(
-                    healthyTarget1.getTarget(), TargetGroup.Type.IP, loadBalancerIp, region),
+                    healthyTarget1.getTarget(),
+                    TargetGroup.Type.IP,
+                    loadBalancerIp,
+                    region,
+                    new Warnings()),
                 computeTargetTransformationStep(
-                    healthyTarget2.getTarget(), TargetGroup.Type.IP, loadBalancerIp, region))));
+                    healthyTarget2.getTarget(),
+                    TargetGroup.Type.IP,
+                    loadBalancerIp,
+                    region,
+                    new Warnings()))));
   }
 
   /** Test that we return null if no valid target is found */
@@ -508,7 +516,8 @@ public class LoadBalancerTest {
                         .build()))
             .build();
     assertThat(
-        computeTargetTransformationStep(target, TargetGroup.Type.IP, loadBalancerIp, region),
+        computeTargetTransformationStep(
+            target, TargetGroup.Type.IP, loadBalancerIp, region, new Warnings()),
         equalTo(
             new ApplyAll(
                 TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
@@ -526,7 +535,11 @@ public class LoadBalancerTest {
 
     assertThat(
         computeTargetTransformationStep(
-            target, TargetGroup.Type.IP, loadBalancerIp, Region.builder("r1").build()),
+            target,
+            TargetGroup.Type.IP,
+            loadBalancerIp,
+            Region.builder("r1").build(),
+            new Warnings()),
         equalTo(
             new ApplyAll(
                 TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
