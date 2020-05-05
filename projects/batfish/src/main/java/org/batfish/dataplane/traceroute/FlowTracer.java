@@ -1126,8 +1126,8 @@ class FlowTracer {
       // Set up a session that will match return traffic originating from this VRF.
       // TODO Ensure this behavior is valid for all vendors.
       //  - Is FibLookup the right action for all vendors?
-      //  - Do any vendors set up sessions for intranode traffic? (If so, then we may still need to
-      //    set up a session when ingressInterface is null.)
+      //  - Do any vendors set up sessions for intranode traffic? AWS should not. If others do, then
+      //    for those cases we would need to set up a session even if ingressInterface is null.
       SessionAction action = org.batfish.datamodel.flow.FibLookup.INSTANCE;
       @Nullable
       FirewallSessionTraceInfo session =
