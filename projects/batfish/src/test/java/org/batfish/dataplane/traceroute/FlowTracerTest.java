@@ -271,6 +271,74 @@ public final class FlowTracerTest {
   }
 
   @Test
+  public void testBuildAcceptTrace_intranodeTraffic() {
+    /* Simulates an intranode flow that is accepted. No session should be set up. */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    vrf.setHasOriginatingSessions(true);
+
+    Ip srcIp = Ip.parse("1.1.1.1");
+    Ip dstIp = Ip.parse("2.2.2.2");
+    int srcPort = 22;
+    int dstPort = 40;
+    Flow flow =
+        Flow.builder()
+            .setSrcIp(srcIp)
+            .setDstIp(dstIp)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(srcPort)
+            .setDstPort(dstPort)
+            .build();
+
+    // Accepting interface should be the one that owns the dst IP
+    String acceptingIfaceName = "acceptingIface";
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setConfigs(ImmutableMap.of(c.getHostname(), c))
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder()
+                        .setAcceptedIps(
+                            ImmutableMap.of(
+                                c.getHostname(),
+                                ImmutableMap.of(
+                                    vrf.getName(),
+                                    ImmutableMap.of(acceptingIfaceName, dstIp.toIpSpace()))))
+                        .build())
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            c,
+            null,
+            new Node(c.getHostname()),
+            traces::add,
+            null,
+            new HashSet<>(),
+            flow,
+            vrf.getName(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new Stack<>(),
+            flow);
+
+    flowTracer.buildAcceptTrace();
+    TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
+    assertThat(traceAndReverseFlow.getTrace(), hasDisposition(ACCEPTED));
+    assertThat(traceAndReverseFlow.getNewFirewallSessions(), empty());
+  }
+
+  @Test
   public void testOriginatingFlowMatchesInboundSession() {
     /* Simulates a reverse flow originating in a VRF where a session has been set up. */
     NetworkFactory nf = new NetworkFactory();

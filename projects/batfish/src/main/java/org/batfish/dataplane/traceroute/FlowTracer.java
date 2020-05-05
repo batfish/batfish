@@ -1121,13 +1121,13 @@ class FlowTracer {
                 // Currently we will only resort to this if a session is matched.
                 () -> _currentConfig.getActiveInterfaces(_vrfName).keySet().iterator().next());
 
-    if (_currentConfig.getVrfs().get(_vrfName).hasOriginatingSessions()) {
-      // Set up a session that will match return traffic originating from this VRF. Typically we
-      // expect the ingress interface to be nonnull in this case, because normally the session will
-      // get set up as a response to external traffic coming in. But it's not strictly guaranteed;
-      // technically the current node could originate traffic destined for itself and set up a
-      // session upon receiving it.
-      // TODO Is FibLookup the right action for all vendors?
+    if (_ingressInterface != null
+        && _currentConfig.getVrfs().get(_vrfName).hasOriginatingSessions()) {
+      // Set up a session that will match return traffic originating from this VRF.
+      // TODO Ensure this behavior is valid for all vendors.
+      //  - Is FibLookup the right action for all vendors?
+      //  - Do any vendors set up sessions for intranode traffic? (If so, then we may still need to
+      //    set up a session when ingressInterface is null.)
       SessionAction action = org.batfish.datamodel.flow.FibLookup.INSTANCE;
       @Nullable
       FirewallSessionTraceInfo session =
