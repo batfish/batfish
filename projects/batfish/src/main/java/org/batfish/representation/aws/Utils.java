@@ -138,7 +138,7 @@ final class Utils {
 
   /** Creates a new interface on {@code c} with the provided name, address, and description. */
   static Interface newInterface(
-      String name, Configuration c, InterfaceAddress primaryAddress, String description) {
+      String name, Configuration c, @Nullable InterfaceAddress primaryAddress, String description) {
     return newInterface(name, c, c.getDefaultVrf().getName(), primaryAddress, description);
   }
 
@@ -150,7 +150,7 @@ final class Utils {
       String name,
       Configuration c,
       String vrfName,
-      InterfaceAddress primaryAddress,
+      @Nullable InterfaceAddress primaryAddress,
       String description) {
     checkArgument(
         c.getVrfs().containsKey(vrfName), "VRF %s does not exist on %s", vrfName, c.getHostname());
@@ -458,6 +458,11 @@ final class Utils {
       ifaceAddressesBuilder.add(address);
     }
     Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
+    if (ifaceAddresses.isEmpty()) {
+      warnings.redFlag(
+          String.format("No valid address found for interface '%s'", netInterface.getId()));
+    }
+    @Nullable
     ConcreteInterfaceAddress primaryAddress =
         ifaceAddresses.stream()
             .filter(addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
@@ -468,8 +473,7 @@ final class Utils {
                       String.format(
                           "Primary address not found for interface '%s'. Using lowest address as primary",
                           netInterface.getId()));
-                  // get() is safe here: ifaceAddresses cannot be empty
-                  return ifaceAddresses.stream().min(naturalOrder()).get();
+                  return ifaceAddresses.stream().min(naturalOrder()).orElse(null);
                 });
 
     Interface iface =
