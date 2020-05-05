@@ -98,20 +98,24 @@ public class AwsConfiguration extends VendorConfiguration {
                       account.getId(), region.getName(), e));
         }
       }
-      // We do this de-duplication because cross-region connections will show up in both regions
-      Set<VpcPeeringConnection> vpcPeeringConnections =
-          regions.stream()
-              .flatMap(r -> r.getVpcPeeringConnections().values().stream())
-              .collect(ImmutableSet.toImmutableSet());
-      try {
-        vpcPeeringConnections.forEach(
-            c -> c.createConnection(_convertedConfiguration, getWarnings()));
-      } catch (Exception e) {
-        getWarnings()
-            .redFlag(
-                String.format(
-                    "Failed to process VPC peerings for account %s\n%s", account.getId(), e));
-      }
+    }
+    // Vpc peerings can be both cross-region and cross-account, so we handle them here
+    processVpcPeerings();
+  }
+
+  private void processVpcPeerings() {
+    // We do this de-duplication (collecting to a set) because cross-region (or cross-account)
+    // connections will show up in both regions. No need to re-create them twice in conversion.
+    Set<VpcPeeringConnection> vpcPeeringConnections =
+        getAccounts().stream()
+            .flatMap(a -> a.getRegions().stream())
+            .flatMap(r -> r.getVpcPeeringConnections().values().stream())
+            .collect(ImmutableSet.toImmutableSet());
+    try {
+      vpcPeeringConnections.forEach(
+          c -> c.createConnection(_convertedConfiguration, getWarnings()));
+    } catch (Exception e) {
+      getWarnings().redFlag(String.format("Failed to process VPC peerings %s", e));
     }
   }
 

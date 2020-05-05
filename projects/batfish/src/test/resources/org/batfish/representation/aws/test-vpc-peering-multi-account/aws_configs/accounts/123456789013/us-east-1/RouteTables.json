@@ -1,0 +1,72 @@
+{
+ "RouteTables": [
+  {
+   "Associations": [
+    {
+     "AssociationState": {
+      "State": "associated"
+     },
+     "Main": false,
+     "RouteTableAssociationId": "rtbassoc-04775398939ab07fc",
+     "RouteTableId": "rtb-00fa109c642f8c07d",
+     "SubnetId": "subnet-088d6408a3a6129fa"
+    }
+   ],
+   "OwnerId": "951601349076",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-00fa109c642f8c07d",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.1.0.0/16",
+     "Origin": "CreateRoute",
+     "State": "active",
+     "VpcPeeringConnectionId": "pcx-0040f7640e10191f4"
+    },
+    {
+     "DestinationCidrBlock": "10.2.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    },
+    {
+     "DestinationCidrBlock": "0.0.0.0/0",
+     "GatewayId": "igw-040de946422fc9672",
+     "Origin": "CreateRoute",
+     "State": "active"
+    }
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "fish-igw"
+    }
+   ],
+   "VpcId": "vpc-05951c91977125d2e"
+  },
+  {
+   "Associations": [
+    {
+     "AssociationState": {
+      "State": "associated"
+     },
+     "Main": true,
+     "RouteTableAssociationId": "rtbassoc-0d1f4545088632530",
+     "RouteTableId": "rtb-05a771a8b6dde18b1"
+    }
+   ],
+   "OwnerId": "951601349076",
+   "PropagatingVgws": [],
+   "RouteTableId": "rtb-05a771a8b6dde18b1",
+   "Routes": [
+    {
+     "DestinationCidrBlock": "10.2.0.0/16",
+     "GatewayId": "local",
+     "Origin": "CreateRouteTable",
+     "State": "active"
+    }
+   ],
+   "Tags": [],
+   "VpcId": "vpc-05951c91977125d2e"
+  }
+ ]
+}

@@ -1,0 +1,201 @@
+{
+ "Reservations": [
+  {
+   "Groups": [],
+   "Instances": [
+    {
+     "AmiLaunchIndex": 0,
+     "Architecture": "x86_64",
+     "BlockDeviceMappings": [],
+     "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "open"
+     },
+     "ClientToken": "",
+     "CpuOptions": {
+      "CoreCount": 1,
+      "ThreadsPerCore": 1
+     },
+     "EbsOptimized": false,
+     "EnaSupport": true,
+     "HibernationOptions": {
+      "Configured": false
+     },
+     "Hypervisor": "xen",
+     "ImageId": "ami-0fc61db8544a617ed",
+     "InstanceId": "i-022b9fb2c0a0c72c1",
+     "InstanceType": "t2.micro",
+     "KeyName": "publicKey",
+     "LaunchTime": "2020-04-28 18:55:00+00:00",
+     "MetadataOptions": {
+      "HttpEndpoint": "enabled",
+      "HttpPutResponseHopLimit": 1,
+      "HttpTokens": "optional",
+      "State": "pending"
+     },
+     "Monitoring": {
+      "State": "disabled"
+     },
+     "NetworkInterfaces": [],
+     "Placement": {
+      "AvailabilityZone": "us-east-1a",
+      "GroupName": "",
+      "Tenancy": "default"
+     },
+     "PrivateDnsName": "",
+     "ProductCodes": [],
+     "PublicDnsName": "",
+     "RootDeviceName": "/dev/xvda",
+     "RootDeviceType": "ebs",
+     "SecurityGroups": [],
+     "State": {
+      "Code": 48,
+      "Name": "terminated"
+     },
+     "StateReason": {
+      "Code": "Client.UserInitiatedShutdown",
+      "Message": "Client.UserInitiatedShutdown: User initiated shutdown"
+     },
+     "StateTransitionReason": "User initiated (2020-04-28 19:00:14 GMT)",
+     "Tags": [
+      {
+       "Key": "Name",
+       "Value": "fish-web01"
+      }
+     ],
+     "VirtualizationType": "hvm"
+    }
+   ],
+   "OwnerId": "951601349076",
+   "ReservationId": "r-081bff6b9b21f3b53"
+  },
+  {
+   "Groups": [],
+   "Instances": [
+    {
+     "AmiLaunchIndex": 0,
+     "Architecture": "x86_64",
+     "BlockDeviceMappings": [
+      {
+       "DeviceName": "/dev/xvda",
+       "Ebs": {
+        "AttachTime": "2020-04-28 19:03:41+00:00",
+        "DeleteOnTermination": true,
+        "Status": "attached",
+        "VolumeId": "vol-0c2ed5d2fe85d2040"
+       }
+      }
+     ],
+     "CapacityReservationSpecification": {
+      "CapacityReservationPreference": "open"
+     },
+     "ClientToken": "",
+     "CpuOptions": {
+      "CoreCount": 1,
+      "ThreadsPerCore": 1
+     },
+     "EbsOptimized": false,
+     "EnaSupport": true,
+     "HibernationOptions": {
+      "Configured": false
+     },
+     "Hypervisor": "xen",
+     "ImageId": "ami-0fc61db8544a617ed",
+     "InstanceId": "i-066ce0b1efbb5602c",
+     "InstanceType": "t2.micro",
+     "KeyName": "publicKey",
+     "LaunchTime": "2020-04-28 19:03:40+00:00",
+     "MetadataOptions": {
+      "HttpEndpoint": "enabled",
+      "HttpPutResponseHopLimit": 1,
+      "HttpTokens": "optional",
+      "State": "applied"
+     },
+     "Monitoring": {
+      "State": "disabled"
+     },
+     "NetworkInterfaces": [
+      {
+       "Association": {
+        "IpOwnerId": "amazon",
+        "PublicDnsName": "ec2-54-82-106-49.compute-1.amazonaws.com",
+        "PublicIp": "54.82.106.49"
+       },
+       "Attachment": {
+        "AttachTime": "2020-04-28 19:03:40+00:00",
+        "AttachmentId": "eni-attach-05f4821141e5f2264",
+        "DeleteOnTermination": true,
+        "DeviceIndex": 0,
+        "Status": "attached"
+       },
+       "Description": "",
+       "Groups": [
+        {
+         "GroupId": "sg-0ca8413f923260084",
+         "GroupName": "fish_sg"
+        }
+       ],
+       "InterfaceType": "interface",
+       "Ipv6Addresses": [],
+       "MacAddress": "0a:bf:3c:4a:80:05",
+       "NetworkInterfaceId": "eni-0b9f8c68d6cb974a6",
+       "OwnerId": "951601349076",
+       "PrivateDnsName": "ip-10-2-1-252.ec2.internal",
+       "PrivateIpAddress": "10.2.1.252",
+       "PrivateIpAddresses": [
+        {
+         "Association": {
+          "IpOwnerId": "amazon",
+          "PublicDnsName": "ec2-54-82-106-49.compute-1.amazonaws.com",
+          "PublicIp": "54.82.106.49"
+         },
+         "Primary": true,
+         "PrivateDnsName": "ip-10-2-1-252.ec2.internal",
+         "PrivateIpAddress": "10.2.1.252"
+        }
+       ],
+       "SourceDestCheck": true,
+       "Status": "in-use",
+       "SubnetId": "subnet-088d6408a3a6129fa",
+       "VpcId": "vpc-05951c91977125d2e"
+      }
+     ],
+     "Placement": {
+      "AvailabilityZone": "us-east-1a",
+      "GroupName": "",
+      "Tenancy": "default"
+     },
+     "PrivateDnsName": "ip-10-2-1-252.ec2.internal",
+     "PrivateIpAddress": "10.2.1.252",
+     "ProductCodes": [],
+     "PublicDnsName": "ec2-54-82-106-49.compute-1.amazonaws.com",
+     "PublicIpAddress": "54.82.106.49",
+     "RootDeviceName": "/dev/xvda",
+     "RootDeviceType": "ebs",
+     "SecurityGroups": [
+      {
+       "GroupId": "sg-0ca8413f923260084",
+       "GroupName": "fish_sg"
+      }
+     ],
+     "SourceDestCheck": true,
+     "State": {
+      "Code": 16,
+      "Name": "running"
+     },
+     "StateTransitionReason": "",
+     "SubnetId": "subnet-088d6408a3a6129fa",
+     "Tags": [
+      {
+       "Key": "Name",
+       "Value": "fish-web01"
+      }
+     ],
+     "VirtualizationType": "hvm",
+     "VpcId": "vpc-05951c91977125d2e"
+    }
+   ],
+   "OwnerId": "951601349076",
+   "ReservationId": "r-017e8f7de6f2d32aa"
+  }
+ ]
+}
