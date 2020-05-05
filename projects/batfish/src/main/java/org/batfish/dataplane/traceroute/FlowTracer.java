@@ -1127,8 +1127,8 @@ class FlowTracer {
       // get set up as a response to external traffic coming in. But it's not strictly guaranteed;
       // technically the current node could originate traffic destined for itself and set up a
       // session upon receiving it.
-      SessionAction action =
-          getSessionAction(false, _ingressInterface, _lastHopNodeAndOutgoingInterface);
+      // TODO Is FibLookup the right action for all vendors?
+      SessionAction action = org.batfish.datamodel.flow.FibLookup.INSTANCE;
       @Nullable
       FirewallSessionTraceInfo session =
           buildFirewallSessionTraceInfo(action, new OriginatingSessionScope(_vrfName));
