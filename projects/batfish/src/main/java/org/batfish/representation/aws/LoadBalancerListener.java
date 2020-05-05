@@ -1,7 +1,7 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.checkNonNull;
-import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -162,7 +162,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
     /**
      * Checks for the sanity of the list of default actions, based on criteria at
-     * https://boto3.amazonaws.com/v1/documentation/api/1.9.42/reference/services/elbv2.html
+     * https://boto3.amazonaws.com/v1/documentation/api/1.9.42/reference/services/elbv2.html#ElasticLoadBalancingv2.Client.describe_listeners
      */
     private static void checkDefaultActions(List<DefaultAction> defaultActions) {
       // The order for the action. This value is required for rules with multiple actions.
