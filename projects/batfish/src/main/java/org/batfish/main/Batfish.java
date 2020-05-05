@@ -1666,12 +1666,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       int pathLength = path.getNameCount();
       String regionName = path.getName(pathLength - 2).toString(); // parent dir name
+      String accountName = path.getName(pathLength - 3).toString(); // account dir name
+      // If we are processing old-style packaging, just put everything in to one "default" account.
+      if (accountName.equalsIgnoreCase(BfConsts.RELPATH_AWS_CONFIGS_DIR)
+          || accountName.equalsIgnoreCase(BfConsts.RELPATH_INPUT)) {
+        accountName = AwsConfiguration.DEFAULT_ACCOUNT_NAME;
+      }
       String fileName = path.subpath(awsRootIndex, pathLength).toString();
       pvcae.getFileMap().put(BfConsts.RELPATH_AWS_CONFIGS_FILE, fileName);
 
       try {
         JsonNode json = BatfishObjectMapper.mapper().readTree(configFile.getValue());
-        config.addConfigElement(regionName, json, fileName, pvcae);
+        config.addConfigElement(regionName, json, fileName, pvcae, accountName);
       } catch (IOException e) {
         pvcae.addRedFlagWarning(
             BfConsts.RELPATH_AWS_CONFIGS_FILE,
@@ -2349,33 +2355,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** READING AWS CONFIGS ***\n");
 
     Path awsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
-    // sortedness guarantees serialization order
-    SortedMap<String, AwsConfiguration> awsConfigs = new TreeMap<>();
+    AwsConfiguration awsConfiguration;
+
     Span span = GlobalTracer.get().buildSpan("Parse AWS configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       Path multiAccountPath = awsPath.resolve(BfConsts.RELPATH_AWS_ACCOUNTS_DIR);
       if (multiAccountPath.toFile().exists()) {
-        try {
-          // Parse one vendor configuration per account
-          Files.list(multiAccountPath)
-              .filter(Files::isDirectory)
-              .forEach(
-                  p ->
-                      awsConfigs.put(
-                          // account name
-                          p.getName(p.getNameCount() - 1).toString(),
-                          parseAwsConfigurations(readAllFiles(p, _logger), pvcae)));
-        } catch (IOException e) {
-          _logger.errorf("Failed to process AWS configs: %s", e);
-          pvcae.addRedFlagWarning(
-              BfConsts.RELPATH_AWS_CONFIGS_FILE,
-              new Warning(String.format("Failed to process folder %s", multiAccountPath), "AWS"));
-        }
+        // Parse all accounts as one vendor configuration
+        awsConfiguration = parseAwsConfigurations(readAllFiles(multiAccountPath, _logger), pvcae);
       } else {
-        awsConfigs.put(
-            BfConsts.RELPATH_AWS_CONFIGS_FILE,
-            parseAwsConfigurations(readAllFiles(awsPath, _logger), pvcae));
+        awsConfiguration = parseAwsConfigurations(readAllFiles(awsPath, _logger), pvcae);
       }
     } finally {
       span.finish();
@@ -2384,12 +2374,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     outputPath.toFile().mkdirs();
-    awsConfigs.forEach(
-        (fname, config) -> {
-          Path currentOutputPath = outputPath.resolve(fname);
-          _logger.debugf("Serializing AWS to \"%s\"...", currentOutputPath);
-          serializeObject(config, currentOutputPath);
-        });
+    Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_FILE);
+    _logger.debugf("Serializing AWS to \"%s\"...", currentOutputPath);
+    serializeObject(awsConfiguration, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
   }

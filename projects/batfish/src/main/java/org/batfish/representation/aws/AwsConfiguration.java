@@ -7,6 +7,7 @@ import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,27 +30,31 @@ import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
 import org.batfish.vendor.VendorConfiguration;
 
-/** The top-level class that represent AWS configuration */
+/** The top-level class that represent AWS configuration across different accounts */
 @ParametersAreNonnullByDefault
 public class AwsConfiguration extends VendorConfiguration {
 
   static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
+  public static final String DEFAULT_ACCOUNT_NAME = "default";
 
   @Nullable private ConvertedConfiguration _convertedConfiguration;
-
-  @Nonnull private final Map<String, Region> _regions;
+  @Nonnull private final Map<String, Account> _accounts;
 
   public AwsConfiguration() {
     this(new HashMap<>());
   }
 
-  public AwsConfiguration(Map<String, Region> regions) {
-    _regions = regions;
+  private AwsConfiguration(Map<String, Account> accounts) {
+    _accounts = accounts;
+  }
+
+  public Collection<Account> getAccounts() {
+    return _accounts.values();
   }
 
   @Nonnull
-  public Map<String, Region> getRegions() {
-    return _regions;
+  private Account addOrGetAccount(String accountId) {
+    return _accounts.computeIfAbsent(accountId, Account::new);
   }
 
   /** Adds a config subtree */
@@ -57,10 +62,9 @@ public class AwsConfiguration extends VendorConfiguration {
       String region,
       JsonNode json,
       String sourceFileName,
-      ParseVendorConfigurationAnswerElement pvcae) {
-    _regions
-        .computeIfAbsent(region, r -> new Region(region))
-        .addConfigElement(json, sourceFileName, pvcae);
+      ParseVendorConfigurationAnswerElement pvcae,
+      String account) {
+    addOrGetAccount(account).addOrGetRegion(region).addConfigElement(json, sourceFileName, pvcae);
   }
 
   /**
@@ -79,22 +83,27 @@ public class AwsConfiguration extends VendorConfiguration {
 
   private void convertConfigurations() {
     _convertedConfiguration = new ConvertedConfiguration();
-    for (Region region : _regions.values()) {
-      region.toConfigurationNodes(_convertedConfiguration, getWarnings());
+    for (Account account : getAccounts()) {
+      Collection<Region> regions = account.getRegions();
+      for (Region region : regions) {
+        region.toConfigurationNodes(_convertedConfiguration, getWarnings());
+      }
+      // We do this de-duplication because cross-region connections will show up in both regions
+      Set<VpcPeeringConnection> vpcPeeringConnections =
+          regions.stream()
+              .flatMap(r -> r.getVpcPeeringConnections().values().stream())
+              .collect(ImmutableSet.toImmutableSet());
+      vpcPeeringConnections.forEach(
+          c -> c.createConnection(_convertedConfiguration, getWarnings()));
     }
-    // We do this de-duplication because cross-region connections will show up in both regions
-    Set<VpcPeeringConnection> vpcPeeringConnections =
-        _regions.values().stream()
-            .flatMap(r -> r.getVpcPeeringConnections().values().stream())
-            .collect(ImmutableSet.toImmutableSet());
-    vpcPeeringConnections.forEach(c -> c.createConnection(_convertedConfiguration, getWarnings()));
   }
 
   @Override
   @Nonnull
   public IspConfiguration getIspConfiguration() {
     List<BorderInterfaceInfo> borderInterfaces =
-        _regions.values().stream()
+        getAccounts().stream()
+            .flatMap(a -> a.getRegions().stream())
             .flatMap(r -> r.getInternetGateways().values().stream())
             .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_INTERFACE_NAME))
             .map(BorderInterfaceInfo::new)
