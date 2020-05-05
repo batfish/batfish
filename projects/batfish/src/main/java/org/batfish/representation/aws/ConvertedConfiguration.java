@@ -51,7 +51,6 @@ class ConvertedConfiguration implements Serializable {
     return _layer1Edges;
   }
 
-  @VisibleForTesting
   void addNode(Configuration cfgNode) {
     _configurationNodes.put(cfgNode.getHostname(), cfgNode);
   }
