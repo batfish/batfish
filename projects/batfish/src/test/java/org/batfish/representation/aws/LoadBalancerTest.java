@@ -330,7 +330,7 @@ public class LoadBalancerTest {
   /** Test that we skip over bad actions and create the right transformation for the good one */
   @Test
   public void testComputeListenerTransformation() {
-    DefaultAction actionBad = new DefaultAction(1, "tgArnBad", ActionType.FORWARD);
+    DefaultAction actionBad = new DefaultAction(1, "tgArnBad", ActionType.AUTHENTICATE_OIDC);
     TargetGroup targetGroupBad =
         new TargetGroup(
             "tgArnBad", ImmutableList.of(), Protocol.TCP, 80, "tgNameBad", TargetGroup.Type.IP);
