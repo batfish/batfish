@@ -1,6 +1,5 @@
 package org.batfish.representation.aws;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.parboiled.common.Preconditions.checkArgument;
 
@@ -54,9 +53,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
       checkNonNull(type, JSON_KEY_TARGET_TYPE, "Load balancer listener");
 
       return new DefaultAction(
-          firstNonNull(order, Integer.MIN_VALUE),
-          targetGroupArn,
-          ActionType.valueOf(type.toUpperCase().replace('-', '_')));
+          order, targetGroupArn, ActionType.valueOf(type.toUpperCase().replace('-', '_')));
     }
 
     DefaultAction(int order, String targetGroupArn, ActionType type) {
