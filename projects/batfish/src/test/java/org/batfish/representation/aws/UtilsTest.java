@@ -5,8 +5,10 @@ import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -164,5 +166,32 @@ public class UtilsTest {
                     Prefix.ZERO,
                     vpcIface.getName(),
                     ((LinkLocalAddress) gatewayIface.getAddress()).getIp()))));
+  }
+
+  @Test
+  public void testAddNodeToSubnet_noValidAddress() {
+    Configuration cfg = Utils.newAwsConfiguration("test", "aws");
+    NetworkInterface networkInterface =
+        new NetworkInterface(
+            "net-iface",
+            "subnet",
+            "vpc",
+            ImmutableList.of(),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("2.2.2.2"), null)),
+            "desc",
+            null);
+
+    // invalid because subnet prefix is different from interface IP
+    Subnet subnet =
+        new Subnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc", "zone", ImmutableMap.of());
+    Warnings warnings = new Warnings(true, true, true);
+
+    Interface iface =
+        Utils.addNodeToSubnet(
+            cfg, networkInterface, subnet, new ConvertedConfiguration(), warnings);
+
+    assertThat(warnings.getRedFlagWarnings().get(0).getText(), containsString("No valid address"));
+
+    assertThat(iface.getConcreteAddress(), nullValue());
   }
 }
