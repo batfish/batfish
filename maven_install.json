@@ -1796,6 +1796,62 @@
                 "sha256": "9f43fea92033ad82bcad2ae44cec5c82abc9d6ee4b095cab921d11ead98bf2ff"
             },
             {
+                "coord": "net.bytebuddy:byte-buddy-agent:1.10.5",
+                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent/1.10.5/byte-buddy-agent-1.10.5.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent/1.10.5/byte-buddy-agent-1.10.5.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent/1.10.5/byte-buddy-agent-1.10.5.jar"
+                ],
+                "sha256": "290c9930965ef5810ddb15baf3b3647ce952f40fa2f0af82d5f669e04ba87e5b"
+            },
+            {
+                "coord": "net.bytebuddy:byte-buddy-agent:jar:sources:1.10.5",
+                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent/1.10.5/byte-buddy-agent-1.10.5-sources.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent/1.10.5/byte-buddy-agent-1.10.5-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent/1.10.5/byte-buddy-agent-1.10.5-sources.jar"
+                ],
+                "sha256": "2286a99c6043271d3efa6cd1190121fcbf8a9523169f78cc711420c95a120cfa"
+            },
+            {
+                "coord": "net.bytebuddy:byte-buddy:1.10.5",
+                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.5/byte-buddy-1.10.5.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.5/byte-buddy-1.10.5.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.5/byte-buddy-1.10.5.jar"
+                ],
+                "sha256": "3c9c603970bb9d68572c1aa29e9ae6b477d602922977a04bfa5f3b5465d7d1f4"
+            },
+            {
+                "coord": "net.bytebuddy:byte-buddy:jar:sources:1.10.5",
+                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.5/byte-buddy-1.10.5-sources.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.5/byte-buddy-1.10.5-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.5/byte-buddy-1.10.5-sources.jar"
+                ],
+                "sha256": "4f60d54ecffa79da4e79761b7a4706e49771b0a0daf682948327a07e39b4b207"
+            },
+            {
                 "coord": "net.java.dev.javacc:javacc:5.0",
                 "file": "v1/https/repo1.maven.org/maven2/net/java/dev/javacc/javacc/5.0/javacc-5.0.jar",
                 "directDependencies": [],
@@ -3979,6 +4035,120 @@
                 "sha256": "db7727c82c150cec38a422b9692f6431150ea2c0c0d0c723bdf7fe6946149041"
             },
             {
+                "coord": "org.mockito:mockito-core:3.3.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/mockito/mockito-core/3.3.3/mockito-core-3.3.3.jar",
+                "directDependencies": [
+                    "net.bytebuddy:byte-buddy:1.10.5",
+                    "net.bytebuddy:byte-buddy-agent:1.10.5",
+                    "org.objenesis:objenesis:2.6"
+                ],
+                "dependencies": [
+                    "net.bytebuddy:byte-buddy-agent:1.10.5",
+                    "net.bytebuddy:byte-buddy:1.10.5",
+                    "org.objenesis:objenesis:2.6"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/mockito/mockito-core/3.3.3/mockito-core-3.3.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/mockito/mockito-core/3.3.3/mockito-core-3.3.3.jar"
+                ],
+                "sha256": "4be648c50456fba4686ba825000d628c1d805a3b92272ba9ad5b697dfa43036b"
+            },
+            {
+                "coord": "org.mockito:mockito-core:jar:sources:3.3.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/mockito/mockito-core/3.3.3/mockito-core-3.3.3-sources.jar",
+                "directDependencies": [
+                    "net.bytebuddy:byte-buddy:jar:sources:1.10.5",
+                    "net.bytebuddy:byte-buddy-agent:jar:sources:1.10.5",
+                    "org.objenesis:objenesis:jar:sources:2.6"
+                ],
+                "dependencies": [
+                    "org.objenesis:objenesis:jar:sources:2.6",
+                    "net.bytebuddy:byte-buddy:jar:sources:1.10.5",
+                    "net.bytebuddy:byte-buddy-agent:jar:sources:1.10.5"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/mockito/mockito-core/3.3.3/mockito-core-3.3.3-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/mockito/mockito-core/3.3.3/mockito-core-3.3.3-sources.jar"
+                ],
+                "sha256": "b460650fbe05f5272e58df51628d3adff3dc870a3b19baf805bdea4d237aef1c"
+            },
+            {
+                "coord": "org.mockito:mockito-inline:3.3.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/mockito/mockito-inline/3.3.3/mockito-inline-3.3.3.jar",
+                "directDependencies": [
+                    "org.mockito:mockito-core:3.3.3"
+                ],
+                "dependencies": [
+                    "net.bytebuddy:byte-buddy-agent:1.10.5",
+                    "net.bytebuddy:byte-buddy:1.10.5",
+                    "org.objenesis:objenesis:2.6",
+                    "org.mockito:mockito-core:3.3.3"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/mockito/mockito-inline/3.3.3/mockito-inline-3.3.3.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/mockito/mockito-inline/3.3.3/mockito-inline-3.3.3.jar"
+                ],
+                "sha256": "c75391c34a1e75d1a977d82834f5736c3f64084c7389cd755434c750e2e745af"
+            },
+            {
+                "coord": "org.mockito:mockito-inline:jar:sources:3.3.3",
+                "file": "v1/https/repo1.maven.org/maven2/org/mockito/mockito-inline/3.3.3/mockito-inline-3.3.3-sources.jar",
+                "directDependencies": [
+                    "org.mockito:mockito-core:jar:sources:3.3.3"
+                ],
+                "dependencies": [
+                    "org.objenesis:objenesis:jar:sources:2.6",
+                    "net.bytebuddy:byte-buddy:jar:sources:1.10.5",
+                    "net.bytebuddy:byte-buddy-agent:jar:sources:1.10.5",
+                    "org.mockito:mockito-core:jar:sources:3.3.3"
+                ],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/mockito/mockito-inline/3.3.3/mockito-inline-3.3.3-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/mockito/mockito-inline/3.3.3/mockito-inline-3.3.3-sources.jar"
+                ],
+                "sha256": "f92f632b36733f7344f2cf32aa77f2d136864f6a566f73acf59447097ee74d4d"
+            },
+            {
+                "coord": "org.objenesis:objenesis:2.6",
+                "file": "v1/https/repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6.jar"
+                ],
+                "sha256": "5e168368fbc250af3c79aa5fef0c3467a2d64e5a7bd74005f25d8399aeb0708d"
+            },
+            {
+                "coord": "org.objenesis:objenesis:jar:sources:2.6",
+                "file": "v1/https/repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6-sources.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "exclusions": [
+                    "org.hamcrest:hamcrest-core"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6-sources.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6-sources.jar"
+                ],
+                "sha256": "52d9f4dba531677fc074eff00ea07f22a1d42e5a97cc9e8571c4cd3d459b6be0"
+            },
+            {
                 "coord": "org.osgi:org.osgi.annotation.versioning:1.0.0",
                 "file": "v1/https/repo1.maven.org/maven2/org/osgi/org.osgi.annotation.versioning/1.0.0/org.osgi.annotation.versioning-1.0.0.jar",
                 "directDependencies": [],
@@ -4362,6 +4532,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1845770343
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 1799877172
     }
 }
