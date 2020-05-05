@@ -1,5 +1,6 @@
 package org.batfish.identifiers;
 
+/** Type of an {@link Id}. */
 public enum IdType {
   ANALYSIS,
   ANSWER,
