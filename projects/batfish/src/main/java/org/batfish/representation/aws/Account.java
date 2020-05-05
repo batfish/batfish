@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,6 +27,11 @@ public class Account implements Serializable {
   @Nonnull
   public Region addOrGetRegion(String region) {
     return _regions.computeIfAbsent(region, Region::new);
+  }
+
+  @VisibleForTesting
+  public void addRegion(Region region) {
+    _regions.put(region.getName(), region);
   }
 
   public Collection<Region> getRegions() {
