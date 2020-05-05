@@ -120,7 +120,7 @@ public class NatGatewayTest {
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
-    awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
+    awsConfiguration.addNode(vpcCfg);
 
     String vrfNameOnVpc = vrfNameForLink(ngw.getId());
     vpcCfg
@@ -205,7 +205,7 @@ public class NatGatewayTest {
             .build();
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
-    awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
+    awsConfiguration.addNode(vpcCfg);
 
     ngw.connectToVpc(ngwConfig, awsConfiguration, region, new Warnings());
 

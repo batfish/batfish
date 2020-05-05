@@ -130,8 +130,7 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
    * routes that belong to subnets were inserted during subnet processing).
    */
   void createConnection(ConvertedConfiguration awsConfiguration, Warnings warnings) {
-    Configuration accepterCfg =
-        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_accepterVpcId));
+    Configuration accepterCfg = awsConfiguration.getNode(Vpc.nodeName(_accepterVpcId));
     if (accepterCfg == null) {
       warnings.redFlag(
           String.format(
@@ -139,8 +138,7 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
               _accepterVpcId, _vpcPeeringConnectionId));
       return;
     }
-    Configuration requesterCfg =
-        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_requesterVpcId));
+    Configuration requesterCfg = awsConfiguration.getNode(Vpc.nodeName(_requesterVpcId));
     if (requesterCfg == null) {
       warnings.redFlag(
           String.format(

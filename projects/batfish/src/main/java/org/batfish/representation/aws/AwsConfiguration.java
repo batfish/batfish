@@ -78,7 +78,7 @@ public class AwsConfiguration extends VendorConfiguration {
     if (_convertedConfiguration == null) {
       convertConfigurations();
     }
-    return ImmutableList.copyOf(_convertedConfiguration.getConfigurationNodes().values());
+    return ImmutableList.copyOf(_convertedConfiguration.getAllNodes());
   }
 
   private void convertConfigurations() {
