@@ -228,7 +228,6 @@ public final class FlowTracerTest {
             ImmutableSet.of(),
             ImmutableMap.of(),
             false);
-    NodeInterfacePair lastNodeIfacePair = NodeInterfacePair.of("node", "iface");
     List<TraceAndReverseFlow> traces = new ArrayList<>();
     FlowTracer flowTracer =
         new FlowTracer(
@@ -237,7 +236,7 @@ public final class FlowTracerTest {
             iface.getName(),
             new Node(c.getHostname()),
             traces::add,
-            lastNodeIfacePair,
+            NodeInterfacePair.of("node", "iface"),
             new HashSet<>(),
             flow,
             vrf.getName(),
@@ -252,8 +251,7 @@ public final class FlowTracerTest {
     FirewallSessionTraceInfo expectedNewSession =
         new FirewallSessionTraceInfo(
             c.getHostname(),
-            // Matching flows should be forwarded out original ingress interface
-            new ForwardOutInterface(iface.getName(), lastNodeIfacePair),
+            FibLookup.INSTANCE,
             new OriginatingSessionScope(vrf.getName()),
             flowMatchingNewSession,
             null);
