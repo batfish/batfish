@@ -451,9 +451,17 @@ public class LoadBalancerTest {
         equalTo(
             new ApplyAny(
                 computeTargetTransformationStep(
-                    healthyTarget1.getTarget(), TargetGroup.Type.IP, loadBalancerIp, region),
+                    healthyTarget1.getTarget(),
+                    TargetGroup.Type.IP,
+                    loadBalancerIp,
+                    region,
+                    new Warnings()),
                 computeTargetTransformationStep(
-                    healthyTarget2.getTarget(), TargetGroup.Type.IP, loadBalancerIp, region))));
+                    healthyTarget2.getTarget(),
+                    TargetGroup.Type.IP,
+                    loadBalancerIp,
+                    region,
+                    new Warnings()))));
   }
 
   /** Test that we return null if no valid target is found */
@@ -508,7 +516,8 @@ public class LoadBalancerTest {
                         .build()))
             .build();
     assertThat(
-        computeTargetTransformationStep(target, TargetGroup.Type.IP, loadBalancerIp, region),
+        computeTargetTransformationStep(
+            target, TargetGroup.Type.IP, loadBalancerIp, region, new Warnings()),
         equalTo(
             new ApplyAll(
                 TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
@@ -526,7 +535,11 @@ public class LoadBalancerTest {
 
     assertThat(
         computeTargetTransformationStep(
-            target, TargetGroup.Type.IP, loadBalancerIp, Region.builder("r1").build()),
+            target,
+            TargetGroup.Type.IP,
+            loadBalancerIp,
+            Region.builder("r1").build(),
+            new Warnings()),
         equalTo(
             new ApplyAll(
                 TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
