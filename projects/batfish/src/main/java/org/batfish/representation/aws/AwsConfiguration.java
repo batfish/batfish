@@ -5,6 +5,7 @@ import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_N
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
@@ -52,8 +53,9 @@ public class AwsConfiguration extends VendorConfiguration {
     return _accounts.values();
   }
 
+  @VisibleForTesting
   @Nonnull
-  private Account addOrGetAccount(String accountId) {
+  Account addOrGetAccount(String accountId) {
     return _accounts.computeIfAbsent(accountId, Account::new);
   }
 
@@ -86,7 +88,15 @@ public class AwsConfiguration extends VendorConfiguration {
     for (Account account : getAccounts()) {
       Collection<Region> regions = account.getRegions();
       for (Region region : regions) {
-        region.toConfigurationNodes(_convertedConfiguration, getWarnings());
+        try {
+          region.toConfigurationNodes(_convertedConfiguration, getWarnings());
+        } catch (Exception e) {
+          getWarnings()
+              .redFlag(
+                  String.format(
+                      "Failed conversion for account %s, region %s\n%s",
+                      account.getId(), region.getName(), e));
+        }
       }
     }
     // Vpc peerings can be both cross-region and cross-account, so we handle them here
@@ -101,7 +111,12 @@ public class AwsConfiguration extends VendorConfiguration {
             .flatMap(a -> a.getRegions().stream())
             .flatMap(r -> r.getVpcPeeringConnections().values().stream())
             .collect(ImmutableSet.toImmutableSet());
-    vpcPeeringConnections.forEach(c -> c.createConnection(_convertedConfiguration, getWarnings()));
+    try {
+      vpcPeeringConnections.forEach(
+          c -> c.createConnection(_convertedConfiguration, getWarnings()));
+    } catch (Exception e) {
+      getWarnings().redFlag(String.format("Failed to process VPC peerings %s", e));
+    }
   }
 
   @Override
