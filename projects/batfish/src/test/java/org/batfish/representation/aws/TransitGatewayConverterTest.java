@@ -98,7 +98,8 @@ public class TransitGatewayConverterTest {
         new TransitGatewayWithMetadata(tgw3, new Region("r1"), "account3");
     assertThat(
         TransitGatewayConverter.getUniqueTransitGateways(
-            ImmutableList.of(t1, t2, t3), new Warnings()), containsInAnyOrder(t1, t3));
+            ImmutableList.of(t1, t2, t3), new Warnings()),
+        containsInAnyOrder(t1, t3));
   }
 
   @Test

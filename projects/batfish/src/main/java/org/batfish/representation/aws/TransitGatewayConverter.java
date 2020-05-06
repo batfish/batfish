@@ -67,7 +67,8 @@ public final class TransitGatewayConverter {
         .map(
             tgw ->
                 tgw.getGateway()
-                    .toConfigurationNode(configs, tgw.getRegion(), awsConfiguration.getWarnings()))
+                    .toConfigurationNode(
+                        awsConfiguration, configs, tgw.getRegion(), awsConfiguration.getWarnings()))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -121,7 +122,8 @@ public final class TransitGatewayConverter {
   static TransitGatewayWithMetadata findOriginalGateway(
       Collection<TransitGatewayWithMetadata> tgws) {
     checkArgument(!tgws.isEmpty());
-    checkArgument(tgws.stream().map(TransitGatewayWithMetadata::getTransitGatewayId).distinct().count() == 1);
+    checkArgument(
+        tgws.stream().map(TransitGatewayWithMetadata::getTransitGatewayId).distinct().count() == 1);
     if (tgws.size() == 1) {
       // Short circuit if there is no de-duplication to do.
       return tgws.iterator().next();
