@@ -13,6 +13,7 @@ import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -58,8 +59,10 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
@@ -520,5 +523,49 @@ public final class FileBasedStorageTest {
 
     assertEquals(
         _storage.loadSynthesizedLayer1Topology(networkSnapshot), Optional.of(Layer1Topology.EMPTY));
+  }
+
+  @Test
+  public void testReadId() throws IOException {
+    _storage.writeId(new NetworkId("network1_id"), "network1");
+    assertThat(_storage.readId(NetworkId.class, "network1"), equalTo("network1_id"));
+
+    _thrown.expect(IOException.class);
+    _storage.readId(NetworkId.class, "network2");
+  }
+
+  @Test
+  public void testHasId() throws IOException {
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
+
+    _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1");
+
+    assertTrue(_storage.hasId(SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
+
+    _storage.deleteNameIdMapping(SnapshotId.class, "snapshot1");
+
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
+  }
+
+  @Test
+  public void testListResolvableNames() throws IOException {
+    _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1", new NetworkId("net1_id"));
+    _storage.writeId(new SnapshotId("snapshot2_id"), "snapshot2", new NetworkId("net1_id"));
+
+    // different ancestors
+    _storage.writeId(
+        new SnapshotId("snapshot1_id_other"),
+        "snapshot3",
+        new NetworkId("net1_id"),
+        new AnalysisId("analysis1_id")); //
+
+    // different ID type
+    _storage.writeId(new QuestionId("question1_id"), "snapshot4", new NetworkId("net1_id"));
+
+    assertThat(
+        _storage.listResolvableNames(SnapshotId.class, new NetworkId("net1_id")),
+        containsInAnyOrder("snapshot1", "snapshot2"));
   }
 }

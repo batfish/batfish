@@ -37,8 +37,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.config.Settings;
-import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -103,12 +103,8 @@ public class WorkMgrServiceTest {
         });
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr manager =
-        new WorkMgr(
-            settings,
-            logger,
-            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+    FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
+    WorkMgr manager = new WorkMgr(settings, logger, new StorageBasedIdManager(fbs), fbs);
     Main.setWorkMgr(manager);
     manager.initNetwork(_networkName, null);
     manager.getIdManager().assignNetwork(_networkName, _networkId);
