@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -762,5 +763,24 @@ public class TransitGatewayTest {
                 vpnConnection,
                 Region.builder("region").setTransitGatewayPropagations(ImmutableMap.of()).build())
             .isPresent());
+  }
+
+  @Test
+  public void testEquals() {
+    TransitGatewayOptions opt1 =
+        new TransitGatewayOptions(
+            64512L, true, "tgw-rtb-0fa40c8df355dce6e", true, "tgw-rtb-0fa40c8df355dce6e", true);
+    TransitGatewayOptions opt2 =
+        new TransitGatewayOptions(
+            64513L, true, "tgw-rtb-0fa40c8df355dce6e", true, "tgw-rtb-0fa40c8df355dce6e", true);
+    TransitGateway tgw = new TransitGateway("gid", opt1, "owner", ImmutableMap.of());
+    new EqualsTester()
+        .addEqualityGroup(tgw, tgw, new TransitGateway("gid", opt1, "owner", ImmutableMap.of()))
+        .addEqualityGroup(new TransitGateway("gid2", opt1, "owner", ImmutableMap.of()))
+        .addEqualityGroup(new TransitGateway("gid", opt2, "owner", ImmutableMap.of()))
+        .addEqualityGroup(new TransitGateway("gid", opt1, "other_owner", ImmutableMap.of()))
+        .addEqualityGroup(
+            new TransitGateway("gid", opt1, "owner", ImmutableMap.of("Name", "Value")))
+        .testEquals();
   }
 }
