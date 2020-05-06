@@ -1,0 +1,6 @@
+{
+  "DestinationPrefixListId": "pl-63a5400a",
+  "GatewayId": "vpce-08ce0df7c620c05dc",
+  "Origin": "CreateRoute",
+  "State": "active"
+}

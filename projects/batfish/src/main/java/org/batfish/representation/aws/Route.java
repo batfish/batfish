@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_PREFIX_LIST_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_GATEWAY_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCE_ID;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID;
@@ -56,6 +57,7 @@ abstract class Route implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock,
       @Nullable @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK)
           Prefix6 destinationIpv6CidrBlock,
+      @Nullable @JsonProperty(JSON_KEY_DESTINATION_PREFIX_LIST_ID) String destinationPrefixListId,
       @Nullable @JsonProperty(JSON_KEY_STATE) String stateStr,
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
       @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
@@ -65,11 +67,15 @@ abstract class Route implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId) {
 
     checkArgument(
-        destinationCidrBlock != null || destinationIpv6CidrBlock != null,
-        "At least one of v4 or v6 destination CIDR block must be present for a route");
+        destinationCidrBlock != null
+            || destinationIpv6CidrBlock != null
+            || destinationPrefixListId != null,
+        "At least one destination type (v4 CIDR, v6 CIDR, prefix list) must be present for a route");
     checkArgument(
-        destinationCidrBlock == null || destinationIpv6CidrBlock == null,
-        "Only one of v4 or v6 destination CIDR block must be present for a route");
+        destinationCidrBlock == null
+            || destinationIpv6CidrBlock == null
+            || destinationPrefixListId == null,
+        "At most one destination type (v4 CIDR, v6 CIDR, prefix list)  must be present for a route");
     checkArgument(stateStr != null, "State cannot be null for a route");
 
     State state = State.valueOf(stateStr.toUpperCase());
@@ -106,8 +112,10 @@ abstract class Route implements Serializable {
 
     if (destinationCidrBlock != null) {
       return new RouteV4(destinationCidrBlock, state, target, targetType);
-    } else {
+    } else if (destinationIpv6CidrBlock != null) {
       return new RouteV6(destinationIpv6CidrBlock, state, target, targetType);
+    } else {
+      return new RoutePrefixListId(destinationPrefixListId, state, target, targetType);
     }
   }
 
