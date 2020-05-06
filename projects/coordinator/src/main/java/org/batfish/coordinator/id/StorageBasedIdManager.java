@@ -1,107 +1,116 @@
 package org.batfish.coordinator.id;
 
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.identifiers.AnalysisId;
-import org.batfish.identifiers.FileBasedIdResolver;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.identifiers.StorageBasedIdResolver;
+import org.batfish.storage.StorageProvider;
 
 /**
- * Filesystem based {@link IdManager} capable of writing mappings used by {@link
- * FileBasedIdResolver}, from which it inherits. Intended to be used together with {@link
- * org.batfish.storage.FileBasedStorage}.
+ * Storage-based {@link IdManager} capable of writing mappings used by {@link
+ * StorageBasedIdResolver}, from which it inherits. Intended to be used together with {@link
+ * org.batfish.storage.StorageProvider}.
  */
 @ParametersAreNonnullByDefault
-public class FileBasedIdManager extends FileBasedIdResolver implements IdManager {
+public class StorageBasedIdManager extends StorageBasedIdResolver implements IdManager {
 
   private static @Nonnull String uuid() {
     return UUID.randomUUID().toString();
   }
 
-  public FileBasedIdManager(Path baseDir) {
-    super(baseDir);
+  public StorageBasedIdManager(StorageProvider s) {
+    super(s);
+  }
+
+  private void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors) {
+    try {
+      _s.deleteNameIdMapping(type, name, ancestors);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private void writeId(Id id, String name, Id... ancestors) {
+    try {
+      _s.writeId(id, name, ancestors);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   @Override
   public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
-    Path idFile = getAnalysisIdPath(analysis, networkId);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, analysisId.getId());
+    writeId(analysisId, analysis, networkId);
   }
 
   @Override
   public void assignIssueSettingsId(
       String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
-    Path idFile = getIssueSettingsIdPath(majorIssueType, networkId);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, issueSettingsId.getId());
+    writeId(issueSettingsId, majorIssueType, networkId);
   }
 
   @Override
   public void assignNetwork(String network, NetworkId networkId) {
-    Path idFile = getNetworkIdPath(network);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, networkId.getId());
+    writeId(networkId, network);
   }
 
   @Override
   public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
-    Path idFile = getNetworkNodeRolesIdPath(networkId);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, networkNodeRolesId.getId());
+    writeId(networkNodeRolesId, NETWORK_NODE_ROLES, networkId);
   }
 
   @Override
   public void assignQuestion(
-      String question, NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
-    Path idFile = getQuestionIdPath(question, networkId, analysisId);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, questionId.getId());
+      String question,
+      NetworkId networkId,
+      QuestionId questionId,
+      @Nullable AnalysisId analysisId) {
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    writeId(questionId, question, ancestors);
   }
 
   @Override
   public void assignQuestionSettingsId(
       String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
-    Path idFile = getQuestionSettingsIdPath(questionClassId, networkId);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, questionSettingsId.getId());
+    writeId(questionSettingsId, questionClassId, networkId);
   }
 
   @Override
   public void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId) {
-    Path idFile = getSnapshotIdPath(snapshot, networkId);
-    idFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(idFile, snapshotId.getId());
+    writeId(snapshotId, snapshot, networkId);
   }
 
   @Override
   public void deleteAnalysis(String analysis, NetworkId networkId) {
-    CommonUtil.delete(getAnalysisIdPath(analysis, networkId));
+    deleteNameIdMapping(AnalysisId.class, analysis, networkId);
   }
 
   @Override
   public void deleteNetwork(String network) {
-    CommonUtil.delete(getNetworkIdPath(network));
+    deleteNameIdMapping(NetworkId.class, network);
   }
 
   @Override
   public void deleteQuestion(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    CommonUtil.delete(getQuestionIdPath(question, networkId, analysisId));
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    deleteNameIdMapping(QuestionId.class, question, ancestors);
   }
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    CommonUtil.delete(getSnapshotIdPath(snapshot, networkId));
+    deleteNameIdMapping(SnapshotId.class, snapshot, networkId);
   }
 
   @Override

@@ -186,7 +186,6 @@ import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
-import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
@@ -194,6 +193,7 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationJob;
@@ -517,9 +517,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? alternateStorageProvider
             : new FileBasedStorage(_settings.getStorageBase(), _logger, this::newBatch);
     _idResolver =
-        alternateIdResolver != null
-            ? alternateIdResolver
-            : new FileBasedIdResolver(_settings.getStorageBase());
+        alternateIdResolver != null ? alternateIdResolver : new StorageBasedIdResolver(_storage);
     _topologyProvider = new TopologyProviderImpl(this, _storage);
     loadPlugins();
   }
