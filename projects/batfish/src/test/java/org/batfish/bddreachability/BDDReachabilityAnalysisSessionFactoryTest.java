@@ -5,7 +5,6 @@ import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.ha
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasIncomingInterfaces;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasSessionFlows;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasTransformation;
-import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
 import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.INCOMING;
 import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.OUTGOING;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -229,7 +228,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
       Map<StateExpr, BDD> forwardReachableSets,
       BDDReverseTransformationRanges transformationRanges) {
 
-    return computeInitializedSesssions(
+    return BDDReachabilityAnalysisSessionFactory.computeInitializedSessions(
         PKT,
         _configs,
         ImmutableMap.of(FW, _fwSrcMgr, R1, _fwSrcMgr, R2, _fwSrcMgr),

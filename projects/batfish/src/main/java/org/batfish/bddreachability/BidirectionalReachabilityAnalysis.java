@@ -1,7 +1,6 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
 import static org.batfish.bddreachability.OriginationStateToTerminationState.originationStateToTerminationState;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
@@ -214,13 +213,15 @@ public final class BidirectionalReachabilityAnalysis {
                 return null;
               }
 
+              // erasing bookkeeping
               BDD bdd = srcManager.existsSource(termBdd);
               if (lastHopMgr != null) {
                 bdd = lastHopMgr.existsLastHop(bdd);
               }
-              bdd = _bddPacket.swapSourceAndDestinationFields(bdd);
               // erase required transit nodes constraint left over from forward pass
               bdd = bdd.exist(_factory.getRequiredTransitNodeBDD());
+
+              bdd = _bddPacket.swapSourceAndDestinationFields(bdd);
               return Maps.immutableEntry(orig, bdd);
             })
         .filter(Objects::nonNull)
@@ -255,7 +256,7 @@ public final class BidirectionalReachabilityAnalysis {
     BDDReverseFlowTransformationFactory reverseFlowTransformationFactory =
         new BDDReverseFlowTransformationFactoryImpl(_configs, transformationToTransitions);
 
-    return computeInitializedSesssions(
+    return BDDReachabilityAnalysisSessionFactory.computeInitializedSessions(
         _bddPacket,
         _configs,
         _factory.getBDDSourceManagers(),

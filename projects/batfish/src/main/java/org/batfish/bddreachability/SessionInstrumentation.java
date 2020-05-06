@@ -95,7 +95,11 @@ public class SessionInstrumentation {
       BDDFibGenerator bddFibGenerator) {
     SessionInstrumentation instrumentation =
         new SessionInstrumentation(bddPacket, configs, srcMgrs, lastHopMgr, filterBdds);
-    Stream<Edge> newEdges = instrumentation.computeNewEdges(initializedSessions);
+    Stream<Edge> newEdges =
+        Stream.concat(
+            instrumentation.computeNewEdges(initializedSessions),
+            // Create a fib subgraph for each node that has FibLookup sessions
+            computeSessionFibLookupSubgraph(initializedSessions, bddFibGenerator));
 
     /* Instrument the original graph by adding an additional constraint to the out-edges from
      * PreInInterface. Those edges are for non-session flows, and the constraint ensures only
@@ -104,10 +108,8 @@ public class SessionInstrumentation {
     Stream<Edge> instrumentedEdges =
         constrainOutEdges(
             originalEdges, computeNonSessionPreInInterfaceOutEdgeConstraints(initializedSessions));
-    Stream<Edge> sessionFibLookupEdges =
-        computeSessionFibLookupSubgraph(initializedSessions, bddFibGenerator);
 
-    return Streams.concat(newEdges, instrumentedEdges, sessionFibLookupEdges);
+    return Streams.concat(newEdges, instrumentedEdges);
   }
 
   @Nonnull

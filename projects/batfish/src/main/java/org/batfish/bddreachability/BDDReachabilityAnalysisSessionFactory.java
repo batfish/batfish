@@ -2,7 +2,6 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.immutableEntry;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -19,6 +18,7 @@ import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -94,7 +94,7 @@ final class BDDReachabilityAnalysisSessionFactory {
    *     graph. Must be computed using forward propagation (from origination to termination points).
    * @return Mapping from node name to the established sessions on that node.
    */
-  static Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSesssions(
+  static Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSessions(
       BDDPacket bddPacket,
       Map<String, Configuration> configs,
       Map<String, BDDSourceManager> srcManagers,
@@ -128,18 +128,11 @@ final class BDDReachabilityAnalysisSessionFactory {
 
   /** Compute initialized sessions for a config */
   private List<BDDFirewallSessionTraceInfo> computeInitializedSessions(Configuration config) {
-    String hostname = config.getHostname();
-
-    List<Interface> sessionExitInterfaces =
-        config.getAllInterfaces().values().stream()
-            .filter(iface -> iface.getActive() && iface.getFirewallSessionInterfaceInfo() != null)
-            .collect(ImmutableList.toImmutableList());
-
-    if (sessionExitInterfaces.isEmpty()) {
-      // No sessions to create (and won't have any entries in _lastHopManager), so return now
+    if (_sessionBdds.isEmpty()) {
       return ImmutableList.of();
     }
 
+    String hostname = config.getHostname();
     Map<String, Map<NodeInterfacePair, BDD>> lastHopOutgoingInterfaceBdds =
         toImmutableMap(
             config.activeInterfaceNames(),
@@ -152,14 +145,15 @@ final class BDDReachabilityAnalysisSessionFactory {
                     .map(BDDFiniteDomain::getValueBdds)
                     .orElse(ImmutableMap.of()));
 
-    return sessionExitInterfaces.stream()
+    return _sessionBdds.entrySet().stream()
         .flatMap(
-            iface -> {
-              BDD exitIfaceBdd = _sessionBdds.get(NodeInterfacePair.of(hostname, iface.getName()));
-              return exitIfaceBdd == null || exitIfaceBdd.isZero()
-                  ? Stream.of()
-                  : computeInitializedSessions(iface, lastHopOutgoingInterfaceBdds, exitIfaceBdd)
-                      .stream();
+            sessionBddEntry -> {
+              NodeInterfacePair key = sessionBddEntry.getKey();
+              BDD exitIfaceBdd = sessionBddEntry.getValue();
+              Interface iface =
+                  _configs.get(key.getHostname()).getAllInterfaces().get(key.getInterface());
+              return computeInitializedSessions(iface, lastHopOutgoingInterfaceBdds, exitIfaceBdd)
+                  .stream();
             })
         .collect(ImmutableList.toImmutableList());
   }
@@ -234,8 +228,8 @@ final class BDDReachabilityAnalysisSessionFactory {
                 Transition incomingTransformation =
                     _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(
                         hostname, src);
-                Map<NodeInterfacePair, BDD> nextHops = lastHopOutIfaceBdds.get(src);
-                if (nextHops.isEmpty()) {
+                Map<NodeInterfacePair, BDD> lastHops = lastHopOutIfaceBdds.get(src);
+                if (lastHops.isEmpty()) {
                   // The src interface has no neighbors
                   assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
 
@@ -267,7 +261,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                   return;
                 }
 
-                nextHops.forEach(
+                lastHops.forEach(
                     (lastHopOutIface, lastHopOutIfaceBdd) -> {
                       // Flows that came from lastHopOutIface, entered src and exited outIface
                       BDD lastHopToSrcIfaceToOutIfaceBdd = srcToOutIfaceBdd.and(lastHopOutIfaceBdd);
@@ -323,20 +317,26 @@ final class BDDReachabilityAnalysisSessionFactory {
     BDDOps ops = new BDDOps(ipProtocolsWithSessionsBdd.getFactory());
     return reachable.entrySet().stream()
         .map(
-            entry ->
-                immutableEntry(
-                    entry.getKey().accept(SessionCreationNodeVisitor.INSTANCE), entry.getValue()))
-        .filter(entry -> entry.getKey() != null)
-        .filter(
             entry -> {
-              NodeInterfacePair key = entry.getKey();
-              return configs
+              NodeInterfacePair key = entry.getKey().accept(SessionCreationNodeVisitor.INSTANCE);
+              if (key == null) {
+                return null;
+              }
+              if (configs
                       .get(key.getHostname())
                       .getAllInterfaces()
                       .get(key.getInterface())
                       .getFirewallSessionInterfaceInfo()
-                  != null;
+                  == null) {
+                return null;
+              }
+              BDD bdd = entry.getValue();
+              if (bdd.isZero()) {
+                return null;
+              }
+              return Maps.immutableEntry(key, bdd);
             })
+        .filter(Objects::nonNull)
         .collect(
             groupingBy(
                 Entry::getKey,

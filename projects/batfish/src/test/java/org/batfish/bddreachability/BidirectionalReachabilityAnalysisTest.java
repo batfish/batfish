@@ -4,7 +4,7 @@ import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.ha
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasIncomingInterfaces;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasSessionFlows;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasTransformation;
-import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
+import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSessions;
 import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.INCOMING;
 import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.OUTGOING;
 import static org.batfish.bddreachability.BidirectionalReachabilityAnalysis.computeReturnPassQueryConstraints;
@@ -408,7 +408,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             .build();
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
-        computeInitializedSesssions(
+        computeInitializedSessions(
             PKT,
             configurations,
             factory.getBDDSourceManagers(),
