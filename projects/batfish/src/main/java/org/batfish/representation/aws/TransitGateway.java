@@ -765,9 +765,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return false;
     }
     TransitGateway that = (TransitGateway) o;
-    return Objects.equals(_gatewayId, that._gatewayId)
-        && Objects.equals(_options, that._options)
-        && Objects.equals(_tags, that._tags);
+    return _gatewayId.equals(that._gatewayId)
+        && _options.equals(that._options)
+        && _ownerId.equals(that._ownerId)
+        && _tags.equals(that._tags);
   }
 
   @Override
