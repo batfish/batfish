@@ -741,12 +741,7 @@ public final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
-    for (TransitGateway tgw : getTransitGateways().values()) {
-      Configuration cfgNode = tgw.toConfigurationNode(awsConfiguration, this, warnings);
-      awsConfiguration.addNode(cfgNode);
-    }
-
-    // VpcPeeringConnections are processed in AwsConfiguration since they can be cross region
+    // VpcPeeringConnections and TransitGateways are processed in AwsConfiguration since they can be cross region (or cross-account)
 
     applyInstanceInterfaceAcls(awsConfiguration, warnings);
 

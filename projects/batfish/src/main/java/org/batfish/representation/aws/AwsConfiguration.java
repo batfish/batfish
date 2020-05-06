@@ -101,6 +101,9 @@ public class AwsConfiguration extends VendorConfiguration {
     }
     // Vpc peerings can be both cross-region and cross-account, so we handle them here
     processVpcPeerings();
+    // Transit gateways can be both cross-account so we handle them here:
+    TransitGatewayConverter.convertTransitGateways(this, _convertedConfiguration)
+        .forEach(_convertedConfiguration::addNode);
   }
 
   private void processVpcPeerings() {
