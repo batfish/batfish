@@ -93,6 +93,7 @@ public class TransitGatewayTest {
                         true,
                         "tgw-rtb-0fa40c8df355dce6e",
                         true),
+                    "554773406868",
                     ImmutableMap.of(TAG_NAME, "transit-test")))));
   }
 
@@ -103,6 +104,7 @@ public class TransitGatewayTest {
         new TransitGateway(
             "tgw",
             new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            "123456789012",
             ImmutableMap.of());
 
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
@@ -303,6 +305,7 @@ public class TransitGatewayTest {
         new TransitGateway(
             "tgw",
             new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            "123456789012",
             ImmutableMap.of());
 
     VpnConnection vpnConnection =
@@ -361,6 +364,7 @@ public class TransitGatewayTest {
         new TransitGateway(
             "tgw",
             new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            "123456789012",
             ImmutableMap.of(TAG_NAME, "tgw-name"));
 
     VpnConnection vpnConnection =
@@ -448,6 +452,7 @@ public class TransitGatewayTest {
         new TransitGateway(
             "tgw",
             new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            "123456789012",
             ImmutableMap.of());
 
     Prefix vpcPrefix = Prefix.parse("2.2.2.2/32");
@@ -522,6 +527,7 @@ public class TransitGatewayTest {
         new TransitGateway(
             "tgw",
             new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            "123456789012",
             ImmutableMap.of());
 
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of()); // no prefix
@@ -601,6 +607,7 @@ public class TransitGatewayTest {
         new TransitGateway(
             "tgw",
             new TransitGatewayOptions(0L, true, routeTableId, true, "tgw-rtb", true),
+            "123456789012",
             ImmutableMap.of());
 
     VpnConnection vpnConnection =

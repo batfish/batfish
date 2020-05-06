@@ -90,6 +90,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_OPTIONS = "Options";
   String JSON_KEY_ORDER = "Order";
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
+  String JSON_KEY_OWNER_ID = "OwnerId";
   String JSON_KEY_PLACEMENT = "Placement";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
   String JSON_KEY_PORT = "Port";
