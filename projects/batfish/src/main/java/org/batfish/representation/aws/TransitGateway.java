@@ -213,29 +213,33 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull private final String _gatewayId;
-
   @Nonnull private final TransitGatewayOptions _options;
-
+  @Nonnull private final String _ownerId;
   @Nonnull private final Map<String, String> _tags;
 
   @JsonCreator
   private static TransitGateway create(
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String gatewayId,
       @Nullable @JsonProperty(JSON_KEY_OPTIONS) TransitGatewayOptions options,
+      @Nullable @JsonProperty(JSON_KEY_OWNER_ID) String ownerId,
       @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
     checkArgument(gatewayId != null, "Transit Gateway Id cannot be null");
     checkArgument(options != null, "Transit Gateway Options cannot be null");
+    checkArgument(ownerId != null, "Transit Gateway owner ID cannot be null");
 
     return new TransitGateway(
         gatewayId,
         options,
+        ownerId,
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  public TransitGateway(String gatewayId, TransitGatewayOptions options, Map<String, String> tags) {
+  public TransitGateway(
+      String gatewayId, TransitGatewayOptions options, String ownerId, Map<String, String> tags) {
     _gatewayId = gatewayId;
     _options = options;
+    _ownerId = ownerId;
     _tags = tags;
   }
 
@@ -747,8 +751,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     return _gatewayId;
   }
 
+  @Nonnull
+  public String getOwnerId() {
+    return _ownerId;
+  }
+
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
