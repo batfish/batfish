@@ -1,0 +1,39 @@
+{
+ "TransitGatewayAttachments": [
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-0b2c8eeefcf19371b"
+   },
+   "CreationTime": "2020-04-28 22:12:29+00:00",
+   "ResourceId": "vpc-04048d4bfba9c2289",
+   "ResourceOwnerId": "028403472736",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-att-bat"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-0f832eb2ca4a975a4",
+   "TransitGatewayId": "tgw-0efdeab79e9a8e490",
+   "TransitGatewayOwnerId": "028403472736"
+  },
+  {
+   "Association": {
+    "State": "associated",
+    "TransitGatewayRouteTableId": "tgw-rtb-0b2c8eeefcf19371b"
+   },
+   "CreationTime": "2020-04-28 22:22:25+00:00",
+   "ResourceId": "vpc-08287a9084472b276",
+   "ResourceOwnerId": "951601349076",
+   "ResourceType": "vpc",
+   "State": "available",
+   "Tags": [],
+   "TransitGatewayAttachmentId": "tgw-attach-0f8397dbb9b9bce0d",
+   "TransitGatewayId": "tgw-0efdeab79e9a8e490",
+   "TransitGatewayOwnerId": "028403472736"
+  }
+ ]
+}

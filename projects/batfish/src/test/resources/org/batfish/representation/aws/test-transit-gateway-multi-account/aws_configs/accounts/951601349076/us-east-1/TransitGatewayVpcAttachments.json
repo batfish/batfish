@@ -1,0 +1,25 @@
+{
+ "TransitGatewayVpcAttachments": [
+  {
+   "CreationTime": "2020-04-28 22:22:25+00:00",
+   "Options": {
+    "DnsSupport": "enable",
+    "Ipv6Support": "disable"
+   },
+   "State": "available",
+   "SubnetIds": [
+    "subnet-0ffa87ae0b553703e"
+   ],
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "tgw-att-fish"
+    }
+   ],
+   "TransitGatewayAttachmentId": "tgw-attach-0f8397dbb9b9bce0d",
+   "TransitGatewayId": "tgw-0efdeab79e9a8e490",
+   "VpcId": "vpc-08287a9084472b276",
+   "VpcOwnerId": "951601349076"
+  }
+ ]
+}
