@@ -41,6 +41,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_DESCRIPTION = "Description";
   String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
   String JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK = "DestinationIpv6CidrBlock";
+  String JSON_KEY_DESTINATION_PREFIX_LIST_ID = "DestinationPrefixListId";
   String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
   String JSON_KEY_DNS_NAME = "DNSName";
   String JSON_KEY_DOMAIN_NAME = "DomainName";

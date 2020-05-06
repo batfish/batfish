@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
@@ -40,6 +41,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
@@ -503,6 +505,45 @@ public class SubnetTest {
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(toStaticRoute(route.getDestinationCidrBlock(), NULL_INTERFACE_NAME))));
+  }
+
+  /** Test that all prefixes of the prefix list are inserted as destinations */
+  @Test
+  public void testProcessRoutePrefixList() {
+    Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "awstest");
+
+    Subnet subnet =
+        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", "vpc", "zone", ImmutableMap.of());
+    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
+
+    List<Prefix> prefixes =
+        ImmutableList.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"));
+    PrefixList prefixList = new PrefixList("plist", prefixes, "name");
+
+    Region region =
+        Region.builder("region")
+            .setPrefixLists(ImmutableMap.of(prefixList.getId(), prefixList))
+            .build();
+
+    RoutePrefixListId route =
+        new RoutePrefixListId(prefixList.getId(), State.BLACKHOLE, null, TargetType.Gateway);
+
+    subnet.processRoute(
+        subnetCfg, region, route, vpcCfg, null, null, new ConvertedConfiguration(), new Warnings());
+
+    assertThat(
+        subnetCfg.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            prefixes.stream()
+                .map(
+                    prefix ->
+                        StaticRoute.builder()
+                            .setNetwork(prefix)
+                            .setNextHopInterface(NULL_INTERFACE_NAME)
+                            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                            .build())
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))));
   }
 
   /** Test that network ACls are properly attached */
