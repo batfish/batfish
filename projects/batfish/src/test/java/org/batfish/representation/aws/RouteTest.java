@@ -14,7 +14,7 @@ public class RouteTest {
 
   @Test
   public void testDeserializationRoutePrefixListId() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RoutePrefixlistId.json");
+    String text = CommonUtil.readResource("org/batfish/representation/aws/RoutePrefixListId.json");
 
     assertThat(
         BatfishObjectMapper.mapper().readValue(text, Route.class),
