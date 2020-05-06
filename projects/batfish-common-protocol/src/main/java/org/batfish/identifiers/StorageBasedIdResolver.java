@@ -9,7 +9,6 @@ import com.google.common.hash.Hashing;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,17 +25,17 @@ public class StorageBasedIdResolver implements IdResolver {
     return Hashing.murmur3_128().hashString(input, UTF_8).toString();
   }
 
-  private @Nonnull Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> idType) {
+  private @Nonnull Set<String> listResolvableNames(Class<? extends Id> idType, Id... ancestors) {
     try {
-      return _s.listResolvableNames(ancestors, idType);
+      return _s.listResolvableNames(idType, ancestors);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
-  private @Nonnull String readId(List<Id> ancestors, Class<? extends Id> idType, String name) {
+  private @Nonnull String readId(Class<? extends Id> idType, String name, Id... ancestors) {
     try {
-      return _s.readId(ancestors, idType, name);
+      return _s.readId(idType, name, ancestors);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -54,7 +53,7 @@ public class StorageBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent analysis %s", analysis));
     }
-    return new AnalysisId(readId(ImmutableList.of(networkId), AnalysisId.class, analysis));
+    return new AnalysisId(readId(AnalysisId.class, analysis, networkId));
   }
 
   @Override
@@ -97,8 +96,7 @@ public class StorageBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-configured majorIssueType %s", majorIssueType));
     }
-    return new IssueSettingsId(
-        readId(ImmutableList.of(networkId), IssueSettingsId.class, majorIssueType));
+    return new IssueSettingsId(readId(IssueSettingsId.class, majorIssueType, networkId));
   }
 
   @Override
@@ -107,7 +105,7 @@ public class StorageBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent network %s", network));
     }
-    return new NetworkId(readId(ImmutableList.of(), NetworkId.class, network));
+    return new NetworkId(readId(NetworkId.class, network));
   }
 
   @Override
@@ -115,8 +113,7 @@ public class StorageBasedIdResolver implements IdResolver {
     if (!hasNetworkNodeRolesId(networkId)) {
       throw new IllegalArgumentException("No assigned node-roles ID");
     }
-    return new NodeRolesId(
-        readId(ImmutableList.of(networkId), NodeRolesId.class, NETWORK_NODE_ROLES));
+    return new NodeRolesId(readId(NodeRolesId.class, NETWORK_NODE_ROLES, networkId));
   }
 
   @Override
@@ -126,9 +123,8 @@ public class StorageBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent question '%s'", question));
     }
-    List<Id> ancestors =
-        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
-    return new QuestionId(readId(ancestors, QuestionId.class, question));
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    return new QuestionId(readId(QuestionId.class, question, ancestors));
   }
 
   @Override
@@ -138,8 +134,7 @@ public class StorageBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-configured questionClassId '%s'", questionClassId));
     }
-    return new QuestionSettingsId(
-        readId(ImmutableList.of(networkId), QuestionSettingsId.class, questionClassId));
+    return new QuestionSettingsId(readId(QuestionSettingsId.class, questionClassId, networkId));
   }
 
   @Override
@@ -148,7 +143,7 @@ public class StorageBasedIdResolver implements IdResolver {
       throw new IllegalArgumentException(
           String.format("No ID assigned to non-existent snapshot '%s'", snapshot));
     }
-    return new SnapshotId(readId(ImmutableList.of(networkId), SnapshotId.class, snapshot));
+    return new SnapshotId(readId(SnapshotId.class, snapshot, networkId));
   }
 
   @Override
@@ -158,61 +153,59 @@ public class StorageBasedIdResolver implements IdResolver {
 
   @Override
   public boolean hasAnalysisId(String analysis, NetworkId networkId) {
-    return _s.hasId(ImmutableList.of(networkId), AnalysisId.class, analysis);
+    return _s.hasId(AnalysisId.class, analysis, networkId);
   }
 
   @Override
   public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    return _s.hasId(ImmutableList.of(networkId), IssueSettingsId.class, majorIssueType);
+    return _s.hasId(IssueSettingsId.class, majorIssueType, networkId);
   }
 
   @Override
   public boolean hasNetworkId(String network) {
-    return _s.hasId(ImmutableList.of(), NetworkId.class, network);
+    return _s.hasId(NetworkId.class, network);
   }
 
   @Override
   public boolean hasNetworkNodeRolesId(NetworkId networkId) {
-    return _s.hasId(ImmutableList.of(networkId), NodeRolesId.class, NETWORK_NODE_ROLES);
+    return _s.hasId(NodeRolesId.class, NETWORK_NODE_ROLES, networkId);
   }
 
   @Override
   public boolean hasQuestionId(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    List<Id> ancestors =
-        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
-    return _s.hasId(ancestors, QuestionId.class, question);
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    return _s.hasId(QuestionId.class, question, ancestors);
   }
 
   @Override
   public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-    return _s.hasId(ImmutableList.of(networkId), QuestionSettingsId.class, questionClassId);
+    return _s.hasId(QuestionSettingsId.class, questionClassId, networkId);
   }
 
   @Override
   public boolean hasSnapshotId(String snapshot, NetworkId networkId) {
-    return _s.hasId(ImmutableList.of(networkId), SnapshotId.class, snapshot);
+    return _s.hasId(SnapshotId.class, snapshot, networkId);
   }
 
   @Override
   public @Nonnull Set<String> listAnalyses(NetworkId networkId) {
-    return listResolvableNames(ImmutableList.of(networkId), AnalysisId.class);
+    return listResolvableNames(AnalysisId.class, networkId);
   }
 
   @Override
   public @Nonnull Set<String> listNetworks() {
-    return listResolvableNames(ImmutableList.of(), NetworkId.class);
+    return listResolvableNames(NetworkId.class);
   }
 
   @Override
   public @Nonnull Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
-    List<Id> ancestors =
-        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
-    return listResolvableNames(ancestors, QuestionId.class);
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    return listResolvableNames(QuestionId.class, ancestors);
   }
 
   @Override
   public @Nonnull Set<String> listSnapshots(NetworkId networkId) {
-    return listResolvableNames(ImmutableList.of(networkId), SnapshotId.class);
+    return listResolvableNames(SnapshotId.class, networkId);
   }
 }

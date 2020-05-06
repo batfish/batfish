@@ -1,9 +1,7 @@
 package org.batfish.coordinator.id;
 
-import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,17 +33,17 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
     super(s);
   }
 
-  private void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> type, String name) {
+  private void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors) {
     try {
-      _s.deleteNameIdMapping(ancestors, type, name);
+      _s.deleteNameIdMapping(type, name, ancestors);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
-  private void writeId(List<Id> ancestors, Id id, String name) {
+  private void writeId(Id id, String name, Id... ancestors) {
     try {
-      _s.writeId(ancestors, id, name);
+      _s.writeId(id, name, ancestors);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -53,23 +51,23 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
 
   @Override
   public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
-    writeId(ImmutableList.of(networkId), analysisId, analysis);
+    writeId(analysisId, analysis, networkId);
   }
 
   @Override
   public void assignIssueSettingsId(
       String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
-    writeId(ImmutableList.of(networkId), issueSettingsId, majorIssueType);
+    writeId(issueSettingsId, majorIssueType, networkId);
   }
 
   @Override
   public void assignNetwork(String network, NetworkId networkId) {
-    writeId(ImmutableList.of(), networkId, network);
+    writeId(networkId, network);
   }
 
   @Override
   public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
-    writeId(ImmutableList.of(networkId), networkNodeRolesId, NETWORK_NODE_ROLES);
+    writeId(networkNodeRolesId, NETWORK_NODE_ROLES, networkId);
   }
 
   @Override
@@ -78,43 +76,41 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
       NetworkId networkId,
       QuestionId questionId,
       @Nullable AnalysisId analysisId) {
-    List<Id> ancestors =
-        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
-    writeId(ancestors, questionId, question);
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    writeId(questionId, question, ancestors);
   }
 
   @Override
   public void assignQuestionSettingsId(
       String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
-    writeId(ImmutableList.of(networkId), questionSettingsId, questionClassId);
+    writeId(questionSettingsId, questionClassId, networkId);
   }
 
   @Override
   public void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId) {
-    writeId(ImmutableList.of(networkId), snapshotId, snapshot);
+    writeId(snapshotId, snapshot, networkId);
   }
 
   @Override
   public void deleteAnalysis(String analysis, NetworkId networkId) {
-    deleteNameIdMapping(ImmutableList.of(networkId), AnalysisId.class, analysis);
+    deleteNameIdMapping(AnalysisId.class, analysis, networkId);
   }
 
   @Override
   public void deleteNetwork(String network) {
-    deleteNameIdMapping(ImmutableList.of(), NetworkId.class, network);
+    deleteNameIdMapping(NetworkId.class, network);
   }
 
   @Override
   public void deleteQuestion(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    List<Id> ancestors =
-        analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
-    deleteNameIdMapping(ancestors, QuestionId.class, question);
+    Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
+    deleteNameIdMapping(QuestionId.class, question, ancestors);
   }
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    deleteNameIdMapping(ImmutableList.of(networkId), SnapshotId.class, snapshot);
+    deleteNameIdMapping(SnapshotId.class, snapshot, networkId);
   }
 
   @Override

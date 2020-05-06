@@ -402,30 +402,29 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nonnull
   @Override
-  public String readId(List<Id> ancestors, Class<? extends Id> type, String name)
+  public String readId(Class<? extends Id> type, String name, Id... ancestors) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void writeId(Id id, String name, Id... ancestors) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void writeId(List<Id> ancestors, Id id, String name) throws IOException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> type, String name)
-      throws IOException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean hasId(List<Id> ancestors, Class<? extends Id> type, String name) {
+  public boolean hasId(Class<? extends Id> type, String name, Id... ancestors) {
     throw new UnsupportedOperationException();
   }
 
   @Nonnull
   @Override
-  public Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> type)
+  public Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
       throws IOException {
     throw new UnsupportedOperationException();
   }

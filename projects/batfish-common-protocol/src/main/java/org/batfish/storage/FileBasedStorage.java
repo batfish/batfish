@@ -1255,33 +1255,33 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String readId(List<Id> ancestors, Class<? extends Id> idType, String name)
+  public @Nonnull String readId(Class<? extends Id> idType, String name, Id... ancestors)
       throws IOException {
-    return readFileToString(getIdFile(ancestors, idType, name), UTF_8);
+    return readFileToString(getIdFile(idType, name, ancestors), UTF_8);
   }
 
   @Override
-  public void writeId(List<Id> ancestors, Id id, String name) throws IOException {
-    Path file = getIdFile(ancestors, id.getClass(), name);
+  public void writeId(Id id, String name, Id... ancestors) throws IOException {
+    Path file = getIdFile(id.getClass(), name, ancestors);
     mkdirs(file.getParent());
     writeStringToFile(file, id.getId(), UTF_8);
   }
 
   @Override
-  public void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> type, String name)
+  public void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
       throws IOException {
-    Files.delete(getIdFile(ancestors, type, name));
+    Files.delete(getIdFile(type, name, ancestors));
   }
 
   @Override
-  public boolean hasId(List<Id> ancestors, Class<? extends Id> type, String name) {
-    return Files.exists(getIdFile(ancestors, type, name));
+  public boolean hasId(Class<? extends Id> type, String name, Id... ancestors) {
+    return Files.exists(getIdFile(type, name, ancestors));
   }
 
   @Override
-  public @Nonnull Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> type)
+  public @Nonnull Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
       throws IOException {
-    Path idsDir = getIdsDir(ancestors, type);
+    Path idsDir = getIdsDir(type, ancestors);
     if (!Files.exists(idsDir)) {
       return ImmutableSet.of();
     }
@@ -1312,7 +1312,7 @@ public final class FileBasedStorage implements StorageProvider {
     return toBase64(type.getCanonicalName());
   }
 
-  private @Nonnull Path getIdsDir(List<Id> ancestors, Class<? extends Id> type) {
+  private @Nonnull Path getIdsDir(Class<? extends Id> type, Id... ancestors) {
     Path file = _d.getStorageBase().resolve("ids");
     for (Id id : ancestors) {
       file = file.resolve(toIdDirName(id.getClass())).resolve(id.getId());
@@ -1320,7 +1320,7 @@ public final class FileBasedStorage implements StorageProvider {
     return file.resolve(toIdDirName(type));
   }
 
-  private @Nonnull Path getIdFile(List<Id> ancestors, Class<? extends Id> type, String name) {
-    return getIdsDir(ancestors, type).resolve(toBase64(name + ID_EXTENSION));
+  private @Nonnull Path getIdFile(Class<? extends Id> type, String name, Id... ancestors) {
+    return getIdsDir(type, ancestors).resolve(toBase64(name + ID_EXTENSION));
   }
 }

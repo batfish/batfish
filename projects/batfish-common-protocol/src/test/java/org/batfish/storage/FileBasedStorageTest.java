@@ -527,50 +527,45 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testReadId() throws IOException {
-    _storage.writeId(ImmutableList.of(), new NetworkId("network1_id"), "network1");
-    assertThat(
-        _storage.readId(ImmutableList.of(), NetworkId.class, "network1"), equalTo("network1_id"));
+    _storage.writeId(new NetworkId("network1_id"), "network1");
+    assertThat(_storage.readId(NetworkId.class, "network1"), equalTo("network1_id"));
 
     _thrown.expect(IOException.class);
-    _storage.readId(ImmutableList.of(), NetworkId.class, "network2");
+    _storage.readId(NetworkId.class, "network2");
   }
 
   @Test
   public void testHasId() throws IOException {
-    assertFalse(_storage.hasId(ImmutableList.of(), SnapshotId.class, "snapshot1"));
-    assertFalse(
-        _storage.hasId(ImmutableList.of(new NetworkId("net1_id")), SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
 
-    _storage.writeId(ImmutableList.of(), new SnapshotId("snapshot1_id"), "snapshot1");
+    _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1");
 
-    assertTrue(_storage.hasId(ImmutableList.of(), SnapshotId.class, "snapshot1"));
-    assertFalse(
-        _storage.hasId(ImmutableList.of(new NetworkId("net1_id")), SnapshotId.class, "snapshot1"));
+    assertTrue(_storage.hasId(SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
 
-    _storage.deleteNameIdMapping(ImmutableList.of(), SnapshotId.class, "snapshot1");
+    _storage.deleteNameIdMapping(SnapshotId.class, "snapshot1");
 
-    assertFalse(_storage.hasId(ImmutableList.of(), SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
   }
 
   @Test
   public void testListResolvableNames() throws IOException {
-    _storage.writeId(
-        ImmutableList.of(new NetworkId("net1_id")), new SnapshotId("snapshot1_id"), "snapshot1");
-    _storage.writeId(
-        ImmutableList.of(new NetworkId("net1_id")), new SnapshotId("snapshot2_id"), "snapshot2");
+    _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1", new NetworkId("net1_id"));
+    _storage.writeId(new SnapshotId("snapshot2_id"), "snapshot2", new NetworkId("net1_id"));
 
     // different ancestors
     _storage.writeId(
-        ImmutableList.of(new NetworkId("net1_id"), new AnalysisId("analysis1_id")),
         new SnapshotId("snapshot1_id_other"),
-        "snapshot3"); //
+        "snapshot3",
+        new NetworkId("net1_id"),
+        new AnalysisId("analysis1_id")); //
 
     // different ID type
-    _storage.writeId(
-        ImmutableList.of(new NetworkId("net1_id")), new QuestionId("question1_id"), "snapshot4");
+    _storage.writeId(new QuestionId("question1_id"), "snapshot4", new NetworkId("net1_id"));
 
     assertThat(
-        _storage.listResolvableNames(ImmutableList.of(new NetworkId("net1_id")), SnapshotId.class),
+        _storage.listResolvableNames(SnapshotId.class, new NetworkId("net1_id")),
         containsInAnyOrder("snapshot1", "snapshot2"));
   }
 }

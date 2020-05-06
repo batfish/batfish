@@ -653,14 +653,14 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   @Nonnull
-  String readId(List<Id> ancestors, Class<? extends Id> idType, String name) throws IOException;
+  String readId(Class<? extends Id> idType, String name, Id... ancestors) throws IOException;
 
   /**
    * Write an name-ID mapping corresponding to given ancestor IDs and user-provided name.
    *
    * @throws IOException if there is an error
    */
-  void writeId(List<Id> ancestors, Id id, String name) throws IOException;
+  void writeId(Id id, String name, Id... ancestors) throws IOException;
 
   /**
    * Delete the name-ID mapping corresponding to the given ancestor IDs, ID type, and user-provided
@@ -668,14 +668,14 @@ public interface StorageProvider {
    *
    * @throws IOException if there is an error
    */
-  void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> idType, String name)
+  void deleteNameIdMapping(Class<? extends Id> idType, String name, Id... ancestors)
       throws IOException;
 
   /**
    * Returns true iff there is a name-ID mapping corresponding to given ancestor IDs and
    * user-provided name.
    */
-  boolean hasId(List<Id> ancestors, Class<? extends Id> idType, String name);
+  boolean hasId(Class<? extends Id> idType, String name, Id... ancestors);
 
   /**
    * Lists the resolvable names corresponding to the given ancestor IDs and ID type.
@@ -683,6 +683,5 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   @Nonnull
-  Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> idType)
-      throws IOException;
+  Set<String> listResolvableNames(Class<? extends Id> idType, Id... ancestors) throws IOException;
 }
