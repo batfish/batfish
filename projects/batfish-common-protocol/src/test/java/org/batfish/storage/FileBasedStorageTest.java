@@ -60,7 +60,6 @@ import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.AnalysisId;
-import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
@@ -530,27 +529,27 @@ public final class FileBasedStorageTest {
   public void testReadId() throws IOException {
     _storage.writeId(ImmutableList.of(), new NetworkId("network1_id"), "network1");
     assertThat(
-        _storage.readId(ImmutableList.of(), IdType.NETWORK, "network1"), equalTo("network1_id"));
+        _storage.readId(ImmutableList.of(), NetworkId.class, "network1"), equalTo("network1_id"));
 
     _thrown.expect(IOException.class);
-    _storage.readId(ImmutableList.of(), IdType.NETWORK, "network2");
+    _storage.readId(ImmutableList.of(), NetworkId.class, "network2");
   }
 
   @Test
   public void testHasId() throws IOException {
-    assertFalse(_storage.hasId(ImmutableList.of(), IdType.SNAPSHOT, "snapshot1"));
+    assertFalse(_storage.hasId(ImmutableList.of(), SnapshotId.class, "snapshot1"));
     assertFalse(
-        _storage.hasId(ImmutableList.of(new NetworkId("net1_id")), IdType.SNAPSHOT, "snapshot1"));
+        _storage.hasId(ImmutableList.of(new NetworkId("net1_id")), SnapshotId.class, "snapshot1"));
 
     _storage.writeId(ImmutableList.of(), new SnapshotId("snapshot1_id"), "snapshot1");
 
-    assertTrue(_storage.hasId(ImmutableList.of(), IdType.SNAPSHOT, "snapshot1"));
+    assertTrue(_storage.hasId(ImmutableList.of(), SnapshotId.class, "snapshot1"));
     assertFalse(
-        _storage.hasId(ImmutableList.of(new NetworkId("net1_id")), IdType.SNAPSHOT, "snapshot1"));
+        _storage.hasId(ImmutableList.of(new NetworkId("net1_id")), SnapshotId.class, "snapshot1"));
 
-    _storage.deleteNameIdMapping(ImmutableList.of(), IdType.SNAPSHOT, "snapshot1");
+    _storage.deleteNameIdMapping(ImmutableList.of(), SnapshotId.class, "snapshot1");
 
-    assertFalse(_storage.hasId(ImmutableList.of(), IdType.SNAPSHOT, "snapshot1"));
+    assertFalse(_storage.hasId(ImmutableList.of(), SnapshotId.class, "snapshot1"));
   }
 
   @Test
@@ -571,7 +570,7 @@ public final class FileBasedStorageTest {
         ImmutableList.of(new NetworkId("net1_id")), new QuestionId("question1_id"), "snapshot4");
 
     assertThat(
-        _storage.listResolvableNames(ImmutableList.of(new NetworkId("net1_id")), IdType.SNAPSHOT),
+        _storage.listResolvableNames(ImmutableList.of(new NetworkId("net1_id")), SnapshotId.class),
         containsInAnyOrder("snapshot1", "snapshot2"));
   }
 }

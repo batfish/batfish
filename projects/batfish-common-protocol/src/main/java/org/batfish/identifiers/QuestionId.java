@@ -8,9 +8,4 @@ public class QuestionId extends Id {
   public QuestionId(String id) {
     super(id);
   }
-
-  @Override
-  public IdType getType() {
-    return IdType.QUESTION;
-  }
 }

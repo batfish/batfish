@@ -31,7 +31,6 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -403,7 +402,8 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nonnull
   @Override
-  public String readId(List<Id> ancestors, IdType type, String name) throws IOException {
+  public String readId(List<Id> ancestors, Class<? extends Id> type, String name)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -413,18 +413,20 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) throws IOException {
+  public void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> type, String name)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean hasId(List<Id> ancestors, IdType type, String name) {
+  public boolean hasId(List<Id> ancestors, Class<? extends Id> type, String name) {
     throw new UnsupportedOperationException();
   }
 
   @Nonnull
   @Override
-  public Set<String> listResolvableNames(List<Id> ancestors, IdType type) throws IOException {
+  public Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> type)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 }

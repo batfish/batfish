@@ -15,9 +15,6 @@ public abstract class Id {
     _id = id;
   }
 
-  /** The type of this Id instance. Should be distinct across implementations. */
-  public abstract IdType getType();
-
   @Override
   public final boolean equals(@Nullable Object obj) {
     if (this == obj) {

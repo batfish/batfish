@@ -78,7 +78,6 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -1256,29 +1255,31 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String readId(List<Id> ancestors, IdType type, String name) throws IOException {
-    return readFileToString(getIdFile(ancestors, type, name), UTF_8);
+  public @Nonnull String readId(List<Id> ancestors, Class<? extends Id> idType, String name)
+      throws IOException {
+    return readFileToString(getIdFile(ancestors, idType, name), UTF_8);
   }
 
   @Override
   public void writeId(List<Id> ancestors, Id id, String name) throws IOException {
-    Path file = getIdFile(ancestors, id.getType(), name);
+    Path file = getIdFile(ancestors, id.getClass(), name);
     mkdirs(file.getParent());
     writeStringToFile(file, id.getId(), UTF_8);
   }
 
   @Override
-  public void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) throws IOException {
+  public void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> type, String name)
+      throws IOException {
     Files.delete(getIdFile(ancestors, type, name));
   }
 
   @Override
-  public boolean hasId(List<Id> ancestors, IdType type, String name) {
+  public boolean hasId(List<Id> ancestors, Class<? extends Id> type, String name) {
     return Files.exists(getIdFile(ancestors, type, name));
   }
 
   @Override
-  public @Nonnull Set<String> listResolvableNames(List<Id> ancestors, IdType type)
+  public @Nonnull Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> type)
       throws IOException {
     Path idsDir = getIdsDir(ancestors, type);
     if (!Files.exists(idsDir)) {
@@ -1307,38 +1308,19 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private static String toIdDirName(IdType type) {
-    switch (type) {
-      case NETWORK:
-        return "network_ids";
-      case SNAPSHOT:
-        return "snapshot_ids";
-      case ANALYSIS:
-        return "analysis_ids";
-      case ANSWER:
-        return "answer_ids";
-      case QUESTION:
-        return "question_ids";
-      case QUESTION_SETTINGS:
-        return "question_settings_ids";
-      case NODE_ROLES:
-        return "node_roles_ids";
-      case ISSUE_SETTINGS:
-        return "issue_settings_ids";
-      default:
-        throw new IllegalArgumentException(String.format("Unsupported IdType: %s", type));
-    }
+  private static String toIdDirName(Class<? extends Id> type) {
+    return toBase64(type.getCanonicalName());
   }
 
-  private @Nonnull Path getIdsDir(List<Id> ancestors, IdType type) {
+  private @Nonnull Path getIdsDir(List<Id> ancestors, Class<? extends Id> type) {
     Path file = _d.getStorageBase().resolve("ids");
     for (Id id : ancestors) {
-      file = file.resolve(toIdDirName(id.getType())).resolve(id.getId());
+      file = file.resolve(toIdDirName(id.getClass())).resolve(id.getId());
     }
     return file.resolve(toIdDirName(type));
   }
 
-  private @Nonnull Path getIdFile(List<Id> ancestors, IdType type, String name) {
+  private @Nonnull Path getIdFile(List<Id> ancestors, Class<? extends Id> type, String name) {
     return getIdsDir(ancestors, type).resolve(toBase64(name + ID_EXTENSION));
   }
 }

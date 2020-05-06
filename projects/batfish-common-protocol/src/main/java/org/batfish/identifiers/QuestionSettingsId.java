@@ -11,9 +11,4 @@ public class QuestionSettingsId extends Id {
   public QuestionSettingsId(String id) {
     super(id);
   }
-
-  @Override
-  public IdType getType() {
-    return IdType.QUESTION_SETTINGS;
-  }
 }

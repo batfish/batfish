@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -36,7 +35,7 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
     super(s);
   }
 
-  private void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) {
+  private void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> type, String name) {
     try {
       _s.deleteNameIdMapping(ancestors, type, name);
     } catch (IOException e) {
@@ -97,12 +96,12 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
 
   @Override
   public void deleteAnalysis(String analysis, NetworkId networkId) {
-    deleteNameIdMapping(ImmutableList.of(networkId), IdType.ANALYSIS, analysis);
+    deleteNameIdMapping(ImmutableList.of(networkId), AnalysisId.class, analysis);
   }
 
   @Override
   public void deleteNetwork(String network) {
-    deleteNameIdMapping(ImmutableList.of(), IdType.NETWORK, network);
+    deleteNameIdMapping(ImmutableList.of(), NetworkId.class, network);
   }
 
   @Override
@@ -110,12 +109,12 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
     List<Id> ancestors =
         analysisId != null ? ImmutableList.of(networkId, analysisId) : ImmutableList.of(networkId);
-    deleteNameIdMapping(ancestors, IdType.QUESTION, question);
+    deleteNameIdMapping(ancestors, QuestionId.class, question);
   }
 
   @Override
   public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    deleteNameIdMapping(ImmutableList.of(networkId), IdType.SNAPSHOT, snapshot);
+    deleteNameIdMapping(ImmutableList.of(networkId), SnapshotId.class, snapshot);
   }
 
   @Override

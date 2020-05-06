@@ -34,7 +34,6 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IdType;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
@@ -654,7 +653,7 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   @Nonnull
-  String readId(List<Id> ancestors, IdType type, String name) throws IOException;
+  String readId(List<Id> ancestors, Class<? extends Id> idType, String name) throws IOException;
 
   /**
    * Write an name-ID mapping corresponding to given ancestor IDs and user-provided name.
@@ -669,13 +668,14 @@ public interface StorageProvider {
    *
    * @throws IOException if there is an error
    */
-  void deleteNameIdMapping(List<Id> ancestors, IdType type, String name) throws IOException;
+  void deleteNameIdMapping(List<Id> ancestors, Class<? extends Id> idType, String name)
+      throws IOException;
 
   /**
    * Returns true iff there is a name-ID mapping corresponding to given ancestor IDs and
    * user-provided name.
    */
-  boolean hasId(List<Id> ancestors, IdType type, String name);
+  boolean hasId(List<Id> ancestors, Class<? extends Id> idType, String name);
 
   /**
    * Lists the resolvable names corresponding to the given ancestor IDs and ID type.
@@ -683,5 +683,6 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   @Nonnull
-  Set<String> listResolvableNames(List<Id> ancestors, IdType type) throws IOException;
+  Set<String> listResolvableNames(List<Id> ancestors, Class<? extends Id> idType)
+      throws IOException;
 }
