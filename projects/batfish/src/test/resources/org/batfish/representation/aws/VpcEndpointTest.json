@@ -1,0 +1,95 @@
+{
+  "VpcEndpoints": [
+    {
+      "CreationTimestamp": "2019-11-12 22:49:12+00:00",
+      "DnsEntries": [],
+      "Groups": [],
+      "NetworkInterfaceIds": [],
+      "OwnerId": "998046515818",
+      "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
+      "PrivateDnsEnabled": false,
+      "RequesterManaged": false,
+      "RouteTableIds": [
+        "rtb-0157d3e9e2dff8303"
+      ],
+      "ServiceName": "com.amazonaws.us-east-1.s3",
+      "State": "available",
+      "SubnetIds": [],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "K8-Cluster-ec2-vpce"
+        }
+      ],
+      "VpcEndpointId": "vpce-0d4dd62ef8577fa8e",
+      "VpcEndpointType": "Gateway",
+      "VpcId": "vpc-05575381cd519fdef"
+    },
+    {
+      "CreationTimestamp": "2019-11-06 18:36:15+00:00",
+      "DnsEntries": [
+        {
+          "DnsName": "vpce-0dacb0be80d30b16e-gj3pv750.ec2.us-east-1.vpce.amazonaws.com",
+          "HostedZoneId": "Z7HUB22UULQXV"
+        },
+        {
+          "DnsName": "vpce-0dacb0be80d30b16e-gj3pv750-us-east-1b.ec2.us-east-1.vpce.amazonaws.com",
+          "HostedZoneId": "Z7HUB22UULQXV"
+        },
+        {
+          "DnsName": "vpce-0dacb0be80d30b16e-gj3pv750-us-east-1a.ec2.us-east-1.vpce.amazonaws.com",
+          "HostedZoneId": "Z7HUB22UULQXV"
+        },
+        {
+          "DnsName": "ec2.us-east-1.amazonaws.com",
+          "HostedZoneId": "Z04158383FXJG7CWISAAZ"
+        }
+      ],
+      "Groups": [
+        {
+          "GroupId": "sg-08d4a6e2c1dedd384",
+          "GroupName": "SG-SSM"
+        }
+      ],
+      "NetworkInterfaceIds": [
+        "eni-01e50eacd921e923f",
+        "eni-02c68bab6b43ddfe6"
+      ],
+      "OwnerId": "998046515818",
+      "PolicyDocument": "{\n \"Statement\": [\n {\n \"Action\": \"*\", \n \"Effect\": \"Allow\", \n \"Principal\": \"*\", \n \"Resource\": \"*\"\n }\n ]\n}",
+      "PrivateDnsEnabled": true,
+      "RequesterManaged": false,
+      "RouteTableIds": [],
+      "ServiceName": "com.amazonaws.us-east-1.ec2",
+      "State": "available",
+      "SubnetIds": [
+        "subnet-0176606bd33f3c98b",
+        "subnet-07ca689a49d471449"
+      ],
+      "Tags": [],
+      "VpcEndpointId": "vpce-0dacb0be80d30b16e",
+      "VpcEndpointType": "Interface",
+      "VpcId": "vpc-05575381cd519fdef"
+    },
+    {
+      "CreationTimestamp": "2019-11-12 22:49:12+00:00",
+      "DnsEntries": [],
+      "Groups": [],
+      "NetworkInterfaceIds": [],
+      "OwnerId": "998046515818",
+      "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
+      "PrivateDnsEnabled": false,
+      "RequesterManaged": false,
+      "RouteTableIds": [
+        "rtb-0157d3e9e2dff8303"
+      ],
+      "ServiceName": "com.amazonaws.us-east-1.s3",
+      "State": "pending",
+      "SubnetIds": [],
+      "Tags": [],
+      "VpcEndpointId": "vpce-0d4dd62ef8577fa8e",
+      "VpcEndpointType": "Gateway",
+      "VpcId": "vpc-05575381cd519fdef"
+    }
+  ]
+}

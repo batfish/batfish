@@ -87,6 +87,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_NETWORK_ACL_ID = "NetworkAclId";
   String JSON_KEY_NETWORK_ACLS = "NetworkAcls";
   String JSON_KEY_NETWORK_INTERFACE_ID = "NetworkInterfaceId";
+  String JSON_KEY_NETWORK_INTERFACE_IDS = "NetworkInterfaceIds";
   String JSON_KEY_NETWORK_INTERFACES = "NetworkInterfaces";
   String JSON_KEY_OPTIONS = "Options";
   String JSON_KEY_ORDER = "Order";
@@ -160,6 +161,9 @@ public interface AwsVpcEntity {
   String JSON_KEY_VPC_ID = "VpcId";
   String JSON_KEY_ES_VPC_ID = "VPCId";
   String JSON_KEY_VPC_OPTIONS = "VPCOptions";
+  String JSON_KEY_VPC_ENDPOINT_ID = "VpcEndpointId";
+  String JSON_KEY_VPC_ENDPOINT_TYPE = "VpcEndpointType";
+  String JSON_KEY_VPC_ENDPOINTS = "VpcEndpoints";
   String JSON_KEY_VPC_PEERING_CONNECTION_ID = "VpcPeeringConnectionId";
   String JSON_KEY_VPC_PEERING_CONNECTIONS = "VpcPeeringConnections";
   String JSON_KEY_VPC_SECURITY_GROUPS = "VpcSecurityGroups";

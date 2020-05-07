@@ -129,11 +129,14 @@ public final class Region implements Serializable {
 
   @Nonnull private final Map<String, VpnConnection> _vpnConnections;
 
+  @Nonnull private final Map<String, VpcEndpoint> _vpcEndpoints;
+
   @Nonnull private final Map<String, VpnGateway> _vpnGateways;
 
   public Region(String name) {
     this(
         name,
+        new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
         new HashMap<>(),
@@ -192,6 +195,7 @@ public final class Region implements Serializable {
       Map<String, TransitGatewayStaticRoutes> transitGatewayStaticRoutes,
       Map<String, TransitGatewayVpcAttachment> transitGatewayVpcAttachments,
       Map<String, TransitGateway> transitGateways,
+      Map<String, VpcEndpoint> vpcEndpoints,
       Map<String, VpcPeeringConnection> vpcPeerings,
       Map<String, Vpc> vpcs,
       Map<String, VpnConnection> vpnConnections,
@@ -222,6 +226,7 @@ public final class Region implements Serializable {
     _transitGatewayStaticRoutes = transitGatewayStaticRoutes;
     _transitGatewayVpcAttachments = transitGatewayVpcAttachments;
     _transitGateways = transitGateways;
+    _vpcEndpoints = vpcEndpoints;
     _vpcPeerings = vpcPeerings;
     _vpcs = vpcs;
     _vpnConnections = vpnConnections;
@@ -476,6 +481,15 @@ public final class Region implements Serializable {
             _transitGateways.put(tGateway.getId(), tGateway);
           }
         };
+      case AwsVpcEntity.JSON_KEY_VPC_ENDPOINTS:
+        return json -> {
+          String state = json.get(AwsVpcEntity.JSON_KEY_STATE).textValue();
+          if (state.equals(AwsVpcEntity.STATE_AVAILABLE)) {
+            VpcEndpoint vpcEndpoint =
+                BatfishObjectMapper.mapper().convertValue(json, VpcEndpoint.class);
+            _vpcEndpoints.put(vpcEndpoint.getId(), vpcEndpoint);
+          }
+        };
       case AwsVpcEntity.JSON_KEY_VPCS:
         return json -> {
           Vpc vpc = BatfishObjectMapper.mapper().convertValue(json, Vpc.class);
@@ -649,6 +663,11 @@ public final class Region implements Serializable {
   @Nonnull
   Map<String, TransitGateway> getTransitGateways() {
     return _transitGateways;
+  }
+
+  @Nonnull
+  public Map<String, VpcEndpoint> getVpcEndpoints() {
+    return _vpcEndpoints;
   }
 
   @Nonnull
@@ -1002,6 +1021,7 @@ public final class Region implements Serializable {
     private Map<String, TransitGatewayStaticRoutes> _transitGatewayStaticRoutes;
     private Map<String, TransitGatewayVpcAttachment> _transitGatewayVpcAttachments;
     private Map<String, TransitGateway> _transitGateways;
+    private Map<String, VpcEndpoint> _vpcEndpoints;
     private Map<String, VpcPeeringConnection> _vpcPeerings;
     private Map<String, Vpc> _vpcs;
     private Map<String, VpnConnection> _vpnConnections;
@@ -1151,6 +1171,11 @@ public final class Region implements Serializable {
       return this;
     }
 
+    public RegionBuilder setVpcEndpoints(Map<String, VpcEndpoint> vpcEndpoints) {
+      _vpcEndpoints = vpcEndpoints;
+      return this;
+    }
+
     public RegionBuilder setVpcPeerings(Map<String, VpcPeeringConnection> vpcPeerings) {
       _vpcPeerings = vpcPeerings;
       return this;
@@ -1200,6 +1225,7 @@ public final class Region implements Serializable {
           firstNonNull(_transitGatewayStaticRoutes, ImmutableMap.of()),
           firstNonNull(_transitGatewayVpcAttachments, ImmutableMap.of()),
           firstNonNull(_transitGateways, ImmutableMap.of()),
+          firstNonNull(_vpcEndpoints, ImmutableMap.of()),
           firstNonNull(_vpcPeerings, ImmutableMap.of()),
           firstNonNull(_vpcs, ImmutableMap.of()),
           firstNonNull(_vpnConnections, ImmutableMap.of()),
