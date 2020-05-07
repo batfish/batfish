@@ -30,7 +30,20 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
   public enum Status {
     AVAILABLE,
-    UNAVAILABLE
+    BACKING_UP,
+    UNAVAILABLE;
+
+    public static Status fromString(String str) {
+      switch (str) {
+        case "available":
+          return AVAILABLE;
+        case "backing-up":
+          return BACKING_UP;
+          // Treat anything unknown as unavailable
+        default:
+          return UNAVAILABLE;
+      }
+    }
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
@@ -212,7 +225,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
         availabilityZone,
         dbSubnetGroup.getVpcId(),
         multiAz,
-        dbInstanceStatus.equalsIgnoreCase("available") ? Status.AVAILABLE : Status.UNAVAILABLE,
+        Status.fromString(dbInstanceStatus),
         azsSubnetIds,
         vpcSecurityGroups.stream()
             .filter(g -> g.getStatus().equalsIgnoreCase("active"))

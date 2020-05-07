@@ -248,4 +248,14 @@ public class RdsInstanceTest {
                     ImmutableListMultimap.of("us-west-2b", "subnet-1"),
                     ImmutableList.of("sg-12345")))));
   }
+
+  @Test
+  public void testStatusConversion() {
+    assertThat(RdsInstance.Status.fromString("available"), equalTo(Status.AVAILABLE));
+    assertThat(RdsInstance.Status.fromString("backing-up"), equalTo(Status.BACKING_UP));
+
+    // Anything other than explicitly available or backing up is unavailable
+    assertThat(RdsInstance.Status.fromString("unavailable"), equalTo(Status.UNAVAILABLE));
+    assertThat(RdsInstance.Status.fromString("unknown"), equalTo(Status.UNAVAILABLE));
+  }
 }
