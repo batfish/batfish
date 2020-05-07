@@ -685,21 +685,20 @@ public final class WorkMgrTest {
 
   @Test
   public void getNodes() throws IOException {
-    _manager.initNetwork("container", null);
+    String network = "network1";
+    String snapshot = "snapshot1";
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
 
-    // create a testrig and write a topology object for it
-    createSnapshotWithMetadata("container", "testrig1");
-    Topology topology = new Topology("testrig1");
+    // create a snapshot and write a topology object for it
+    createSnapshotWithMetadata(network, snapshot);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    Topology topology = new Topology(snapshot);
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
-    CommonUtil.writeFile(
-        _manager
-            .getdirSnapshot("container", "testrig1")
-            .resolve(
-                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
-        BatfishObjectMapper.mapper().writeValueAsString(topology));
+    _storage.storePojoTopology(topology, networkId, snapshotId);
 
     // should get the nodes of the topology when we ask for it
-    assertThat(_manager.getNodes("container", "testrig1"), equalTo(ImmutableSet.of("a1", "b1")));
+    assertThat(_manager.getNodes(network, snapshot), equalTo(ImmutableSet.of("a1", "b1")));
   }
 
   @Test
