@@ -31,7 +31,7 @@ import org.batfish.datamodel.StaticRoute;
 @ParametersAreNonnullByDefault
 public final class RdsInstance implements AwsVpcEntity, Serializable {
 
-  private static Set<String> _DOWN_STATES =
+  private static final Set<String> _DOWN_STATES =
       ImmutableSet.of(
           "creating", "deleting", "stopped", "stopping", "failed", "rebooting", "moving-to-vpc");
 
