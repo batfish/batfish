@@ -8,11 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -29,23 +31,9 @@ import org.batfish.datamodel.StaticRoute;
 @ParametersAreNonnullByDefault
 public final class RdsInstance implements AwsVpcEntity, Serializable {
 
-  public enum Status {
-    AVAILABLE,
-    BACKING_UP,
-    UNAVAILABLE;
-
-    public static Status fromString(String str) {
-      switch (str) {
-        case "available":
-          return AVAILABLE;
-        case "backing-up":
-          return BACKING_UP;
-          // Treat anything unknown as unavailable
-        default:
-          return UNAVAILABLE;
-      }
-    }
-  }
+  private static Set<String> _DOWN_STATES =
+      ImmutableSet.of(
+          "creating", "deleting", "stopped", "stopping", "failed", "rebooting", "moving-to-vpc");
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -181,7 +169,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _dbInstanceIdentifier;
 
-  @Nonnull private final Status _dbInstanceStatus;
+  @Nonnull private final String _dbInstanceStatus;
 
   @Nonnull private final ListMultimap<String, String> _azsSubnetIds;
 
@@ -226,7 +214,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
         availabilityZone,
         dbSubnetGroup.getVpcId(),
         multiAz,
-        Status.fromString(dbInstanceStatus),
+        dbInstanceStatus,
         azsSubnetIds,
         vpcSecurityGroups.stream()
             .filter(g -> g.getStatus().equalsIgnoreCase("active"))
@@ -239,7 +227,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
       String availabilityZone,
       String vpcId,
       boolean multiAz,
-      Status dbInstanceStatus,
+      String dbInstanceStatus,
       ListMultimap<String, String> azSubnetIds,
       List<String> securityGroups) {
     _dbInstanceIdentifier = dbInstanceIdentifier;
@@ -280,14 +268,14 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   }
 
   @Nonnull
-  public Status getDbInstanceStatus() {
+  public String getDbInstanceStatus() {
     return _dbInstanceStatus;
   }
 
   /** Return boolean indicating if the instance is up and operational. */
   @JsonIgnore
   public boolean isUp() {
-    return _dbInstanceStatus == Status.AVAILABLE || _dbInstanceStatus == Status.BACKING_UP;
+    return !_DOWN_STATES.contains(_dbInstanceStatus);
   }
 
   Configuration toConfigurationNode(
@@ -354,7 +342,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     RdsInstance that = (RdsInstance) o;
     return _multiAz == that._multiAz
         && Objects.equals(_dbInstanceIdentifier, that._dbInstanceIdentifier)
-        && _dbInstanceStatus == that._dbInstanceStatus
+        && Objects.equals(_dbInstanceStatus, that._dbInstanceStatus)
         && Objects.equals(_azsSubnetIds, that._azsSubnetIds)
         && Objects.equals(_availabilityZone, that._availabilityZone)
         && Objects.equals(_vpcId, that._vpcId)

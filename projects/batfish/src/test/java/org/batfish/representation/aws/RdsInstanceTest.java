@@ -54,7 +54,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.aws.IpPermissions.AddressType;
-import org.batfish.representation.aws.RdsInstance.Status;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -246,19 +245,9 @@ public class RdsInstanceTest {
                     "us-west-2b",
                     "vpc-1",
                     false,
-                    Status.AVAILABLE,
+                    "available",
                     ImmutableListMultimap.of("us-west-2b", "subnet-1"),
                     ImmutableList.of("sg-12345")))));
-  }
-
-  @Test
-  public void testStatusConversion() {
-    assertThat(RdsInstance.Status.fromString("available"), equalTo(Status.AVAILABLE));
-    assertThat(RdsInstance.Status.fromString("backing-up"), equalTo(Status.BACKING_UP));
-
-    // Should fallback to unavailable for other statuses
-    assertThat(RdsInstance.Status.fromString("unavailable"), equalTo(Status.UNAVAILABLE));
-    assertThat(RdsInstance.Status.fromString("unknown"), equalTo(Status.UNAVAILABLE));
   }
 
   @Test
@@ -270,7 +259,7 @@ public class RdsInstanceTest {
                 "az",
                 "vpc",
                 false,
-                Status.AVAILABLE,
+                "available",
                 ImmutableListMultimap.of(),
                 ImmutableList.of())
             .isUp());
@@ -280,19 +269,13 @@ public class RdsInstanceTest {
                 "az",
                 "vpc",
                 false,
-                Status.BACKING_UP,
+                "backing-up",
                 ImmutableListMultimap.of(),
                 ImmutableList.of())
             .isUp());
     assertFalse(
         new RdsInstance(
-                "id",
-                "az",
-                "vpc",
-                false,
-                Status.UNAVAILABLE,
-                ImmutableListMultimap.of(),
-                ImmutableList.of())
+                "id", "az", "vpc", false, "stopped", ImmutableListMultimap.of(), ImmutableList.of())
             .isUp());
   }
 }
