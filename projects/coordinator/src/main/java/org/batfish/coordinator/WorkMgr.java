@@ -232,8 +232,6 @@ public class WorkMgr extends AbstractCoordinator {
   private static final Set<String> WELL_KNOWN_NETWORK_FILENAMES =
       ImmutableSet.of(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
 
-  private static final int MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES = 10;
-
   private static final String SNAPSHOT_PACKAGING_INSTRUCTIONS_URL =
       "https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis";
 
