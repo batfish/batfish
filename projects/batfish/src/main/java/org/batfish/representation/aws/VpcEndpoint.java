@@ -42,9 +42,9 @@ abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue));
 
-    if (vpcEndpointType.toLowerCase().equals("gateway")) {
+    if (vpcEndpointType.equalsIgnoreCase("gateway")) {
       return new VpcEndpointGateway(vpcEndpointId, vpcId, tagMap);
-    } else if (vpcEndpointType.toLowerCase().equals("interface")) {
+    } else if (vpcEndpointType.equalsIgnoreCase("interface")) {
       checkNonNull(networkInterfaceIds, JSON_KEY_NETWORK_INTERFACE_IDS, "Interface VPC endpoint");
       checkNonNull(subnetIds, JSON_KEY_SUBNET_IDS, "Interface VPC endpoint");
       return new VpcEndpointInterface(vpcEndpointId, vpcId, networkInterfaceIds, subnetIds, tagMap);

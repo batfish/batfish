@@ -1,9 +1,9 @@
 package org.batfish.representation.aws;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
-import org.parboiled.common.ImmutableList;
 
 public class VpcEndpointInterfaceTest {
 
