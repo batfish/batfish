@@ -5,7 +5,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
@@ -52,10 +51,11 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
-    // write a library to the right place
-    ReferenceLibrary.write(
-        new ReferenceLibrary(ImmutableList.of(ReferenceBook.builder("book1").build())),
-        Main.getWorkMgr().getReferenceLibraryPath(container));
+    // write a library
+    Main.getWorkMgr()
+        .putReferenceLibrary(
+            new ReferenceLibrary(ImmutableList.of(ReferenceBook.builder("book1").build())),
+            container);
 
     Response response = getReferenceBookTarget(container, "book1").delete();
 
@@ -71,14 +71,15 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void getReferenceBook() throws JsonProcessingException {
+  public void getReferenceBook() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
     // write a library to the right place
-    ReferenceLibrary.write(
-        new ReferenceLibrary(ImmutableList.of(ReferenceBook.builder("book1").build())),
-        Main.getWorkMgr().getReferenceLibraryPath(container));
+    Main.getWorkMgr()
+        .putReferenceLibrary(
+            new ReferenceLibrary(ImmutableList.of(ReferenceBook.builder("book1").build())),
+            container);
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on ReferenceBookBean to have created the object with the right content

@@ -45,7 +45,7 @@ public class ReferenceBookResource {
     try {
       ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(_network);
       library.delAddressBook(_bookName);
-      ReferenceLibrary.write(library, Main.getWorkMgr().getReferenceLibraryPath(_network));
+      Main.getWorkMgr().putReferenceLibrary(library, _network);
       return Response.ok().build();
     } catch (IOException e) {
       throw new InternalServerErrorException("Reference library is corrupted");
@@ -82,9 +82,12 @@ public class ReferenceBookResource {
     _logger.infof("WMS2: putReferenceBook '%s'\n", _network);
     checkClientArgument(referenceBookBean.name != null, "Reference book must have a name");
     try {
-      ReferenceLibrary.mergeReferenceBooks(
-          Main.getWorkMgr().getReferenceLibraryPath(_network),
-          ImmutableSortedSet.of(referenceBookBean.toAddressBook()));
+      Main.getWorkMgr()
+          .putReferenceLibrary(
+              Main.getWorkMgr()
+                  .getReferenceLibrary(_network)
+                  .mergeReferenceBooks(ImmutableSortedSet.of(referenceBookBean.toAddressBook())),
+              _network);
       return Response.ok().build();
     } catch (IOException e) {
       throw new InternalServerErrorException("ReferenceLibrary resource is corrupted");

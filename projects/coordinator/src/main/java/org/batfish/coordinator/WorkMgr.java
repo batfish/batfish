@@ -1392,18 +1392,18 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Gets the {@link ReferenceLibrary} for the {@code network}.
+   * Gets the {@link ReferenceLibrary} for the {@code network}. Returns an empty {@link
+   * ReferenceLibrary} if one does not exist for that network. Returns {@code null} if the network
+   * does not exist.
    *
-   * @throws IOException The contents of reference library file cannot be converted to {@link
-   *     ReferenceLibrary}
+   * @throws IOException if there is an error loading the {@link ReferenceLibrary}
    */
   public ReferenceLibrary getReferenceLibrary(String network) throws IOException {
-    return ReferenceLibrary.read(getReferenceLibraryPath(network));
-  }
-
-  /** Gets the path of the reference library file */
-  public Path getReferenceLibraryPath(String network) {
-    return getdirNetwork(network).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    return _storage.loadReferenceLibrary(networkId).orElse(new ReferenceLibrary(null));
   }
 
   public JSONObject getStatusJson() throws JSONException {
@@ -1599,9 +1599,13 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
           referenceLibraryData = true;
           try {
-            ReferenceLibrary testrigData = ReferenceLibrary.read(subFile);
-            Path path = networkDir.resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
-            ReferenceLibrary.mergeReferenceBooks(path, testrigData.getReferenceBooks());
+            ReferenceLibrary testrigData =
+                BatfishObjectMapper.mapper()
+                    .readValue(CommonUtil.readFile(subFile), ReferenceLibrary.class);
+            ReferenceLibrary mergedLibrary =
+                getReferenceLibrary(networkName)
+                    .mergeReferenceBooks(testrigData.getReferenceBooks());
+            _storage.storeReferenceLibrary(mergedLibrary, networkId);
           } catch (IOException e) {
             // lets not stop the upload because that file is busted.
             // TODO: figure out a way to surface this error to the user
@@ -2152,6 +2156,18 @@ public class WorkMgr extends AbstractCoordinator {
           new SnapshotMetadataEntry(snapshot, getSnapshotMetadata(network, snapshot)));
     }
     return snapshotMetadataList.build();
+  }
+
+  /**
+   * Write the reference library for the given network.
+   *
+   * @throws IOException if there is an error
+   */
+  public void putReferenceLibrary(ReferenceLibrary referenceLibrary, String network)
+      throws IOException {
+    checkArgument(_idManager.hasNetworkId(network), "Invalid network: %s", network);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _storage.storeReferenceLibrary(referenceLibrary, networkId);
   }
 
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */

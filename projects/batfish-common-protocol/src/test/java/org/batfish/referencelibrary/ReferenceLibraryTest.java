@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.SortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -66,12 +65,10 @@ public class ReferenceLibraryTest {
   /** check that merger of reference books is proper */
   @Test
   public void testMergeReferenceBooks() throws IOException {
-    Path tempPath = CommonUtil.createTempFile("referencelibrary", "tmp");
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
                 ReferenceBook.builder("book1").build(), ReferenceBook.builder("book2").build()));
-    ReferenceLibrary.write(library, tempPath);
 
     SortedSet<ReferenceBook> newBooks =
         ImmutableSortedSet.of(
@@ -81,10 +78,10 @@ public class ReferenceLibraryTest {
                 .build(),
             ReferenceBook.builder("book3").build());
 
-    ReferenceLibrary.mergeReferenceBooks(tempPath, newBooks);
+    ReferenceLibrary merged = library.mergeReferenceBooks(newBooks);
 
     assertThat(
-        ReferenceLibrary.read(tempPath).getReferenceBooks(),
+        merged.getReferenceBooks(),
         equalTo(
             ImmutableSortedSet.of(
                 ReferenceBook.builder("book1")
