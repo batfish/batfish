@@ -1345,11 +1345,6 @@ public class WorkMgr extends AbstractCoordinator {
     return snapshotDir;
   }
 
-  @Override
-  public Path getdirSnapshots(String networkName) {
-    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR));
-  }
-
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
       throws IOException {
     if (!_idManager.hasIssueSettingsId(majorIssueType, networkId)) {
