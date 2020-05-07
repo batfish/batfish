@@ -245,7 +245,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
   /** Creates a node for the transit gateway. */
   Configuration toConfigurationNode(
-      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
+      AwsConfiguration vsConfig,
+      ConvertedConfiguration awsConfiguration,
+      Region region,
+      Warnings warnings) {
     Configuration cfgNode =
         Utils.newAwsConfiguration(
             nodeName(_gatewayId), "aws", _tags, DeviceModel.AWS_TRANSIT_GATEWAY);
@@ -264,7 +267,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     // make connections to the attachments
     region.getTransitGatewayAttachments().values().stream()
         .filter(a -> a.getGatewayId().equals(_gatewayId))
-        .forEach(a -> connectAttachment(cfgNode, a, awsConfiguration, region, warnings));
+        .forEach(a -> connectAttachment(cfgNode, a, vsConfig, awsConfiguration, region, warnings));
 
     // propagate routes
     routeTables.forEach(
@@ -277,7 +280,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                 .forEach(
                     propagation ->
                         propagateRoutes(
-                            cfgNode, table, propagation, awsConfiguration, region, warnings)));
+                            cfgNode,
+                            table,
+                            propagation,
+                            vsConfig,
+                            awsConfiguration,
+                            region,
+                            warnings)));
 
     // add static routes that were configured for route tables
     region.getTransitGatewayRouteTables().values().stream()
@@ -305,6 +314,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private static void connectAttachment(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
+      AwsConfiguration vsConfiguration,
       ConvertedConfiguration awsConfiguration,
       Region region,
       Warnings warnings) {
@@ -321,7 +331,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                     attachment.getResourceId(), tgwCfg.getHostname()));
             return;
           }
-          connectVpc(tgwCfg, attachment, awsConfiguration, region, warnings);
+          connectVpc(tgwCfg, attachment, vsConfiguration, awsConfiguration, region, warnings);
           return;
         }
       case VPN:
@@ -358,13 +368,14 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   static void connectVpc(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
+      AwsConfiguration vsConfiguration,
       ConvertedConfiguration awsConfiguration,
       Region region,
       Warnings warnings) {
 
-    // we don't need to look beyond the region; all VPCs attached to the transit gateway should be
-    // in the same region
-    Vpc vpc = region.getVpcs().get(attachment.getResourceId());
+    // we need to look beyond the region; all VPCs attached to the transit gateway can be in
+    // different accounts
+    Vpc vpc = vsConfiguration.getVpc(attachment.getResourceId());
     if (vpc == null) {
       warnings.redFlag(
           String.format(
@@ -555,6 +566,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       Configuration tgwCfg,
       TransitGatewayRouteTable table,
       Propagation propagation,
+      AwsConfiguration vsConfig,
       ConvertedConfiguration awsConfiguration,
       Region region,
       Warnings warnings) {
@@ -563,8 +575,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
     switch (propagation.getResourceType()) {
       case VPC:
-        // need to look only in region; all VPCs attached to the gateway should have same region
-        Vpc vpc = region.getVpcs().get(propagation.getResourceId());
+        // need to look across all VPCs (accross accounts)
+        Vpc vpc = vsConfig.getVpc(propagation.getResourceId());
         if (vpc == null) {
           warnings.redFlag(
               String.format(
