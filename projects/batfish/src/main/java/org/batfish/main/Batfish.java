@@ -1243,16 +1243,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Gets the {@link ReferenceLibrary} for the network */
   @Override
-  public ReferenceLibrary getReferenceLibraryData() {
-    Path libraryPath =
-        _settings
-            .getStorageBase()
-            .resolve(_settings.getContainer().getId())
-            .resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+  public @Nullable ReferenceLibrary getReferenceLibraryData() {
     try {
-      return ReferenceLibrary.read(libraryPath);
+      return _storage
+          .loadReferenceLibrary(_settings.getContainer())
+          .orElse(new ReferenceLibrary(null));
     } catch (IOException e) {
-      _logger.errorf("Could not read reference library data from %s: %s", libraryPath, e);
+      _logger.errorf(
+          "Could not read reference library data for network %s: %s", _settings.getContainer(), e);
       return null;
     }
   }

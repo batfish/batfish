@@ -84,6 +84,7 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
@@ -1306,6 +1307,30 @@ public final class FileBasedStorage implements StorageProvider {
     } catch (IOException e) {
       throw new IOException("Could not list files in '" + idsDir + "'", e);
     }
+  }
+
+  @Nonnull
+  @Override
+  public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
+    Path path = getReferenceLibraryPath(network);
+    if (!Files.exists(path)) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                readFileToString(getReferenceLibraryPath(network), UTF_8), ReferenceLibrary.class));
+  }
+
+  @Override
+  public void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
+      throws IOException {
+    writeStringToFile(
+        getReferenceLibraryPath(network), BatfishObjectMapper.writeString(referenceLibrary), UTF_8);
+  }
+
+  private @Nonnull Path getReferenceLibraryPath(NetworkId network) {
+    return _d.getNetworkDir(network).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
   }
 
   private static String toIdDirName(Class<? extends Id> type) {

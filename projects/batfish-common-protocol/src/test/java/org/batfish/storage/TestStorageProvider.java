@@ -37,6 +37,7 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 
 public class TestStorageProvider implements StorageProvider {
@@ -425,6 +426,18 @@ public class TestStorageProvider implements StorageProvider {
   @Nonnull
   @Override
   public Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
       throws IOException {
     throw new UnsupportedOperationException();
   }
