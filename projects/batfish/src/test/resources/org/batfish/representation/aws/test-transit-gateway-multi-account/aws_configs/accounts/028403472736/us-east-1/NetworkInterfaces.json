@@ -1,0 +1,86 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Attachment": {
+    "AttachmentId": "ela-attach-12923018",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "Network Interface for Transit Gateway Attachment tgw-attach-0f832eb2ca4a975a4",
+   "Groups": [],
+   "InterfaceType": "transit_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:c4:eb:8c:6a:a1",
+   "NetworkInterfaceId": "eni-0e151815b7108dfc4",
+   "OwnerId": "028403472736",
+   "PrivateDnsName": "ip-10-1-250-80.ec2.internal",
+   "PrivateIpAddress": "10.1.250.80",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-250-80.ec2.internal",
+     "PrivateIpAddress": "10.1.250.80"
+    }
+   ],
+   "RequesterId": "936118442230",
+   "RequesterManaged": false,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-03b8a36729c9da776",
+   "TagSet": [],
+   "VpcId": "vpc-04048d4bfba9c2289"
+  },
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-18-212-39-59.compute-1.amazonaws.com",
+    "PublicIp": "18.212.39.59"
+   },
+   "Attachment": {
+    "AttachTime": "2020-04-28 22:36:30+00:00",
+    "AttachmentId": "eni-attach-0475a7681bf0f8651",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-0bdf35d561be3d962",
+    "InstanceOwnerId": "028403472736",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0749b241c02b9bb8c",
+     "GroupName": "bat_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:b2:3c:29:13:9d",
+   "NetworkInterfaceId": "eni-0206afdbeb82fcedf",
+   "OwnerId": "028403472736",
+   "PrivateDnsName": "ip-10-1-1-100.ec2.internal",
+   "PrivateIpAddress": "10.1.1.100",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-18-212-39-59.compute-1.amazonaws.com",
+      "PublicIp": "18.212.39.59"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-1-100.ec2.internal",
+     "PrivateIpAddress": "10.1.1.100"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-0a68915f31d3ca69f",
+   "TagSet": [],
+   "VpcId": "vpc-04048d4bfba9c2289"
+  }
+ ]
+}

@@ -1,0 +1,46 @@
+{
+ "Subnets": [
+  {
+   "AssignIpv6AddressOnCreation": false,
+   "AvailabilityZone": "us-east-1a",
+   "AvailabilityZoneId": "use1-az4",
+   "AvailableIpAddressCount": 250,
+   "CidrBlock": "10.2.250.0/24",
+   "DefaultForAz": false,
+   "Ipv6CidrBlockAssociationSet": [],
+   "MapPublicIpOnLaunch": false,
+   "OwnerId": "951601349076",
+   "State": "available",
+   "SubnetArn": "arn:aws:ec2:us-east-1:951601349076:subnet/subnet-0ffa87ae0b553703e",
+   "SubnetId": "subnet-0ffa87ae0b553703e",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "fish_10.2.250.0/24"
+    }
+   ],
+   "VpcId": "vpc-08287a9084472b276"
+  },
+  {
+   "AssignIpv6AddressOnCreation": false,
+   "AvailabilityZone": "us-east-1a",
+   "AvailabilityZoneId": "use1-az4",
+   "AvailableIpAddressCount": 250,
+   "CidrBlock": "10.2.1.0/24",
+   "DefaultForAz": false,
+   "Ipv6CidrBlockAssociationSet": [],
+   "MapPublicIpOnLaunch": true,
+   "OwnerId": "951601349076",
+   "State": "available",
+   "SubnetArn": "arn:aws:ec2:us-east-1:951601349076:subnet/subnet-0c2cb08833b3c9921",
+   "SubnetId": "subnet-0c2cb08833b3c9921",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "fish_10.2.1.0/24"
+    }
+   ],
+   "VpcId": "vpc-08287a9084472b276"
+  }
+ ]
+}

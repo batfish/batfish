@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -51,6 +52,20 @@ public class AwsConfiguration extends VendorConfiguration {
 
   public Collection<Account> getAccounts() {
     return _accounts.values();
+  }
+
+  /** Return a stream of all VPCs, across all accounts */
+  @Nonnull
+  public Stream<Vpc> getAllVpc() {
+    return getAccounts().stream()
+        .flatMap(a -> a.getRegions().stream())
+        .flatMap(r -> r.getVpcs().values().stream());
+  }
+
+  /** Return a VPC with a given ID (in any account/region) if it exists, or {@code null} */
+  @Nullable
+  public Vpc getVpc(String vpcId) {
+    return getAllVpc().filter(v -> vpcId.equals(v.getId())).findFirst().orElse(null);
   }
 
   @VisibleForTesting
@@ -101,6 +116,9 @@ public class AwsConfiguration extends VendorConfiguration {
     }
     // Vpc peerings can be both cross-region and cross-account, so we handle them here
     processVpcPeerings();
+    // Transit gateways can be cross-account so we handle them here
+    TransitGatewayConverter.convertTransitGateways(this, _convertedConfiguration)
+        .forEach(_convertedConfiguration::addNode);
   }
 
   private void processVpcPeerings() {

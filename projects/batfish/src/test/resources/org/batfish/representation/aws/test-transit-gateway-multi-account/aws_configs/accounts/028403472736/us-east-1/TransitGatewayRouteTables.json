@@ -1,0 +1,13 @@
+{
+ "TransitGatewayRouteTables": [
+  {
+   "CreationTime": "2020-04-28 21:38:43+00:00",
+   "DefaultAssociationRouteTable": true,
+   "DefaultPropagationRouteTable": true,
+   "State": "available",
+   "Tags": [],
+   "TransitGatewayId": "tgw-0efdeab79e9a8e490",
+   "TransitGatewayRouteTableId": "tgw-rtb-0b2c8eeefcf19371b"
+  }
+ ]
+}

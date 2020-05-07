@@ -1,0 +1,86 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Attachment": {
+    "AttachmentId": "ela-attach-c9d18bf7",
+    "DeleteOnTermination": false,
+    "DeviceIndex": 1,
+    "InstanceOwnerId": "amazon-aws",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "Network Interface for Transit Gateway Attachment tgw-attach-0f8397dbb9b9bce0d",
+   "Groups": [],
+   "InterfaceType": "transit_gateway",
+   "Ipv6Addresses": [],
+   "MacAddress": "0a:97:10:8f:47:29",
+   "NetworkInterfaceId": "eni-02c0a3e91d5705a3f",
+   "OwnerId": "951601349076",
+   "PrivateDnsName": "ip-10-2-250-249.ec2.internal",
+   "PrivateIpAddress": "10.2.250.249",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-2-250-249.ec2.internal",
+     "PrivateIpAddress": "10.2.250.249"
+    }
+   ],
+   "RequesterId": "936118442230",
+   "RequesterManaged": false,
+   "SourceDestCheck": false,
+   "Status": "in-use",
+   "SubnetId": "subnet-0ffa87ae0b553703e",
+   "TagSet": [],
+   "VpcId": "vpc-08287a9084472b276"
+  },
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-52-201-239-254.compute-1.amazonaws.com",
+    "PublicIp": "52.201.239.254"
+   },
+   "Attachment": {
+    "AttachTime": "2020-04-28 22:36:30+00:00",
+    "AttachmentId": "eni-attach-07f9c77f893278245",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-03df168b3f73cc262",
+    "InstanceOwnerId": "951601349076",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-081797c4fc92bb8ec",
+     "GroupName": "fish_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "0a:01:3e:6a:e0:97",
+   "NetworkInterfaceId": "eni-0d1a34edceb1e9c42",
+   "OwnerId": "951601349076",
+   "PrivateDnsName": "ip-10-2-1-183.ec2.internal",
+   "PrivateIpAddress": "10.2.1.183",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-52-201-239-254.compute-1.amazonaws.com",
+      "PublicIp": "52.201.239.254"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-2-1-183.ec2.internal",
+     "PrivateIpAddress": "10.2.1.183"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-0c2cb08833b3c9921",
+   "TagSet": [],
+   "VpcId": "vpc-08287a9084472b276"
+  }
+ ]
+}

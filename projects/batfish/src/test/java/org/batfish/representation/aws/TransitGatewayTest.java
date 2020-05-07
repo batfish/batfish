@@ -138,11 +138,13 @@ public class TransitGatewayTest {
     Configuration vpcCfg =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
 
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
 
     Warnings warnings = new Warnings(true, true, true);
-    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrfs exist
@@ -201,13 +203,15 @@ public class TransitGatewayTest {
                 ImmutableMap.of(
                     routeTableId, new TransitGatewayRouteTable(routeTableId, tgwId, true, true)))
             .build();
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
 
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId)).setOwner(tgwCfg).build();
     Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwAttachment.getId())).build();
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
-    connectVpc(tgwCfg, tgwAttachment, awsConfiguration, region, new Warnings());
+    connectVpc(tgwCfg, tgwAttachment, vsConfig, awsConfiguration, region, new Warnings());
 
     // check that interfaces are created in the right VRFs
     Interface tgwInterface =
@@ -273,6 +277,8 @@ public class TransitGatewayTest {
                             new Propagation(
                                 tgwAttachment.getId(), ResourceType.VPC, vpc.getId(), true)))))
             .build();
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
 
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId1)).setOwner(tgwCfg).build();
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId2)).setOwner(tgwCfg).build();
@@ -280,7 +286,7 @@ public class TransitGatewayTest {
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
-    connectVpc(tgwCfg, tgwAttachment, awsConfiguration, region, new Warnings());
+    connectVpc(tgwCfg, tgwAttachment, vsConfig, awsConfiguration, region, new Warnings());
 
     // check that interfaces are created and in the right VRFs
     assertThat(
@@ -340,10 +346,13 @@ public class TransitGatewayTest {
                     new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
             .build();
 
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
+
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     Warnings warnings = new Warnings(true, true, true);
-    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
@@ -406,11 +415,12 @@ public class TransitGatewayTest {
                     routeTableId,
                     new TransitGatewayRouteTable(routeTableId, tgw.getId(), true, true)))
             .build();
-
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     Warnings warnings = new Warnings(true, true, true);
-    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg.getHumanName(), equalTo("tgw-name"));
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
@@ -493,11 +503,14 @@ public class TransitGatewayTest {
 
     Configuration vpcCfg =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
 
     Warnings warnings = new Warnings(true, true, true);
-    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrf exists
@@ -577,11 +590,13 @@ public class TransitGatewayTest {
 
     Configuration vpcCfg =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
 
     Warnings warnings = new Warnings(true, true, true);
-    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that vrf exists
@@ -655,9 +670,11 @@ public class TransitGatewayTest {
             .build();
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
-
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
     Warnings warnings = new Warnings(true, true, true);
-    Configuration tgwCfg = tgw.toConfigurationNode(awsConfiguration, region, warnings);
+
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
     // check that the vrf exists
