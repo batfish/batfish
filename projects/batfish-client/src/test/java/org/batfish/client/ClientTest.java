@@ -36,7 +36,6 @@ import static org.batfish.client.Command.SHOW_NETWORK;
 import static org.batfish.client.Command.SHOW_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
-import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
@@ -1406,17 +1405,6 @@ public final class ClientTest {
     String input = "10";
     String expectedMessage = String.format("A Batfish %s must be a JSON string", STRING.getName());
     validateTypeWithInvalidInput(input, expectedMessage, STRING);
-  }
-
-  @Test
-  public void testUploadCustomObjectInvalidParas() throws Exception {
-    testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testUploadCustomObjectValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1", "parameter2"};
-    checkProcessCommandErrorMessage(UPLOAD_CUSTOM_OBJECT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test

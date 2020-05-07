@@ -2272,8 +2272,6 @@ public class Client extends AbstractClient implements IClient {
         return showVersion(options, parameters);
       case TEST:
         return test(options, parameters);
-      case UPLOAD_CUSTOM_OBJECT:
-        return uploadCustomObject(options, parameters);
       case VALIDATE_TEMPLATE:
         return validateTemplate(words, outWriter, options, parameters);
 
@@ -2842,21 +2840,6 @@ public class Client extends AbstractClient implements IClient {
       _currTestrig = null;
       _logger.info("Current snapshot is now unset\n");
     }
-  }
-
-  private boolean uploadCustomObject(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 2, 2, Command.UPLOAD_CUSTOM_OBJECT)) {
-      return false;
-    }
-    if (!isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
-
-    String objectName = parameters.get(0);
-    String objectFile = parameters.get(1);
-
-    // upload the object
-    return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
   }
 
   private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoAnalyze) {
