@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -10,8 +11,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 final class VpcEndpointGateway extends VpcEndpoint {
 
-  VpcEndpointGateway(String id, String vpcId) {
-    super(id, vpcId);
+  VpcEndpointGateway(String id, String vpcId, Map<String, String> tags) {
+    super(id, vpcId, tags);
   }
 
   @Override
@@ -23,11 +24,11 @@ final class VpcEndpointGateway extends VpcEndpoint {
       return false;
     }
     VpcEndpointGateway that = (VpcEndpointGateway) o;
-    return _id.equals(that._id) && _vpcId.equals(that._vpcId);
+    return _id.equals(that._id) && _vpcId.equals(that._vpcId) && _tags.equals(that._tags);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id, _vpcId);
+    return Objects.hash(_id, _vpcId, _tags);
   }
 }

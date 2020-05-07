@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,8 +18,12 @@ final class VpcEndpointInterface extends VpcEndpoint {
   @Nonnull private final List<String> _subnetIds;
 
   VpcEndpointInterface(
-      String id, String vpcId, List<String> networkInterfaceIds, List<String> subnetIds) {
-    super(id, vpcId);
+      String id,
+      String vpcId,
+      List<String> networkInterfaceIds,
+      List<String> subnetIds,
+      Map<String, String> tags) {
+    super(id, vpcId, tags);
     _networkInterfaceIds = networkInterfaceIds;
     _subnetIds = subnetIds;
   }
@@ -45,11 +50,12 @@ final class VpcEndpointInterface extends VpcEndpoint {
     return _networkInterfaceIds.equals(that._networkInterfaceIds)
         && _subnetIds.equals(that._subnetIds)
         && _id.equals(that._id)
-        && _vpcId.equals(that._vpcId);
+        && _vpcId.equals(that._vpcId)
+        && _tags.equals(that._tags);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_networkInterfaceIds, _subnetIds, _id, _vpcId);
+    return Objects.hash(_networkInterfaceIds, _subnetIds, _id, _vpcId, _tags);
   }
 }

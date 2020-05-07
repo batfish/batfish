@@ -15,7 +15,12 @@
       "ServiceName": "com.amazonaws.us-east-1.s3",
       "State": "available",
       "SubnetIds": [],
-      "Tags": [],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "K8-Cluster-ec2-vpce"
+        }
+      ],
       "VpcEndpointId": "vpce-0d4dd62ef8577fa8e",
       "VpcEndpointType": "Gateway",
       "VpcId": "vpc-05575381cd519fdef"
