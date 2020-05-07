@@ -342,7 +342,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     RdsInstance that = (RdsInstance) o;
     return _multiAz == that._multiAz
         && Objects.equals(_dbInstanceIdentifier, that._dbInstanceIdentifier)
-        && Objects.equals(_dbInstanceStatus, that._dbInstanceStatus)
+        && _dbInstanceStatus.equals(that._dbInstanceStatus)
         && Objects.equals(_azsSubnetIds, that._azsSubnetIds)
         && Objects.equals(_availabilityZone, that._availabilityZone)
         && Objects.equals(_vpcId, that._vpcId)
