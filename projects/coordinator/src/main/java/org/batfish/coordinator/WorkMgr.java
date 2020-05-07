@@ -2201,29 +2201,6 @@ public class WorkMgr extends AbstractCoordinator {
     _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
   }
 
-  @Deprecated
-  public void putObject(
-      String networkName, String snapshotName, String objectName, InputStream fileStream) {
-    Path snapshotDir = getCanonicalPath(getdirSnapshot(networkName, snapshotName));
-    Path file = getCanonicalPath(snapshotDir.resolve(objectName));
-    // check if we got an object name outside of the testrig folder,
-    // perhaps because of ".." in the name; disallow it
-    if (!file.startsWith(snapshotDir)) {
-      throw new BatfishException("Illegal object name: '" + objectName + "'");
-    }
-    Path parentFolder = file.getParent();
-    if (!Files.exists(parentFolder)) {
-      if (!parentFolder.toFile().mkdirs()) {
-        throw new BatfishException("Failed to create directory: '" + parentFolder + "'");
-      }
-    } else {
-      if (!Files.isDirectory(parentFolder)) {
-        throw new BatfishException(parentFolder + " already exists but is not a folder");
-      }
-    }
-    writeStreamToFile(fileStream, file);
-  }
-
   public boolean queueWork(WorkItem workItem) {
     NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getNetwork()));
     boolean success;

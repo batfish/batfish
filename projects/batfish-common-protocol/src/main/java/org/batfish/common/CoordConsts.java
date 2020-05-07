@@ -162,7 +162,6 @@ public class CoordConsts {
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_POOL_GETSTATUS = "getstatus";
   public static final String SVC_RSC_POOL_UPDATE = "updatepool";
-  public static final String SVC_RSC_PUT_OBJECT = "putobject";
   public static final String SVC_RSC_QUEUE_WORK = "queuework";
   public static final String SVC_RSC_SYNC_SNAPSHOTS_SYNC_NOW = "syncsnapshotssyncnow";
   public static final String SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS = "syncsnapshotsupdatesettings";

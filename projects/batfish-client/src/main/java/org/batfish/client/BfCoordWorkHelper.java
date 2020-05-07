@@ -913,33 +913,6 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean uploadCustomObject(
-      String networkName, String snapshotName, String objName, String objFileName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_PUT_OBJECT);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_OBJECT_NAME, objName);
-      addFileMultiPart(multiPart, CoordConsts.SVC_KEY_FILE, objFileName);
-
-      return postData(webTarget, multiPart) != null;
-    } catch (Exception e) {
-      if (e.getMessage().contains("FileNotFoundException")) {
-        _logger.errorf("File not found: %s\n", objFileName);
-      } else {
-        _logger.errorf(
-            "Exception when uploading custom object to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, snapshotName, objName, objFileName, Throwables.getStackTraceAsString(e));
-      }
-      return false;
-    }
-  }
-
   public boolean uploadQuestion(
       String networkName, String snapshotName, String qName, String qFileName) {
     try {
