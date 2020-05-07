@@ -1766,56 +1766,6 @@ public class WorkMgrService {
   }
 
   /**
-   * Upload a custom object under the specified network, snapshot.
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The name of the network in which the snapshot resides
-   * @param snapshotName The name of the snapshot under which to upload the object
-   * @param objectName The name of the object to upload
-   * @param fileStream The stream from which the object is read
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_PUT_OBJECT)
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Deprecated
-  public JSONArray putObject(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName,
-      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
-    try {
-      _logger.infof("WMS:putObject %s %s %s / %s\n", apiKey, networkName, snapshotName, objectName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-      checkStringParam(objectName, "Object name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      Main.getWorkMgr().putObject(networkName, snapshotName, objectName, fileStream);
-
-      return successResponse(new JSONObject().put("result", "successfully uploaded custom object"));
-
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:putObject exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:putObject exception: %s", stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
    * Queue a new work item
    *
    * @param apiKey The API key of the client

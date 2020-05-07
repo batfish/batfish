@@ -61,7 +61,6 @@ public enum Command {
   SHOW_SNAPSHOT("show-snapshot"),
   SHOW_VERSION("show-version"),
   TEST("test"),
-  UPLOAD_CUSTOM_OBJECT("upload-custom"),
   VALIDATE_TEMPLATE("validate-template");
 
   public static class CommandUsage {
@@ -237,9 +236,6 @@ public enum Command {
                     .collect(Collectors.joining("|"))
                 + "] <ref file> <command>",
             "Run the command and compare its output to the ref file (used for testing)"));
-    descs.put(
-        UPLOAD_CUSTOM_OBJECT,
-        new CommandUsage("<object-name> <object-file>", "Uploads a custom object"));
     descs.put(
         VALIDATE_TEMPLATE,
         new CommandUsage(
