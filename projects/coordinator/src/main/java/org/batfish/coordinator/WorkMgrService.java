@@ -44,7 +44,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
-import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -1701,66 +1700,6 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:listQuestions exception for apikey:%s in network:%s; exception:%s",
           apiKey, networkName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * List the snapshots under the specified network
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The name of the network whose snapshots are to be listed
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_LIST_SNAPSHOTS)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Deprecated
-  public JSONArray listSnapshots(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
-    try {
-      _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      JSONArray retArray = new JSONArray();
-
-      List<String> snapshotList = Main.getWorkMgr().listSnapshots(networkName);
-      checkArgument(snapshotList != null, String.format("Network '%s' not found", networkName));
-      for (String snapshot : snapshotList) {
-        try {
-          String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
-          SnapshotMetadata ssMetadata =
-              Main.getWorkMgr().getSnapshotMetadata(networkName, snapshot);
-
-          String metadataStr = BatfishObjectMapper.writeString(ssMetadata);
-          JSONObject jObject =
-              new JSONObject()
-                  .put(CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshot)
-                  .put(CoordConsts.SVC_KEY_SNAPSHOT_INFO, snapshotInfo)
-                  .put(CoordConsts.SVC_KEY_SNAPSHOT_METADATA, metadataStr);
-
-          retArray.put(jObject);
-        } catch (Exception e) {
-          _logger.warnf(
-              "Error listing snapshot %s in network %s: %s",
-              networkName, snapshot, Throwables.getStackTraceAsString(e));
-        }
-      }
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SNAPSHOT_LIST, retArray));
-    } catch (Exception e) {
-      _logger.errorf(
-          "WMS:listSnapshots exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, Throwables.getStackTraceAsString(e));
       return failureResponse(e.getMessage());
     }
   }

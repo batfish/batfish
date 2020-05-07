@@ -1450,42 +1450,6 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getStatusJson();
   }
 
-  @Deprecated
-  public String getTestrigInfo(String networkName, String testrigName) {
-    Path testrigDir = getdirSnapshot(networkName, testrigName);
-    Path submittedTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
-    if (!Files.exists(submittedTestrigDir)) {
-      return "Missing folder '" + BfConsts.RELPATH_INPUT + "' for snapshot '" + testrigName + "'\n";
-    }
-    StringBuilder retStringBuilder = new StringBuilder();
-    SortedSet<Path> entries = getEntries(submittedTestrigDir);
-    for (Path entry : entries) {
-      retStringBuilder.append(entry.getFileName());
-      if (Files.isDirectory(entry)) {
-        String[] subdirEntryNames =
-            getEntries(entry).stream()
-                .map(subdirEntry -> subdirEntry.getFileName().toString())
-                .toArray(String[]::new);
-        retStringBuilder.append("/\n");
-        // now append a maximum of MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES
-        for (int index = 0;
-            index < subdirEntryNames.length && index < MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES;
-            index++) {
-          retStringBuilder.append("  " + subdirEntryNames[index] + "\n");
-        }
-        if (subdirEntryNames.length > 10) {
-          retStringBuilder.append(
-              "  ...... "
-                  + (subdirEntryNames.length - MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES)
-                  + " more entries\n");
-        }
-      } else {
-        retStringBuilder.append("\n");
-      }
-    }
-    return retStringBuilder.toString();
-  }
-
   /** Checks if the specified snapshot exists. */
   public boolean checkSnapshotExists(String network, String snapshot) {
     if (!_idManager.hasNetworkId(network)) {

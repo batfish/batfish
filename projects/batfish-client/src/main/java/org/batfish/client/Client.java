@@ -115,7 +115,6 @@ import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
 import org.batfish.version.BatfishVersion;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
@@ -1717,43 +1716,6 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean listSnapshots(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 1, 0, 0, Command.LIST_SNAPSHOTS)) {
-      return false;
-    }
-
-    boolean showMetadata = true;
-    if (options.size() == 1) {
-      if (options.get(0).equals("-nometadata")) {
-        showMetadata = false;
-      } else {
-        _logger.errorf("Unknown option: %s\n", options.get(0));
-        printUsage(Command.LIST_SNAPSHOTS);
-        return false;
-      }
-    }
-
-    JSONArray testrigArray = _workHelper.listSnapshots(_currContainerName);
-    if (testrigArray != null) {
-      for (int index = 0; index < testrigArray.length(); index++) {
-        try {
-          JSONObject jObjTestrig = testrigArray.getJSONObject(index);
-          String name = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_NAME);
-          String info = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_INFO);
-          logOutput(outWriter, String.format("Testrig: %s\n%s\n", name, info));
-          if (showMetadata) {
-            String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
-            logOutput(outWriter, String.format("TestrigMetadata: %s\n", metadata));
-          }
-        } catch (JSONException e) {
-          throw new BatfishException("Unexpected packaging of testrig data", e);
-        }
-      }
-    }
-    return true;
-  }
-
   /**
    * Loads question from a given file
    *
@@ -2234,8 +2196,6 @@ public class Client extends AbstractClient implements IClient {
         return listNetworks(options, parameters);
       case LIST_QUESTIONS:
         return listQuestions(options, parameters);
-      case LIST_SNAPSHOTS:
-        return listSnapshots(outWriter, options, parameters);
       case LOAD_QUESTIONS:
         return loadQuestions(outWriter, options, parameters, _bfq);
       case SET_BACKGROUND_EXECUCTION:

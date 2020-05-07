@@ -41,7 +41,6 @@ public enum Command {
   LIST_INCOMPLETE_WORK("list-incomplete-work"),
   LIST_NETWORKS("list-networks"),
   LIST_QUESTIONS("list-questions"),
-  LIST_SNAPSHOTS("list-snapshots"),
   LOAD_QUESTIONS("load-questions"),
   QUIT("quit"),
   SET_BACKGROUND_EXECUCTION("set-background-execution"),
@@ -186,9 +185,6 @@ public enum Command {
     descs.put(
         LIST_QUESTIONS,
         new CommandUsage("", "List the questions under current network and snapshot"));
-    descs.put(
-        LIST_SNAPSHOTS,
-        new CommandUsage("[-nometadata]", "List the snapshots within the current network"));
     descs.put(
         LOAD_QUESTIONS,
         new CommandUsage(
