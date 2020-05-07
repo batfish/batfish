@@ -5,7 +5,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.addressGroupGetter;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -86,7 +85,8 @@ public class ParboiledAutoCompleteReferenceBookEntityTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of());
 
     assertThat(
-        getPAC().autoCompleteReferenceBookEntity(pm, "(b1a", addressGroupGetter),
+        getPAC()
+            .autoCompleteReferenceBookEntity(pm, "(b1a", ParboiledAutoComplete::addressGroupGetter),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("g11", 42, ADDRESS_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("g12", 42, ADDRESS_GROUP_NAME)));
@@ -107,19 +107,25 @@ public class ParboiledAutoCompleteReferenceBookEntityTest {
     // should match only r11
     assertThat(
         pac.autoCompleteReferenceBookEntity(
-            new PotentialMatch(anchor, "g11", ImmutableList.of()), "(b1a", addressGroupGetter),
+            new PotentialMatch(anchor, "g11", ImmutableList.of()),
+            "(b1a",
+            ParboiledAutoComplete::addressGroupGetter),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("g11", 42, ADDRESS_GROUP_NAME)));
 
     // should not match anything
     assertThat(
         pac.autoCompleteReferenceBookEntity(
-            new PotentialMatch(anchor, "g2", ImmutableList.of()), "(b1a", addressGroupGetter),
+            new PotentialMatch(anchor, "g2", ImmutableList.of()),
+            "(b1a",
+            ParboiledAutoComplete::addressGroupGetter),
         equalTo(ImmutableSet.of()));
 
     // should match only r11 but preserve quotes
     assertThat(
         pac.autoCompleteReferenceBookEntity(
-            new PotentialMatch(anchor, "\"g11", ImmutableList.of()), "(b1a", addressGroupGetter),
+            new PotentialMatch(anchor, "\"g11", ImmutableList.of()),
+            "(b1a",
+            ParboiledAutoComplete::addressGroupGetter),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("\"g11\"", 42, ADDRESS_GROUP_NAME)));
   }
 
