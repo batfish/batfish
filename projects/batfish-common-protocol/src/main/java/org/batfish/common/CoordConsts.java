@@ -159,8 +159,6 @@ public class CoordConsts {
   public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_NETWORKS = "listnetworks";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
-  public static final String SVC_RSC_LIST_SNAPSHOTS = "listsnapshots";
-  public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_POOL_GETSTATUS = "getstatus";
   public static final String SVC_RSC_POOL_UPDATE = "updatepool";
