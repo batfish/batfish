@@ -685,7 +685,7 @@ public final class JFactory extends BDDFactory {
   private static final int BDD_ERRNUM = 24;
 
   /* Strings for all error mesages */
-  private static String[] errorstrings = {
+  private static final String[] errorstrings = {
     "",
     "Out of memory",
     "Unknown variable",
@@ -3590,7 +3590,7 @@ public final class JFactory extends BDDFactory {
   static final int OPERATOR_NUM = 11;
 
   /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
-  private static int[][] oprres = {
+  private static final int[][] oprres = {
     {0, 0, 0, 1}, /* and                       ( & )         */
     {0, 1, 1, 0}, /* xor                       ( ^ )         */
     {0, 1, 1, 1}, /* or                        ( | )         */
@@ -4563,10 +4563,6 @@ public final class JFactory extends BDDFactory {
       while (r != 0) {
         int next = NEXT(r);
 
-        /**
-         * * if (LOW(r) == -1) { System.out.println(r+": LOW="+LOW(r)); } if (HIGH(r) == -1) {
-         * System.out.println(r+": HIGH="+HIGH(r)); } *
-         */
         if (VARr(LOW(r)) != var1 && VARr(HIGH(r)) != var1) {
           /* Node does not depend on next var, let it stay in the chain */
           SETNEXT(r, HASH(n + vl0));
@@ -5261,7 +5257,6 @@ public final class JFactory extends BDDFactory {
 
   private class bvec extends BDDBitVector {
 
-    /** @param bitnum */
     bvec(int bitnum) {
       super(bitnum);
     }
@@ -5274,7 +5269,7 @@ public final class JFactory extends BDDFactory {
 
   //// Prime stuff below.
 
-  private Random rng = new Random();
+  private final Random rng = new Random();
 
   private int Random(int i) {
     return rng.nextInt(i) + 1;
