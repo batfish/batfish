@@ -18,7 +18,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -254,8 +256,43 @@ public class RdsInstanceTest {
     assertThat(RdsInstance.Status.fromString("available"), equalTo(Status.AVAILABLE));
     assertThat(RdsInstance.Status.fromString("backing-up"), equalTo(Status.BACKING_UP));
 
-    // Anything other than explicitly available or backing up is unavailable
+    // Should fallback to unavailable for other statuses
     assertThat(RdsInstance.Status.fromString("unavailable"), equalTo(Status.UNAVAILABLE));
     assertThat(RdsInstance.Status.fromString("unknown"), equalTo(Status.UNAVAILABLE));
+  }
+
+  @Test
+  public void testIsUp() {
+    // Instance should be considered up unless status is unavailable
+    assertTrue(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                Status.AVAILABLE,
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
+    assertTrue(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                Status.BACKING_UP,
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
+    assertFalse(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                Status.UNAVAILABLE,
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
   }
 }

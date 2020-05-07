@@ -321,8 +321,7 @@ public final class Region implements Serializable {
         return json -> {
           RdsInstance rdsInstance =
               BatfishObjectMapper.mapper().convertValue(json, RdsInstance.class);
-          RdsInstance.Status status = rdsInstance.getDbInstanceStatus();
-          if (status == RdsInstance.Status.AVAILABLE || status == RdsInstance.Status.BACKING_UP) {
+          if (rdsInstance.isUp()) {
             _rdsInstances.put(rdsInstance.getId(), rdsInstance);
           }
         };

@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ArrayListMultimap;
@@ -281,6 +282,12 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   @Nonnull
   public Status getDbInstanceStatus() {
     return _dbInstanceStatus;
+  }
+
+  /** Return boolean indicating if the instance is up and operational. */
+  @JsonIgnore
+  public boolean isUp() {
+    return _dbInstanceStatus == Status.AVAILABLE || _dbInstanceStatus == Status.BACKING_UP;
   }
 
   Configuration toConfigurationNode(
