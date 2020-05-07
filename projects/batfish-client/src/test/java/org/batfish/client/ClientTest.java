@@ -20,7 +20,6 @@ import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.INIT_SNAPSHOT;
 import static org.batfish.client.Command.LIST_NETWORKS;
 import static org.batfish.client.Command.LIST_QUESTIONS;
-import static org.batfish.client.Command.LIST_SNAPSHOTS;
 import static org.batfish.client.Command.LOAD_QUESTIONS;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SET_LOGLEVEL;
@@ -815,12 +814,6 @@ public final class ClientTest {
   @Test
   public void testListQuestionsValidParas() throws Exception {
     checkProcessCommandErrorMessage(LIST_QUESTIONS, new String[] {}, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testListSnapshotsInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_SNAPSHOTS, new String[] {}, parameters);
   }
 
   @Test
