@@ -18,7 +18,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -52,7 +54,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.aws.IpPermissions.AddressType;
-import org.batfish.representation.aws.RdsInstance.Status;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -244,8 +245,37 @@ public class RdsInstanceTest {
                     "us-west-2b",
                     "vpc-1",
                     false,
-                    Status.AVAILABLE,
+                    "available",
                     ImmutableListMultimap.of("us-west-2b", "subnet-1"),
                     ImmutableList.of("sg-12345")))));
+  }
+
+  @Test
+  public void testIsUp() {
+    // Instance should be considered up unless status is unavailable
+    assertTrue(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                "available",
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
+    assertTrue(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                "backing-up",
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
+    assertFalse(
+        new RdsInstance(
+                "id", "az", "vpc", false, "stopped", ImmutableListMultimap.of(), ImmutableList.of())
+            .isUp());
   }
 }
