@@ -15,7 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -58,7 +57,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -86,7 +84,6 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
-import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
 import org.batfish.common.runtime.SnapshotRuntimeData;
@@ -121,7 +118,6 @@ import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -1405,23 +1401,6 @@ public class WorkMgr extends AbstractCoordinator {
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     return BatfishObjectMapper.mapper()
         .readValue(_storage.loadPojoTopology(networkId, snapshotId), Topology.class);
-  }
-
-  public JSONObject getParsingResults(String networkName, String snapshotName)
-      throws JsonProcessingException, JSONException {
-
-    ParseVendorConfigurationAnswerElement pvcae =
-        deserializeObject(
-            getdirSnapshot(networkName, snapshotName)
-                .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)),
-            ParseVendorConfigurationAnswerElement.class);
-    JSONObject warnings = new JSONObject();
-    SortedMap<String, Warnings> warningsMap = pvcae.getWarnings();
-    ObjectWriter writer = BatfishObjectMapper.prettyWriter();
-    for (String s : warningsMap.keySet()) {
-      warnings.put(s, writer.writeValueAsString(warningsMap.get(s)));
-    }
-    return warnings;
   }
 
   /**

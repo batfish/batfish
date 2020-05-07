@@ -1267,35 +1267,6 @@ public class WorkMgrService {
   }
 
   @POST
-  @Path(CoordConsts.SVC_RSC_GET_PARSING_RESULTS)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getParsingResults(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName) {
-    try {
-      _logger.infof("WMS:getParsingResults %s %s %s\n", apiKey, networkName, snapshotName);
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      return successResponse(Main.getWorkMgr().getParsingResults(networkName, snapshotName));
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:getParsingResults exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
   @Deprecated
