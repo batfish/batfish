@@ -5,12 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -21,10 +18,11 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Class that describes the reference library information */
+@ParametersAreNonnullByDefault
 public class ReferenceLibrary {
   private static final String PROP_BOOKS = "books";
 
@@ -35,7 +33,7 @@ public class ReferenceLibrary {
    * removing duplicate entries.
    */
   @JsonCreator
-  public ReferenceLibrary(@JsonProperty(PROP_BOOKS) List<ReferenceBook> books) {
+  public ReferenceLibrary(@JsonProperty(PROP_BOOKS) @Nullable List<ReferenceBook> books) {
     List<ReferenceBook> nnBooks = firstNonNull(books, ImmutableList.of());
     checkDuplicates(
         "book", nnBooks.stream().map(ReferenceBook::getName).collect(Collectors.toList()));
@@ -69,7 +67,7 @@ public class ReferenceLibrary {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (!(o instanceof ReferenceLibrary)) {
       return false;
     }
@@ -77,20 +75,8 @@ public class ReferenceLibrary {
   }
 
   /** Returns the specified dimension in this ReferenceLibrary object */
-  public Optional<ReferenceBook> getReferenceBook(String bookName) {
+  public @Nonnull Optional<ReferenceBook> getReferenceBook(String bookName) {
     return _books.stream().filter(d -> d.getName().equals(bookName)).findFirst();
-  }
-
-  /**
-   * From the {@link ReferenceLibrary} at {@code dataPath}, get the {@link ReferenceBook} with name
-   * {@code bookName}.
-   *
-   * @throws IOException If the contents of the file could not be cast to {@link ReferenceLibrary}
-   */
-  public static Optional<ReferenceBook> getReferenceBook(
-      @Nonnull Path dataPath, @Nonnull String bookName) throws IOException {
-    ReferenceLibrary data = read(dataPath);
-    return data.getReferenceBook(bookName);
   }
 
   @JsonProperty(PROP_BOOKS)
@@ -105,16 +91,12 @@ public class ReferenceLibrary {
   }
 
   /**
-   * Adds the reference books in {@code newBooks} to the ReferenceLibrary at {@code path}. Books
-   * with the same name are overwritten
+   * Returns a new reference library additionally containing the reference books in {@code
+   * newBooks}. Books with the same name are overwritten.
    */
-  public static void mergeReferenceBooks(
-      @Nonnull Path path, @Nonnull SortedSet<ReferenceBook> newBooks) throws IOException {
-
-    ReferenceLibrary originalLibrary = read(path);
-
+  public @Nonnull ReferenceLibrary mergeReferenceBooks(Collection<ReferenceBook> newBooks) {
     List<ReferenceBook> booksToKeep =
-        originalLibrary._books.stream()
+        _books.stream()
             .filter(
                 originalBook ->
                     !newBooks.stream()
@@ -122,28 +104,6 @@ public class ReferenceLibrary {
             .collect(Collectors.toList());
 
     booksToKeep.addAll(newBooks);
-    ReferenceLibrary newLibrary = new ReferenceLibrary(booksToKeep);
-
-    write(newLibrary, path);
-  }
-
-  /**
-   * Reads the {@link ReferenceLibrary} object from {@code dataPath}. If the path does not exist,
-   * initializes a new object.
-   *
-   * @throws IOException If file exists but its contents could not be cast to {@link
-   *     ReferenceLibrary}
-   */
-  public static ReferenceLibrary read(Path dataPath) throws IOException {
-    if (Files.exists(dataPath)) {
-      return BatfishObjectMapper.mapper()
-          .readValue(CommonUtil.readFile(dataPath), ReferenceLibrary.class);
-    }
-    return new ReferenceLibrary(null);
-  }
-
-  public static synchronized void write(ReferenceLibrary data, Path dataPath)
-      throws JsonProcessingException {
-    CommonUtil.writeFile(dataPath, BatfishObjectMapper.writePrettyString(data));
+    return new ReferenceLibrary(booksToKeep);
   }
 }

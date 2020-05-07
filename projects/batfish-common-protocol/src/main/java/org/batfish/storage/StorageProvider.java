@@ -40,6 +40,7 @@ import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
@@ -684,4 +685,21 @@ public interface StorageProvider {
    */
   @Nonnull
   Set<String> listResolvableNames(Class<? extends Id> idType, Id... ancestors) throws IOException;
+
+  /**
+   * Loads the network-wide reference library for the given network if it exists, or else returns
+   * {@link Optional#empty}.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException;
+
+  /**
+   * Stores the network-wide reference library for the given network
+   *
+   * @throws IOException if there is an error
+   */
+  void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
+      throws IOException;
 }
