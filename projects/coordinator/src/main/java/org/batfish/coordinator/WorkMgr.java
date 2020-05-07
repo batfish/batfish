@@ -1327,18 +1327,6 @@ public class WorkMgr extends AbstractCoordinator {
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
-  public Path getdirSnapshot(String network, String snapshot) {
-    FileBasedStorageDirectoryProvider dirProvider =
-        new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
-    NetworkId networkId = _idManager.getNetworkId(network);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    Path snapshotDir = dirProvider.getSnapshotDir(networkId, snapshotId).toAbsolutePath();
-    if (!Files.exists(snapshotDir)) {
-      throw new BatfishException("Snapshot '" + snapshot + "' does not exist");
-    }
-    return snapshotDir;
-  }
-
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
       throws IOException {
     if (!_idManager.hasIssueSettingsId(majorIssueType, networkId)) {
