@@ -28,9 +28,6 @@
  */
 package net.sf.javabdd;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -688,7 +685,7 @@ public final class JFactory extends BDDFactory {
   private static final int BDD_ERRNUM = 24;
 
   /* Strings for all error mesages */
-  private static String[] errorstrings = {
+  private static final String[] errorstrings = {
     "",
     "Out of memory",
     "Unknown variable",
@@ -3593,7 +3590,7 @@ public final class JFactory extends BDDFactory {
   static final int OPERATOR_NUM = 11;
 
   /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
-  private static int[][] oprres = {
+  private static final int[][] oprres = {
     {0, 0, 0, 1}, /* and                       ( & )         */
     {0, 1, 1, 0}, /* xor                       ( ^ )         */
     {0, 1, 1, 1}, /* or                        ( | )         */
@@ -4375,18 +4372,6 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public BDD load(BufferedReader in, int[] translate) throws IOException {
-    int result = bdd_load(in, translate);
-    return makeBDD(result);
-  }
-
-  @Override
-  public void save(BufferedWriter out, BDD b) throws IOException {
-    int x = ((BDDImpl) b)._index;
-    bdd_save(out, x);
-  }
-
-  @Override
   public int level2Var(int level) {
     return bddlevel2var[level];
   }
@@ -4578,10 +4563,6 @@ public final class JFactory extends BDDFactory {
       while (r != 0) {
         int next = NEXT(r);
 
-        /**
-         * * if (LOW(r) == -1) { System.out.println(r+": LOW="+LOW(r)); } if (HIGH(r) == -1) {
-         * System.out.println(r+": HIGH="+HIGH(r)); } *
-         */
         if (VARr(LOW(r)) != var1 && VARr(HIGH(r)) != var1) {
           /* Node does not depend on next var, let it stay in the chain */
           SETNEXT(r, HASH(n + vl0));
@@ -5232,163 +5213,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private int lh_nodenum;
-  private int lh_freepos;
-  private int[] loadvar2level;
-  private LoadHash[] lh_table;
-
-  private int bdd_load(BufferedReader ifile, int[] translate) throws IOException {
-    int vnum, tmproot;
-    int root;
-
-    lh_nodenum = Integer.parseInt(readNext(ifile));
-    vnum = Integer.parseInt(readNext(ifile));
-
-    // Check for constant true / false
-    if (lh_nodenum == 0 && vnum == 0) {
-      root = Integer.parseInt(readNext(ifile));
-      return root;
-    }
-
-    // Not actually used.
-    loadvar2level = new int[vnum];
-    for (int n = 0; n < vnum; n++) {
-      loadvar2level[n] = Integer.parseInt(readNext(ifile));
-    }
-
-    if (vnum > bddvarnum) {
-      bdd_setvarnum(vnum);
-    }
-
-    lh_table = new LoadHash[lh_nodenum];
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      lh_table[n] = new LoadHash();
-      lh_table[n].first = -1;
-      lh_table[n].next = n + 1;
-    }
-    lh_table[lh_nodenum - 1].next = -1;
-    lh_freepos = 0;
-
-    tmproot = bdd_loaddata(ifile, translate);
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      bdd_delref(lh_table[n].data);
-    }
-
-    lh_table = null;
-    loadvar2level = null;
-
-    root = tmproot;
-    return root;
-  }
-
-  static class LoadHash {
-    int key;
-    int data;
-    int first;
-    int next;
-  }
-
-  private int bdd_loaddata(BufferedReader ifile, int[] translate) throws IOException {
-    int key, var, low, high, root = 0;
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      key = Integer.parseInt(readNext(ifile));
-      var = Integer.parseInt(readNext(ifile));
-      if (translate != null) {
-        var = translate[var];
-      }
-      low = Integer.parseInt(readNext(ifile));
-      high = Integer.parseInt(readNext(ifile));
-
-      if (low >= 2) {
-        low = loadhash_get(low);
-      }
-      if (high >= 2) {
-        high = loadhash_get(high);
-      }
-
-      if (low < 0 || high < 0 || var < 0) {
-        return bdd_error(BDD_FORMAT);
-      }
-
-      root = bdd_addref(bdd_ite(bdd_ithvar(var), high, low));
-
-      loadhash_add(key, root);
-    }
-
-    return root;
-  }
-
-  private void loadhash_add(int key, int data) {
-    int hash = key % lh_nodenum;
-    int pos = lh_freepos;
-
-    lh_freepos = lh_table[pos].next;
-    lh_table[pos].next = lh_table[hash].first;
-    lh_table[hash].first = pos;
-
-    lh_table[pos].key = key;
-    lh_table[pos].data = data;
-  }
-
-  private int loadhash_get(int key) {
-    int hash = lh_table[key % lh_nodenum].first;
-
-    while (hash != -1 && lh_table[hash].key != key) {
-      hash = lh_table[hash].next;
-    }
-
-    if (hash == -1) {
-      return -1;
-    }
-    return lh_table[hash].data;
-  }
-
-  private void bdd_save(BufferedWriter out, int r) throws IOException {
-    int[] n = new int[1];
-
-    if (r < 2) {
-      out.write("0 0 " + r + "\n");
-      return;
-    }
-
-    bdd_markcount(r, n);
-    bdd_unmark(r);
-    out.write(n[0] + " " + bddvarnum + "\n");
-
-    for (int x = 0; x < bddvarnum; x++) {
-      out.write(bddvar2level[x] + " ");
-    }
-    out.write("\n");
-
-    bdd_save_rec(out, r);
-    bdd_unmark(r);
-
-    out.flush();
-  }
-
-  private void bdd_save_rec(BufferedWriter out, int root) throws IOException {
-
-    if (root < 2) {
-      return;
-    }
-
-    if (MARKED(root)) {
-      return;
-    }
-    SETMARK(root);
-
-    bdd_save_rec(out, LOW(root));
-    bdd_save_rec(out, HIGH(root));
-
-    out.write(root + " ");
-    out.write(bddlevel2var[LEVEL(root)] + " ");
-    out.write(LOW(root) + " ");
-    out.write(HIGH(root) + "\n");
-  }
-
   private static String right(int x, int w) {
     return right(Integer.toString(x), w);
   }
@@ -5433,7 +5257,6 @@ public final class JFactory extends BDDFactory {
 
   private class bvec extends BDDBitVector {
 
-    /** @param bitnum */
     bvec(int bitnum) {
       super(bitnum);
     }
@@ -5446,7 +5269,7 @@ public final class JFactory extends BDDFactory {
 
   //// Prime stuff below.
 
-  private Random rng = new Random();
+  private final Random rng = new Random();
 
   private int Random(int i) {
     return rng.nextInt(i) + 1;

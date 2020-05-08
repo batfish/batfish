@@ -41,7 +41,6 @@ public enum Command {
   LIST_INCOMPLETE_WORK("list-incomplete-work"),
   LIST_NETWORKS("list-networks"),
   LIST_QUESTIONS("list-questions"),
-  LIST_SNAPSHOTS("list-snapshots"),
   LOAD_QUESTIONS("load-questions"),
   QUIT("quit"),
   SET_BACKGROUND_EXECUCTION("set-background-execution"),
@@ -61,7 +60,6 @@ public enum Command {
   SHOW_SNAPSHOT("show-snapshot"),
   SHOW_VERSION("show-version"),
   TEST("test"),
-  UPLOAD_CUSTOM_OBJECT("upload-custom"),
   VALIDATE_TEMPLATE("validate-template");
 
   public static class CommandUsage {
@@ -187,9 +185,6 @@ public enum Command {
         LIST_QUESTIONS,
         new CommandUsage("", "List the questions under current network and snapshot"));
     descs.put(
-        LIST_SNAPSHOTS,
-        new CommandUsage("[-nometadata]", "List the snapshots within the current network"));
-    descs.put(
         LOAD_QUESTIONS,
         new CommandUsage(
             "[-loadremote] [path to local directory containing question json files]",
@@ -237,9 +232,6 @@ public enum Command {
                     .collect(Collectors.joining("|"))
                 + "] <ref file> <command>",
             "Run the command and compare its output to the ref file (used for testing)"));
-    descs.put(
-        UPLOAD_CUSTOM_OBJECT,
-        new CommandUsage("<object-name> <object-file>", "Uploads a custom object"));
     descs.put(
         VALIDATE_TEMPLATE,
         new CommandUsage(

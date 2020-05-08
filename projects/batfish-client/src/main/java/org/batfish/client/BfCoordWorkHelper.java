@@ -846,37 +846,6 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  JSONArray listSnapshots(String networkName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_SNAPSHOTS);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      if (networkName != null) {
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      }
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      if (jObj == null) {
-        return null;
-      }
-
-      if (!jObj.has(CoordConsts.SVC_KEY_SNAPSHOT_LIST)) {
-        _logger.errorf("snapshot list key not found in: %s\n", jObj);
-        return null;
-      }
-
-      return jObj.getJSONArray(CoordConsts.SVC_KEY_SNAPSHOT_LIST);
-    } catch (Exception e) {
-      _logger.errorf("Exception in listSnapshots for network %s:\n", networkName);
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return null;
-    }
-  }
-
-  @Nullable
   private JSONObject postData(WebTarget webTarget, MultiPart multiPart) throws Exception {
     try {
 
@@ -940,33 +909,6 @@ public class BfCoordWorkHelper {
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return false;
-    }
-  }
-
-  boolean uploadCustomObject(
-      String networkName, String snapshotName, String objName, String objFileName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_PUT_OBJECT);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_OBJECT_NAME, objName);
-      addFileMultiPart(multiPart, CoordConsts.SVC_KEY_FILE, objFileName);
-
-      return postData(webTarget, multiPart) != null;
-    } catch (Exception e) {
-      if (e.getMessage().contains("FileNotFoundException")) {
-        _logger.errorf("File not found: %s\n", objFileName);
-      } else {
-        _logger.errorf(
-            "Exception when uploading custom object to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, snapshotName, objName, objFileName, Throwables.getStackTraceAsString(e));
-      }
       return false;
     }
   }

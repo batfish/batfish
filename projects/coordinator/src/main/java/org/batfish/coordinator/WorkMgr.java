@@ -15,7 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -58,7 +57,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -86,7 +84,6 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
-import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
 import org.batfish.common.runtime.SnapshotRuntimeData;
@@ -121,7 +118,6 @@ import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.Metrics;
 import org.batfish.datamodel.answers.MinorIssueConfig;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -231,8 +227,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final Set<String> WELL_KNOWN_NETWORK_FILENAMES =
       ImmutableSet.of(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
-
-  private static final int MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES = 10;
 
   private static final String SNAPSHOT_PACKAGING_INSTRUCTIONS_URL =
       "https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis";
@@ -1333,23 +1327,6 @@ public class WorkMgr extends AbstractCoordinator {
     return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
-  public Path getdirSnapshot(String network, String snapshot) {
-    FileBasedStorageDirectoryProvider dirProvider =
-        new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
-    NetworkId networkId = _idManager.getNetworkId(network);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    Path snapshotDir = dirProvider.getSnapshotDir(networkId, snapshotId).toAbsolutePath();
-    if (!Files.exists(snapshotDir)) {
-      throw new BatfishException("Snapshot '" + snapshot + "' does not exist");
-    }
-    return snapshotDir;
-  }
-
-  @Override
-  public Path getdirSnapshots(String networkName) {
-    return getdirNetwork(networkName).resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR));
-  }
-
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
       throws IOException {
     if (!_idManager.hasIssueSettingsId(majorIssueType, networkId)) {
@@ -1414,76 +1391,23 @@ public class WorkMgr extends AbstractCoordinator {
         .readValue(_storage.loadPojoTopology(networkId, snapshotId), Topology.class);
   }
 
-  public JSONObject getParsingResults(String networkName, String snapshotName)
-      throws JsonProcessingException, JSONException {
-
-    ParseVendorConfigurationAnswerElement pvcae =
-        deserializeObject(
-            getdirSnapshot(networkName, snapshotName)
-                .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)),
-            ParseVendorConfigurationAnswerElement.class);
-    JSONObject warnings = new JSONObject();
-    SortedMap<String, Warnings> warningsMap = pvcae.getWarnings();
-    ObjectWriter writer = BatfishObjectMapper.prettyWriter();
-    for (String s : warningsMap.keySet()) {
-      warnings.put(s, writer.writeValueAsString(warningsMap.get(s)));
-    }
-    return warnings;
-  }
-
   /**
-   * Gets the {@link ReferenceLibrary} for the {@code network}.
+   * Gets the {@link ReferenceLibrary} for the {@code network}. Returns an empty {@link
+   * ReferenceLibrary} if one does not exist for that network. Returns {@code null} if the network
+   * does not exist.
    *
-   * @throws IOException The contents of reference library file cannot be converted to {@link
-   *     ReferenceLibrary}
+   * @throws IOException if there is an error loading the {@link ReferenceLibrary}
    */
   public ReferenceLibrary getReferenceLibrary(String network) throws IOException {
-    return ReferenceLibrary.read(getReferenceLibraryPath(network));
-  }
-
-  /** Gets the path of the reference library file */
-  public Path getReferenceLibraryPath(String network) {
-    return getdirNetwork(network).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    return _storage.loadReferenceLibrary(networkId).orElse(new ReferenceLibrary(null));
   }
 
   public JSONObject getStatusJson() throws JSONException {
     return _workQueueMgr.getStatusJson();
-  }
-
-  @Deprecated
-  public String getTestrigInfo(String networkName, String testrigName) {
-    Path testrigDir = getdirSnapshot(networkName, testrigName);
-    Path submittedTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
-    if (!Files.exists(submittedTestrigDir)) {
-      return "Missing folder '" + BfConsts.RELPATH_INPUT + "' for snapshot '" + testrigName + "'\n";
-    }
-    StringBuilder retStringBuilder = new StringBuilder();
-    SortedSet<Path> entries = getEntries(submittedTestrigDir);
-    for (Path entry : entries) {
-      retStringBuilder.append(entry.getFileName());
-      if (Files.isDirectory(entry)) {
-        String[] subdirEntryNames =
-            getEntries(entry).stream()
-                .map(subdirEntry -> subdirEntry.getFileName().toString())
-                .toArray(String[]::new);
-        retStringBuilder.append("/\n");
-        // now append a maximum of MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES
-        for (int index = 0;
-            index < subdirEntryNames.length && index < MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES;
-            index++) {
-          retStringBuilder.append("  " + subdirEntryNames[index] + "\n");
-        }
-        if (subdirEntryNames.length > 10) {
-          retStringBuilder.append(
-              "  ...... "
-                  + (subdirEntryNames.length - MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES)
-                  + " more entries\n");
-        }
-      } else {
-        retStringBuilder.append("\n");
-      }
-    }
-    return retStringBuilder.toString();
   }
 
   /** Checks if the specified snapshot exists. */
@@ -1675,9 +1599,13 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
           referenceLibraryData = true;
           try {
-            ReferenceLibrary testrigData = ReferenceLibrary.read(subFile);
-            Path path = networkDir.resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
-            ReferenceLibrary.mergeReferenceBooks(path, testrigData.getReferenceBooks());
+            ReferenceLibrary testrigData =
+                BatfishObjectMapper.mapper()
+                    .readValue(CommonUtil.readFile(subFile), ReferenceLibrary.class);
+            ReferenceLibrary mergedLibrary =
+                getReferenceLibrary(networkName)
+                    .mergeReferenceBooks(testrigData.getReferenceBooks());
+            _storage.storeReferenceLibrary(mergedLibrary, networkId);
           } catch (IOException e) {
             // lets not stop the upload because that file is busted.
             // TODO: figure out a way to surface this error to the user
@@ -2230,6 +2158,18 @@ public class WorkMgr extends AbstractCoordinator {
     return snapshotMetadataList.build();
   }
 
+  /**
+   * Write the reference library for the given network.
+   *
+   * @throws IOException if there is an error
+   */
+  public void putReferenceLibrary(ReferenceLibrary referenceLibrary, String network)
+      throws IOException {
+    checkArgument(_idManager.hasNetworkId(network), "Invalid network: %s", network);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _storage.storeReferenceLibrary(referenceLibrary, networkId);
+  }
+
   /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
   public void putMajorIssueConfig(String network, String majorIssueType, MajorIssueConfig config)
       throws IOException {
@@ -2237,29 +2177,6 @@ public class WorkMgr extends AbstractCoordinator {
     IssueSettingsId issueSettingsId = _idManager.generateIssueSettingsId();
     _storage.storeMajorIssueConfig(networkId, issueSettingsId, config);
     _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
-  }
-
-  @Deprecated
-  public void putObject(
-      String networkName, String snapshotName, String objectName, InputStream fileStream) {
-    Path snapshotDir = getCanonicalPath(getdirSnapshot(networkName, snapshotName));
-    Path file = getCanonicalPath(snapshotDir.resolve(objectName));
-    // check if we got an object name outside of the testrig folder,
-    // perhaps because of ".." in the name; disallow it
-    if (!file.startsWith(snapshotDir)) {
-      throw new BatfishException("Illegal object name: '" + objectName + "'");
-    }
-    Path parentFolder = file.getParent();
-    if (!Files.exists(parentFolder)) {
-      if (!parentFolder.toFile().mkdirs()) {
-        throw new BatfishException("Failed to create directory: '" + parentFolder + "'");
-      }
-    } else {
-      if (!Files.isDirectory(parentFolder)) {
-        throw new BatfishException(parentFolder + " already exists but is not a folder");
-      }
-    }
-    writeStreamToFile(fileStream, file);
   }
 
   public boolean queueWork(WorkItem workItem) {

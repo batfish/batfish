@@ -3,7 +3,6 @@ package org.batfish.representation.aws.matchers;
 import com.google.common.collect.Multimap;
 import java.util.List;
 import org.batfish.representation.aws.RdsInstance;
-import org.batfish.representation.aws.RdsInstance.Status;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -30,13 +29,13 @@ final class RdsInstanceMatchersImpl {
     }
   }
 
-  static final class HasDbInstanceStatus extends FeatureMatcher<RdsInstance, Status> {
-    HasDbInstanceStatus(Matcher<? super Status> subMatcher) {
+  static final class HasDbInstanceStatus extends FeatureMatcher<RdsInstance, String> {
+    HasDbInstanceStatus(Matcher<? super String> subMatcher) {
       super(subMatcher, "dbInstanceStatus", "dbInstanceStatus");
     }
 
     @Override
-    protected Status featureValueOf(RdsInstance actual) {
+    protected String featureValueOf(RdsInstance actual) {
       return actual.getDbInstanceStatus();
     }
   }

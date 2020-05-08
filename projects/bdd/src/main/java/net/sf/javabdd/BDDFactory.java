@@ -29,9 +29,6 @@
 package net.sf.javabdd;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,7 +36,6 @@ import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.security.AccessControlException;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -442,123 +438,6 @@ public abstract class BDDFactory {
    */
   public abstract void printTable(BDD b);
 
-  /**
-   * Loads a BDD from a file.
-   *
-   * <p>Compare to bdd_load.
-   */
-  public BDD load(String filename) throws IOException {
-    try (BufferedReader r = new BufferedReader(new FileReader(filename))) {
-      BDD result = load(r);
-      return result;
-    }
-  }
-  // TODO: error code from bdd_load (?)
-
-  /**
-   * Loads a BDD from the given input.
-   *
-   * <p>Compare to bdd_load.
-   *
-   * @param ifile reader
-   * @return BDD
-   */
-  public BDD load(BufferedReader ifile) throws IOException {
-    return load(ifile, null);
-  }
-
-  /**
-   * Loads a BDD from the given input, translating BDD variables according to the given map.
-   *
-   * <p>Compare to bdd_load.
-   *
-   * @param ifile reader
-   * @param translate variable translation map
-   * @return BDD
-   */
-  public BDD load(BufferedReader ifile, int[] translate) throws IOException {
-
-    tokenizer = null;
-
-    int lh_nodenum = Integer.parseInt(readNext(ifile));
-    int vnum = Integer.parseInt(readNext(ifile));
-
-    // Check for constant true / false
-    if (lh_nodenum == 0 && vnum == 0) {
-      int r = Integer.parseInt(readNext(ifile));
-      return r == 0 ? zero() : one();
-    }
-
-    // Not actually used.
-    int[] loadvar2level = new int[vnum];
-    for (int n = 0; n < vnum; n++) {
-      loadvar2level[n] = Integer.parseInt(readNext(ifile));
-    }
-
-    if (vnum > varNum()) {
-      setVarNum(vnum);
-    }
-
-    LoadHash[] lh_table = new LoadHash[lh_nodenum];
-    for (int n = 0; n < lh_nodenum; n++) {
-      lh_table[n] = new LoadHash();
-      lh_table[n].first = -1;
-      lh_table[n].next = n + 1;
-    }
-    lh_table[lh_nodenum - 1].next = -1;
-    int lh_freepos = 0;
-
-    BDD root = null;
-    for (int n = 0; n < lh_nodenum; n++) {
-      int key = Integer.parseInt(readNext(ifile));
-      int var = Integer.parseInt(readNext(ifile));
-      if (translate != null) {
-        var = translate[var];
-      }
-      int lowi = Integer.parseInt(readNext(ifile));
-      int highi = Integer.parseInt(readNext(ifile));
-
-      BDD low, high;
-
-      low = loadhash_get(lh_table, lh_nodenum, lowi);
-      high = loadhash_get(lh_table, lh_nodenum, highi);
-
-      if (low == null || high == null || var < 0) {
-        throw new BDDException("Incorrect file format");
-      }
-
-      BDD b = ithVar(var);
-      root = b.ite(high, low);
-      b.free();
-      if (low.isZero() || low.isOne()) {
-        low.free();
-      }
-      if (high.isZero() || high.isOne()) {
-        high.free();
-      }
-
-      int hash = key % lh_nodenum;
-      int pos = lh_freepos;
-
-      lh_freepos = lh_table[pos].next;
-      lh_table[pos].next = lh_table[hash].first;
-      lh_table[hash].first = pos;
-
-      lh_table[pos].key = key;
-      lh_table[pos].data = root;
-    }
-    BDD tmproot = root.id();
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      lh_table[n].data.free();
-    }
-
-    lh_table = null;
-    loadvar2level = null;
-
-    return tmproot;
-  }
-
   /** Used for tokenization during loading. */
   protected StringTokenizer tokenizer;
 
@@ -578,127 +457,6 @@ public abstract class BDDFactory {
     }
     return tokenizer.nextToken();
   }
-
-  /** LoadHash is used to hash during loading. */
-  protected static class LoadHash {
-    int key;
-    BDD data;
-    int first;
-    int next;
-  }
-
-  /** Gets a BDD from the load hash table. */
-  protected BDD loadhash_get(LoadHash[] lh_table, int lh_nodenum, int key) {
-    if (key < 0) {
-      return null;
-    }
-    if (key == 0) {
-      return zero();
-    }
-    if (key == 1) {
-      return one();
-    }
-
-    int hash = lh_table[key % lh_nodenum].first;
-
-    while (hash != -1 && lh_table[hash].key != key) {
-      hash = lh_table[hash].next;
-    }
-
-    if (hash == -1) {
-      return null;
-    }
-    return lh_table[hash].data;
-  }
-
-  /**
-   * Saves a BDD to a file.
-   *
-   * <p>Compare to bdd_save.
-   */
-  public void save(String filename, BDD var) throws IOException {
-    BufferedWriter is = null;
-    try {
-      is = new BufferedWriter(new FileWriter(filename));
-      save(is, var);
-    } finally {
-      if (is != null) {
-        try {
-          is.close();
-        } catch (IOException ignored) {
-        }
-      }
-    }
-  }
-  // TODO: error code from bdd_save (?)
-
-  /**
-   * Saves a BDD to an output writer.
-   *
-   * <p>Compare to bdd_save.
-   */
-  public void save(BufferedWriter out, BDD r) throws IOException {
-    if (r.isOne() || r.isZero()) {
-      out.write("0 0 " + (r.isOne() ? 1 : 0) + "\n");
-      return;
-    }
-
-    out.write(r.nodeCount() + " " + varNum() + "\n");
-
-    for (int x = 0; x < varNum(); x++) {
-      out.write(var2Level(x) + " ");
-    }
-    out.write("\n");
-
-    BitSet visited = new BitSet(getNodeTableSize());
-    save_rec(out, visited, r.id());
-  }
-
-  /** Helper function for save(). */
-  protected int save_rec(BufferedWriter out, BitSet visited, BDD root) throws IOException {
-    if (root.isZero()) {
-      root.free();
-      return 0;
-    }
-    if (root.isOne()) {
-      root.free();
-      return 1;
-    }
-    // Integer i = (Integer) visited.get(root);
-    int i = root.hashCode();
-    // if (i != null) {
-    if (visited.get(i)) {
-      root.free();
-      // return i.intValue();
-      return i;
-    }
-    // int v = visited.size() + 2;
-    int v = i;
-    // visited.put(root, new Integer(v));
-    visited.set(i);
-
-    BDD h = root.high();
-
-    BDD l = root.low();
-
-    int rootvar = root.var();
-    root.free();
-
-    int lo = save_rec(out, visited, l);
-
-    int hi = save_rec(out, visited, h);
-
-    // out.write(v + " ");
-    out.write(i + " ");
-    out.write(rootvar + " ");
-    out.write(lo + " ");
-    out.write(hi + "\n");
-
-    return v;
-  }
-
-  // TODO: bdd_blockfile_hook
-  // TODO: bdd_versionnum, bdd_versionstr
 
   /** ** REORDERING *** */
 
