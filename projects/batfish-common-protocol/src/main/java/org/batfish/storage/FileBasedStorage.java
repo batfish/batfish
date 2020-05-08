@@ -1348,7 +1348,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getUploadSnapshotZipPath(String key, NetworkId network) {
-    return _d.getOriginalDir(network).resolve(toBase64(key));
+    return _d.getOriginalDir(key, network).resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
   }
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
