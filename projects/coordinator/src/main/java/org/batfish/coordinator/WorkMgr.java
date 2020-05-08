@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Comparators.lexicographical;
+import static com.google.common.io.MoreFiles.createParentDirectories;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
@@ -36,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
@@ -1675,6 +1677,19 @@ public class WorkMgr extends AbstractCoordinator {
     return srcDirEntries.iterator().next();
   }
 
+  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
+
+  private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
+    createParentDirectories(outputFile);
+    try (OutputStream fileOutputStream = Files.newOutputStream(outputFile)) {
+      int read = 0;
+      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      while ((read = inputStream.read(bytes)) != -1) {
+        fileOutputStream.write(bytes, 0, read);
+      }
+    }
+  }
+
   /**
    * Copy a snapshot and make modifications to the copy.
    *
@@ -1687,56 +1702,49 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
       throws IllegalArgumentException, IOException {
-    Path networkDir = getdirNetwork(networkName);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
 
     String baseSnapshotName = forkSnapshotBean.baseSnapshot;
     String snapshotName = forkSnapshotBean.newSnapshot;
 
     // Fail early if the new snapshot already exists or the base snapshot does not
-    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
-      throw new IllegalArgumentException(
-          "Snapshot with name: '" + snapshotName + "' already exists");
-    }
+    checkArgument(_idManager.hasNetworkId(networkName), "Network '%s' does not exist", networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    checkArgument(
+        !_idManager.hasSnapshotId(snapshotName, networkId),
+        "Snapshot with name: '%s' already exists",
+        snapshotName);
     if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
       throw new FileNotFoundException(
           "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
     }
 
     // Save user input for troubleshooting
-    Path originalDir =
-        networkDir
-            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(snapshotName));
-    if (!originalDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
-    }
-    CommonUtil.writeFile(
-        originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
-        BatfishObjectMapper.writeString(forkSnapshotBean));
+    String forkSnapshotKey = generateFileDateString(snapshotName);
+    _storage.storeForkSnapshotRequest(
+        BatfishObjectMapper.writeString(forkSnapshotBean), forkSnapshotKey, networkId);
 
     SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
-    Path baseSnapshotDir =
-        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
 
     // Copy baseSnapshot so initSnapshot will see a properly formatted upload
-    Path baseSnapshotInputsDir = baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
     Path newSnapshotInputsDir =
         CommonUtil.createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
-    if (baseSnapshotInputsDir.toFile().exists()) {
-      FileUtils.copyDirectory(baseSnapshotInputsDir.toFile(), newSnapshotInputsDir.toFile());
-      _logger.infof(
-          "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
-          baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
-    } else {
-      throw new IllegalArgumentException(
-          String.format(
-              "Base snapshot %s is not properly formatted, try re-uploading.", baseSnapshotName));
-    }
 
+    try (Stream<String> baseInputObjectKeys =
+        _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
+      baseInputObjectKeys.forEach(
+          key -> {
+            try (InputStream baseObjectStream =
+                _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
+              writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
+            } catch (IOException e) {
+              throw new UncheckedIOException(
+                  String.format("Unable to copy base snapshot input object with key: %s", key), e);
+            }
+          });
+    }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
       Path zipFile =
