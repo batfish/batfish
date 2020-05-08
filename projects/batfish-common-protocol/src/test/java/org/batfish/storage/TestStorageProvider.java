@@ -441,4 +441,22 @@ public class TestStorageProvider implements StorageProvider {
       throws IOException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeSnapshotInputObject(
+      InputStream inputStream, String key, NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
 }
