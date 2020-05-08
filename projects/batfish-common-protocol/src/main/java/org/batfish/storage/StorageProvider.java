@@ -702,4 +702,31 @@ public interface StorageProvider {
    */
   void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
       throws IOException;
+
+  /**
+   * Stores the original zip for a snapshot upload request for the given network, associating it
+   * with the given key.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException;
+
+  /**
+   * Loads the original zip for a snapshot upload request associated with the given key.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException;
+
+  /**
+   * Stores an input object with the given key whose contents are accessible via the given
+   * inputStream for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeSnapshotInputObject(InputStream inputStream, String key, NetworkSnapshot snapshot)
+      throws IOException;
 }
