@@ -755,6 +755,12 @@ public final class Region implements Serializable {
       cfgNodes.forEach(awsConfiguration::addNode);
     }
 
+    for (VpcEndpoint vpcEndpoint : getVpcEndpoints().values()) {
+      vpcEndpoint
+          .toConfigurationNodes(awsConfiguration, this, warnings)
+          .forEach(awsConfiguration::addNode);
+    }
+
     for (Subnet subnet : getSubnets().values()) {
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
       awsConfiguration.addNode(cfgNode);
