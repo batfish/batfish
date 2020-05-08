@@ -1,5 +1,7 @@
 package org.batfish.storage;
 
+import static org.batfish.storage.FileBasedStorage.toBase64;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.annotation.Nonnull;
@@ -60,6 +62,12 @@ public class FileBasedStorageDirectoryProvider {
 
   public @Nonnull Path getNetworkDir(NetworkId network) {
     return _baseDir.resolve(network.getId());
+  }
+
+  /** Directory where original initialization or fork requests are stored */
+  @Nonnull
+  Path getOriginalDir(String key, NetworkId network) {
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_ORIGINAL_DIR).resolve(toBase64(key));
   }
 
   public @Nonnull Path getNetworkSettingsDir(NetworkId network) {

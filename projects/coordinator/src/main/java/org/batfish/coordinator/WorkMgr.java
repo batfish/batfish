@@ -36,7 +36,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -83,6 +83,7 @@ import org.batfish.common.ColumnSortOption;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
@@ -182,7 +183,6 @@ public class WorkMgr extends AbstractCoordinator {
                               Comparator.<Step<?>, String>comparing(
                                       step -> step.getDetail().toString())
                                   .thenComparing(Step::getAction)))));
-  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   private static Path getCanonicalPath(Path path) {
     try {
@@ -202,19 +202,6 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Error listing directory '" + directory + "'", e);
     }
     return entries;
-  }
-
-  private static void writeStreamToFile(InputStream inputStream, Path outputFile) {
-    try (OutputStream fileOutputStream = new FileOutputStream(outputFile.toFile())) {
-      int read = 0;
-      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
-      while ((read = inputStream.read(bytes)) != -1) {
-        fileOutputStream.write(bytes, 0, read);
-      }
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile + "'", e);
-    }
   }
 
   static final class AssignWorkTask implements Runnable {
@@ -1563,29 +1550,13 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
 
-    Path networkDir = getdirNetwork(networkName);
-    Path testrigDir =
-        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId()));
-
-    if (!testrigDir.resolve(BfConsts.RELPATH_OUTPUT).toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
-    }
-
     // Now that the directory exists, we must also create the metadata.
     try {
       _snapshotMetadataManager.writeMetadata(
           new SnapshotMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
-      BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
-      try {
-        CommonUtil.deleteDirectory(testrigDir);
-      } catch (Exception inner) {
-        metadataError.addSuppressed(inner);
-      }
-      throw metadataError;
+      throw new BatfishException("Could not write testrigMetadata", e);
     }
-
-    Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
 
     // things look ok, now make the move
     boolean bgpTables = false;
@@ -1614,15 +1585,32 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
       // Copy everything over
-      Path dstPath = srcTestrigDir.resolve(subFile.getFileName());
       try {
         if (Files.isDirectory(subFile)) {
-          FileUtils.copyDirectory(subFile.toFile(), dstPath.toFile());
+          Files.walk(subFile)
+              .filter(Files::isRegularFile)
+              .forEach(
+                  deepFile -> {
+                    try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
+                      _storage.storeSnapshotInputObject(
+                          srcFileStream,
+                          subDir.relativize(deepFile).toString(),
+                          new NetworkSnapshot(networkId, snapshotId));
+                    } catch (IOException e) {
+                      throw new UncheckedIOException(
+                          String.format("Failed to copy: '%s'", subFile), e);
+                    }
+                  });
         } else {
-          FileUtils.copyFile(subFile.toFile(), dstPath.toFile());
+          try (InputStream srcFileStream = Files.newInputStream(subFile)) {
+            _storage.storeSnapshotInputObject(
+                srcFileStream,
+                subFile.getFileName().toString(),
+                new NetworkSnapshot(networkId, snapshotId));
+          }
         }
       } catch (IOException e) {
-        throw new BatfishException("Failed to copy: '" + subFile + "' to: '" + dstPath + "'", e);
+        throw new UncheckedIOException(String.format("Failed to copy: '%s'", subFile), e);
       }
     }
     _logger.infof(
@@ -2303,7 +2291,6 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public void uploadSnapshot(
       String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
-    Path networkDir = getdirNetwork(networkName);
     NetworkId networkId = _idManager.getNetworkId(networkName);
 
     // Fail early if the snapshot already exists
@@ -2312,17 +2299,19 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Save uploaded zip for troubleshooting
-    Path originalDir =
-        networkDir
-            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(snapshotName));
-    if (!originalDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
+    String uploadZipKey = generateFileDateString(snapshotName);
+    try {
+      _storage.storeUploadSnapshotZip(fileStream, uploadZipKey, networkId);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-    Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
-    writeStreamToFile(fileStream, snapshotZipFile);
+
     Path unzipDir = CommonUtil.createTempDirectory("tr");
-    UnzipUtility.unzip(snapshotZipFile, unzipDir);
+    try (InputStream zipStream = _storage.loadUploadSnapshotZip(uploadZipKey, networkId)) {
+      UnzipUtility.unzip(zipStream, unzipDir);
+    } catch (IOException e) {
+      throw new UncheckedIOException("Failed to extract uploaded zip", e);
+    }
 
     try {
       initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);

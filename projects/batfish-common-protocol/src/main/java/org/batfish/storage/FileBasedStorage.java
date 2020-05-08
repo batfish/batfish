@@ -1126,6 +1126,21 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
+  private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
+    Path tmpFile = Files.createTempFile(null, null);
+    try (OutputStream fileOutputStream = Files.newOutputStream(tmpFile)) {
+      int read = 0;
+      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      while ((read = inputStream.read(bytes)) != -1) {
+        fileOutputStream.write(bytes, 0, read);
+      }
+      mkdirs(outputFile.getParent());
+      Files.move(tmpFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+    } finally {
+      deleteIfExists(tmpFile);
+    }
+  }
+
   private static void writeStringToFile(Path file, String data, Charset charset)
       throws IOException {
     Path tmpFile = Files.createTempFile(null, null);
@@ -1327,6 +1342,33 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     writeStringToFile(
         getReferenceLibraryPath(network), BatfishObjectMapper.writeString(referenceLibrary), UTF_8);
+  }
+
+  @Override
+  public void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException {
+    writeStreamToFile(inputStream, getUploadSnapshotZipPath(key, network));
+  }
+
+  private @Nonnull Path getUploadSnapshotZipPath(String key, NetworkId network) {
+    return _d.getOriginalDir(key, network).resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
+  }
+
+  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+    return Files.newInputStream(getUploadSnapshotZipPath(key, network));
+  }
+
+  @Override
+  public void storeSnapshotInputObject(
+      InputStream inputStream, String key, NetworkSnapshot snapshot) throws IOException {
+    writeStreamToFile(
+        inputStream,
+        getSnapshotInputObjectPath(snapshot.getNetwork(), snapshot.getSnapshot(), key));
   }
 
   private @Nonnull Path getReferenceLibraryPath(NetworkId network) {

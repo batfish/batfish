@@ -363,6 +363,7 @@ public final class FileBasedStorageTest {
     }
 
     Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
+    unzipDir.toFile().mkdirs();
     UnzipUtility.unzip(tmpzip, unzipDir);
 
     // the top level entry in the zip should be testkey
