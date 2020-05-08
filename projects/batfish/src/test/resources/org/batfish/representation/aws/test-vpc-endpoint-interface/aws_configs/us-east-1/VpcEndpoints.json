@@ -1,0 +1,44 @@
+{
+ "VpcEndpoints": [
+  {
+   "CreationTimestamp": "2020-05-08 03:45:53+00:00",
+   "DnsEntries": [
+    {
+     "DnsName": "vpce-083c683a6be29b889-0h4w5u94.cloudtrail.us-east-1.vpce.amazonaws.com",
+     "HostedZoneId": "Z7HUB22UULQXV"
+    },
+    {
+     "DnsName": "vpce-083c683a6be29b889-0h4w5u94-us-east-1a.cloudtrail.us-east-1.vpce.amazonaws.com",
+     "HostedZoneId": "Z7HUB22UULQXV"
+    },
+    {
+     "DnsName": "cloudtrail.us-east-1.amazonaws.com",
+     "HostedZoneId": "Z06525552F9L5PIMURQGQ"
+    }
+   ],
+   "Groups": [
+    {
+     "GroupId": "sg-0973207c61f3466e1",
+     "GroupName": "testing_sg"
+    }
+   ],
+   "NetworkInterfaceIds": [
+    "eni-0084b734451ba23ca"
+   ],
+   "OwnerId": "554773406868",
+   "PolicyDocument": "{\n  \"Statement\": [\n    {\n      \"Action\": \"*\", \n      \"Effect\": \"Allow\", \n      \"Principal\": \"*\", \n      \"Resource\": \"*\"\n    }\n  ]\n}",
+   "PrivateDnsEnabled": true,
+   "RequesterManaged": false,
+   "RouteTableIds": [],
+   "ServiceName": "com.amazonaws.us-east-1.cloudtrail",
+   "State": "available",
+   "SubnetIds": [
+    "subnet-0bb8615d8368ece31"
+   ],
+   "Tags": [],
+   "VpcEndpointId": "vpce-083c683a6be29b889",
+   "VpcEndpointType": "Interface",
+   "VpcId": "vpc-072d45b801aeffef2"
+  }
+ ]
+}

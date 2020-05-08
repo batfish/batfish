@@ -14,6 +14,8 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.Configuration;
 
 /** Represents an AWS VPC endpoint */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -58,6 +60,9 @@ abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
     _vpcId = vpcId;
     _tags = tags;
   }
+
+  abstract List<Configuration> toConfigurationNodes(
+      ConvertedConfiguration awsConfiguration, Region region, Warnings warnings);
 
   @Override
   public String getId() {
