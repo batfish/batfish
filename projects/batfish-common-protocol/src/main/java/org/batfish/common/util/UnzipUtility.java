@@ -1,15 +1,14 @@
 package org.batfish.common.util;
 
+import static com.google.common.io.MoreFiles.createParentDirectories;
+
 import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -53,21 +52,26 @@ public final class UnzipUtility {
   }
 
   /**
-   * Extracts {@code zipStream} to a directory specified by {@code destDirectory}, which must
-   * already exist.
+   * Extracts {@code zipStream} to a directory specified by {@code destDirectory}. The caller is
+   * responsible for ensuring that the directory exists and is empty. If the directory is not empty,
+   * behavior of this function is undefined.
    *
    * @throws IOException if {@code destDirectory} does not exist or there is any other errror
    */
   public static void unzip(InputStream zipStream, Path destDirectory) throws IOException {
-    if (!Files.exists(destDirectory)) {
-      throw new FileNotFoundException(
-          String.format("Output directory does not exist exists: %s", destDirectory));
+    if (!destDirectory.toFile().isDirectory()) {
+      throw new IOException(
+          String.format(
+              "Output directory does not exist or is not a direcotry: %s", destDirectory));
     }
     try (ZipInputStream zipIn = new ZipInputStream(zipStream)) {
       for (ZipEntry entry = zipIn.getNextEntry(); entry != null; entry = zipIn.getNextEntry()) {
+        // entry may start with '/', so we do a little magic to ensure it is applied relatively
+        // against destDirectory
         Path outputPath =
             validatePath(
-                Paths.get(destDirectory + File.separator + entry.getName()), destDirectory);
+                new File(destDirectory.toFile(), new File(entry.getName()).getPath()).toPath(),
+                destDirectory);
         if (entry.isDirectory()) {
           // Make the directory, including parent dirs.
           if (!outputPath.toFile().mkdirs()) {
@@ -75,7 +79,7 @@ public final class UnzipUtility {
           }
         } else {
           // Make sure parent directories exist, in case the zip does not contain dir entries
-          com.google.common.io.Files.createParentDirs(outputPath.toFile());
+          createParentDirectories(outputPath);
           // Extract the file.
           extractFile(zipIn, outputPath);
         }
@@ -85,8 +89,9 @@ public final class UnzipUtility {
   }
 
   /**
-   * Extracts {@code zipFile} to a directory specified by {@code destDirectory}, which must already
-   * exist.
+   * Extracts {@code zipFile} to a directory specified by {@code destDirectory}. The caller is
+   * responsible for ensuring that the directory exists and is empty. If the directory is not empty,
+   * behavior of this function is undefined.
    *
    * @throws IOException if {@code destDirectory} does not exist or there is any other errror
    */

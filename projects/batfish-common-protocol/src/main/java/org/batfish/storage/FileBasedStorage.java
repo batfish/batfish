@@ -15,7 +15,6 @@ import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -1128,13 +1127,17 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
-    mkdirs(outputFile.getParent());
-    try (OutputStream fileOutputStream = new FileOutputStream(outputFile.toFile())) {
+    Path tmpFile = Files.createTempFile(null, null);
+    try (OutputStream fileOutputStream = Files.newOutputStream(tmpFile)) {
       int read = 0;
       final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
       while ((read = inputStream.read(bytes)) != -1) {
         fileOutputStream.write(bytes, 0, read);
       }
+      mkdirs(outputFile.getParent());
+      Files.move(tmpFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+    } finally {
+      deleteIfExists(tmpFile);
     }
   }
 
