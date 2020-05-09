@@ -138,6 +138,10 @@ final class Vpc implements AwsVpcEntity, Serializable {
         .filter(vgw -> vgw.getAttachmentVpcIds().contains(_vpcId))
         .forEach(vgw -> initializeVrf(vrfNameForLink(vgw.getId()), cfgNode));
 
+    region.getVpcEndpoints().values().stream()
+        .filter(vpce -> vpce instanceof VpcEndpointGateway && vpce.getVpcId().equals(_vpcId))
+        .forEach(vpce -> initializeVrf(vrfNameForLink(vpce.getId()), cfgNode));
+
     region.getNatGateways().values().stream()
         .filter(ngw -> ngw.getVpcId().equals(_vpcId))
         .forEach(ngw -> initializeVrf(vrfNameForLink(ngw.getId()), cfgNode));

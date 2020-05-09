@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -226,7 +227,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
                           cfgNode, interfaceNameToRemote(vpcConfigNode, interfaceSuffix))));
             });
 
-    Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);
+    String vpnGatewayId = region.findVpnGateway(_vpcId).map(VpnGateway::getId).orElse(null);
     Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
 
@@ -235,6 +236,19 @@ public class Subnet implements AwsVpcEntity, Serializable {
         && isPublicSubnet(optInternetGateway.get(), routeTable.get())) {
       cfgNode.setDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC);
     }
+
+    // collect all VPC-level gateways: IGW, VGW, VPC Endpoint Gateway
+    List<String> vpcGatewayIds =
+        Streams.concat(
+                Stream.of(optInternetGateway.map(InternetGateway::getId).orElse(null)),
+                Stream.of(vpnGatewayId),
+                region.getVpcEndpoints().values().stream()
+                    .filter(
+                        vpce ->
+                            vpce instanceof VpcEndpointGateway && vpce.getVpcId().equals(_vpcId))
+                    .map(VpcEndpoint::getId))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
 
     // process route tables to get outbound traffic going
     if (!routeTable.isPresent()) {
@@ -251,8 +265,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
                       region,
                       route,
                       vpcConfigNode,
-                      optInternetGateway.orElse(null),
-                      optVpnGateway.orElse(null),
+                      vpcGatewayIds,
                       awsConfiguration,
                       warnings));
     }
@@ -330,8 +343,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Region region,
       Route route,
       Configuration vpcNode,
-      @Nullable InternetGateway igw,
-      @Nullable VpnGateway vgw,
+      List<String> vpcGatewayIds, // IGW, VGW, VPC Endpoint Gateway
       ConvertedConfiguration awsConfiguration,
       Warnings warnings) {
     List<Prefix> networks;
@@ -371,20 +383,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
             // To VPC
             nextHopIp = getInterfaceLinkLocalIp(vpcNode, _subnetId);
             nexthopInterfaceName = interfaceNameToRemote(vpcNode);
-          } else if (igw != null && route.getTarget().equals(igw.getId())) {
-            // To IGW
+          } else if (vpcGatewayIds.contains(route.getTarget())) {
             nexthopInterfaceName =
-                Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(igw.getId()));
+                Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(route.getTarget()));
             nextHopIp =
                 getInterfaceLinkLocalIp(
-                    vpcNode, Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(igw.getId())));
-          } else if (vgw != null && route.getTarget().equals(vgw.getId())) {
-            // To VGW
-            nexthopInterfaceName =
-                Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(vgw.getId()));
-            nextHopIp =
-                getInterfaceLinkLocalIp(
-                    vpcNode, Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(vgw.getId())));
+                    vpcNode,
+                    Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(route.getTarget())));
           } else {
             warnings.redFlag(
                 String.format(

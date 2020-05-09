@@ -297,9 +297,9 @@ public class SubnetTest {
                     vpcIface.getLinkLocalAddress().getIp()))));
   }
 
-  /** Tests that we do the right thing when processing a route for an Internet gateway. */
+  /** Tests that we do the right thing when processing a route for a VPC-level gateway. */
   @Test
-  public void testProcessRouteInternetGateway() {
+  public void testProcessRouteVpcGateway() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -330,47 +330,15 @@ public class SubnetTest {
         vrfNameForLink(igw.getId()),
         vrfNameForLink(igw.getId()));
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, igw, null, awsConfiguration, new Warnings());
+        subnetCfg,
+        region,
+        route,
+        vpcCfg,
+        ImmutableList.of(igw.getId()),
+        awsConfiguration,
+        new Warnings());
 
     testProcessRouteHelper(route, igw.getId(), vpcCfg, subnetCfg);
-  }
-
-  /** Tests that we do the right thing when processing a route for an Internet gateway. */
-  @Test
-  public void testProcessRouteVpnGateway() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
-
-    Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
-    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
-
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
-
-    Region region = Region.builder("region").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
-
-    RouteV4 route =
-        new RouteV4(Prefix.parse("192.168.0.0/16"), State.ACTIVE, vgw.getId(), TargetType.Gateway);
-
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
-
-    vpcCfg
-        .getVrfs()
-        .put(
-            vrfNameForLink(vgw.getId()),
-            Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(vgw.getId())).build());
-    connect(
-        awsConfiguration,
-        subnetCfg,
-        DEFAULT_VRF_NAME,
-        vpcCfg,
-        vrfNameForLink(vgw.getId()),
-        vrfNameForLink(vgw.getId()));
-
-    subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, vgw, awsConfiguration, new Warnings());
-
-    testProcessRouteHelper(route, vgw.getId(), vpcCfg, subnetCfg);
   }
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
@@ -407,7 +375,7 @@ public class SubnetTest {
         vrfNameForLink(connectionId));
 
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
 
     testProcessRouteHelper(route, connectionId, vpcCfg, subnetCfg);
   }
@@ -456,7 +424,7 @@ public class SubnetTest {
         vrfNameForLink(linkId),
         vrfNameForLink(linkId));
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
 
     testProcessRouteHelper(route, linkId, vpcCfg, subnetCfg);
   }
@@ -499,7 +467,7 @@ public class SubnetTest {
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
 
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
@@ -529,7 +497,13 @@ public class SubnetTest {
         new RoutePrefixListId(prefixList.getId(), State.BLACKHOLE, null, TargetType.Gateway);
 
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, new ConvertedConfiguration(), new Warnings());
+        subnetCfg,
+        region,
+        route,
+        vpcCfg,
+        ImmutableList.of(),
+        new ConvertedConfiguration(),
+        new Warnings());
 
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),

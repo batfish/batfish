@@ -1,0 +1,64 @@
+{
+ "AvailabilityZones": [
+  {
+   "GroupName": "us-east-1",
+   "Messages": [],
+   "NetworkBorderGroup": "us-east-1",
+   "OptInStatus": "opt-in-not-required",
+   "RegionName": "us-east-1",
+   "State": "available",
+   "ZoneId": "use1-az2",
+   "ZoneName": "us-east-1a"
+  },
+  {
+   "GroupName": "us-east-1",
+   "Messages": [],
+   "NetworkBorderGroup": "us-east-1",
+   "OptInStatus": "opt-in-not-required",
+   "RegionName": "us-east-1",
+   "State": "available",
+   "ZoneId": "use1-az4",
+   "ZoneName": "us-east-1b"
+  },
+  {
+   "GroupName": "us-east-1",
+   "Messages": [],
+   "NetworkBorderGroup": "us-east-1",
+   "OptInStatus": "opt-in-not-required",
+   "RegionName": "us-east-1",
+   "State": "available",
+   "ZoneId": "use1-az6",
+   "ZoneName": "us-east-1c"
+  },
+  {
+   "GroupName": "us-east-1",
+   "Messages": [],
+   "NetworkBorderGroup": "us-east-1",
+   "OptInStatus": "opt-in-not-required",
+   "RegionName": "us-east-1",
+   "State": "available",
+   "ZoneId": "use1-az1",
+   "ZoneName": "us-east-1d"
+  },
+  {
+   "GroupName": "us-east-1",
+   "Messages": [],
+   "NetworkBorderGroup": "us-east-1",
+   "OptInStatus": "opt-in-not-required",
+   "RegionName": "us-east-1",
+   "State": "available",
+   "ZoneId": "use1-az3",
+   "ZoneName": "us-east-1e"
+  },
+  {
+   "GroupName": "us-east-1",
+   "Messages": [],
+   "NetworkBorderGroup": "us-east-1",
+   "OptInStatus": "opt-in-not-required",
+   "RegionName": "us-east-1",
+   "State": "available",
+   "ZoneId": "use1-az5",
+   "ZoneName": "us-east-1f"
+  }
+ ]
+}

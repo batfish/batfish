@@ -311,7 +311,8 @@ final class Utils {
   }
 
   /**
-   * Connects Internet or Vpn gateway to its VPC and adds static routes on both nodes.
+   * Connects gateways such as Internet, VPN, VPC endpoint to its VPC and adds static routes on both
+   * nodes.
    *
    * @retruns The Interface on the gateway for the new link or null if the VPC is not found.
    */

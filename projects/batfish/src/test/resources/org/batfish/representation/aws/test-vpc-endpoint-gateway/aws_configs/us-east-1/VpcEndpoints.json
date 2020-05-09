@@ -1,0 +1,25 @@
+{
+ "VpcEndpoints": [
+  {
+   "CreationTimestamp": "2020-05-09 05:01:38+00:00",
+   "DnsEntries": [],
+   "Groups": [],
+   "NetworkInterfaceIds": [],
+   "OwnerId": "554773406868",
+   "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
+   "PrivateDnsEnabled": false,
+   "RequesterManaged": false,
+   "RouteTableIds": [
+    "rtb-04f71fc2caa8d94cf",
+    "rtb-0efde4139784b75b0"
+   ],
+   "ServiceName": "com.amazonaws.us-east-1.s3",
+   "State": "available",
+   "SubnetIds": [],
+   "Tags": [],
+   "VpcEndpointId": "vpce-0b7357542bb7b83ec",
+   "VpcEndpointType": "Gateway",
+   "VpcId": "vpc-05d56c7295fca139b"
+  }
+ ]
+}
