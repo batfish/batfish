@@ -227,6 +227,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
                           cfgNode, interfaceNameToRemote(vpcConfigNode, interfaceSuffix))));
             });
 
+    @Nullable
     String vpnGatewayId = region.findVpnGateway(_vpcId).map(VpnGateway::getId).orElse(null);
     Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
