@@ -148,7 +148,6 @@ import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
 import org.codehaus.jettison.json.JSONArray;
@@ -1292,11 +1291,6 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public Path getdirNetwork(String networkName) {
-    return getdirNetwork(networkName, true);
-  }
-
-  @Override
   public BatfishLogger getLogger() {
     return _logger;
   }
@@ -1304,16 +1298,6 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Set<String> getNetworkNames() {
     return _idManager.listNetworks();
-  }
-
-  private static Path getdirNetwork(String networkName, boolean errIfNotExist) {
-    FileBasedStorageDirectoryProvider dirProvider =
-        new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
-    if (errIfNotExist && !Main.getWorkMgr().getIdManager().hasNetworkId(networkName)) {
-      throw new BatfishException("Network '" + networkName + "' does not exist");
-    }
-    NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(networkName);
-    return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
