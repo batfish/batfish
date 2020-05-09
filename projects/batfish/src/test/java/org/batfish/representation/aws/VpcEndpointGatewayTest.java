@@ -4,7 +4,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceMode
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.batfish.representation.aws.VpcEndpointGateway.SERVICE_PREFIX_FILTER;
 import static org.batfish.representation.aws.VpcEndpointGateway.computeServicePrefixFilter;
 import static org.batfish.representation.aws.VpcEndpointGateway.serviceInterfaceName;
@@ -27,6 +26,9 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.specifier.LocationInfo;
@@ -58,6 +60,10 @@ public class VpcEndpointGatewayTest {
             "vpce-gw", "service", vpc.getId(), ImmutableMap.of(TAG_NAME, "humanName"));
 
     Prefix servicePrefix = Prefix.parse("1.1.1.1/32");
+    IpSpace servicePrefixSpace =
+        IpWildcardSetIpSpace.builder()
+            .including(ImmutableList.of(IpWildcard.create(servicePrefix)))
+            .build();
     PrefixList prefixList =
         new PrefixList("pl", ImmutableList.of(servicePrefix), vpceGateway.getServiceName());
 
@@ -68,7 +74,6 @@ public class VpcEndpointGatewayTest {
             .setPrefixLists(ImmutableMap.of(prefixList.getId(), prefixList))
             .build();
 
-    String vrfNameOnVpc = vrfNameForLink(vpceGateway.getId());
     Configuration vpcConfig =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
 
@@ -110,13 +115,12 @@ public class VpcEndpointGatewayTest {
     // check the filter on vpc interface
     assertTrue(vpceGwConfig.getIpAccessLists().containsKey(SERVICE_PREFIX_FILTER));
     assertThat(
-        vpcInterface.getIncomingFilter(),
-        equalTo(computeServicePrefixFilter(servicePrefix.toIpSpace())));
+        vpcInterface.getIncomingFilter(), equalTo(computeServicePrefixFilter(servicePrefixSpace)));
 
     // test for location info
     assertThat(
         vpceGwConfig.getLocationInfo().get(interfaceLinkLocation(serviceInterface)),
-        equalTo(new LocationInfo(true, servicePrefix.toIpSpace(), LINK_LOCAL_IP.toIpSpace())));
+        equalTo(new LocationInfo(true, servicePrefixSpace, LINK_LOCAL_IP.toIpSpace())));
   }
 
   @Test
