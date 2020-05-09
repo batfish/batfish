@@ -1354,6 +1354,16 @@ public final class FileBasedStorage implements StorageProvider {
     return _d.getOriginalDir(key, network).resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
   }
 
+  @Override
+  public void storeForkSnapshotRequest(String forkSnapshotRequest, String key, NetworkId network)
+      throws IOException {
+    writeStringToFile(getForkSnapshotRequestPath(key, network), forkSnapshotRequest, UTF_8);
+  }
+
+  private @Nonnull Path getForkSnapshotRequestPath(String key, NetworkId network) {
+    return _d.getOriginalDir(key, network).resolve(BfConsts.RELPATH_FORK_REQUEST_FILE);
+  }
+
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   @MustBeClosed
@@ -1369,6 +1379,18 @@ public final class FileBasedStorage implements StorageProvider {
     writeStreamToFile(
         inputStream,
         getSnapshotInputObjectPath(snapshot.getNetwork(), snapshot.getSnapshot(), key));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
+    Path inputObjectsPath =
+        _d.getSnapshotInputObjectsDir(snapshot.getNetwork(), snapshot.getSnapshot());
+    return Files.walk(inputObjectsPath)
+        .filter(Files::isRegularFile)
+        .map(inputObjectsPath::relativize)
+        .map(Object::toString);
   }
 
   private @Nonnull Path getReferenceLibraryPath(NetworkId network) {

@@ -1184,7 +1184,7 @@ public final class WorkMgrTest {
     String snapshotNewName = "snapshotNew";
 
     // Fork should fail because network does not exist
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
     _manager.forkSnapshot(
         networkName,

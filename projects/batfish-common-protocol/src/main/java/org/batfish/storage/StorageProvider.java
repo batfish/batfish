@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -713,6 +714,14 @@ public interface StorageProvider {
       throws IOException;
 
   /**
+   * Stores the a fork-snapshot request for the given network, associating it with the given key.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeForkSnapshotRequest(String forkSnapshotRequest, String key, NetworkId network)
+      throws IOException;
+
+  /**
    * Loads the original zip for a snapshot upload request associated with the given key.
    *
    * @throws IOException if there is an error
@@ -729,4 +738,13 @@ public interface StorageProvider {
    */
   void storeSnapshotInputObject(InputStream inputStream, String key, NetworkSnapshot snapshot)
       throws IOException;
+
+  /**
+   * Returns a stream of the keys of all input objects for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException;
 }
