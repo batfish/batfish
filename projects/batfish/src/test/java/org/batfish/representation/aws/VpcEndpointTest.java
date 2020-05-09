@@ -29,11 +29,13 @@ public class VpcEndpointTest {
                 "vpce-0d4dd62ef8577fa8e",
                 new VpcEndpointGateway(
                     "vpce-0d4dd62ef8577fa8e",
+                    "com.amazonaws.us-east-1.s3",
                     "vpc-05575381cd519fdef",
                     ImmutableMap.of("Name", "K8-Cluster-ec2-vpce")),
                 "vpce-0dacb0be80d30b16e",
                 new VpcEndpointInterface(
                     "vpce-0dacb0be80d30b16e",
+                    "com.amazonaws.us-east-1.ec2",
                     "vpc-05575381cd519fdef",
                     ImmutableList.of("eni-01e50eacd921e923f", "eni-02c68bab6b43ddfe6"),
                     ImmutableList.of("subnet-0176606bd33f3c98b", "subnet-07ca689a49d471449"),

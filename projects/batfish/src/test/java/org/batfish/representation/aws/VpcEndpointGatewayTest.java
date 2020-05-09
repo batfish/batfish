@@ -10,11 +10,13 @@ public class VpcEndpointGatewayTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new VpcEndpointGateway("id", "vpc", ImmutableMap.of()),
-            new VpcEndpointGateway("id", "vpc", ImmutableMap.of()))
-        .addEqualityGroup(new VpcEndpointGateway("other", "vpc", ImmutableMap.of()))
-        .addEqualityGroup(new VpcEndpointGateway("id", "other", ImmutableMap.of()))
-        .addEqualityGroup(new VpcEndpointGateway("id", "vpc", ImmutableMap.of("tag", "tag")))
+            new VpcEndpointGateway("id", "service", "vpc", ImmutableMap.of()),
+            new VpcEndpointGateway("id", "service", "vpc", ImmutableMap.of()))
+        .addEqualityGroup(new VpcEndpointGateway("other", "service", "vpc", ImmutableMap.of()))
+        .addEqualityGroup(new VpcEndpointGateway("id", "other", "vpc", ImmutableMap.of()))
+        .addEqualityGroup(new VpcEndpointGateway("id", "service", "other", ImmutableMap.of()))
+        .addEqualityGroup(
+            new VpcEndpointGateway("id", "service", "vpc", ImmutableMap.of("tag", "tag")))
         .testEquals();
   }
 }
