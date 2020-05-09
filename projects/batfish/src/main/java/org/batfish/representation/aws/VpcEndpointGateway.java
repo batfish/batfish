@@ -15,8 +15,8 @@ import org.batfish.datamodel.Configuration;
 @ParametersAreNonnullByDefault
 final class VpcEndpointGateway extends VpcEndpoint {
 
-  VpcEndpointGateway(String id, String vpcId, Map<String, String> tags) {
-    super(id, vpcId, tags);
+  VpcEndpointGateway(String id, String serviceName, String vpcId, Map<String, String> tags) {
+    super(id, serviceName, vpcId, tags);
   }
 
   @Override
@@ -35,11 +35,14 @@ final class VpcEndpointGateway extends VpcEndpoint {
       return false;
     }
     VpcEndpointGateway that = (VpcEndpointGateway) o;
-    return _id.equals(that._id) && _vpcId.equals(that._vpcId) && _tags.equals(that._tags);
+    return _id.equals(that._id)
+        && _serviceName.equals(that._serviceName)
+        && _vpcId.equals(that._vpcId)
+        && _tags.equals(that._tags);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id, _vpcId, _tags);
+    return Objects.hash(_id, _serviceName, _vpcId, _tags);
   }
 }

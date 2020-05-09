@@ -33,11 +33,12 @@ final class VpcEndpointInterface extends VpcEndpoint {
 
   VpcEndpointInterface(
       String id,
+      String serviceName,
       String vpcId,
       List<String> networkInterfaceIds,
       List<String> subnetIds,
       Map<String, String> tags) {
-    super(id, vpcId, tags);
+    super(id, serviceName, vpcId, tags);
     _networkInterfaceIds = networkInterfaceIds;
     _subnetIds = subnetIds;
   }
@@ -127,12 +128,13 @@ final class VpcEndpointInterface extends VpcEndpoint {
     return _networkInterfaceIds.equals(that._networkInterfaceIds)
         && _subnetIds.equals(that._subnetIds)
         && _id.equals(that._id)
+        && _serviceName.equals(that._serviceName)
         && _vpcId.equals(that._vpcId)
         && _tags.equals(that._tags);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_networkInterfaceIds, _subnetIds, _id, _vpcId, _tags);
+    return Objects.hash(_networkInterfaceIds, _subnetIds, _id, _serviceName, _vpcId, _tags);
   }
 }
