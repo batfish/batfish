@@ -41,24 +41,52 @@ public class VpcEndpointInterfaceTest {
     new EqualsTester()
         .addEqualityGroup(
             new VpcEndpointInterface(
-                "id", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()),
+                "id", "service", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()),
             new VpcEndpointInterface(
-                "id", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()))
+                "id", "service", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()))
         .addEqualityGroup(
             new VpcEndpointInterface(
-                "other", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()))
+                "other",
+                "service",
+                "vpc",
+                ImmutableList.of(),
+                ImmutableList.of(),
+                ImmutableMap.of()))
         .addEqualityGroup(
             new VpcEndpointInterface(
-                "id", "other", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()))
+                "id", "other", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of()))
         .addEqualityGroup(
             new VpcEndpointInterface(
-                "id", "vpc", ImmutableList.of("other"), ImmutableList.of(), ImmutableMap.of()))
+                "id",
+                "service",
+                "other",
+                ImmutableList.of(),
+                ImmutableList.of(),
+                ImmutableMap.of()))
         .addEqualityGroup(
             new VpcEndpointInterface(
-                "id", "vpc", ImmutableList.of(), ImmutableList.of("other"), ImmutableMap.of()))
+                "id",
+                "service",
+                "vpc",
+                ImmutableList.of("other"),
+                ImmutableList.of(),
+                ImmutableMap.of()))
         .addEqualityGroup(
             new VpcEndpointInterface(
-                "id", "vpc", ImmutableList.of(), ImmutableList.of(), ImmutableMap.of("tag", "tag")))
+                "id",
+                "service",
+                "vpc",
+                ImmutableList.of(),
+                ImmutableList.of("other"),
+                ImmutableMap.of()))
+        .addEqualityGroup(
+            new VpcEndpointInterface(
+                "id",
+                "service",
+                "vpc",
+                ImmutableList.of(),
+                ImmutableList.of(),
+                ImmutableMap.of("tag", "tag")))
         .testEquals();
   }
 
@@ -67,6 +95,7 @@ public class VpcEndpointInterfaceTest {
     VpcEndpointInterface vpcEndpointInterface =
         new VpcEndpointInterface(
             "endpoint",
+            "service",
             "vpc",
             ImmutableList.of("net1", "net2"),
             ImmutableList.of("sub1", "sub2"),
@@ -100,6 +129,7 @@ public class VpcEndpointInterfaceTest {
     VpcEndpointInterface vpcEndpointInterface =
         new VpcEndpointInterface(
             "endpoint",
+            "service",
             "vpc",
             ImmutableList.of(networkInterface.getId()),
             ImmutableList.of(subnet.getId()),

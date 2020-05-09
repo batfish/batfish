@@ -24,6 +24,8 @@ abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
 
   @Nonnull protected final String _id;
 
+  @Nonnull protected final String _serviceName;
+
   @Nonnull protected final String _vpcId;
 
   @Nonnull protected final Map<String, String> _tags;
@@ -31,12 +33,14 @@ abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
   @JsonCreator
   private static VpcEndpoint create(
       @Nullable @JsonProperty(JSON_KEY_VPC_ENDPOINT_ID) String vpcEndpointId,
+      @Nullable @JsonProperty(JSON_KEY_SERVICE_NAME) String serviceName,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ENDPOINT_TYPE) String vpcEndpointType,
       @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_IDS) List<String> networkInterfaceIds,
       @Nullable @JsonProperty(JSON_KEY_SUBNET_IDS) List<String> subnetIds,
       @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
     checkNonNull(vpcEndpointId, JSON_KEY_VPC_ENDPOINT_ID, "VPC endpoint");
+    checkNonNull(serviceName, JSON_KEY_SERVICE_NAME, "VPC endpoint");
     checkNonNull(vpcId, JSON_KEY_VPC_ID, "VPC endpoint");
     checkNonNull(vpcEndpointType, JSON_KEY_VPC_ENDPOINT_TYPE, "VPC endpoint");
 
@@ -45,18 +49,20 @@ abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue));
 
     if (vpcEndpointType.equalsIgnoreCase("gateway")) {
-      return new VpcEndpointGateway(vpcEndpointId, vpcId, tagMap);
+      return new VpcEndpointGateway(vpcEndpointId, serviceName, vpcId, tagMap);
     } else if (vpcEndpointType.equalsIgnoreCase("interface")) {
       checkNonNull(networkInterfaceIds, JSON_KEY_NETWORK_INTERFACE_IDS, "Interface VPC endpoint");
       checkNonNull(subnetIds, JSON_KEY_SUBNET_IDS, "Interface VPC endpoint");
-      return new VpcEndpointInterface(vpcEndpointId, vpcId, networkInterfaceIds, subnetIds, tagMap);
+      return new VpcEndpointInterface(
+          vpcEndpointId, serviceName, vpcId, networkInterfaceIds, subnetIds, tagMap);
     } else {
       throw new IllegalArgumentException("Unknown VPC endpoint type " + vpcEndpointType);
     }
   }
 
-  VpcEndpoint(String id, String vpcId, Map<String, String> tags) {
+  VpcEndpoint(String id, String serviceName, String vpcId, Map<String, String> tags) {
     _id = id;
+    _serviceName = serviceName;
     _vpcId = vpcId;
     _tags = tags;
   }
@@ -64,9 +70,15 @@ abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
   abstract List<Configuration> toConfigurationNodes(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings);
 
+  @Nonnull
   @Override
   public String getId() {
     return _id;
+  }
+
+  @Nonnull
+  public String getServiceName() {
+    return _serviceName;
   }
 
   @Nonnull

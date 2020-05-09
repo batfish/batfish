@@ -122,6 +122,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_SCHEME = "Scheme";
   String JSON_KEY_SECURITY_GROUPS = "SecurityGroups";
   String JSON_KEY_SECURITY_GROUP_IDS = "SecurityGroupIds";
+  String JSON_KEY_SERVICE_NAME = "ServiceName";
   String JSON_KEY_SERVICE_NAMES = "ServiceNames";
   String JSON_KEY_STATE = "State";
   String JSON_KEY_STATIC_ROUTES_ONLY = "StaticRoutesOnly";
