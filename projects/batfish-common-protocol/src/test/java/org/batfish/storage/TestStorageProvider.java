@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.CompletionMetadata;
@@ -439,6 +440,36 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
       throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeForkSnapshotRequest(String forkSnapshotRequest, String key, NetworkId network)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeSnapshotInputObject(
+      InputStream inputStream, String key, NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 }

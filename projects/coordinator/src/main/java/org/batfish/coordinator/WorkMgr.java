@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Comparators.lexicographical;
+import static com.google.common.io.MoreFiles.createParentDirectories;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
@@ -37,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -83,6 +85,7 @@ import org.batfish.common.ColumnSortOption;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
@@ -145,7 +148,6 @@ import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
 import org.codehaus.jettison.json.JSONArray;
@@ -182,7 +184,6 @@ public class WorkMgr extends AbstractCoordinator {
                               Comparator.<Step<?>, String>comparing(
                                       step -> step.getDetail().toString())
                                   .thenComparing(Step::getAction)))));
-  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   private static Path getCanonicalPath(Path path) {
     try {
@@ -202,19 +203,6 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Error listing directory '" + directory + "'", e);
     }
     return entries;
-  }
-
-  private static void writeStreamToFile(InputStream inputStream, Path outputFile) {
-    try (OutputStream fileOutputStream = new FileOutputStream(outputFile.toFile())) {
-      int read = 0;
-      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
-      while ((read = inputStream.read(bytes)) != -1) {
-        fileOutputStream.write(bytes, 0, read);
-      }
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile + "'", e);
-    }
   }
 
   static final class AssignWorkTask implements Runnable {
@@ -1303,11 +1291,6 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public Path getdirNetwork(String networkName) {
-    return getdirNetwork(networkName, true);
-  }
-
-  @Override
   public BatfishLogger getLogger() {
     return _logger;
   }
@@ -1315,16 +1298,6 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Set<String> getNetworkNames() {
     return _idManager.listNetworks();
-  }
-
-  private static Path getdirNetwork(String networkName, boolean errIfNotExist) {
-    FileBasedStorageDirectoryProvider dirProvider =
-        new FileBasedStorageDirectoryProvider(Main.getSettings().getContainersLocation());
-    if (errIfNotExist && !Main.getWorkMgr().getIdManager().hasNetworkId(networkName)) {
-      throw new BatfishException("Network '" + networkName + "' does not exist");
-    }
-    NetworkId networkId = Main.getWorkMgr().getIdManager().getNetworkId(networkName);
-    return dirProvider.getNetworkDir(networkId).toAbsolutePath();
   }
 
   private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
@@ -1563,29 +1536,13 @@ public class WorkMgr extends AbstractCoordinator {
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
 
-    Path networkDir = getdirNetwork(networkName);
-    Path testrigDir =
-        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, snapshotId.getId()));
-
-    if (!testrigDir.resolve(BfConsts.RELPATH_OUTPUT).toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
-    }
-
     // Now that the directory exists, we must also create the metadata.
     try {
       _snapshotMetadataManager.writeMetadata(
           new SnapshotMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
-      BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
-      try {
-        CommonUtil.deleteDirectory(testrigDir);
-      } catch (Exception inner) {
-        metadataError.addSuppressed(inner);
-      }
-      throw metadataError;
+      throw new BatfishException("Could not write testrigMetadata", e);
     }
-
-    Path srcTestrigDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
 
     // things look ok, now make the move
     boolean bgpTables = false;
@@ -1614,15 +1571,32 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
       // Copy everything over
-      Path dstPath = srcTestrigDir.resolve(subFile.getFileName());
       try {
         if (Files.isDirectory(subFile)) {
-          FileUtils.copyDirectory(subFile.toFile(), dstPath.toFile());
+          Files.walk(subFile)
+              .filter(Files::isRegularFile)
+              .forEach(
+                  deepFile -> {
+                    try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
+                      _storage.storeSnapshotInputObject(
+                          srcFileStream,
+                          subDir.relativize(deepFile).toString(),
+                          new NetworkSnapshot(networkId, snapshotId));
+                    } catch (IOException e) {
+                      throw new UncheckedIOException(
+                          String.format("Failed to copy: '%s'", subFile), e);
+                    }
+                  });
         } else {
-          FileUtils.copyFile(subFile.toFile(), dstPath.toFile());
+          try (InputStream srcFileStream = Files.newInputStream(subFile)) {
+            _storage.storeSnapshotInputObject(
+                srcFileStream,
+                subFile.getFileName().toString(),
+                new NetworkSnapshot(networkId, snapshotId));
+          }
         }
       } catch (IOException e) {
-        throw new BatfishException("Failed to copy: '" + subFile + "' to: '" + dstPath + "'", e);
+        throw new UncheckedIOException(String.format("Failed to copy: '%s'", subFile), e);
       }
     }
     _logger.infof(
@@ -1687,68 +1661,74 @@ public class WorkMgr extends AbstractCoordinator {
     return srcDirEntries.iterator().next();
   }
 
+  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
+
+  private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
+    createParentDirectories(outputFile);
+    try (OutputStream fileOutputStream = Files.newOutputStream(outputFile)) {
+      int read = 0;
+      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      while ((read = inputStream.read(bytes)) != -1) {
+        fileOutputStream.write(bytes, 0, read);
+      }
+    }
+  }
+
   /**
    * Copy a snapshot and make modifications to the copy.
    *
    * @param networkName Name of the network containing the original snapshot
    * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
-   * @throws IllegalArgumentException If the new snapshot name conflicts with an existing snapshot
-   *     or if item to restore had not been deactivated.
-   * @throws IOException If the base network or snapshot are missing or if there is an error reading
-   *     or writing snapshot files.
+   * @throws IllegalArgumentException If the new snapshot name conflicts with an existing snapshot;
+   *     or if item to restore had not been deactivated; or if network does not exist
+   * @throws FileNotFoundException if base snapshot does not exist
+   * @throws IOException If there is an error reading or writing snapshot files.
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
       throws IllegalArgumentException, IOException {
-    Path networkDir = getdirNetwork(networkName);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
 
     String baseSnapshotName = forkSnapshotBean.baseSnapshot;
     String snapshotName = forkSnapshotBean.newSnapshot;
 
     // Fail early if the new snapshot already exists or the base snapshot does not
-    if (_idManager.hasSnapshotId(snapshotName, networkId)) {
-      throw new IllegalArgumentException(
-          "Snapshot with name: '" + snapshotName + "' already exists");
-    }
+    checkArgument(_idManager.hasNetworkId(networkName), "Network '%s' does not exist", networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName);
+    checkArgument(
+        !_idManager.hasSnapshotId(snapshotName, networkId),
+        "Snapshot with name: '%s' already exists",
+        snapshotName);
     if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
       throw new FileNotFoundException(
-          "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
+          String.format("Base snapshot with name: '%s' does not exist", baseSnapshotName));
     }
 
     // Save user input for troubleshooting
-    Path originalDir =
-        networkDir
-            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(snapshotName));
-    if (!originalDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
-    }
-    CommonUtil.writeFile(
-        originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
-        BatfishObjectMapper.writeString(forkSnapshotBean));
+    String forkSnapshotKey = generateFileDateString(snapshotName);
+    _storage.storeForkSnapshotRequest(
+        BatfishObjectMapper.writeString(forkSnapshotBean), forkSnapshotKey, networkId);
 
     SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
-    Path baseSnapshotDir =
-        networkDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, baseSnapshotId.getId()));
 
     // Copy baseSnapshot so initSnapshot will see a properly formatted upload
-    Path baseSnapshotInputsDir = baseSnapshotDir.resolve(Paths.get(BfConsts.RELPATH_INPUT));
     Path newSnapshotInputsDir =
         CommonUtil.createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
-    if (baseSnapshotInputsDir.toFile().exists()) {
-      FileUtils.copyDirectory(baseSnapshotInputsDir.toFile(), newSnapshotInputsDir.toFile());
-      _logger.infof(
-          "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
-          baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
-    } else {
-      throw new IllegalArgumentException(
-          String.format(
-              "Base snapshot %s is not properly formatted, try re-uploading.", baseSnapshotName));
-    }
 
+    try (Stream<String> baseInputObjectKeys =
+        _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
+      baseInputObjectKeys.forEach(
+          key -> {
+            try (InputStream baseObjectStream =
+                _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
+              writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
+            } catch (IOException e) {
+              throw new UncheckedIOException(
+                  String.format("Unable to copy base snapshot input object with key: %s", key), e);
+            }
+          });
+    }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
       Path zipFile =
@@ -2303,7 +2283,6 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public void uploadSnapshot(
       String networkName, String snapshotName, InputStream fileStream, boolean autoAnalyze) {
-    Path networkDir = getdirNetwork(networkName);
     NetworkId networkId = _idManager.getNetworkId(networkName);
 
     // Fail early if the snapshot already exists
@@ -2312,17 +2291,19 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Save uploaded zip for troubleshooting
-    Path originalDir =
-        networkDir
-            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(generateFileDateString(snapshotName));
-    if (!originalDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
+    String uploadZipKey = generateFileDateString(snapshotName);
+    try {
+      _storage.storeUploadSnapshotZip(fileStream, uploadZipKey, networkId);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-    Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
-    writeStreamToFile(fileStream, snapshotZipFile);
+
     Path unzipDir = CommonUtil.createTempDirectory("tr");
-    UnzipUtility.unzip(snapshotZipFile, unzipDir);
+    try (InputStream zipStream = _storage.loadUploadSnapshotZip(uploadZipKey, networkId)) {
+      UnzipUtility.unzip(zipStream, unzipDir);
+    } catch (IOException e) {
+      throw new UncheckedIOException("Failed to extract uploaded zip", e);
+    }
 
     try {
       initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);

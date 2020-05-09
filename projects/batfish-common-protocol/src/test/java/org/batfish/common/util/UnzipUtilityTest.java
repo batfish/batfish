@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.batfish.common.BatfishException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -71,8 +70,7 @@ public class UnzipUtilityTest {
     }
 
     File dest = _folder.newFolder("dest");
-    _thrown.expect(BatfishException.class);
-    _thrown.expectCause(instanceOf(IOException.class));
+    _thrown.expect(instanceOf(IOException.class));
     UnzipUtility.unzip(pathViolation.toPath(), dest.toPath());
   }
 }

@@ -1,5 +1,7 @@
 package org.batfish.storage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
@@ -25,7 +27,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -39,7 +40,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
@@ -120,23 +120,17 @@ public final class FileBasedStorageTest {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
-    Path batfishConfigDir =
-        _storage
-            .getDirectoryProvider()
-            .getSnapshotInputObjectsDir(networkId, snapshotId)
-            .resolve(BfConsts.RELPATH_BATFISH_CONFIGS_DIR);
-    final boolean mkdirs = batfishConfigDir.toFile().mkdirs();
-    assertThat(mkdirs, equalTo(true));
-
     IspConfiguration ispConfiguration =
         new IspConfiguration(
             ImmutableList.of(new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
             new IspFilter(
                 ImmutableList.of(1L, 2L),
                 ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"))));
-    BatfishObjectMapper.mapper()
-        .writeValue(
-            batfishConfigDir.resolve(BfConsts.RELPATH_ISP_CONFIG_FILE).toFile(), ispConfiguration);
+    String ispConfigurationStr = BatfishObjectMapper.writeString(ispConfiguration);
+    try (InputStream is = new ByteArrayInputStream(ispConfigurationStr.getBytes(UTF_8))) {
+      _storage.storeSnapshotInputObject(
+          is, ISP_CONFIGURATION_KEY, new NetworkSnapshot(networkId, snapshotId));
+    }
 
     IspConfiguration readIspConfiguration = _storage.loadIspConfiguration(networkId, snapshotId);
     assertThat(ispConfiguration, equalTo(readIspConfiguration));
@@ -183,7 +177,7 @@ public final class FileBasedStorageTest {
   @Test
   public void testCheckNetworkExistsTrue() {
     NetworkId network = new NetworkId("network");
-    _storage.getDirectoryProvider().getNetworkDir(network).toFile().mkdirs();
+    _storage.getNetworkDir(network).toFile().mkdirs();
 
     assertThat(_storage.checkNetworkExists(network), equalTo(true));
   }
@@ -325,7 +319,7 @@ public final class FileBasedStorageTest {
     assertThat("Should have been set", found, notNullValue());
     assertFalse("Should not have been found", found);
 
-    byte[] content = "here's some content".getBytes(StandardCharsets.UTF_8);
+    byte[] content = "here's some content".getBytes(UTF_8);
     _storage.storeNetworkBlob(new ByteArrayInputStream(content), network, id);
 
     byte[] loaded = ByteStreams.toByteArray(_storage.loadNetworkBlob(network, id));
@@ -343,7 +337,7 @@ public final class FileBasedStorageTest {
         _storage.getSnapshotInputObjectPath(network, snapshot, "test").toFile());
 
     try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "test")) {
-      assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()), equalTo(testSting));
+      assertThat(IOUtils.toString(inputStream, UTF_8.name()), equalTo(testSting));
     }
   }
 
@@ -363,6 +357,7 @@ public final class FileBasedStorageTest {
     }
 
     Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
+    unzipDir.toFile().mkdirs();
     UnzipUtility.unzip(tmpzip, unzipDir);
 
     // the top level entry in the zip should be testkey
@@ -376,8 +371,7 @@ public final class FileBasedStorageTest {
     // the content of the testfile should match what we wrote
     assertThat(
         new String(
-            Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])),
-            StandardCharsets.UTF_8),
+            Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])), UTF_8),
         equalTo(testSting));
   }
 

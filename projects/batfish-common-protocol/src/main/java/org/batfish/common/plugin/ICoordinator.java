@@ -6,8 +6,6 @@ import org.batfish.common.BatfishLogger;
 
 public interface ICoordinator {
 
-  Path getdirNetwork(String networkName);
-
   BatfishLogger getLogger();
 
   Set<String> getNetworkNames();
