@@ -1695,10 +1695,10 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @param networkName Name of the network containing the original snapshot
    * @param forkSnapshotBean {@link ForkSnapshotBean} containing parameters used to create the fork
-   * @throws IllegalArgumentException If the new snapshot name conflicts with an existing snapshot
-   *     or if item to restore had not been deactivated.
-   * @throws IOException If the base network or snapshot are missing or if there is an error reading
-   *     or writing snapshot files.
+   * @throws IllegalArgumentException If the new snapshot name conflicts with an existing snapshot;
+   *     or if item to restore had not been deactivated; or if network does not exist
+   * @throws FileNotFoundException if base snapshot does not exist
+   * @throws IOException If there is an error reading or writing snapshot files.
    */
   public void forkSnapshot(String networkName, ForkSnapshotBean forkSnapshotBean)
       throws IllegalArgumentException, IOException {
@@ -1715,7 +1715,7 @@ public class WorkMgr extends AbstractCoordinator {
         snapshotName);
     if (!_idManager.hasSnapshotId(baseSnapshotName, networkId)) {
       throw new FileNotFoundException(
-          "Base snapshot with name: '" + baseSnapshotName + "' does not exist");
+          String.format("Base snapshot with name: '%s' does not exist", baseSnapshotName));
     }
 
     // Save user input for troubleshooting
