@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -34,14 +35,21 @@ public final class AwsConfigurationTestUtils {
     return batfish;
   }
 
-  /** Returns some concrete IP address of the node. */
+  /**
+   * Returns some concrete IP address of the node.
+   *
+   * @throws IllegalArgumentException if no such address is found
+   */
   static Ip getAnyNodeIp(String nodeName, IBatfish batfish) {
     return batfish.loadConfigurations(batfish.getSnapshot()).get(nodeName).getAllInterfaces()
         .values().stream()
+        .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .findAny()
-        .get()
-        .getConcreteAddress()
-        .getIp();
+        .map(ConcreteInterfaceAddress::getIp)
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    "Could not find an interface with a concrete address on " + nodeName));
   }
 
   /** Returns the IP address of the node. Assumes that the node has only one interface */
