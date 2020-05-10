@@ -8,8 +8,8 @@
         "deviceModel" : "BATFISH_ISP",
         "deviceType" : "ISP",
         "interfaces" : {
-          "To Internet" : {
-            "name" : "To Internet",
+          "To-Internet" : {
+            "name" : "To-Internet",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -30,8 +30,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To igw-068fee63" : {
-            "name" : "To igw-068fee63",
+          "To-igw-068fee63" : {
+            "name" : "To-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -50,8 +50,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To igw-9b93ddfc" : {
-            "name" : "To igw-9b93ddfc",
+          "To-igw-9b93ddfc" : {
+            "name" : "To-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -70,8 +70,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To igw-fac5839d" : {
-            "name" : "To igw-fac5839d",
+          "To-igw-fac5839d" : {
+            "name" : "To-igw-fac5839d",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -1871,7 +1871,7 @@
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "interfaceNeighbors" : {
-                "To Internet" : {
+                "To-Internet" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1893,10 +1893,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To Internet",
+                  "peerInterface" : "To-Internet",
                   "remoteAsns" : "65537"
                 },
-                "To igw-068fee63" : {
+                "To-igw-068fee63" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1918,10 +1918,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To igw-068fee63",
+                  "peerInterface" : "To-igw-068fee63",
                   "remoteAsns" : "65534"
                 },
-                "To igw-9b93ddfc" : {
+                "To-igw-9b93ddfc" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1943,10 +1943,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To igw-9b93ddfc",
+                  "peerInterface" : "To-igw-9b93ddfc",
                   "remoteAsns" : "65534"
                 },
-                "To igw-fac5839d" : {
+                "To-igw-fac5839d" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1968,7 +1968,7 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To igw-fac5839d",
+                  "peerInterface" : "To-igw-fac5839d",
                   "remoteAsns" : "65534"
                 }
               },
@@ -14970,8 +14970,8 @@
         "deviceModel" : "BATFISH_INTERNET",
         "deviceType" : "INTERNET",
         "interfaces" : {
-          "To aws-backbone" : {
-            "name" : "To aws-backbone",
+          "To-aws-backbone" : {
+            "name" : "To-aws-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -15069,7 +15069,7 @@
               "ibgpAdminCost" : 200,
               "routerId" : "240.254.254.1",
               "interfaceNeighbors" : {
-                "To aws-backbone" : {
+                "To-aws-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -15091,7 +15091,7 @@
                   },
                   "localAs" : 65537,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To aws-backbone",
+                  "peerInterface" : "To-aws-backbone",
                   "remoteAsns" : "16509"
                 }
               },
