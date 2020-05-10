@@ -115,6 +115,30 @@ public class VpcTest {
         equalTo(ImmutableSet.of(DEFAULT_VRF_NAME, vrfNameForLink(gatewayId))));
   }
 
+  /** VRFs are in place for VPC Endpoint gateways */
+  @Test
+  public void testToConfigurationNod_vpceGateways() {
+    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+
+    String gatewayId = "gateway";
+    Region region =
+        Region.builder("r1")
+            .setVpcEndpoints(
+                ImmutableMap.of(
+                    gatewayId,
+                    new VpcEndpointGateway(gatewayId, "service", vpc.getId(), ImmutableMap.of()),
+                    "other",
+                    new VpcEndpointGateway("other", "service", "otherVpc", ImmutableMap.of())))
+            .build();
+
+    Configuration vpcCfg =
+        vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
+
+    assertThat(
+        vpcCfg.getVrfs().keySet(),
+        equalTo(ImmutableSet.of(DEFAULT_VRF_NAME, vrfNameForLink(gatewayId))));
+  }
+
   /** VRFs are in place for the right NAT gateways */
   @Test
   public void testToConfigurationNod_ngwVrfs() {
