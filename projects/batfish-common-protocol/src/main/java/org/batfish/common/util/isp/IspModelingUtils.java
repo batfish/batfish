@@ -115,6 +115,14 @@ public final class IspModelingUtils {
     return String.format("%s_%s", "isp", asn);
   }
 
+  public static String internetToIspInterfaceName(String ispHostname) {
+    return "To " + ispHostname;
+  }
+
+  public static String ispToRemoteInterfaceName(String remoteHostname) {
+    return "To " + remoteHostname;
+  }
+
   public static class ModeledNodes {
 
     @Nonnull private final Map<String, Configuration> _configurations;
@@ -355,6 +363,7 @@ public final class IspModelingUtils {
       Interface internetIface =
           nf.interfaceBuilder()
               .setOwner(internet)
+              .setName(internetToIspInterfaceName(ispConfiguration.getHostname()))
               .setVrf(internet.getDefaultVrf())
               .setAddress(LINK_LOCAL_ADDRESS)
               .build();
@@ -609,6 +618,7 @@ public final class IspModelingUtils {
               Interface ispInterface =
                   nf.interfaceBuilder()
                       .setOwner(ispConfiguration)
+                      .setName(ispToRemoteInterfaceName(remote.getRemoteHostname()))
                       .setVrf(defaultVrf)
                       .setAddress(remote.getIspIfaceAddress())
                       .setIncomingFilter(fromNetwork)
