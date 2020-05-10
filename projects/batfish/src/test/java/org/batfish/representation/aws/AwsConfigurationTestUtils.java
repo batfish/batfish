@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -42,9 +43,9 @@ public final class AwsConfigurationTestUtils {
   static Ip getAnyNodeIp(String nodeName, IBatfish batfish) {
     return batfish.loadConfigurations(batfish.getSnapshot()).get(nodeName).getAllInterfaces()
         .values().stream()
-        .filter(iface -> iface.getConcreteAddress() != null)
+        .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .findAny()
-        .map(iface -> iface.getConcreteAddress().getIp())
+        .map(ConcreteInterfaceAddress::getIp)
         .orElseThrow(
             () ->
                 new IllegalArgumentException(
