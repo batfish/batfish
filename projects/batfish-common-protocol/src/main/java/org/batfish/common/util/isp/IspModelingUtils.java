@@ -98,7 +98,7 @@ public final class IspModelingUtils {
   public static final String INTERNET_OUT_INTERFACE = "out";
   static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
   static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(LINK_LOCAL_IP);
-  static final String ISP_TO_INTERNET_INTERFACE_NAME = "To Internet";
+  static final String ISP_TO_INTERNET_INTERFACE_NAME = "To-Internet";
 
   // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
   // that use this space internally
@@ -113,6 +113,14 @@ public final class IspModelingUtils {
 
   public static String getDefaultIspNodeName(Long asn) {
     return String.format("%s_%s", "isp", asn);
+  }
+
+  public static String internetToIspInterfaceName(String ispHostname) {
+    return "To-" + ispHostname;
+  }
+
+  public static String ispToRemoteInterfaceName(String remoteHostname) {
+    return "To-" + remoteHostname;
   }
 
   public static class ModeledNodes {
@@ -355,6 +363,7 @@ public final class IspModelingUtils {
       Interface internetIface =
           nf.interfaceBuilder()
               .setOwner(internet)
+              .setName(internetToIspInterfaceName(ispConfiguration.getHostname()))
               .setVrf(internet.getDefaultVrf())
               .setAddress(LINK_LOCAL_ADDRESS)
               .build();
@@ -609,6 +618,7 @@ public final class IspModelingUtils {
               Interface ispInterface =
                   nf.interfaceBuilder()
                       .setOwner(ispConfiguration)
+                      .setName(ispToRemoteInterfaceName(remote.getRemoteHostname()))
                       .setVrf(defaultVrf)
                       .setAddress(remote.getIspIfaceAddress())
                       .setIncomingFilter(fromNetwork)
