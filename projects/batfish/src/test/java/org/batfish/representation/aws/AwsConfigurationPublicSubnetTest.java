@@ -7,7 +7,7 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
@@ -66,6 +66,9 @@ public class AwsConfigurationPublicSubnetTest {
   private static Ip _publicIp = Ip.parse("18.216.80.133");
   private static Ip _privateIp = Ip.parse("10.0.0.91");
 
+  private static final String AWS_BACKBONE_HOSTNAME =
+      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
+
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
 
   private static IBatfish _batfish;
@@ -89,7 +92,7 @@ public class AwsConfigurationPublicSubnetTest {
             FlowDisposition.DENIED_IN, // by the default security settings
             ImmutableList.of(
                 IspModelingUtils.INTERNET_HOST_NAME,
-                AWS_BACKBONE_NODE_NAME,
+                AWS_BACKBONE_HOSTNAME,
                 _igw,
                 _vpc,
                 _subnet,
@@ -118,7 +121,7 @@ public class AwsConfigurationPublicSubnetTest {
     testTrace(
         flowFromInternet,
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME, AWS_BACKBONE_NODE_NAME),
+        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME, AWS_BACKBONE_HOSTNAME),
         _batfish);
   }
 
@@ -150,7 +153,7 @@ public class AwsConfigurationPublicSubnetTest {
                 _subnet,
                 _vpc,
                 _igw,
-                AWS_BACKBONE_NODE_NAME,
+                AWS_BACKBONE_HOSTNAME,
                 IspModelingUtils.INTERNET_HOST_NAME),
             _batfish);
 
