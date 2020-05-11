@@ -1103,7 +1103,9 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
-  private @Nonnull Path validatePath(Path path) {
+  @VisibleForTesting
+  @Nonnull
+  Path validatePath(Path path) {
     try {
       Path sanitizedPath = path.toFile().getCanonicalFile().toPath();
       checkArgument(

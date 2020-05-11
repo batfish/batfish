@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -229,6 +230,18 @@ public final class FileBasedStorageTest {
 
     _thrown.expect(FileNotFoundException.class);
     assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
+  }
+
+  @Test
+  public void testValidatePath() {
+    Path validPath = _containerDir.resolve("foo");
+
+    _storage.validatePath(_containerDir);
+    _storage.validatePath(validPath);
+
+    Path invalidPath = Paths.get("/dev/null");
+    _thrown.expect(IllegalArgumentException.class);
+    _storage.validatePath(invalidPath);
   }
 
   @Test
