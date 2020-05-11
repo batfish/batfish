@@ -5,7 +5,7 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTraces;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -32,6 +32,9 @@ import org.junit.rules.TemporaryFolder;
  * manually.
  */
 public class AwsConfigurationPublicPrivateSubnetTest {
+
+  private static final String AWS_BACKBONE_HOSTNAME =
+      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-public-private-subnet";
@@ -119,7 +122,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         FlowDisposition.DENIED_IN, // be the default security setting
         ImmutableList.of(
             IspModelingUtils.INTERNET_HOST_NAME,
-            AWS_BACKBONE_NODE_NAME,
+            AWS_BACKBONE_HOSTNAME,
             _igw,
             _vpc,
             _publicSubnet,
@@ -143,7 +146,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
             _publicSubnet,
             _vpc,
             _igw,
-            AWS_BACKBONE_NODE_NAME,
+            AWS_BACKBONE_HOSTNAME,
             IspModelingUtils.INTERNET_HOST_NAME),
         _batfish);
 
@@ -161,7 +164,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
         getAnyFlow(_publicInstance, _sitePrefix.getStartIp(), _batfish),
         FlowDisposition.EXITS_NETWORK,
         ImmutableList.of(
-            _publicInstance, _publicSubnet, _vpc, _igw, AWS_BACKBONE_NODE_NAME, INTERNET_HOST_NAME),
+            _publicInstance, _publicSubnet, _vpc, _igw, AWS_BACKBONE_HOSTNAME, INTERNET_HOST_NAME),
         _batfish);
 
     // private instance should send site traffic to VGW

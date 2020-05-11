@@ -24,10 +24,10 @@ import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFilte
 /** Contains the information required to model one ISP node */
 @ParametersAreNonnullByDefault
 final class IspModel {
+
   static final class Builder {
     IspModel build() {
       checkArgument(_asn != null, "Missing ASN");
-      checkArgument(_name != null, "Missing name");
       return new IspModel(
           _asn,
           firstNonNull(_remotes, ImmutableList.of()),
@@ -166,7 +166,7 @@ final class IspModel {
   }
 
   private final long _asn;
-  private final @Nonnull String _name;
+  private final @Nullable String _name;
   private @Nonnull List<Remote> _remotes;
   private final @Nonnull Set<Prefix> _additionalPrefixesToInternet;
   private final @Nonnull IspTrafficFiltering _trafficFiltering;
@@ -174,7 +174,7 @@ final class IspModel {
   private IspModel(
       long asn,
       List<Remote> remotes,
-      String name,
+      @Nullable String name,
       Set<Prefix> additionalPrefixesToInternet,
       IspTrafficFiltering trafficFiltering) {
     _asn = asn;
@@ -200,6 +200,7 @@ final class IspModel {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
+        .omitNullValues()
         .add("asn", _asn)
         .add("name", _name)
         .add("neighbors", _remotes)
@@ -219,7 +220,7 @@ final class IspModel {
     IspModel ispInfo = (IspModel) o;
     return _asn == ispInfo._asn
         && _remotes.equals(ispInfo._remotes)
-        && _name.equals(ispInfo._name)
+        && Objects.equals(_name, ispInfo._name)
         && _additionalPrefixesToInternet.equals(ispInfo._additionalPrefixesToInternet)
         && _trafficFiltering.equals(ispInfo._trafficFiltering);
   }
@@ -234,6 +235,11 @@ final class IspModel {
   }
 
   @Nonnull
+  public String getHostname() {
+    return IspModelingUtils.getDefaultIspNodeName(_asn);
+  }
+
+  @Nullable
   public String getName() {
     return _name;
   }

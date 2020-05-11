@@ -44,6 +44,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
@@ -114,9 +115,9 @@ import org.junit.Test;
 /** Tests for {@link IspModelingUtils} */
 public class IspModelingUtilsTest {
 
-  private static long _localAsn = 2L;
+  private static final long LOCAL_ASN = 2L;
 
-  private static long _remoteAsn = 1L;
+  private static final long REMOTE_ASN = 1L;
 
   /** Makes a Configuration object with one BGP peer */
   private static Configuration configurationWithOnePeer() {
@@ -141,9 +142,9 @@ public class IspModelingUtilsTest {
         bgpUnnumbered
             ? BgpUnnumberedPeerConfig.builder().setPeerInterface("interface")
             : BgpActivePeerConfig.builder().setPeerAddress(Ip.parse("1.1.1.1"));
-    peer.setRemoteAs(_remoteAsn)
+    peer.setRemoteAs(REMOTE_ASN)
         .setLocalIp(Ip.parse("2.2.2.2"))
-        .setLocalAs(_localAsn)
+        .setLocalAs(LOCAL_ASN)
         .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
         .setBgpProcess(bgpProcess)
         .build();
@@ -562,16 +563,16 @@ public class IspModelingUtilsTest {
         inputMap,
         new Warnings());
 
-    assertThat(inputMap, hasKey(_remoteAsn));
+    assertThat(inputMap, hasKey(REMOTE_ASN));
 
-    IspModel ispInfo = inputMap.get(_remoteAsn);
+    IspModel ispInfo = inputMap.get(REMOTE_ASN);
 
     assertThat(
         ispInfo,
         equalTo(
             IspModel.builder()
-                .setAsn(_remoteAsn)
-                .setName(getDefaultIspNodeName(_remoteAsn))
+                .setAsn(REMOTE_ASN)
+                .setName(null)
                 .setRemotes(
                     new Remote(
                         remote.getHostname(),
@@ -581,7 +582,7 @@ public class IspModelingUtilsTest {
                             remote.getDefaultVrf().getBgpProcess().getActiveNeighbors().values())))
                 .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                 .build()));
-    assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
+    assertThat(ispInfo.getHostname(), equalTo(getDefaultIspNodeName(REMOTE_ASN)));
   }
 
   @Test
@@ -597,16 +598,16 @@ public class IspModelingUtilsTest {
         inputMap,
         new Warnings());
 
-    assertThat(inputMap, hasKey(_remoteAsn));
+    assertThat(inputMap, hasKey(REMOTE_ASN));
 
-    IspModel ispInfo = inputMap.get(_remoteAsn);
+    IspModel ispInfo = inputMap.get(REMOTE_ASN);
 
     assertThat(
         ispInfo,
         equalTo(
             IspModel.builder()
-                .setAsn(_remoteAsn)
-                .setName(getDefaultIspNodeName(_remoteAsn))
+                .setAsn(REMOTE_ASN)
+                .setName(null)
                 .setRemotes(
                     new Remote(
                         remote.getHostname(),
@@ -620,7 +621,7 @@ public class IspModelingUtilsTest {
                                 .values())))
                 .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
                 .build()));
-    assertThat(ispInfo.getName(), equalTo(getDefaultIspNodeName(_remoteAsn)));
+    assertThat(ispInfo.getHostname(), equalTo(getDefaultIspNodeName(REMOTE_ASN)));
   }
 
   @Test
@@ -631,13 +632,13 @@ public class IspModelingUtilsTest {
         ImmutableSet.of("interface"),
         ImmutableList.of(),
         ImmutableList.of(),
-        ImmutableList.of(new IspNodeInfo(_remoteAsn, "myisp")),
+        ImmutableList.of(new IspNodeInfo(REMOTE_ASN, "myisp")),
         inputMap,
         new Warnings());
 
-    assertThat(inputMap, hasKey(_remoteAsn));
+    assertThat(inputMap, hasKey(REMOTE_ASN));
 
-    IspModel ispInfo = inputMap.get(_remoteAsn);
+    IspModel ispInfo = inputMap.get(REMOTE_ASN);
 
     assertThat(ispInfo.getName(), equalTo("myisp"));
   }
@@ -652,13 +653,13 @@ public class IspModelingUtilsTest {
         ImmutableList.of(),
         ImmutableList.of(
             new IspNodeInfo(
-                _remoteAsn,
+                REMOTE_ASN,
                 "myisp",
                 ImmutableList.of(
                     new IspAnnouncement(Prefix.parse("1.1.1.1/32")),
                     new IspAnnouncement(Prefix.parse("2.2.2.2/32")))),
             new IspNodeInfo(
-                _remoteAsn,
+                REMOTE_ASN,
                 "myisp",
                 ImmutableList.of(
                     new IspAnnouncement(Prefix.parse("3.3.3.3/32")),
@@ -667,7 +668,7 @@ public class IspModelingUtilsTest {
         new Warnings());
 
     assertThat(
-        inputMap.get(_remoteAsn).getAdditionalPrefixesToInternet(),
+        inputMap.get(REMOTE_ASN).getAdditionalPrefixesToInternet(),
         equalTo(
             ImmutableSet.of(
                 Prefix.parse("1.1.1.1/32"),
@@ -1211,7 +1212,7 @@ public class IspModelingUtilsTest {
                 remoteAsn,
                 IspModel.builder()
                     .setAsn(remoteAsn)
-                    .setName(getDefaultIspNodeName(remoteAsn))
+                    .setName(null)
                     .setRemotes(
                         new Remote(
                             c1.getHostname(),
@@ -1257,27 +1258,35 @@ public class IspModelingUtilsTest {
             IspModel.builder().setAsn(2).setName("isp1").build());
     Map<String, Configuration> configurations = ImmutableMap.of();
 
-    String message = getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
-    assertThat(message, containsString("ASN 1"));
+    // No conflicts when duplicate human names are used, since the ASN used for hostname is still
+    // different.
+    assertThat(ispNameConflicts(configurations, ispInfoMap), empty());
   }
 
   @Test
   public void testIspNameConflictsNodeConflict() {
     Map<Long, IspModel> ispInfoMap =
+        ImmutableMap.of(1L, IspModel.builder().setAsn(1).setName("FOO").build());
+    Map<String, Configuration> configurationsNoConflict =
         ImmutableMap.of(
-            1L,
-            IspModel.builder().setAsn(1).setName("isp1").build(),
-            2L,
-            IspModel.builder().setAsn(2).setName("isp2").build());
-    Map<String, Configuration> configurations =
-        ImmutableMap.of(
-            "isp1",
+            "FOO",
             new NetworkFactory()
                 .configurationBuilder()
                 .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
                 .build());
 
-    String message = getOnlyElement(ispNameConflicts(configurations, ispInfoMap));
+    // No conflicts when node name matches ISP human name.
+    assertThat(ispNameConflicts(configurationsNoConflict, ispInfoMap), empty());
+
+    Map<String, Configuration> configurationsConflict =
+        ImmutableMap.of(
+            getDefaultIspNodeName(1),
+            new NetworkFactory()
+                .configurationBuilder()
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build());
+    // Conflict when node name matches ISP hostame.
+    String message = getOnlyElement(ispNameConflicts(configurationsConflict, ispInfoMap));
     assertThat(message, containsString("ASN 1"));
   }
 }
