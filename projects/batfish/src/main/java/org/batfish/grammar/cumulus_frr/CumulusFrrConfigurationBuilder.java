@@ -691,6 +691,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
+    if (ctx.FORCE() != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setForceNextHopSelf(true);
+    }
   }
 
   @Override

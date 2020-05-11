@@ -291,6 +291,11 @@ FILE
   'file' -> pushMode(M_Remark)
 ;
 
+FORCE
+:
+  'force'
+;
+
 FORWARDING
 :
   'forwarding'

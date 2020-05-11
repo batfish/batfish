@@ -771,16 +771,23 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    if (neighbor.getRemoteAs() == null
-        || bgpVrf.getAutonomousSystem() == null
-        || !neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem())) {
+    if (neighbor.getRemoteAs() == null || bgpVrf.getAutonomousSystem() == null) {
       return null;
     }
 
+    boolean isIBgp = neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem());
     boolean nextHopSelf =
         Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
             .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
             .orElse(false);
+
+    if (isIBgp) {
+      // Check for "force".
+      Boolean forceNextHopSelf = neighbor.getIpv4UnicastAddressFamily().getForceNextHopSelf();
+      if (forceNextHopSelf == null || !forceNextHopSelf) {
+        nextHopSelf = false;
+      }
+    }
 
     return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance()) : null;
   }
