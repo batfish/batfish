@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -111,8 +112,9 @@ public final class IspModelingUtils {
   /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
   static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
 
-  public static String getDefaultIspNodeName(Long asn) {
-    return String.format("%s_%s", "isp", asn);
+  /** Returns the hostname that will be used for the ISP model with the given ASN. */
+  public static String getDefaultIspNodeName(long asn) {
+    return String.format("isp_%s", asn);
   }
 
   public static String internetToIspInterfaceName(String ispHostname) {
@@ -202,21 +204,13 @@ public final class IspModelingUtils {
 
     asnToIspInfo.forEach(
         (asn, ispInfo) -> {
-          String ispName = ispInfo.getName();
-          if (configurations.containsKey(ispName)) {
+          String hostname = ispInfo.getHostname();
+          if (configurations.containsKey(hostname)) {
             conflicts.add(
                 String.format(
-                    "ISP name %s for ASN %d conflicts with a node name in the snapshot",
-                    ispName, asn));
+                    "ISP hostname %s for ASN %d conflicts with a node name in the snapshot",
+                    hostname, asn));
           }
-          asnToIspInfo.values().stream()
-              .filter(info -> info.getAsn() > asn && info.getName().equals(ispName))
-              .forEach(
-                  info ->
-                      conflicts.add(
-                          String.format(
-                              "ISP name %s for ASN %d conflicts with that for ASN %d",
-                              ispName, asn, info.getAsn())));
         });
     return conflicts.build();
   }
@@ -480,11 +474,8 @@ public final class IspModelingUtils {
             ispNodeInfos.stream().filter(i -> i.getAsn() == asn).collect(Collectors.toList());
 
         // For properties that can't be merged, pick the first one.
-        String ispName =
-            matchingInfos.stream()
-                .map(IspNodeInfo::getName)
-                .findFirst()
-                .orElse(getDefaultIspNodeName(asn));
+        @Nullable
+        String ispName = matchingInfos.stream().map(IspNodeInfo::getName).findFirst().orElse(null);
         IspTrafficFiltering filtering =
             matchingInfos.stream()
                 .map(IspNodeInfo::getIspTrafficFiltering)
@@ -536,7 +527,8 @@ public final class IspModelingUtils {
 
     Configuration ispConfiguration =
         Configuration.builder()
-            .setHostname(ispInfo.getName())
+            .setHostname(ispInfo.getHostname())
+            .setHumanName(ispInfo.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setDeviceModel(DeviceModel.BATFISH_ISP)
             .build();

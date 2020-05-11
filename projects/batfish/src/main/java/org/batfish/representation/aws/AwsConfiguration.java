@@ -1,7 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_NODE_NAME;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_HUMAN_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -153,7 +153,7 @@ public class AwsConfiguration extends VendorConfiguration {
         ImmutableList.of(
             new IspNodeInfo(
                 AWS_BACKBONE_ASN,
-                AWS_BACKBONE_NODE_NAME,
+                AWS_BACKBONE_HUMAN_NAME,
                 AwsPrefixes.getPrefixes().stream()
                     .map(IspAnnouncement::new)
                     .collect(ImmutableList.toImmutableList()))));
