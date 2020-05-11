@@ -3,7 +3,6 @@ package org.batfish.storage;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
-import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -233,11 +233,23 @@ public final class FileBasedStorageTest {
   }
 
   @Test
+  public void testValidatePath() {
+    Path validPath = _containerDir.resolve("foo");
+
+    _storage.validatePath(_containerDir);
+    _storage.validatePath(validPath);
+
+    Path invalidPath = Paths.get("/dev/null");
+    _thrown.expect(IllegalArgumentException.class);
+    _storage.validatePath(invalidPath);
+  }
+
+  @Test
   public void testMkdirs() throws IOException {
-    Path dir = _folder.newFolder().toPath().resolve("parentDir").resolve("subDir");
+    Path dir = _containerDir.resolve("parentDir").resolve("subDir");
 
     // Confirm mkdirs creates the non-existent dir
-    mkdirs(dir);
+    _storage.mkdirs(dir);
     assertThat(dir.toFile(), anExistingDirectory());
   }
 
@@ -251,7 +263,7 @@ public final class FileBasedStorageTest {
     // Try many times, since false negatives are possible
     int numTries = 100;
 
-    final Path dir = _folder.newFolder().toPath().resolve("testDir");
+    final Path dir = _containerDir.resolve("testDir");
     final CyclicBarrier barrier = new CyclicBarrier(numThreads);
     final AtomicInteger exceptions = new AtomicInteger(0);
     List<Thread> threads = new ArrayList<>();
@@ -264,7 +276,7 @@ public final class FileBasedStorageTest {
                   try {
                     // Wait until all threads are at the barrier
                     barrier.await();
-                    mkdirs(dir);
+                    _storage.mkdirs(dir);
                   } catch (Exception e) {
                     // Track exceptions with int since they are not directly surfaced
                     exceptions.addAndGet(1);
@@ -286,22 +298,22 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testMkdirsExists() throws IOException {
-    Path dir = _folder.newFolder().toPath();
+    Path dir = _containerDir;
 
     // Confirm mkdirs succeeds when the dir already exists
-    mkdirs(dir);
+    _storage.mkdirs(dir);
     assertThat(dir.toFile(), anExistingDirectory());
   }
 
   @Test
   public void testMkdirsFail() throws IOException {
-    File parentDir = _folder.newFolder();
+    File parentDir = _containerDir.toFile();
     parentDir.setReadOnly();
     Path dir = parentDir.toPath().resolve("testDir");
 
     // Confirm mkdirs throws when creating a dir within a read-only dir
     _thrown.expectMessage(containsString("Unable to create directory"));
-    mkdirs(dir);
+    _storage.mkdirs(dir);
   }
 
   @Test

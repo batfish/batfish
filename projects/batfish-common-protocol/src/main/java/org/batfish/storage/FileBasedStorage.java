@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -114,7 +115,12 @@ public final class FileBasedStorage implements StorageProvider {
       Path baseDir, BatfishLogger logger, BiFunction<String, Integer, AtomicInteger> newBatch) {
     _logger = logger;
     _newBatch = newBatch;
-    _baseDir = baseDir;
+    try {
+      _baseDir = baseDir.toFile().getCanonicalFile().toPath();
+    } catch (IOException e) {
+      throw new UncheckedIOException(
+          String.format("Could not get canonical path of %s", baseDir), e);
+    }
   }
 
   /**
@@ -499,10 +505,11 @@ public final class FileBasedStorage implements StorageProvider {
    * Returns a single object of the given class deserialized from the given file. Uses the {@link
    * FileBasedStorage} default file encoding including serialization format and compression.
    */
-  private static <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
+  private <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
       throws BatfishException {
+    Path sanitizedInputFile = validatePath(inputFile);
     try (Closer closer = Closer.create()) {
-      FileInputStream fis = closer.register(new FileInputStream(inputFile.toFile()));
+      FileInputStream fis = closer.register(new FileInputStream(sanitizedInputFile.toFile()));
       PushbackInputStream pbstream = new PushbackInputStream(fis, DEFAULT_HEADER_LENGTH_BYTES);
       Format f = detectFormat(pbstream);
       ObjectInputStream ois;
@@ -517,7 +524,7 @@ public final class FileBasedStorage implements StorageProvider {
         ois = new ObjectInputStream(pbstream);
       } else {
         throw new BatfishException(
-            String.format("Could not detect format of the file %s", inputFile));
+            String.format("Could not detect format of the file %s", sanitizedInputFile));
       }
       closer.register(ois);
       return outputClass.cast(ois.readObject());
@@ -525,7 +532,7 @@ public final class FileBasedStorage implements StorageProvider {
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",
-              outputClass.getCanonicalName(), inputFile),
+              outputClass.getCanonicalName(), sanitizedInputFile),
           e);
     }
   }
@@ -559,15 +566,17 @@ public final class FileBasedStorage implements StorageProvider {
    * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
    */
-  private static void serializeObject(Serializable object, Path outputFile) {
+  private void serializeObject(Serializable object, Path outputFile) {
+    Path sanitizedOutputFile = validatePath(outputFile);
     try {
-      try (OutputStream out = Files.newOutputStream(outputFile);
+      try (OutputStream out = Files.newOutputStream(sanitizedOutputFile);
           LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
           ObjectOutputStream oos = new ObjectOutputStream(gos)) {
         oos.writeObject(object);
       }
     } catch (Throwable e) {
-      throw new BatfishException("Failed to serialize object to output file: " + outputFile, e);
+      throw new BatfishException(
+          "Failed to serialize object to output file: " + sanitizedOutputFile, e);
     }
   }
 
@@ -1087,36 +1096,53 @@ public final class FileBasedStorage implements StorageProvider {
    * @throws IOException if there is an error creating the directories
    */
   @VisibleForTesting
-  static void mkdirs(Path dir) throws IOException {
-    if (!dir.toFile().mkdirs() && !dir.toFile().exists()) {
-      throw new IOException(String.format("Unable to create directory '%s'", dir));
+  void mkdirs(Path dir) throws IOException {
+    Path sanitizedDir = validatePath(dir);
+    if (!sanitizedDir.toFile().mkdirs() && !sanitizedDir.toFile().exists()) {
+      throw new IOException(String.format("Unable to create directory '%s'", sanitizedDir));
     }
   }
 
-  private static void deleteDirectory(Path path) throws IOException {
-    FileUtils.deleteDirectory(path.toFile());
+  @VisibleForTesting
+  @Nonnull
+  Path validatePath(Path path) {
+    try {
+      Path sanitizedPath = path.toFile().getCanonicalFile().toPath();
+      checkArgument(
+          sanitizedPath.toString().startsWith(_baseDir.toString()),
+          "Path %s outside of base dir %s",
+          path,
+          _baseDir);
+      return sanitizedPath;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
-  private static void deleteIfExists(Path path) throws IOException {
-    Files.deleteIfExists(path);
+  private void deleteDirectory(Path path) throws IOException {
+    Path sanitizedPath = validatePath(path);
+    FileUtils.deleteDirectory(sanitizedPath.toFile());
   }
 
-  private static @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
-    return FileUtils.readFileToString(file.toFile(), charset);
+  private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
+    Path sanitizedFile = validatePath(file);
+    return FileUtils.readFileToString(sanitizedFile.toFile(), charset);
   }
 
-  private static void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
+  private void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
+    Path sanitizedFile = validatePath(file);
     Path tmpFile = Files.createTempFile(null, null);
     try {
       FileUtils.write(tmpFile.toFile(), data, charset);
-      mkdirs(file.getParent());
-      Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING);
+      mkdirs(sanitizedFile.getParent());
+      Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
-      deleteIfExists(tmpFile);
+      Files.deleteIfExists(tmpFile);
     }
   }
 
   private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
+    Path sanitizedOutputFile = validatePath(outputFile);
     Path tmpFile = Files.createTempFile(null, null);
     try (OutputStream fileOutputStream = Files.newOutputStream(tmpFile)) {
       int read = 0;
@@ -1124,22 +1150,22 @@ public final class FileBasedStorage implements StorageProvider {
       while ((read = inputStream.read(bytes)) != -1) {
         fileOutputStream.write(bytes, 0, read);
       }
-      mkdirs(outputFile.getParent());
-      Files.move(tmpFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+      mkdirs(sanitizedOutputFile.getParent());
+      Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
-      deleteIfExists(tmpFile);
+      Files.deleteIfExists(tmpFile);
     }
   }
 
-  private static void writeStringToFile(Path file, String data, Charset charset)
-      throws IOException {
+  private void writeStringToFile(Path file, String data, Charset charset) throws IOException {
+    Path sanitizedFile = validatePath(file);
     Path tmpFile = Files.createTempFile(null, null);
     try {
       FileUtils.writeStringToFile(tmpFile.toFile(), data, charset);
-      mkdirs(file.getParent());
-      Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING);
+      mkdirs(sanitizedFile.getParent());
+      Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
-      deleteIfExists(tmpFile);
+      Files.deleteIfExists(tmpFile);
     }
   }
 
