@@ -3443,20 +3443,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     }
 
-    public Path getInferredNodeRolesPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH);
-    }
-
     public Path getInputPath() {
       return getBasePath().resolve(BfConsts.RELPATH_INPUT);
     }
 
     public SnapshotId getName() {
       return _name;
-    }
-
-    public Path getNodeRolesPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     }
 
     public Path getOutputPath() {
@@ -3467,20 +3459,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
     }
 
-    public Path getReferenceLibraryPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
-    }
-
     public Path getSerializeEnvironmentBgpTablesPath() {
       return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
     }
 
     public Path getSerializeVendorPath() {
       return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
-    }
-
-    public Path getValidateSnapshotAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_SNAPSHOT_ANSWER);
     }
 
     @Override
