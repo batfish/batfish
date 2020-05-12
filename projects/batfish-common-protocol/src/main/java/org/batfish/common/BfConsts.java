@@ -147,7 +147,6 @@ public class BfConsts {
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_RUNTIME_DATA_FILE = "runtime_data.json";
-  public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   public static final String RELPATH_QUESTION_FILE = "question.json";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
