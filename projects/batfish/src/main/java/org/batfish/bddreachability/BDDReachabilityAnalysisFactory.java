@@ -1156,32 +1156,6 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  @Nonnull
-  private static Stream<Edge> getPreOutVrfToDispositionStateEdges(
-      Map<String, Map<String, Map<String, BDD>>> dispositionBddMap,
-      BiFunction<String, String, StateExpr> stateConstructor) {
-    return dispositionBddMap.entrySet().stream()
-        .flatMap(
-            nodeEntry -> {
-              String hostname = nodeEntry.getKey();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        String vrfName = vrfEntry.getKey();
-                        StateExpr preState = new PreOutVrf(hostname, vrfName);
-                        return vrfEntry.getValue().entrySet().stream()
-                            .filter(e -> !e.getValue().isZero())
-                            .map(
-                                ifaceEntry -> {
-                                  String ifaceName = ifaceEntry.getKey();
-                                  BDD bdd = ifaceEntry.getValue();
-                                  return new Edge(
-                                      preState, stateConstructor.apply(hostname, ifaceName), bdd);
-                                });
-                      });
-            });
-  }
-
   private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
     return getInterfaces()
         .flatMap(
