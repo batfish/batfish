@@ -99,7 +99,6 @@ public class BfConsts {
   public static final String PROP_FIELDS = "fields";
   public static final String PROP_FILTERS = "filters";
   public static final String PROP_INCLUDE_ONE_TABLE_KEYS = "includeOneTableKeys";
-  public static final String PROP_INNER_QUESTION = "innerQuestion";
   public static final String PROP_INSTANCE = "instance";
   public static final String PROP_INSTANCE_NAME = "instanceName";
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
@@ -129,8 +128,6 @@ public class BfConsts {
   public static final String PROP_VARIABLES = "variables";
 
   public static final String RELPATH_ANALYSES_DIR = "analyses";
-  public static final String RELPATH_ANALYSIS_FILE = "analysis";
-  public static final String RELPATH_ANSWER_HTML = "answer.html";
   public static final String RELPATH_ANSWER_JSON = "answer.json";
   public static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
   public static final String RELPATH_ANSWERS_DIR = "answers";
@@ -148,12 +145,9 @@ public class BfConsts {
   public static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
-  public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
-  public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
   public static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
-  public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
   public static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
@@ -168,15 +162,10 @@ public class BfConsts {
   public static final String RELPATH_RUNTIME_DATA_FILE = "runtime_data.json";
   public static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
-  public static final String RELPATH_TESTRIG_ZIP_FILE = "testrig.zip";
-  public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
   public static final String RELPATH_QUESTION_FILE = "question.json";
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
-  public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
-  public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
-  public static final String RELPATH_VALIDATE_SNAPSHOT_ANSWER = "venv_answer";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 
