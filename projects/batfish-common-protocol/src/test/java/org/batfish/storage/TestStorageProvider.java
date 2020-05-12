@@ -18,6 +18,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -470,6 +471,22 @@ public class TestStorageProvider implements StorageProvider {
   @Nonnull
   @Override
   public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 }
