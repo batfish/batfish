@@ -783,9 +783,13 @@ public final class CumulusConversions {
 
     if (isIBgp) {
       // Check for "force".
-      Boolean forceNextHopSelf = neighbor.getIpv4UnicastAddressFamily().getForceNextHopSelf();
-      if (forceNextHopSelf == null || !forceNextHopSelf) {
-        nextHopSelf = false;
+      // TODO: Handle v6 AFI.
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = neighbor.getIpv4UnicastAddressFamily();
+      if (ipv4af != null) {
+        Boolean forceNextHopSelf = ipv4af.getForceNextHopSelf();
+        if (forceNextHopSelf == null || !forceNextHopSelf) {
+          nextHopSelf = false;
+        }
       }
     }
 
