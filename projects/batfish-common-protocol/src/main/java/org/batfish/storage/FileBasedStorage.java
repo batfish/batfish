@@ -64,6 +64,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -121,6 +122,7 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
   private static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
   private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
+  private static final String RELPATH_DATA_PLANE = "dp";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -1422,6 +1424,27 @@ public final class FileBasedStorage implements StorageProvider {
         .filter(Files::isRegularFile)
         .map(inputObjectsPath::relativize)
         .map(Object::toString);
+  }
+
+  @Nonnull
+  @Override
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
+    return deserializeObject(getDataPlanePath(snapshot), DataPlane.class);
+  }
+
+  @Override
+  public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
+    serializeObject(dataPlane, getDataPlanePath(snapshot));
+  }
+
+  @Override
+  public boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException {
+    return Files.exists(getDataPlanePath(snapshot));
+  }
+
+  private @Nonnull Path getDataPlanePath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_DATA_PLANE);
   }
 
   private @Nonnull Path getReferenceLibraryPath(NetworkId network) {

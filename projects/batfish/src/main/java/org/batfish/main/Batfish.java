@@ -51,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -829,8 +830,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Span writeDataplane = GlobalTracer.get().buildSpan("Writing data plane").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(writeDataplane)) {
       assert scope != null; // avoid unused warning
-      serializeObject(result._dataPlane, getTestrigSettings(snapshot).getDataPlanePath());
-      serializeObject(result._answerElement, getTestrigSettings(snapshot).getDataPlaneAnswerPath());
+      _storage.storeDataPlane(result._dataPlane, snapshot);
       TopologyContainer topologies = result._topologies;
       _storage.storeBgpTopology(topologies.getBgpTopology(), snapshot);
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), snapshot);
@@ -877,11 +877,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Convert configurations to vendor-independent format");
     _logger.printElapsedTime();
     return configurations;
-  }
-
-  private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    Path dpPath = testrigSettings.getDataPlaneAnswerPath();
-    return Files.exists(dpPath);
   }
 
   @Override
@@ -1326,8 +1321,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       computeEnvironmentBgpTables(snapshot);
     }
     if (dp) {
-      if (!dataPlaneDependenciesExist(tr)) {
-        computeDataPlane(snapshot);
+      try {
+        if (!_storage.hasDataPlane(snapshot)) {
+          computeDataPlane(snapshot);
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
     }
   }
@@ -1414,10 +1413,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
-        dp = deserializeObject(getTestrigSettings(snapshot).getDataPlanePath(), DataPlane.class);
+        dp = _storage.loadDataPlane(snapshot);
         _cachedDataPlanes.put(snapshot, dp);
       }
       return dp;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     } finally {
       span.finish();
     }
@@ -3424,15 +3425,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     public Path getBasePath() {
       checkState(_basePath != null, "base path is not configured");
       return _basePath;
-    }
-
-    @Nonnull
-    public Path getDataPlanePath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);
-    }
-
-    public Path getDataPlaneAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH);
     }
 
     public Path getEnvironmentBgpTablesPath() {

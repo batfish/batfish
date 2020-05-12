@@ -21,6 +21,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -747,4 +748,26 @@ public interface StorageProvider {
   @MustBeClosed
   @Nonnull
   Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the stored data plane for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the data plane for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns {@code true} iff a data plane has been stored for the given snapshot
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException;
 }
