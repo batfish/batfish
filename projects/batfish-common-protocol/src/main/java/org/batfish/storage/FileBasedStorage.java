@@ -93,6 +93,8 @@ import org.batfish.role.NodeRolesData;
 public final class FileBasedStorage implements StorageProvider {
 
   private static final String ID_EXTENSION = ".id";
+  private static final String SUFFIX_LOG_FILE = ".log";
+  private static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
   private static final String RELPATH_BGP_TOPOLOGY = "bgp_topology.json";
   private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
@@ -102,6 +104,22 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_LAYER3_TOPOLOGY = "layer3_topology.json";
   private static final String RELPATH_OSPF_TOPOLOGY = "ospf_topology.json";
   private static final String RELPATH_VXLAN_TOPOLOGY = "vxlan_topology.json";
+  private static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
+  private static final String RELPATH_QUESTIONS_DIR = "questions";
+  private static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
+  private static final String RELPATH_ORIGINAL_DIR = "original";
+  private static final String RELPATH_METADATA_FILE = "metadata.json";
+  private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
+  private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
+  private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+  private static final String RELPATH_CONTAINER_SETTINGS_ISSUES = "issues";
+  private static final String RELPATH_CONTAINER_SETTINGS = "settings";
+  private static final String RELPATH_ANSWERS_DIR = "answers";
+  private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
+  private static final String RELPATH_ANSWER_JSON = "answer.json";
+  private static final String RELPATH_ANALYSES_DIR = "analyses";
+  private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
+  private static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -142,7 +160,7 @@ public final class FileBasedStorage implements StorageProvider {
     Path testrigDir = getSnapshotDir(network, snapshot);
     Path indepDir =
         testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
+            Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
     return loadConfigurations(network, snapshot, indepDir);
   }
 
@@ -185,7 +203,7 @@ public final class FileBasedStorage implements StorageProvider {
       NetworkId network, SnapshotId snapshot) {
     Path ccaePath =
         getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -206,7 +224,7 @@ public final class FileBasedStorage implements StorageProvider {
     Path insideBatfish =
         Paths.get(
             BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            RELPATH_BATFISH_CONFIGS_DIR,
             BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
     Optional<Path> path =
@@ -233,8 +251,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @VisibleForTesting
   static final String ISP_CONFIGURATION_KEY =
-      String.format(
-          "%s/%s", BfConsts.RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_ISP_CONFIG_FILE);
+      String.format("%s/%s", RELPATH_BATFISH_CONFIGS_DIR, RELPATH_ISP_CONFIG_FILE);
 
   @Override
   public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
@@ -257,7 +274,7 @@ public final class FileBasedStorage implements StorageProvider {
     Path insideBatfish =
         Paths.get(
             BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            RELPATH_BATFISH_CONFIGS_DIR,
             BfConsts.RELPATH_NODE_BLACKLIST_FILE);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE);
     Optional<Path> path =
@@ -287,9 +304,7 @@ public final class FileBasedStorage implements StorageProvider {
     // Prefer runtime data inside of batfish/ subfolder over top level
     Path insideBatfish =
         Paths.get(
-            BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
-            BfConsts.RELPATH_L1_TOPOLOGY_PATH);
+            BfConsts.RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
     Path deprecated = Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology");
     Optional<Path> path =
@@ -377,7 +392,7 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getQuestionSettingsPath(
       NetworkId network, QuestionSettingsId questionSettingsId) {
     return getNetworkSettingsDir(network)
-        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(RELPATH_QUESTIONS_DIR)
         .resolve(String.format("%s.json", questionSettingsId.getId()));
   }
 
@@ -387,7 +402,7 @@ public final class FileBasedStorage implements StorageProvider {
     Path insideBatfish =
         Paths.get(
             BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            RELPATH_BATFISH_CONFIGS_DIR,
             BfConsts.RELPATH_RUNTIME_DATA_FILE);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE);
     Optional<Path> path =
@@ -451,7 +466,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
   }
 
   private @Nonnull Path getSynthesizedLayer1TopologyPath(NetworkId network, SnapshotId snapshot) {
@@ -633,11 +648,11 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnswerPath(AnswerId answerId) {
-    return getAnswerDir(answerId).resolve(BfConsts.RELPATH_ANSWER_JSON);
+    return getAnswerDir(answerId).resolve(RELPATH_ANSWER_JSON);
   }
 
   private @Nonnull Path getAnswerMetadataPath(AnswerId answerId) {
-    return getAnswerDir(answerId).resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    return getAnswerDir(answerId).resolve(RELPATH_ANSWER_METADATA);
   }
 
   @Override
@@ -688,12 +703,12 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnalysisMetadataPath(NetworkId networkId, AnalysisId analysisId) {
-    return getNetworkAnalysisDir(networkId, analysisId).resolve(BfConsts.RELPATH_METADATA_FILE);
+    return getNetworkAnalysisDir(networkId, analysisId).resolve(RELPATH_METADATA_FILE);
   }
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_METADATA_FILE));
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_METADATA_FILE));
   }
 
   @Override
@@ -997,7 +1012,7 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId)
         .resolve(BfConsts.RELPATH_OUTPUT)
-        .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+        .resolve(RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
   }
 
   /**
@@ -1011,14 +1026,13 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Nonnull
   private Path getWorkLogPath(NetworkId network, SnapshotId snapshot, String workId) {
-    return getSnapshotOutputDir(network, snapshot)
-        .resolve(toBase64(workId + BfConsts.SUFFIX_LOG_FILE));
+    return getSnapshotOutputDir(network, snapshot).resolve(toBase64(workId + SUFFIX_LOG_FILE));
   }
 
   @Nonnull
   private Path getWorkJsonPath(NetworkId network, SnapshotId snapshot, String workId) {
     return getSnapshotOutputDir(network, snapshot)
-        .resolve(toBase64(workId + BfConsts.SUFFIX_ANSWER_JSON_FILE));
+        .resolve(toBase64(workId + SUFFIX_ANSWER_JSON_FILE));
   }
 
   @Override
@@ -1031,7 +1045,7 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId)
         .resolve(BfConsts.RELPATH_OUTPUT)
-        .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
+        .resolve(RELPATH_ENV_TOPOLOGY_FILE);
   }
 
   @Override
@@ -1377,7 +1391,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getForkSnapshotRequestPath(String key, NetworkId network) {
-    return getOriginalDir(key, network).resolve(BfConsts.RELPATH_FORK_REQUEST_FILE);
+    return getOriginalDir(key, network).resolve(RELPATH_FORK_REQUEST_FILE);
   }
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
@@ -1438,7 +1452,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAdHocQuestionsDir(NetworkId networkId) {
-    return getNetworkDir(networkId).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    return getNetworkDir(networkId).resolve(RELPATH_QUESTIONS_DIR);
   }
 
   private @Nonnull Path getAnalysisQuestionDir(
@@ -1447,21 +1461,21 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
-    return getNetworkAnalysisDir(network, analysis).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    return getNetworkAnalysisDir(network, analysis).resolve(RELPATH_QUESTIONS_DIR);
   }
 
   private @Nonnull Path getAnswerDir(AnswerId answerId) {
-    return _baseDir.resolve(BfConsts.RELPATH_ANSWERS_DIR).resolve(answerId.getId());
+    return _baseDir.resolve(RELPATH_ANSWERS_DIR).resolve(answerId.getId());
   }
 
   private @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
     return getNetworkSettingsDir(network)
-        .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)
+        .resolve(RELPATH_CONTAINER_SETTINGS_ISSUES)
         .resolve(majorIssueType + ".json");
   }
 
   private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
-    return getNetworkDir(network).resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve(analysis.getId());
+    return getNetworkDir(network).resolve(RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
 
   @VisibleForTesting
@@ -1473,11 +1487,11 @@ public final class FileBasedStorage implements StorageProvider {
   /** Directory where original initialization or fork requests are stored */
   @Nonnull
   Path getOriginalDir(String key, NetworkId network) {
-    return getNetworkDir(network).resolve(BfConsts.RELPATH_ORIGINAL_DIR).resolve(toBase64(key));
+    return getNetworkDir(network).resolve(RELPATH_ORIGINAL_DIR).resolve(toBase64(key));
   }
 
   private @Nonnull Path getNetworkSettingsDir(NetworkId network) {
-    return getNetworkDir(network).resolve(BfConsts.RELPATH_CONTAINER_SETTINGS);
+    return getNetworkDir(network).resolve(RELPATH_CONTAINER_SETTINGS);
   }
 
   private Path getNodeRolesDir() {
@@ -1501,8 +1515,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
   }
 
   private @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
