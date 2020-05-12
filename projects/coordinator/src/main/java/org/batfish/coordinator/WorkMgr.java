@@ -33,8 +33,8 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1731,14 +1731,8 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
-      Path zipFile =
-          CommonUtil.createTempDirectory("zip").resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
-      try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile.toString())) {
-        fileOutputStream.write(forkSnapshotBean.zipFile);
-      }
-
       Path unzipDir = CommonUtil.createTempDirectory("upload");
-      UnzipUtility.unzip(zipFile, unzipDir);
+      UnzipUtility.unzip(new ByteArrayInputStream(forkSnapshotBean.zipFile), unzipDir);
 
       // Preserve proper snapshot dir formatting (single top-level dir), so copy new files directly
       // into existing top-level dir

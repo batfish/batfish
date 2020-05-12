@@ -120,6 +120,7 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_ANALYSES_DIR = "analyses";
   private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
   private static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
+  private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -1381,7 +1382,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getUploadSnapshotZipPath(String key, NetworkId network) {
-    return getOriginalDir(key, network).resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
+    return getOriginalDir(key, network).resolve(RELPATH_SNAPSHOT_ZIP_FILE);
   }
 
   @Override
