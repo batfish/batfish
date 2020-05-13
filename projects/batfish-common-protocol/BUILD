@@ -160,7 +160,6 @@ junit_tests(
         "@maven//:io_opentracing_opentracing_api",
         "@maven//:io_opentracing_opentracing_mock",
         "@maven//:io_opentracing_opentracing_noop",
-        "@maven//:io_opentracing_opentracing_util",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
         "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",

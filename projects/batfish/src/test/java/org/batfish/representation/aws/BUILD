@@ -11,6 +11,9 @@ junit_tests(
         "**/*Test*.java",
     ]),
     resources = ["//projects/batfish/src/test/resources/org/batfish/representation/aws"],
+    runtime_deps = [
+        "@maven//:org_mockito_mockito_inline",
+    ],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
@@ -24,6 +27,5 @@ junit_tests(
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
         "@maven//:org_mockito_mockito_core",
-        "@maven//:org_mockito_mockito_inline",
     ],
 )
