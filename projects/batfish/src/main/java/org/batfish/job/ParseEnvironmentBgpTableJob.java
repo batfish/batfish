@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import java.io.IOException;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
@@ -7,6 +8,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -60,6 +62,24 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseEnvironmentBgpTableResult(
             elapsedTime, _logger.getHistory(), _key, _warnings, ParseStatus.EMPTY);
+
+      case JSON:
+        elapsedTime = System.currentTimeMillis() - startTime;
+        try {
+          return new ParseEnvironmentBgpTableResult(
+              elapsedTime,
+              _logger.getHistory(),
+              _key,
+              _hostname,
+              BatfishObjectMapper.mapper().readValue(_objectText, BgpAdvertisementsByVrf.class),
+              _warnings,
+              _ptSentences);
+        } catch (IOException e) {
+          elapsedTime = System.currentTimeMillis() - startTime;
+          return new ParseEnvironmentBgpTableResult(elapsedTime, _logger.getHistory(), _key, e);
+        } finally {
+          Batfish.logWarnings(_logger, _warnings);
+        }
 
       case UNKNOWN:
         String unknownError = "Unknown bgp-table format for object: '" + _key + "'\n";

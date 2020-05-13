@@ -593,10 +593,15 @@ public final class FileBasedStorage implements StorageProvider {
   private void serializeObject(Serializable object, Path outputFile) {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
-      try (OutputStream out = Files.newOutputStream(sanitizedOutputFile);
+      Path tmpFile = Files.createTempFile(null, null);
+      try (OutputStream out = Files.newOutputStream(tmpFile);
           LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
           ObjectOutputStream oos = new ObjectOutputStream(gos)) {
         oos.writeObject(object);
+        mkdirs(sanitizedOutputFile.getParent());
+        Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
+      } finally {
+        Files.deleteIfExists(tmpFile);
       }
     } catch (Throwable e) {
       throw new BatfishException(
