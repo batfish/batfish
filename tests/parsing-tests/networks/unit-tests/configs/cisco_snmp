@@ -66,6 +66,8 @@ snmp-server enable traps vtp vlandelete
 snmp-server engineID local 000000090200000652D6C000
 snmp-server file-transfer access-group 8 protocol tftp
 snmp-server group cenic-nms v2c IPv4 auth
+snmp-server group V3GROUP v3 priv read V3READ access 50
+snmp-server group V3GROUP v3 priv read V3READ access ipv6 snmp6
 snmp-server host 10.1.2.3 xyx
 snmp-server host 10.1.2.3 use-vrf management
 snmp-server host 10.1.2.3 version 2c dummycommunity 

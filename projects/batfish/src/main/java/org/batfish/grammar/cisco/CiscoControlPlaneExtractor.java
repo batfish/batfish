@@ -241,6 +241,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLIC
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE;
@@ -908,6 +910,7 @@ import org.batfish.grammar.cisco.CiscoParser.Spanning_tree_portfastContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_enable_trapsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_file_transferContext;
+import org.batfish.grammar.cisco.CiscoParser.Ss_group_v3Context;
 import org.batfish.grammar.cisco.CiscoParser.Ss_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_tftp_server_listContext;
@@ -8688,6 +8691,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IP_ACCESS_LIST, acl, SNMP_SERVER_FILE_TRANSFER_ACL, line);
+  }
+
+  @Override
+  public void exitSs_group_v3(Ss_group_v3Context ctx) {
+    if (ctx.v4acl != null) {
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST,
+          ctx.v4acl.getText(),
+          SNMP_SERVER_GROUP_V3_ACCESS,
+          ctx.v4acl.getStart().getLine());
+    }
+    if (ctx.v6acl != null) {
+      _configuration.referenceStructure(
+          IPV6_ACCESS_LIST,
+          ctx.v6acl.getText(),
+          SNMP_SERVER_GROUP_V3_ACCESS_IPV6,
+          ctx.v6acl.getStart().getLine());
+    }
   }
 
   @Override
