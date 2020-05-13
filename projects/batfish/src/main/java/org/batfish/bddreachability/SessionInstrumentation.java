@@ -182,7 +182,7 @@ public class SessionInstrumentation {
               BDD nonSessionFlows = sessionInfo.getSessionFlows().not();
               return sessionInfo
                   .getSessionScope()
-                  .accept(new PrecedingStatesVisitor(hostname, ifaces))
+                  .accept(new SessionEdgePreStates(hostname, ifaces))
                   .map(state -> Maps.immutableEntry(state, nonSessionFlows));
             })
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue, BDD::and));

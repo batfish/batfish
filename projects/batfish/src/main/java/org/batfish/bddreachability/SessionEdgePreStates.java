@@ -17,14 +17,21 @@ import org.batfish.symbolic.state.StateExpr;
  * Visitor for a {@link SessionScope} that returns the {@link StateExpr states} from which the
  * corresponding session can be matched. These states include {@link PreInInterface} (for {@link
  * IncomingSessionScope}) and {@link OriginateInterface} and {@link OriginateVrf} (for {@link
- * OriginatingSessionScope}).
+ * OriginatingSessionScope}). Used for:
+ *
+ * <ul>
+ *   <li>Identifying states that may have non-session out-edges that need to be constrained to
+ *       exclude flows that will match a session
+ *   <li>Producing starting states for edges representing sessions (visitor is currently used in
+ *       this capacity for VRF scopes only, in {@link FibLookupSessionEdgesVisitor})
+ * </ul>
  */
 @ParametersAreNonnullByDefault
-public class PrecedingStatesVisitor implements SessionScopeVisitor<Stream<StateExpr>> {
+public class SessionEdgePreStates implements SessionScopeVisitor<Stream<StateExpr>> {
   private final String _hostname;
   private final Collection<Interface> _ifaces;
 
-  PrecedingStatesVisitor(String hostname, Collection<Interface> ifaces) {
+  SessionEdgePreStates(String hostname, Collection<Interface> ifaces) {
     _hostname = hostname;
     _ifaces = ifaces;
   }

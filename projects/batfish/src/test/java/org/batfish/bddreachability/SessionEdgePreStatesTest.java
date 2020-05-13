@@ -17,7 +17,7 @@ import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
 import org.junit.Test;
 
-public class PrecedingStatesVisitorTest {
+public class SessionEdgePreStatesTest {
   private static final String HOSTNAME = "node";
   private static final String VRF_NAME = "vrf";
   private static final String IFACE_NAME = "iface";
@@ -25,8 +25,8 @@ public class PrecedingStatesVisitorTest {
       Interface.builder().setName(IFACE_NAME).setVrf(new Vrf(VRF_NAME)).build();
 
   /** Visitor set up with hostname and interface defined above */
-  private static final PrecedingStatesVisitor VISITOR =
-      new PrecedingStatesVisitor(HOSTNAME, ImmutableSet.of(IFACE));
+  private static final SessionEdgePreStates VISITOR =
+      new SessionEdgePreStates(HOSTNAME, ImmutableSet.of(IFACE));
 
   @Test
   public void testIncomingSessionScope() {
