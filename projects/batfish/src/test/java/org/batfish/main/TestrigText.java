@@ -42,7 +42,6 @@ public class TestrigText {
     }
 
     private Map<String, String> _awsText;
-    private Map<String, String> _bgpTablesText;
     private Map<String, String> _configurationText;
     private Map<String, String> _hostsText;
     private Map<String, String> _iptablesFilesText;
@@ -53,7 +52,6 @@ public class TestrigText {
     public TestrigText build() {
       TestrigText testrigText = new TestrigText();
       testrigText.setAwsText(_awsText);
-      testrigText.setBgpTablesText(_bgpTablesText);
       testrigText.setConfigurationText(_configurationText);
       testrigText.setHostsText(_hostsText);
       testrigText.setIptablesFilesText(_iptablesFilesText);
@@ -71,18 +69,6 @@ public class TestrigText {
     public Builder setAwsText(String testrigResourcePrefix, Iterable<String> filenames) {
       _awsText =
           readTestrigResources(testrigResourcePrefix, BfConsts.RELPATH_AWS_CONFIGS_DIR, filenames);
-      return this;
-    }
-
-    public Builder setBgpTablesText(Map<String, String> bgpTablesText) {
-      _bgpTablesText = bgpTablesText;
-      return this;
-    }
-
-    public Builder setBgpTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _bgpTablesText =
-          readTestrigResources(
-              testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES, filenames);
       return this;
     }
 
@@ -153,7 +139,6 @@ public class TestrigText {
   }
 
   private Map<String, String> _awsText;
-  private Map<String, String> _bgpTablesText;
   private Map<String, String> _configurationText;
   private Map<String, String> _hostsText;
   private Map<String, String> _iptablesFilesText;
@@ -163,10 +148,6 @@ public class TestrigText {
 
   public Map<String, String> getAwsText() {
     return _awsText;
-  }
-
-  public Map<String, String> getBgpTablesText() {
-    return _bgpTablesText;
   }
 
   public Map<String, String> getConfigurationText() {
@@ -195,10 +176,6 @@ public class TestrigText {
 
   public void setAwsText(Map<String, String> awsText) {
     _awsText = awsText;
-  }
-
-  public void setBgpTablesText(Map<String, String> bgpTablesText) {
-    _bgpTablesText = bgpTablesText;
   }
 
   public void setConfigurationText(Map<String, String> configurationText) {
