@@ -203,6 +203,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   SNMP_SERVER_COMMUNITY_ACL4("snmp server community ipv4 acl"),
   SNMP_SERVER_COMMUNITY_ACL6("snmp server community ipv6 acl"),
   SNMP_SERVER_FILE_TRANSFER_ACL("snmp server file transfer acl"),
+  SNMP_SERVER_GROUP_V3_ACCESS("snmp-server group v3 access"),
+  SNMP_SERVER_GROUP_V3_ACCESS_IPV6("snmp-server group v3 access ipv6"),
   SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
   SNMP_SERVER_TFTP_SERVER_LIST("snmp server tftp-server list"),
   SNMP_SERVER_TRAP_SOURCE("snmp-server trap-source"),
