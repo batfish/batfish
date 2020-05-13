@@ -648,6 +648,8 @@ public final class BDDReachabilityAnalysisFactory {
               String vrf = originateVrf.getVrf();
               PostInVrf postInVrf = new PostInVrf(hostname, vrf);
               BDD rootBdd = entry.getValue();
+              // Keep this edge's transition in sync with transition of session-matching edge,
+              // defined in SessionScopeFibLookupSessionEdges#visitOriginatingSessionScope.
               return new Edge(
                   originateVrf,
                   postInVrf,

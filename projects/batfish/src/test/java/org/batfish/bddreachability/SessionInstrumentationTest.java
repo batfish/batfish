@@ -296,19 +296,20 @@ public final class SessionInstrumentationTest {
         new BDDFirewallSessionTraceInfo(
             FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
 
+    BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
+    Matcher<Transition> expectedTransition =
+        allOf(mapsForward(ONE, sessionHeaders.and(originating)), mapsBackward(ONE, sessionHeaders));
     assertThat(
         fibLookupSessionEdges(sessionInfo),
         containsInAnyOrder(
             allOf(
                 hasPreState(new OriginateInterface(FW, FW_I1)),
                 hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(
-                    allOf(mapsForward(ONE, sessionHeaders), mapsBackward(ONE, sessionHeaders)))),
+                hasTransition(expectedTransition)),
             allOf(
                 hasPreState(new OriginateVrf(FW, FW_VRF)),
                 hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(
-                    allOf(mapsForward(ONE, sessionHeaders), mapsBackward(ONE, sessionHeaders))))));
+                hasTransition(expectedTransition))));
   }
 
   @Test
@@ -320,8 +321,11 @@ public final class SessionInstrumentationTest {
         new BDDFirewallSessionTraceInfo(
             FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, nat);
 
+    BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =
-        allOf(mapsForward(ONE, sessionHeaders.and(poolBdd)), mapsBackward(ONE, sessionHeaders));
+        allOf(
+            mapsForward(ONE, sessionHeaders.and(originating).and(poolBdd)),
+            mapsBackward(ONE, sessionHeaders));
     assertThat(
         fibLookupSessionEdges(natSessionInfo),
         containsInAnyOrder(

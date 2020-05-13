@@ -260,11 +260,13 @@ public class SessionInstrumentation {
 
     String hostname = sessionInfo.getHostname();
     BDD sessionFlows = sessionInfo.getSessionFlows();
-    Transition transition = compose(constraint(sessionFlows), sessionInfo.getTransformation());
+    Transition transformation = sessionInfo.getTransformation();
     Map<String, Interface> ifaces = _configs.get(hostname).getAllInterfaces();
     return sessionInfo
         .getSessionScope()
-        .accept(new SessionScopeFibLookupSessionEdges(hostname, ifaces, transition));
+        .accept(
+            new SessionScopeFibLookupSessionEdges(
+                hostname, ifaces, sessionFlows, transformation, _srcMgrs.get(hostname)));
   }
 
   @Nonnull

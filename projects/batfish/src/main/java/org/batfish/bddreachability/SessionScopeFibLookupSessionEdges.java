@@ -1,10 +1,16 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.compose;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
+
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.IncomingSessionScope;
@@ -27,14 +33,22 @@ import org.batfish.symbolic.state.StateExpr;
 public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<Stream<Edge>> {
   private final String _hostname;
   private final Map<String, Interface> _ifaces;
-  private final Transition _transition;
+  private final BDD _sessionFlows;
+  private final Transition _transformation;
+  private final BDDSourceManager _srcMgr;
   private final SessionEdgePreStates _sessionEdgePreStates;
 
   SessionScopeFibLookupSessionEdges(
-      String hostname, Map<String, Interface> ifaces, Transition transition) {
+      String hostname,
+      Map<String, Interface> ifaces,
+      BDD sessionFlows,
+      Transition transformation,
+      BDDSourceManager srcMgr) {
     _hostname = hostname;
     _ifaces = ImmutableMap.copyOf(ifaces);
-    _transition = transition;
+    _sessionFlows = sessionFlows;
+    _transformation = transformation;
+    _srcMgr = srcMgr;
     _sessionEdgePreStates = new SessionEdgePreStates(_hostname, _ifaces.values());
   }
 
@@ -47,7 +61,8 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
                     new PreInInterface(_hostname, incomingInterface),
                     new PostInVrfSession(
                         _hostname, _ifaces.get(incomingInterface).getVrf().getName()),
-                    _transition));
+                    // TODO Should this edge apply _transformation?
+                    _sessionFlows));
   }
 
   @Override
@@ -57,9 +72,18 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
     String vrf = originatingSessionScope.getOriginatingVrf();
     StateExpr postState = new PostInVrfSession(_hostname, vrf);
 
-    // Create an edge per preceding state
+    // Build transition for the session-matching edges.
+    // Keep this transition in sync with transition on OriginateVrf->PostInVrf edge, defined in
+    // BDDReachabilityAnalysisFactory#generateRootEdges_OriginateVrf_PostInVrf.
+    Transition transition =
+        compose(
+            constraint(_sessionFlows),
+            _transformation,
+            addOriginatingFromDeviceConstraint(_srcMgr));
+
+    // Create an edge per preceding state.
     return _sessionEdgePreStates
         .visitOriginatingSessionScope(originatingSessionScope)
-        .map(preState -> new Edge(preState, postState, _transition));
+        .map(preState -> new Edge(preState, postState, transition));
   }
 }
