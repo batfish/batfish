@@ -58,16 +58,18 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
                 .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
                 .build(),
             null);
-    Response response =
-        getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+    try (Response response =
+        getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON))) {
 
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(container);
-    assertThat(nrData.nodeRoleDimensionFor("dimension1").isPresent(), equalTo(true));
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(container);
+      assertThat(nrData.nodeRoleDimensionFor("dimension1").isPresent(), equalTo(true));
+    }
 
-    Response response2 =
-        getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
-    assertThat(response2.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response =
+        getNodeRolesTarget(container).post(Entity.entity(dimBean, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   @Test
@@ -75,19 +77,19 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
-    Response response = getNodeRolesTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(NodeRolesDataBean.class).toNodeRolesData(), equalTo(nodeRolesData));
+    try (Response response = getNodeRolesTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(NodeRolesDataBean.class).toNodeRolesData(), equalTo(nodeRolesData));
+    }
   }
 
   @Test
   public void testGetNodeRolesMissingNetwork() {
     String network = "someContainer";
-    Response response = getNodeRolesTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRolesTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -100,11 +102,11 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             .setRoleDimensions(ImmutableList.of(NodeRoleDimension.builder().setName("a").build()))
             .build();
     Main.getWorkMgr().putNetworkNodeRoles(nodeRolesData, network);
-    Response response = getNodeRolesTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(NodeRolesDataBean.class).toNodeRolesData(), equalTo(nodeRolesData));
+    try (Response response = getNodeRolesTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(NodeRolesDataBean.class).toNodeRolesData(), equalTo(nodeRolesData));
+    }
   }
 
   @Test
@@ -171,11 +173,11 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
                         new RoleMapping(name, "", null, null)))
                 .build(),
             null);
-    Response response =
+    try (Response response =
         getNodeRolesTarget(network)
-            .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+            .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   @Test
@@ -183,21 +185,21 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
     String network = "someContainer";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(NodeRolesData.builder().build(), null);
-    Response response =
+    try (Response response =
         getNodeRolesTarget(network)
-            .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+            .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testPutNodeRolesNull() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response =
-        getNodeRolesTarget(network).put(Entity.entity("", MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response =
+        getNodeRolesTarget(network).put(Entity.entity("", MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   @Test
@@ -210,11 +212,11 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
             .setRoleDimensions(ImmutableList.of(NodeRoleDimension.builder().setName("a").build()))
             .build();
     NodeRolesDataBean nodeRolesDataBean = new NodeRolesDataBean(nodeRolesData, null);
-    Response response =
+    try (Response response =
         getNodeRolesTarget(network)
-            .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(Main.getWorkMgr().getNetworkNodeRoles(network), equalTo(nodeRolesData));
+            .put(Entity.entity(nodeRolesDataBean, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(Main.getWorkMgr().getNetworkNodeRoles(network), equalTo(nodeRolesData));
+    }
   }
 }

@@ -648,6 +648,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
    * Panorama.
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
@@ -669,6 +670,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private Stream<NatRule> getAllNatRules(Vsys vsys) {
     Stream<NatRule> pre =
         _panorama == null

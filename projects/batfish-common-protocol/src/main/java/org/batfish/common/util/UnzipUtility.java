@@ -99,8 +99,9 @@ public final class UnzipUtility {
     // :ratul:
     // this lets us check if the zip file is proper
     // for bad zip files this will throw an exception
-    ZipFile zipTest = new ZipFile(zipFile.toFile());
-    zipTest.close();
+    try (ZipFile zipTest = new ZipFile(zipFile.toFile())) {
+      assert zipTest != null; // suppress unused warning
+    }
 
     try (FileInputStream fis = new FileInputStream(zipFile.toFile())) {
       unzip(fis, destDirectory);

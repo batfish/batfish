@@ -523,6 +523,7 @@ public final class FileBasedStorage implements StorageProvider {
    * Returns a single object of the given class deserialized from the given file. Uses the {@link
    * FileBasedStorage} default file encoding including serialization format and compression.
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
   private <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
       throws BatfishException {
     Path sanitizedInputFile = validatePath(inputFile);

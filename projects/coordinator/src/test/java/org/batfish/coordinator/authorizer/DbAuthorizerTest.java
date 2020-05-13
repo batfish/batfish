@@ -40,26 +40,27 @@ public class DbAuthorizerTest {
     String connString =
         String.format("jdbc:sqlite:%s", Paths.get(tmpFolder.getRoot().getAbsolutePath(), DB_NAME));
     try (Connection conn = DriverManager.getConnection(connString)) {
-      PreparedStatement ps =
+      try (PreparedStatement ps =
           conn.prepareStatement(
               String.format(
                   "CREATE TABLE %s (`Memberid` int PRIMARY KEY,"
                       + "  `Username` varchar(255) NOT NULL DEFAULT '',"
                       + "  `ApiKey` varchar(64) DEFAULT '', "
                       + "  `Endpoint` varchar(255) DEFAULT 'test.service.intentionet.com')",
-                  TABLE_USERS));
-      ps.execute();
-      ps.close();
-      ps =
+                  TABLE_USERS))) {
+        ps.execute();
+      }
+      try (PreparedStatement ps =
           conn.prepareStatement(
               String.format(
                   "CREATE TABLE %s (`ContainerName` varchar(255) PRIMARY KEY,"
                       + "  `DateCreated` timestamp NULL DEFAULT NULL,"
                       + "  `DateLastAccessed` timestamp NULL DEFAULT NULL)",
-                  TABLE_CONTAINERS));
-      ps.execute();
-      ps.close();
-      conn.prepareStatement(
+                  TABLE_CONTAINERS))) {
+        ps.execute();
+      }
+      try (PreparedStatement ps =
+          conn.prepareStatement(
               String.format(
                   "CREATE TABLE %s ("
                       + "  `ComboId` int PRIMARY KEY,"
@@ -67,21 +68,21 @@ public class DbAuthorizerTest {
                       + "  `ApiKey` varchar(64) DEFAULT '',"
                       + "  `DateCreated` timestamp NULL DEFAULT NULL,"
                       + "  `DateLastAccessed` timestamp NULL DEFAULT NULL)",
-                  TABLE_PERMISSIONS))
-          .execute();
-      ps.close();
+                  TABLE_PERMISSIONS))) {
+        ps.execute();
+      }
 
-      PreparedStatement st =
+      try (PreparedStatement st =
           conn.prepareStatement(
               String.format(
-                  "INSERT INTO %s ('Username', %s) VALUES (?, ?)", TABLE_USERS, COLUMN_APIKEY));
-      st.setString(1, "test_user_1");
-      st.setString(2, KEY1);
-      st.execute();
-      st.setString(1, "test_user_2");
-      st.setString(2, KEY2);
-      st.execute();
-      st.close();
+                  "INSERT INTO %s ('Username', %s) VALUES (?, ?)", TABLE_USERS, COLUMN_APIKEY))) {
+        st.setString(1, "test_user_1");
+        st.setString(2, KEY1);
+        st.execute();
+        st.setString(1, "test_user_2");
+        st.setString(2, KEY2);
+        st.execute();
+      }
     }
 
     // Set logger, otherwise exceptions are thrown

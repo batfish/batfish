@@ -125,7 +125,6 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.NullCompleter;
-import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.skyscreamer.jsonassert.JSONAssert;
 import sun.misc.Signal;
@@ -780,10 +779,9 @@ public class Client extends AbstractClient implements IClient {
             "This is not a supported client for Batfish. Please use pybatfish following the "
                 + "instructions in the README: https://github.com/batfish/batfish/#how-do-i-get-started");
         try {
-          Terminal terminal = TerminalBuilder.builder().build();
           _reader =
               LineReaderBuilder.builder()
-                  .terminal(terminal)
+                  .terminal(TerminalBuilder.builder().build())
                   .completer(new ArgumentCompleter(new CommandCompleter(), new NullCompleter()))
                   .build();
           Path historyPath = Paths.get(System.getenv(ENV_HOME), HISTORY_FILE);
@@ -794,8 +792,11 @@ public class Client extends AbstractClient implements IClient {
               .handle(org.jline.terminal.Terminal.Signal.INT, signal -> handleSigInt());
           _reader.unsetOpt(Option.INSERT_TAB); // supports completion with nothing entered
 
+          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
           PrintWriter pWriter = new PrintWriter(_reader.getTerminal().output(), true);
+          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
           OutputStream os = new WriterOutputStream(pWriter, StandardCharsets.UTF_8);
+          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
           PrintStream ps = new PrintStream(os, true);
           _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
         } catch (Exception e) {
@@ -1048,11 +1049,9 @@ public class Client extends AbstractClient implements IClient {
     File tempFile = tempFilePath.toFile();
     tempFile.deleteOnExit();
     _logger.debugf("Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath());
-    FileWriter writer;
-    try {
-      writer = new FileWriter(tempFile);
+
+    try (FileWriter writer = new FileWriter(tempFile)) {
       writer.write(content + "\n");
-      writer.close();
     } catch (IOException e) {
       throw new BatfishException("Failed to write content to temporary file", e);
     }
@@ -2272,6 +2271,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer.
   private boolean debugPost(FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 2, 2, 2, Command.DEBUG_POST)) {
       return false;
@@ -2317,6 +2317,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer.
   private boolean debugPut(FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 2, 2, 2, Command.DEBUG_PUT)) {
       return false;
@@ -2723,10 +2724,10 @@ public class Client extends AbstractClient implements IClient {
 
     File testoutFile = Files.createTempFile("test", "out").toFile();
     testoutFile.deleteOnExit();
-    FileWriter testoutWriter = new FileWriter(testoutFile);
-
-    boolean testCommandSucceeded = processCommand(testCommand, testoutWriter);
-    testoutWriter.close();
+    boolean testCommandSucceeded;
+    try (FileWriter testoutWriter = new FileWriter(testoutFile)) {
+      testCommandSucceeded = processCommand(testCommand, testoutWriter);
+    }
 
     String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
 

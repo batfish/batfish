@@ -52,8 +52,9 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr().putNetworkNodeRoles(NodeRolesData.builder().build(), network);
 
-    Response response = getNodeRoleDimensionTarget(network, dimension).delete();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRoleDimensionTarget(network, dimension).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -61,8 +62,9 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
 
-    Response response = getNodeRoleDimensionTarget(network, dimension).delete();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRoleDimensionTarget(network, dimension).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -79,16 +81,21 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
         .putNetworkNodeRoles(
             NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build(),
             network);
-    Response response = getNodeRoleDimensionTarget(network, dimension).delete();
+    try (Response response = getNodeRoleDimensionTarget(network, dimension).delete()) {
 
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        Main.getWorkMgr().getNetworkNodeRoles(network).nodeRoleDimensionFor(dimension).isPresent(),
-        equalTo(false));
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          Main.getWorkMgr()
+              .getNetworkNodeRoles(network)
+              .nodeRoleDimensionFor(dimension)
+              .isPresent(),
+          equalTo(false));
+    }
 
     // deleting again should fail
-    Response response2 = getNodeRoleDimensionTarget(network, dimension).delete();
-    assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response2 = getNodeRoleDimensionTarget(network, dimension).delete()) {
+      assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -98,8 +105,9 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr().putNetworkNodeRoles(NodeRolesData.builder().build(), network);
 
-    Response response = getNodeRoleDimensionTarget(network, dimension).get();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRoleDimensionTarget(network, dimension).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -107,8 +115,9 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     String network = "network1";
     String dimension = "dimension1";
 
-    Response response = getNodeRoleDimensionTarget(network, dimension).get();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRoleDimensionTarget(network, dimension).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -126,11 +135,12 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
             NodeRolesData.builder().setRoleDimensions(ImmutableList.of(nodeRoleDimension)).build(),
             network);
 
-    Response response = getNodeRoleDimensionTarget(network, dimension).get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(NodeRoleDimensionBean.class).toNodeRoleDimension(),
-        equalTo(nodeRoleDimension));
+    try (Response response = getNodeRoleDimensionTarget(network, dimension).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(NodeRoleDimensionBean.class).toNodeRoleDimension(),
+          equalTo(nodeRoleDimension));
+    }
   }
 
   @Test
@@ -140,10 +150,11 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
 
     NodeRoleDimensionBean dimBean =
         new NodeRoleDimensionBean(NodeRoleDimension.builder("dimension1").build(), null);
-    Response response =
+    try (Response response =
         getNodeRoleDimensionTarget(network, dimension)
-            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -158,23 +169,25 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
                 .setRoleDimensionMappings(ImmutableList.of(new RoleDimensionMapping("(.*)")))
                 .build(),
             null);
-    Response response =
+    try (Response response =
         getNodeRoleDimensionTarget(network, dimension)
-            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON))) {
 
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(network);
-    assertThat(nrData.nodeRoleDimensionFor(dimension).isPresent(), equalTo(true));
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(network);
+      assertThat(nrData.nodeRoleDimensionFor(dimension).isPresent(), equalTo(true));
+    }
 
     // put again should succeed and have new content
     RoleDimensionMapping rdMapping = new RoleDimensionMapping("\\(.*\\)");
     dimBean.roleDimensionMappings = ImmutableList.of(new RoleDimensionMappingBean(rdMapping));
-    Response response2 =
+    try (Response response2 =
         getNodeRoleDimensionTarget(network, dimension)
-            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
-    assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
-    NodeRoleDimension dim2 =
-        Main.getWorkMgr().getNetworkNodeRoles(network).nodeRoleDimensionFor(dimension).get();
-    assertThat(dim2.getRoleDimensionMappings(), equalTo(ImmutableList.of(rdMapping)));
+            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON))) {
+      assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
+      NodeRoleDimension dim2 =
+          Main.getWorkMgr().getNetworkNodeRoles(network).nodeRoleDimensionFor(dimension).get();
+      assertThat(dim2.getRoleDimensionMappings(), equalTo(ImmutableList.of(rdMapping)));
+    }
   }
 }

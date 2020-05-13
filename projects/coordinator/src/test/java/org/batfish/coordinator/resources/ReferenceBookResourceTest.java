@@ -57,17 +57,18 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
             new ReferenceLibrary(ImmutableList.of(ReferenceBook.builder("book1").build())),
             container);
 
-    Response response = getReferenceBookTarget(container, "book1").delete();
-
-    // response should be OK and book1 should have disappeared
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    try (Response response = getReferenceBookTarget(container, "book1").delete()) {
+      // response should be OK and book1 should have disappeared
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
     assertThat(
         Main.getWorkMgr().getReferenceLibrary(container).getReferenceBook("book1").isPresent(),
         equalTo(false));
 
     // deleting again should fail
-    Response response2 = getReferenceBookTarget(container, "book1").delete();
-    assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response2 = getReferenceBookTarget(container, "book1").delete()) {
+      assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -83,14 +84,17 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on ReferenceBookBean to have created the object with the right content
-    Response response = getReferenceBookTarget(container, "book1").get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(ReferenceBook.class), equalTo(ReferenceBook.builder("book1").build()));
+    try (Response response = getReferenceBookTarget(container, "book1").get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(ReferenceBook.class),
+          equalTo(ReferenceBook.builder("book1").build()));
+    }
 
     // should get 404 for non-existent dimension
-    Response response2 = getReferenceBookTarget(container, "book2").get();
-    assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response2 = getReferenceBookTarget(container, "book2").get()) {
+      assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -99,10 +103,11 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
     String bookName = "book1";
 
     ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder(bookName).build());
-    Response response =
+    try (Response response =
         getReferenceBookTarget(network, bookName)
-            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -113,22 +118,23 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
     // add book1
     ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder(bookName).build());
-    Response response =
+    try (Response response =
         getReferenceBookTarget(network, bookName)
-            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
-
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
     // test: bookName should have been added
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(network);
     assertThat(library.getReferenceBook(bookName).isPresent(), equalTo(true));
 
     // test: put of bookName again should succeed and the contents should be new
     AddressGroup ag = new AddressGroup(null, "ag");
     book.addressGroups = ImmutableSet.of(new AddressGroupBean(ag));
-    Response response2 =
+    try (Response response2 =
         getReferenceBookTarget(network, bookName)
-            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
-    assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON))) {
+      assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
+    }
     ReferenceBook book2 =
         Main.getWorkMgr().getReferenceLibrary(network).getReferenceBook(bookName).get();
     assertThat(book2.getAddressGroups(), equalTo(ImmutableSet.of(ag)));

@@ -134,12 +134,12 @@ public final class ClientTest {
       Command command, String[] parameters, String expected) throws Exception {
     Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
-    FileWriter writer = new FileWriter(tempFile);
-    client._logger = new BatfishLogger("output", false);
-    String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
-    assertFalse(client.processCommand(args, writer));
-    assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
-    writer.close();
+    try (FileWriter writer = new FileWriter(tempFile)) {
+      client._logger = new BatfishLogger("output", false);
+      String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
+      assertFalse(client.processCommand(args, writer));
+      assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    }
   }
 
   @Test
@@ -180,12 +180,13 @@ public final class ClientTest {
   public void testDefaultCase() throws Exception {
     Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
-    FileWriter writer = new FileWriter(tempFile);
-    client._logger = new BatfishLogger("output", false);
-    String[] args = new String[] {"non-exist command"};
-    String expected = "Command failed: Not a valid command: \"non-exist command\"\n";
-    assertFalse(client.processCommand(args, writer));
-    assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    try (FileWriter writer = new FileWriter(tempFile)) {
+      client._logger = new BatfishLogger("output", false);
+      String[] args = new String[] {"non-exist command"};
+      String expected = "Command failed: Not a valid command: \"non-exist command\"\n";
+      assertFalse(client.processCommand(args, writer));
+      assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    }
   }
 
   @Test
@@ -1145,12 +1146,12 @@ public final class ClientTest {
       Command command, String[] parameters, String expected) throws Exception {
     Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
-    FileWriter writer = new FileWriter(tempFile);
-    String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
-    client._logger = new BatfishLogger("output", false);
-    assertTrue(client.processCommand(args, writer));
-    assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
-    writer.close();
+    try (FileWriter writer = new FileWriter(tempFile)) {
+      String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
+      client._logger = new BatfishLogger("output", false);
+      assertTrue(client.processCommand(args, writer));
+      assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    }
   }
 
   @Test

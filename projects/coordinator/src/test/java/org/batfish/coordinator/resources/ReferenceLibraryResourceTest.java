@@ -50,18 +50,19 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
 
     // add book1
     ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder("book1").build());
-    Response response =
-        getReferenceLibraryTarget(network).post(Entity.entity(book, MediaType.APPLICATION_JSON));
-
+    try (Response response =
+        getReferenceLibraryTarget(network).post(Entity.entity(book, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
     // test: book1 should have been added
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(network);
     assertThat(library.getReferenceBook("book1").isPresent(), equalTo(true));
 
     // test: another addition of book1 should fail
-    Response response2 =
-        getReferenceLibraryTarget(network).post(Entity.entity(book, MediaType.APPLICATION_JSON));
-    assertThat(response2.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response2 =
+        getReferenceLibraryTarget(network).post(Entity.entity(book, MediaType.APPLICATION_JSON))) {
+      assertThat(response2.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   /** Test that we get back the reference library */
@@ -72,10 +73,11 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on ReferenceLibraryBean to have created the object with the right content
-    Response response = getReferenceLibraryTarget(network).get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(ReferenceLibraryBean.class),
-        equalTo(new ReferenceLibraryBean(new ReferenceLibrary(ImmutableList.of()))));
+    try (Response response = getReferenceLibraryTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(ReferenceLibraryBean.class),
+          equalTo(new ReferenceLibraryBean(new ReferenceLibrary(ImmutableList.of()))));
+    }
   }
 }

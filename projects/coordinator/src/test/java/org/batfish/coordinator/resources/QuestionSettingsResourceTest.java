@@ -117,16 +117,16 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
 
   @Test
   public void testGetQuestionSettingsAbsent() {
-    Response response = getQuestionSettingsTarget(QUESTION).get();
-
-    assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionSettingsTarget(QUESTION).get()) {
+      assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetQuestionSettingsError() {
-    Response response = getQuestionSettingsTarget(BAD_QUESTION).get();
-
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    try (Response response = getQuestionSettingsTarget(BAD_QUESTION).get()) {
+      assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    }
   }
 
   @Test
@@ -136,34 +136,34 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _idManager.assignQuestionSettingsId(
         QUESTION, _idManager.getNetworkId(NETWORK), questionSettingsId);
-    Response response = getQuestionSettingsTarget(QUESTION).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo(settings));
+    try (Response response = getQuestionSettingsTarget(QUESTION).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(String.class), equalTo(settings));
+    }
   }
 
   @Test
   public void testPutQuestionSettingsAbsentSuccess() throws IOException {
     String settings = "{}";
     JsonNode settingsNode = BatfishObjectMapper.mapper().readTree(settings);
-    Response response =
+    try (Response response =
         getQuestionSettingsTarget(QUESTION)
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(
-        BatfishObjectMapper.mapper().readTree(_storage._questionSettings), equalTo(settingsNode));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+      assertThat(
+          BatfishObjectMapper.mapper().readTree(_storage._questionSettings), equalTo(settingsNode));
+    }
   }
 
   @Test
   public void testPutQuestionSettingsError() throws IOException {
     String settings = "{}";
     JsonNode settingsNode = BatfishObjectMapper.mapper().readTree(settings);
-    Response response =
+    try (Response response =
         getQuestionSettingsTarget(BAD_QUESTION)
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    }
   }
 
   @Test
@@ -171,11 +171,11 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     String settings = "{}";
     _storage._questionSettings = "{\"a\":\"b\"}";
     JsonNode settingsNode = BatfishObjectMapper.mapper().readTree(settings);
-    Response response =
+    try (Response response =
         getQuestionSettingsTarget(QUESTION)
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    }
     assertThat(
         BatfishObjectMapper.mapper().readTree(_storage._questionSettings), equalTo(settingsNode));
   }

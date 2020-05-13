@@ -46,9 +46,9 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   public void testInferredGetMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getNodeRolesTarget(network, snapshot, true).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRolesTarget(network, snapshot, true).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -56,9 +56,9 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getNodeRolesTarget(network, snapshot, true).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRolesTarget(network, snapshot, true).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -70,21 +70,21 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, nodes);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
     WorkMgrTestUtils.setSnapshotNodeRoles(nodeRolesData, network, snapshot);
-    Response response = getNodeRolesTarget(network, snapshot, true).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(NodeRolesDataBean.class),
-        equalTo(new NodeRolesDataBean(nodeRolesData, snapshot)));
+    try (Response response = getNodeRolesTarget(network, snapshot, true).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(NodeRolesDataBean.class),
+          equalTo(new NodeRolesDataBean(nodeRolesData, snapshot)));
+    }
   }
 
   @Test
   public void testNetworkGetMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getNodeRolesTarget(network, snapshot, false).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRolesTarget(network, snapshot, false).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -92,9 +92,9 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getNodeRolesTarget(network, snapshot, false).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNodeRolesTarget(network, snapshot, false).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -105,11 +105,11 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
     Set<String> nodes = ImmutableSet.of();
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, nodes);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
-    Response response = getNodeRolesTarget(network, snapshot, false).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(NodeRolesDataBean.class),
-        equalTo(new NodeRolesDataBean(nodeRolesData, snapshot)));
+    try (Response response = getNodeRolesTarget(network, snapshot, false).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(NodeRolesDataBean.class),
+          equalTo(new NodeRolesDataBean(nodeRolesData, snapshot)));
+    }
   }
 }

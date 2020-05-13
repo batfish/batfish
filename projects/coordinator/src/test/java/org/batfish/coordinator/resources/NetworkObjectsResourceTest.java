@@ -53,20 +53,18 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, key).delete();
-    response = getTarget(network, key).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, key).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testDeleteMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
-    Response response = getTarget(network, key).delete();
-    response = getTarget(network, key).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, key).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -77,15 +75,15 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
     Main.getWorkMgr().putNetworkObject(inputStream, network, key);
-    Response response = getTarget(network, key).delete();
+    try (Response response = getTarget(network, key).delete()) {
+      // delete should succeed
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
 
-    // delete should succeed
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    response = getTarget(network, key).delete();
-
-    // delete should fail the second time
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, key).delete()) {
+      // delete should fail the second time
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -93,18 +91,18 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, key).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, key).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
-    Response response = getTarget(network, key).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, key).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -115,10 +113,10 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
     Main.getWorkMgr().putNetworkObject(inputStream, network, key);
-    Response response = getTarget(network, key).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo(content));
+    try (Response response = getTarget(network, key).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(String.class), equalTo(content));
+    }
   }
 
   @Test
@@ -127,10 +125,11 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String key = "foo/bar";
     String content = "baz";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-    Response response =
-        getTarget(network, key).put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM));
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response =
+        getTarget(network, key)
+            .put(Entity.entity(inputStream, MediaType.APPLICATION_OCTET_STREAM))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -139,13 +138,13 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
     String content = "baz";
-    Response response =
-        getTarget(network, key).put(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM));
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    try (InputStream stream = Main.getWorkMgr().getNetworkObject(network, key)) {
-      assertThat(stream, not(nullValue()));
-      assertThat(IOUtils.toString(stream, UTF_8), equalTo(content));
+    try (Response response =
+        getTarget(network, key).put(Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      try (InputStream stream = Main.getWorkMgr().getNetworkObject(network, key)) {
+        assertThat(stream, not(nullValue()));
+        assertThat(IOUtils.toString(stream, UTF_8), equalTo(content));
+      }
     }
   }
 
@@ -158,13 +157,14 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
     String newContent = "bath";
     Main.getWorkMgr()
         .putNetworkObject(new ByteArrayInputStream(oldContent.getBytes()), network, key);
-    Response response =
-        getTarget(network, key).put(Entity.entity(newContent, MediaType.APPLICATION_OCTET_STREAM));
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    try (InputStream stream = Main.getWorkMgr().getNetworkObject(network, key)) {
-      assertThat(stream, not(nullValue()));
-      assertThat(IOUtils.toString(stream, UTF_8), equalTo(newContent));
+    try (Response response =
+        getTarget(network, key)
+            .put(Entity.entity(newContent, MediaType.APPLICATION_OCTET_STREAM))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      try (InputStream stream = Main.getWorkMgr().getNetworkObject(network, key)) {
+        assertThat(stream, not(nullValue()));
+        assertThat(IOUtils.toString(stream, UTF_8), equalTo(newContent));
+      }
     }
   }
 }

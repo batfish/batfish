@@ -56,16 +56,17 @@ public class IssueSettingsResourceTest extends WorkMgrServiceV2TestBase {
 
     // add a minor issue
     MinorIssueConfig minor1Config = new MinorIssueConfig("minor1", 100, "www.cnn.com");
-    Response response =
+    try (Response response =
         getIssueSettingsTarget(network)
             .post(
                 Entity.entity(
-                    new IssueConfigBean(major, minor1Config), MediaType.APPLICATION_JSON));
+                    new IssueConfigBean(major, minor1Config), MediaType.APPLICATION_JSON))) {
 
-    // test: minorIssue should have been added
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    MajorIssueConfig config = Main.getWorkMgr().getMajorIssueConfig(network, major);
-    assertThat(config, equalTo(new MajorIssueConfig(major, ImmutableList.of(minor1Config))));
+      // test: minorIssue should have been added
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      MajorIssueConfig config = Main.getWorkMgr().getMajorIssueConfig(network, major);
+      assertThat(config, equalTo(new MajorIssueConfig(major, ImmutableList.of(minor1Config))));
+    }
 
     // add two more minor issues, one for the same one as before
     MinorIssueConfig minor1ConfigAgain = new MinorIssueConfig("minor1", 90, "www");

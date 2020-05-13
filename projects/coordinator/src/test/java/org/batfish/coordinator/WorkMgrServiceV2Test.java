@@ -54,67 +54,71 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   @Test
   public void getContainers() {
-    Response response =
+    try (Response response =
         getContainersTarget()
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
+    }
 
     Main.getWorkMgr().initNetwork("someContainer", null);
-    response =
+    try (Response response =
         getContainersTarget()
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
+    }
   }
 
   @Test
   public void redirectContainer() {
-    Response response =
+    try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_NETWORK)
             .property(FOLLOW_REDIRECTS, false)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-    assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
-    assertThat(response.getLocation().getPath(), equalTo("/v2/networks"));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
+      assertThat(response.getLocation().getPath(), equalTo("/v2/networks"));
+    }
   }
 
   @Test
   public void testGetQuestionTemplatesUnconfigured() {
-    Response response =
+    try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-    assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetQuestionTemplatesConfigured() {
     String templateName = "template1";
     String templateText = writeTemplateFile(templateName);
-    Response response =
+    try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(Map.class), equalTo(ImmutableMap.of(templateName, templateText)));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(Map.class), equalTo(ImmutableMap.of(templateName, templateText)));
+    }
   }
 
   private @Nonnull String writeTemplateFile(String templateName) {
@@ -136,34 +140,34 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     String hiddenTemplateName = "__template2";
     String templateText = writeTemplateFile(templateName);
     String hiddenTemplateText = writeTemplateFile(hiddenTemplateName);
-    Response response =
+    // when not verbose, hidden template should be absent
+    try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(Map.class), equalTo(ImmutableMap.of(templateName, templateText)));
+    }
 
-    // when not verbose, hidden template should be absent
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(Map.class), equalTo(ImmutableMap.of(templateName, templateText)));
-
-    response =
+    // when verbose, hidden template should be present
+    try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
             .queryParam(CoordConstsV2.QP_VERBOSE, true)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-
-    // when verbose, hidden template should be present
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(Map.class),
-        equalTo(
-            ImmutableMap.of(templateName, templateText, hiddenTemplateName, hiddenTemplateText)));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(Map.class),
+          equalTo(
+              ImmutableMap.of(templateName, templateText, hiddenTemplateName, hiddenTemplateText)));
+    }
   }
 
   /** Test that the ApiKey is extracted from the correct header */
@@ -181,57 +185,61 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(containerName, null);
 
     // Test that subsequent calls return 200 with correct API key
-    Response resp =
+    try (Response resp =
         getContainersTarget()
             .path(containerName)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, myKey)
-            .get();
-    assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        resp.readEntity(Container.class),
-        equalTo(Container.of(containerName, Collections.emptySortedSet())));
+            .get()) {
+      assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          resp.readEntity(Container.class),
+          equalTo(Container.of(containerName, Collections.emptySortedSet())));
+    }
 
     // Test that subsequent calls return 401 unauthorized with unknown API key
-    resp =
+    try (Response resp =
         getContainersTarget()
             .path(containerName)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "unknownKey")
-            .get();
-    assertThat(resp.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
-    assertThat(
-        resp.readEntity(String.class), equalTo("Authorizer: 'unknownKey' is NOT a valid key"));
+            .get()) {
+      assertThat(resp.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
+      assertThat(
+          resp.readEntity(String.class), equalTo("Authorizer: 'unknownKey' is NOT a valid key"));
+    }
 
     // Test that subsequent calls return 403 forbidden with known API key and no access
-    resp =
+    try (Response resp =
         getContainersTarget()
             .path(containerName)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, otherKey)
-            .get();
-    assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
-    assertThat(
-        resp.readEntity(String.class),
-        equalTo("network 'someContainer' is not accessible by the api key: AnotherApiKey"));
+            .get()) {
+      assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
+      assertThat(
+          resp.readEntity(String.class),
+          equalTo("network 'someContainer' is not accessible by the api key: AnotherApiKey"));
+    }
   }
 
   @Test
   public void testGetVersion() {
-    Response response =
+    try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_VERSION)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    // Should get a non-unknown Batfish version
-    assertThat(
-        response.readEntity(new GenericType<Map<String, String>>() {}),
-        hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      // Should get a non-unknown Batfish version
+      assertThat(
+          response.readEntity(new GenericType<Map<String, String>>() {}),
+          hasEntry(equalTo("Batfish"), not(equalTo(UNKNOWN_VERSION))));
+    }
   }
 }
