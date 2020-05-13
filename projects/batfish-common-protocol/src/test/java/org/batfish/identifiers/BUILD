@@ -14,10 +14,7 @@ java_library(
         ["*.java"],
         exclude = ["*Test.java"],
     ),
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "@maven//:com_google_code_findbugs_jsr305",
-    ],
+    deps = ["//projects/batfish-common-protocol:common"],
 )
 
 pmd_test(
@@ -30,16 +27,6 @@ junit_tests(
     srcs = glob(
         ["*.java"],
         exclude = ["Test*.java"],
-
     ),
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "@maven//:com_fasterxml_jackson_core_jackson_core",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
+    deps = ["@maven//:junit_junit"],
 )
-
-
