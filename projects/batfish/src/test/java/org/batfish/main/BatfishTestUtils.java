@@ -163,6 +163,7 @@ public class BatfishTestUtils {
   public static Batfish getBatfishFromTestrigText(
       TestrigText testrigText, TemporaryFolder tempFolder) throws IOException {
     Map<String, String> awsText = testrigText.getAwsText();
+    Map<String, String> bgpTablesText = testrigText.getBgpTablesText();
     Map<String, String> configurationText = testrigText.getConfigurationText();
     Map<String, String> hostsText = testrigText.getHostsText();
     Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
@@ -190,6 +191,7 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
+    writeTemporaryTestrigFiles(bgpTablesText, snapshotTr.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
     if (layer1TopologyText != null) {

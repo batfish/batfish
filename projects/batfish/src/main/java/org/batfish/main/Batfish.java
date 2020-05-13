@@ -40,14 +40,12 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
-import com.google.common.io.ByteStreams;
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -414,36 +412,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to walk path: " + directory, e);
     }
-  }
-
-  /**
-   * Reads the snapshot input objects corresponding to the provided keys, and returns a map from
-   * each object's key to its contents.
-   */
-  private @Nonnull SortedMap<String, String> readAllInputObjects(
-      Stream<String> keys, NetworkSnapshot snapshot, BatfishLogger logger) {
-    return keys.map(
-            key -> {
-              logger.debugf("Reading: \"%s\"\n", key);
-              long copiedBytes;
-              ByteArrayOutputStream baos;
-              try (InputStream inputStream =
-                  _storage.loadSnapshotInputObject(
-                      snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
-                baos = new ByteArrayOutputStream();
-                copiedBytes = ByteStreams.copy(inputStream, baos);
-              } catch (IOException e) {
-                throw new UncheckedIOException(e);
-              }
-              if (copiedBytes > 0) {
-                // Adding a trailing newline helps EOF in some parsers.
-                baos.write('\n');
-              }
-              return new SimpleEntry<>(key, new String(baos.toByteArray(), UTF_8));
-            })
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));
   }
 
   public static void logWarnings(BatfishLogger logger, Warnings warnings) {
@@ -878,6 +846,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
+  private void computeEnvironmentBgpTables(NetworkSnapshot snapshot) {
+    Path outputPath = getTestrigSettings(snapshot).getSerializeEnvironmentBgpTablesPath();
+    Path inputPath = getTestrigSettings(snapshot).getEnvironmentBgpTablesPath();
+    serializeEnvironmentBgpTables(snapshot, inputPath, outputPath);
+  }
+
   private Map<String, Configuration> convertConfigurations(
       Map<String, VendorConfiguration> vendorConfigurations,
       SnapshotRuntimeData runtimeData,
@@ -914,6 +888,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
     return computeLocationInfo(
         getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
+  }
+
+  private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
+      Path serializeEnvironmentBgpTablesPath) {
+    _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
+    _logger.resetTimer();
+    Map<Path, String> namesByPath = new TreeMap<>();
+    try (DirectoryStream<Path> serializedBgpTables =
+        Files.newDirectoryStream(serializeEnvironmentBgpTablesPath)) {
+      for (Path serializedBgpTable : serializedBgpTables) {
+        String name = serializedBgpTable.getFileName().toString();
+        namesByPath.put(serializedBgpTable, name);
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Error reading serialized BGP tables directory", e);
+    }
+    SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
+        deserializeObjects(namesByPath, BgpAdvertisementsByVrf.class);
+    _logger.printElapsedTime();
+    return bgpTables;
   }
 
   /**
@@ -1045,6 +1039,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private boolean environmentBgpTablesExist(TestrigSettings testrigSettings) {
+    Path answerPath = testrigSettings.getParseEnvironmentBgpTablesAnswerPath();
+    return Files.exists(answerPath);
+  }
+
   private boolean outputExists(TestrigSettings testrigSettings) {
     return testrigSettings.getOutputPath().toFile().exists();
   }
@@ -1132,14 +1131,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
-      NetworkSnapshot snapshot, ParseEnvironmentBgpTablesAnswerElement answerElement) {
-    _logger.info("\n*** READING Environment BGP Tables ***\n");
-    SortedMap<String, String> inputData;
-    try (Stream<String> keys = _storage.listInputEnvironmentBgpTableKeys(snapshot)) {
-      inputData = readAllInputObjects(keys, snapshot, _logger);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+      NetworkSnapshot snapshot,
+      Path inputPath,
+      ParseEnvironmentBgpTablesAnswerElement answerElement) {
+    if (!Files.exists(inputPath)) {
+      return new TreeMap<>();
     }
+    _logger.info("\n*** READING Environment BGP Tables ***\n");
+    SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(snapshot, inputData, answerElement);
     return bgpTables;
@@ -1318,17 +1317,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!outputExists(tr)) {
       createDirectories(tr.getOutputPath());
     }
-    try {
-      if (!_storage.hasParseEnvironmentBgpTablesAnswerElement(snapshot)) {
-        computeEnvironmentBgpTables(snapshot);
-      }
-      if (dp) {
+    if (!environmentBgpTablesExist(tr)) {
+      computeEnvironmentBgpTables(snapshot);
+    }
+    if (dp) {
+      try {
         if (!_storage.hasDataPlane(snapshot)) {
           computeDataPlane(snapshot);
         }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
     }
   }
 
@@ -1432,12 +1431,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _cachedEnvironmentBgpTables.get(snapshot);
     if (environmentBgpTables == null) {
       loadParseEnvironmentBgpTablesAnswerElement(snapshot);
-      try {
-        environmentBgpTables =
-            ImmutableSortedMap.copyOf(_storage.loadEnvironmentBgpTables(snapshot));
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      environmentBgpTables =
+          deserializeEnvironmentBgpTables(
+              getTestrigSettings(snapshot).getSerializeEnvironmentBgpTablesPath());
       _cachedEnvironmentBgpTables.put(snapshot, environmentBgpTables);
     }
     return environmentBgpTables;
@@ -1450,18 +1446,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
       NetworkSnapshot snapshot, boolean firstAttempt) {
-    try {
-      if (!_storage.hasParseEnvironmentBgpTablesAnswerElement(snapshot)) {
-        repairEnvironmentBgpTables(snapshot);
-      }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+    TestrigSettings tr = getTestrigSettings(snapshot);
+    Path answerPath = tr.getParseEnvironmentBgpTablesAnswerPath();
+    if (!Files.exists(answerPath)) {
+      repairEnvironmentBgpTables(snapshot);
     }
     try {
-      return _storage.loadParseEnvironmentBgpTablesAnswerElement(snapshot);
+      return deserializeObject(answerPath, ParseEnvironmentBgpTablesAnswerElement.class);
     } catch (Exception e) {
       /* Do nothing, this is expected on serialization or other errors. */
-      _logger.warn("Unable to load prior parse data");
+      _logger.warn(
+          "Unable to load prior parse data from "
+              + tr.getParseEnvironmentBgpTablesAnswerPath()
+              + "\n");
     }
 
     if (firstAttempt) {
@@ -1689,17 +1686,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
       NetworkSnapshot snapshot,
-      SortedMap<String, String> inputData,
+      SortedMap<Path, String> inputData,
       ParseEnvironmentBgpTablesAnswerElement answerElement) {
     _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
     _logger.resetTimer();
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
     List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
     SortedMap<String, Configuration> configurations = loadConfigurations(snapshot);
-    for (Entry<String, String> bgpObject : inputData.entrySet()) {
-      String currentKey = bgpObject.getKey();
-      String objectText = bgpObject.getValue();
-      String hostname = Paths.get(currentKey).getFileName().toString(); //
+    for (Entry<Path, String> bgpFile : inputData.entrySet()) {
+      Path currentFile = bgpFile.getKey();
+      String fileText = bgpFile.getValue();
+
+      String hostname = currentFile.getFileName().toString();
       String optionalSuffix = ".bgp";
       if (hostname.endsWith(optionalSuffix)) {
         hostname = hostname.substring(0, hostname.length() - optionalSuffix.length());
@@ -1710,7 +1708,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Warnings warnings = buildWarnings(_settings);
       ParseEnvironmentBgpTableJob job =
           new ParseEnvironmentBgpTableJob(
-              _settings, snapshot, objectText, hostname, currentKey, warnings, _bgpTablePlugins);
+              _settings, snapshot, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -2245,12 +2243,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void repairEnvironmentBgpTables(NetworkSnapshot snapshot) {
-    try {
-      _storage.deleteParseEnvironmentBgpTablesAnswerElement(snapshot);
-      _storage.deleteEnvironmentBgpTables(snapshot);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    Path answerPath = getTestrigSettings(snapshot).getParseEnvironmentBgpTablesAnswerPath();
+    CommonUtil.deleteIfExists(answerPath);
+    Path bgpTablesOutputPath = getTestrigSettings(snapshot).getSerializeEnvironmentBgpTablesPath();
+    CommonUtil.deleteDirectory(bgpTablesOutputPath);
     computeEnvironmentBgpTables(snapshot);
   }
 
@@ -2382,21 +2378,37 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
-  private Answer computeEnvironmentBgpTables(NetworkSnapshot snapshot) {
+  private Answer serializeEnvironmentBgpTables(
+      NetworkSnapshot snapshot, Path inputPath, Path outputPath) {
     Answer answer = new Answer();
     ParseEnvironmentBgpTablesAnswerElement answerElement =
         new ParseEnvironmentBgpTablesAnswerElement();
     answerElement.setVersion(BatfishVersion.getVersionStatic());
     answer.addAnswerElement(answerElement);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
-        getEnvironmentBgpTables(snapshot, answerElement);
-    try {
-      _storage.storeEnvironmentBgpTables(bgpTables, snapshot);
-      _storage.storeParseEnvironmentBgpTablesAnswerElement(answerElement, snapshot);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+        getEnvironmentBgpTables(snapshot, inputPath, answerElement);
+    serializeEnvironmentBgpTables(bgpTables, outputPath);
+    serializeObject(
+        answerElement, getTestrigSettings(snapshot).getParseEnvironmentBgpTablesAnswerPath());
     return answer;
+  }
+
+  private void serializeEnvironmentBgpTables(
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables, Path outputPath) {
+    if (bgpTables == null) {
+      throw new BatfishException("Exiting due to parsing error(s)");
+    }
+    _logger.info("\n*** SERIALIZING ENVIRONMENT BGP TABLES ***\n");
+    _logger.resetTimer();
+    outputPath.toFile().mkdirs();
+    SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
+    bgpTables.forEach(
+        (name, rt) -> {
+          Path currentOutputPath = outputPath.resolve(name);
+          output.put(currentOutputPath, rt);
+        });
+    serializeObjects(output);
+    _logger.printElapsedTime();
   }
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
@@ -3415,6 +3427,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return _basePath;
     }
 
+    public Path getEnvironmentBgpTablesPath() {
+      return getInputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
+    }
+
     public Path getExternalBgpAnnouncementsPath() {
       return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     }
@@ -3435,6 +3451,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
     }
 
+    public Path getSerializeEnvironmentBgpTablesPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
+    }
+
     public Path getSerializeVendorPath() {
       return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
     }
@@ -3450,6 +3470,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     public void setName(SnapshotId name) {
       _name = name;
+    }
+
+    public Path getParseEnvironmentBgpTablesAnswerPath() {
+      return getOutputPath().resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
     }
   }
 }
