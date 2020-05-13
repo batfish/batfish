@@ -46,6 +46,7 @@ import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -308,6 +309,30 @@ public final class SessionInstrumentationTest {
                 hasPostState(new PostInVrfSession(FW, FW_VRF)),
                 hasTransition(
                     allOf(mapsForward(ONE, sessionHeaders), mapsBackward(ONE, sessionHeaders))))));
+  }
+
+  @Test
+  public void testFibLookupSessionEdges_inboundSessionWithTransformation() {
+    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD poolBdd = PKT.getSrcIp().value(10L);
+    Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+    BDDFirewallSessionTraceInfo natSessionInfo =
+        new BDDFirewallSessionTraceInfo(
+            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, nat);
+
+    Matcher<Transition> expectedTransition =
+        allOf(mapsForward(ONE, sessionHeaders.and(poolBdd)), mapsBackward(ONE, sessionHeaders));
+    assertThat(
+        fibLookupSessionEdges(natSessionInfo),
+        containsInAnyOrder(
+            allOf(
+                hasPreState(new OriginateInterface(FW, FW_I1)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(expectedTransition)),
+            allOf(
+                hasPreState(new OriginateVrf(FW, FW_VRF)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(expectedTransition))));
   }
 
   @Test

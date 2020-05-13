@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -21,16 +22,17 @@ import org.batfish.symbolic.state.PreInInterface;
 import org.junit.Test;
 
 public class SessionScopeFibLookupSessionEdgesTest {
-  private static final BDD ZERO = new BDDPacket().getFactory().zero();
+  private static final BDD BDD1 = new BDDPacket().getDstIp().value(10L);
   private static final String HOSTNAME = "node";
   private static final String VRF_NAME = "vrf";
   private static final String IFACE_NAME = "iface";
   private static final Interface IFACE =
       Interface.builder().setName(IFACE_NAME).setVrf(new Vrf(VRF_NAME)).build();
 
-  /** Visitor set up with hostname and interface defined above that sets flow constraint to ZERO */
+  /** Visitor set up with hostname and interface defined above that sets flow constraint to BDD1 */
   private static final SessionScopeFibLookupSessionEdges VISITOR =
-      new SessionScopeFibLookupSessionEdges(HOSTNAME, ImmutableMap.of(IFACE_NAME, IFACE), ZERO);
+      new SessionScopeFibLookupSessionEdges(
+          HOSTNAME, ImmutableMap.of(IFACE_NAME, IFACE), constraint(BDD1));
 
   @Test
   public void testIncomingSessionScope() {
@@ -41,7 +43,7 @@ public class SessionScopeFibLookupSessionEdgesTest {
         new Edge(
             new PreInInterface(HOSTNAME, IFACE_NAME),
             new PostInVrfSession(HOSTNAME, VRF_NAME),
-            ZERO);
+            BDD1);
     List<Edge> actualEdges = scope.accept(VISITOR).collect(ImmutableList.toImmutableList());
     assertThat(actualEdges, contains(expectedEdge));
   }
@@ -55,10 +57,10 @@ public class SessionScopeFibLookupSessionEdgesTest {
         new Edge(
             new OriginateInterface(HOSTNAME, IFACE_NAME),
             new PostInVrfSession(HOSTNAME, VRF_NAME),
-            ZERO);
+            BDD1);
     Edge expectedOriginateVrfEdge =
         new Edge(
-            new OriginateVrf(HOSTNAME, VRF_NAME), new PostInVrfSession(HOSTNAME, VRF_NAME), ZERO);
+            new OriginateVrf(HOSTNAME, VRF_NAME), new PostInVrfSession(HOSTNAME, VRF_NAME), BDD1);
     List<Edge> actualEdges = scope.accept(VISITOR).collect(ImmutableList.toImmutableList());
     assertThat(
         actualEdges, containsInAnyOrder(expectedOriginateInterfaceEdge, expectedOriginateVrfEdge));

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
-import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.IncomingSessionScope;
@@ -27,14 +27,14 @@ import org.batfish.symbolic.state.StateExpr;
 public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<Stream<Edge>> {
   private final String _hostname;
   private final Map<String, Interface> _ifaces;
-  private final BDD _sessionFlows;
+  private final Transition _transition;
   private final SessionEdgePreStates _sessionEdgePreStates;
 
   SessionScopeFibLookupSessionEdges(
-      String hostname, Map<String, Interface> ifaces, BDD sessionFlows) {
+      String hostname, Map<String, Interface> ifaces, Transition transition) {
     _hostname = hostname;
     _ifaces = ImmutableMap.copyOf(ifaces);
-    _sessionFlows = sessionFlows;
+    _transition = transition;
     _sessionEdgePreStates = new SessionEdgePreStates(_hostname, _ifaces.values());
   }
 
@@ -47,7 +47,7 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
                     new PreInInterface(_hostname, incomingInterface),
                     new PostInVrfSession(
                         _hostname, _ifaces.get(incomingInterface).getVrf().getName()),
-                    _sessionFlows));
+                    _transition));
   }
 
   @Override
@@ -60,6 +60,6 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
     // Create an edge per preceding state
     return _sessionEdgePreStates
         .visitOriginatingSessionScope(originatingSessionScope)
-        .map(preState -> new Edge(preState, postState, _sessionFlows));
+        .map(preState -> new Edge(preState, postState, _transition));
   }
 }
