@@ -594,18 +594,20 @@ public class Driver {
       for (Map.Entry<String, String> entry : params.entrySet()) {
         webTarget = webTarget.queryParam(entry.getKey(), entry.getValue());
       }
-      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
+      JSONArray array;
+      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
 
-      logger.debug(
-          "BF: " + response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+        logger.debug(
+            "BF: " + response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        logger.error("Did not get an OK response\n");
-        return null;
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+          logger.error("Did not get an OK response\n");
+          return null;
+        }
+
+        String sobj = response.readEntity(String.class);
+        array = new JSONArray(sobj);
       }
-
-      String sobj = response.readEntity(String.class);
-      JSONArray array = new JSONArray(sobj);
       logger.debugf("BF: response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {

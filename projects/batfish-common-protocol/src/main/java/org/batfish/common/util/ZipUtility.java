@@ -51,15 +51,15 @@ public class ZipUtility {
          */
         byte[] buf = new byte[1024];
         int len;
-        FileInputStream in = new FileInputStream(srcFile);
-        zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
-        while ((len = in.read(buf)) > 0) {
-          /*
-           * Write the Result
-           */
-          zip.write(buf, 0, len);
+        try (FileInputStream in = new FileInputStream(srcFile)) {
+          zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
+          while ((len = in.read(buf)) > 0) {
+            /*
+             * Write the Result
+             */
+            zip.write(buf, 0, len);
+          }
         }
-        in.close();
       }
     }
   }
@@ -94,6 +94,7 @@ public class ZipUtility {
   }
 
   /** Zip {@code srcFolder} and write to {@code destZipFile} */
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
   public static void zipFiles(Path srcFolder, Path destZipFile) {
     try (Closer closer = Closer.create()) {
       OutputStream fos = closer.register(Files.newOutputStream(destZipFile));
@@ -120,6 +121,7 @@ public class ZipUtility {
   /*
    * zip the folders
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
   private static void zipFolder(String srcFolder, OutputStream outputStream, Closer closer)
       throws Exception {
     ZipOutputStream zip = null;

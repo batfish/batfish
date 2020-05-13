@@ -140,6 +140,7 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
     _isBest = _name.contains("_BEST");
     _isBestOverall = (_isBest && _name.contains("_OVERALL"));
 
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = slice.getCtx();
 
     boolean hasOspf = slice.getProtocols().get(router).contains(Protocol.OSPF);

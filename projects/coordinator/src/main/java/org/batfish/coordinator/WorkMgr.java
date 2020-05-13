@@ -320,34 +320,35 @@ public class WorkMgr extends AbstractCoordinator {
                   UriComponent.encode(
                       task.toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
 
-      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
-
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
-      } else {
+      JSONArray array;
+      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+          _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
+          return;
+        }
         String sobj = response.readEntity(String.class);
-        JSONArray array = new JSONArray(sobj);
-        _logger.info(
-            String.format(
-                "WM:AssignWork: response: %s [%s] [%s]\n",
-                array.toString(), array.get(0), array.get(1)));
+        array = new JSONArray(sobj);
+      }
+      _logger.info(
+          String.format(
+              "WM:AssignWork: response: %s [%s] [%s]\n",
+              array.toString(), array.get(0), array.get(1)));
 
-        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-          _logger.error(
-              String.format("ERROR in assigning task: %s %s\n", array.get(0), array.get(1)));
+      if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+        _logger.error(
+            String.format("ERROR in assigning task: %s %s\n", array.get(0), array.get(1)));
 
-          assignmentError = true;
-        } else {
-          assigned = true;
-          Span postAssignmentSpan =
-              GlobalTracer.get().buildSpan("Post-assignment task operations").start();
-          try (Scope postAssignmentScope =
-              GlobalTracer.get().scopeManager().activate(postAssignmentSpan)) {
-            assert postAssignmentScope != null;
-            work.setPostAssignmentContext(postAssignmentSpan.context());
-          } finally {
-            postAssignmentSpan.finish();
-          }
+        assignmentError = true;
+      } else {
+        assigned = true;
+        Span postAssignmentSpan =
+            GlobalTracer.get().buildSpan("Post-assignment task operations").start();
+        try (Scope postAssignmentScope =
+            GlobalTracer.get().scopeManager().activate(postAssignmentSpan)) {
+          assert postAssignmentScope != null;
+          work.setPostAssignmentContext(postAssignmentSpan.context());
+        } finally {
+          postAssignmentSpan.finish();
         }
       }
     } catch (ProcessingException e) {
@@ -482,25 +483,27 @@ public class WorkMgr extends AbstractCoordinator {
                   BfConsts.SVC_TASKID_KEY,
                   UriComponent.encode(
                       work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("WM:CheckTask: Got non-OK response %s\n", response.getStatus());
-      } else {
+      JSONArray array;
+      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+          _logger.errorf("WM:CheckTask: Got non-OK response %s\n", response.getStatus());
+          return;
+        }
         String sobj = response.readEntity(String.class);
-        JSONArray array = new JSONArray(sobj);
-        _logger.info(String.format("response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
+        array = new JSONArray(sobj);
+      }
+      _logger.info(String.format("response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
 
-        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-          _logger.error(
-              String.format(
-                  "got error while refreshing status: %s %s\n", array.get(0), array.get(1)));
-        } else {
-          String taskStr = array.get(1).toString();
-          task = BatfishObjectMapper.mapper().readValue(taskStr, Task.class);
-          if (task.getStatus() == null) {
-            _logger.error("did not see status key in json response\n");
-          }
+      if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+        _logger.error(
+            String.format(
+                "got error while refreshing status: %s %s\n", array.get(0), array.get(1)));
+      } else {
+        String taskStr = array.get(1).toString();
+        task = BatfishObjectMapper.mapper().readValue(taskStr, Task.class);
+        if (task.getStatus() == null) {
+          _logger.error("did not see status key in json response\n");
         }
       }
     } catch (ProcessingException e) {
@@ -1961,30 +1964,32 @@ public class WorkMgr extends AbstractCoordinator {
                   BfConsts.SVC_TASKID_KEY,
                   UriComponent.encode(
                       work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
-      } else {
-        try {
-          String sobj = response.readEntity(String.class);
-          JSONArray array = new JSONArray(sobj);
-          _logger.infof("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
-          if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-            _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
-          } else {
-            Task task = BatfishObjectMapper.mapper().readValue(array.getString(1), Task.class);
-            _workQueueMgr.processTaskCheckResult(work, task);
-            killed = true;
-          }
-        } catch (IllegalStateException e) {
-          // can happen if the worker dies before we could finish reading; let's assume success
-          _logger.infof("worker appears dead before response completion\n");
-          Task fakeTask =
-              new Task(TaskStatus.TerminatedByUser, "worker appears dead before responding");
-          _workQueueMgr.processTaskCheckResult(work, fakeTask);
+      JSONArray array;
+      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+          _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
+          return killed;
+        }
+        String sobj = response.readEntity(String.class);
+        array = new JSONArray(sobj);
+      }
+      try {
+        _logger.infof("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
+        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+          _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
+        } else {
+          Task task = BatfishObjectMapper.mapper().readValue(array.getString(1), Task.class);
+          _workQueueMgr.processTaskCheckResult(work, task);
           killed = true;
         }
+      } catch (IllegalStateException e) {
+        // can happen if the worker dies before we could finish reading; let's assume success
+        _logger.infof("worker appears dead before response completion\n");
+        Task fakeTask =
+            new Task(TaskStatus.TerminatedByUser, "worker appears dead before responding");
+        _workQueueMgr.processTaskCheckResult(work, fakeTask);
+        killed = true;
       }
     } catch (ProcessingException e) {
       _logger.errorf("unable to connect to %s: %s\n", worker, Throwables.getStackTraceAsString(e));

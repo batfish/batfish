@@ -184,6 +184,7 @@ public final class BatfishLogger {
         }
       }
 
+      @SuppressWarnings("PMD.CloseResource") // PMD cannot link to much later closing.
       PrintStream filePrintStream = null;
       try {
         filePrintStream = new PrintStream(_logFile, "UTF-8");
