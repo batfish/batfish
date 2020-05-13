@@ -10,6 +10,7 @@ import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
 import com.google.common.collect.ImmutableList;
@@ -36,12 +37,16 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.ForwardOutInterface;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
 import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.OriginateInterface;
+import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -189,9 +194,9 @@ public final class SessionInstrumentationTest {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private List<Edge> postInVrfSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
+  private List<Edge> fibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
-        .postInVrfSessionEdges(sessionInfo)
+        .fibLookupSessionEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -268,20 +273,70 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testPostInVrfSessionEdges() {
+  public void testFibLookupSessionEdges() {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
             FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
 
     assertThat(
-        postInVrfSessionEdges(sessionInfo),
+        fibLookupSessionEdges(sessionInfo),
         contains(
             allOf(
                 hasPreState(new PreInInterface(FW, FW_I1)),
                 hasPostState(new PostInVrfSession(FW, FW_VRF)),
                 hasTransition(
                     allOf(mapsForward(ONE, sessionHeaders), mapsBackward(ONE, sessionHeaders))))));
+  }
+
+  @Test
+  public void testFibLookupSessionEdges_inboundSession() {
+    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDDFirewallSessionTraceInfo sessionInfo =
+        new BDDFirewallSessionTraceInfo(
+            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
+
+    BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
+    Matcher<Transition> expectedTransition =
+        allOf(mapsForward(ONE, sessionHeaders.and(originating)), mapsBackward(ONE, sessionHeaders));
+    assertThat(
+        fibLookupSessionEdges(sessionInfo),
+        containsInAnyOrder(
+            allOf(
+                hasPreState(new OriginateInterface(FW, FW_I1)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(expectedTransition)),
+            allOf(
+                hasPreState(new OriginateVrf(FW, FW_VRF)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(expectedTransition))));
+  }
+
+  @Test
+  public void testFibLookupSessionEdges_inboundSessionWithTransformation() {
+    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD poolBdd = PKT.getSrcIp().value(10L);
+    Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+    BDDFirewallSessionTraceInfo natSessionInfo =
+        new BDDFirewallSessionTraceInfo(
+            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, nat);
+
+    BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
+    Matcher<Transition> expectedTransition =
+        allOf(
+            mapsForward(ONE, sessionHeaders.and(originating).and(poolBdd)),
+            mapsBackward(ONE, sessionHeaders));
+    assertThat(
+        fibLookupSessionEdges(natSessionInfo),
+        containsInAnyOrder(
+            allOf(
+                hasPreState(new OriginateInterface(FW, FW_I1)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(expectedTransition)),
+            allOf(
+                hasPreState(new OriginateVrf(FW, FW_VRF)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(expectedTransition))));
   }
 
   @Test
