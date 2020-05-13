@@ -23,7 +23,7 @@ import org.batfish.symbolic.state.StateExpr;
  *   <li>Identifying states that may have non-session out-edges that need to be constrained to
  *       exclude flows that will match a session
  *   <li>Producing starting states for edges representing sessions (visitor is currently used in
- *       this capacity for VRF scopes only, in {@link FibLookupSessionEdgesVisitor})
+ *       this capacity for VRF scopes only, in {@link SessionScopeFibLookupSessionEdges})
  * </ul>
  */
 @ParametersAreNonnullByDefault

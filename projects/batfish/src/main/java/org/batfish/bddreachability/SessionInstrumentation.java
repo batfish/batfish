@@ -263,7 +263,7 @@ public class SessionInstrumentation {
     Map<String, Interface> ifaces = _configs.get(hostname).getAllInterfaces();
     return sessionInfo
         .getSessionScope()
-        .accept(new FibLookupSessionEdgesVisitor(hostname, ifaces, sessionFlows));
+        .accept(new SessionScopeFibLookupSessionEdges(hostname, ifaces, sessionFlows));
   }
 
   @Nonnull

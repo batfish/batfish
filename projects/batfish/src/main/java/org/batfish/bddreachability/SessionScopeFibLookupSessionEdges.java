@@ -24,13 +24,14 @@ import org.batfish.symbolic.state.StateExpr;
  * or {@link OriginateInterface} or {@link OriginateVrf} (for {@link OriginatingSessionScope}).
  */
 @ParametersAreNonnullByDefault
-public class FibLookupSessionEdgesVisitor implements SessionScopeVisitor<Stream<Edge>> {
+public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<Stream<Edge>> {
   private final String _hostname;
   private final Map<String, Interface> _ifaces;
   private final BDD _sessionFlows;
   private final SessionEdgePreStates _sessionEdgePreStates;
 
-  FibLookupSessionEdgesVisitor(String hostname, Map<String, Interface> ifaces, BDD sessionFlows) {
+  SessionScopeFibLookupSessionEdges(
+      String hostname, Map<String, Interface> ifaces, BDD sessionFlows) {
     _hostname = hostname;
     _ifaces = ImmutableMap.copyOf(ifaces);
     _sessionFlows = sessionFlows;
