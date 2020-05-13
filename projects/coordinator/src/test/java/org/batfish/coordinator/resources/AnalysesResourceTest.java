@@ -46,9 +46,9 @@ public final class AnalysesResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void testListAnalysesMissingNetwork() {
     String network = "network1";
-    Response response = getTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -59,9 +59,9 @@ public final class AnalysesResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr()
         .configureAnalysis(
             network, true, analysis, ImmutableMap.of("foo", "{}"), ImmutableList.of(), false);
-    Response response = getTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(List.class), equalTo(ImmutableList.of(analysis)));
+    try (Response response = getTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(List.class), equalTo(ImmutableList.of(analysis)));
+    }
   }
 }

@@ -48,9 +48,9 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void testListSnapshotsMissingNetwork() {
     String network = "network1";
-    Response response = getTarget(network, false).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, false).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -59,20 +59,20 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
-    Response response = getTarget(network, false).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(new GenericType<List<String>>() {}),
-        equalTo(ImmutableList.of(snapshot)));
+    try (Response response = getTarget(network, false).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(new GenericType<List<String>>() {}),
+          equalTo(ImmutableList.of(snapshot)));
+    }
   }
 
   @Test
   public void testListSnapshotsVerboseMissingNetwork() {
     String network = "network1";
-    Response response = getTarget(network, true).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, true).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -81,14 +81,14 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
-    Response response = getTarget(network, true).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(new GenericType<List<SnapshotMetadataEntry>>() {}),
-        equalTo(
-            ImmutableList.of(
-                new SnapshotMetadataEntry(
-                    snapshot, Main.getWorkMgr().getSnapshotMetadata(network, snapshot)))));
+    try (Response response = getTarget(network, true).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(new GenericType<List<SnapshotMetadataEntry>>() {}),
+          equalTo(
+              ImmutableList.of(
+                  new SnapshotMetadataEntry(
+                      snapshot, Main.getWorkMgr().getSnapshotMetadata(network, snapshot)))));
+    }
   }
 }

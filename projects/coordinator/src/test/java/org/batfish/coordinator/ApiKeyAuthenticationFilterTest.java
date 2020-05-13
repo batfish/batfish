@@ -58,34 +58,40 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
 
   @Test
   public void testEmptyApiKey() {
-    Response response = target("/test").request().header(HTTP_HEADER_BATFISH_APIKEY, "").get();
-    assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
-    assertThat(
-        response.readEntity(String.class),
-        equalTo("HTTP header " + HTTP_HEADER_BATFISH_APIKEY + " should contain an API key"));
+    try (Response response =
+        target("/test").request().header(HTTP_HEADER_BATFISH_APIKEY, "").get()) {
+      assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
+      assertThat(
+          response.readEntity(String.class),
+          equalTo("HTTP header " + HTTP_HEADER_BATFISH_APIKEY + " should contain an API key"));
+    }
   }
 
   @Test
   public void testDefaultKeyWhenApiKeyIsMissing() {
-    Response response = target("/test").request().get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    try (Response response = target("/test").request().get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 
   @Test
   public void testUnauthorizedApiKey() {
-    Response response = target("/test").request().header(HTTP_HEADER_BATFISH_APIKEY, "100").get();
-    assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
-    String expectMessage = "Authorizer: '100' is NOT a valid key";
-    assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    try (Response response =
+        target("/test").request().header(HTTP_HEADER_BATFISH_APIKEY, "100").get()) {
+      assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
+      String expectMessage = "Authorizer: '100' is NOT a valid key";
+      assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    }
   }
 
   @Test
   public void testValidApiKey() {
-    Response response =
+    try (Response response =
         target("/test")
             .request()
             .header(HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 }

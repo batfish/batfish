@@ -48,31 +48,35 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
 
   @Test
   public void testMissingVersionPreMatch() {
-    Response response = target("/crash").request().get();
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    String expectMessage =
-        String.format(
-            "HTTP header %s should contain a client version", HTTP_HEADER_BATFISH_VERSION);
-    assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    try (Response response = target("/crash").request().get()) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+      String expectMessage =
+          String.format(
+              "HTTP header %s should contain a client version", HTTP_HEADER_BATFISH_VERSION);
+      assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    }
   }
 
   @Test
   public void testEmptyVersionPreMatch() {
-    Response response = target("/crash").request().header(HTTP_HEADER_BATFISH_VERSION, "").get();
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    String expectMessage =
-        String.format(
-            "HTTP header %s should contain a client version", HTTP_HEADER_BATFISH_VERSION);
-    assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    try (Response response =
+        target("/crash").request().header(HTTP_HEADER_BATFISH_VERSION, "").get()) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+      String expectMessage =
+          String.format(
+              "HTTP header %s should contain a client version", HTTP_HEADER_BATFISH_VERSION);
+      assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    }
   }
 
   @Test
   public void testValidVersion() {
-    Response response =
+    try (Response response =
         target("/test")
             .request()
             .header(HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-            .get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+            .get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 }

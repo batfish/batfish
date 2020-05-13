@@ -68,9 +68,9 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     String key = "foo/bar";
-    Response response = getTarget(network, snapshot, key).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot, key).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -78,9 +78,9 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     String network = "network1";
     String snapshot = "snapshot1";
     String key = "foo/bar";
-    Response response = getTarget(network, snapshot, key).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot, key).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -89,9 +89,9 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     String key = "foo/bar";
-    Response response = getTarget(network, snapshot, key).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot, key).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -103,10 +103,10 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, content, _folder);
     String key = String.format("%s/%s", BfConsts.RELPATH_CONFIGURATIONS_DIR, node);
-    Response response = getTarget(network, snapshot, key).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo(content));
+    try (Response response = getTarget(network, snapshot, key).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(String.class), equalTo(content));
+    }
   }
 
   @Test
@@ -118,15 +118,14 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, content, _folder);
 
-    Response response = listKeysTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    assertThat(
-        response.readEntity(new GenericType<List<StoredObjectMetadata>>() {}),
-        equalTo(
-            ImmutableList.of(
-                new StoredObjectMetadata("configs/" + node, content.getBytes().length))));
+    try (Response response = listKeysTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(new GenericType<List<StoredObjectMetadata>>() {}),
+          equalTo(
+              ImmutableList.of(
+                  new StoredObjectMetadata("configs/" + node, content.getBytes().length))));
+    }
   }
 
   @Test
@@ -134,8 +133,9 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     String network = "network1";
     String snapshot = "snapshot1";
 
-    Response response = listKeysTarget(network, snapshot).get();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = listKeysTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -143,7 +143,8 @@ public final class SnapshotInputObjectsResourceTest extends WorkMgrServiceV2Test
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = listKeysTarget(network, snapshot).get();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = listKeysTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 }
