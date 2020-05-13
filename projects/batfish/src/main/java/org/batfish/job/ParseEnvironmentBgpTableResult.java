@@ -3,7 +3,7 @@ package org.batfish.job;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.base.Throwables;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -21,7 +21,7 @@ public class ParseEnvironmentBgpTableResult
 
   private BgpAdvertisementsByVrf _bgpTable;
 
-  private final Path _file;
+  private final String _key;
 
   private String _name;
 
@@ -34,13 +34,13 @@ public class ParseEnvironmentBgpTableResult
   public ParseEnvironmentBgpTableResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      Path file,
+      String key,
       String name,
       BgpAdvertisementsByVrf bgpTable,
       Warnings warnings,
       ParseTreeSentences parseTree) {
     super(elapsedTime, history);
-    _file = file;
+    _key = key;
     _parseTree = parseTree;
     _name = name;
     _bgpTable = bgpTable;
@@ -50,20 +50,20 @@ public class ParseEnvironmentBgpTableResult
   }
 
   public ParseEnvironmentBgpTableResult(
-      long elapsedTime, BatfishLoggerHistory history, Path file, Throwable failureCause) {
+      long elapsedTime, BatfishLoggerHistory history, String key, Throwable failureCause) {
     super(elapsedTime, history, failureCause);
-    _file = file;
+    _key = key;
     _status = ParseStatus.FAILED;
   }
 
   public ParseEnvironmentBgpTableResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      Path file,
+      String key,
       Warnings warnings,
       ParseStatus status) {
     super(elapsedTime, history);
-    _file = file;
+    _key = key;
     _status = status;
     _warnings = warnings;
   }
@@ -76,7 +76,7 @@ public class ParseEnvironmentBgpTableResult
     } else if (_bgpTable != null) {
       terseLogLevelPrefix = _name + ": ";
     } else {
-      terseLogLevelPrefix = _file + ": ";
+      terseLogLevelPrefix = _key + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }
@@ -87,7 +87,7 @@ public class ParseEnvironmentBgpTableResult
       BatfishLogger logger,
       ParseEnvironmentBgpTablesAnswerElement answerElement) {
     appendHistory(logger);
-    String filename = _file.getFileName().toString();
+    String filename = Paths.get(_key).getFileName().toString();
     if (_bgpTable != null) {
       String hostname = _name;
       if (bgpTables.containsKey(hostname)) {
@@ -127,8 +127,8 @@ public class ParseEnvironmentBgpTableResult
     return _bgpTable;
   }
 
-  public Path getFile() {
-    return _file;
+  public String getKey() {
+    return _key;
   }
 
   @Override
