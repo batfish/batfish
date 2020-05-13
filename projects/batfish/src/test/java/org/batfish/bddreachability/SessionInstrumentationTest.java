@@ -285,6 +285,27 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
+  public void testPostInVrfSessionEdges_transformation() {
+    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD poolBdd = PKT.getSrcIp().value(10L);
+    Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+    BDDFirewallSessionTraceInfo sessionInfo =
+        new BDDFirewallSessionTraceInfo(
+            FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, nat);
+
+    assertThat(
+        postInVrfSessionEdges(sessionInfo),
+        contains(
+            allOf(
+                hasPreState(new PreInInterface(FW, FW_I1)),
+                hasPostState(new PostInVrfSession(FW, FW_VRF)),
+                hasTransition(
+                    allOf(
+                        mapsForward(ONE, sessionHeaders.and(poolBdd)),
+                        mapsBackward(ONE, sessionHeaders))))));
+  }
+
+  @Test
   public void testPreInInterfaceEdges() {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
