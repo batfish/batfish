@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import java.nio.file.Path;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
@@ -21,8 +22,8 @@ import org.batfish.main.ParserBatfishException;
 public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpTableResult> {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
-  private String _key;
-  private String _objectText;
+  private Path _file;
+  private String _fileText;
   private String _hostname;
   private ParseTreeSentences _ptSentences;
   private final NetworkSnapshot _snapshot;
@@ -31,15 +32,15 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
   public ParseEnvironmentBgpTableJob(
       Settings settings,
       NetworkSnapshot snapshot,
-      String objectText,
+      String fileText,
       String hostname,
-      String key,
+      Path file,
       Warnings warnings,
       SortedMap<BgpTableFormat, BgpTablePlugin> bgpTablePlugins) {
     super(settings);
     _bgpTablePlugins = bgpTablePlugins;
-    _objectText = objectText;
-    _key = key;
+    _fileText = fileText;
+    _file = file;
     _hostname = hostname;
     _ptSentences = new ParseTreeSentences();
     _snapshot = snapshot;
@@ -50,28 +51,29 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
   public ParseEnvironmentBgpTableResult call() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
+    String currentPath = _file.toAbsolutePath().toString();
     ParserRuleContext tree = null;
-    _logger.infof("Processing: '%s'\n", _key);
+    _logger.infof("Processing: '%s'\n", currentPath);
     BgpTablePlugin plugin = null;
-    BgpTableFormat format = BgpTableFormatDetector.identifyBgpTableFormat(_objectText);
+    BgpTableFormat format = BgpTableFormatDetector.identifyBgpTableFormat(_fileText);
     switch (format) {
       case EMPTY:
-        _warnings.redFlag("Empty object: '" + _key + "'\n");
+        _warnings.redFlag("Empty file: '" + currentPath + "'\n");
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseEnvironmentBgpTableResult(
-            elapsedTime, _logger.getHistory(), _key, _warnings, ParseStatus.EMPTY);
+            elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.EMPTY);
 
       case UNKNOWN:
-        String unknownError = "Unknown bgp-table format for object: '" + _key + "'\n";
+        String unknownError = "Unknown bgp-table format for file: '" + currentPath + "'\n";
         if (!_settings.ignoreUnknown()) {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseEnvironmentBgpTableResult(
-              elapsedTime, _logger.getHistory(), _key, new BatfishException(unknownError));
+              elapsedTime, _logger.getHistory(), _file, new BatfishException(unknownError));
         } else {
           _warnings.unimplemented(unknownError);
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseEnvironmentBgpTableResult(
-              elapsedTime, _logger.getHistory(), _key, _warnings, ParseStatus.UNKNOWN);
+              elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.UNKNOWN);
         }
 
         // $CASES-OMITTED$
@@ -84,24 +86,24 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
           "Unsupported bgp-table format: '"
               + format.bgpTableFormatName()
               + "' for file: '"
-              + _key
+              + currentPath
               + "'\n";
       if (!_settings.ignoreUnsupported()) {
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseEnvironmentBgpTableResult(
-            elapsedTime, _logger.getHistory(), _key, new BatfishException(unsupportedError));
+            elapsedTime, _logger.getHistory(), _file, new BatfishException(unsupportedError));
       } else {
         _warnings.unimplemented(unsupportedError);
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseEnvironmentBgpTableResult(
-            elapsedTime, _logger.getHistory(), _key, _warnings, ParseStatus.UNSUPPORTED);
+            elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.UNSUPPORTED);
       }
     }
     BgpTableExtractor extractor;
     try {
       _logger.info("\tParsing...");
-      BatfishCombinedParser<?, ?> combinedParser = plugin.parser(_objectText, _settings);
-      extractor = plugin.extractor(_hostname, _objectText, combinedParser, _warnings);
+      BatfishCombinedParser<?, ?> combinedParser = plugin.parser(_fileText, _settings);
+      extractor = plugin.extractor(_hostname, _fileText, combinedParser, _warnings);
       tree = Batfish.parse(combinedParser, _logger, _settings);
       if (_settings.getPrintParseTree()) {
         _ptSentences =
@@ -112,15 +114,16 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
       extractor.processParseTree(_snapshot, tree);
       _logger.info("OK\n");
     } catch (ParserBatfishException e) {
-      String error = "Error parsing configuration file: '" + _key + "'";
+      String error = "Error parsing configuration file: '" + currentPath + "'";
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseEnvironmentBgpTableResult(
-          elapsedTime, _logger.getHistory(), _key, new BatfishException(error, e));
+          elapsedTime, _logger.getHistory(), _file, new BatfishException(error, e));
     } catch (Exception e) {
-      String error = "Error post-processing parse tree of configuration file: '" + _key + "'";
+      String error =
+          "Error post-processing parse tree of configuration file: '" + currentPath + "'";
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseEnvironmentBgpTableResult(
-          elapsedTime, _logger.getHistory(), _key, new BatfishException(error, e));
+          elapsedTime, _logger.getHistory(), _file, new BatfishException(error, e));
     } finally {
       Batfish.logWarnings(_logger, _warnings);
     }
@@ -129,7 +132,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
     return new ParseEnvironmentBgpTableResult(
         elapsedTime,
         _logger.getHistory(),
-        _key,
+        _file,
         _hostname,
         bgpAdvertisementsByVrf,
         _warnings,

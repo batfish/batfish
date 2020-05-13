@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 
 import com.google.common.collect.ImmutableList;
+import java.nio.file.Paths;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishLogger;
@@ -19,7 +20,7 @@ public class ParseEnvironmentBgpTableResultTest {
 
   @Test
   public void testApplyTo() {
-    String key = "file.cfg";
+    String filename = "file.cfg";
 
     ParseTreeSentences parseTree = new ParseTreeSentences();
     parseTree.setSentences(ImmutableList.of("test"));
@@ -31,7 +32,7 @@ public class ParseEnvironmentBgpTableResultTest {
         new ParseEnvironmentBgpTableResult(
             0,
             new BatfishLoggerHistory(),
-            key,
+            Paths.get(filename),
             "name",
             new BgpAdvertisementsByVrf(),
             warnings,
@@ -47,9 +48,9 @@ public class ParseEnvironmentBgpTableResultTest {
     SortedMap<String, Warnings> answerWarnings = answerElement.getWarnings();
 
     // Confirm result parse tree was properly applied to answerElement
-    assertThat(answerParseTrees, hasEntry(key, parseTree));
+    assertThat(answerParseTrees, hasEntry(filename, parseTree));
 
     // Confirm result warning was properly applied to answerElement
-    assertThat(answerWarnings, hasEntry(key, warnings));
+    assertThat(answerWarnings, hasEntry(filename, warnings));
   }
 }
