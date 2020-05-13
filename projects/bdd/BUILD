@@ -35,6 +35,7 @@ junit_tests(
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
+    skip_pmd = True,
     deps = [
         ":bdd",
         ":bdd_testlib",

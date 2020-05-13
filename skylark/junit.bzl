@@ -18,7 +18,8 @@
 
 # See https://github.com/bazelbuild/bazel/issues/1017 for background.
 
-load("@rules_java//java:defs.bzl", "java_test")
+load("@rules_java//java:defs.bzl", "java_library", "java_test")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 _OUTPUT = """import org.junit.runners.Suite;
 import org.junit.runner.RunWith;
@@ -71,9 +72,14 @@ _GenSuite = rule(
     implementation = _impl,
 )
 
-def junit_tests(name, srcs, **kwargs):
+def junit_tests(name, srcs, skip_pmd = False, **kwargs):
+    if len(srcs) == 0:
+        return
+
     s_name = name.replace("-", "_") + "TestSuite"
     test_files = [s for s in srcs if s.endswith("Test.java")]
+
+    # generate a JUnit suite and a java_test that runs it
     _GenSuite(
         name = s_name,
         srcs = test_files,
@@ -84,4 +90,21 @@ def junit_tests(name, srcs, **kwargs):
         test_class = s_name,
         srcs = srcs + [":" + s_name],
         **kwargs
+    )
+
+    # Generate a java library and a pmd_test that checks it
+    if skip_pmd:
+        return
+
+    lib_kwargs = dict(**kwargs)  # have to remove non-java_library args
+    lib_kwargs.pop("size", "")
+    java_library(
+        name = name + "_pmdlib",
+        srcs = srcs,
+        testonly = True,
+        **lib_kwargs
+    )
+    pmd_test(
+        name = name + "_pmd",
+        lib = name + "_pmdlib",
     )
