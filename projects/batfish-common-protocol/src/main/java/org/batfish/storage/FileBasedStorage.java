@@ -1,6 +1,7 @@
 package org.batfish.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Streams.stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
@@ -11,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
@@ -31,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -70,7 +73,9 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -123,6 +128,8 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
   private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
   private static final String RELPATH_DATA_PLANE = "dp";
+  private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
+  private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -204,9 +211,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
-    Path ccaePath =
-        getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
+    Path ccaePath = getConvertAnswerPath(network, snapshot);
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -588,15 +593,44 @@ public final class FileBasedStorage implements StorageProvider {
   private void serializeObject(Serializable object, Path outputFile) {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
-      try (OutputStream out = Files.newOutputStream(sanitizedOutputFile);
-          LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
-          ObjectOutputStream oos = new ObjectOutputStream(gos)) {
-        oos.writeObject(object);
+      Path tmpFile = Files.createTempFile(null, null);
+      try {
+        try (OutputStream out = Files.newOutputStream(tmpFile);
+            LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
+            ObjectOutputStream oos = new ObjectOutputStream(gos)) {
+          oos.writeObject(object);
+        } catch (Throwable e) {
+          throw new BatfishException(
+              "Failed to serialize object to output file: " + sanitizedOutputFile, e);
+        }
+        mkdirs(sanitizedOutputFile.getParent());
+        Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
+      } finally {
+        Files.deleteIfExists(tmpFile);
       }
-    } catch (Throwable e) {
-      throw new BatfishException(
-          "Failed to serialize object to output file: " + sanitizedOutputFile, e);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
+  }
+
+  private <S extends Serializable> void serializeObjects(Map<Path, S> objectsByPath) {
+    if (objectsByPath.isEmpty()) {
+      return;
+    }
+    int size = objectsByPath.size();
+    String className = objectsByPath.values().iterator().next().getClass().getName();
+    AtomicInteger serializeCompleted =
+        _newBatch.apply(String.format("Serializing '%s' instances to disk", className), size);
+    objectsByPath
+        .entrySet()
+        .parallelStream()
+        .forEach(
+            entry -> {
+              Path outputPath = entry.getKey();
+              S object = entry.getValue();
+              serializeObject(object, outputPath);
+              serializeCompleted.incrementAndGet();
+            });
   }
 
   private boolean cachedConfigsAreCompatible(NetworkId network, SnapshotId snapshot) {
@@ -1424,6 +1458,9 @@ public final class FileBasedStorage implements StorageProvider {
     return Files.walk(inputObjectsPath)
         .filter(Files::isRegularFile)
         .map(inputObjectsPath::relativize)
+        // ignore hidden files and folders
+        .filter(
+            path -> stream(path).noneMatch(pathElement -> pathElement.toString().startsWith(".")))
         .map(Object::toString);
   }
 
@@ -1441,6 +1478,104 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException {
     return Files.exists(getDataPlanePath(snapshot));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+  }
+
+  @Nonnull
+  @Override
+  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    return deserializeObject(
+        getParseEnvironmentBgpTablesAnswerElementPath(snapshot),
+        ParseEnvironmentBgpTablesAnswerElement.class);
+  }
+
+  @Override
+  public void storeParseEnvironmentBgpTablesAnswerElement(
+      ParseEnvironmentBgpTablesAnswerElement parseEnvironmentBgpTablesAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    serializeObject(
+        parseEnvironmentBgpTablesAnswerElement,
+        getParseEnvironmentBgpTablesAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public boolean hasParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    return Files.exists(getParseEnvironmentBgpTablesAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    Files.deleteIfExists(getParseEnvironmentBgpTablesAnswerElementPath(snapshot));
+  }
+
+  private @Nonnull Path getParseEnvironmentBgpTablesAnswerElementPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
+      throws IOException {
+    _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
+    _logger.resetTimer();
+    Map<Path, String> namesByPath = new HashMap<>();
+    Path dir = getEnvironmentBgpTablesPath(snapshot);
+    if (!Files.exists(dir)) {
+      return ImmutableSortedMap.of();
+    }
+    try (DirectoryStream<Path> serializedBgpTables =
+        Files.newDirectoryStream(getEnvironmentBgpTablesPath(snapshot))) {
+      for (Path serializedBgpTable : serializedBgpTables) {
+        String name = serializedBgpTable.getFileName().toString();
+        namesByPath.put(serializedBgpTable, name);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException("Error reading serialized BGP tables", e);
+    }
+    SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
+        deserializeObjects(namesByPath, BgpAdvertisementsByVrf.class);
+    _logger.printElapsedTime();
+    return bgpTables;
+  }
+
+  @Override
+  public void storeEnvironmentBgpTables(
+      Map<String, BgpAdvertisementsByVrf> environmentBgpTables, NetworkSnapshot snapshot)
+      throws IOException {
+    _logger.info("\n*** SERIALIZING ENVIRONMENT BGP TABLES ***\n");
+    _logger.resetTimer();
+    SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
+    Path outputPath = getEnvironmentBgpTablesPath(snapshot);
+    environmentBgpTables.forEach(
+        (name, rt) -> {
+          Path currentOutputPath = outputPath.resolve(name);
+          output.put(currentOutputPath, rt);
+        });
+    serializeObjects(output);
+    _logger.printElapsedTime();
+  }
+
+  @Override
+  public void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException {
+    deleteDirectory(getEnvironmentBgpTablesPath(snapshot));
+  }
+
+  private @Nonnull Path getEnvironmentBgpTablesPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
   }
 
   private @Nonnull Path getDataPlanePath(NetworkSnapshot snapshot) {

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -54,6 +55,9 @@ import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -63,6 +67,9 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
@@ -70,6 +77,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
@@ -261,6 +269,51 @@ public class BatfishTest {
             .map(Entry::getKey)
             .collect(ImmutableSet.toImmutableSet()),
         containsInAnyOrder("Ethernet1", "Ethernet2"));
+  }
+
+  @Test
+  public void testInitSnapshotWithEnvironmentBgpTables() throws IOException {
+    /* Setup: Config rtr1 has associated environment BGP tables. */
+    String snapshotResourcePrefix = "org/batfish/main/snapshots/env_bgp";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setBgpTablesText(snapshotResourcePrefix, "rtr1.bgp")
+                .setConfigurationText(snapshotResourcePrefix, "rtr1")
+                .build(),
+            _folder);
+    // don't crash
+    batfish.loadConfigurations(batfish.getSnapshot());
+    SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
+        batfish.loadEnvironmentBgpTables(batfish.getSnapshot());
+
+    assertThat(
+        environmentBgpTables,
+        equalTo(
+            ImmutableMap.of(
+                "rtr1",
+                ImmutableMap.of(
+                    "default",
+                    ImmutableSet.of(
+                        BgpAdvertisement.builder()
+                            .setType(BgpAdvertisementType.EBGP_SENT)
+                            .setNetwork(Prefix.strict("192.0.2.0/24"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
+                            .setSrcNode("neighbor")
+                            .setSrcIp(Ip.parse("10.0.0.3"))
+                            .setDstNode("rtr1")
+                            .setDstIp(Ip.parse("10.0.0.4"))
+                            .setSrcProtocol(RoutingProtocol.AGGREGATE)
+                            .setOriginType(OriginType.INCOMPLETE)
+                            .setLocalPreference(100L)
+                            .setMed(0L)
+                            .setOriginatorIp(Ip.ZERO)
+                            .setAsPath(AsPath.empty())
+                            .setCommunities(ImmutableSortedSet.of())
+                            .setSrcVrf("default")
+                            .setDstVrf("default")
+                            .setClusterList(ImmutableSortedSet.of())
+                            .build())))));
   }
 
   @Test
