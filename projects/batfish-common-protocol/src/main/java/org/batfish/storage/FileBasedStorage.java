@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
@@ -1530,6 +1531,10 @@ public final class FileBasedStorage implements StorageProvider {
     _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
     _logger.resetTimer();
     Map<Path, String> namesByPath = new HashMap<>();
+    Path dir = getEnvironmentBgpTablesPath(snapshot);
+    if (!Files.exists(dir)) {
+      return ImmutableSortedMap.of();
+    }
     try (DirectoryStream<Path> serializedBgpTables =
         Files.newDirectoryStream(getEnvironmentBgpTablesPath(snapshot))) {
       for (Path serializedBgpTable : serializedBgpTables) {

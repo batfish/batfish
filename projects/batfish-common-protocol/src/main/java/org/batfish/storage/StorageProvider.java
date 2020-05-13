@@ -819,7 +819,8 @@ public interface StorageProvider {
   void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
 
   /**
-   * Loads the compiled environment BGP tables for the given snapshot if they exist.
+   * Loads the compiled environment BGP tables for the given snapshot if they exist. Returns an
+   * empty map if none were compiled.
    *
    * @throws IOException if there is an error
    */
