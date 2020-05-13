@@ -60,8 +60,7 @@ public final class BgpTableFormatDetector {
     try {
       BatfishObjectMapper.mapper().readValue(_fileText, BgpAdvertisementsByVrf.class);
       return BgpTableFormat.JSON;
-    } catch (IOException e) { // just continue
-      assert Boolean.TRUE;
+    } catch (IOException e) {
     }
     return BgpTableFormat.UNKNOWN;
   }

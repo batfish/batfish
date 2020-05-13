@@ -210,9 +210,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
-    Path ccaePath =
-        getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
+    Path ccaePath = getConvertAnswerPath(network, snapshot);
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -594,18 +592,22 @@ public final class FileBasedStorage implements StorageProvider {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
       Path tmpFile = Files.createTempFile(null, null);
-      try (OutputStream out = Files.newOutputStream(tmpFile);
-          LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
-          ObjectOutputStream oos = new ObjectOutputStream(gos)) {
-        oos.writeObject(object);
+      try {
+        try (OutputStream out = Files.newOutputStream(tmpFile);
+            LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
+            ObjectOutputStream oos = new ObjectOutputStream(gos)) {
+          oos.writeObject(object);
+        } catch (Throwable e) {
+          throw new BatfishException(
+              "Failed to serialize object to output file: " + sanitizedOutputFile, e);
+        }
         mkdirs(sanitizedOutputFile.getParent());
         Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
       } finally {
         Files.deleteIfExists(tmpFile);
       }
-    } catch (Throwable e) {
-      throw new BatfishException(
-          "Failed to serialize object to output file: " + sanitizedOutputFile, e);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
