@@ -191,7 +191,8 @@ public class BatfishTestUtils {
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(bgpTablesText, snapshotTr.getEnvironmentBgpTablesPath());
+    writeTemporaryTestrigFiles(
+        bgpTablesText, testrigPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
     if (layer1TopologyText != null) {

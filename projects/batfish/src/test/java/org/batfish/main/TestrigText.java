@@ -79,6 +79,10 @@ public class TestrigText {
       return this;
     }
 
+    public Builder setBgpTablesText(String testrigResourcePrefix, String... filenames) {
+      return setBgpTablesText(testrigResourcePrefix, Arrays.asList(filenames));
+    }
+
     public Builder setBgpTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
       _bgpTablesText =
           readTestrigResources(

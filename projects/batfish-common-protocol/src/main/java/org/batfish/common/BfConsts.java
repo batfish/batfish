@@ -133,7 +133,6 @@ public class BfConsts {
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
-  public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INPUT = "input";
@@ -146,7 +145,6 @@ public class BfConsts {
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_RUNTIME_DATA_FILE = "runtime_data.json";
   public static final String RELPATH_QUESTION_FILE = "question.json";
-  public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 
