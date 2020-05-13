@@ -84,6 +84,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_AUTO_COMPLETE);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -117,6 +118,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CHECK_API_KEY);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -139,6 +141,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_QUESTION_TEMPLATE);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -172,16 +175,14 @@ public class BfCoordWorkHelper {
   }
 
   public boolean delNetwork(String networkName) {
-    try {
-      WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_NETWORKS, networkName));
+    WebTarget webTarget = getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_NETWORKS, networkName));
 
-      Response response =
-          webTarget
-              .request(MediaType.APPLICATION_JSON)
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-              .delete();
+    try (Response response =
+        webTarget
+            .request(MediaType.APPLICATION_JSON)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .delete()) {
 
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.errorf("delNetwork: Did not get OK response. Got: %s\n", response.getStatus());
@@ -200,6 +201,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_QUESTION);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -221,6 +223,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_SNAPSHOT);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -237,61 +240,13 @@ public class BfCoordWorkHelper {
     }
   }
 
-  // private JSONObject getJsonResponse(WebTarget webTarget) throws Exception {
-  // try {
-  // Response response = webTarget.request(MediaType.APPLICATION_JSON)
-  // .get();
-  //
-  // _logger.info(response.getStatus() + " " + response.getStatusInfo()
-  // + " " + response + "\n");
-  //
-  // if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-  // _logger.errorf("Did not get an OK response from: %s\n", webTarget);
-  // return null;
-  // }
-  //
-  // String sobj = response.readEntity(String.class);
-  // JSONArray array = new JSONArray(sobj);
-  //
-  // _logger.infof("response: %s [%s] [%s]\n", array.toString(),
-  // array.get(0), array.get(1));
-  //
-  // if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-  // _logger.errorf("did not get success: %s %s\n", array.get(0),
-  // array.get(1));
-  // return null;
-  // }
-  //
-  // return new JSONObject(array.get(1).toString());
-  // }
-  // catch (ProcessingException e) {
-  // if (e.getMessage().contains("ConnectException")) {
-  // _logger.errorf("unable to connect to coordinator at %s\n",
-  // _coordWorkMgr);
-  // return null;
-  // }
-  // if (e.getMessage().contains("SSLHandshakeException")) {
-  // _logger
-  // .errorf("SSL handshake exception while connecting to coordinator (Is the
-  // coordinator using SSL and using keys that you trust?)\n");
-  // return null;
-  // }
-  // if (e.getMessage().contains("SocketException: Unexpected end of file")) {
-  // _logger
-  // .errorf("SocketException while connecting to coordinator. (Are you using
-  // SSL?)\n");
-  // return null;
-  // }
-  // throw e;
-  // }
-  // }
-
   @Nullable
   String getAnswer(
       String networkName, String snapshot, String referenceSnapshot, String questionName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANSWER);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -343,22 +298,22 @@ public class BfCoordWorkHelper {
    */
   @Nullable
   String getConfiguration(String networkName, String snapshotName, String configName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONFIGURATION);
+    WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONFIGURATION);
 
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+    @SuppressWarnings("PMD.CloseResource") // postData will close it
+    MultiPart multiPart = new MultiPart();
+    multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONFIGURATION_NAME, configName);
+    addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+    addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
+    addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
+    addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
+    addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONFIGURATION_NAME, configName);
 
-      Response response =
-          webTarget
-              .request(MediaType.APPLICATION_JSON)
-              .post(Entity.entity(multiPart, multiPart.getMediaType()));
+    try (Response response =
+        webTarget
+            .request(MediaType.APPLICATION_JSON)
+            .post(Entity.entity(multiPart, multiPart.getMediaType()))) {
 
       _logger.debugf("%s %s %s\n", response.getStatus(), response.getStatusInfo(), response);
 
@@ -385,16 +340,13 @@ public class BfCoordWorkHelper {
    */
   @Nullable
   public Container getNetwork(String networkName) {
-    try {
-      WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_NETWORKS, networkName));
-
-      Response response =
-          webTarget
-              .request(MediaType.APPLICATION_JSON)
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-              .get();
+    WebTarget webTarget = getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_NETWORKS, networkName));
+    try (Response response =
+        webTarget
+            .request(MediaType.APPLICATION_JSON)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
@@ -415,11 +367,8 @@ public class BfCoordWorkHelper {
 
   @Nullable
   Map<String, String> getInfo() {
-    try {
-      WebTarget webTarget = getTarget("");
-
-      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
-
+    WebTarget webTarget = getTarget("");
+    try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
       _logger.debugf(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
@@ -461,22 +410,21 @@ public class BfCoordWorkHelper {
    */
   @Nullable
   public String getWorkJson(String networkName, String snapshotName, UUID workId) {
-    try {
-      WebTarget webTarget =
-          getTargetV2(
-              Arrays.asList(
-                  CoordConstsV2.RSC_NETWORKS,
-                  networkName,
-                  CoordConstsV2.RSC_SNAPSHOTS,
-                  snapshotName,
-                  CoordConstsV2.RSC_WORK_JSON,
-                  workId.toString()));
-      Response response =
-          webTarget
-              .request(MediaType.TEXT_PLAIN)
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-              .get();
+    WebTarget webTarget =
+        getTargetV2(
+            Arrays.asList(
+                CoordConstsV2.RSC_NETWORKS,
+                networkName,
+                CoordConstsV2.RSC_SNAPSHOTS,
+                snapshotName,
+                CoordConstsV2.RSC_WORK_JSON,
+                workId.toString()));
+    try (Response response =
+        webTarget
+            .request(MediaType.TEXT_PLAIN)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.debugf(
@@ -496,21 +444,20 @@ public class BfCoordWorkHelper {
   /** Returns the JSON-encoded POJO topology for a snapshot. */
   @Nullable
   public String getPojoTopology(String networkName, String snapshotName) {
-    try {
-      WebTarget webTarget =
-          getTargetV2(
-              Arrays.asList(
-                  CoordConstsV2.RSC_NETWORKS,
-                  networkName,
-                  CoordConstsV2.RSC_SNAPSHOTS,
-                  snapshotName,
-                  CoordConstsV2.RSC_POJO_TOPOLOGY));
-      Response response =
-          webTarget
-              .request(MediaType.APPLICATION_JSON)
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-              .get();
+    WebTarget webTarget =
+        getTargetV2(
+            Arrays.asList(
+                CoordConstsV2.RSC_NETWORKS,
+                networkName,
+                CoordConstsV2.RSC_SNAPSHOTS,
+                snapshotName,
+                CoordConstsV2.RSC_POJO_TOPOLOGY));
+    try (Response response =
+        webTarget
+            .request(MediaType.APPLICATION_JSON)
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
+            .get()) {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.debugf(
@@ -538,6 +485,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -609,6 +557,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -646,6 +595,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_INIT_NETWORK);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -678,9 +628,7 @@ public class BfCoordWorkHelper {
 
     WebTarget webTarget = getTarget("");
 
-    try {
-      Response response = webTarget.request().get();
-
+    try (Response response = webTarget.request().get()) {
       _logger.info(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
@@ -719,6 +667,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_KILL_WORK);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -747,6 +696,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_NETWORKS);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -784,6 +734,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_INCOMPLETE_WORK);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -816,6 +767,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_QUESTIONS);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -851,20 +803,20 @@ public class BfCoordWorkHelper {
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
 
-      Response response =
+      JSONArray array;
+      try (Response response =
           webTarget
               .request(MediaType.APPLICATION_JSON)
-              .post(Entity.entity(multiPart, multiPart.getMediaType()));
-
-      _logger.debugf(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
-
-      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
-        System.err.print("PostData: Did not get an OK response\n");
-        return null;
+              .post(Entity.entity(multiPart, multiPart.getMediaType()))) {
+        _logger.debugf(
+            response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+        if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
+          System.err.print("PostData: Did not get an OK response\n");
+          return null;
+        }
+        String sobj = response.readEntity(String.class);
+        array = new JSONArray(sobj);
       }
-
-      String sobj = response.readEntity(String.class);
-      JSONArray array = new JSONArray(sobj);
       _logger.debugf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
@@ -897,6 +849,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_QUEUE_WORK);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -918,6 +871,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
@@ -945,6 +899,7 @@ public class BfCoordWorkHelper {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_SNAPSHOT);
 
+      @SuppressWarnings("PMD.CloseResource") // postData will close it
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 

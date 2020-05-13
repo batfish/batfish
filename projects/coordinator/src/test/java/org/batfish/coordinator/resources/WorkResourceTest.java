@@ -49,9 +49,9 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   public void testGetWorkStatusMissingNetwork() {
     String network = "network1";
     UUID workId = UUID.randomUUID();
-    Response response = getWorkItemTarget(network, workId.toString()).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getWorkItemTarget(network, workId.toString()).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -59,18 +59,18 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     UUID workId = UUID.randomUUID();
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getWorkItemTarget(network, workId.toString()).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getWorkItemTarget(network, workId.toString()).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetWorkStatusInvalidUuid() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getWorkItemTarget(network, "@@@").get();
-
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response = getWorkItemTarget(network, "@@@").get()) {
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   @Test
@@ -82,14 +82,14 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
     WorkItem workItem = new WorkItem(workId, network, snapshot, new HashMap<>());
     Main.getWorkMgr().queueWork(workItem);
-    Response response = getWorkItemTarget(network, workId.toString()).get();
+    try (Response response = getWorkItemTarget(network, workId.toString()).get()) {
+      // work item should exist
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    // work item should exist
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      WorkStatus workStatus = response.readEntity(WorkStatus.class);
 
-    WorkStatus workStatus = response.readEntity(WorkStatus.class);
-
-    // work ID should match
-    assertThat(workStatus.getWorkItem().getId(), equalTo(workId));
+      // work ID should match
+      assertThat(workStatus.getWorkItem().getId(), equalTo(workId));
+    }
   }
 }

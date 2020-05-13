@@ -47,25 +47,26 @@ public class CrossDomainFilterTest extends JerseyTest {
 
   @Test
   public void testGetRequestThrows() {
-    Response response = target("/test").request().get();
-    assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+    try (Response response = target("/test").request().get()) {
+      assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+    }
   }
 
   @Test
   public void testOptionsRequestSucceeds() {
-    Response response = target("/test").request().options();
+    try (Response response = target("/test").request().options()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    MultivaluedMap<String, String> headers = response.getStringHeaders();
-    assertThat(headers, hasEntry(equalTo("Access-Control-Allow-Origin"), contains("*")));
-    assertThat(
-        headers,
-        hasEntry(
-            equalTo("Access-Control-Allow-Headers"),
-            contains(
-                allOf(
-                    containsString(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY),
-                    containsString(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION)))));
+      MultivaluedMap<String, String> headers = response.getStringHeaders();
+      assertThat(headers, hasEntry(equalTo("Access-Control-Allow-Origin"), contains("*")));
+      assertThat(
+          headers,
+          hasEntry(
+              equalTo("Access-Control-Allow-Headers"),
+              contains(
+                  allOf(
+                      containsString(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY),
+                      containsString(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION)))));
+    }
   }
 }

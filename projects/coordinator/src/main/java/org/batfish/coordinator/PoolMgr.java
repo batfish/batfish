@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -130,44 +129,44 @@ public class PoolMgr {
               String.format(
                   "%s://%s%s/%s",
                   protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_STATUS_RSC));
-      Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
-      Response response = invocationBuilder.get();
 
-      // _logger.debug(webTarget.getUri());
+      JSONArray array;
+      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("PM:RefreshWorkerStatus: Got non-OK response %s\n", response.getStatus());
-      } else {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+          _logger.errorf("PM:RefreshWorkerStatus: Got non-OK response %s\n", response.getStatus());
+          return;
+        }
         String sobj = response.readEntity(String.class);
-        JSONArray array = new JSONArray(sobj);
+        array = new JSONArray(sobj);
+      }
 
-        // _logger.info(String.format("response: %s [%s] [%s]\n",
-        // array.toString(), array.get(0), array.get(1)));
+      // _logger.info(String.format("response: %s [%s] [%s]\n",
+      // array.toString(), array.get(0), array.get(1)));
 
-        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-          _logger.error(
-              String.format(
-                  "got error while refreshing status: %s %s\n", array.get(0), array.get(1)));
-          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
-          return;
-        }
+      if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+        _logger.error(
+            String.format(
+                "got error while refreshing status: %s %s\n", array.get(0), array.get(1)));
+        updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
+        return;
+      }
 
-        JSONObject jObj = new JSONObject(array.get(1).toString());
+      JSONObject jObj = new JSONObject(array.get(1).toString());
 
-        if (!jObj.has("idle")) {
-          _logger.error("did not see idle key in json response\n");
-          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
-          return;
-        }
+      if (!jObj.has("idle")) {
+        _logger.error("did not see idle key in json response\n");
+        updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
+        return;
+      }
 
-        boolean status = jObj.getBoolean("idle");
+      boolean status = jObj.getBoolean("idle");
 
-        // update the status, except leave the ones with TRYINGTOASSIGN
-        // alone
-        if (getWorkerStatus(worker).getStatus() != WorkerStatus.StatusCode.TRYINGTOASSIGN) {
-          updateWorkerStatus(
-              worker, status ? WorkerStatus.StatusCode.IDLE : WorkerStatus.StatusCode.BUSY);
-        }
+      // update the status, except leave the ones with TRYINGTOASSIGN
+      // alone
+      if (getWorkerStatus(worker).getStatus() != WorkerStatus.StatusCode.TRYINGTOASSIGN) {
+        updateWorkerStatus(
+            worker, status ? WorkerStatus.StatusCode.IDLE : WorkerStatus.StatusCode.BUSY);
       }
     } catch (ProcessingException e) {
       _logger.error(String.format("unable to connect to %s: %s\n", worker, e.getMessage()));

@@ -115,13 +115,13 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
     setupQuestionAndAnswer(network, snapshot, question, null, expectedAnswer);
 
-    Response response = getAnswerTarget(network, question, snapshot).get();
-
-    // Confirm the existing answer is successfully fetched
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        BatfishObjectMapper.writeString(response.readEntity(Answer.class)),
-        equalTo(expectedAnswerString));
+    try (Response response = getAnswerTarget(network, question, snapshot).get()) {
+      // Confirm the existing answer is successfully fetched
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          BatfishObjectMapper.writeString(response.readEntity(Answer.class)),
+          equalTo(expectedAnswerString));
+    }
   }
 
   @Test
@@ -138,13 +138,13 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
     setupQuestionAndAnswer(network, snapshot, question, analysis, expectedAnswer);
 
-    Response response = getAnalysisAnswerTarget(network, question, analysis, snapshot).get();
-
-    // Confirm the existing analysis answer is successfully fetched
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        BatfishObjectMapper.writeString(response.readEntity(Answer.class)),
-        equalTo(expectedAnswerString));
+    try (Response response = getAnalysisAnswerTarget(network, question, analysis, snapshot).get()) {
+      // Confirm the existing analysis answer is successfully fetched
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          BatfishObjectMapper.writeString(response.readEntity(Answer.class)),
+          equalTo(expectedAnswerString));
+    }
   }
 
   @Test
@@ -157,12 +157,13 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, null);
 
-    Response responseNoSnapshot = getAnswerTarget(network, question, null).get();
-
-    // Missing snapshot name should result in bad request
-    assertThat(responseNoSnapshot.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(
-        responseNoSnapshot.readEntity(String.class), containsString("Snapshot must be specified"));
+    try (Response responseNoSnapshot = getAnswerTarget(network, question, null).get()) {
+      // Missing snapshot name should result in bad request
+      assertThat(responseNoSnapshot.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+      assertThat(
+          responseNoSnapshot.readEntity(String.class),
+          containsString("Snapshot must be specified"));
+    }
   }
 
   @Test
@@ -171,37 +172,38 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot";
     String bogusSnapshot = "bogusSnapshot";
     String question = "question";
-    Response responseNoNetwork = getAnswerTarget(network, question, null).get();
+    // No network should result in 404
+    try (Response responseNoNetwork = getAnswerTarget(network, question, null).get()) {
+      assertThat(responseNoNetwork.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(
+          responseNoNetwork.readEntity(String.class),
+          containsString(String.format("Network '%s' does not exist", network)));
+    }
 
     Main.getWorkMgr().initNetwork(network, null);
-    Response responseNoQuestion = getAnswerTarget(network, question, null).get();
+    try (Response responseNoQuestion = getAnswerTarget(network, question, null).get()) {
+      // No question should result in 404
+      assertThat(responseNoQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(
+          responseNoQuestion.readEntity(String.class),
+          containsString(String.format("Question '%s' does not exist", question)));
+    }
 
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, null);
-    Response responseBadSnap = getAnswerTarget(network, question, bogusSnapshot).get();
-    Response responseNoAns = getAnswerTarget(network, question, snapshot).get();
-
-    // No network should result in 404
-    assertThat(responseNoNetwork.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseNoNetwork.readEntity(String.class),
-        containsString(String.format("Network '%s' does not exist", network)));
-
-    // Invalid snapshot name should result in 404
-    assertThat(responseBadSnap.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseBadSnap.readEntity(String.class),
-        containsString(String.format("Snapshot %s not found", bogusSnapshot)));
-
-    // No question should result in 404
-    assertThat(responseNoQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseNoQuestion.readEntity(String.class),
-        containsString(String.format("Question '%s' does not exist", question)));
+    try (Response responseBadSnap = getAnswerTarget(network, question, bogusSnapshot).get()) {
+      // Invalid snapshot name should result in 404
+      assertThat(responseBadSnap.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(
+          responseBadSnap.readEntity(String.class),
+          containsString(String.format("Snapshot %s not found", bogusSnapshot)));
+    }
 
     // No answer should result in 404
-    assertThat(responseNoAns.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(responseNoAns.readEntity(String.class), containsString("Answer not found"));
+    try (Response responseNoAns = getAnswerTarget(network, question, snapshot).get()) {
+      assertThat(responseNoAns.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(responseNoAns.readEntity(String.class), containsString("Answer not found"));
+    }
   }
 
   @Test
@@ -237,16 +239,17 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
     String expectedTableViewString = BatfishObjectMapper.writeString(expectedTableView);
 
-    Response response =
-        filterAnswerTarget(network, question, snapshot).post(Entity.json(filterAnswer));
-    // Confirm the filtered answer is successfully fetched
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    Answer actual = response.readEntity(Answer.class);
-    // Confirm the filtered answer contains one answer element, matching the expected table view
-    assertThat(actual.getAnswerElements(), iterableWithSize(1));
-    assertThat(
-        BatfishObjectMapper.writeString(actual.getAnswerElements().get(0)),
-        equalTo(expectedTableViewString));
+    try (Response response =
+        filterAnswerTarget(network, question, snapshot).post(Entity.json(filterAnswer))) {
+      // Confirm the filtered answer is successfully fetched
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      Answer actual = response.readEntity(Answer.class);
+      // Confirm the filtered answer contains one answer element, matching the expected table view
+      assertThat(actual.getAnswerElements(), iterableWithSize(1));
+      assertThat(
+          BatfishObjectMapper.writeString(actual.getAnswerElements().get(0)),
+          equalTo(expectedTableViewString));
+    }
   }
 
   @Test
@@ -284,16 +287,18 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedTableView);
 
-    Response response =
-        filterAnswerTarget(network, question, snapshot).post(Entity.json(filterAnswer));
-    // Confirm the (un)filtered answer is successfully fetched
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    Answer actual = response.readEntity(Answer.class);
-    // Confirm the (un)filtered answer contains one answer element, matching the expected table view
-    assertThat(actual.getAnswerElements(), iterableWithSize(1));
-    assertThat(
-        BatfishObjectMapper.writeString(actual.getAnswerElements().get(0)),
-        equalTo(expectedAnswerString));
+    try (Response response =
+        filterAnswerTarget(network, question, snapshot).post(Entity.json(filterAnswer))) {
+      // Confirm the (un)filtered answer is successfully fetched
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      Answer actual = response.readEntity(Answer.class);
+      // Confirm the (un)filtered answer contains one answer element, matching the expected table
+      // view
+      assertThat(actual.getAnswerElements(), iterableWithSize(1));
+      assertThat(
+          BatfishObjectMapper.writeString(actual.getAnswerElements().get(0)),
+          equalTo(expectedAnswerString));
+    }
   }
 
   @Test
@@ -307,13 +312,14 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     setupQuestionAndAnswer(network, snapshot, question, null, new Answer());
 
     // Post arbitrary item that is not an AnswerRowsOptions object
-    Response responseBadFilter =
-        filterAnswerTarget(network, question, null).post(Entity.json(true));
+    try (Response responseBadFilter =
+        filterAnswerTarget(network, question, null).post(Entity.json(true))) {
 
-    // Bogus filterAnswer should result in bad request
-    assertThat(responseBadFilter.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(
-        responseBadFilter.readEntity(String.class), containsString("Cannot construct instance"));
+      // Bogus filterAnswer should result in bad request
+      assertThat(responseBadFilter.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+      assertThat(
+          responseBadFilter.readEntity(String.class), containsString("Cannot construct instance"));
+    }
   }
 
   @Test
@@ -334,29 +340,31 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, null);
 
-    Response responseBadSnapshot =
-        filterAnswerTarget(network, question, null).post(Entity.json(filterBadSnapshot));
-    Response responseMissingQuestion =
-        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filterAnswer));
-    Response responseMissingAnswer =
-        filterAnswerTarget(network, question, null).post(Entity.json(filterAnswer));
+    try (Response responseBadSnapshot =
+        filterAnswerTarget(network, question, null).post(Entity.json(filterBadSnapshot))) {
+      // Bogus snapshot should result in not found
+      assertThat(responseBadSnapshot.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(
+          responseBadSnapshot.readEntity(String.class),
+          containsString(String.format("Snapshot %s not found", bogusSnapshot)));
+    }
 
-    // Bogus snapshot should result in not found
-    assertThat(responseBadSnapshot.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseBadSnapshot.readEntity(String.class),
-        containsString(String.format("Snapshot %s not found", bogusSnapshot)));
+    try (Response responseMissingQuestion =
+        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filterAnswer))) {
+      // Bogus question should result in not found
+      assertThat(responseMissingQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(
+          responseMissingQuestion.readEntity(String.class),
+          containsString(String.format("Question '%s' does not exist", bogusQuestion)));
+    }
 
-    // Bogus question should result in not found
-    assertThat(responseMissingQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseMissingQuestion.readEntity(String.class),
-        containsString(String.format("Question '%s' does not exist", bogusQuestion)));
-
-    // Filtering non existent question should result in not found
-    assertThat(responseMissingAnswer.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseMissingAnswer.readEntity(String.class),
-        containsString(String.format("Answer not found for question %s", question)));
+    try (Response responseMissingAnswer =
+        filterAnswerTarget(network, question, null).post(Entity.json(filterAnswer))) {
+      // Filtering non existent question should result in not found
+      assertThat(responseMissingAnswer.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      assertThat(
+          responseMissingAnswer.readEntity(String.class),
+          containsString(String.format("Answer not found for question %s", question)));
+    }
   }
 }

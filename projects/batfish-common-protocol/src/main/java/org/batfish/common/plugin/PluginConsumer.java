@@ -75,6 +75,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   /** Deserialize object from file, with support for different compression methods. */
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
   protected static <S extends Serializable> S deserializeObject(
       Path inputFile, Class<S> outputClass) {
     try {
@@ -163,6 +164,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   /** Serializes the given object to a file with the given output name. */
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
   protected static void serializeObject(Serializable object, Path outputFile) {
     try {
       try (Closer closer = Closer.create()) {
@@ -176,6 +178,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   /** Serializes the given object to the given stream, using LZ4 compression. */
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer.
   private static void serializeToLz4Data(Serializable object, OutputStream out) {
     try (Closer closer = Closer.create()) {
       OutputStream los = closer.register(new LZ4FrameOutputStream(out));
