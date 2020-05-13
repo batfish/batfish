@@ -40,7 +40,6 @@ java_library(
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
         "@maven//:org_jline_jline",
-        "@maven//:org_skyscreamer_jsonassert",
     ],
 )
 
