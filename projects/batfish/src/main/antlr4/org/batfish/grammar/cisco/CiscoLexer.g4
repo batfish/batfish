@@ -5165,6 +5165,11 @@ GREEN
 GROUP
 :
    'group'
+   {
+     if (lastTokenType() == SNMP_SERVER) {
+       pushMode(M_Name);
+     }
+   }
 ;
 
 GROUP_ALIAS
@@ -10432,6 +10437,11 @@ REACTION
    'reaction'
 ;
 
+READ
+:
+   'read'
+;
+
 READ_ONLY_PASSWORD
 :
    'read-only-password'
@@ -14239,6 +14249,11 @@ UUCP_PATH
    'uucp-path'
 ;
 
+V1
+:
+   'v1'
+;
+
 V1_RP_REACHABILITY
 :
    'v1-rp-reachability'
@@ -14247,6 +14262,16 @@ V1_RP_REACHABILITY
 V2
 :
    'v2'
+;
+
+V2C
+:
+   'v2c'
+;
+
+V3
+:
+   'v3'
 ;
 
 V4
@@ -14899,6 +14924,11 @@ WRED
 WRED_PROFILE
 :
    'wred-profile'
+;
+
+WRITE
+:
+   'write'
 ;
 
 WRITE_MEMORY

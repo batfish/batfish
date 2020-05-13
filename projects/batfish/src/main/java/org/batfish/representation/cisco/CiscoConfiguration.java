@@ -3470,6 +3470,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
+        CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS,
         CiscoStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
         CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
@@ -3478,6 +3479,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.NTP_ACCESS_GROUP,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
+        CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6,
         CiscoStructureUsage.SSH_IPV6_ACL,
         CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
         CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
