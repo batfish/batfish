@@ -425,21 +425,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return keys.map(
             key -> {
               logger.debugf("Reading: \"%s\"\n", key);
-              String objectText;
+              long copiedBytes;
+              ByteArrayOutputStream baos;
               try (InputStream inputStream =
                   _storage.loadSnapshotInputObject(
                       snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ByteStreams.copy(inputStream, baos);
-                objectText = new String(baos.toByteArray(), UTF_8);
+                baos = new ByteArrayOutputStream();
+                copiedBytes = ByteStreams.copy(inputStream, baos);
               } catch (IOException e) {
                 throw new UncheckedIOException(e);
               }
-              if (!objectText.isEmpty()) {
+              if (copiedBytes > 0) {
                 // Adding a trailing newline helps EOF in some parsers.
-                objectText += '\n';
+                baos.write('\n');
               }
-              return new SimpleEntry<>(key, objectText);
+              return new SimpleEntry<>(key, new String(baos.toByteArray(), UTF_8));
             })
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
