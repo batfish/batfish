@@ -27,9 +27,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
-import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -772,74 +770,4 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException;
-
-  /**
-   * Returns a list of snapshot input object keys corresponding to environment BGP tables.
-   *
-   * @throws IOException if there is an error
-   */
-  @MustBeClosed
-  @Nonnull
-  Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot) throws IOException;
-
-  /**
-   * Loads the answer element that is the result of parsing environment BGP tables for the given
-   * snapshot.
-   *
-   * @throws IOException if there is an error
-   */
-  @Nonnull
-  ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
-      NetworkSnapshot snapshot) throws IOException;
-
-  /**
-   * Stores the answer element that is the result of parsing environment BGP tables for the given
-   * snapshot.
-   *
-   * @throws IOException if there is an error
-   */
-  void storeParseEnvironmentBgpTablesAnswerElement(
-      ParseEnvironmentBgpTablesAnswerElement parseEnvironmentBgpTablesAnswerElement,
-      NetworkSnapshot snapshot)
-      throws IOException;
-
-  /**
-   * Returns true iff environment BGP tables have been parsed for the given snapshot.
-   *
-   * @throws IOException if there is an error
-   */
-  boolean hasParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
-
-  /**
-   * Deletes the answer element that is the result of parsing environment BGP tables for the given
-   * snapshot if it exists.
-   *
-   * @throws IOException if there is an error
-   */
-  void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
-
-  /**
-   * Loads the compiled environment BGP tables for the given snapshot if they exist.
-   *
-   * @throws IOException if there is an error
-   */
-  @Nonnull
-  Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
-      throws IOException;
-
-  /**
-   * Stores the compiled environment BGP tables for the given snapshot if they exist.
-   *
-   * @throws IOException if there is an error
-   */
-  void storeEnvironmentBgpTables(
-      Map<String, BgpAdvertisementsByVrf> environmentBgpTables, NetworkSnapshot snapshot)
-      throws IOException;
-
-  /**
-   * Deletes the compiled environment BGP tables for the given snapshot if they exist.
-   *
-   * @throws IOException if there is an error
-   */
-  void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException;
 }
