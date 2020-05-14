@@ -776,6 +776,7 @@ public final class CumulusConversions {
     }
 
     boolean isIBgp = neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem());
+    // TODO: Need to handle dynamic neighbors.
     boolean nextHopSelf =
         Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
             .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
