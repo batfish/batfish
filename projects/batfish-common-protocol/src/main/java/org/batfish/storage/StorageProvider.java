@@ -846,6 +846,15 @@ public interface StorageProvider {
   void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException;
 
   /**
+   * Loads the content of the external BGP announcements input file for the given snapshot, or
+   * returns {@link Optional#empty} if the snapshot does not contain one.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) throws IOException;
+
+  /**
    * Loads the answer element that is the result of parsing vendor configurations for the given
    * snapshot.
    *

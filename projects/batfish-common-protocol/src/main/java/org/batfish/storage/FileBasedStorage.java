@@ -131,6 +131,8 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_DATA_PLANE = "dp";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
+  private static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS =
+      "external_bgp_announcements.json";
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
 
   private final BatfishLogger _logger;
@@ -1573,6 +1575,19 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException {
     deleteDirectory(getEnvironmentBgpTablesPath(snapshot));
+  }
+
+  @Nonnull
+  @Override
+  public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+      throws IOException {
+    Path path =
+        getSnapshotInputObjectPath(
+            snapshot.getNetwork(), snapshot.getSnapshot(), RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    if (!Files.exists(path)) {
+      return Optional.empty();
+    }
+    return Optional.of(readFileToString(path, UTF_8));
   }
 
   private @Nonnull Path getEnvironmentBgpTablesPath(NetworkSnapshot snapshot) {

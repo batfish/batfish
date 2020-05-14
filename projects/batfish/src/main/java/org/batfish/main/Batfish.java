@@ -2016,12 +2016,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   @Nullable
   public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
-    Path externalBgpAnnouncementsPath =
-        getTestrigSettings(snapshot).getExternalBgpAnnouncementsPath();
-    if (Files.exists(externalBgpAnnouncementsPath)) {
-      return CommonUtil.readFile(externalBgpAnnouncementsPath);
-    } else {
-      return null;
+    try {
+      return _storage.loadExternalBgpAnnouncementsFile(snapshot).orElse(null);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -3425,10 +3423,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     public Path getBasePath() {
       checkState(_basePath != null, "base path is not configured");
       return _basePath;
-    }
-
-    public Path getExternalBgpAnnouncementsPath() {
-      return getInputPath().resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     }
 
     public Path getInputPath() {
