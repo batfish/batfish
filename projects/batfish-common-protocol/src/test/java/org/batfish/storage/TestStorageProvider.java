@@ -25,6 +25,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -548,6 +549,33 @@ public class TestStorageProvider implements StorageProvider {
   @Nonnull
   @Override
   public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
       throws IOException {
     throw new UnsupportedOperationException();
   }
