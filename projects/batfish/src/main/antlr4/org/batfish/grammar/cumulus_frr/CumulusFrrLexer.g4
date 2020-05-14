@@ -65,6 +65,11 @@ ALERTS
    'alerts'
 ;
 
+ALL
+:
+  'all'
+;
+
 ALLOWAS_IN
 :
   'allowas-in'
@@ -289,6 +294,11 @@ EBGP_MULTIHOP
 FILE
 :
   'file' -> pushMode(M_Remark)
+;
+
+FORCE
+:
+  'force'
 ;
 
 FORWARDING

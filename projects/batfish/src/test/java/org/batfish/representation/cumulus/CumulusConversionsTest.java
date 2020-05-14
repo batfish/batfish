@@ -384,16 +384,14 @@ public final class CumulusConversionsTest {
     }
 
     {
-      // if is ibgp and neighbor configuration set next-hop-self set, then set
-      // next-hop-self
+      // if is ibgp and neighbor configuration has next-hop-self set, then getSetNextHop should
+      // return null.
       bgpNeighbor.setRemoteAs(10000L);
       bgpVrf.setAutonomousSystem(10000L);
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-
-      assertThat(
-          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+      assertNull(getSetNextHop(bgpNeighbor, bgpVrf));
     }
   }
 
@@ -1695,5 +1693,89 @@ public final class CumulusConversionsTest {
     convertVxlans(
         c, vsConfig, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
     assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
+  }
+
+  @Test
+  public void testNextHopSelfAll() {
+    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    {
+      // If eBGP and next-hop-self is NOT set, then next-hop should not be self.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(20000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(false);
+      ipv4af.setNextHopSelfAll(false);
+      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+    }
+
+    {
+      // If eBGP and next-hop-self is set WITHOUT force, then next-hop should be self.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(20000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(false);
+      assertThat(
+          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+    }
+
+    {
+      // If eBGP and next-hop-self is set WITH force, then next-hop should be self.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(20000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(true);
+      assertThat(
+          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+    }
+
+    {
+      // If iBGP and next-hop-self NOT set, then next-hop should be null.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(10000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(false);
+      ipv4af.setNextHopSelfAll(false);
+      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+    }
+
+    {
+      // If iBGP and next-hop-self is set WITHOUT force, then next-hop should be null.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(10000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(false);
+      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+    }
+
+    {
+      // If iBGP and next-hop-self is set WITH force, then next-hop should be self.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(10000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(true);
+      assertThat(
+          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+    }
+
+    {
+      // If iBGP and force is null, then next-hop should be null.
+      bgpNeighbor.setRemoteAs(10000L);
+      bgpVrf.setAutonomousSystem(10000L);
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
+      bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
+      ipv4af.setNextHopSelfAll(true);
+      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+    }
   }
 }

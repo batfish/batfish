@@ -303,7 +303,7 @@ sbafin_default_originate
 
 sbafin_next_hop_self
 :
-  NEXT_HOP_SELF
+  NEXT_HOP_SELF (FORCE | ALL)?
 ;
 
 sbafin_route_reflector_client
