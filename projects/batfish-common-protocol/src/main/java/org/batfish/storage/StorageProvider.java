@@ -47,6 +47,7 @@ import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -452,6 +453,8 @@ public interface StorageProvider {
   @MustBeClosed
   InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
+
+  boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException;
 
   /**
    * Fetch the list of keys in the given snapshot's input directory
@@ -889,4 +892,69 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the compiled vendor configurations for the given snapshot if they exist. Returns an empty
+   * map if none were compiled.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Stores the compiled vendor configurations for the given snapshot if they exist. Merges with any
+   * existing stored vendor configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Deletes the compiled vendor configurations for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to host configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to network configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to AWS multi-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to AWS single-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 }

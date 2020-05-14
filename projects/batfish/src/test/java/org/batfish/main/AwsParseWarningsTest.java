@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
@@ -16,7 +15,8 @@ import org.junit.Test;
 public class AwsParseWarningsTest {
 
   private ParseVendorConfigurationAnswerElement _pvcae;
-  private Path _path = Paths.get(BfConsts.RELPATH_AWS_CONFIGS_DIR, "region", "file.json");
+  private String _key =
+      Paths.get(BfConsts.RELPATH_AWS_CONFIGS_DIR, "region", "file.json").toString();
 
   @Before
   public void initializeAnswerElement() {
@@ -25,22 +25,19 @@ public class AwsParseWarningsTest {
 
   @Test
   public void testBadJsonWarning() {
-    Batfish.parseAwsConfigurations(ImmutableMap.of(_path, "{"), _pvcae);
+    Batfish.parseAwsConfigurations(ImmutableMap.of(_key, "{"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getRedFlagWarnings(),
-        contains(
-            new Warning(
-                String.format("Unexpected content in AWS file %s", _path.toString()), "AWS")));
+        contains(new Warning(String.format("Unexpected content in AWS file %s", _key), "AWS")));
   }
 
   @Test
   public void testInvalidKeyWarning() {
-    Batfish.parseAwsConfigurations(ImmutableMap.of(_path, "{ \"invalidKey\": [1] }"), _pvcae);
+    Batfish.parseAwsConfigurations(ImmutableMap.of(_key, "{ \"invalidKey\": [1] }"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getUnimplementedWarnings(),
         contains(
             new Warning(
-                String.format("Unrecognized element 'invalidKey' in AWS file %s", _path.toString()),
-                "AWS")));
+                String.format("Unrecognized element 'invalidKey' in AWS file %s", _key), "AWS")));
   }
 }

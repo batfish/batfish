@@ -44,6 +44,7 @@ import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 public class TestStorageProvider implements StorageProvider {
 
@@ -282,6 +283,11 @@ public class TestStorageProvider implements StorageProvider {
   public InputStream loadSnapshotInputObject(
       NetworkId networkId, SnapshotId snapshotId, String key) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException {
+    return false;
   }
 
   @Override
@@ -577,6 +583,49 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
       throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException {}
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 }
