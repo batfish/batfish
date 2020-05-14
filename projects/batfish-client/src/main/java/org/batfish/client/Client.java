@@ -141,8 +141,6 @@ public class Client extends AbstractClient implements IClient {
 
   private static final int NUM_TRIES_WARNING_THRESHOLD = 5;
 
-  private static final String STARTUP_FILE = ".batfishclientrc";
-
   /**
    * Verify that every non-optional variable has value assigned to it.
    *
@@ -1933,7 +1931,6 @@ public class Client extends AbstractClient implements IClient {
 
       case interactive:
         {
-          runStartupFile();
           runInteractive();
           break;
         }
@@ -1977,17 +1974,6 @@ public class Client extends AbstractClient implements IClient {
         _reader.getHistory().save();
       } catch (IOException e) {
         e.printStackTrace();
-      }
-    }
-  }
-
-  private void runStartupFile() {
-    Path startupFilePath = Paths.get(System.getenv(ENV_HOME), STARTUP_FILE);
-    if (Files.exists(startupFilePath)) {
-      List<String> commands = readCommands(startupFilePath);
-      boolean result = processCommands(commands);
-      if (!result) {
-        System.exit(1);
       }
     }
   }
