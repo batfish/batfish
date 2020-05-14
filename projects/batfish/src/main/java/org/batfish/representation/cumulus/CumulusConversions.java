@@ -786,8 +786,8 @@ public final class CumulusConversions {
       // TODO: Handle v6 AFI.
       BgpNeighborIpv4UnicastAddressFamily ipv4af = neighbor.getIpv4UnicastAddressFamily();
       if (ipv4af != null) {
-        Boolean forceNextHopSelf = ipv4af.getForceNextHopSelf();
-        if (forceNextHopSelf == null || !forceNextHopSelf) {
+        Boolean nextHopSelfAll = ipv4af.getNextHopSelfAll();
+        if (nextHopSelfAll == null || !nextHopSelfAll) {
           nextHopSelf = false;
         }
       }

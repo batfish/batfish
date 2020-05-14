@@ -1696,7 +1696,7 @@ public final class CumulusConversionsTest {
   }
 
   @Test
-  public void testForceNextHopSelf() {
+  public void testNextHopSelfAll() {
     BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     {
@@ -1706,7 +1706,7 @@ public final class CumulusConversionsTest {
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(false);
-      ipv4af.setForceNextHopSelf(false);
+      ipv4af.setNextHopSelfAll(false);
       assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
     }
 
@@ -1717,7 +1717,7 @@ public final class CumulusConversionsTest {
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-      ipv4af.setForceNextHopSelf(false);
+      ipv4af.setNextHopSelfAll(false);
       assertThat(
           getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
@@ -1729,7 +1729,7 @@ public final class CumulusConversionsTest {
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-      ipv4af.setForceNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(true);
       assertThat(
           getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
@@ -1741,7 +1741,7 @@ public final class CumulusConversionsTest {
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(false);
-      ipv4af.setForceNextHopSelf(false);
+      ipv4af.setNextHopSelfAll(false);
       assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
     }
 
@@ -1752,7 +1752,7 @@ public final class CumulusConversionsTest {
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-      ipv4af.setForceNextHopSelf(false);
+      ipv4af.setNextHopSelfAll(false);
       assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
     }
 
@@ -1763,7 +1763,7 @@ public final class CumulusConversionsTest {
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-      ipv4af.setForceNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(true);
       assertThat(
           getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
@@ -1774,7 +1774,7 @@ public final class CumulusConversionsTest {
       bgpVrf.setAutonomousSystem(10000L);
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
-      ipv4af.setNextHopSelf(true);
+      ipv4af.setNextHopSelfAll(true);
       assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
     }
   }

@@ -9,9 +9,9 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   @Nullable private Boolean _activated;
   @Nullable private Integer _allowAsIn;
   @Nullable private Boolean _defaultOriginate;
-  @Nullable private Boolean _forceNextHopSelf;
   @Nullable private Boolean _routeReflectorClient;
   @Nullable private Boolean _nextHopSelf;
+  @Nullable private Boolean _nextHopSelfAll;
   @Nullable private String _routeMapIn;
   @Nullable private String _routeMapOut;
 
@@ -46,12 +46,12 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   }
 
   @Nullable
-  public Boolean getForceNextHopSelf() {
-    return _forceNextHopSelf;
+  public Boolean getNextHopSelfAll() {
+    return _nextHopSelfAll;
   }
 
-  public void setForceNextHopSelf(boolean forceNextHopSelf) {
-    _forceNextHopSelf = forceNextHopSelf;
+  public void setNextHopSelfAll(boolean nextHopSelfAll) {
+    _nextHopSelfAll = nextHopSelfAll;
   }
 
   void inheritFrom(@Nonnull BgpNeighborIpv4UnicastAddressFamily other) {

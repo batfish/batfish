@@ -65,6 +65,11 @@ ALERTS
    'alerts'
 ;
 
+ALL
+:
+  'all'
+;
+
 ALLOWAS_IN
 :
   'allowas-in'
