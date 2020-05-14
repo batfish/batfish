@@ -544,4 +544,11 @@ public class TestStorageProvider implements StorageProvider {
   public void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
+
+  @Nonnull
+  @Override
+  public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
 }
