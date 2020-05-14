@@ -1482,15 +1482,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
       NetworkSnapshot snapshot, boolean firstAttempt) {
-    TestrigSettings tr = getTestrigSettings(snapshot);
-    if (Files.exists(tr.getParseAnswerPath())) {
-      try {
-        return deserializeObject(
-            tr.getParseAnswerPath(), ParseVendorConfigurationAnswerElement.class);
-      } catch (Exception e) {
-        /* Do nothing, this is expected on serialization or other errors. */
-        _logger.warn("Unable to load prior parse data from " + tr.getParseAnswerPath() + "\n");
+    try {
+      if (_storage.hasParseVendorConfigurationAnswerElement(snapshot)) {
+        try {
+          return _storage.loadParseVendorConfigurationAnswerElement(snapshot);
+        } catch (Exception e) {
+          /* Do nothing, this is expected on serialization or other errors. */
+          _logger.warn("Unable to load prior parse data");
+        }
       }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
     if (firstAttempt) {
       repairVendorConfigurations(snapshot);
@@ -2257,6 +2259,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void repairVendorConfigurations(NetworkSnapshot snapshot) {
     TestrigSettings tr = getTestrigSettings(snapshot);
     Path outputPath = tr.getSerializeVendorPath();
+    try {
+      _storage.deleteParseVendorConfigurationAnswerElement(snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     CommonUtil.deleteDirectory(outputPath);
     Path testRigPath = tr.getInputPath();
     serializeVendorConfigs(snapshot, testRigPath, outputPath);
@@ -2404,7 +2411,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path testRigPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement) {
-    TestrigSettings tr = getTestrigSettings(snapshot);
     _logger.info("\n*** READING HOST CONFIGS ***\n");
     Map<String, String> keyedHostText =
         readAllFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger).entrySet()
@@ -2477,7 +2483,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         });
     serializeObjects(output);
     // serialize warnings
-    serializeObject(answerElement, tr.getParseAnswerPath());
+    try {
+      _storage.storeParseVendorConfigurationAnswerElement(answerElement, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     _logger.printElapsedTime();
     return overlayConfigurations;
   }
@@ -2924,8 +2934,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot snapshot, Path userUploadPath, Path outputPath) {
     Answer answer = new Answer();
     boolean configsFound = false;
-    TestrigSettings tr = getTestrigSettings(snapshot);
-
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.setVersion(BatfishVersion.getVersionStatic());
@@ -2960,7 +2968,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // serialize warnings
-    serializeObject(answerElement, tr.getParseAnswerPath());
+    try {
+      _storage.storeParseVendorConfigurationAnswerElement(answerElement, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
 
     return answer;
   }
@@ -3429,10 +3441,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     public Path getOutputPath() {
       return getBasePath().resolve(BfConsts.RELPATH_OUTPUT);
-    }
-
-    public Path getParseAnswerPath() {
-      return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
     }
 
     public Path getSerializeVendorPath() {

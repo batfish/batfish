@@ -28,6 +28,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -843,4 +844,40 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the answer element that is the result of parsing vendor configurations for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the answer element that is the result of parsing vendor configurations for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Returns true iff vendor configurations have been parsed for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Deletes the answer element that is the result of parsing vendor configurations for the given
+   * snapshot if it exists.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
 }

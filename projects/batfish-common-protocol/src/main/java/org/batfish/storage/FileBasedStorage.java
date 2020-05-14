@@ -74,6 +74,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -130,6 +131,7 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_DATA_PLANE = "dp";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
+  private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -1701,5 +1703,41 @@ public final class FileBasedStorage implements StorageProvider {
 
   private Path getSnapshotOutputDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_OUTPUT);
+  }
+
+  @Nonnull
+  @Override
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    return deserializeObject(
+        getParseVendorConfigurationAnswerElementPath(snapshot),
+        ParseVendorConfigurationAnswerElement.class);
+  }
+
+  @Override
+  public void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    serializeObject(
+        parseVendorConfigurationAnswerElement,
+        getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    return Files.exists(getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    Files.deleteIfExists(getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_PARSE_ANSWER_PATH);
   }
 }
