@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,8 +74,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
@@ -86,7 +83,6 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
-import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
@@ -442,52 +438,6 @@ public class BatfishTest {
   }
 
   @Test
-  public void testReadMissingIptableFile() throws IOException {
-    HostConfiguration host1 = new HostConfiguration();
-    String filename = Paths.get("iptables", "host1.iptables").toString();
-    host1.setHostname("host1");
-    host1.setIptablesFile(filename);
-    SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
-    hostConfigurations.put("host1", host1);
-    SortedMap<Path, String> iptablesData = new TreeMap<>();
-    Path testRigPath = _folder.newFolder("testrig").toPath();
-    ParseVendorConfigurationAnswerElement answerElement =
-        new ParseVendorConfigurationAnswerElement();
-    answerElement.getParseStatus().put("configs/host1.cfg", ParseStatus.PASSED);
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    String failureMessage =
-        "Iptables file iptables"
-            + File.separator
-            + "host1.iptables for host host1 is not contained within the testrig";
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(
-        answerElement.getParseStatus().get(Paths.get("iptables", "host1.iptables").toString()),
-        equalTo(ParseStatus.FAILED));
-    assertThat(answerElement.getErrors().get("host1").toString(), containsString(failureMessage));
-    // When host file failed, verify that error message contains both failure messages
-    answerElement.getErrors().clear();
-    answerElement
-        .getErrors()
-        .put(
-            "host1",
-            new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(answerElement.getErrors().get("host1").toString(), containsString(failureMessage));
-    assertThat(
-        answerElement.getErrors().get("host1").toString(),
-        containsString("Failed to parse host file: host1"));
-    // When the haltonparseerror flag is set to true
-    batfish.getSettings().setHaltOnParseError(true);
-    answerElement.getErrors().clear();
-    String parseErrorMessage =
-        "Fatal exception due to at least one Iptables file is not contained"
-            + " within the testrig";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(parseErrorMessage);
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-  }
-
-  @Test
   public void testReadNestedPath() throws IOException {
     Path nestedFolder = _folder.newFolder("nestedDirectory").toPath();
     Set<Path> expected = new HashSet<>();
@@ -559,28 +509,6 @@ public class BatfishTest {
 
     // Tests that computing IP owners with such a bad interface does not crash.
     IpOwners.computeIpNodeOwners(configs, false);
-  }
-
-  @Test
-  public void testReadValidIptableFile() throws IOException {
-    HostConfiguration host1 = new HostConfiguration();
-    host1.setHostname("host1");
-    Path iptablePath = Paths.get("iptables").resolve("host1.iptables");
-    host1.setIptablesFile(iptablePath.toString());
-    SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
-    hostConfigurations.put("host1", host1);
-    SortedMap<Path, String> iptablesData = new TreeMap<>();
-    Path testRigPath = _folder.newFolder("testrig").toPath();
-    File iptableFile = Paths.get(testRigPath.toString(), iptablePath.toString()).toFile();
-    iptableFile.getParentFile().mkdir();
-    assertThat(iptableFile.createNewFile(), is(true));
-    ParseVendorConfigurationAnswerElement answerElement =
-        new ParseVendorConfigurationAnswerElement();
-    answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
-    assertThat(answerElement.getErrors().size(), is(0));
   }
 
   @Test

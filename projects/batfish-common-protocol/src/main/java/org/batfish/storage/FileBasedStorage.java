@@ -94,6 +94,7 @@ import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
@@ -134,6 +135,8 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS =
       "external_bgp_announcements.json";
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
+  private static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
+  private static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -959,6 +962,12 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  public boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException {
+    return Files.exists(
+        getSnapshotInputObjectPath(snapshot.getNetwork(), snapshot.getSnapshot(), key));
+  }
+
+  @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       NetworkId networkId, SnapshotId snapshotId) throws IOException {
     Path objectPath = getSnapshotInputObjectsDir(networkId, snapshotId);
@@ -1697,7 +1706,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
   }
 
   private Path getNetworkBlobsDir(NetworkId networkId) {
@@ -1749,6 +1758,90 @@ public final class FileBasedStorage implements StorageProvider {
   public void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
       throws IOException {
     Files.deleteIfExists(getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException {
+    _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    Map<Path, String> namesByPath = new TreeMap<>();
+    Path serializedVendorConfigPath = getVendorConfigurationsPath(snapshot);
+    if (!Files.exists(serializedVendorConfigPath)) {
+      return ImmutableSortedMap.of();
+    }
+    try (DirectoryStream<Path> serializedConfigs =
+        Files.newDirectoryStream(serializedVendorConfigPath)) {
+      for (Path serializedConfig : serializedConfigs) {
+        String name = serializedConfig.getFileName().toString();
+        namesByPath.put(serializedConfig, name);
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Error reading vendor configs directory", e);
+    }
+    Map<String, VendorConfiguration> vendorConfigurations =
+        deserializeObjects(namesByPath, VendorConfiguration.class);
+    _logger.printElapsedTime();
+    return vendorConfigurations;
+  }
+
+  private @Nonnull Path getVendorConfigurationsPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+  }
+
+  @Override
+  public void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException {
+    Map<Path, VendorConfiguration> output = new HashMap<>();
+    Path outputPath = getVendorConfigurationsPath(snapshot);
+    vendorConfigurations.forEach(
+        (name, vc) -> {
+          Path currentOutputPath = outputPath.resolve(name);
+          output.put(currentOutputPath, vc);
+        });
+    serializeObjects(output);
+  }
+
+  @Override
+  public void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException {
+    deleteDirectory(getVendorConfigurationsPath(snapshot));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_HOST_CONFIGS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(RELPATH_AWS_ACCOUNTS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_AWS_CONFIGS_DIR));
   }
 
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
