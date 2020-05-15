@@ -52,8 +52,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
@@ -150,7 +148,6 @@ import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ConvertStatus;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
-import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
@@ -195,7 +192,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
-import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
@@ -352,37 +348,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Reads the files in the given directory (recursively) and returns a map from each file's {@link
-   * Path} to its contents.
-   *
-   * <p>Temporary files (files start with {@code .} are omitted from the returned list.
-   *
-   * <p>This method follows all symbolic links.
-   */
-  static SortedMap<Path, String> readAllFiles(Path directory, BatfishLogger logger) {
-    try (Stream<Path> paths = Files.walk(directory, FileVisitOption.FOLLOW_LINKS)) {
-      return paths
-          .filter(Files::isRegularFile)
-          .filter(path -> !path.getFileName().toString().startsWith("."))
-          .map(
-              path -> {
-                logger.debugf("Reading: \"%s\"\n", path);
-                String fileText = CommonUtil.readFile(path.toAbsolutePath());
-                if (!fileText.isEmpty()) {
-                  // Adding a trailing newline helps EOF in some parsers.
-                  fileText += '\n';
-                }
-                return new SimpleEntry<>(path, fileText);
-              })
-          .collect(
-              ImmutableSortedMap.toImmutableSortedMap(
-                  Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));
-    } catch (IOException e) {
-      throw new BatfishException("Failed to walk path: " + directory, e);
-    }
-  }
-
-  /**
    * Reads the snapshot input objects corresponding to the provided keys, and returns a map from
    * each object's key to its contents.
    */
@@ -519,21 +484,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         alternateIdResolver != null ? alternateIdResolver : new StorageBasedIdResolver(_storage);
     _topologyProvider = new TopologyProviderImpl(this, _storage);
     loadPlugins();
-  }
-
-  /**
-   * A shallow wrapper for {@link Files#createDirectories} that throws a {@link BatfishException}
-   * instead of {@link IOException}.
-   *
-   * @throws BatfishException if there is an error creating directories.
-   */
-  private static void createDirectories(Path path) {
-    try {
-      Files.createDirectories(path);
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Could not create directories leading up to and including '" + path + "'", e);
-    }
   }
 
   private Answer analyze() {
@@ -784,10 +734,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public static Warnings buildWarnings(Settings settings) {
-    return new Warnings(
-        settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
-        settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
-        settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
+    return Warnings.forLogger(settings.getLogger());
   }
 
   @Override
@@ -931,46 +878,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           }
         }
       }
-    }
-  }
-
-  public void flatten(Path inputPath, Path outputPath) {
-    _logger.info("\n*** READING FILES TO FLATTEN ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
-
-    Map<Path, String> outputConfigurationData = new TreeMap<>();
-    Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    createDirectories(outputConfigDir);
-    _logger.info("\n*** FLATTENING TEST RIG ***\n");
-    _logger.resetTimer();
-    List<FlattenVendorConfigurationJob> jobs = new ArrayList<>();
-    for (Entry<Path, String> configFile : configurationData.entrySet()) {
-      Path inputFile = configFile.getKey();
-      String fileText = configFile.getValue();
-      Warnings warnings = buildWarnings(_settings);
-      String name = inputFile.getFileName().toString();
-      Path outputFile = outputConfigDir.resolve(name);
-      FlattenVendorConfigurationJob job =
-          new FlattenVendorConfigurationJob(_settings, fileText, inputFile, outputFile, warnings);
-      jobs.add(job);
-    }
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings,
-        _logger,
-        jobs,
-        outputConfigurationData,
-        new FlattenVendorConfigurationAnswerElement(),
-        _settings.getFlatten() || _settings.getHaltOnParseError(),
-        "Flatten configurations");
-    _logger.printElapsedTime();
-    for (Entry<Path, String> e : outputConfigurationData.entrySet()) {
-      Path outputFile = e.getKey();
-      String flatConfigText = e.getValue();
-      String outputFileAsString = outputFile.toString();
-      _logger.debugf("Writing config to \"%s\"...", outputFileAsString);
-      CommonUtil.writeFile(outputFile, flatConfigText);
-      _logger.debug("OK\n");
     }
   }
 
