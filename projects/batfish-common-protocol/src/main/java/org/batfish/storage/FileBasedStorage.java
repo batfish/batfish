@@ -176,14 +176,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Nullable
   public SortedMap<String, Configuration> loadConfigurations(
       NetworkId network, SnapshotId snapshot) {
-    Path testrigDir = getSnapshotDir(network, snapshot);
-    Path indepDir =
-        testrigDir.resolve(Paths.get(RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
-    return loadConfigurations(network, snapshot, indepDir);
-  }
-
-  private @Nullable SortedMap<String, Configuration> loadConfigurations(
-      NetworkId network, SnapshotId snapshot, Path indepDir) {
+    Path indepDir = getVendorIndependentConfigDir(network, snapshot);
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
       _logger.debugf("Unable to load configs for %s from disk: no cache directory", snapshot);
@@ -481,13 +474,11 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERT_ANSWER_PATH);
   }
 
   private @Nonnull Path getSynthesizedLayer1TopologyPath(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY));
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY);
   }
 
   private void storeConfigurations(
@@ -753,8 +744,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
-    return getSnapshotDir(networkId, snapshotId)
-        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_METADATA_FILE));
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_METADATA_FILE);
   }
 
   @Override
@@ -1062,9 +1052,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
-    return getSnapshotDir(networkId, snapshotId)
-        .resolve(RELPATH_OUTPUT)
-        .resolve(RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
   }
 
   /**
@@ -1095,9 +1083,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
-    return getSnapshotDir(networkId, snapshotId)
-        .resolve(RELPATH_OUTPUT)
-        .resolve(RELPATH_ENV_TOPOLOGY_FILE);
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_ENV_TOPOLOGY_FILE);
   }
 
   @Override
@@ -1701,13 +1687,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
-  }
-
-  private @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
   }
 
   private Path getNetworkBlobsDir(NetworkId networkId) {
