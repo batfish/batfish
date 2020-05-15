@@ -1,12 +1,19 @@
 package org.batfish.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
+import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
@@ -30,7 +37,6 @@ import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.identifiers.StorageBasedIdResolver;
-import org.batfish.main.Batfish.TestrigSettings;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.vendor.VendorConfiguration;
@@ -185,23 +191,27 @@ public class BatfishTestUtils {
             makeVendorConfigurationCache(),
             null,
             new TestStorageBasedIdResolver(settings.getStorageBase()));
-    TestrigSettings snapshotTr = batfish.getSnapshotTestrigSettings();
-    Path testrigPath = snapshotTr.getInputPath();
-    snapshotTr.getOutputPath().toFile().mkdirs();
-    writeTemporaryTestrigFiles(
-        configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
-    writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(
-        bgpTablesText, testrigPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
-    writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    StorageProvider storage = new FileBasedStorage(settings.getStorageBase(), batfish.getLogger());
+    writeTemporarySnapshotInputFiles(
+        configurationText, RELPATH_CONFIGURATIONS_DIR, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(awsText, RELPATH_AWS_CONFIGS_DIR, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(
+        bgpTablesText, RELPATH_ENVIRONMENT_BGP_TABLES, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(hostsText, RELPATH_HOST_CONFIGS_DIR, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(iptablesFilesText, "iptables", storage, TEST_SNAPSHOT);
     if (layer1TopologyText != null) {
-      writeTemporaryTestrigFiles(
-          ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText), testrigPath);
+      writeTemporarySnapshotInputFiles(
+          ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText),
+          "",
+          storage,
+          TEST_SNAPSHOT);
     }
     if (runtimeDataText != null) {
-      writeTemporaryTestrigFiles(
-          ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataText), testrigPath);
+      writeTemporarySnapshotInputFiles(
+          ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataText),
+          "",
+          storage,
+          TEST_SNAPSHOT);
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -293,17 +303,22 @@ public class BatfishTestUtils {
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
-  private static void writeTemporaryTestrigFiles(
-      @Nullable Map<String, String> filesText, Path outputDirectory) {
+  private static void writeTemporarySnapshotInputFiles(
+      @Nullable Map<String, String> filesText,
+      String keyPrefix,
+      StorageProvider storage,
+      NetworkSnapshot snapshot) {
     if (filesText != null) {
       filesText.forEach(
           (filename, text) -> {
-            outputDirectory.toFile().mkdirs();
-            Path fpath = Paths.get(filename);
-            if (fpath.getNameCount() > 1) {
-              outputDirectory.resolve(fpath.subpath(0, fpath.getNameCount() - 1)).toFile().mkdirs();
+            String key =
+                keyPrefix.isEmpty() ? filename : String.format("%s/%s", keyPrefix, filename);
+            try {
+              storage.storeSnapshotInputObject(
+                  new ByteArrayInputStream(text.getBytes(UTF_8)), key, snapshot);
+            } catch (IOException e) {
+              throw new UncheckedIOException(e);
             }
-            CommonUtil.writeFile(outputDirectory.resolve(filename), text);
           });
     }
   }
