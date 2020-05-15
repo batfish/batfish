@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import org.batfish.common.BatfishLogger;
 
 /** Utility functions for internal CLI tools */
-class CliUtils {
+final class CliUtils {
 
   /**
    * Reads the files in the given directory (recursively) and returns a map from each file's {@link
