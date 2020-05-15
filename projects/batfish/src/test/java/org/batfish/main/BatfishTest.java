@@ -6,9 +6,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
-import static org.batfish.main.Batfish.readAllFiles;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -27,10 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +40,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
@@ -96,8 +91,6 @@ public class BatfishTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static final BatfishLogger LOGGER = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
 
   private static final Question TEST_QUESTION =
       new TestQuestion() {
@@ -386,13 +379,6 @@ public class BatfishTest {
   }
 
   @Test
-  public void testNoFileUnderPath() throws IOException {
-    Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
-    Map<Path, String> result = readAllFiles(emptyFolder, LOGGER);
-    assertThat(result, anEmptyMap());
-  }
-
-  @Test
   public void testCheckValidTopology() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
@@ -435,56 +421,6 @@ public class BatfishTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Topology contains a non-existent interface 'eth1' on node 'h1'");
     Batfish.checkTopology(configs, topology);
-  }
-
-  @Test
-  public void testReadNestedPath() throws IOException {
-    Path nestedFolder = _folder.newFolder("nestedDirectory").toPath();
-    Set<Path> expected = new HashSet<>();
-    expected.add(nestedFolder.resolve("b-test.cfg"));
-    expected.add(nestedFolder.resolve("d-test.cfg"));
-    expected.add(nestedFolder.resolve("aDirectory").resolve("e-test.cfg"));
-    expected.add(nestedFolder.resolve("eDirectory").resolve("a-test.cfg"));
-    expected.add(nestedFolder.resolve("eDirectory").resolve("c-test.cfg"));
-    for (Path path : expected) {
-      path.getParent().toFile().mkdir();
-      assertThat(path.toFile().createNewFile(), is(true));
-    }
-    Set<Path> actual = readAllFiles(nestedFolder, LOGGER).keySet();
-    assertThat(expected, equalTo(actual));
-  }
-
-  @Test
-  public void testReadStartWithDotFile() throws IOException {
-    Path startWithDot = _folder.newFolder("startWithDot").toPath();
-    File file = startWithDot.resolve(".cfg").toFile();
-    file.getParentFile().mkdir();
-    assertThat(file.createNewFile(), is(true));
-    Map<Path, String> result = readAllFiles(startWithDot, LOGGER);
-    assertThat(result, anEmptyMap());
-  }
-
-  @Test
-  public void testReadUnNestedPath() throws IOException {
-    Path unNestedFolder = _folder.newFolder("unNestedDirectory").toPath();
-    Set<Path> expected = new HashSet<>();
-    expected.add(unNestedFolder.resolve("test1.cfg"));
-    expected.add(unNestedFolder.resolve("test2.cfg"));
-    expected.add(unNestedFolder.resolve("test3.cfg"));
-    for (Path path : expected) {
-      path.getParent().toFile().mkdir();
-      assertThat(path.toFile().createNewFile(), is(true));
-    }
-    Set<Path> actual = readAllFiles(unNestedFolder, LOGGER).keySet();
-    assertThat(expected, equalTo(actual));
-  }
-
-  @Test
-  public void testReadThrowsExceptionWithSpecificType() {
-    Path nonExistPath = _folder.getRoot().toPath().resolve("nonExistent");
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Failed to walk path: " + nonExistPath);
-    readAllFiles(nonExistPath, LOGGER);
   }
 
   @Test

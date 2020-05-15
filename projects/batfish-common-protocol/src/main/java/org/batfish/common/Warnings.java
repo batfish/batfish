@@ -3,6 +3,9 @@ package org.batfish.common;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.BatfishLogger.LEVEL_PEDANTIC;
+import static org.batfish.common.BatfishLogger.LEVEL_REDFLAG;
+import static org.batfish.common.BatfishLogger.LEVEL_UNIMPLEMENTED;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,6 +48,13 @@ public class Warnings implements Serializable {
   private transient boolean _unimplementedRecord;
 
   private final List<Warning> _unimplementedWarnings;
+
+  public static @Nonnull Warnings forLogger(BatfishLogger logger) {
+    return new Warnings(
+        logger.isActive(LEVEL_PEDANTIC),
+        logger.isActive(LEVEL_REDFLAG),
+        logger.isActive(LEVEL_UNIMPLEMENTED));
+  }
 
   @JsonCreator
   private Warnings(
