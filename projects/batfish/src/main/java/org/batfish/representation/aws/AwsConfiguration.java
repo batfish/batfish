@@ -36,6 +36,7 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public class AwsConfiguration extends VendorConfiguration {
 
+  public static final String DEFAULT_REGION_NAME = "us-west-2";
   static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
   public static final String DEFAULT_ACCOUNT_NAME = "default";
 

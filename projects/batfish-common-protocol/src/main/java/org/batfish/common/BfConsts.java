@@ -127,7 +127,6 @@ public class BfConsts {
   public static final String PROP_VALUES = "values";
   public static final String PROP_VARIABLES = "variables";
 
-  public static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
@@ -144,7 +143,6 @@ public class BfConsts {
   public static final String RELPATH_RUNTIME_DATA_FILE = "runtime_data.json";
   public static final String RELPATH_QUESTION_FILE = "question.json";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
-  public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 
   public static final String SVC_BASE_RSC = "/batfishservice";
   public static final String SVC_FAILURE_KEY = "failure";

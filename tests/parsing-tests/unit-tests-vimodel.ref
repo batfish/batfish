@@ -30605,7 +30605,7 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs",
+            "region" : "us-west-2",
             "subnetId" : "subnet-a9660ce1",
             "vpcId" : "vpc-50fffd36"
           }
@@ -30627,7 +30627,7 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs",
+            "region" : "us-west-2",
             "subnetId" : "subnet-3e7e3458",
             "vpcId" : "vpc-50fffd36"
           }
