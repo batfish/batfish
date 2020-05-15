@@ -997,6 +997,72 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
+  public void testInboundSession() throws IOException {
+    /*
+    Test that inbound session will be created and matched. Setup:
+     1. Create node with interface whose outgoing ACL denies all traffic
+     2. Give the VRF a static default route out that interface
+     3. Run bidirectional reachability for traffic entering that interface, with the interface
+        address as its dst IP
+    The return flows can only be successful if they match a session on the VRF, allowing them to
+    skip the interface's outgoing filter.
+    */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration node =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(SFL_INGRESS_NODE)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setName(SFL_INGRESS_VRF).setOwner(node).build();
+    vrf.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopInterface(SFL_INGRESS_IFACE)
+                .setAdmin(1)
+                .build());
+    nf.interfaceBuilder()
+        .setOwner(node)
+        .setActive(true)
+        .setName(SFL_INGRESS_IFACE)
+        .setVrf(vrf)
+        .setAddress(SFL_INGRESS_IFACE_ADDRESS)
+        .setOutgoingFilter(
+            nf.aclBuilder()
+                .setOwner(node)
+                .setLines(ExprAclLine.rejecting(AclLineMatchExprs.TRUE))
+                .build())
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(SFL_INGRESS_IFACE), null, null))
+        .build();
+
+    // Sanity check: VRF currently does NOT originate sessions. All return flows should be blocked
+    // by outgoing filter.
+    BidirectionalReachabilityResult noOriginateSessionsResult =
+        getReachabilityResultForSessionFibLookup(
+            ImmutableSortedMap.of(node.getHostname(), node),
+            SFL_INGRESS_IFACE_ADDRESS.getIp().toIpSpace(),
+            ImmutableSet.of(ACCEPTED));
+    assertThat(noOriginateSessionsResult.getStartLocationReturnPassSuccessBdds(), anEmptyMap());
+
+    // Now allow the VRF to originate sessions. Return flows should succeed, as long as they aren't
+    // destined for the interface address (i.e. original flow's src IP wasn't interface address).
+    vrf.setHasOriginatingSessions(true);
+    BDD expectedSuccessDstIp = PKT.getDstIp().value(SFL_INGRESS_IFACE_ADDRESS.getIp().asLong());
+    BDD expectedSuccessSrcIps =
+        PKT.getSrcIp().value(SFL_INGRESS_IFACE_ADDRESS.getIp().asLong()).not();
+    BDD expectedSuccessFlows = expectedSuccessDstIp.and(expectedSuccessSrcIps);
+    BidirectionalReachabilityResult originateSessionsResult =
+        getReachabilityResultForSessionFibLookup(
+            ImmutableSortedMap.of(node.getHostname(), node),
+            SFL_INGRESS_IFACE_ADDRESS.getIp().toIpSpace(),
+            ImmutableSet.of(ACCEPTED));
+    assertThat(
+        originateSessionsResult.getStartLocationReturnPassSuccessBdds(),
+        equalTo(ImmutableMap.of(SFL_INGRESS_LOCATION, expectedSuccessFlows)));
+  }
+
+  @Test
   public void testSessionFibLookupAcceptSingleNodeSingleVrf() throws IOException {
     assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, false, false, false));
   }
@@ -1067,7 +1133,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         configurations, SFL_DST_IP_SPACE_DUAL_NODE, ALL_DISPOSITIONS);
   }
 
-  private void assertSessionFiblookupAccept(
+  private BidirectionalReachabilityResult getReachabilityResultForSessionFibLookup(
       SortedMap<String, Configuration> configurations,
       IpSpace dstIpSpaceOfInterest,
       Set<FlowDisposition> forwardDispositions)
@@ -1091,7 +1157,17 @@ public final class BidirectionalReachabilityAnalysisTest {
             ImmutableSet.of(),
             configurations.keySet(),
             forwardDispositions);
-    BidirectionalReachabilityResult result = analysis.getResult();
+    return analysis.getResult();
+  }
+
+  private void assertSessionFiblookupAccept(
+      SortedMap<String, Configuration> configurations,
+      IpSpace dstIpSpaceOfInterest,
+      Set<FlowDisposition> forwardDispositions)
+      throws IOException {
+    BidirectionalReachabilityResult result =
+        getReachabilityResultForSessionFibLookup(
+            configurations, dstIpSpaceOfInterest, forwardDispositions);
 
     assertThat(
         result.getStartLocationReturnPassSuccessBdds(),
