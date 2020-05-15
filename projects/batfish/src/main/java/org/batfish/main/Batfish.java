@@ -2,7 +2,6 @@ package org.batfish.main;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
@@ -52,14 +51,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -252,15 +249,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private static final Pattern MANAGEMENT_VRFS =
       Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
 
-  /** The name of the [optional] topology file within a test-rig */
-  private static void applyBaseDir(
-      TestrigSettings settings, Path containerDir, SnapshotId testrig) {
-    Path testrigDir =
-        containerDir.resolve(Paths.get(BfConsts.RELPATH_SNAPSHOTS_DIR, testrig.getId()));
-    settings.setName(testrig);
-    settings.setBasePath(testrigDir);
-  }
-
   static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
     for (Edge edge : topology.getEdges()) {
       if (!configurations.containsKey(edge.getNode1())) {
@@ -351,37 +339,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  @VisibleForTesting
-  TestrigSettings getSnapshotTestrigSettings() {
-    return _baseTestrigSettings;
-  }
-
-  @VisibleForTesting
-  TestrigSettings getReferenceTestrigSettings() {
-    return _deltaTestrigSettings;
-  }
-
   private void initLocalSettings(Settings settings) {
     if (settings == null || settings.getStorageBase() == null || settings.getContainer() == null) {
       // This should only happen in tests.
       return;
     }
-    Path containerDir = settings.getStorageBase().resolve(settings.getContainer().getId());
-
-    _baseTestrigSettings = new TestrigSettings();
-    SnapshotId snapshotId = settings.getTestrig();
-    _baseTestrigSettings.setName(snapshotId);
-    if (snapshotId == null) {
+    _snapshot = settings.getTestrig();
+    if (_snapshot == null) {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
     }
-    applyBaseDir(_baseTestrigSettings, containerDir, snapshotId);
-
-    _deltaTestrigSettings = new TestrigSettings();
-    SnapshotId referenceId = settings.getDeltaTestrig();
-    if (referenceId != null) {
-      _deltaTestrigSettings.setName(referenceId);
-      applyBaseDir(_deltaTestrigSettings, containerDir, referenceId);
-    }
+    _referenceSnapshot = settings.getDeltaTestrig();
   }
 
   /**
@@ -490,7 +457,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private final Map<String, AnswererCreator> _answererCreators;
 
-  private TestrigSettings _baseTestrigSettings;
+  private SnapshotId _snapshot;
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
@@ -504,7 +471,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Cache<NetworkSnapshot, Map<String, VendorConfiguration>>
       _cachedVendorConfigurations;
 
-  private TestrigSettings _deltaTestrigSettings;
+  private SnapshotId _referenceSnapshot;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
 
@@ -824,31 +791,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void checkSnapshotOutputReady(NetworkSnapshot snapshot) {
-    TestrigSettings tr = getTestrigSettings(snapshot);
-    checkState(
-        outputExists(tr),
-        "Output directory does not exist for snapshot %s",
-        snapshot.getSnapshot());
-  }
-
-  @Override
   public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
-    checkSnapshotOutputReady(snapshot);
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(snapshot);
     saveDataPlane(snapshot, result);
     return result._answerElement;
-  }
-
-  private TestrigSettings getTestrigSettings(NetworkSnapshot snapshot) {
-    if (_baseTestrigSettings.getName().equals(snapshot.getSnapshot())) {
-      return _baseTestrigSettings;
-    }
-    if (_deltaTestrigSettings != null
-        && _deltaTestrigSettings.getName().equals(snapshot.getSnapshot())) {
-      return _deltaTestrigSettings;
-    }
-    throw new IllegalStateException("Unknown snapshot " + snapshot);
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
@@ -913,42 +859,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Map<Location, LocationInfo> getLocationInfo(NetworkSnapshot snapshot) {
     return computeLocationInfo(
         getTopologyProvider().getIpOwners(snapshot), loadConfigurations(snapshot));
-  }
-
-  /**
-   * Deserialize a bunch of objects
-   *
-   * @param namesByPath Mapping of object paths to their names
-   * @param outputClass the class type for {@link S}
-   * @param <S> desired type of objects
-   * @return a map of objects keyed by their name (from {@code namesByPath})
-   */
-  public <S extends Serializable> SortedMap<String, S> deserializeObjects(
-      Map<Path, String> namesByPath, Class<S> outputClass) {
-    String outputClassName = outputClass.getName();
-    BatfishLogger logger = getLogger();
-    AtomicInteger readCompleted =
-        newBatch(
-            "Reading, unpacking, and deserializing files containing '"
-                + outputClassName
-                + "' instances",
-            namesByPath.size());
-    return namesByPath
-        .entrySet()
-        .parallelStream()
-        .map(
-            e -> {
-              logger.debugf(
-                  "Reading and unzipping: %s '%s' from %s%n",
-                  outputClassName, e.getValue(), e.getKey());
-              S object = deserializeObject(e.getKey(), outputClass);
-              logger.debug(" ...OK\n");
-              readCompleted.incrementAndGet();
-              return new SimpleImmutableEntry<>(e.getValue(), object);
-            })
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                String::compareTo, Entry::getKey, Entry::getValue));
   }
 
   private void disableUnusableVlanInterfaces(Map<String, Configuration> configurations) {
@@ -1022,10 +932,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
       }
     }
-  }
-
-  private boolean outputExists(TestrigSettings testrigSettings) {
-    return testrigSettings.getOutputPath().toFile().exists();
   }
 
   public void flatten(Path inputPath, Path outputPath) {
@@ -1241,12 +1147,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public NetworkSnapshot getSnapshot() {
-    return new NetworkSnapshot(_settings.getContainer(), _baseTestrigSettings.getName());
+    return new NetworkSnapshot(_settings.getContainer(), _snapshot);
   }
 
   @Override
   public NetworkSnapshot getReferenceSnapshot() {
-    return new NetworkSnapshot(_settings.getContainer(), _deltaTestrigSettings.getName());
+    return new NetworkSnapshot(_settings.getContainer(), _referenceSnapshot);
   }
 
   @Override
@@ -1293,10 +1199,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void prepareToAnswerQuestions(NetworkSnapshot snapshot, boolean dp) {
-    TestrigSettings tr = getTestrigSettings(snapshot);
-    if (!outputExists(tr)) {
-      createDirectories(tr.getOutputPath());
-    }
     try {
       if (!_storage.hasParseEnvironmentBgpTablesAnswerElement(snapshot)) {
         computeEnvironmentBgpTables(snapshot);
@@ -1599,7 +1501,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (questionId == null) {
       return;
     }
-    SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    SnapshotId referenceSnapshot = _settings.getDiffQuestion() ? _referenceSnapshot : null;
     NetworkId networkId = _settings.getContainer();
     AnalysisId analysisId = _settings.getAnalysisName();
     QuestionSettingsId questionSettingsId;
@@ -1620,11 +1522,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
-            _baseTestrigSettings.getName(),
+            _snapshot,
             questionId,
             questionSettingsId,
             networkNodeRolesId,
-            deltaSnapshot,
+            referenceSnapshot,
             analysisId);
 
     _storage.storeAnswerMetadata(
@@ -2021,8 +1923,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /**
    * Read Iptable Files for each host in the keyset of {@code hostConfigurations}, and store the
-   * contents in {@code iptablesData}. Each task fails if the Iptables file specified by host is not
-   * under {@code testRigPath} or does not exist.
+   * contents in {@code iptablesData}. Each task fails if the Iptables file specified by host does
+   * not exist.
    *
    * @throws BatfishException if there is a failed task and either {@link
    *     Settings#getExitOnFirstError()} or {@link Settings#getHaltOnParseError()} is set.
@@ -2266,14 +2168,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     newBatch("Begin job", 0);
     boolean action = false;
     Answer answer = new Answer();
-    TestrigSettings tr = getTestrigSettings(snapshot);
-
-    if (_settings.getFlatten()) {
-      Path flattenSource = tr.getInputPath();
-      Path flattenDestination = _settings.getFlattenDestination();
-      flatten(flattenSource, flattenDestination);
-      return answer;
-    }
 
     if (_settings.getSerializeVendor()) {
       answer.append(serializeVendorConfigs(snapshot));
@@ -2900,27 +2794,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return found;
   }
 
-  public <S extends Serializable> void serializeObjects(Map<Path, S> objectsByPath) {
-    if (objectsByPath.isEmpty()) {
-      return;
-    }
-
-    int size = objectsByPath.size();
-    String className = objectsByPath.values().iterator().next().getClass().getName();
-    AtomicInteger serializeCompleted =
-        newBatch(String.format("Serializing '%s' instances to disk", className), size);
-    objectsByPath
-        .entrySet()
-        .parallelStream()
-        .forEach(
-            entry -> {
-              Path outputPath = entry.getKey();
-              S object = entry.getValue();
-              serializeObject(object, outputPath);
-              serializeCompleted.incrementAndGet();
-            });
-  }
-
   /**
    * Parses configuration files from the uploaded user data and produces {@link VendorConfiguration
    * vendor-specific configurations} serialized to the given output path.
@@ -3336,7 +3209,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString) throws IOException {
-    SnapshotId deltaSnapshot = _settings.getDiffQuestion() ? _deltaTestrigSettings.getName() : null;
+    SnapshotId referenceSnapshot = _settings.getDiffQuestion() ? _referenceSnapshot : null;
     NetworkId networkId = _settings.getContainer();
     QuestionId questionId = _settings.getQuestionName();
     AnalysisId analysisId = _settings.getAnalysisName();
@@ -3358,11 +3231,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
-            _baseTestrigSettings.getName(),
+            _snapshot,
             questionId,
             questionSettingsId,
             networkNodeRolesId,
-            deltaSnapshot,
+            referenceSnapshot,
             analysisId);
     _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
@@ -3401,55 +3274,5 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     AnswererCreator creator = _answererCreators.get(question.getName());
     return creator != null ? creator.create(question, this) : null;
-  }
-
-  @VisibleForTesting
-  static final class TestrigSettings {
-
-    private Path _basePath;
-
-    private SnapshotId _name;
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      } else if (!(obj instanceof TestrigSettings)) {
-        return false;
-      }
-      TestrigSettings other = (TestrigSettings) obj;
-      return _name.equals(other._name);
-    }
-
-    @Nonnull
-    public Path getBasePath() {
-      checkState(_basePath != null, "base path is not configured");
-      return _basePath;
-    }
-
-    public Path getInputPath() {
-      return getBasePath().resolve(BfConsts.RELPATH_INPUT);
-    }
-
-    public SnapshotId getName() {
-      return _name;
-    }
-
-    public Path getOutputPath() {
-      return getBasePath().resolve(BfConsts.RELPATH_OUTPUT);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(_name);
-    }
-
-    public void setBasePath(Path basePath) {
-      _basePath = basePath;
-    }
-
-    public void setName(SnapshotId name) {
-      _name = name;
-    }
   }
 }

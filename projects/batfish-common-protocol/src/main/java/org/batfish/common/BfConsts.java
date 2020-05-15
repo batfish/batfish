@@ -138,11 +138,9 @@ public class BfConsts {
   public static final String RELPATH_L1_TOPOLOGY_PATH = "layer1_topology.json";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
-  public static final String RELPATH_OUTPUT = "output";
   public static final String RELPATH_REFERENCE_LIBRARY_PATH = "address_library.json";
   public static final String RELPATH_RUNTIME_DATA_FILE = "runtime_data.json";
   public static final String RELPATH_QUESTION_FILE = "question.json";
-  public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
 
   public static final String SVC_BASE_RSC = "/batfishservice";
   public static final String SVC_FAILURE_KEY = "failure";

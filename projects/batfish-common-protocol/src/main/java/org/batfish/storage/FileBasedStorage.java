@@ -137,6 +137,8 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   private static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
   private static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";
+  private static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
+  private static final String RELPATH_OUTPUT = "output";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -176,8 +178,7 @@ public final class FileBasedStorage implements StorageProvider {
       NetworkId network, SnapshotId snapshot) {
     Path testrigDir = getSnapshotDir(network, snapshot);
     Path indepDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
+        testrigDir.resolve(Paths.get(RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
     return loadConfigurations(network, snapshot, indepDir);
   }
 
@@ -481,12 +482,12 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
+        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_CONVERT_ANSWER_PATH));
   }
 
   private @Nonnull Path getSynthesizedLayer1TopologyPath(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY));
+        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY));
   }
 
   private void storeConfigurations(
@@ -753,7 +754,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_METADATA_FILE));
+        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_METADATA_FILE));
   }
 
   @Override
@@ -1062,7 +1063,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId)
-        .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(RELPATH_OUTPUT)
         .resolve(RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
   }
 
@@ -1095,7 +1096,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId)
-        .resolve(BfConsts.RELPATH_OUTPUT)
+        .resolve(RELPATH_OUTPUT)
         .resolve(RELPATH_ENV_TOPOLOGY_FILE);
   }
 
@@ -1692,7 +1693,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
-    return getNetworkDir(network).resolve(BfConsts.RELPATH_SNAPSHOTS_DIR).resolve(snapshot.getId());
+    return getNetworkDir(network).resolve(RELPATH_SNAPSHOTS_DIR).resolve(snapshot.getId());
   }
 
   private @Nonnull Path getStorageBase() {
@@ -1701,12 +1702,12 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
+        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
   }
 
   private @Nonnull Path getVendorSpecificConfigDir(NetworkId network, SnapshotId snapshot) {
     return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+        .resolve(Paths.get(RELPATH_OUTPUT, RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
   }
 
   private Path getNetworkBlobsDir(NetworkId networkId) {
@@ -1726,7 +1727,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private Path getSnapshotOutputDir(NetworkId networkId, SnapshotId snapshotId) {
-    return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_OUTPUT);
+    return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_OUTPUT);
   }
 
   @Nonnull

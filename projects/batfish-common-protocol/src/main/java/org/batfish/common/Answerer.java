@@ -56,9 +56,6 @@ public abstract class Answerer {
    * <p>Answerers that want a custom differential answer, should override this function.
    */
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
-    _batfish.checkSnapshotOutputReady(snapshot);
-    _batfish.checkSnapshotOutputReady(reference);
-
     AnswerElement baseAnswer = create(_question, _batfish).answer(snapshot);
     AnswerElement deltaAnswer = create(_question, _batfish).answer(reference);
     if (baseAnswer instanceof TableAnswerElement) {
