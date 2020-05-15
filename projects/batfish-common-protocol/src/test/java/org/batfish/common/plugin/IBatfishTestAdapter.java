@@ -181,11 +181,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void checkSnapshotOutputReady(NetworkSnapshot snapshot) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
