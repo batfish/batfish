@@ -61,8 +61,7 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
                     new PreInInterface(_hostname, incomingInterface),
                     new PostInVrfSession(
                         _hostname, _ifaces.get(incomingInterface).getVrf().getName()),
-                    // TODO Should this edge apply _transformation?
-                    _sessionFlows));
+                    compose(constraint(_sessionFlows), _transformation)));
   }
 
   @Override
