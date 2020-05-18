@@ -286,7 +286,10 @@ public final class SessionInstrumentationTest {
                 hasPreState(new PreInInterface(FW, FW_I1)),
                 hasPostState(new PostInVrfSession(FW, FW_VRF)),
                 hasTransition(
-                    allOf(mapsForward(ONE, sessionHeaders), mapsBackward(ONE, sessionHeaders))))));
+                    allOf(
+                        mapsForward(
+                            ONE, sessionHeaders.and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
+                        mapsBackward(ONE, sessionHeaders))))));
   }
 
   @Test
