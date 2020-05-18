@@ -60,13 +60,18 @@ public class SessionScopeFibLookupSessionEdgesTest {
     // PreInInterface to PostInVrf
     IncomingSessionScope scope = new IncomingSessionScope(ImmutableSet.of(IFACE_NAME));
     List<Edge> actualEdges = scope.accept(VISITOR).collect(ImmutableList.toImmutableList());
+    BDD expectedForwardFlows =
+        SESSION_HEADERS.and(POOL_BDD).and(SRC_MGR.getSourceInterfaceBDD(IFACE_NAME));
     assertThat(
         actualEdges,
         contains(
             allOf(
                 hasPreState(new PreInInterface(HOSTNAME, IFACE_NAME)),
                 hasPostState(new PostInVrfSession(HOSTNAME, VRF_NAME)),
-                hasTransition(mapsForward(ONE, SESSION_HEADERS.and(POOL_BDD))))));
+                hasTransition(
+                    allOf(
+                        mapsForward(ONE, expectedForwardFlows),
+                        mapsBackward(ONE, SESSION_HEADERS))))));
   }
 
   @Test

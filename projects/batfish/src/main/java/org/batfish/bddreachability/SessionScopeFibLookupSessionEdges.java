@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 
@@ -61,7 +62,10 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
                     new PreInInterface(_hostname, incomingInterface),
                     new PostInVrfSession(
                         _hostname, _ifaces.get(incomingInterface).getVrf().getName()),
-                    compose(constraint(_sessionFlows), _transformation)));
+                    compose(
+                        constraint(_sessionFlows),
+                        _transformation,
+                        addSourceInterfaceConstraint(_srcMgr, incomingInterface))));
   }
 
   @Override
