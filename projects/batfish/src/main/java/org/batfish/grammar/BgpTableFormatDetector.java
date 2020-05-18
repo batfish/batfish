@@ -1,8 +1,11 @@
 package org.batfish.grammar;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 
 public final class BgpTableFormatDetector {
 
@@ -54,6 +57,11 @@ public final class BgpTableFormatDetector {
     if (format != null) {
       return format;
     }
-    return BgpTableFormat.UNKNOWN;
+    try {
+      BatfishObjectMapper.mapper().readValue(_fileText, BgpAdvertisementsByVrf.class);
+      return BgpTableFormat.JSON;
+    } catch (IOException e) {
+      return BgpTableFormat.UNKNOWN;
+    }
   }
 }

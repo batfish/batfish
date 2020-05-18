@@ -691,6 +691,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
+    // "force" and "all" are aliases. See https://github.com/FRRouting/frr/pull/4200.
+    // The functionality is described at
+    // http://docs.frrouting.org/en/latest/bgp.html#clicmd-[no]neighborPEERnext-hop-self[all].
+    if (ctx.FORCE() != null || ctx.ALL() != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelfAll(true);
+    }
   }
 
   @Override

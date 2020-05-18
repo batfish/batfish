@@ -1,10 +1,10 @@
 package org.batfish.bddreachability;
 
-import java.util.Set;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.datamodel.flow.SessionAction;
+import org.batfish.datamodel.flow.SessionScope;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -33,18 +33,15 @@ public class BDDFirewallSessionTraceInfoMatchersImpl {
     }
   }
 
-  static final class HasIncomingInterfaces
-      extends FeatureMatcher<BDDFirewallSessionTraceInfo, Set<String>> {
-    public HasIncomingInterfaces(Matcher<? super Set<String>> subMatcher) {
-      super(
-          subMatcher,
-          "A BDDFirewallSessionTraceInfo with incomingInterfaces:",
-          "incomingInterfaces");
+  static final class HasSessionScope
+      extends FeatureMatcher<BDDFirewallSessionTraceInfo, SessionScope> {
+    public HasSessionScope(Matcher<? super SessionScope> subMatcher) {
+      super(subMatcher, "A BDDFirewallSessionTraceInfo with sessionScope:", "sessionScope");
     }
 
     @Override
-    protected Set<String> featureValueOf(BDDFirewallSessionTraceInfo bddFirewallSessionTraceInfo) {
-      return bddFirewallSessionTraceInfo.getIncomingInterfaces();
+    protected SessionScope featureValueOf(BDDFirewallSessionTraceInfo bddFirewallSessionTraceInfo) {
+      return bddFirewallSessionTraceInfo.getSessionScope();
     }
   }
 

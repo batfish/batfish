@@ -27,7 +27,10 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -44,6 +47,7 @@ import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -450,6 +454,8 @@ public interface StorageProvider {
   InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
+  boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException;
+
   /**
    * Fetch the list of keys in the given snapshot's input directory
    *
@@ -770,4 +776,185 @@ public interface StorageProvider {
    * @throws IOException if there is an error
    */
   boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to environment BGP tables.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the answer element that is the result of parsing environment BGP tables for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+      NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the answer element that is the result of parsing environment BGP tables for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeParseEnvironmentBgpTablesAnswerElement(
+      ParseEnvironmentBgpTablesAnswerElement parseEnvironmentBgpTablesAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Returns true iff environment BGP tables have been parsed for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Deletes the answer element that is the result of parsing environment BGP tables for the given
+   * snapshot if it exists.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the compiled environment BGP tables for the given snapshot if they exist. Returns an
+   * empty map if none were compiled.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Stores the compiled environment BGP tables for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeEnvironmentBgpTables(
+      Map<String, BgpAdvertisementsByVrf> environmentBgpTables, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Deletes the compiled environment BGP tables for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the content of the external BGP announcements input file for the given snapshot, or
+   * returns {@link Optional#empty} if the snapshot does not contain one.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the answer element that is the result of parsing vendor configurations for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the answer element that is the result of parsing vendor configurations for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Returns true iff vendor configurations have been parsed for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Deletes the answer element that is the result of parsing vendor configurations for the given
+   * snapshot if it exists.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the compiled vendor configurations for the given snapshot if they exist. Returns an empty
+   * map if none were compiled.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Stores the compiled vendor configurations for the given snapshot if they exist. Merges with any
+   * existing stored vendor configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Deletes the compiled vendor configurations for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to host configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to network configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to AWS multi-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to AWS single-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 }

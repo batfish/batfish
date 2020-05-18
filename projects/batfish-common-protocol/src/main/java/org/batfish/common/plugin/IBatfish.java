@@ -63,8 +63,6 @@ public interface IBatfish extends IPluginConsumer {
   SortedMap<Flow, List<Trace>> buildFlows(
       NetworkSnapshot snapshot, Set<Flow> flows, boolean ignoreFilters);
 
-  void checkSnapshotOutputReady(NetworkSnapshot snapshot);
-
   /** Compute the dataplane for the given {@link NetworkSnapshot} */
   DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot);
 
