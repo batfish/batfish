@@ -59,14 +59,19 @@ public class SessionScopeFibLookupSessionEdgesTest {
     // Applying visitor to IncomingSessionScope for the known interface should give edge from
     // PreInInterface to PostInVrf
     IncomingSessionScope scope = new IncomingSessionScope(ImmutableSet.of(IFACE_NAME));
-    Edge expectedEdge =
-        new Edge(
-            new PreInInterface(HOSTNAME, IFACE_NAME),
-            new PostInVrfSession(HOSTNAME, VRF_NAME),
-            // TODO Currently no source or transformation constraint here, but there should be.
-            SESSION_HEADERS);
     List<Edge> actualEdges = scope.accept(VISITOR).collect(ImmutableList.toImmutableList());
-    assertThat(actualEdges, contains(expectedEdge));
+    BDD expectedForwardFlows =
+        SESSION_HEADERS.and(POOL_BDD).and(SRC_MGR.getSourceInterfaceBDD(IFACE_NAME));
+    assertThat(
+        actualEdges,
+        contains(
+            allOf(
+                hasPreState(new PreInInterface(HOSTNAME, IFACE_NAME)),
+                hasPostState(new PostInVrfSession(HOSTNAME, VRF_NAME)),
+                hasTransition(
+                    allOf(
+                        mapsForward(ONE, expectedForwardFlows),
+                        mapsBackward(ONE, SESSION_HEADERS))))));
   }
 
   @Test
