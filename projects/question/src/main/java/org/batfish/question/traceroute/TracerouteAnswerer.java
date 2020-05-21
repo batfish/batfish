@@ -2,6 +2,7 @@ package org.batfish.question.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
@@ -39,7 +40,8 @@ public final class TracerouteAnswerer extends Answerer {
     super(question, batfish);
   }
 
-  private SortedMap<Flow, List<Trace>> getTraces(NetworkSnapshot snapshot, TracerouteQuestion q) {
+  @VisibleForTesting
+  SortedMap<Flow, List<Trace>> getTraces(NetworkSnapshot snapshot, TracerouteQuestion q) {
     TracerouteAnswererHelper helper =
         new TracerouteAnswererHelper(
             q.getHeaderConstraints(),
