@@ -157,4 +157,31 @@ public class TopologyTest {
 
     assertThat(topo.getAggregates(), hasItem(expectedAgg));
   }
+
+  @Test
+  public void testPutInAwsAggregateCreatesAwsAggregateIfNeededForVpc() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder()
+            .setHostname("vpc-1")
+            .setConfigurationFormat(ConfigurationFormat.AWS)
+            .build();
+    VendorFamily vf = new VendorFamily();
+    AwsFamily af = new AwsFamily();
+    String regionName = "us-west-1";
+    af.setRegion(regionName);
+    af.setVpcId("vpc-1");
+    vf.setAws(af);
+    c1.setVendorFamily(vf);
+    Topology topo = new Topology("ss");
+    Node topoNode = new Node(c1.getHostname());
+
+    Topology.putInAwsAggregate(topo, c1, topoNode);
+
+    // AWS aggregate is present and contains region of the node c1
+    Aggregate expectedAgg = new Aggregate("aws", AggregateType.CLOUD);
+    expectedAgg.setContents(ImmutableSet.of("aggregate-us-west-1"));
+
+    assertThat(topo.getAggregates(), hasItem(expectedAgg));
+  }
 }
