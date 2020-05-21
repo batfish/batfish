@@ -7,6 +7,7 @@ import java.util.List;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.matchers.HopMatchersImpl.HasAcceptingInterface;
 import org.batfish.datamodel.matchers.HopMatchersImpl.HasEnterInputInterface;
 import org.batfish.datamodel.matchers.HopMatchersImpl.HasExitOutputInterface;
 import org.batfish.datamodel.matchers.HopMatchersImpl.HasNodeName;
@@ -17,6 +18,10 @@ import org.hamcrest.Matcher;
 public final class HopMatchers {
   public static HasNodeName hasNodeName(String nodeName) {
     return new HasNodeName(equalTo(nodeName));
+  }
+
+  public static Matcher<Hop> hasAcceptingInterface(NodeInterfacePair iface) {
+    return new HasAcceptingInterface(is(iface));
   }
 
   public static HasEnterInputInterface hasInputInterface(NodeInterfacePair iface) {

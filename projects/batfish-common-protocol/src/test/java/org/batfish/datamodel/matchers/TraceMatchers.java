@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
@@ -36,6 +37,11 @@ public final class TraceMatchers {
   /** A {@link Matcher} for {@link Trace} {@link Hop hops}. */
   public static HasHops hasHops(Matcher<? super List<? extends Hop>> hopsMatcher) {
     return new HasHops(hopsMatcher);
+  }
+
+  /** A {@link Matcher} for a {@link Trace} with a single {@link Hop}. */
+  public static HasHops hasHop(Matcher<? super Hop> hopMatcher) {
+    return hasHops(contains(hopMatcher));
   }
 
   /** A {@link Matcher} for the last hop in a {@link Trace}. */
