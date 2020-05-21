@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -103,8 +104,8 @@ public class Topology extends BfObject {
     return pojoTopology;
   }
 
-  private static void putInAwsAggregate(
-      Topology pojoTopology, Configuration configuration, Node pojoNode) {
+  @VisibleForTesting
+  static void putInAwsAggregate(Topology pojoTopology, Configuration configuration, Node pojoNode) {
     VendorFamily vendorFamily = configuration.getVendorFamily();
     if (vendorFamily.getAws().getSubnetId() != null) {
       String subnetId = vendorFamily.getAws().getSubnetId();
@@ -122,6 +123,8 @@ public class Topology extends BfObject {
       String region = vendorFamily.getAws().getRegion();
       Aggregate regionAggregate = pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
       regionAggregate.getContents().add(vpcAggregate.getId());
+      Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
+      awsAggregate.getContents().add(regionAggregate.getId());
     } else if (vendorFamily.getAws().getRegion() != null) {
       String region = vendorFamily.getAws().getRegion();
       Aggregate regionAggregate = pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
