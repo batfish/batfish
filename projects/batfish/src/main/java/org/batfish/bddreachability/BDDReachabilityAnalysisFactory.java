@@ -224,6 +224,9 @@ public final class BDDReachabilityAnalysisFactory {
   /** node --&gt; vrf --&gt; interface --&gt; set of packets accepted by the interface */
   private final Map<String, Map<String, Map<String, BDD>>> _ifaceAcceptBDDs;
 
+  /** node --&gt; vrf --&gt; set of packets accepted by the vrf */
+  private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
+
   // node --> vrf --> nextVrf --> set of packets vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, BDD>>> _nextVrfBDDs;
 
@@ -280,6 +283,7 @@ public final class BDDReachabilityAnalysisFactory {
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _ifaceAcceptBDDs =
           computeIfaceAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
+      _vrfAcceptBDDs = computeVrfAcceptBDDs(); // must do this after populating _ifaceAcceptBDDs
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
       _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
@@ -302,13 +306,31 @@ public final class BDDReachabilityAnalysisFactory {
               _exitsNetworkBDDs,
               _insufficientInfoBDDs,
               _ifaceAcceptBDDs,
+              _vrfAcceptBDDs,
               _routableBDDs,
               _nextVrfBDDs,
-              _nullRoutedBDDs,
-              _bddPacket.getFactory()::orAll);
+              _nullRoutedBDDs);
     } finally {
       span.finish();
     }
+  }
+
+  /**
+   * Computes VRF accept BDDs based on interface accept BDDs. Each VRF's accept BDD is the union of
+   * its interfaces' accept BDDs.
+   */
+  private Map<String, Map<String, BDD>> computeVrfAcceptBDDs() {
+    return toImmutableMap(
+        _ifaceAcceptBDDs,
+        Entry::getKey, // node name
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf name
+                vrfEntry ->
+                    _bddPacket
+                        .getFactory()
+                        .orAll(vrfEntry.getValue().values()))); // vrf's accept BDD
   }
 
   /**
@@ -912,8 +934,8 @@ public final class BDDReachabilityAnalysisFactory {
 
   /**
    * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
-   * From there they can get accepted into the ingress VRF or forwarded based on the PBR FIB lookup.
-   * These edges represent the former.
+   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
+   * lookup. These edges represent the former.
    */
   private Stream<Edge> generateRules_PbrFibLookup_InterfaceAccept() {
     return getInterfaces()
@@ -936,8 +958,8 @@ public final class BDDReachabilityAnalysisFactory {
 
   /**
    * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
-   * From there they can get accepted into the ingress VRF or forwarded based on the PBR FIB lookup.
-   * These edges represent the latter.
+   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
+   * lookup. These edges represent the latter.
    */
   private Stream<Edge> generateRules_PbrFibLookup_PreOutVrf() {
     return getInterfaces()
@@ -948,11 +970,7 @@ public final class BDDReachabilityAnalysisFactory {
               // Generate PbrFibLookup -> PreOutVrf edge for each PbrFibLookup
               String hostname = pbrFibLookup.getHostname();
               String ingressVrf = pbrFibLookup.getIngressVrf();
-              BDD vrfAcceptBdd =
-                  _bddPacket
-                      .getFactory()
-                      .orAll(_ifaceAcceptBDDs.get(hostname).get(ingressVrf).values());
-              BDD notAcceptedBdd = vrfAcceptBdd.not();
+              BDD notAcceptedBdd = _vrfAcceptBDDs.get(hostname).get(ingressVrf).not();
               return new Edge(
                   pbrFibLookup,
                   new PreOutVrf(hostname, pbrFibLookup.getLookupVrf()),
