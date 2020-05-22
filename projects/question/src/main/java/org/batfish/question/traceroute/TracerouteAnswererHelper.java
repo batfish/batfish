@@ -7,14 +7,17 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.phc_to_flow.IpFieldExtractorContext;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
@@ -37,6 +40,8 @@ public final class TracerouteAnswererHelper {
   private final String _sourceLocationStr;
   private final SpecifierContext _specifierContext;
   private final IpFieldExtractorContext _packetHeaderConstraintToFlowHelper;
+  private final IpSpaceAssignment _srcIpAssignment;
+  private final Builder _flowBuilder;
   private final LocationVisitor<Boolean> _isActiveLocation =
       new LocationVisitor<Boolean>() {
         private boolean isActiveInterface(String hostname, String ifaceName) {
@@ -66,15 +71,24 @@ public final class TracerouteAnswererHelper {
     _packetHeaderConstraints = packetHeaderConstraints;
     _sourceLocationStr = sourceLocationStr;
     _specifierContext = specifierContext;
-
+    _srcIpAssignment =
+        initSourceIpAssignment(
+            _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext);
     _packetHeaderConstraintToFlowHelper =
-        new IpFieldExtractorContext(
-            initSourceIpAssignment(
-                _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext),
-            _specifierContext);
+        new IpFieldExtractorContext(_srcIpAssignment, _specifierContext);
+
+    _flowBuilder = initFlowBuilder(_packetHeaderConstraints);
+    setDstIp(_packetHeaderConstraints, _flowBuilder);
   }
 
-  private static final int TRACEROUTE_PORT = 33434;
+  static Flow.Builder initFlowBuilder(PacketHeaderConstraints phc) {
+    BDDPacket pkt = new BDDPacket();
+    return pkt.getFlow(
+            PacketHeaderConstraintsUtil.toBDD(
+                pkt, phc, UniverseIpSpace.INSTANCE, UniverseIpSpace.INSTANCE),
+            BDDFlowConstraintGenerator.FlowPreference.TRACEROUTE)
+        .orElseThrow(() -> new BatfishException("could not convert header constraints to flow"));
+  }
 
   @VisibleForTesting
   static IpSpaceAssignment initSourceIpAssignment(
@@ -110,38 +124,6 @@ public final class TracerouteAnswererHelper {
     builder.setDstIp(dstIp);
   }
 
-  /**
-   * Generate a flow builder given some set of packet header constraints.
-   *
-   * @param constraints {@link PacketHeaderConstraints}
-   * @throws IllegalArgumentException if the {@code constraints} cannot be resolved to a single
-   *     value.
-   */
-  private Flow.Builder headerConstraintsToFlow(
-      PacketHeaderConstraints constraints, Location srcLocation) throws IllegalArgumentException {
-    Flow.Builder builder = PacketHeaderConstraintsUtil.toFlow(constraints);
-
-    // Extract and source IP from header constraints,
-    setSrcIp(constraints, srcLocation, builder);
-    setDstIp(constraints, builder);
-
-    // Set defaults for protocol, and ports and packet lengths:
-    if (builder.getIpProtocol() == null) {
-      builder.setIpProtocol(IpProtocol.UDP);
-    }
-    // set SYN if the user didn't specify any TCP flags
-    if (builder.getIpProtocol() == IpProtocol.TCP && constraints.getTcpFlags() == null) {
-      builder.setTcpFlagsSyn(1);
-    }
-    if (builder.getDstPort() == null) {
-      builder.setDstPort(TRACEROUTE_PORT);
-    }
-    if (builder.getSrcPort() == null) {
-      builder.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
-    }
-    return builder;
-  }
-
   /** Generate a set of flows to do traceroute */
   @VisibleForTesting
   Set<Flow> getFlows() {
@@ -161,7 +143,9 @@ public final class TracerouteAnswererHelper {
     // Perform cross-product of all locations to flows
     for (Location srcLocation : srcLocations) {
       try {
-        Flow.Builder flowBuilder = headerConstraintsToFlow(_packetHeaderConstraints, srcLocation);
+        Flow.Builder flowBuilder = _flowBuilder;
+        // Extract and source IP from header constraints,
+        setSrcIp(_packetHeaderConstraints, srcLocation, flowBuilder);
         setStartLocation(_specifierContext.getConfigs(), flowBuilder, srcLocation);
         setBuilder.add(flowBuilder.build());
       } catch (IllegalArgumentException e) {
