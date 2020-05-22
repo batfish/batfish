@@ -45,6 +45,9 @@ public final class BDDFlowConstraintGenerator {
   @VisibleForTesting
   static final Prefix RESERVED_DOCUMENTATION_203 = Prefix.parse("203.0.113.0/24");
 
+  static final int UDP_TRACEROUTE_FIRST_PORT = 33434;
+  static final int UDP_TRACEROUTE_LAST_PORT = 33534;
+
   private final BDDPacket _bddPacket;
   private final BDDOps _bddOps;
   private final List<BDD> _icmpConstraints;
@@ -130,7 +133,7 @@ public final class BDDFlowConstraintGenerator {
     BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
     return _bddOps.and(
         udp,
-        dstPort.range(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE.number()),
+        dstPort.range(UDP_TRACEROUTE_FIRST_PORT, UDP_TRACEROUTE_LAST_PORT),
         srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
   }
 
