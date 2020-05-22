@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dscpsToAclLineMatchExpr;
 import static org.batfish.datamodel.PacketHeaderConstraintsToAclLineMatchExprUtils.dstPortsToAclLineMatchExpr;
@@ -22,14 +21,13 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
-import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /** Utility class to convert {@link PacketHeaderConstraints} to other internal representations. */
@@ -122,122 +120,10 @@ public class PacketHeaderConstraintsUtil {
    * the caller.
    */
   @VisibleForTesting
-  public static Flow.Builder toFlow(PacketHeaderConstraints phc) throws IllegalArgumentException {
-    Flow.Builder builder = Flow.builder();
-
-    setIpProtocol(phc, builder);
-    setSrcPort(phc, builder);
-    setDstPort(phc, builder);
-    setIcmpValues(phc, builder);
-    setDscpValue(phc, builder);
-    setPacketLength(phc, builder);
-    setEcnValue(phc, builder);
-    setFragmentOffsets(phc, builder);
-    setTcpFlags(phc, builder);
-    return builder;
-  }
-
-  @VisibleForTesting
-  static void setDscpValue(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    IntegerSpace dscps = constraints.getDscps();
-    if (dscps != null) {
-      checkArgument(dscps.isSingleton(), "Cannot construct flow with multiple DSCP values");
-      builder.setDscp(dscps.singletonValue());
-    } else {
-      builder.setDscp(0);
-    }
-  }
-
-  @VisibleForTesting
-  static void setIcmpValues(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    IntegerSpace icmpTypes = constraints.getIcmpTypes();
-    if (icmpTypes != null) {
-      checkArgument(icmpTypes.isSingleton(), "Cannot construct flow with multiple ICMP types");
-      builder.setIcmpType(icmpTypes.singletonValue());
-    } else if (builder.getIpProtocol() == IpProtocol.ICMP) {
-      builder.setIcmpType(8); // Default to Echo request for unconstrained, used for ICMP ping
-    }
-    IntegerSpace icmpCodes = constraints.getIcmpCodes();
-    if (icmpCodes != null) {
-      checkArgument(icmpCodes.isSingleton(), "Cannot construct flow with multiple ICMP codes");
-      builder.setIcmpCode(icmpCodes.singletonValue());
-    } else if (builder.getIpProtocol() == IpProtocol.ICMP) {
-      builder.setIcmpCode(0); // Default to Echo request for unconstrained, used for ICMP ping
-    }
-  }
-
-  @VisibleForTesting
-  static void setSrcPort(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    IntegerSpace srcPorts = constraints.getSrcPorts();
-    checkArgument(
-        srcPorts == null || srcPorts.isSingleton(),
-        "Cannot construct flow with multiple source ports");
-    if (srcPorts != null) {
-      builder.setSrcPort(srcPorts.singletonValue());
-    }
-  }
-
-  private static void setIpProtocol(PacketHeaderConstraints constraints, Flow.Builder builder) {
-    // IP protocol if constrained, else unset and constrained later.
-    Set<IpProtocol> ipProtocols = constraints.resolveIpProtocols();
-    checkArgument(
-        ipProtocols == null || ipProtocols.size() == 1,
-        "Cannot construct flow with multiple IP protocols");
-    if (ipProtocols != null) {
-      builder.setIpProtocol(ipProtocols.iterator().next());
-    }
-  }
-
-  @VisibleForTesting
-  static void setDstPort(PacketHeaderConstraints constraints, Builder builder) {
-    IntegerSpace dstPorts = constraints.resolveDstPorts();
-    final String errorMessage = "Cannot construct flow with multiple destination ports";
-    checkArgument(dstPorts == null || dstPorts.isSingleton(), errorMessage);
-    if (dstPorts != null) {
-      builder.setDstPort(dstPorts.singletonValue());
-    }
-  }
-
-  @VisibleForTesting
-  static void setPacketLength(PacketHeaderConstraints constraints, Builder builder) {
-    IntegerSpace packetLengths = constraints.getPacketLengths();
-    final String errorMessage = "Cannot construct flow with multiple packet lengths";
-    checkArgument(packetLengths == null || packetLengths.isSingleton(), errorMessage);
-    if (packetLengths != null) {
-      builder.setPacketLength(packetLengths.singletonValue());
-    } else {
-      builder.setPacketLength(DEFAULT_PACKET_LENGTH);
-    }
-  }
-
-  @VisibleForTesting
-  static void setEcnValue(PacketHeaderConstraints phc, Builder builder) {
-    IntegerSpace ecns = phc.getEcns();
-    final String errorMessage = "Cannot construct flow with multiple ECN values";
-    checkArgument(ecns == null || ecns.isSingleton(), errorMessage);
-    if (ecns != null) {
-      builder.setEcn(ecns.singletonValue());
-    }
-  }
-
-  @VisibleForTesting
-  static void setFragmentOffsets(PacketHeaderConstraints phc, Builder builder) {
-    IntegerSpace fragmentOffsets = phc.getFragmentOffsets();
-    final String errorMessage = "Cannot construct flow with multiple packet lengths";
-    checkArgument(fragmentOffsets == null || fragmentOffsets.isSingleton(), errorMessage);
-    if (fragmentOffsets != null) {
-      builder.setFragmentOffset(fragmentOffsets.singletonValue());
-    }
-  }
-
-  @VisibleForTesting
-  static void setTcpFlags(PacketHeaderConstraints phc, Builder builder) {
-    Set<TcpFlagsMatchConditions> tcpFlags = phc.getTcpFlags();
-    checkArgument(
-        tcpFlags == null || tcpFlags.size() == 1,
-        "Cannot construct flow with multiple versions of TCP flags specified");
-    if (tcpFlags != null) {
-      builder.setTcpFlags(tcpFlags.iterator().next().getTcpFlags());
-    }
+  public static Flow.Builder toFlow(
+      BDDPacket pkt, PacketHeaderConstraints phc, IpSpace srcIps, IpSpace dstIps)
+      throws IllegalArgumentException {
+    return pkt.getFlow(toBDD(pkt, phc, srcIps, dstIps))
+        .orElseThrow(() -> new BatfishException("could not convert header constraints to flow"));
   }
 }
