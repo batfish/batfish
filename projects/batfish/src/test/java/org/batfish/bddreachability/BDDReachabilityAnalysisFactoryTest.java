@@ -125,6 +125,7 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PbrFibLookup;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInVrf;
 import org.batfish.symbolic.state.PreInInterface;
@@ -1580,17 +1581,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
             ImmutableSet.of(hostname),
             ImmutableSet.of(EXITS_NETWORK));
 
-    // Check state edge presence
+    // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
+    PbrFibLookup pbrFibLookup = new PbrFibLookup(hostname, "vrf1", "vrf2");
+    PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
-            hasKey(equalTo(new PostInVrf(hostname, "vrf2")))));
+            equalTo(new PreInInterface(hostname, INGRESS_IFACE)), hasKey(equalTo(pbrFibLookup))));
+    assertThat(
+        analysis.getForwardEdgeMap(), hasEntry(equalTo(pbrFibLookup), hasKey(equalTo(preOutVrf2))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreOutVrf(hostname, "vrf2")),
-            hasKey(equalTo(new PreOutInterfaceExitsNetwork(hostname, "i1")))));
+            equalTo(preOutVrf2), hasKey(equalTo(new PreOutInterfaceExitsNetwork(hostname, "i1")))));
 
     // End-to-end reachability based on reachable ingress locations
     Map<IngressLocation, BDD> bdds = analysis.getIngressLocationReachableBDDs();
@@ -1639,16 +1642,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
             ImmutableSet.of(neighborHostname),
             ImmutableSet.of(ACCEPTED));
 
-    // Check state edge presence
+    // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
+    PbrFibLookup pbrFibLookup = new PbrFibLookup(hostname, "vrf1", "vrf2");
+    PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreInInterface(hostname, INGRESS_IFACE)),
-            hasKey(equalTo(new PostInVrf(hostname, "vrf2")))));
+            equalTo(new PreInInterface(hostname, INGRESS_IFACE)), hasKey(equalTo(pbrFibLookup))));
+    assertThat(
+        analysis.getForwardEdgeMap(), hasEntry(equalTo(pbrFibLookup), hasKey(equalTo(preOutVrf2))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
-            equalTo(new PreOutVrf(hostname, "vrf2")),
+            equalTo(preOutVrf2),
             hasKey(equalTo(new PreOutEdge(hostname, "i1", neighborHostname, neighborIface)))));
   }
 
