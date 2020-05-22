@@ -69,9 +69,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
-import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
-import org.batfish.datamodel.packet_policy.LiteralVrfName;
-import org.batfish.datamodel.packet_policy.VrfExprVisitor;
+import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -92,6 +90,7 @@ import org.batfish.symbolic.state.DropNoRoute;
 import org.batfish.symbolic.state.DropNullRoute;
 import org.batfish.symbolic.state.ExitsNetwork;
 import org.batfish.symbolic.state.InsufficientInfo;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NeighborUnreachable;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
@@ -105,6 +104,7 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PbrFibLookup;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInVrf;
 import org.batfish.symbolic.state.PreInInterface;
@@ -224,6 +224,9 @@ public final class BDDReachabilityAnalysisFactory {
   /** node --&gt; vrf --&gt; interface --&gt; set of packets accepted by the interface */
   private final Map<String, Map<String, Map<String, BDD>>> _ifaceAcceptBDDs;
 
+  /** node --&gt; vrf --&gt; set of packets accepted by the vrf */
+  private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
+
   // node --> vrf --> nextVrf --> set of packets vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, BDD>>> _nextVrfBDDs;
 
@@ -280,6 +283,7 @@ public final class BDDReachabilityAnalysisFactory {
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _ifaceAcceptBDDs =
           computeIfaceAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
+      _vrfAcceptBDDs = computeVrfAcceptBDDs(); // must do this after populating _ifaceAcceptBDDs
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
       _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
@@ -302,13 +306,31 @@ public final class BDDReachabilityAnalysisFactory {
               _exitsNetworkBDDs,
               _insufficientInfoBDDs,
               _ifaceAcceptBDDs,
+              _vrfAcceptBDDs,
               _routableBDDs,
               _nextVrfBDDs,
-              _nullRoutedBDDs,
-              _bddPacket.getFactory()::orAll);
+              _nullRoutedBDDs);
     } finally {
       span.finish();
     }
+  }
+
+  /**
+   * Computes VRF accept BDDs based on interface accept BDDs. Each VRF's accept BDD is the union of
+   * its interfaces' accept BDDs.
+   */
+  private Map<String, Map<String, BDD>> computeVrfAcceptBDDs() {
+    return toImmutableMap(
+        _ifaceAcceptBDDs,
+        Entry::getKey, // node name
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf name
+                vrfEntry ->
+                    _bddPacket
+                        .getFactory()
+                        .orAll(vrfEntry.getValue().values()))); // vrf's accept BDD
   }
 
   /**
@@ -701,9 +723,11 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_NodeDropAclIn_PBR(),
         generateRules_PreInInterface_PostInInterface(),
-        generateRules_PreInInterface_PostInVrf_PBR(),
+        generateRules_PreInInterface_PbrFibLookup(),
         generateRules_PostInInterface_NodeDropAclIn(),
         generateRules_PostInInterface_PostInVrf(),
+        generateRules_PbrFibLookup_InterfaceAccept(),
+        generateRules_PbrFibLookup_PreOutVrf(),
         generateRules_PreOutEdge_NodeDropAclOut(),
         generateRules_PreOutEdge_PreOutEdgePostNat(),
         generateRules_PreOutEdgePostNat_NodeDropAclOut(),
@@ -882,42 +906,95 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PostInVrf_PBR() {
+  private Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
     return getInterfaces()
         .filter(iface -> iface.getRoutingPolicyName() != null)
         .flatMap(
             iface -> {
               String nodeName = iface.getOwner().getHostname();
+              String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
               Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
+              VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
 
-              PreInInterface preState = new PreInInterface(nodeName, ifaceName);
+              PreInInterface preInInterface = new PreInInterface(nodeName, ifaceName);
               return transitionByFibLookup.entrySet().stream()
                   .map(
-                      transitionByFibLookupEntry ->
-                          new Edge(
-                              preState,
-                              new PostInVrf(
-                                  nodeName,
-                                  transitionByFibLookupEntry
-                                      .getKey()
-                                      .getVrfExpr()
-                                      .accept(
-                                          new VrfExprVisitor<String>() {
-                                            @Override
-                                            public String visitLiteralVrfName(LiteralVrfName expr) {
-                                              return expr.getVrfName();
-                                            }
-
-                                            @Override
-                                            public String visitIngressInterfaceVrf(
-                                                IngressInterfaceVrf expr) {
-                                              return iface.getVrfName();
-                                            }
-                                          })),
-                              transitionByFibLookupEntry.getValue()));
+                      transitionByFibLookupEntry -> {
+                        FibLookup fibLookup = transitionByFibLookupEntry.getKey();
+                        String lookupVrf = fibLookup.getVrfExpr().accept(lookupVrfExtractor);
+                        return new Edge(
+                            preInInterface,
+                            new PbrFibLookup(nodeName, vrfName, lookupVrf),
+                            transitionByFibLookupEntry.getValue());
+                      });
             });
+  }
+
+  /**
+   * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
+   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
+   * lookup. These edges represent the former.
+   */
+  private Stream<Edge> generateRules_PbrFibLookup_InterfaceAccept() {
+    return getInterfaces()
+        .flatMap(this::interfaceToPbrFibLookups)
+        .distinct()
+        .flatMap(
+            pbrFibLookup -> {
+              // Create edge from PbrFibLookup to InterfaceAccept for each interface in ingress VRF
+              String hostname = pbrFibLookup.getHostname();
+              String ingressVrf = pbrFibLookup.getIngressVrf();
+              return _ifaceAcceptBDDs.get(hostname).get(ingressVrf).entrySet().stream()
+                  .map(
+                      ifaceAcceptBddEntry ->
+                          new Edge(
+                              pbrFibLookup,
+                              new InterfaceAccept(hostname, ifaceAcceptBddEntry.getKey()),
+                              ifaceAcceptBddEntry.getValue()));
+            });
+  }
+
+  /**
+   * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
+   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
+   * lookup. These edges represent the latter.
+   */
+  private Stream<Edge> generateRules_PbrFibLookup_PreOutVrf() {
+    return getInterfaces()
+        .flatMap(this::interfaceToPbrFibLookups)
+        .distinct()
+        .map(
+            pbrFibLookup -> {
+              // Generate PbrFibLookup -> PreOutVrf edge for each PbrFibLookup
+              String hostname = pbrFibLookup.getHostname();
+              String ingressVrf = pbrFibLookup.getIngressVrf();
+              BDD notAcceptedBdd = _vrfAcceptBDDs.get(hostname).get(ingressVrf).not();
+              return new Edge(
+                  pbrFibLookup,
+                  new PreOutVrf(hostname, pbrFibLookup.getLookupVrf()),
+                  notAcceptedBdd);
+            });
+  }
+
+  /** Returns {@link PbrFibLookup} states reachable by entering the given interface */
+  @Nonnull
+  private Stream<PbrFibLookup> interfaceToPbrFibLookups(Interface iface) {
+    if (iface.getRoutingPolicyName() == null) {
+      // Interface does not have PBR
+      return Stream.of();
+    }
+    String nodeName = iface.getOwner().getHostname();
+    String vrfName = iface.getVrfName();
+    String ifaceName = iface.getName();
+    VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
+
+    Map<FibLookup, Transition> transitionByFibLookup =
+        _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
+    return transitionByFibLookup.keySet().stream()
+        .map(fibLookup -> fibLookup.getVrfExpr().accept(lookupVrfExtractor))
+        .map(lookupVrf -> new PbrFibLookup(nodeName, vrfName, lookupVrf));
   }
 
   private BDD aclDenyBDD(String node, @Nullable String acl) {

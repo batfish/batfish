@@ -15,6 +15,7 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PbrFibLookup;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInInterfacePostNat;
 import org.batfish.symbolic.state.PostInVrf;
@@ -174,6 +175,11 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
 
   @Override
   public StateExpr visitOriginateVrf(OriginateVrf originateVrf) {
+    return null;
+  }
+
+  @Override
+  public StateExpr visitPbrFibLookup(PbrFibLookup pbrFibLookup) {
     return null;
   }
 

@@ -108,10 +108,8 @@ import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
-import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
-import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
-import org.batfish.datamodel.packet_policy.VrfExprVisitor;
+import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
@@ -528,18 +526,7 @@ class FlowTracer {
     return new ActionVisitor<Boolean>() {
 
       /** Helper visitor to figure out in which VRF we need to do the FIB lookup */
-      private VrfExprVisitor<String> _vrfExprVisitor =
-          new VrfExprVisitor<String>() {
-            @Override
-            public String visitLiteralVrfName(@Nonnull LiteralVrfName expr) {
-              return expr.getVrfName();
-            }
-
-            @Override
-            public String visitIngressInterfaceVrf(@Nonnull IngressInterfaceVrf expr) {
-              return incomingInterface.getVrfName();
-            }
-          };
+      private VrfExprNameExtractor _vrfExprVisitor = new VrfExprNameExtractor(incomingInterface);
 
       @Override
       public Boolean visitDrop(@Nonnull Drop drop) {

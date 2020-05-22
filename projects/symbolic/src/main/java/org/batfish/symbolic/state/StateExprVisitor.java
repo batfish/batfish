@@ -48,6 +48,8 @@ public interface StateExprVisitor<R> {
 
   R visitOriginateVrf(OriginateVrf originateVrf);
 
+  R visitPbrFibLookup(PbrFibLookup pbrFibLookup);
+
   R visitPostInInterface(PostInInterface postInInterface);
 
   R visitPostInInterfacePostNat(PostInInterfacePostNat postInInterfacePostNat);
