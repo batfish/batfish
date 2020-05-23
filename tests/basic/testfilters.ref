@@ -54,50 +54,6 @@
           "id" : "node-host2",
           "name" : "host2"
         },
-        "Filter_Name" : "filter::OUTPUT",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 80,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "TCP",
-          "packetLength" : 512,
-          "srcIp" : "2.128.1.101",
-          "srcPort" : 49152,
-          "state" : "NEW",
-          "tag" : "tag",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Content" : "default",
-        "Trace" : [
-          {
-            "traceElement" : {
-              "fragments" : [
-                {
-                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                  "text" : "Matched line default"
-                }
-              ]
-            }
-          }
-        ]
-      },
-      {
-        "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
         "Filter_Name" : "filter::INPUT",
         "Flow" : {
           "dscp" : 0,
@@ -119,7 +75,7 @@
           "tcpFlagsFin" : 0,
           "tcpFlagsPsh" : 0,
           "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
+          "tcpFlagsSyn" : 1,
           "tcpFlagsUrg" : 0
         },
         "Action" : "DENY",
@@ -139,6 +95,50 @@
       },
       {
         "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "Filter_Name" : "filter::OUTPUT",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 80,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "TCP",
+          "packetLength" : 512,
+          "srcIp" : "2.128.1.101",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "tag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 1,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Content" : "default",
+        "Trace" : [
+          {
+            "traceElement" : {
+              "fragments" : [
+                {
+                  "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                  "text" : "Matched line default"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "Node" : {
           "id" : "node-host1",
           "name" : "host1"
         },
@@ -163,7 +163,7 @@
           "tcpFlagsFin" : 0,
           "tcpFlagsPsh" : 0,
           "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
+          "tcpFlagsSyn" : 1,
           "tcpFlagsUrg" : 0
         },
         "Action" : "PERMIT",
@@ -207,7 +207,7 @@
           "tcpFlagsFin" : 0,
           "tcpFlagsPsh" : 0,
           "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
+          "tcpFlagsSyn" : 1,
           "tcpFlagsUrg" : 0
         },
         "Action" : "DENY",
@@ -251,7 +251,7 @@
           "tcpFlagsFin" : 0,
           "tcpFlagsPsh" : 0,
           "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
+          "tcpFlagsSyn" : 1,
           "tcpFlagsUrg" : 0
         },
         "Action" : "PERMIT",
@@ -295,7 +295,7 @@
           "tcpFlagsFin" : 0,
           "tcpFlagsPsh" : 0,
           "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
+          "tcpFlagsSyn" : 1,
           "tcpFlagsUrg" : 0
         },
         "Action" : "PERMIT",
