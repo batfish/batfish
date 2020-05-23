@@ -96,6 +96,23 @@ public final class BDDFlowConstraintGenerator {
         _bddOps.and(tcp, tcpPort.value(0).not()));
   }
 
+  private List<BDD> tcpFlagPreferences(BDD tcp) {
+    return ImmutableList.of(
+        // Force all the rarely used flags off
+        _bddOps.and(tcp, _bddPacket.getTcpCwr().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpEce().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpPsh().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpUrg().not()),
+        // Less rarely used flags
+        _bddOps.and(tcp, _bddPacket.getTcpFin().not()),
+        // Sometimes used flags
+        _bddOps.and(tcp, _bddPacket.getTcpRst().not()),
+        // Prefer SYN, SYN_ACK, ACK
+        _bddOps.and(tcp, _bddPacket.getTcpSyn(), _bddPacket.getTcpAck().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpAck(), _bddPacket.getTcpSyn()),
+        _bddOps.and(tcp, _bddPacket.getTcpAck()));
+  }
+
   // Get TCP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
   private List<BDD> computeTCPConstraints() {
@@ -110,9 +127,11 @@ public final class BDDFlowConstraintGenerator {
         // First, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
         .add(_bddOps.and(tcp, srcPortEphemeral, dstPortEphemeral.not()))
         .add(_bddOps.and(tcp, srcPortEphemeral.not(), dstPortEphemeral))
-        // Next, execute port preferences
+        // Next, execute port preferences.
         .addAll(tcpPortPreferences(tcp, srcPort))
         .addAll(tcpPortPreferences(tcp, dstPort))
+        // Next execute flag preferences.
+        .addAll(tcpFlagPreferences(tcp))
         // Anything TCP.
         .add(tcp)
         .build();
