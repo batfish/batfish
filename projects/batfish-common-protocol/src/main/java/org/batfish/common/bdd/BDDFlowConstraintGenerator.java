@@ -180,18 +180,6 @@ public final class BDDFlowConstraintGenerator {
         .build();
   }
 
-  private List<BDD> computeTraceroutePrefs() {
-    BDDInteger srcPort = _bddPacket.getSrcPort();
-    BDD tcp = _bddPacket.getIpProtocol().value(IpProtocol.TCP);
-
-    return ImmutableList.<BDD>builder()
-        .add(emphemeralPort(srcPort))
-        .add(_defaultPacketLength)
-        .add(_udpTraceroute)
-        .add(tcp.and(_bddPacket.getTcpSyn()))
-        .build();
-  }
-
   @VisibleForTesting
   static BDD isPrivateIp(IpSpaceToBDD ip) {
     return BDDOps.orNull(
@@ -255,7 +243,13 @@ public final class BDDFlowConstraintGenerator {
             .addAll(_ipConstraints)
             .build();
       case TRACEROUTE:
-        return computeTraceroutePrefs();
+        return ImmutableList.<BDD>builder()
+            .addAll(_udpConstraints)
+            .addAll(_tcpConstraints)
+            .addAll(_icmpConstraints)
+            .add(_defaultPacketLength)
+            .addAll(_ipConstraints)
+            .build();
       default:
         throw new BatfishException("Not supported flow preference");
     }
