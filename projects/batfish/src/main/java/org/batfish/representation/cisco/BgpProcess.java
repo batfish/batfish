@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -32,6 +34,8 @@ public class BgpProcess implements Serializable {
   private boolean _asPathMultipathRelax;
 
   private Ip _clusterId;
+  private @Nullable Long _confederation;
+  private final @Nonnull Set<Long> _confederationMembers;
 
   private boolean _defaultIpv4Activate;
 
@@ -76,6 +80,7 @@ public class BgpProcess implements Serializable {
     _aggregateNetworks = new HashMap<>();
     _aggregateIpv6Networks = new HashMap<>();
     _allPeerGroups = new HashSet<>();
+    _confederationMembers = new TreeSet<>();
     _defaultIpv4Activate = true;
     _dynamicIpPeerGroups = new HashMap<>();
     _dynamicIpv6PeerGroups = new HashMap<>();
@@ -170,6 +175,18 @@ public class BgpProcess implements Serializable {
 
   public Ip getClusterId() {
     return _clusterId;
+  }
+
+  public @Nullable Long getConfederation() {
+    return _confederation;
+  }
+
+  public void setConfederation(@Nullable Long confederation) {
+    _confederation = confederation;
+  }
+
+  public @Nonnull Set<Long> getConfederationMembers() {
+    return _confederationMembers;
   }
 
   public int getDefaultMetric() {

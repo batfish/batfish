@@ -147,7 +147,21 @@ auto_summary_bgp_tail
 
 bgp_confederation_rb_stanza
 :
-   BGP CONFEDERATION ~NEWLINE+ NEWLINE
+   BGP CONFEDERATION
+   (
+     bgp_conf_identifier_rb_stanza
+     | bgp_conf_peers_rb_stanza
+   )
+;
+
+bgp_conf_identifier_rb_stanza
+:
+  IDENTIFIER id = bgp_asn NEWLINE
+;
+
+bgp_conf_peers_rb_stanza
+:
+  PEERS peers += bgp_asn+ NEWLINE
 ;
 
 bgp_listen_range_rb_stanza

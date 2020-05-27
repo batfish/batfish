@@ -8007,6 +8007,13 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "confederation" : {
+                "id" : 100,
+                "members" : [
+                  10,
+                  11
+                ]
+              },
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",

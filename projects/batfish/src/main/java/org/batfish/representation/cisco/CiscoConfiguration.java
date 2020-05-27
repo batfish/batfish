@@ -138,6 +138,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -1207,6 +1208,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
 
+    // Global confederation config
+    Long confederation = proc.getConfederation();
+    if (confederation != null && !proc.getConfederationMembers().isEmpty()) {
+      newBgpProcess.setConfederation(
+          new BgpConfederation(confederation, proc.getConfederationMembers()));
+    }
+
     /*
      * Create common bgp export policy. This policy encompasses network
      * statements, aggregate-address with/without summary-only, redistribution
@@ -1547,6 +1555,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         throw new VendorConversionException("Invalid BGP leaf neighbor type");
       }
       newNeighborBuilder.setBgpProcess(newBgpProcess);
+      newNeighborBuilder.setConfederation(proc.getConfederation());
 
       AddressFamilyCapabilities ipv4AfSettings =
           AddressFamilyCapabilities.builder()

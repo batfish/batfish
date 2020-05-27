@@ -271,6 +271,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.CommunityList;
@@ -335,6 +336,7 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -1455,6 +1457,37 @@ public final class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
+  }
+
+  @Test
+  public void testIosBgpConfedExtraction() {
+    CiscoConfiguration c = parseCiscoConfig("ios-bgp-confed", ConfigurationFormat.CISCO_IOS);
+    org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    assertThat(p, notNullValue());
+    assertThat(p.getConfederation(), equalTo(65100L));
+    assertThat(p.getConfederationMembers(), contains(65134L));
+  }
+
+  @Test
+  public void testIosBgpConfedConversion() throws IOException {
+    Configuration c = parseConfig("ios-bgp-confed");
+    BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    assertThat(p, notNullValue());
+    assertThat(p.getConfederation(), equalTo(new BgpConfederation(65100, ImmutableSet.of(65134L))));
+    {
+      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.2/32")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.2/32"));
+      assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
+      assertThat(neighbor.getLocalAs(), equalTo(65112L));
+      assertThat(neighbor.getRemoteAsns().enumerate(), contains(65112L));
+    }
+    {
+      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.3/32")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.3/32"));
+      assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
+      assertThat(neighbor.getLocalAs(), equalTo(65112L));
+      assertThat(neighbor.getRemoteAsns().enumerate(), contains(65134L));
+    }
   }
 
   @Test
