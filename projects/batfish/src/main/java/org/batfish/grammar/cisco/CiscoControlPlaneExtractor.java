@@ -3243,6 +3243,42 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_line(S_lineContext ctx) {
+    List<String> names = getLineNames(ctx);
+
+    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
+    // default list is undefined
+    AaaAuthenticationLoginList defaultList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
+            .orElse(null);
+
+    for (String name : names) {
+      if (_configuration.getCf().getLines().get(name) == null) {
+        Line line = new Line(name);
+        if (defaultList != null) {
+          // if default list defined, apply it to all lines
+          line.setAaaAuthenticationLoginList(defaultList);
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        } else if (_configuration.getCf().getAaa() != null
+            && _configuration.getCf().getAaa().getNewModel()
+            && line.getLineType() != LineType.CON) {
+          // if default list not defined but aaa new-model, apply to all lines except con0
+          line.setAaaAuthenticationLoginList(
+              new AaaAuthenticationLoginList(
+                  Collections.singletonList(AuthenticationMethod.LOCAL)));
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        }
+        _configuration.getCf().getLines().put(name, line);
+      }
+    }
+    _currentLineNames = names;
+  }
+
+  @Nonnull
+  private List<String> getLineNames(S_lineContext ctx) {
     String lineType = ctx.line_type().getText();
     if (lineType.equals("")) {
       lineType = "<UNNAMED>";
@@ -3276,7 +3312,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         last = first;
       }
       if (last < first) {
-        throw new BatfishException("Do not support decreasing line range: " + first + " " + last);
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            String.format("Do not support decreasing line range: %s %s", first, last));
+        return ImmutableList.of();
       }
       if (slot1 != null && port1 != null) {
         for (int s = slot1; s <= slot2; s++) {
@@ -3303,37 +3344,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       names.add(nameBase);
     }
-
-    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
-    // default list is undefined
-    AaaAuthenticationLoginList defaultList =
-        Optional.ofNullable(_configuration.getCf().getAaa())
-            .map(Aaa::getAuthentication)
-            .map(AaaAuthentication::getLogin)
-            .map(AaaAuthenticationLogin::getLists)
-            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
-            .orElse(null);
-
-    for (String name : names) {
-      if (_configuration.getCf().getLines().get(name) == null) {
-        Line line = new Line(name);
-        if (defaultList != null) {
-          // if default list defined, apply it to all lines
-          line.setAaaAuthenticationLoginList(defaultList);
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        } else if (_configuration.getCf().getAaa() != null
-            && _configuration.getCf().getAaa().getNewModel()
-            && line.getLineType() != LineType.CON) {
-          // if default list not defined but aaa new-model, apply to all lines except con0
-          line.setAaaAuthenticationLoginList(
-              new AaaAuthenticationLoginList(
-                  Collections.singletonList(AuthenticationMethod.LOCAL)));
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        }
-        _configuration.getCf().getLines().put(name, line);
-      }
-    }
-    _currentLineNames = names;
+    return names;
   }
 
   @Override

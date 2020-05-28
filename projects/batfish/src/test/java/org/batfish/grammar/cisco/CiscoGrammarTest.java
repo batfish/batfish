@@ -1269,6 +1269,11 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosLineParsing() {
+    assertNotNull(parseCiscoConfig("ios-line", null));
+  }
+
+  @Test
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
