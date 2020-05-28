@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
+import java.util.Optional;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
@@ -93,10 +94,10 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     _idManager =
         new LocalIdManager() {
           @Override
-          public QuestionSettingsId getQuestionSettingsId(
+          public Optional<QuestionSettingsId> getQuestionSettingsId(
               String questionClassId, NetworkId networkId) {
             if (questionClassId.equals(BAD_QUESTION)) {
-              return BAD_QUESTION_SETTINGS_ID;
+              return Optional.of(BAD_QUESTION_SETTINGS_ID);
             }
             return super.getQuestionSettingsId(questionClassId, networkId);
           }
@@ -135,7 +136,7 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
     _storage._questionSettings = settings;
     QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _idManager.assignQuestionSettingsId(
-        QUESTION, _idManager.getNetworkId(NETWORK), questionSettingsId);
+        QUESTION, _idManager.getNetworkId(NETWORK).get(), questionSettingsId);
     try (Response response = getQuestionSettingsTarget(QUESTION).get()) {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       assertThat(response.readEntity(String.class), equalTo(settings));

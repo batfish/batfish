@@ -1,11 +1,12 @@
 package org.batfish.identifiers;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class TestIdResolver implements IdResolver {
 
   @Override
-  public AnalysisId getAnalysisId(String analysis, NetworkId networkId) {
+  public Optional<AnalysisId> getAnalysisId(String analysis, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
@@ -27,32 +28,34 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId) {
+  public Optional<IssueSettingsId> getIssueSettingsId(String majorIssueType, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public NetworkId getNetworkId(String network) {
+  public Optional<NetworkId> getNetworkId(String network) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public NodeRolesId getNetworkNodeRolesId(NetworkId networkId) {
+  public Optional<NodeRolesId> getNetworkNodeRolesId(NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public QuestionId getQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
+  public Optional<QuestionId> getQuestionId(
+      String question, NetworkId networkId, AnalysisId analysisId) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public QuestionSettingsId getQuestionSettingsId(String questionClassId, NetworkId networkId) {
+  public Optional<QuestionSettingsId> getQuestionSettingsId(
+      String questionClassId, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SnapshotId getSnapshotId(String snapshot, NetworkId networkId) {
+  public Optional<SnapshotId> getSnapshotId(String snapshot, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 

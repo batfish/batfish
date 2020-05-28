@@ -43,20 +43,30 @@ public interface IdManager extends IdResolver {
   /** Assign {@code snapshot} under {@code networkId} to {@code snapshotId}. */
   void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId);
 
-  /** Delete any mapping for {@code analysis} under {@code network} */
-  void deleteAnalysis(String analysis, NetworkId networkId);
+  /**
+   * Delete any mapping for {@code analysis} under {@code network}. Returns {@code true} iff a
+   * mapping for the provided name was successfully deleted.
+   */
+  boolean deleteAnalysis(String analysis, NetworkId networkId);
 
-  /** Delete any mapping for {@code network} */
-  void deleteNetwork(String network);
+  /**
+   * Delete any mapping for {@code network}. Returns {@code true} iff a mapping for the provided
+   * name was successfully deleted.
+   */
+  boolean deleteNetwork(String network);
 
   /**
    * Delete any mapping for {@code question} under {@code networkId}, {@code analysisId}. If {@code
-   * analysisId} is {@code null}, the mapping to remove is for an ad-hoc question.
+   * analysisId} is {@code null}, the mapping to remove is for an ad-hoc question. Returns {@code
+   * true} iff a mapping for the provided name was successfully deleted.
    */
-  void deleteQuestion(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
+  boolean deleteQuestion(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
 
-  /** Delete any mapping for {@code snapshot} under {@code networkId} */
-  void deleteSnapshot(String snapshot, NetworkId networkId);
+  /**
+   * Delete any mapping for {@code snapshot} under {@code networkId}. Returns {@code true} iff a
+   * mapping for the provided name was successfully deleted.
+   */
+  boolean deleteSnapshot(String snapshot, NetworkId networkId);
 
   /** Generate a new {@link AnalysisId} suitable for assignment */
   @Nonnull
