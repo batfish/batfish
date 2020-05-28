@@ -891,14 +891,6 @@ class FlowTracer {
                     return null;
                   }
 
-                  // apply outgoing filter matching original flow
-                  if (applyFilterToOriginalFlow(
-                          outgoingInterface.getOutgoingOriginalFlowFilter(),
-                          EGRESS_ORIGINAL_FLOW_FILTER)
-                      == DENIED) {
-                    return null;
-                  }
-
                   // add ExitOutIfaceStep
                   _steps.add(buildExitOutputIfaceStep(outgoingInterfaceName));
 
