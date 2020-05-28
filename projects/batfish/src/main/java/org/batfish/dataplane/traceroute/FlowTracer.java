@@ -8,6 +8,7 @@ import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDiff.returnFlowDiffs;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_ORIGINAL_FLOW_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
@@ -978,7 +979,7 @@ class FlowTracer {
 
     // apply outgoing filter matching original flow
     if (applyFilterToOriginalFlow(
-            outgoingInterface.getOutgoingOriginalFlowFilter(), PRE_TRANSFORMATION_EGRESS_FILTER)
+            outgoingInterface.getOutgoingOriginalFlowFilter(), EGRESS_ORIGINAL_FLOW_FILTER)
         == DENIED) {
       return;
     }
