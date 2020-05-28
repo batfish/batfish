@@ -33,6 +33,7 @@ public class FilterStep extends Step<FilterStepDetail> {
         case POST_TRANSFORMATION_INGRESS_FILTER:
           return FlowDisposition.DENIED_IN;
         case EGRESS_FILTER:
+        case EGRESS_ORIGINAL_FLOW_FILTER:
         case PRE_TRANSFORMATION_EGRESS_FILTER:
           return FlowDisposition.DENIED_OUT;
         default:
