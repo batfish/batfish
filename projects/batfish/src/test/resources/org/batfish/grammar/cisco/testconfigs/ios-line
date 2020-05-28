@@ -1,0 +1,78 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-line
+!
+!
+line con 0
+ exec-timeout 9 0
+ password 7 0123456789ABCDEF0123456789ABCDEF01
+ transport output telnet ssh
+line aux 0
+line 2
+ exec-timeout 0 0
+ no activation-character
+ no exec
+ transport preferred none
+ transport output all
+ stopbits 1
+line 0/0/0 0/0/12
+ exec-timeout 0 0
+ no exec
+ transport preferred none
+ transport input all
+ transport output all
+line 0/0/13
+ exec-timeout 0 0
+ buffer-length 1
+ logging synchronous level all limit 0
+ no exec
+ transport preferred none
+ transport input all
+ transport output all
+ hold-character 47
+ stopbits 1
+ stop-character 47
+line 0/0/14
+ exec-timeout 0 0
+ logging synchronous level all
+ no exec
+ transport preferred none
+ transport input all
+ transport output all
+ stopbits 1
+ stop-character 47
+line 0/0/15 0/1/5
+ exec-timeout 0 0
+ no exec
+ transport preferred none
+ transport input all
+ transport output all
+line 0/1/6 0/1/7
+ exec-timeout 0 0
+ no exec
+ transport preferred none
+ transport input all
+ transport output all
+ stopbits 1
+line vty 0 4
+ access-class foo_acl in
+ exec-timeout 9 0
+ password 7 0123456789ABCDEF0123456789ABCDEF01
+ transport input ssh
+ transport output all
+line vty 5 14
+ access-class foo_acl in
+ exec-timeout 9 0
+ password 7 0123456789ABCDEF0123456789ABCDEF01
+ transport input ssh
+ transport output all
+line vty 15
+ access-class foo_acl in
+ exec-timeout 9 0
+ password 7 0123456789ABCDEF0123456789ABCDEF01
+ rotary 23
+ transport input ssh
+ transport output all
+!
+end
