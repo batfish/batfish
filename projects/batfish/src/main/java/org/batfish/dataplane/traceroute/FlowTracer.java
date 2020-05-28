@@ -8,6 +8,7 @@ import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDiff.returnFlowDiffs;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_ORIGINAL_FLOW_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
@@ -289,7 +290,7 @@ class FlowTracer {
     return vrfName;
   }
 
-  /** Construct a {@link FlowTracer} with expliclty-provided fields. */
+  /** Construct a {@link FlowTracer} with explicitly-provided fields. */
   @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
@@ -596,7 +597,7 @@ class FlowTracer {
 
         Fib fib = _tracerouteContext.getFib(currentNodeName, incomingInterface.getVrfName()).get();
         // Re-resolve and send out using FIB lookup part of the pipeline.
-        // Call the version of fibLookup that keeps track of overriden nextHopIp
+        // Call the version of fibLookup that keeps track of overridden nextHopIp
         Ip dstIp = result.getFinalFlow().getDstIp();
         fibLookup(dstIp, lookupIp, currentNodeName, fib);
         return true;
@@ -658,7 +659,7 @@ class FlowTracer {
   private void fibLookup(
       Ip dstIp, @Nullable Ip overrideNextHopIp, String currentNodeName, Fib fib) {
     fibLookup(
-        // Intentionally looking up the overriden NH
+        // Intentionally looking up the overridden NH
         firstNonNull(overrideNextHopIp, dstIp),
         currentNodeName,
         fib,
@@ -955,11 +956,12 @@ class FlowTracer {
    *
    * @param outgoingInterface the interface out of which the packet is being sent
    * @param nextHopIp the next hop IP (a.k.a ARP IP) <emph>as far as the FIB is concerned</emph>
-   * @param overridenNextHopIp not {@code null} if the next hop was overriden outside of the FIB
+   * @param overriddenNextHopIp not {@code null} if the next hop was overridden outside of the FIB
    *     (e.g., in PBR)
    */
-  private void forwardOutInterface(
-      Interface outgoingInterface, Ip nextHopIp, @Nullable Ip overridenNextHopIp) {
+  @VisibleForTesting
+  void forwardOutInterface(
+      Interface outgoingInterface, Ip nextHopIp, @Nullable Ip overriddenNextHopIp) {
     // Apply preSourceNatOutgoingFilter
     if (applyFilter(
             outgoingInterface.getPreTransformationOutgoingFilter(),
@@ -972,6 +974,13 @@ class FlowTracer {
 
     // apply outgoing filter
     if (applyFilter(outgoingInterface.getOutgoingFilter(), EGRESS_FILTER) == DENIED) {
+      return;
+    }
+
+    // apply outgoing filter matching original flow
+    if (applyFilterToOriginalFlow(
+            outgoingInterface.getOutgoingOriginalFlowFilter(), EGRESS_ORIGINAL_FLOW_FILTER)
+        == DENIED) {
       return;
     }
 
@@ -1004,8 +1013,8 @@ class FlowTracer {
     SortedSet<NodeInterfacePair> neighborIfaces =
         _tracerouteContext.getInterfaceNeighbors(currentNodeName, outgoingIfaceName);
     /*
-    Special handling is necessary if ARP IP was overriden.
-    Consider the following: dst IP: 2.2.2.2, NH was overriden to 1.1.1.1 and matched a connected route 1.1.1.0/24, for "iface0"
+    Special handling is necessary if ARP IP was overridden.
+    Consider the following: dst IP: 2.2.2.2, NH was overridden to 1.1.1.1 and matched a connected route 1.1.1.0/24, for "iface0"
     Since the FIB entry has no ARP IP (because connected route) we'd normally compute disposition for the dest IP (2.2.2.2)
     However, nothing in forwarding analysis says 2.2.2.2 has a valid disposition for "iface0":
       - there is no route for 2.2.2.2 there,
@@ -1014,13 +1023,13 @@ class FlowTracer {
     To simplify our life, just compute disposition for 1.1.1.1, at least that's guaranteed to give us a disposition
     */
     if (neighborIfaces.isEmpty()) {
-      Ip arpIp = firstNonNull(overridenNextHopIp, _currentFlow.getDstIp());
+      Ip arpIp = firstNonNull(overriddenNextHopIp, _currentFlow.getDstIp());
       FlowDisposition disposition =
           _tracerouteContext.computeDisposition(currentNodeName, outgoingIfaceName, arpIp);
       buildArpFailureTrace(outgoingIfaceName, arpIp, disposition);
     } else {
       processOutgoingInterfaceEdges(
-          outgoingIfaceName, firstNonNull(overridenNextHopIp, nextHopIp), neighborIfaces);
+          outgoingIfaceName, firstNonNull(overriddenNextHopIp, nextHopIp), neighborIfaces);
     }
   }
 
@@ -1148,17 +1157,32 @@ class FlowTracer {
   }
 
   /**
-   * Apply a filter, and create the corresponding step. If the filter DENIED the flow, then create a
-   * trace ending in the denial. Return the action if the filter is non-null. If the filter is null,
-   * return null.
+   * Apply a filter to the current flow, and create the corresponding step. If the filter DENIED the
+   * flow, then create a trace ending in the denial. Return the action if the filter is non-null. If
+   * the filter is null, return null.
    */
   private @Nullable StepAction applyFilter(@Nullable IpAccessList filter, FilterType filterType) {
+    return applyFilter(filter, filterType, _currentFlow);
+  }
+
+  /**
+   * Apply a filter to the original flow, and create the corresponding step. If the filter DENIED
+   * the flow, then create a trace ending in the denial. Return the action if the filter is
+   * non-null. If the filter is null, return null.
+   */
+  private @Nullable StepAction applyFilterToOriginalFlow(
+      @Nullable IpAccessList filter, FilterType filterType) {
+    return applyFilter(filter, filterType, _originalFlow);
+  }
+
+  private @Nullable StepAction applyFilter(
+      @Nullable IpAccessList filter, FilterType filterType, @Nonnull Flow flow) {
     if (filter == null) {
       return null;
     }
     FilterStep filterStep =
         createFilterStep(
-            _currentFlow,
+            flow,
             _ingressInterface,
             filter,
             filterType,
