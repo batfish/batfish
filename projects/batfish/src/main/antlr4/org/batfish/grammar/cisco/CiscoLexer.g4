@@ -1788,6 +1788,11 @@ BUCKETS
    'buckets'
 ;
 
+BUFFER_LENGTH
+:
+  'buffer-length'
+;
+
 BUFFER_LIMIT
 :
    'buffer-limit'
@@ -5475,6 +5480,11 @@ HIGH_RESOLUTION
 HISTORY
 :
    'history'
+;
+
+HOLD_CHARACTER
+:
+  'hold-character'
 ;
 
 HOLD_TIME
@@ -12407,6 +12417,11 @@ STICKY_ARP
 STOP
 :
    'stop'
+;
+
+STOP_CHARACTER
+:
+  'stop-character'
 ;
 
 STOP_ONLY
