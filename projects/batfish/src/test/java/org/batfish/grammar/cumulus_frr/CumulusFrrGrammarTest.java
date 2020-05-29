@@ -694,6 +694,18 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpClusterId_set() {
+    parse("router bgp 1\n bgp router-id 1.2.3.4\n bgp cluster-id 2.2.2.2\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getClusterId(), equalTo(Ip.parse("2.2.2.2")));
+  }
+
+  @Test
+  public void testBgpClusterId_unset() {
+    parse("router bgp 1\n bgp router-id 1.2.3.4\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getClusterId(), equalTo(null));
+  }
+
+  @Test
   public void testBgpNoDefaultIpv4Unicast() {
     parse("router bgp 1\n no bgp default ipv4-unicast\n");
     assertFalse(_frr.getBgpProcess().getDefaultVrf().getDefaultIpv4Unicast());

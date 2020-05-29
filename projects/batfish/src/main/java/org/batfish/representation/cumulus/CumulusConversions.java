@@ -534,6 +534,8 @@ public final class CumulusConversions {
 
     peerConfigBuilder
         .setBgpProcess(newProc)
+        //If not specified, ClusterID is RouterID in Quagga/FRR
+        .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId()).asLong())
         .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
@@ -1247,6 +1249,18 @@ public final class CumulusConversions {
     return biggestInterfaceIp
         .map(ConcreteInterfaceAddress::getIp)
         .orElseGet(() -> Ip.parse("0.0.0.0"));
+  }
+
+  /**
+   * REF: https://github.com/FRRouting/frr/blob/b4b1d1ebdbee99664c0607cf4abac977dfc896b6/bgpd/bgp_attr.c#L3851
+   * If FRR has a cluster-id set it will use that, otherwise it will use router-id.
+   * @param bgpVrf
+   * @param routerId
+   * @return
+   */
+  @VisibleForTesting
+  static Ip inferClusterId(final BgpVrf bgpVrf, final Ip routerId) {
+    return bgpVrf.getClusterId() != null ? bgpVrf.getClusterId() : routerId;
   }
 
   @VisibleForTesting
