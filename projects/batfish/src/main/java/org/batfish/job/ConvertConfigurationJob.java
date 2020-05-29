@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -157,65 +159,48 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
+  private static void clearInvalidFilterAndWarn(
+      Map<String, IpAccessList> acls,
+      @Nonnull Supplier<IpAccessList> getter,
+      @Nonnull Consumer<IpAccessList> setter,
+      @Nonnull String purpose,
+      Warnings w) {
+    @Nullable IpAccessList acl = getter.get();
+    if (acl == null || acls.containsKey(acl.getName())) {
+      return;
+    }
+    w.redFlag(String.format("The device ACL map does not contain %s %s.", acl.getName(), purpose));
+    setter.accept(null);
+  }
+
   /** Confirm assigned ACLs (e.g. interface's outgoing ACL) exist in config's IpAccessList map */
   private static void removeInvalidAcls(Configuration c, Warnings w) {
     for (Interface iface : c.getAllInterfaces().values()) {
-      String ifaceName = iface.getName();
-
-      IpAccessList inboundAcl = iface.getInboundFilter();
-      if (inboundAcl != null && !c.getIpAccessLists().containsKey(inboundAcl.getName())) {
-        w.redFlag(
-            String.format(
-                "IpAccessList map is missing filter %s: inbound filter for interface %s",
-                inboundAcl.getName(), ifaceName));
-        iface.setInboundFilter(null);
-      }
-
-      IpAccessList inAcl = iface.getIncomingFilter();
-      if (inAcl != null && !c.getIpAccessLists().containsKey(inAcl.getName())) {
-        w.redFlag(
-            String.format(
-                "IpAccessList map is missing filter %s: incoming filter for interface %s",
-                inAcl.getName(), ifaceName));
-        iface.setIncomingFilter(null);
-      }
-
-      IpAccessList outAcl = iface.getOutgoingFilter();
-      if (outAcl != null && !c.getIpAccessLists().containsKey(outAcl.getName())) {
-        w.redFlag(
-            String.format(
-                "IpAccessList map is missing filter %s: outgoing filter for interface %s",
-                outAcl.getName(), ifaceName));
-        iface.setOutgoingFilter(null);
-      }
-
-      IpAccessList outOriginalAcl = iface.getOutgoingOriginalFlowFilter();
-      if (outOriginalAcl != null && !c.getIpAccessLists().containsKey(outOriginalAcl.getName())) {
-        w.redFlag(
-            String.format(
-                "IpAccessList map is missing filter %s: outgoing filter on original flow for interface %s",
-                outOriginalAcl.getName(), ifaceName));
-        iface.setOutgoingOriginalFlowFilter(null);
-      }
-
-      IpAccessList postTransformAcl = iface.getPostTransformationIncomingFilter();
-      if (postTransformAcl != null
-          && !c.getIpAccessLists().containsKey(postTransformAcl.getName())) {
-        w.redFlag(
-            String.format(
-                "IpAccessList map is missing filter %s: post transformation incoming filter for interface %s",
-                postTransformAcl.getName(), ifaceName));
-        iface.setPostTransformationIncomingFilter(null);
-      }
-
-      IpAccessList preTransform = iface.getPreTransformationOutgoingFilter();
-      if (preTransform != null && !c.getIpAccessLists().containsKey(preTransform.getName())) {
-        w.redFlag(
-            String.format(
-                "IpAccessList map is missing filter %s: pre transformation outgoing filter for interface %s",
-                preTransform.getName(), ifaceName));
-        iface.setPreTransformationOutgoingFilter(null);
-      }
+      Map<String, IpAccessList> acls = c.getIpAccessLists();
+      clearInvalidFilterAndWarn(
+          acls, iface::getInboundFilter, iface::setInboundFilter, "inbound filter", w);
+      clearInvalidFilterAndWarn(
+          acls, iface::getIncomingFilter, iface::setIncomingFilter, "incoming filter", w);
+      clearInvalidFilterAndWarn(
+          acls, iface::getOutgoingFilter, iface::setOutgoingFilter, "outgoing filter", w);
+      clearInvalidFilterAndWarn(
+          acls,
+          iface::getOutgoingOriginalFlowFilter,
+          iface::setOutgoingOriginalFlowFilter,
+          "outgoing filter on original flow",
+          w);
+      clearInvalidFilterAndWarn(
+          acls,
+          iface::getPostTransformationIncomingFilter,
+          iface::setPostTransformationIncomingFilter,
+          "post transformation incoming filter",
+          w);
+      clearInvalidFilterAndWarn(
+          acls,
+          iface::getPreTransformationOutgoingFilter,
+          iface::setPreTransformationOutgoingFilter,
+          "pre transformation outgoing filter",
+          w);
     }
   }
 
