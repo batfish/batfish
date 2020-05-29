@@ -109,6 +109,27 @@ if_delay
    NO? DELAY DEC NEWLINE
 ;
 
+if_encapsulation
+:
+  ENCAPSULATION
+  (
+    if_encapsulation_dot1q
+    | if_encapsulation_null
+  )
+;
+
+if_encapsulation_dot1q
+:
+  DOT1Q vlan = vlan_id NEWLINE
+;
+
+if_encapsulation_null
+:
+  (
+    DEFAULT
+  ) null_rest_of_line
+;
+
 if_flow_sampler
 :
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
@@ -677,7 +698,6 @@ if_null_block
       )
       | DUPLEX
       | ENABLE
-      | ENCAPSULATION
       | ENCRYPTION
       | ETHERNET
       | EXIT
@@ -893,7 +913,6 @@ if_null_block
       | PRIORITY
       | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
-      | PVC
       | QOS
       | QUEUE_MONITOR
       | QUEUE_SET
@@ -1029,6 +1048,21 @@ if_port_security
 if_private_vlan
 :
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
+;
+
+if_pvc
+:
+  PVC null_rest_of_line pvc_null*
+;
+
+pvc_null
+:
+  NO?
+  (
+    DIALER
+    | ENCAPSULATION
+    | PROTOCOL
+  ) null_rest_of_line
 ;
 
 if_routing_dynamic
@@ -1685,6 +1719,7 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
+   | if_encapsulation
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6
@@ -1748,6 +1783,7 @@ if_inner
    | if_no_security_level
    | if_port_security
    | if_private_vlan
+   | if_pvc
    | if_routing_dynamic
    | if_service_instance
    | if_service_policy

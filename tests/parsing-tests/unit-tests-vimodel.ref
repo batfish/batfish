@@ -5310,6 +5310,7 @@
             "declaredNames" : [
               "ethernet6/0.48"
             ],
+            "encapsulationVlan" : 48,
             "mtu" : 1500,
             "prefix" : "22.33.44.55/30",
             "proxyArp" : false,

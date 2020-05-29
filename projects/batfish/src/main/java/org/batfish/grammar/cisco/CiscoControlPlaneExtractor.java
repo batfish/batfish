@@ -548,6 +548,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.If_encapsulation_dot1qContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_address_secondaryContext;
@@ -5623,6 +5624,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_vlan(If_vlanContext ctx) {
+    int vlan = toInteger(ctx.vlan);
+    _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
+  }
+
+  @Override
+  public void exitIf_encapsulation_dot1q(If_encapsulation_dot1qContext ctx) {
     int vlan = toInteger(ctx.vlan);
     _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
   }
