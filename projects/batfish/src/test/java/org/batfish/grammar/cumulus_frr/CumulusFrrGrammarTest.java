@@ -694,6 +694,18 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpClusterId_set() {
+    parse("router bgp 1\n bgp router-id 1.2.3.4\n bgp cluster-id 2.2.2.2\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getClusterId(), equalTo(Ip.parse("2.2.2.2")));
+  }
+
+  @Test
+  public void testBgpClusterId_unset() {
+    parse("router bgp 1\n bgp router-id 1.2.3.4\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getClusterId(), equalTo(null));
+  }
+
+  @Test
   public void testBgpNoDefaultIpv4Unicast() {
     parse("router bgp 1\n no bgp default ipv4-unicast\n");
     assertFalse(_frr.getBgpProcess().getDefaultVrf().getDefaultIpv4Unicast());
@@ -730,8 +742,8 @@ public class CumulusFrrGrammarTest {
         vrf.getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                new StaticRoute(Prefix.parse("1.0.0.0/8"), Ip.parse("10.0.2.1"), null),
-                new StaticRoute(Prefix.parse("0.0.0.0/0"), Ip.parse("10.0.0.1"), null))));
+                new StaticRoute(Prefix.parse("1.0.0.0/8"), Ip.parse("10.0.2.1"), null, null),
+                new StaticRoute(Prefix.parse("0.0.0.0/0"), Ip.parse("10.0.0.1"), null, null))));
   }
 
   @Test
@@ -741,7 +753,8 @@ public class CumulusFrrGrammarTest {
     parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
     assertThat(
         vrf.getStaticRoutes(),
-        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.0.0.0/8"), null, "blackhole"))));
+        equalTo(
+            ImmutableSet.of(new StaticRoute(Prefix.parse("1.0.0.0/8"), null, "blackhole", null))));
   }
 
   @Test
@@ -1589,7 +1602,21 @@ public class CumulusFrrGrammarTest {
 
     assertThat(
         _frr.getVrfs().get("VRF").getStaticRoutes(),
-        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), Ip.parse("1.1.1.1"), null)));
+        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), Ip.parse("1.1.1.1"), null, null)));
+  }
+
+  @Test
+  public void testStaticRoute_vrf_withDefinition_withDistance() {
+    _warnings = new Warnings(false, true, false);
+
+    _frr.getVrfs().put("VRF", new Vrf("VRF"));
+    parseLines("ip route 1.2.3.0/24 1.1.1.1 200 vrf VRF");
+
+    assertThat(_warnings.getRedFlagWarnings(), empty());
+
+    assertThat(
+        _frr.getVrfs().get("VRF").getStaticRoutes(),
+        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), Ip.parse("1.1.1.1"), null, 200)));
   }
 
   @Test
@@ -1599,7 +1626,17 @@ public class CumulusFrrGrammarTest {
         _frr.getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                new StaticRoute(Prefix.parse("1.2.3.4/24"), Ip.parse("1.1.1.1"), null))));
+                new StaticRoute(Prefix.parse("1.2.3.4/24"), Ip.parse("1.1.1.1"), null, null))));
+  }
+
+  @Test
+  public void testStaticRoute_defaultVrf_withDistance() {
+    parseLines("ip route 1.2.3.4/24 1.1.1.1 75");
+    assertThat(
+        _frr.getStaticRoutes(),
+        equalTo(
+            ImmutableSet.of(
+                new StaticRoute(Prefix.parse("1.2.3.4/24"), Ip.parse("1.1.1.1"), null, 75))));
   }
 
   @Test
@@ -1627,7 +1664,7 @@ public class CumulusFrrGrammarTest {
     parseLines("ip route 1.2.3.4/24 Null0");
     assertThat(
         _frr.getStaticRoutes(),
-        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "Null0"))));
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "Null0", null))));
   }
 
   @Test
@@ -1635,7 +1672,8 @@ public class CumulusFrrGrammarTest {
     parseLines("ip route 1.2.3.4/24 reject");
     assertThat(
         _frr.getStaticRoutes(),
-        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "reject"))));
+        equalTo(
+            ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "reject", null))));
   }
 
   @Test
@@ -1643,15 +1681,16 @@ public class CumulusFrrGrammarTest {
     parseLines("ip route 1.2.3.4/24 blackhole");
     assertThat(
         _frr.getStaticRoutes(),
-        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "blackhole"))));
+        equalTo(
+            ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "blackhole", null))));
   }
 
   @Test
   public void testStaticRouteInterface_defaultVrf() {
-    parseLines("ip route 1.2.3.4/24 eth0");
+    parseLines("ip route 1.2.3.4/24 eth0 100");
     assertThat(
         _frr.getStaticRoutes(),
-        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "eth0"))));
+        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "eth0", 100))));
   }
 
   @Test
@@ -1665,6 +1704,6 @@ public class CumulusFrrGrammarTest {
 
     assertThat(
         _frr.getVrfs().get("VRF").getStaticRoutes(),
-        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), null, "eth0")));
+        contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), null, "eth0", null)));
   }
 }

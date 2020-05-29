@@ -25,6 +25,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateGene
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
+import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
@@ -1190,6 +1191,34 @@ public final class CumulusConversionsTest {
         .build();
 
     assertThat(inferRouterId(c), equalTo(Ip.parse("2.2.2.2")));
+  }
+
+  @Test
+  public void testInferClusterId_with_ClusterId() {
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED);
+
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    bgpVrf.setClusterId(Ip.parse("2.2.2.2"));
+
+    assertThat(
+        inferClusterId(bgpVrf, newProc.getRouterId()),
+        equalTo(Ip.parse("2.2.2.2")));
+  }
+
+  @Test
+  public void testInferClusterId_without_ClusterId() {
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED);
+
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    bgpVrf.setClusterId(null);
+
+    assertThat(
+        inferClusterId(bgpVrf, newProc.getRouterId()),
+        equalTo(Ip.parse("1.1.1.1")));
   }
 
   @Test

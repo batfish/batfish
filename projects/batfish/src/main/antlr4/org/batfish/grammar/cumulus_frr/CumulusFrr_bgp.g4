@@ -28,6 +28,7 @@ sb_bgp
     | sbb_confederation
     | sbb_log_neighbor_changes
     | sbb_router_id
+    | sbb_cluster_id
   )
 ;
 
@@ -83,6 +84,11 @@ sbbb_aspath_multipath_relax
 sbb_router_id
 :
   ROUTER_ID IP_ADDRESS NEWLINE
+;
+
+sbb_cluster_id
+:
+  CLUSTER_ID IP_ADDRESS NEWLINE
 ;
 
 sb_neighbor

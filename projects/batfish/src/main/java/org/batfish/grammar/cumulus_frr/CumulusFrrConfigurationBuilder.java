@@ -113,6 +113,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
@@ -739,6 +740,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbb_cluster_id(Sbb_cluster_idContext ctx) {
+    _currentBgpVrf.setClusterId(Ip.parse(ctx.IP_ADDRESS() != null ? ctx.IP_ADDRESS().getText() : null));
+  }
+
+  @Override
   public void exitSbb_confederation(Sbb_confederationContext ctx) {
     Long id = toLong(ctx.id);
     _currentBgpVrf.setConfederationId(id);
@@ -888,7 +894,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
     Prefix network = Prefix.parse(ctx.prefix().getText());
 
-    _currentVrf.getStaticRoutes().add(new StaticRoute(network, next_hop_ip, next_hop_interface));
+    final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
+
+    _currentVrf
+        .getStaticRoutes()
+        .add(new StaticRoute(network, next_hop_ip, next_hop_interface, distance));
   }
 
   @Override
@@ -1203,9 +1213,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
     // If user provides an IP next-hop instead of an interface, use that
     final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
+    // If admin distance is specified, set it
+    final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
 
     StaticRoute route =
-        new StaticRoute(Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface);
+        new StaticRoute(
+            Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface, distance);
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {
