@@ -19,12 +19,15 @@ public class StaticRoute implements Serializable {
   private final @Nonnull Prefix _network;
   private final @Nullable Ip _nextHopIp;
   private final @Nullable String _nextHopInterface;
+  private final @Nullable Integer _distance;
 
-  public StaticRoute(Prefix network, @Nullable Ip nextHopIp, @Nullable String nextHopInterface) {
+  public StaticRoute(Prefix network, @Nullable Ip nextHopIp, @Nullable String nextHopInterface,
+      @Nullable Integer distance) {
     assert nextHopInterface != null || nextHopIp != null; // grammar invariant
     _network = network;
     _nextHopIp = nextHopIp;
     _nextHopInterface = nextHopInterface;
+    _distance = distance;
   }
 
   public @Nonnull Prefix getNetwork() {
@@ -38,6 +41,10 @@ public class StaticRoute implements Serializable {
   @Nullable
   public String getNextHopInterface() {
     return _nextHopInterface;
+  }
+
+  public @Nullable Integer getDistance() {
+    return _distance;
   }
 
   @Override
@@ -63,7 +70,7 @@ public class StaticRoute implements Serializable {
   @Nonnull
   org.batfish.datamodel.StaticRoute convert() {
     return org.batfish.datamodel.StaticRoute.builder()
-        .setAdmin(DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
+        .setAdmin(_distance != null ? _distance : DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
         .setMetric(DEFAULT_STATIC_ROUTE_METRIC)
         .setNetwork(_network)
         .setNextHopIp(_nextHopIp)

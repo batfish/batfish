@@ -888,7 +888,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
     Prefix network = Prefix.parse(ctx.prefix().getText());
 
-    _currentVrf.getStaticRoutes().add(new StaticRoute(network, next_hop_ip, next_hop_interface));
+    final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
+
+    _currentVrf.getStaticRoutes().add(new StaticRoute(network, next_hop_ip, next_hop_interface, distance));
   }
 
   @Override
@@ -1203,9 +1205,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
     // If user provides an IP next-hop instead of an interface, use that
     final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
+    // If admin distance is specified, set it
+    final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
 
     StaticRoute route =
-        new StaticRoute(Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface);
+        new StaticRoute(Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface, distance);
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {

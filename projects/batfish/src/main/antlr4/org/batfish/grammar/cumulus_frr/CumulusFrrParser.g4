@@ -104,7 +104,7 @@ s_ip
 
 ip_route
 :
-  ROUTE network = prefix (next_hop_ip = ip_address | next_hop_interface = word)
+  ROUTE network = prefix (next_hop_ip = ip_address | next_hop_interface = word) (distance = uint8)?
     (
       VRF vrf = word
     )? NEWLINE
