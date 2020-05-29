@@ -21,7 +21,10 @@ public class StaticRoute implements Serializable {
   private final @Nullable String _nextHopInterface;
   private final @Nullable Integer _distance;
 
-  public StaticRoute(Prefix network, @Nullable Ip nextHopIp, @Nullable String nextHopInterface,
+  public StaticRoute(
+      Prefix network,
+      @Nullable Ip nextHopIp,
+      @Nullable String nextHopInterface,
       @Nullable Integer distance) {
     assert nextHopInterface != null || nextHopIp != null; // grammar invariant
     _network = network;

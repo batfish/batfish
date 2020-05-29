@@ -741,7 +741,8 @@ public class CumulusFrrGrammarTest {
     parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
     assertThat(
         vrf.getStaticRoutes(),
-        equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.0.0.0/8"), null, "blackhole", null))));
+        equalTo(
+            ImmutableSet.of(new StaticRoute(Prefix.parse("1.0.0.0/8"), null, "blackhole", null))));
   }
 
   @Test
@@ -1659,7 +1660,12 @@ public class CumulusFrrGrammarTest {
     parseLines("ip route 1.2.3.4/24 reject");
     assertThat(
         _frr.getStaticRoutes(),
+<<<<<<< HEAD
         equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "reject", null))));
+=======
+        equalTo(
+            ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "reject", null))));
+>>>>>>> Adding admin distance support to static routes in FRR
   }
 
   @Test
@@ -1667,7 +1673,12 @@ public class CumulusFrrGrammarTest {
     parseLines("ip route 1.2.3.4/24 blackhole");
     assertThat(
         _frr.getStaticRoutes(),
+<<<<<<< HEAD
         equalTo(ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "blackhole", null))));
+=======
+        equalTo(
+            ImmutableSet.of(new StaticRoute(Prefix.parse("1.2.3.4/24"), null, "blackhole", null))));
+>>>>>>> Adding admin distance support to static routes in FRR
   }
 
   @Test
