@@ -2000,8 +2000,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (zoneOutgoingAcl == null) {
       return;
     }
-    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
-    if (oldOutgoingFilterName == null) {
+    IpAccessList oldOutgoingFilter = newIface.getOutgoingFilter();
+    if (oldOutgoingFilter == null) {
       // No interface outbound filter
       newIface.setOutgoingFilter(zoneOutgoingAcl);
       return;
@@ -2010,7 +2010,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Construct a new ACL that combines filters, i.e. 1 AND 2
     // 1) the interface outbound filter, if it exists
     // 2) the zone filter
-
+    String oldOutgoingFilterName = oldOutgoingFilter.getName();
     IpAccessList combinedOutgoingAcl =
         IpAccessList.builder()
             .setOwner(c)
@@ -2044,7 +2044,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (interSecurityLevelAcl == null) {
       return;
     }
-    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
+    IpAccessList oldOutgoingFilter = newIface.getOutgoingFilter();
+    String oldOutgoingFilterName = oldOutgoingFilter == null ? null : oldOutgoingFilter.getName();
 
     // Construct a new ACL that:
     // 1) rejects if the (inter- or intra-) security-level policy rejects

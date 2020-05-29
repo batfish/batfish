@@ -65,6 +65,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -834,7 +835,7 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
         .map(
             i -> {
-              String acl = i.getPostTransformationIncomingFilterName();
+              IpAccessList acl = i.getPostTransformationIncomingFilter();
               String node = i.getOwner().getHostname();
               String iface = i.getName();
 
@@ -853,7 +854,7 @@ public final class BDDReachabilityAnalysisFactory {
     return getInterfaces()
         .map(
             iface -> {
-              String aclName = iface.getPostTransformationIncomingFilterName();
+              IpAccessList acl = iface.getPostTransformationIncomingFilter();
               String nodeName = iface.getOwner().getHostname();
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
@@ -861,7 +862,7 @@ public final class BDDReachabilityAnalysisFactory {
               PostInInterface preState = new PostInInterface(nodeName, ifaceName);
               PostInVrf postState = new PostInVrf(nodeName, vrfName);
 
-              BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
+              BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
               return new Edge(preState, postState, constraint(inAclBDD));
             });
   }
@@ -872,7 +873,7 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(iface -> iface.getRoutingPolicyName() == null && iface.getIncomingFilter() != null)
         .map(
             i -> {
-              String acl = i.getIncomingFilterName();
+              IpAccessList acl = i.getIncomingFilter();
               String node = i.getOwner().getHostname();
               String iface = i.getName();
 
@@ -997,19 +998,19 @@ public final class BDDReachabilityAnalysisFactory {
         .map(lookupVrf -> new PbrFibLookup(nodeName, vrfName, lookupVrf));
   }
 
-  private BDD aclDenyBDD(String node, @Nullable String acl) {
-    return acl == null ? _zero : _aclDenyBDDs.get(node).get(acl).get();
+  private BDD aclDenyBDD(String node, @Nullable IpAccessList acl) {
+    return acl == null ? _zero : _aclDenyBDDs.get(node).get(acl.getName()).get();
   }
 
-  private BDD aclPermitBDD(String node, @Nullable String acl) {
-    return acl == null ? _one : _aclPermitBDDs.get(node).get(acl).get();
+  private BDD aclPermitBDD(String node, @Nullable IpAccessList acl) {
+    return acl == null ? _one : _aclPermitBDDs.get(node).get(acl.getName()).get();
   }
 
-  private BDD ignorableAclDenyBDD(String node, @Nullable String acl) {
+  private BDD ignorableAclDenyBDD(String node, @Nullable IpAccessList acl) {
     return _ignoreFilters ? _zero : aclDenyBDD(node, acl);
   }
 
-  private BDD ignorableAclPermitBDD(String node, @Nullable String acl) {
+  private BDD ignorableAclPermitBDD(String node, @Nullable IpAccessList acl) {
     return _ignoreFilters ? _one : aclPermitBDD(node, acl);
   }
 
@@ -1019,14 +1020,14 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(iface -> iface.getRoutingPolicyName() == null)
         .map(
             iface -> {
-              String aclName = iface.getIncomingFilterName();
+              IpAccessList acl = iface.getIncomingFilter();
               String nodeName = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
 
               PreInInterface preState = new PreInInterface(nodeName, ifaceName);
               PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
-              BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
+              BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
 
               Transition transition =
                   compose(
@@ -1050,7 +1051,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              String preNatAcl = i1.getPreTransformationOutgoingFilterName();
+              IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
 
               BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
               if (denyPreNat.equals(_zero)) {
@@ -1078,7 +1079,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              String preNatAcl = i1.getPreTransformationOutgoingFilterName();
+              IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
 
               BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
               if (aclPermit.equals(_zero)) {
@@ -1110,13 +1111,13 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              String aclName = i1.getOutgoingFilterName();
+              IpAccessList acl = i1.getOutgoingFilter();
 
-              if (aclName == null) {
+              if (acl == null) {
                 return Stream.of();
               }
 
-              BDD aclDenyBDD = ignorableAclDenyBDD(node1, aclName);
+              BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
               return Stream.of(
                   new Edge(
                       new PreOutEdgePostNat(node1, iface1, node2, iface2),
@@ -1139,7 +1140,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilterName());
+              BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilter());
               assert aclPermitBDD != null;
 
               return new Edge(
@@ -1172,16 +1173,16 @@ public final class BDDReachabilityAnalysisFactory {
                             .stream()
                             .filter(
                                 iface ->
-                                    iface.getPreTransformationOutgoingFilterName() != null
-                                        || iface.getOutgoingFilterName() != null)
+                                    iface.getPreTransformationOutgoingFilter() != null
+                                        || iface.getOutgoingFilter() != null)
                             .flatMap(
                                 iface -> {
                                   String ifaceName = iface.getName();
                                   BDD denyPreAclBDD =
                                       ignorableAclDenyBDD(
-                                          node, iface.getPreTransformationOutgoingFilterName());
+                                          node, iface.getPreTransformationOutgoingFilter());
                                   BDD denyPostAclBDD =
-                                      ignorableAclDenyBDD(node, iface.getOutgoingFilterName());
+                                      ignorableAclDenyBDD(node, iface.getOutgoingFilter());
                                   Transition transformation =
                                       _bddOutgoingTransformations.get(node).get(ifaceName);
 
@@ -1242,8 +1243,8 @@ public final class BDDReachabilityAnalysisFactory {
               String node = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
               BDD permitBeforeNatBDD =
-                  ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilterName());
-              BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilterName());
+                  ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilter());
+              BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilter());
               Transition outgoingTransformation =
                   _bddOutgoingTransformations.get(node).get(ifaceName);
 

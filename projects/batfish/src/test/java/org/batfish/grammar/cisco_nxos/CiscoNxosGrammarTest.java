@@ -206,6 +206,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
@@ -2412,8 +2413,8 @@ public final class CiscoNxosGrammarTest {
             hasMtu(9216)));
     assertTrue(eth11.getAutoState());
     assertThat(eth11.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
-    assertThat(eth11.getIncomingFilterName(), equalTo("acl_in"));
-    assertThat(eth11.getOutgoingFilterName(), equalTo("acl_out"));
+    assertThat(eth11.getIncomingFilter(), IpAccessListMatchers.hasName("acl_in"));
+    assertThat(eth11.getOutgoingFilter(), IpAccessListMatchers.hasName("acl_out"));
     // TODO: convert and test delay
   }
 

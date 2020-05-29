@@ -110,7 +110,7 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasOutgoingFilterName(
       @Nonnull Matcher<? super String> subMatcher) {
-    return new InterfaceMatchersImpl.HasOutgoingFilterName(subMatcher);
+    return hasOutgoingFilter(IpAccessListMatchers.hasName(subMatcher));
   }
 
   /**
@@ -118,7 +118,7 @@ public final class DataModelMatchers {
    * to {@code expectedName}.
    */
   public static @Nonnull Matcher<Interface> hasOutgoingFilterName(@Nullable String expectedName) {
-    return new InterfaceMatchersImpl.HasOutgoingFilterName(equalTo(expectedName));
+    return hasOutgoingFilter(IpAccessListMatchers.hasName(expectedName));
   }
 
   /**

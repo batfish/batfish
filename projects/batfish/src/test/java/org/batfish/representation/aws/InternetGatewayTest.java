@@ -55,6 +55,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Test;
@@ -159,8 +160,8 @@ public class InternetGatewayTest {
         igwConfig
             .getAllInterfaces()
             .get(Utils.interfaceNameToRemote(vpcConfig))
-            .getIncomingFilterName(),
-        equalTo(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
+            .getIncomingFilter(),
+        IpAccessListMatchers.hasName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
