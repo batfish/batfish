@@ -1,0 +1,10 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-encapsulation-vlan
+!
+!
+interface GigabitEthernet0/1.203
+ encapsulation dot1Q 203
+ ip address 10.1.2.3 255.255.255.0
+!

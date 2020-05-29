@@ -69,6 +69,11 @@ AAA_USER
    'aaa-user'
 ;
 
+AAL5SNAP
+:
+  'aal5snap'
+;
+
 ABSOLUTE_TIMEOUT
 :
    'absolute-timeout'
