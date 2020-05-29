@@ -173,8 +173,8 @@ public class BatfishTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     assertThat(
-        configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
-        is(notNullValue()));
+        configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilter(),
+        notNullValue());
   }
 
   @Test

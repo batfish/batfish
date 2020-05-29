@@ -372,17 +372,6 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasOutgoingFilterName extends FeatureMatcher<Interface, String> {
-    HasOutgoingFilterName(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "an Interface with outgoingFilterName:", "outgoingFilterName");
-    }
-
-    @Override
-    protected String featureValueOf(Interface actual) {
-      return actual.getOutgoingFilterName();
-    }
-  }
-
   static final class HasSpeed extends FeatureMatcher<Interface, Double> {
     HasSpeed(@Nonnull Matcher<? super Double> subMatcher) {
       super(subMatcher, "an Interface with speed:", "speed");
