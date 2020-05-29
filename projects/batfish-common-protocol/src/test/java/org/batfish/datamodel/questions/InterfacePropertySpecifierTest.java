@@ -67,7 +67,6 @@ public class InterfacePropertySpecifierTest {
             .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
     Interface i1 = Interface.builder().setName("i1").setIncomingFilter(acl).build();
-    i1.setInboundFilterName(acl.getName());
     assertThat(
         InterfacePropertySpecifier.getPropertyDescriptor(INCOMING_FILTER_NAME)
             .getGetter()

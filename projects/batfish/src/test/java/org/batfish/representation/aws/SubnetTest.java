@@ -43,6 +43,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
@@ -559,13 +560,17 @@ public class SubnetTest {
     // NACLs are not installed on the instances-facing interface
     Interface instancesInterface =
         subnetCfg.getAllInterfaces().get(instancesInterfaceName(subnet.getId()));
-    assertThat(instancesInterface.getIncomingFilterName(), nullValue());
-    assertThat(instancesInterface.getOutgoingFilterName(), nullValue());
+    assertThat(instancesInterface.getIncomingFilter(), nullValue());
+    assertThat(instancesInterface.getOutgoingFilter(), nullValue());
 
     // NACLs are installed on the vpc-facing interface
     Interface ifaceToVpc = subnetCfg.getAllInterfaces().get(interfaceNameToRemote(vpcCfg));
-    assertThat(ifaceToVpc.getIncomingFilterName(), equalTo(getAclName(acl.getId(), false)));
-    assertThat(ifaceToVpc.getOutgoingFilterName(), equalTo(getAclName(acl.getId(), true)));
+    assertThat(
+        ifaceToVpc.getIncomingFilter(),
+        IpAccessListMatchers.hasName(getAclName(acl.getId(), false)));
+    assertThat(
+        ifaceToVpc.getOutgoingFilter(),
+        IpAccessListMatchers.hasName(getAclName(acl.getId(), true)));
   }
 
   @Test

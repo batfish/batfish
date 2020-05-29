@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.Schema;
@@ -72,6 +73,22 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String VRF = "VRF";
   public static final String VRRP_GROUPS = "VRRP_Groups";
   public static final String ZONE_NAME = "Zone_Name";
+
+  private static @Nullable String getIncomingFilterName(@Nonnull Interface i) {
+    IpAccessList acl = i.getIncomingFilter();
+    if (acl == null) {
+      return null;
+    }
+    return acl.getName();
+  }
+
+  private static @Nullable String getOutgoingFilterName(@Nonnull Interface i) {
+    IpAccessList acl = i.getOutgoingFilter();
+    if (acl == null) {
+      return null;
+    }
+    return acl.getName();
+  }
 
   private static final Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Interface>>()
@@ -159,7 +176,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(
-                  Interface::getIncomingFilterName, Schema.STRING, "Name of the input IPv4 filter"))
+                  InterfacePropertySpecifier::getIncomingFilterName,
+                  Schema.STRING,
+                  "Name of the input IPv4 filter"))
           // Uncomment after we've fixed interface types
           // .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType,
           // Schema.STRING))
@@ -181,7 +200,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               OUTGOING_FILTER_NAME,
               new PropertyDescriptor<>(
-                  Interface::getOutgoingFilterName,
+                  InterfacePropertySpecifier::getOutgoingFilterName,
                   Schema.STRING,
                   "Name of the output IPv4 filter"))
           // skip getOwner
