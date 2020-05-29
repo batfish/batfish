@@ -1274,6 +1274,20 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEncapsulationVlanExtraction() {
+    CiscoConfiguration vc =
+        parseCiscoConfig("ios-encapsulation-vlan", ConfigurationFormat.CISCO_IOS);
+    assertThat(
+        vc.getInterfaces().get("GigabitEthernet0/1.203").getEncapsulationVlan(), equalTo(203));
+  }
+
+  @Test
+  public void testIosEncapsulationVlanConversion() throws IOException {
+    Configuration c = parseConfig("ios-encapsulation-vlan");
+    assertThat(c, hasInterface("GigabitEthernet0/1.203", hasEncapsulationVlan(203)));
+  }
+
+  @Test
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
