@@ -1009,7 +1009,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
     params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
-    JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
+    JSONObject response =
+        (JSONObject) CoordinatorClient.talkToCoordinator(url, params, _settings, _logger);
     if (response == null) {
       throw new BatfishException("Could not get question templates: Got null response");
     }
@@ -1369,7 +1370,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AtomicInteger newBatch(String description, int jobs) {
-    return Driver.newBatch(_settings, description, jobs);
+    return BatchManager.get().newBatch(_settings, description, jobs);
   }
 
   private void outputAnswer(Answer answer) {
