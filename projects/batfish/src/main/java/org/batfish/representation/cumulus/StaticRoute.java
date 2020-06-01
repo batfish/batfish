@@ -67,7 +67,7 @@ public class StaticRoute implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _nextHopIp, _nextHopInterface);
+    return Objects.hash(_network, _nextHopIp, _nextHopInterface, _distance);
   }
 
   /** Convert this static route to a VI static route */
