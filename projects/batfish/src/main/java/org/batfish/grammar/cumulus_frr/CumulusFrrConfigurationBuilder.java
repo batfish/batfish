@@ -1211,12 +1211,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
 
     StaticRoute route =
-<<<<<<< HEAD
-        new StaticRoute(Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface, distance);
-=======
         new StaticRoute(
             Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface, distance);
->>>>>>> Adding admin distance support to static routes in FRR
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {
