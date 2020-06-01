@@ -18,7 +18,7 @@ s_vrf
 
 sv_route
 :
-  IP ROUTE network = prefix (next_hop_ip = ip_address | next_hop_interface = word) NEWLINE
+  IP ROUTE network = prefix (next_hop_ip = ip_address | next_hop_interface = word) (distance = uint8)? NEWLINE
 ;
 
 sv_vni

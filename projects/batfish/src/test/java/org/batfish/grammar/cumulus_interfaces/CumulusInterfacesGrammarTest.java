@@ -421,7 +421,8 @@ public class CumulusInterfacesGrammarTest {
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
     assertThat(
         iface.getPostUpIpRoutes(),
-        equalTo(ImmutableList.of(new StaticRoute(Prefix.parse("10.10.10.0/24"), null, "eth0"))));
+        equalTo(
+            ImmutableList.of(new StaticRoute(Prefix.parse("10.10.10.0/24"), null, "eth0", null))));
   }
 
   @Test
@@ -433,7 +434,7 @@ public class CumulusInterfacesGrammarTest {
         iface.getPostUpIpRoutes(),
         equalTo(
             ImmutableList.of(
-                new StaticRoute(Prefix.parse("10.10.10.0/24"), Ip.parse("10.1.1.1"), null))));
+                new StaticRoute(Prefix.parse("10.10.10.0/24"), Ip.parse("10.1.1.1"), null, null))));
   }
 
   @Test

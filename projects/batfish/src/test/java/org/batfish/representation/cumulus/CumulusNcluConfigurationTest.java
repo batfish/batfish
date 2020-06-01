@@ -72,8 +72,8 @@ public class CumulusNcluConfigurationTest {
   public void testInitVrfStaticRoutes_postUpRoutes() {
     CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
 
-    StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0");
-    StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0");
+    StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0", null);
+    StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0", null);
 
     // enabled interface in the target vrf
     Interface iface1 = new Interface("eth0", CumulusInterfaceType.PHYSICAL, null, null);

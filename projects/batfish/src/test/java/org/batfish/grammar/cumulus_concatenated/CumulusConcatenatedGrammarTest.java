@@ -272,7 +272,7 @@ public class CumulusConcatenatedGrammarTest {
                 StaticRoute.builder()
                     .setNetwork(Prefix.parse("1.1.1.1/24"))
                     .setNextHopIp(Ip.parse("10.0.0.1"))
-                    .setAdministrativeCost(1)
+                    .setAdministrativeCost(100)
                     .build(),
                 StaticRoute.builder()
                     .setNetwork(Prefix.parse("3.3.3.3/24"))
@@ -292,7 +292,7 @@ public class CumulusConcatenatedGrammarTest {
                 StaticRoute.builder()
                     .setNetwork(Prefix.parse("7.7.7.7/24"))
                     .setNextHopInterface("null_interface")
-                    .setAdministrativeCost(1)
+                    .setAdministrativeCost(250)
                     .build())));
     assertThat(
         viConfig.getVrfs().get("VRF").getStaticRoutes(),
