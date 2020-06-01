@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -62,23 +61,6 @@ public class Service {
       if (task == null) {
         task = new Task(TaskStatus.Unknown);
       }
-      String taskStr = BatfishObjectMapper.writeString(task);
-      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
-    } catch (Exception e) {
-      return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
-    }
-  }
-
-  @GET
-  @Path(BfConsts.SVC_KILL_TASK_RSC)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray killTask(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
-    _logger.infof("BFS:killTask %s\n", taskId);
-    try {
-      if (Strings.isNullOrEmpty(taskId)) {
-        return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
-      }
-      Task task = BatchManager.get().killTask(taskId);
       String taskStr = BatfishObjectMapper.writeString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
