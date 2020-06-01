@@ -19,12 +19,18 @@ public class StaticRoute implements Serializable {
   private final @Nonnull Prefix _network;
   private final @Nullable Ip _nextHopIp;
   private final @Nullable String _nextHopInterface;
+  private final @Nullable Integer _distance;
 
-  public StaticRoute(Prefix network, @Nullable Ip nextHopIp, @Nullable String nextHopInterface) {
+  public StaticRoute(
+      Prefix network,
+      @Nullable Ip nextHopIp,
+      @Nullable String nextHopInterface,
+      @Nullable Integer distance) {
     assert nextHopInterface != null || nextHopIp != null; // grammar invariant
     _network = network;
     _nextHopIp = nextHopIp;
     _nextHopInterface = nextHopInterface;
+    _distance = distance;
   }
 
   public @Nonnull Prefix getNetwork() {
@@ -40,6 +46,10 @@ public class StaticRoute implements Serializable {
     return _nextHopInterface;
   }
 
+  public @Nullable Integer getDistance() {
+    return _distance;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -51,19 +61,20 @@ public class StaticRoute implements Serializable {
     StaticRoute rhs = (StaticRoute) obj;
     return _network.equals(rhs._network)
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
-        && Objects.equals(_nextHopInterface, rhs._nextHopInterface);
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
+        && Objects.equals(_distance, rhs._distance);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _nextHopIp, _nextHopInterface);
+    return Objects.hash(_network, _nextHopIp, _nextHopInterface, _distance);
   }
 
   /** Convert this static route to a VI static route */
   @Nonnull
   org.batfish.datamodel.StaticRoute convert() {
     return org.batfish.datamodel.StaticRoute.builder()
-        .setAdmin(DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
+        .setAdmin(_distance != null ? _distance : DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
         .setMetric(DEFAULT_STATIC_ROUTE_METRIC)
         .setNetwork(_network)
         .setNextHopIp(_nextHopIp)
@@ -91,6 +102,7 @@ public class StaticRoute implements Serializable {
         .add("_network", _network)
         .add("_nextHopIp", _nextHopIp)
         .add("_nextHopInterface", _nextHopInterface)
+        .add("_distance", _distance)
         .toString();
   }
 }

@@ -1250,17 +1250,17 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         vc.getStaticRoutes(),
         containsInAnyOrder(
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1"), null),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"), null),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "swp1"),
-            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "Null0")));
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1"), null, null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"), null, null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "swp1", null),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), null, "Null0", null)));
 
     // static route (alternate vrf)
     assertThat(
         vc.getVrfs().get("vrf1").getStaticRoutes(),
         containsInAnyOrder(
-            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1"), null),
-            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"), null)));
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1"), null, null),
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"), null, null)));
 
     // route-map keys
     assertThat(vc.getRouteMaps().keySet(), containsInAnyOrder("rm1", "rm2"));

@@ -279,8 +279,8 @@ public class CumulusConcatenatedConfigurationTest {
 
   @Test
   public void testInitPostUpRoutes() {
-    StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0");
-    StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0");
+    StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0", null);
+    StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0", null);
 
     // enabled interface in the target vrf
     InterfacesInterface iface1 = new InterfacesInterface("eth0");
