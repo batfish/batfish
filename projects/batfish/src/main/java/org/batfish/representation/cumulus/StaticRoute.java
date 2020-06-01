@@ -61,7 +61,8 @@ public class StaticRoute implements Serializable {
     StaticRoute rhs = (StaticRoute) obj;
     return _network.equals(rhs._network)
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
-        && Objects.equals(_nextHopInterface, rhs._nextHopInterface);
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
+        && Objects.equals(_distance, rhs._distance);
   }
 
   @Override
@@ -101,6 +102,7 @@ public class StaticRoute implements Serializable {
         .add("_network", _network)
         .add("_nextHopIp", _nextHopIp)
         .add("_nextHopInterface", _nextHopInterface)
+        .add("_distance", _distance)
         .toString();
   }
 }

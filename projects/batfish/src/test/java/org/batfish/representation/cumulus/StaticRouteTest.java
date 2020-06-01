@@ -16,6 +16,8 @@ public class StaticRouteTest {
             new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), "iface", null))
         .addEqualityGroup(
             new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), "otherIface", null))
+        .addEqualityGroup(
+            new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), "iface", 250))
         .addEqualityGroup(new Object())
         .testEquals();
   }
