@@ -1345,7 +1345,12 @@ public class WorkMgrService {
       NetworkId networkId = work.getDetails().getNetworkId();
       Optional<String> networkOpt =
           Main.getWorkMgr().getNetworkNames().stream()
-              .filter(n -> Main.getWorkMgr().getIdManager().getNetworkId(n).equals(networkId))
+              .filter(
+                  n ->
+                      Main.getWorkMgr()
+                          .getIdManager()
+                          .getNetworkId(n)
+                          .equals(Optional.of(networkId)))
               .findFirst();
       checkArgument(networkOpt.isPresent(), "Invalid network ID: %s", networkId);
 
