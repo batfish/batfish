@@ -142,7 +142,7 @@ public final class WorkQueueMgrTest {
     Main.getWorkMgr().initNetwork(NETWORK, null);
     _idManager = Main.getWorkMgr().getIdManager();
     _snapshotMetadataManager = Main.getWorkMgr().getSnapshotMetadataManager();
-    _networkId = _idManager.getNetworkId(NETWORK);
+    _networkId = _idManager.getNetworkId(NETWORK).get();
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger(), _snapshotMetadataManager);
   }
 
@@ -153,8 +153,8 @@ public final class WorkQueueMgrTest {
   private void initSnapshotMetadata(String network, String snapshot, ProcessingStatus status)
       throws IOException {
     WorkMgrTestUtils.initSnapshotWithTopology(NETWORK, snapshot, ImmutableSet.of());
-    NetworkId networkId = _idManager.getNetworkId(network);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId).get();
     _snapshotMetadataManager.writeMetadata(
         new SnapshotMetadata(Instant.now(), null).updateStatus(status, null),
         networkId,
@@ -168,7 +168,7 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(wType)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
     _workQueueMgr.queueUnassignedWork(work);
   }
@@ -181,8 +181,9 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(wType)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
-                .setReferenceSnapshotId(_idManager.getSnapshotId(referenceSnapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
+                .setReferenceSnapshotId(
+                    _idManager.getSnapshotId(referenceSnapshot, _networkId).get())
                 .setIsDifferential(true)
                 .build());
     _workQueueMgr.queueUnassignedWork(work);
@@ -195,7 +196,7 @@ public final class WorkQueueMgrTest {
             new WorkItem(NETWORK, SNAPSHOT),
             WorkDetails.builder()
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId).get())
                 .setWorkType(wType)
                 .build());
     _thrown.expect(BatfishException.class);
@@ -213,8 +214,9 @@ public final class WorkQueueMgrTest {
             new WorkItem(NETWORK, SNAPSHOT),
             WorkDetails.builder()
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
-                .setReferenceSnapshotId(_idManager.getSnapshotId(REFERENCE_SNAPSHOT, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId).get())
+                .setReferenceSnapshotId(
+                    _idManager.getSnapshotId(REFERENCE_SNAPSHOT, _networkId).get())
                 .setIsDifferential(true)
                 .setWorkType(wType)
                 .build());
@@ -232,7 +234,7 @@ public final class WorkQueueMgrTest {
             new WorkItem(NETWORK, SNAPSHOT),
             WorkDetails.builder()
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId).get())
                 .setWorkType(wType)
                 .build());
     doAction(new Action(ActionType.QUEUE, work));
@@ -254,8 +256,9 @@ public final class WorkQueueMgrTest {
             new WorkItem(NETWORK, SNAPSHOT),
             WorkDetails.builder()
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
-                .setReferenceSnapshotId(_idManager.getSnapshotId(REFERENCE_SNAPSHOT, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId).get())
+                .setReferenceSnapshotId(
+                    _idManager.getSnapshotId(REFERENCE_SNAPSHOT, _networkId).get())
                 .setIsDifferential(true)
                 .setWorkType(wType)
                 .build());
@@ -268,7 +271,7 @@ public final class WorkQueueMgrTest {
   public void getCompletedWork() throws Exception {
     String snapshot = "snapshot";
     WorkMgrTestUtils.initSnapshotWithTopology(NETWORK, snapshot, ImmutableSet.of());
-    SnapshotId snapshot1Id = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshot1Id = _idManager.getSnapshotId(snapshot, _networkId).get();
 
     WorkDetails.Builder builder =
         WorkDetails.builder()
@@ -326,9 +329,9 @@ public final class WorkQueueMgrTest {
     WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot2, ImmutableSet.of());
     WorkMgrTestUtils.initSnapshotWithTopology(network2, snapshot1, ImmutableSet.of());
 
-    NetworkId network1Id = _idManager.getNetworkId(network1);
-    NetworkId network2Id = _idManager.getNetworkId(network2);
-    SnapshotId network1Snapshot1Id = _idManager.getSnapshotId(snapshot1, network1Id);
+    NetworkId network1Id = _idManager.getNetworkId(network1).get();
+    NetworkId network2Id = _idManager.getNetworkId(network2).get();
+    SnapshotId network1Snapshot1Id = _idManager.getSnapshotId(snapshot1, network1Id).get();
 
     WorkDetails.Builder builder = WorkDetails.builder().setWorkType(WorkType.UNKNOWN);
     QueuedWork network1Snapshot1Work1 =
@@ -340,14 +343,14 @@ public final class WorkQueueMgrTest {
             new WorkItem(network1, snapshot2),
             builder
                 .setNetworkId(network1Id)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot2, network1Id))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot2, network1Id).get())
                 .build());
     QueuedWork network2Snapshot1Work =
         new QueuedWork(
             new WorkItem(network2, snapshot1),
             builder
                 .setNetworkId(network2Id)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot1, network2Id))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot1, network2Id).get())
                 .build());
     _workQueueMgr.queueUnassignedWork(network1Snapshot1Work1);
     _workQueueMgr.queueUnassignedWork(network1Snapshot2Work);
@@ -381,7 +384,7 @@ public final class WorkQueueMgrTest {
         WorkDetails.builder()
             .setWorkType(WorkType.UNKNOWN)
             .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get());
     QueuedWork work1 = new QueuedWork(wItem1, builder.build());
     QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     _workQueueMgr.queueUnassignedWork(work1);
@@ -402,7 +405,7 @@ public final class WorkQueueMgrTest {
         WorkDetails.builder()
             .setWorkType(WorkType.UNKNOWN)
             .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get());
     QueuedWork work1 = new QueuedWork(wItem1, builder.build());
     QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     _workQueueMgr.queueUnassignedWork(work1);
@@ -425,21 +428,21 @@ public final class WorkQueueMgrTest {
     Main.getWorkMgr().initNetwork(otherNetwork, null);
     WorkMgrTestUtils.initSnapshotWithTopology(otherNetwork, snapshot, ImmutableSet.of());
     initSnapshotMetadata(otherNetwork, snapshot, ProcessingStatus.UNINITIALIZED);
-    NetworkId otherNetworkId = _idManager.getNetworkId(otherNetwork);
+    NetworkId otherNetworkId = _idManager.getNetworkId(otherNetwork).get();
     WorkDetails.Builder builder = WorkDetails.builder().setWorkType(WorkType.UNKNOWN);
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot),
             builder
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
     QueuedWork work2 =
         new QueuedWork(
             new WorkItem(otherNetwork, snapshot),
             builder
                 .setNetworkId(otherNetworkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, otherNetworkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, otherNetworkId).get())
                 .build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
@@ -456,7 +459,7 @@ public final class WorkQueueMgrTest {
     WorkDetails.Builder builder =
         WorkDetails.builder()
             .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get());
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
@@ -483,15 +486,15 @@ public final class WorkQueueMgrTest {
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot1),
-            builder.setSnapshotId(_idManager.getSnapshotId(snapshot1, _networkId)).build());
+            builder.setSnapshotId(_idManager.getSnapshotId(snapshot1, _networkId).get()).build());
     QueuedWork work2 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot1),
-            builder.setSnapshotId(_idManager.getSnapshotId(snapshot2, _networkId)).build());
+            builder.setSnapshotId(_idManager.getSnapshotId(snapshot2, _networkId).get()).build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot1, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot1, _networkId).get();
     List<QueuedWork> parsingWorks = _workQueueMgr.listIncompleteWork(_networkId, snapshotId, null);
 
     assertThat(parsingWorks, equalTo(Collections.singletonList(work1)));
@@ -1160,7 +1163,7 @@ public final class WorkQueueMgrTest {
   public void dataplaningAfterParsingFailure() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
     WorkDetails.Builder builder =
         WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
@@ -1194,7 +1197,7 @@ public final class WorkQueueMgrTest {
     WorkDetails.Builder builder =
         WorkDetails.builder()
             .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get());
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
@@ -1218,7 +1221,7 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(WorkType.UNKNOWN)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
     _workQueueMgr.queueUnassignedWork(work1);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
@@ -1236,7 +1239,7 @@ public final class WorkQueueMgrTest {
     WorkDetails.Builder builder =
         WorkDetails.builder()
             .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
             .setWorkType(WorkType.UNKNOWN);
     QueuedWork work1 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
@@ -1284,7 +1287,7 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(WorkType.UNKNOWN)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
     _workQueueMgr.queueUnassignedWork(work1);
 
@@ -1299,7 +1302,7 @@ public final class WorkQueueMgrTest {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
     WorkDetails.Builder builder =
         WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
@@ -1347,7 +1350,7 @@ public final class WorkQueueMgrTest {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
     WorkDetails.Builder builder =
         WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
@@ -1401,7 +1404,7 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(WorkType.PARSING)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
 
     doAction(new Action(ActionType.QUEUE, work1));
@@ -1420,7 +1423,7 @@ public final class WorkQueueMgrTest {
   public void testProcessTaskCheckResultPromoteSuccessfulParse() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
     Main.getWorkMgr()
         .getStorage()
@@ -1434,20 +1437,20 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(WorkType.PARSING)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
 
     doAction(new Action(ActionType.QUEUE, work1));
     _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedNormally, "Fake"));
 
-    assertThat(_idManager.getNetworkNodeRolesId(_networkId), equalTo(snapshotNodeRolesId));
+    assertThat(_idManager.getNetworkNodeRolesId(_networkId).get(), equalTo(snapshotNodeRolesId));
   }
 
   @Test
   public void testProcessTaskCheckResultPromoteUnsuccessfulParse() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
     Main.getWorkMgr()
         .getStorage()
@@ -1461,7 +1464,7 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(WorkType.PARSING)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
 
     doAction(new Action(ActionType.QUEUE, work1));
@@ -1474,7 +1477,7 @@ public final class WorkQueueMgrTest {
   public void testProcessTaskCheckResultPromoteNoChange() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
     Main.getWorkMgr()
         .getStorage()
@@ -1488,12 +1491,12 @@ public final class WorkQueueMgrTest {
             WorkDetails.builder()
                 .setWorkType(WorkType.PARSING)
                 .setNetworkId(_networkId)
-                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId).get())
                 .build());
 
     doAction(new Action(ActionType.QUEUE, work1));
     _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedNormally, "Fake"));
 
-    assertThat(_idManager.getNetworkNodeRolesId(_networkId), equalTo(oldNodeRolesId));
+    assertThat(_idManager.getNetworkNodeRolesId(_networkId).get(), equalTo(oldNodeRolesId));
   }
 }

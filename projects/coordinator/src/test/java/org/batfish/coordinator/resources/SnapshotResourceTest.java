@@ -299,8 +299,8 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
     IdManager idm = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idm.getNetworkId(network);
-    SnapshotId snapshotId = idm.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = idm.getNetworkId(network).get();
+    SnapshotId snapshotId = idm.getSnapshotId(snapshot, networkId).get();
     Main.getWorkMgr().getStorage().storeWorkLog("logoutput", networkId, snapshotId, "workid");
 
     Builder target = getWorkLogTarget(network, snapshot, "workid");

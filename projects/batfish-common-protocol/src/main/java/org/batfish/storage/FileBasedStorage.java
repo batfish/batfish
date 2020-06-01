@@ -13,8 +13,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -1176,9 +1178,19 @@ public final class FileBasedStorage implements StorageProvider {
     FileUtils.deleteDirectory(sanitizedPath.toFile());
   }
 
+  /**
+   * Read the contents of a file into a string, using the provided input charset.
+   *
+   * @throws FileNotFoundException if the file does not exist or is otherwise inaccessible
+   * @throws IOException if there is any other error
+   */
   private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
     Path sanitizedFile = validatePath(file);
-    return FileUtils.readFileToString(sanitizedFile.toFile(), charset);
+    try (InputStream in = new FileInputStream(sanitizedFile.toFile())) {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      ByteStreams.copy(in, out);
+      return new String(out.toByteArray(), charset);
+    }
   }
 
   private void writeFile(Path file, CharSequence data, Charset charset) throws IOException {
@@ -1339,9 +1351,13 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String readId(Class<? extends Id> idType, String name, Id... ancestors)
+  public @Nonnull Optional<String> readId(Class<? extends Id> idType, String name, Id... ancestors)
       throws IOException {
-    return readFileToString(getIdFile(idType, name, ancestors), UTF_8);
+    try {
+      return Optional.of(readFileToString(getIdFile(idType, name, ancestors), UTF_8));
+    } catch (FileNotFoundException e) {
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -1352,9 +1368,9 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
+  public boolean deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
       throws IOException {
-    Files.delete(getIdFile(type, name, ancestors));
+    return Files.deleteIfExists(getIdFile(type, name, ancestors));
   }
 
   @Override

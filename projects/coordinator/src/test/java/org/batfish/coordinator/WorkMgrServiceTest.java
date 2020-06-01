@@ -163,7 +163,7 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
     assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
     // test delete questions
     String questionsToDelete = String.format("[%s]", questionName);
@@ -213,8 +213,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -401,7 +401,7 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
     assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
     // test delete questions
     String questionsToDelete = String.format("[%s]", questionName);
@@ -451,8 +451,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -532,8 +532,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -613,8 +613,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -689,8 +689,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -740,7 +740,7 @@ public class WorkMgrServiceTest {
     String questionContent = BatfishObjectMapper.writeString(questionObj);
 
     Main.getWorkMgr().uploadQuestion(_networkName, question, questionContent);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, null);
+    QuestionId questionId = idm().getQuestionId(question, _networkId, null).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -823,8 +823,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -986,8 +986,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(

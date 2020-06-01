@@ -59,10 +59,10 @@ public final class WorkMgrTestUtils {
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
     SnapshotMetadataMgr ssmManager = Main.getWorkMgr().getSnapshotMetadataManager();
-    NetworkId networkId = idManager.getNetworkId(network);
+    NetworkId networkId = idManager.getNetworkId(network).get();
     SnapshotId snapshotId =
         idManager.hasSnapshotId(snapshot, networkId)
-            ? idManager.getSnapshotId(snapshot, networkId)
+            ? idManager.getSnapshotId(snapshot, networkId).get()
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
     ssmManager.writeMetadata(
@@ -78,8 +78,8 @@ public final class WorkMgrTestUtils {
   public static void setSnapshotNodeRoles(
       NodeRolesData nodeRolesData, String network, String snapshot) throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network);
-    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId).get();
     NodeRolesId snapshotNodeRolesId = idManager.getSnapshotNodeRolesId(networkId, snapshotId);
     Main.getWorkMgr().getStorage().storeNodeRoles(nodeRolesData, snapshotNodeRolesId);
   }
@@ -159,8 +159,8 @@ public final class WorkMgrTestUtils {
     IdManager idManager = manager.getIdManager();
     StorageProvider storage = manager.getStorage();
     Question question = new TestQuestion();
-    NetworkId networkId = idManager.getNetworkId(network);
-    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId).get();
     AnalysisId analysisId = null;
 
     // Setup question
@@ -172,18 +172,20 @@ public final class WorkMgrTestUtils {
           ImmutableMap.of(questionName, BatfishObjectMapper.writeString(question)),
           Lists.newArrayList(),
           null);
-      analysisId = idManager.getAnalysisId(analysis, networkId);
+      analysisId = idManager.getAnalysisId(analysis, networkId).get();
     } else {
       idManager.assignQuestion(questionName, networkId, idManager.generateQuestionId(), null);
     }
-    QuestionId questionId = idManager.getQuestionId(questionName, networkId, analysisId);
+    QuestionId questionId = idManager.getQuestionId(questionName, networkId, analysisId).get();
     storage.storeQuestion(
         BatfishObjectMapper.writeString(question), networkId, questionId, analysisId);
 
     // Setup answer iff one was passed in
     if (answer != null) {
       SnapshotId referenceSnapshotId =
-          referenceSnapshot == null ? null : idManager.getSnapshotId(referenceSnapshot, networkId);
+          referenceSnapshot == null
+              ? null
+              : idManager.getSnapshotId(referenceSnapshot, networkId).get();
       AnswerId answerId =
           idManager.getBaseAnswerId(
               networkId,

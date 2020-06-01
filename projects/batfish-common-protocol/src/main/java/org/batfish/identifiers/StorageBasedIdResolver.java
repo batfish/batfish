@@ -9,6 +9,7 @@ import com.google.common.hash.Hashing;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,7 +34,8 @@ public class StorageBasedIdResolver implements IdResolver {
     }
   }
 
-  private @Nonnull String readId(Class<? extends Id> idType, String name, Id... ancestors) {
+  private @Nonnull Optional<String> readId(
+      Class<? extends Id> idType, String name, Id... ancestors) {
     try {
       return _s.readId(idType, name, ancestors);
     } catch (IOException e) {
@@ -48,12 +50,8 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull AnalysisId getAnalysisId(String analysis, NetworkId networkId) {
-    if (!hasAnalysisId(analysis, networkId)) {
-      throw new IllegalArgumentException(
-          String.format("No ID assigned to non-existent analysis %s", analysis));
-    }
-    return new AnalysisId(readId(AnalysisId.class, analysis, networkId));
+  public @Nonnull Optional<AnalysisId> getAnalysisId(String analysis, NetworkId networkId) {
+    return readId(AnalysisId.class, analysis, networkId).map(AnalysisId::new);
   }
 
   @Override
@@ -91,59 +89,38 @@ public class StorageBasedIdResolver implements IdResolver {
   }
 
   @Override
-  public @Nonnull IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    if (!hasIssueSettingsId(majorIssueType, networkId)) {
-      throw new IllegalArgumentException(
-          String.format("No ID assigned to non-configured majorIssueType %s", majorIssueType));
-    }
-    return new IssueSettingsId(readId(IssueSettingsId.class, majorIssueType, networkId));
+  public @Nonnull Optional<IssueSettingsId> getIssueSettingsId(
+      String majorIssueType, NetworkId networkId) {
+    return readId(IssueSettingsId.class, majorIssueType, networkId).map(IssueSettingsId::new);
   }
 
   @Override
-  public @Nonnull NetworkId getNetworkId(String network) {
-    if (!hasNetworkId(network)) {
-      throw new IllegalArgumentException(
-          String.format("No ID assigned to non-existent network %s", network));
-    }
-    return new NetworkId(readId(NetworkId.class, network));
+  public @Nonnull Optional<NetworkId> getNetworkId(String network) {
+    return readId(NetworkId.class, network).map(NetworkId::new);
   }
 
   @Override
-  public NodeRolesId getNetworkNodeRolesId(NetworkId networkId) {
-    if (!hasNetworkNodeRolesId(networkId)) {
-      throw new IllegalArgumentException("No assigned node-roles ID");
-    }
-    return new NodeRolesId(readId(NodeRolesId.class, NETWORK_NODE_ROLES, networkId));
+  public Optional<NodeRolesId> getNetworkNodeRolesId(NetworkId networkId) {
+    return readId(NodeRolesId.class, NETWORK_NODE_ROLES, networkId).map(NodeRolesId::new);
   }
 
   @Override
-  public @Nonnull QuestionId getQuestionId(
+  public @Nonnull Optional<QuestionId> getQuestionId(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    if (!hasQuestionId(question, networkId, analysisId)) {
-      throw new IllegalArgumentException(
-          String.format("No ID assigned to non-existent question '%s'", question));
-    }
     Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
-    return new QuestionId(readId(QuestionId.class, question, ancestors));
+    return readId(QuestionId.class, question, ancestors).map(QuestionId::new);
   }
 
   @Override
-  public @Nonnull QuestionSettingsId getQuestionSettingsId(
+  public @Nonnull Optional<QuestionSettingsId> getQuestionSettingsId(
       String questionClassId, NetworkId networkId) {
-    if (!hasQuestionSettingsId(questionClassId, networkId)) {
-      throw new IllegalArgumentException(
-          String.format("No ID assigned to non-configured questionClassId '%s'", questionClassId));
-    }
-    return new QuestionSettingsId(readId(QuestionSettingsId.class, questionClassId, networkId));
+    return readId(QuestionSettingsId.class, questionClassId, networkId)
+        .map(QuestionSettingsId::new);
   }
 
   @Override
-  public @Nonnull SnapshotId getSnapshotId(String snapshot, NetworkId networkId) {
-    if (!hasSnapshotId(snapshot, networkId)) {
-      throw new IllegalArgumentException(
-          String.format("No ID assigned to non-existent snapshot '%s'", snapshot));
-    }
-    return new SnapshotId(readId(SnapshotId.class, snapshot, networkId));
+  public @Nonnull Optional<SnapshotId> getSnapshotId(String snapshot, NetworkId networkId) {
+    return readId(SnapshotId.class, snapshot, networkId).map(SnapshotId::new);
   }
 
   @Override

@@ -33,9 +33,9 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
     super(s);
   }
 
-  private void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors) {
+  private boolean deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors) {
     try {
-      _s.deleteNameIdMapping(type, name, ancestors);
+      return _s.deleteNameIdMapping(type, name, ancestors);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -92,25 +92,25 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   }
 
   @Override
-  public void deleteAnalysis(String analysis, NetworkId networkId) {
-    deleteNameIdMapping(AnalysisId.class, analysis, networkId);
+  public boolean deleteAnalysis(String analysis, NetworkId networkId) {
+    return deleteNameIdMapping(AnalysisId.class, analysis, networkId);
   }
 
   @Override
-  public void deleteNetwork(String network) {
-    deleteNameIdMapping(NetworkId.class, network);
+  public boolean deleteNetwork(String network) {
+    return deleteNameIdMapping(NetworkId.class, network);
   }
 
   @Override
-  public void deleteQuestion(
+  public boolean deleteQuestion(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
     Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
-    deleteNameIdMapping(QuestionId.class, question, ancestors);
+    return deleteNameIdMapping(QuestionId.class, question, ancestors);
   }
 
   @Override
-  public void deleteSnapshot(String snapshot, NetworkId networkId) {
-    deleteNameIdMapping(SnapshotId.class, snapshot, networkId);
+  public boolean deleteSnapshot(String snapshot, NetworkId networkId) {
+    return deleteNameIdMapping(SnapshotId.class, snapshot, networkId);
   }
 
   @Override

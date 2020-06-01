@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -467,9 +468,9 @@ public class BatfishTest {
               }
 
               @Override
-              public QuestionSettingsId getQuestionSettingsId(
+              public Optional<QuestionSettingsId> getQuestionSettingsId(
                   String questionClassId, NetworkId networkId) {
-                return new QuestionSettingsId("blah");
+                return Optional.of(new QuestionSettingsId("blah"));
               }
             });
 
@@ -489,8 +490,9 @@ public class BatfishTest {
             },
             new TestIdResolver() {
               @Override
-              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-                return false;
+              public Optional<QuestionSettingsId> getQuestionSettingsId(
+                  String questionClassId, NetworkId networkId) {
+                return Optional.empty();
               }
             });
 
@@ -510,9 +512,9 @@ public class BatfishTest {
             },
             new TestIdResolver() {
               @Override
-              public QuestionSettingsId getQuestionSettingsId(
+              public Optional<QuestionSettingsId> getQuestionSettingsId(
                   String questionClassId, NetworkId networkId) {
-                return new QuestionSettingsId("foo");
+                return Optional.of(new QuestionSettingsId("foo"));
               }
 
               @Override

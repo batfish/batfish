@@ -534,10 +534,9 @@ public final class FileBasedStorageTest {
   @Test
   public void testReadId() throws IOException {
     _storage.writeId(new NetworkId("network1_id"), "network1");
-    assertThat(_storage.readId(NetworkId.class, "network1"), equalTo("network1_id"));
+    assertThat(_storage.readId(NetworkId.class, "network1"), equalTo(Optional.of("network1_id")));
 
-    _thrown.expect(IOException.class);
-    _storage.readId(NetworkId.class, "network2");
+    assertThat(_storage.readId(NetworkId.class, "network2"), equalTo(Optional.empty()));
   }
 
   @Test
