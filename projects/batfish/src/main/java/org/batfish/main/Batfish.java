@@ -497,10 +497,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
           .listQuestions(containerName, analysisName)
           .forEach(
               questionName -> {
-                QuestionId questionId =
+                Optional<QuestionId> questionIdOpt =
                     _idResolver.getQuestionId(questionName, containerName, analysisName);
-                _settings.setQuestionName(questionId);
-
+                checkArgument(
+                    questionIdOpt.isPresent(),
+                    "Question '%s' for analysis '%s' for network '%s' was deleted in the middle of this operation",
+                    questionName,
+                    containerName,
+                    analysisName);
+                _settings.setQuestionName(questionIdOpt.get());
                 Answer currentAnswer;
                 Span span =
                     GlobalTracer.get().buildSpan("Getting answer to analysis question").start();
@@ -951,12 +956,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public NodeRolesData getNodeRolesData() {
     try {
       NetworkId networkId = _settings.getContainer();
-      if (!_idResolver.hasNetworkNodeRolesId(networkId)) {
+      Optional<NodeRolesId> networkNodeRolesIdOpt = _idResolver.getNetworkNodeRolesId(networkId);
+      if (!networkNodeRolesIdOpt.isPresent()) {
         return null;
       }
-      NodeRolesId nodeRolesId = _idResolver.getNetworkNodeRolesId(networkId);
       return BatfishObjectMapper.mapper()
-          .readValue(_storage.loadNodeRoles(nodeRolesId), NodeRolesData.class);
+          .readValue(_storage.loadNodeRoles(networkNodeRolesIdOpt.get()), NodeRolesData.class);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data: %s", e);
       return null;
@@ -983,11 +988,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    IssueSettingsId id = _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
-    if (id == null) {
+    Optional<IssueSettingsId> issueSetingsIdOpt =
+        _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
+    if (!issueSetingsIdOpt.isPresent()) {
       return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
     }
-    MajorIssueConfig loaded = _storage.loadMajorIssueConfig(_settings.getContainer(), id);
+    MajorIssueConfig loaded =
+        _storage.loadMajorIssueConfig(_settings.getContainer(), issueSetingsIdOpt.get());
     return loaded != null ? loaded : new MajorIssueConfig(majorIssueType, ImmutableMap.of());
   }
 
@@ -1009,7 +1016,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
     params.put(CoordConstsV2.QP_VERBOSE, String.valueOf(verbose));
 
-    JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
+    JSONObject response =
+        (JSONObject) CoordinatorClient.talkToCoordinator(url, params, _settings, _logger);
     if (response == null) {
       throw new BatfishException("Could not get question templates: Got null response");
     }
@@ -1369,7 +1377,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AtomicInteger newBatch(String description, int jobs) {
-    return Driver.newBatch(_settings, description, jobs);
+    return BatchManager.get().newBatch(_settings, description, jobs);
   }
 
   private void outputAnswer(Answer answer) {
@@ -1414,18 +1422,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     QuestionSettingsId questionSettingsId;
     try {
       String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
-        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
-      } else {
-        questionSettingsId = QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
-      }
+      questionSettingsId =
+          _idResolver
+              .getQuestionSettingsId(questionClassId, networkId)
+              .orElse(QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID);
     } catch (IOException e) {
       throw new IOException("Failed to retrieve question settings ID", e);
     }
     NodeRolesId networkNodeRolesId =
-        _idResolver.hasNetworkNodeRolesId(networkId)
-            ? _idResolver.getNetworkNodeRolesId(networkId)
-            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+        _idResolver
+            .getNetworkNodeRolesId(networkId)
+            .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
@@ -3123,18 +3130,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     QuestionSettingsId questionSettingsId;
     try {
       String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-      if (_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
-        questionSettingsId = _idResolver.getQuestionSettingsId(questionClassId, networkId);
-      } else {
-        questionSettingsId = QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
-      }
+      questionSettingsId =
+          _idResolver
+              .getQuestionSettingsId(questionClassId, networkId)
+              .orElse(QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID);
     } catch (IOException e) {
       throw new BatfishException("Failed to retrieve question settings ID", e);
     }
     NodeRolesId networkNodeRolesId =
-        _idResolver.hasNetworkNodeRolesId(networkId)
-            ? _idResolver.getNetworkNodeRolesId(networkId)
-            : NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+        _idResolver
+            .getNetworkNodeRolesId(networkId)
+            .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
     AnswerId baseAnswerId =
         _idResolver.getBaseAnswerId(
             networkId,
@@ -3164,13 +3170,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public @Nullable String loadQuestionSettings(@Nonnull Question question) {
     String questionClassId = question.getName();
     NetworkId networkId = _settings.getContainer();
-    if (!_idResolver.hasQuestionSettingsId(questionClassId, networkId)) {
+    Optional<QuestionSettingsId> questionSettingsIdOpt =
+        _idResolver.getQuestionSettingsId(questionClassId, networkId);
+    if (!questionSettingsIdOpt.isPresent()) {
       return null;
     }
     try {
-      QuestionSettingsId questionSettingsId =
-          _idResolver.getQuestionSettingsId(questionClassId, networkId);
-      return _storage.loadQuestionSettings(_settings.getContainer(), questionSettingsId);
+      return _storage.loadQuestionSettings(_settings.getContainer(), questionSettingsIdOpt.get());
     } catch (IOException e) {
       throw new BatfishException(
           String.format("Failed to read question settings for question: '%s'", questionClassId), e);

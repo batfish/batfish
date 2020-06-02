@@ -13,7 +13,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.main.Driver;
+import org.batfish.main.BatchManager;
 
 /**
  * Class to execute a list of jobs in a thread pool of adaptable size using {@link Executors}. The
@@ -254,7 +254,7 @@ public class BatfishJobExecutor {
   <JobT> void initializeJobsStats(List<JobT> jobs, String description) {
     _finishedJobs = 0;
     _totalJobs = jobs.size();
-    _completed = Driver.newBatch(_settings, description, _totalJobs);
+    _completed = BatchManager.get().newBatch(_settings, description, _totalJobs);
     _finishedPercent = 0;
   }
 

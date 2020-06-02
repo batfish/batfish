@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.Optional;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
@@ -103,10 +104,10 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     _idManager =
         new LocalIdManager() {
           @Override
-          public QuestionSettingsId getQuestionSettingsId(
+          public Optional<QuestionSettingsId> getQuestionSettingsId(
               String questionClassId, NetworkId networkId) {
             if (questionClassId.equals(BAD_QUESTION)) {
-              return BAD_QUESTION_SETTINGS_ID;
+              return Optional.of(BAD_QUESTION_SETTINGS_ID);
             }
             return super.getQuestionSettingsId(questionClassId, networkId);
           }

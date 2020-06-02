@@ -4,10 +4,10 @@ iface VRF
   vrf-table auto
 # ports.conf --
 frr version test
-ip route 1.1.1.1/24 10.0.0.1
+ip route 1.1.1.1/24 10.0.0.1 100
 ip route 2.2.2.2/24 10.0.0.2 vrf VRF
 ip route 3.3.3.3/24 Null0
 ip route 4.4.4.4/24 Eth0
 ip route 5.5.5.5/24 eth0-1 vrf VRF
 ip route 6.6.6.6/24 blackhole
-ip route 7.7.7.7/24 reject
+ip route 7.7.7.7/24 reject 250

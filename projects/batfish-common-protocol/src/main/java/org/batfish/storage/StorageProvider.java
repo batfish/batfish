@@ -658,11 +658,13 @@ public interface StorageProvider {
 
   /**
    * Read the value of an ID corresponding to given ancestor IDs, ID type, and user-provided name.
+   * Returns {@link Optional#empty} if there is no such ID.
    *
    * @throws IOException if there is an error
    */
   @Nonnull
-  String readId(Class<? extends Id> idType, String name, Id... ancestors) throws IOException;
+  Optional<String> readId(Class<? extends Id> idType, String name, Id... ancestors)
+      throws IOException;
 
   /**
    * Write an name-ID mapping corresponding to given ancestor IDs and user-provided name.
@@ -673,11 +675,11 @@ public interface StorageProvider {
 
   /**
    * Delete the name-ID mapping corresponding to the given ancestor IDs, ID type, and user-provided
-   * name.
+   * name. Returns {@code true} iff a mapping for the provided name was successfully deleted.
    *
    * @throws IOException if there is an error
    */
-  void deleteNameIdMapping(Class<? extends Id> idType, String name, Id... ancestors)
+  boolean deleteNameIdMapping(Class<? extends Id> idType, String name, Id... ancestors)
       throws IOException;
 
   /**

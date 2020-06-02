@@ -414,7 +414,8 @@ public class TestStorageProvider implements StorageProvider {
 
   @Nonnull
   @Override
-  public String readId(Class<? extends Id> type, String name, Id... ancestors) throws IOException {
+  public Optional<String> readId(Class<? extends Id> type, String name, Id... ancestors)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -424,7 +425,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
+  public boolean deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
       throws IOException {
     throw new UnsupportedOperationException();
   }

@@ -20,6 +20,8 @@ public class FilterStep extends Step<FilterStepDetail> {
     INGRESS_FILTER,
     /** egress filter */
     EGRESS_FILTER,
+    /** egress filter matching on original (pre-transformation) flow */
+    EGRESS_ORIGINAL_FLOW_FILTER,
     /** post-transformation ingress filter */
     POST_TRANSFORMATION_INGRESS_FILTER,
     /** pre-transformation egress filter */
@@ -31,6 +33,7 @@ public class FilterStep extends Step<FilterStepDetail> {
         case POST_TRANSFORMATION_INGRESS_FILTER:
           return FlowDisposition.DENIED_IN;
         case EGRESS_FILTER:
+        case EGRESS_ORIGINAL_FLOW_FILTER:
         case PRE_TRANSFORMATION_EGRESS_FILTER:
           return FlowDisposition.DENIED_OUT;
         default:

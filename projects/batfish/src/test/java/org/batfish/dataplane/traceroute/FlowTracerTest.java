@@ -3,6 +3,7 @@ package org.batfish.dataplane.traceroute;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
@@ -37,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,6 +53,7 @@ import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
@@ -58,9 +61,12 @@ import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -73,6 +79,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
@@ -92,7 +99,11 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.junit.Test;
 
@@ -1226,5 +1237,120 @@ public final class FlowTracerTest {
     // both original and current flows are transformed
     assertThat(flowTracer2.getOriginalFlow().getDstIp(), equalTo(dstIp2));
     assertThat(flowTracer2.getCurrentFlow().getDstIp(), equalTo(dstIp2));
+  }
+
+  @Test
+  public void testOutgoingOriginalFlowFilter() {
+    // Tests that outgoing original flow filter really acts on the original flow and not current
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    Interface iface = nf.interfaceBuilder().setOwner(c).setVrf(vrf).build();
+
+    Ip blockedSrcIp = Ip.parse("1.1.1.1");
+    Ip permittedSrcIp = Ip.parse("1.1.1.2");
+    Ip dstIp = Ip.parse("2.2.2.2");
+
+    // Filter denies src IP blockedSrcIp, permits everything else
+    IpAccessList filter =
+        nf.aclBuilder()
+            .setLines(
+                ExprAclLine.rejecting(AclLineMatchExprs.matchSrc(blockedSrcIp)),
+                ExprAclLine.ACCEPT_ALL)
+            .build();
+    iface.setOutgoingOriginalFlowFilter(filter);
+
+    Flow flowWithBlockedSrc =
+        Flow.builder()
+            .setSrcIp(blockedSrcIp)
+            .setDstIp(dstIp)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .build();
+    Flow flowWithPermittedSrc = flowWithBlockedSrc.toBuilder().setSrcIp(permittedSrcIp).build();
+
+    // Set up forwarding analysis to consider flows to dstIp delivered to subnet
+    ForwardingAnalysis forwardingAnalysis =
+        MockForwardingAnalysis.builder()
+            .setDeliveredToSubnet(
+                ImmutableMap.of(
+                    c.getHostname(),
+                    ImmutableMap.of(
+                        vrf.getName(), ImmutableMap.of(iface.getName(), dstIp.toIpSpace()))))
+            .build();
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setConfigs(ImmutableMap.of(c.getHostname(), c))
+                .setForwardingAnalysis(forwardingAnalysis)
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+
+    // There's a sanity check in FlowTracer constructor that requires there to be a PolicyStep or
+    // TransformationStep if the current and original flows don't match. Doesn't matter if this
+    // doesn't accurately represent the transformation.
+    FlowDiff flowDiff = FlowDiff.flowDiff(IpField.SOURCE, blockedSrcIp, permittedSrcIp);
+    TransformationStep placeholderTransformationStep =
+        new TransformationStep(
+            new TransformationStepDetail(
+                TransformationType.SOURCE_NAT, ImmutableSortedSet.of(flowDiff)),
+            StepAction.TRANSFORMED);
+
+    {
+      // When original flow has the blocked src IP, it should get denied out
+      List<Step<?>> steps = new ArrayList<>();
+      steps.add(placeholderTransformationStep);
+      List<TraceAndReverseFlow> traces = new ArrayList<>();
+      FlowTracer flowTracer =
+          new FlowTracer(
+              ctxt,
+              c,
+              null,
+              new Node(c.getHostname()),
+              traces::add,
+              NodeInterfacePair.of("node", "iface"),
+              ImmutableSet.of(),
+              flowWithBlockedSrc, // original flow
+              vrf.getName(),
+              new ArrayList<>(),
+              steps,
+              new Stack<>(),
+              flowWithPermittedSrc); // current flow
+
+      flowTracer.forwardOutInterface(iface, dstIp, null);
+      assertThat(traces, hasSize(1));
+      assertThat(traces.get(0).getTrace(), hasDisposition(DENIED_OUT));
+    }
+
+    {
+      // When current flow has the blocked src IP (but original doesn't), it should succeed
+      List<Step<?>> steps = new ArrayList<>();
+      steps.add(placeholderTransformationStep);
+      List<TraceAndReverseFlow> traces = new ArrayList<>();
+      FlowTracer flowTracer =
+          new FlowTracer(
+              ctxt,
+              c,
+              null,
+              new Node(c.getHostname()),
+              traces::add,
+              NodeInterfacePair.of("node", "iface"),
+              ImmutableSet.of(),
+              flowWithPermittedSrc, // original flow
+              vrf.getName(),
+              new ArrayList<>(),
+              steps,
+              new Stack<>(),
+              flowWithBlockedSrc); // current flow
+
+      flowTracer.forwardOutInterface(iface, dstIp, null);
+      assertThat(traces, hasSize(1));
+      assertThat(traces.get(0).getTrace(), hasDisposition(DELIVERED_TO_SUBNET));
+    }
   }
 }

@@ -443,7 +443,8 @@ import org.batfish.grammar.cisco.CiscoParser.Asa_twice_nat_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
-import org.batfish.grammar.cisco.CiscoParser.Bgp_confederation_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_identifier_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_peers_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_redistribute_internal_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cadant_stdacl_nameContext;
@@ -547,6 +548,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.If_encapsulation_dot1qContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_address_secondaryContext;
@@ -1664,8 +1666,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterBgp_confederation_rb_stanza(Bgp_confederation_rb_stanzaContext ctx) {
-    todo(ctx);
+  public void exitBgp_conf_identifier_rb_stanza(Bgp_conf_identifier_rb_stanzaContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    long asn = toAsNum(ctx.id);
+    proc.setConfederation(asn);
+  }
+
+  @Override
+  public void exitBgp_conf_peers_rb_stanza(Bgp_conf_peers_rb_stanzaContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    Set<Long> members = proc.getConfederationMembers();
+    for (Bgp_asnContext peer : ctx.peers) {
+      members.add(toAsNum(peer));
+    }
   }
 
   @Override
@@ -3231,6 +3244,42 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_line(S_lineContext ctx) {
+    List<String> names = getLineNames(ctx);
+
+    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
+    // default list is undefined
+    AaaAuthenticationLoginList defaultList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
+            .orElse(null);
+
+    for (String name : names) {
+      if (_configuration.getCf().getLines().get(name) == null) {
+        Line line = new Line(name);
+        if (defaultList != null) {
+          // if default list defined, apply it to all lines
+          line.setAaaAuthenticationLoginList(defaultList);
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        } else if (_configuration.getCf().getAaa() != null
+            && _configuration.getCf().getAaa().getNewModel()
+            && line.getLineType() != LineType.CON) {
+          // if default list not defined but aaa new-model, apply to all lines except con0
+          line.setAaaAuthenticationLoginList(
+              new AaaAuthenticationLoginList(
+                  Collections.singletonList(AuthenticationMethod.LOCAL)));
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        }
+        _configuration.getCf().getLines().put(name, line);
+      }
+    }
+    _currentLineNames = names;
+  }
+
+  @Nonnull
+  private List<String> getLineNames(S_lineContext ctx) {
     String lineType = ctx.line_type().getText();
     if (lineType.equals("")) {
       lineType = "<UNNAMED>";
@@ -3264,7 +3313,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         last = first;
       }
       if (last < first) {
-        throw new BatfishException("Do not support decreasing line range: " + first + " " + last);
+        _w.addWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            String.format("Do not support decreasing line range: %s %s", first, last));
+        return ImmutableList.of();
       }
       if (slot1 != null && port1 != null) {
         for (int s = slot1; s <= slot2; s++) {
@@ -3291,37 +3345,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       names.add(nameBase);
     }
-
-    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
-    // default list is undefined
-    AaaAuthenticationLoginList defaultList =
-        Optional.ofNullable(_configuration.getCf().getAaa())
-            .map(Aaa::getAuthentication)
-            .map(AaaAuthentication::getLogin)
-            .map(AaaAuthenticationLogin::getLists)
-            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
-            .orElse(null);
-
-    for (String name : names) {
-      if (_configuration.getCf().getLines().get(name) == null) {
-        Line line = new Line(name);
-        if (defaultList != null) {
-          // if default list defined, apply it to all lines
-          line.setAaaAuthenticationLoginList(defaultList);
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        } else if (_configuration.getCf().getAaa() != null
-            && _configuration.getCf().getAaa().getNewModel()
-            && line.getLineType() != LineType.CON) {
-          // if default list not defined but aaa new-model, apply to all lines except con0
-          line.setAaaAuthenticationLoginList(
-              new AaaAuthenticationLoginList(
-                  Collections.singletonList(AuthenticationMethod.LOCAL)));
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        }
-        _configuration.getCf().getLines().put(name, line);
-      }
-    }
-    _currentLineNames = names;
+    return names;
   }
 
   @Override
@@ -5600,6 +5624,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_vlan(If_vlanContext ctx) {
+    int vlan = toInteger(ctx.vlan);
+    _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
+  }
+
+  @Override
+  public void exitIf_encapsulation_dot1q(If_encapsulation_dot1qContext ctx) {
     int vlan = toInteger(ctx.vlan);
     _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
   }

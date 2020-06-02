@@ -58,7 +58,7 @@ public class Service {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
 
-      Task task = Driver.getTaskFromLog(taskId);
+      Task task = BatchManager.get().getTaskFromLog(taskId);
       if (task == null) {
         task = new Task(TaskStatus.Unknown);
       }
@@ -78,7 +78,7 @@ public class Service {
       if (Strings.isNullOrEmpty(taskId)) {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
-      Task task = Driver.killTask(taskId);
+      Task task = BatchManager.get().killTask(taskId);
       String taskStr = BatfishObjectMapper.writeString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {

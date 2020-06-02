@@ -69,6 +69,11 @@ AAA_USER
    'aaa-user'
 ;
 
+AAL5SNAP
+:
+  'aal5snap'
+;
+
 ABSOLUTE_TIMEOUT
 :
    'absolute-timeout'
@@ -1786,6 +1791,11 @@ BSR_CANDIDATE
 BUCKETS
 :
    'buckets'
+;
+
+BUFFER_LENGTH
+:
+  'buffer-length'
 ;
 
 BUFFER_LIMIT
@@ -5475,6 +5485,11 @@ HIGH_RESOLUTION
 HISTORY
 :
    'history'
+;
+
+HOLD_CHARACTER
+:
+  'hold-character'
 ;
 
 HOLD_TIME
@@ -12407,6 +12422,11 @@ STICKY_ARP
 STOP
 :
    'stop'
+;
+
+STOP_CHARACTER
+:
+  'stop-character'
 ;
 
 STOP_ONLY

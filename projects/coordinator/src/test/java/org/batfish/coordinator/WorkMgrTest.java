@@ -159,7 +159,7 @@ public final class WorkMgrTest {
   }
 
   private void createSnapshotWithMetadata(String network, String snapshot) throws IOException {
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshot, networkId, snapshotId);
     _snapshotMetadataManager.writeMetadata(
@@ -626,7 +626,7 @@ public final class WorkMgrTest {
     String internalQuestionName = "__internalquestion";
     String network = "container";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
     // Make sure the questions are assigned
     _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
     _idManager.assignQuestion(
@@ -651,7 +651,7 @@ public final class WorkMgrTest {
   public void listSortedQuestionNames() {
     String network = "container";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
     _idManager.assignQuestion("nodes", networkId, _idManager.generateQuestionId(), null);
     _idManager.assignQuestion("access", networkId, _idManager.generateQuestionId(), null);
     _idManager.assignQuestion("initinfo", networkId, _idManager.generateQuestionId(), null);
@@ -688,11 +688,11 @@ public final class WorkMgrTest {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
 
     // create a snapshot and write a topology object for it
     createSnapshotWithMetadata(network, snapshot);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId).get();
     Topology topology = new Topology(snapshot);
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
     _storage.storePojoTopology(topology, networkId, snapshotId);
@@ -706,7 +706,7 @@ public final class WorkMgrTest {
     String network = "container";
     String snapshot = "testrig";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
     _idManager.assignSnapshot(snapshot, networkId, _idManager.generateSnapshotId());
     Container container = _manager.getContainer(network);
     assertThat(
@@ -757,10 +757,10 @@ public final class WorkMgrTest {
         ImmutableMap.of("question2", "question2Content", "question3", "question3Content");
     _manager.configureAnalysis(
         containerName, false, analysisName, questionsToAdd, Lists.newArrayList(), null);
-    NetworkId networkId = _idManager.getNetworkId(containerName);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionId q1Id = _idManager.getQuestionId("question1", networkId, analysisId);
-    QuestionId q2Id = _idManager.getQuestionId("question2", networkId, analysisId);
+    NetworkId networkId = _idManager.getNetworkId(containerName).get();
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
+    QuestionId q1Id = _idManager.getQuestionId("question1", networkId, analysisId).get();
+    QuestionId q2Id = _idManager.getQuestionId("question2", networkId, analysisId).get();
     String actual = _storage.loadQuestion(networkId, q1Id, analysisId);
     assertThat(actual, equalTo("question1Content"));
     actual = _storage.loadQuestion(networkId, q2Id, analysisId);
@@ -859,8 +859,8 @@ public final class WorkMgrTest {
         networkName,
         new ForkSnapshotBean(
             snapshotBaseName, snapshotNewName1, interfaces, links, nodes, null, null, null, null));
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId1 = _idManager.getSnapshotId(snapshotNewName1, networkId);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId snapshotId1 = _idManager.getSnapshotId(snapshotNewName1, networkId).get();
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName1)));
@@ -878,7 +878,7 @@ public final class WorkMgrTest {
         networkName,
         new ForkSnapshotBean(
             snapshotNewName1, snapshotNewName2, null, null, null, interfaces, links, nodes, null));
-    SnapshotId snapshotId2 = _idManager.getSnapshotId(snapshotNewName2, networkId);
+    SnapshotId snapshotId2 = _idManager.getSnapshotId(snapshotNewName2, networkId).get();
 
     // Confirm the forked snapshot exists
     assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName2)));
@@ -970,8 +970,8 @@ public final class WorkMgrTest {
         networkName,
         new ForkSnapshotBean(
             baseSnapshotName, forkName, deactivate, null, null, activate, null, null, null));
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId forkId = _idManager.getSnapshotId(forkName, networkId);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId forkId = _idManager.getSnapshotId(forkName, networkId).get();
 
     // Interface blacklist should not exist in fork
     assertNull(_storage.loadInterfaceBlacklist(networkId, forkId));
@@ -1050,8 +1050,8 @@ public final class WorkMgrTest {
         networkName,
         new ForkSnapshotBean(
             baseSnapshotName, forkName, deactivate, null, null, activate, null, null, null));
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId forkId = _idManager.getSnapshotId(forkName, networkId);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId forkId = _idManager.getSnapshotId(forkName, networkId).get();
 
     // Interface blacklist should not exist in fork
     assertNull(_storage.loadInterfaceBlacklist(networkId, forkId));
@@ -1302,7 +1302,9 @@ public final class WorkMgrTest {
     // Confirm we get an illegal arg exception calling getAnswer with a bad reference snapshot
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(
-        containsString(String.format("non-existent snapshot '%s'", bogusReferenceSnapshot)));
+        containsString(
+            String.format(
+                "Missing snapshot '%s' for network '%s'", bogusReferenceSnapshot, network)));
     _manager.getAnswer(network, snapshot, questionName, bogusReferenceSnapshot, null);
   }
 
@@ -1346,12 +1348,12 @@ public final class WorkMgrTest {
 
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
-    NetworkId networkId = _idManager.getNetworkId(containerName);
+    NetworkId networkId = _idManager.getNetworkId(containerName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
-    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId).get();
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId).get();
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
@@ -1434,12 +1436,12 @@ public final class WorkMgrTest {
 
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
-    NetworkId networkId = _idManager.getNetworkId(containerName);
+    NetworkId networkId = _idManager.getNetworkId(containerName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
-    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId).get();
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId).get();
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
@@ -1510,12 +1512,12 @@ public final class WorkMgrTest {
 
     _manager.configureAnalysis(
         containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
-    NetworkId networkId = _idManager.getNetworkId(containerName);
+    NetworkId networkId = _idManager.getNetworkId(containerName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(testrigName, networkId, snapshotId);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId);
-    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
+    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId).get();
+    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId).get();
 
     AnswerId baseAnswerId1 =
         _idManager.getBaseAnswerId(
@@ -1621,11 +1623,11 @@ public final class WorkMgrTest {
         ImmutableMap.of(questionName, questionContent),
         ImmutableList.of(),
         null);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId).get();
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId,
@@ -1658,7 +1660,7 @@ public final class WorkMgrTest {
     _manager.initNetwork(networkName, null);
     _manager.configureAnalysis(
         networkName, true, analysisName, ImmutableMap.of(), ImmutableList.of(), null);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
@@ -1685,11 +1687,11 @@ public final class WorkMgrTest {
         ImmutableMap.of(questionName, questionContent),
         ImmutableList.of(),
         null);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId).get();
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId,
@@ -1722,7 +1724,7 @@ public final class WorkMgrTest {
     Question question = new TestQuestion();
     String questionName = "question1";
     _manager.initNetwork(networkName, null);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     // the analysis id is not assigned, so the analysis is effectively missing
@@ -1743,10 +1745,10 @@ public final class WorkMgrTest {
     String questionName = "question2Name";
     _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId,
@@ -1778,10 +1780,10 @@ public final class WorkMgrTest {
     String questionName = "question2Name";
     _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId,
@@ -1815,10 +1817,10 @@ public final class WorkMgrTest {
     String questionName = "question2Name";
     _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
     _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
     AnswerId baseAnswerId =
@@ -1875,8 +1877,8 @@ public final class WorkMgrTest {
   }
 
   private boolean getMetadataSuggested(String containerName, String analysisName) {
-    NetworkId networkId = _idManager.getNetworkId(containerName);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId);
+    NetworkId networkId = _idManager.getNetworkId(containerName).get();
+    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
     try {
       return AnalysisMetadataMgr.readMetadata(networkId, analysisId).getSuggested();
     } catch (IOException e) {
@@ -1969,8 +1971,8 @@ public final class WorkMgrTest {
     _manager.initSnapshot(networkName, snapshotName, srcDir, false);
 
     // Interface blacklist should not exist in new snapshot
-    NetworkId networkId = _idManager.getNetworkId(networkName);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshotName, networkId).get();
     assertNull(_storage.loadInterfaceBlacklist(networkId, snapshotId));
     assertThat(
         _storage.loadRuntimeData(networkId, snapshotId),
@@ -3022,7 +3024,7 @@ public final class WorkMgrTest {
                         .build()))
             .build();
     _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);
-    _idManager.assignNetworkNodeRolesId(_idManager.getNetworkId(network), networkNodeRolesId);
+    _idManager.assignNetworkNodeRolesId(_idManager.getNetworkId(network).get(), networkNodeRolesId);
 
     // inferred roles for first snapshot should have been set network-wide
     assertThat(_manager.getNetworkNodeRoles(network), equalTo(networkNodeRoles));
@@ -3056,7 +3058,7 @@ public final class WorkMgrTest {
     String network = "network1";
     String questionClassId = "foo";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
 
     // no QuestionSettingsId for questionClassId at first
     assertFalse(_idManager.hasQuestionSettingsId(questionClassId, networkId));
@@ -3068,7 +3070,7 @@ public final class WorkMgrTest {
     assertTrue(_idManager.hasQuestionSettingsId(questionClassId, networkId));
 
     QuestionSettingsId questionSettingsId =
-        _idManager.getQuestionSettingsId(questionClassId, networkId);
+        _idManager.getQuestionSettingsId(questionClassId, networkId).get();
     _manager.writeQuestionSettings(
         network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
 
@@ -3097,7 +3099,7 @@ public final class WorkMgrTest {
     String network = "network1";
     String majorIssueType = "type1";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
 
     // no ID should exist at first
     assertFalse(_idManager.hasIssueSettingsId(majorIssueType, networkId));
@@ -3108,7 +3110,8 @@ public final class WorkMgrTest {
     // There should be an ID now
     assertTrue(_idManager.hasIssueSettingsId(majorIssueType, networkId));
 
-    IssueSettingsId issueSettingsId = _idManager.getIssueSettingsId(majorIssueType, networkId);
+    IssueSettingsId issueSettingsId =
+        _idManager.getIssueSettingsId(majorIssueType, networkId).get();
 
     _manager.putMajorIssueConfig(
         network,
@@ -3152,7 +3155,7 @@ public final class WorkMgrTest {
 
     assertThat(
         workDetails.getSnapshotId(),
-        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network))));
+        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network).get()).get()));
     assertThat(workDetails.getWorkType(), equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 
@@ -3174,7 +3177,7 @@ public final class WorkMgrTest {
 
     assertThat(
         workDetails.getSnapshotId(),
-        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network))));
+        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network).get()).get()));
     assertThat(workDetails.getWorkType(), equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 
@@ -3187,10 +3190,10 @@ public final class WorkMgrTest {
     String questionName = "question2Name";
     _manager.initNetwork(networkName, null);
     _manager.uploadQuestion(networkName, questionName, questionContent, false);
-    NetworkId networkId = _idManager.getNetworkId(networkName);
+    NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     AnswerId baseAnswerId =
         _idManager.getBaseAnswerId(
             networkId,
@@ -3392,7 +3395,7 @@ public final class WorkMgrTest {
     // No question should result in questionExists being false
     assertFalse(_manager.checkQuestionExists(network, question, null));
 
-    NetworkId networkId = _idManager.getNetworkId(network);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
     _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), null);
     // After creating both network and question, questionExists should be true
     assertTrue(_manager.checkQuestionExists(network, question, null));
@@ -3417,8 +3420,8 @@ public final class WorkMgrTest {
     assertFalse(_manager.checkQuestionExists(network, question, analysis));
 
     // After creating network, analysis, and question, check should finally be true
-    NetworkId networkId = _idManager.getNetworkId(network);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysis, networkId);
+    NetworkId networkId = _idManager.getNetworkId(network).get();
+    AnalysisId analysisId = _idManager.getAnalysisId(analysis, networkId).get();
     _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), analysisId);
     assertTrue(_manager.checkQuestionExists(network, question, analysis));
   }

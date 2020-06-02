@@ -21,18 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
@@ -44,7 +36,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
 import org.batfish.common.Task;
-import org.batfish.common.Task.Batch;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 import org.batfish.config.Settings;
@@ -55,7 +46,6 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.version.BatfishVersion;
-import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -76,8 +66,6 @@ public class Driver {
   private static BatfishLogger _mainLogger = null;
 
   private static Settings _mainSettings = null;
-
-  private static ConcurrentMap<String, Task> _taskLog;
 
   private static final Cache<NetworkSnapshot, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
@@ -148,21 +136,6 @@ public class Driver {
     return _mainLogger;
   }
 
-  @Nullable
-  private static synchronized Task getTask(Settings settings) {
-    String taskId = settings.getTaskId();
-    if (taskId == null) {
-      return null;
-    } else {
-      return _taskLog.get(taskId);
-    }
-  }
-
-  @Nullable
-  public static synchronized Task getTaskFromLog(String taskId) {
-    return _taskLog.get(taskId);
-  }
-
   private static void initTracer() {
     io.jaegertracing.Configuration config =
         new io.jaegertracing.Configuration(_mainSettings.getServiceName())
@@ -175,42 +148,6 @@ public class Driver {
                             .withAgentPort(_mainSettings.getTracingAgentPort()))
                     .withLogSpans(false));
     GlobalTracer.registerIfAbsent(config.getTracer());
-  }
-
-  public static synchronized Task killTask(String taskId) {
-    Task task = _taskLog.get(taskId);
-    if (task == null) {
-      throw new BatfishException("Task with provided id not found: " + taskId);
-    } else if (task.getStatus().isTerminated()) {
-      throw new BatfishException("Task with provided id already terminated " + taskId);
-    } else {
-      // update task details in case a new query for status check comes in
-      task.newBatch("Got kill request");
-      task.setStatus(TaskStatus.TerminatedByUser);
-      task.setTerminated(new Date());
-      task.setErrMessage("Terminated by user");
-
-      // we die after a little bit, to allow for the response making it back to the coordinator
-      new java.util.Timer()
-          .schedule(
-              new java.util.TimerTask() {
-                @Override
-                public void run() {
-                  System.exit(0);
-                }
-              },
-              3000);
-
-      return task;
-    }
-  }
-
-  private static synchronized void logTask(String taskId, Task task) throws Exception {
-    if (_taskLog.containsKey(taskId)) {
-      throw new Exception("duplicate UUID for task");
-    } else {
-      _taskLog.put(taskId, task);
-    }
   }
 
   public static void main(String[] args) {
@@ -228,7 +165,6 @@ public class Driver {
   }
 
   private static void mainInit(String[] args) {
-    _taskLog = new ConcurrentHashMap<>();
     try {
       _mainSettings = new Settings(args);
       networkListenerLogger.setLevel(Level.WARNING);
@@ -332,25 +268,13 @@ public class Driver {
     _idle = true;
   }
 
-  public static synchronized AtomicInteger newBatch(
-      Settings settings, String description, int jobs) {
-    Batch batch = null;
-    Task task = getTask(settings);
-    if (task != null) {
-      batch = task.newBatch(description);
-      batch.setSize(jobs);
-      return batch.getCompleted();
-    } else {
-      return new AtomicInteger();
-    }
-  }
-
   private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
     Map<String, String> params = new HashMap<>();
     params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
     params.put(CoordConsts.SVC_KEY_VERSION, BatfishVersion.getVersionStatic());
 
-    Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
+    Object response =
+        CoordinatorClient.talkToCoordinator(poolRegUrl, params, _mainSettings, _mainLogger);
     return response != null;
   }
 
@@ -531,7 +455,7 @@ public class Driver {
 
       final Task task = new Task(args);
 
-      logTask(taskId, task);
+      BatchManager.get().logTask(taskId, task);
 
       @Nullable
       SpanContext runTaskSpanContext =
@@ -573,65 +497,6 @@ public class Driver {
       _mainLogger.error("Exception while running task: " + e.getMessage());
       makeIdle();
       return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
-    }
-  }
-
-  public static Object talkToCoordinator(
-      String url, Map<String, String> params, BatfishLogger logger) {
-    Client client = null;
-    try {
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  _mainSettings.getSslDisable(),
-                  _mainSettings.getSslTrustAllCerts(),
-                  _mainSettings.getSslKeystoreFile(),
-                  _mainSettings.getSslKeystorePassword(),
-                  _mainSettings.getSslTruststoreFile(),
-                  _mainSettings.getSslTruststorePassword(),
-                  true)
-              .build();
-      WebTarget webTarget = client.target(url);
-      for (Map.Entry<String, String> entry : params.entrySet()) {
-        webTarget = webTarget.queryParam(entry.getKey(), entry.getValue());
-      }
-      JSONArray array;
-      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
-
-        logger.debug(
-            "BF: " + response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-          logger.error("Did not get an OK response\n");
-          return null;
-        }
-
-        String sobj = response.readEntity(String.class);
-        array = new JSONArray(sobj);
-      }
-      logger.debugf("BF: response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
-
-      if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
-        logger.errorf(
-            "BF: got error while talking to coordinator: %s %s\n", array.get(0), array.get(1));
-        return null;
-      }
-
-      return array.get(1);
-    } catch (ProcessingException e) {
-      if (CommonUtil.causedBy(e, SSLHandshakeException.class)
-          || CommonUtil.causedByMessage(e, "Unexpected end of file from server")) {
-        throw new BatfishException("Unrecoverable connection error", e);
-      }
-      logger.errorf("BF: unable to connect to coordinator pool mgr at %s\n", url);
-      logger.debug(Throwables.getStackTraceAsString(e) + "\n");
-      return null;
-    } catch (Exception e) {
-      logger.errorf("exception: " + Throwables.getStackTraceAsString(e));
-      return null;
-    } finally {
-      if (client != null) {
-        client.close();
-      }
     }
   }
 }
