@@ -1,9 +1,8 @@
 load("@rules_java//java:defs.bzl", "java_library")
-
-package(default_visibility = ["//visibility:public"])
-
 load("@batfish//skylark:junit.bzl", "junit_tests")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+
+package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "parser_files",
