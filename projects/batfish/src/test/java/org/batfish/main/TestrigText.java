@@ -1,5 +1,7 @@
 package org.batfish.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -7,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
@@ -19,7 +22,7 @@ public class TestrigText {
 
   public static class Builder {
 
-    private static Map<String, String> readTestrigResources(
+    private static Map<String, byte[]> readTestrigResources(
         String testrigResourcePrefix, @Nullable String subfolder, Iterable<String> filenames) {
       if (filenames != null) {
         List<String> filenameList = ImmutableList.copyOf(filenames);
@@ -33,7 +36,7 @@ public class TestrigText {
                 ImmutableMap.toImmutableMap(
                     Function.identity(),
                     filename ->
-                        CommonUtil.readResource(
+                        CommonUtil.readResourceBytes(
                             String.format(
                                 "%s%s/%s", testrigResourcePrefix, subfolderText, filename))));
       } else {
@@ -41,98 +44,106 @@ public class TestrigText {
       }
     }
 
-    private Map<String, String> _awsText;
-    private Map<String, String> _bgpTablesText;
-    private Map<String, String> _configurationText;
-    private Map<String, String> _hostsText;
-    private Map<String, String> _iptablesFilesText;
-    private String _layer1TopologyText;
-    private Map<String, String> _routingTablesText;
-    private String _runtimeDataText;
+    private Map<String, byte[]> _awsBytes;
+    private Map<String, byte[]> _bgpTablesBytes;
+    private Map<String, byte[]> _configurationBytes;
+    private Map<String, byte[]> _hostsBytes;
+    private Map<String, byte[]> _iptablesFilesBytes;
+    private byte[] _layer1TopologyBytes;
+    private Map<String, byte[]> _routingTablesBytes;
+    private byte[] _runtimeDataBytes;
 
     public TestrigText build() {
       TestrigText testrigText = new TestrigText();
-      testrigText.setAwsText(_awsText);
-      testrigText.setBgpTablesText(_bgpTablesText);
-      testrigText.setConfigurationText(_configurationText);
-      testrigText.setHostsText(_hostsText);
-      testrigText.setIptablesFilesText(_iptablesFilesText);
-      testrigText.setLayer1TopologyText(_layer1TopologyText);
-      testrigText.setRoutingTablesText(_routingTablesText);
-      testrigText.setRuntimeDataText(_runtimeDataText);
+      testrigText.setAwsBytes(_awsBytes);
+      testrigText.setBgpTablesBytes(_bgpTablesBytes);
+      testrigText.setConfigurationBytes(_configurationBytes);
+      testrigText.setHostsBytes(_hostsBytes);
+      testrigText.setIptablesFilesBytes(_iptablesFilesBytes);
+      testrigText.setLayer1TopologyBytes(_layer1TopologyBytes);
+      testrigText.setRoutingTablesBytes(_routingTablesBytes);
+      testrigText.setRuntimeDataBytes(_runtimeDataBytes);
       return testrigText;
     }
 
-    public Builder setAwsText(Map<String, String> awsText) {
-      _awsText = awsText;
+    public Builder setAwsBytes(Map<String, byte[]> awsText) {
+      _awsBytes = awsText;
       return this;
     }
 
-    public Builder setAwsText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _awsText =
+    public Builder setAwsFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _awsBytes =
           readTestrigResources(testrigResourcePrefix, BfConsts.RELPATH_AWS_CONFIGS_DIR, filenames);
       return this;
     }
 
-    public Builder setBgpTablesText(Map<String, String> bgpTablesText) {
-      _bgpTablesText = bgpTablesText;
+    public Builder setBgpTablesBytes(Map<String, byte[]> bgpTablesText) {
+      _bgpTablesBytes = bgpTablesText;
       return this;
     }
 
-    public Builder setBgpTablesText(String testrigResourcePrefix, String... filenames) {
-      return setBgpTablesText(testrigResourcePrefix, Arrays.asList(filenames));
+    public Builder setBgpTablesFiles(String testrigResourcePrefix, String... filenames) {
+      return setBgpTablesFiles(testrigResourcePrefix, Arrays.asList(filenames));
     }
 
-    public Builder setBgpTablesText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _bgpTablesText =
+    public Builder setBgpTablesFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _bgpTablesBytes =
           readTestrigResources(
               testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES, filenames);
       return this;
     }
 
     public Builder setConfigurationText(Map<String, String> configurationText) {
-      _configurationText = configurationText;
+      _configurationBytes =
+          configurationText.entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getBytes(UTF_8)));
       return this;
     }
 
-    public Builder setConfigurationText(String testrigResourcePrefix, String... filenames) {
-      return setConfigurationText(testrigResourcePrefix, Arrays.asList(filenames));
+    public Builder setConfigurationBytes(Map<String, byte[]> configurationText) {
+      _configurationBytes = configurationText;
+      return this;
     }
 
-    public Builder setConfigurationText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _configurationText =
+    public Builder setConfigurationFiles(String testrigResourcePrefix, String... filenames) {
+      return setConfigurationFiles(testrigResourcePrefix, Arrays.asList(filenames));
+    }
+
+    public Builder setConfigurationFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _configurationBytes =
           readTestrigResources(
               testrigResourcePrefix, BfConsts.RELPATH_CONFIGURATIONS_DIR, filenames);
       return this;
     }
 
-    public Builder setHostsText(Map<String, String> hostsText) {
-      _hostsText = hostsText;
+    public Builder setHostsBytes(Map<String, byte[]> hostsText) {
+      _hostsBytes = hostsText;
       return this;
     }
 
-    public Builder setHostsText(String testrigResourcePrefix, String... filenames) {
-      return setHostsText(testrigResourcePrefix, Arrays.asList(filenames));
+    public Builder setHostsFiles(String testrigResourcePrefix, String... filenames) {
+      return setHostsFiles(testrigResourcePrefix, Arrays.asList(filenames));
     }
 
-    public Builder setHostsText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _hostsText =
+    public Builder setHostsFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _hostsBytes =
           readTestrigResources(testrigResourcePrefix, BfConsts.RELPATH_HOST_CONFIGS_DIR, filenames);
       return this;
     }
 
-    public Builder setIptablesFilesText(Map<String, String> iptablesFilesText) {
-      _iptablesFilesText = iptablesFilesText;
+    public Builder setIptablesBytes(Map<String, byte[]> iptablesFilesText) {
+      _iptablesFilesBytes = iptablesFilesText;
       return this;
     }
 
-    public Builder setIptablesFilesText(String testrigResourcePrefix, Iterable<String> filenames) {
-      _iptablesFilesText = readTestrigResources(testrigResourcePrefix, "iptables", filenames);
+    public Builder setIptablesFiles(String testrigResourcePrefix, Iterable<String> filenames) {
+      _iptablesFilesBytes = readTestrigResources(testrigResourcePrefix, "iptables", filenames);
       return this;
     }
 
-    public @Nonnull Builder setLayer1TopologyText(@Nonnull String testrigResourcePrefix) {
-      _layer1TopologyText =
+    public @Nonnull Builder setLayer1TopologyPrefix(@Nonnull String testrigResourcePrefix) {
+      _layer1TopologyBytes =
           readTestrigResources(
                   testrigResourcePrefix, null, ImmutableList.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH))
               .values()
@@ -141,8 +152,8 @@ public class TestrigText {
       return this;
     }
 
-    public @Nonnull Builder setRuntimeDataText(@Nonnull String testrigResourcePrefix) {
-      _runtimeDataText =
+    public @Nonnull Builder setRuntimeDataPrefix(@Nonnull String testrigResourcePrefix) {
+      _runtimeDataBytes =
           readTestrigResources(
                   testrigResourcePrefix, null, ImmutableList.of(BfConsts.RELPATH_RUNTIME_DATA_FILE))
               .values()
@@ -156,76 +167,76 @@ public class TestrigText {
     return new Builder();
   }
 
-  private Map<String, String> _awsText;
-  private Map<String, String> _bgpTablesText;
-  private Map<String, String> _configurationText;
-  private Map<String, String> _hostsText;
-  private Map<String, String> _iptablesFilesText;
-  private String _layer1TopologyText;
-  private Map<String, String> _routingTablesText;
-  private String _runtimeDataText;
+  private Map<String, byte[]> _awsBytes;
+  private Map<String, byte[]> _bgpTablesBytes;
+  private Map<String, byte[]> _configurationBytes;
+  private Map<String, byte[]> _hostsBytes;
+  private Map<String, byte[]> _iptablesFilesBytes;
+  private byte[] _layer1TopologyBytes;
+  private Map<String, byte[]> _routingTablesBytes;
+  private byte[] _runtimeDataBytes;
 
-  public Map<String, String> getAwsText() {
-    return _awsText;
+  public Map<String, byte[]> getAwsBytes() {
+    return _awsBytes;
   }
 
-  public Map<String, String> getBgpTablesText() {
-    return _bgpTablesText;
+  public Map<String, byte[]> getBgpTablesBytes() {
+    return _bgpTablesBytes;
   }
 
-  public Map<String, String> getConfigurationText() {
-    return _configurationText;
+  public Map<String, byte[]> getConfigurationBytes() {
+    return _configurationBytes;
   }
 
-  public Map<String, String> getHostsText() {
-    return _hostsText;
+  public Map<String, byte[]> getHostsBytes() {
+    return _hostsBytes;
   }
 
-  public Map<String, String> getIptablesFilesText() {
-    return _iptablesFilesText;
+  public Map<String, byte[]> getIptablesFilesBytes() {
+    return _iptablesFilesBytes;
   }
 
-  public @Nullable String getLayer1TopologyText() {
-    return _layer1TopologyText;
+  public @Nullable byte[] getLayer1TopologyBytes() {
+    return _layer1TopologyBytes;
   }
 
-  public Map<String, String> getRoutingTablesText() {
-    return _routingTablesText;
+  public Map<String, byte[]> getRoutingTablesBytes() {
+    return _routingTablesBytes;
   }
 
-  public String getRuntimeDataText() {
-    return _runtimeDataText;
+  public byte[] getRuntimeDataBytes() {
+    return _runtimeDataBytes;
   }
 
-  public void setAwsText(Map<String, String> awsText) {
-    _awsText = awsText;
+  public void setAwsBytes(Map<String, byte[]> awsBytes) {
+    _awsBytes = awsBytes;
   }
 
-  public void setBgpTablesText(Map<String, String> bgpTablesText) {
-    _bgpTablesText = bgpTablesText;
+  public void setBgpTablesBytes(Map<String, byte[]> bgpTablesText) {
+    _bgpTablesBytes = bgpTablesText;
   }
 
-  public void setConfigurationText(Map<String, String> configurationText) {
-    _configurationText = configurationText;
+  public void setConfigurationBytes(Map<String, byte[]> configurationText) {
+    _configurationBytes = configurationText;
   }
 
-  public void setHostsText(Map<String, String> hostsText) {
-    _hostsText = hostsText;
+  public void setHostsBytes(Map<String, byte[]> hostsBytes) {
+    _hostsBytes = hostsBytes;
   }
 
-  public void setIptablesFilesText(Map<String, String> iptablesFilesText) {
-    _iptablesFilesText = iptablesFilesText;
+  public void setIptablesFilesBytes(Map<String, byte[]> iptablesFilesBytes) {
+    _iptablesFilesBytes = iptablesFilesBytes;
   }
 
-  public void setLayer1TopologyText(@Nullable String layer1TopologyText) {
-    _layer1TopologyText = layer1TopologyText;
+  public void setLayer1TopologyBytes(@Nullable byte[] layer1TopologyBytes) {
+    _layer1TopologyBytes = layer1TopologyBytes;
   }
 
-  public void setRoutingTablesText(Map<String, String> routingTablesText) {
-    _routingTablesText = routingTablesText;
+  public void setRoutingTablesBytes(Map<String, byte[]> routingTablesBytes) {
+    _routingTablesBytes = routingTablesBytes;
   }
 
-  public void setRuntimeDataText(String runtimeDataText) {
-    _runtimeDataText = runtimeDataText;
+  public void setRuntimeDataBytes(byte[] runtimeDataBytes) {
+    _runtimeDataBytes = runtimeDataBytes;
   }
 }

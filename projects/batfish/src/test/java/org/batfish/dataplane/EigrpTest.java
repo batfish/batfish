@@ -47,7 +47,7 @@ public class EigrpTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOT_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(SNAPSHOT_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 

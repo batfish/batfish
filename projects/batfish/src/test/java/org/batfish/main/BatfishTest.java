@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_FILE;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
+import static org.batfish.common.util.CommonUtil.readResourceBytes;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
@@ -48,7 +49,6 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -140,36 +140,36 @@ public class BatfishTest {
 
   @Test
   public void testOverlayIptables() throws IOException {
-    SortedMap<String, String> configurationsText = new TreeMap<>();
+    SortedMap<String, byte[]> configurationsBytes = new TreeMap<>();
     String[] configurationNames = new String[] {"host1.cfg"};
     String testConfigsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/configs/";
 
-    SortedMap<String, String> hostsText = new TreeMap<>();
+    SortedMap<String, byte[]> hostsBytes = new TreeMap<>();
     String[] hostNames = new String[] {"host1.json"};
     String testHostsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/hosts/";
 
-    SortedMap<String, String> iptablesFilesText = new TreeMap<>();
+    SortedMap<String, byte[]> iptablesFilesBytes = new TreeMap<>();
     String[] iptablesNames = new String[] {"host1.iptables"};
     String testIptablesPrefix = "org/batfish/grammar/host/testrigs/router-iptables/iptables/";
 
     for (String configurationName : configurationNames) {
-      String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);
-      configurationsText.put(configurationName, configurationText);
+      byte[] configurationText = readResourceBytes(testConfigsPrefix + configurationName);
+      configurationsBytes.put(configurationName, configurationText);
     }
     for (String hostName : hostNames) {
-      String hostText = CommonUtil.readResource(testHostsPrefix + hostName);
-      hostsText.put(hostName, hostText);
+      byte[] hostText = readResourceBytes(testHostsPrefix + hostName);
+      hostsBytes.put(hostName, hostText);
     }
     for (String iptablesName : iptablesNames) {
-      String iptablesText = CommonUtil.readResource(testIptablesPrefix + iptablesName);
-      iptablesFilesText.put(iptablesName, iptablesText);
+      byte[] iptablesText = readResourceBytes(testIptablesPrefix + iptablesName);
+      iptablesFilesBytes.put(iptablesName, iptablesText);
     }
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(configurationsText)
-                .setHostsText(hostsText)
-                .setIptablesFilesText(iptablesFilesText)
+                .setConfigurationBytes(configurationsBytes)
+                .setHostsBytes(hostsBytes)
+                .setIptablesBytes(iptablesFilesBytes)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -187,7 +187,7 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .setConfigurationFiles(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
 
@@ -206,7 +206,7 @@ public class BatfishTest {
     Batfish batfish2 =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix2, configurationNames2)
+                .setConfigurationFiles(testrigResourcePrefix2, configurationNames2)
                 .build(),
             _folder);
 
@@ -221,8 +221,8 @@ public class BatfishTest {
     String testrigResourcePrefix = "org/batfish/common/topology/testrigs/layer1";
     TestrigText.Builder testrigTextBuilder =
         TestrigText.builder()
-            .setLayer1TopologyText(testrigResourcePrefix)
-            .setHostsText(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
+            .setLayer1TopologyPrefix(testrigResourcePrefix)
+            .setHostsFiles(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
@@ -241,8 +241,8 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(snapshotResourcePrefix, "rtr1")
-                .setRuntimeDataText(snapshotResourcePrefix)
+                .setConfigurationFiles(snapshotResourcePrefix, "rtr1")
+                .setRuntimeDataPrefix(snapshotResourcePrefix)
                 .build(),
             _folder);
     Map<String, Interface> interfaces =
@@ -268,8 +268,8 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setBgpTablesText(snapshotResourcePrefix, "rtr1.bgp")
-                .setConfigurationText(snapshotResourcePrefix, "rtr1")
+                .setBgpTablesFiles(snapshotResourcePrefix, "rtr1.bgp")
+                .setConfigurationFiles(snapshotResourcePrefix, "rtr1")
                 .build(),
             _folder);
     // don't crash
@@ -309,7 +309,8 @@ public class BatfishTest {
   @Test
   public void testLoadLayer1Topology() throws IOException {
     TestrigText.Builder testrigTextBuilder =
-        TestrigText.builder().setLayer1TopologyText("org/batfish/common/topology/testrigs/layer1");
+        TestrigText.builder()
+            .setLayer1TopologyPrefix("org/batfish/common/topology/testrigs/layer1");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
     Layer1Topology layer1Topology =
@@ -349,8 +350,8 @@ public class BatfishTest {
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText(snapshotPath, awsFiles)
-                .setConfigurationText(snapshotPath, routerFile)
+                .setAwsFiles(snapshotPath, awsFiles)
+                .setConfigurationFiles(snapshotPath, routerFile)
                 .build(),
             _folder);
 
@@ -371,7 +372,7 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .setConfigurationFiles(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());

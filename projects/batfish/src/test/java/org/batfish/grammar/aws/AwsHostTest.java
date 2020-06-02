@@ -69,9 +69,9 @@ public class AwsHostTest {
 
     return BatfishTestUtils.getBatfishFromTestrigText(
         TestrigText.builder()
-            .setAwsText(testrigResourcePrefix, awsFilenames)
-            .setConfigurationText(testrigResourcePrefix, configurationFilenames)
-            .setHostsText(testrigResourcePrefix, hostFilenames)
+            .setAwsFiles(testrigResourcePrefix, awsFilenames)
+            .setConfigurationFiles(testrigResourcePrefix, configurationFilenames)
+            .setHostsFiles(testrigResourcePrefix, hostFilenames)
             .build(),
         _folder);
   }

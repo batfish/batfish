@@ -1,5 +1,7 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
@@ -10,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -288,6 +291,17 @@ public class CommonUtil {
       return output;
     } catch (IOException e) {
       throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);
+    }
+  }
+
+  /** Returns the contents of the resource at the provided path as a byte array. */
+  public static @Nonnull byte[] readResourceBytes(@Nonnull String resourcePath) {
+    try (InputStream is =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+      checkArgument(is != null, "Error opening resource: '%s'", resourcePath);
+      return IOUtils.toByteArray(is);
+    } catch (IOException e) {
+      throw new UncheckedIOException("Could not open resource: '" + resourcePath + "'", e);
     }
   }
 

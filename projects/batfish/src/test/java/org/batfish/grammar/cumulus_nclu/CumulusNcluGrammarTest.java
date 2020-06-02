@@ -243,8 +243,8 @@ public final class CumulusNcluGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
-                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyPrefix(TESTRIGS_PREFIX + testrigName)
                 .build(),
             _folder);
 
@@ -828,8 +828,8 @@ public final class CumulusNcluGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
-                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyPrefix(TESTRIGS_PREFIX + testrigName)
                 .build(),
             _folder);
 

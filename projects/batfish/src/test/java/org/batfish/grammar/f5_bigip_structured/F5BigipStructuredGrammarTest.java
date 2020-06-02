@@ -406,7 +406,7 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -1066,8 +1066,8 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, natHostname)
-                .setHostsText(SNAPSHOTS_PREFIX + snapshotName, hostFilename)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, natHostname)
+                .setHostsFiles(SNAPSHOTS_PREFIX + snapshotName, hostFilename)
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
