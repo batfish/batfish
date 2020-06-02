@@ -663,6 +663,15 @@ public abstract class BDD {
   public abstract BDD fullSatOne();
 
   /**
+   * Finds one satisfying variable assignment, deterministically produced as a function of the seed.
+   * Finds a BDD with exactly one variable at all levels. The new BDD implies this BDD and is not
+   * false unless this BDD is false.
+   *
+   * @return one satisfying variable assignment
+   */
+  public abstract BDD randomFullSatOne(int seed);
+
+  /**
    * Finds one satisfying variable assignment. Finds a minterm in this BDD. The <tt>var</tt>
    * argument is a set of variables that must be mentioned in the result. The polarity of these
    * variables in the result - in case they are undefined in this BDD - are defined by the
