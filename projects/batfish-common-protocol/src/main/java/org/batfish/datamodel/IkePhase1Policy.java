@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -21,49 +24,45 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
 
   private @Nonnull List<String> _ikePhase1Proposals;
-
-  private IkePhase1Key _ikePhase1Key;
-
-  private IpSpace _remoteIdentity;
-
-  private Ip _selfIdentity;
-
-  private String _localInterface;
+  private @Nullable IkePhase1Key _ikePhase1Key;
+  private @Nullable IpSpace _remoteIdentity;
+  private @Nullable Ip _selfIdentity;
+  private @Nonnull String _localInterface;
 
   @JsonCreator
   public IkePhase1Policy(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _ikePhase1Proposals = ImmutableList.of();
+    _localInterface = UNSET_LOCAL_INTERFACE;
   }
 
   /** IKE phase 1 proposals to be used with this IKE phase 1 policy. */
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  @Nonnull
-  public List<String> getIkePhase1Proposals() {
+  public @Nonnull List<String> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
   /** Key to be used with this IKE phase 1 policy. */
   @JsonProperty(PROP_IKE_PHASE1_KEY)
-  public IkePhase1Key getIkePhase1Key() {
+  public @Nullable IkePhase1Key getIkePhase1Key() {
     return _ikePhase1Key;
   }
 
   /** Identity of the remote peer that can match with this IKE phase 1 policy. */
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  public IpSpace getRemoteIdentity() {
+  public @Nullable IpSpace getRemoteIdentity() {
     return _remoteIdentity;
   }
 
   /** Self identity to be used with a remote peer while using this IKE phase 1 policy. */
   @JsonProperty(PROP_SELF_IDENTITY)
-  public Ip getSelfIdentity() {
+  public @Nullable Ip getSelfIdentity() {
     return _selfIdentity;
   }
 
   /** Local interface on which this IKE phase 1 policy can be used. */
   @JsonProperty(PROP_LOCAL_INTERFACE)
-  public String getLocalInterface() {
+  public @Nonnull String getLocalInterface() {
     return _localInterface;
   }
 
@@ -90,6 +89,6 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   @JsonProperty(PROP_LOCAL_INTERFACE)
   public void setLocalInterface(@Nullable String localInterface) {
-    _localInterface = localInterface;
+    _localInterface = firstNonNull(localInterface, UNSET_LOCAL_INTERFACE);
   }
 }

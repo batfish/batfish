@@ -148,4 +148,33 @@ public class BgpSessionPropertiesTest {
         getAddressFamilyIntersection(peer1, peerBuilder.setIpv4UnicastAddressFamily(null).build()),
         empty());
   }
+
+  /** Test that session head/tail IPs are not {@link Ip#AUTO} for dynamic session */
+  @Test
+  public void testPassiveSessionIpComputation() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    long as1 = 1;
+    long as2 = 2;
+    Ipv4UnicastAddressFamily addressFamily = Ipv4UnicastAddressFamily.builder().build();
+    BgpActivePeerConfig p1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(as1)
+            .setRemoteAs(as2)
+            .setPeerAddress(ip2)
+            .setIpv4UnicastAddressFamily(addressFamily)
+            .build();
+    BgpPassivePeerConfig p2 =
+        BgpPassivePeerConfig.builder()
+            .setPeerPrefix(Prefix.create(ip1, 24))
+            .setLocalIp(Ip.AUTO)
+            .setLocalAs(as2)
+            .setRemoteAs(as1)
+            .setIpv4UnicastAddressFamily(addressFamily)
+            .build();
+    BgpSessionProperties session = BgpSessionProperties.from(p1, p2, false);
+    assertThat(session.getTailIp(), equalTo(ip1));
+    assertThat(session.getHeadIp(), equalTo(ip2));
+  }
 }

@@ -993,7 +993,9 @@ public class CiscoConversions {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
       String ikePhase1PolicyLocalInterface = ikePhase1Policy.getLocalInterface();
-      if (ikePhase1Policy.getRemoteIdentity().containsIp(remoteAddress, ImmutableMap.of())
+      IpSpace remoteAddressSpace =
+          firstNonNull(ikePhase1Policy.getRemoteIdentity(), EmptyIpSpace.INSTANCE);
+      if (remoteAddressSpace.containsIp(remoteAddress, ImmutableMap.of())
           && (UNSET_LOCAL_INTERFACE.equals(ikePhase1PolicyLocalInterface)
               || ikePhase1PolicyLocalInterface.equals(localInterface))) {
         return e.getKey();

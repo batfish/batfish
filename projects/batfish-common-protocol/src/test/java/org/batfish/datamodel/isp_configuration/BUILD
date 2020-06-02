@@ -1,9 +1,9 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
 package(
     default_testonly = True,
     default_visibility = ["//visibility:private"],
 )
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 junit_tests(
     name = "tests",

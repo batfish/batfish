@@ -1424,7 +1424,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Kill the specified work
+   * Here for backwards compatibility. Throws exception because it never worked correctly.
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1438,34 +1438,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_WORKID) String workId) {
-    try {
-      _logger.infof("WMS:killWork %s\n", workId);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(workId, "work id");
-
-      checkApiKeyValidity(apiKey);
-
-      QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
-
-      if (work == null) {
-        return failureResponse("work with the specified id does not exist or is not inaccessible");
-      }
-
-      checkNetworkAccessibility(apiKey, work.getWorkItem().getNetwork());
-
-      boolean killed = Main.getWorkMgr().killWork(work);
-
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_RESULT, killed));
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:killWork exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:killWork exception: %s", stackTrace);
-      return failureResponse(e.getMessage());
-    }
+    // TODO: remove this api call
+    throw new UnsupportedOperationException();
   }
 
   /**
