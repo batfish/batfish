@@ -495,7 +495,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   /** Shallow wrapper to define flattened structures in the correct configuration. */
   private void defineFlattenedStructure(
-      StructureType type, String name, ParserRuleContext ctx, BatfishCombinedParser parser) {
+      StructureType type, String name, ParserRuleContext ctx, BatfishCombinedParser<?, ?> parser) {
     _mainConfiguration.defineFlattenedStructure(type, name, ctx, parser);
   }
 
