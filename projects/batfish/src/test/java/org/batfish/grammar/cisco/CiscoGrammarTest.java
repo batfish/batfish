@@ -1988,6 +1988,13 @@ public final class CiscoGrammarTest {
                                 .build()))))));
   }
 
+  /** Tests that Cisco parser doesn't crash in conversion for incomplete ipsec profile. */
+  @Test
+  public void testIosIpsecGh5849() throws IOException {
+    // doesn't crash.
+    parseConfig("ios-ipsec-gh-5849");
+  }
+
   @Test
   public void testIosIsisConfigOnInterface() throws IOException {
     String hostname = "ios-isis";
