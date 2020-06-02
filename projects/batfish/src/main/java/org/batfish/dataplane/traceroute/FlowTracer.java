@@ -501,6 +501,10 @@ class FlowTracer {
     fibLookup(dstIp, currentNodeName, fib);
   }
 
+  /**
+   * Applies PBR to the flow at the given {@code incomingInterface} if a packet policy is present.
+   * Returns true if PBR was applied.
+   */
   private boolean processPBR(Interface incomingInterface) {
 
     // apply routing/packet policy applied to the interface, if defined.
@@ -513,6 +517,7 @@ class FlowTracer {
       return false;
     }
 
+    // Policy is present. If this point is reached, processPBR will return true.
     Configuration owner = incomingInterface.getOwner();
     FlowResult result =
         FlowEvaluator.evaluate(
@@ -524,43 +529,44 @@ class FlowTracer {
             owner.getIpSpaces(),
             _tracerouteContext.getFibs(_currentNode.getName()));
     _currentFlow = result.getFinalFlow();
-    return new ActionVisitor<Boolean>() {
+
+    new ActionVisitor<Void>() {
 
       /** Helper visitor to figure out in which VRF we need to do the FIB lookup */
       private VrfExprNameExtractor _vrfExprVisitor = new VrfExprNameExtractor(incomingInterface);
 
       @Override
-      public Boolean visitDrop(@Nonnull Drop drop) {
+      public Void visitDrop(@Nonnull Drop drop) {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), DENIED));
         buildDeniedTrace(FlowDisposition.DENIED_IN);
-        return true;
+        return null;
       }
 
       @Override
-      public Boolean visitFibLookup(@Nonnull FibLookup fibLookup) {
+      public Void visitFibLookup(@Nonnull FibLookup fibLookup) {
         makePermittedStep();
         Ip dstIp = result.getFinalFlow().getDstIp();
 
         // Accept if the flow is destined for this vrf on this host.
         if (isAcceptedAtCurrentVrf()) {
-          return true;
+          return null;
         }
 
         String currentNodeName = _currentNode.getName();
         String lookupVrfName = fibLookup.getVrfExpr().accept(_vrfExprVisitor);
         Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
         fibLookup(dstIp, currentNodeName, fib);
-        return true;
+        return null;
       }
 
       @Override
-      public Boolean visitFibLookupOverrideLookupIp(
+      public Void visitFibLookupOverrideLookupIp(
           @Nonnull FibLookupOverrideLookupIp fibLookupAction) {
         makePermittedStep();
 
         // Accept if the flow is destined for this vrf on this host.
         if (isAcceptedAtCurrentVrf()) {
-          return true;
+          return null;
         }
 
         String currentNodeName = _currentNode.getName();
@@ -589,7 +595,8 @@ class FlowTracer {
 
         if (lookupIp == null) {
           // Nothing matched, execute default action
-          return visit(fibLookupAction.getDefaultAction());
+          visit(fibLookupAction.getDefaultAction());
+          return null;
         }
 
         // Just a sanity check, can't be Ip.AUTO
@@ -600,7 +607,7 @@ class FlowTracer {
         // Call the version of fibLookup that keeps track of overridden nextHopIp
         Ip dstIp = result.getFinalFlow().getDstIp();
         fibLookup(dstIp, lookupIp, currentNodeName, fib);
-        return true;
+        return null;
       }
 
       /**
@@ -621,6 +628,8 @@ class FlowTracer {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), PERMITTED));
       }
     }.visit(result.getAction());
+
+    return true;
   }
 
   /** Apply the input {@link Transformation} to the current flow in the current context. */
