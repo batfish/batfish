@@ -28800,7 +28800,8 @@
             },
             "ikePhase1Proposals" : [
               "PROPOSAL"
-            ]
+            ],
+            "localInterface" : "unset_local_interface"
           }
         },
         "ikePhase1Proposals" : {

@@ -1,0 +1,22 @@
+!
+hostname ios-ipsec-gh-5849
+!
+crypto keyring KEYRING
+  pre-shared-key address 2.2.2.2 key SOMEKEY
+!
+crypto isakmp profile PROFILE
+  keyring KEYRING
+  ! no match identity statement
+  local-address Ethernet1
+!
+interface Tunnel1
+ ip address 3.3.3.3 255.255.255.252
+ tunnel source Ethernet1
+ tunnel mode ipsec ipv4
+ tunnel destination 4.4.4.4
+ tunnel protection ipsec profile PROFILE
+interface Ethernet1
+  no shutdown
+  no switchport
+  ip address 1.1.1.1 255.255.255.255
+!
