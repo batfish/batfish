@@ -1,6 +1,6 @@
-package(default_visibility = ["//visibility:private"])
-
 load("@batfish//skylark:junit.bzl", "junit_tests")
+
+package(default_visibility = ["//visibility:private"])
 
 junit_tests(
     name = "IngressLocationTest",
