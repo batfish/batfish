@@ -3101,7 +3101,7 @@ public final class JFactory extends BDDFactory {
       newSeed *= 23;
     }
     int next = randomfullsatone_rec(useLo ? lo : hi, level + 1, newSeed);
-    return PUSHREF(bdd_makesatnode(LEVEL(r), next, useLo));
+    return PUSHREF(bdd_makesatnode(level, next, useLo));
   }
 
   private void bdd_gbc_rehash() {
