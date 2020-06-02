@@ -138,7 +138,7 @@ import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
-public final class PaloAltoConfiguration extends VendorConfiguration {
+public class PaloAltoConfiguration extends VendorConfiguration {
 
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
@@ -160,6 +160,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private Configuration _c;
 
   private List<CryptoProfile> _cryptoProfiles;
+
+  private final Map<String, DeviceGroup> _deviceGroups;
 
   private String _dnsServerPrimary;
 
@@ -196,6 +198,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
+    _deviceGroups = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
