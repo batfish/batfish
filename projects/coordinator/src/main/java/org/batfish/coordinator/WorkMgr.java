@@ -364,9 +364,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
-      if (assigned) {
-        killWork(work, worker);
-      }
       return;
     }
 
@@ -1970,94 +1967,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static boolean isWellKnownNetworkFile(Path path) {
     return WELL_KNOWN_NETWORK_FILENAMES.contains(path.getFileName().toString());
-  }
-
-  public boolean killWork(QueuedWork work) {
-    String worker = work.getAssignedWorker();
-
-    if (worker != null) {
-      return killWork(work, worker);
-    }
-
-    // (worker = null) => this work was not assigned in the first place
-    boolean killed = false;
-    Task fakeTask = new Task(TaskStatus.TerminatedByUser, "Killed unassigned work");
-    try {
-      _workQueueMgr.processTaskCheckResult(work, fakeTask);
-      killed = true;
-    } catch (Exception e) {
-      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
-    }
-    return killed;
-  }
-
-  private boolean killWork(QueuedWork work, String worker) {
-    Client client = null;
-    boolean killed = false;
-
-    Span span = GlobalTracer.get().buildSpan("Killing task").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword(),
-                  true)
-              .build();
-
-      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
-      WebTarget webTarget =
-          client
-              .target(
-                  String.format(
-                      "%s://%s%s/%s",
-                      protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_KILL_TASK_RSC))
-              .queryParam(
-                  BfConsts.SVC_TASKID_KEY,
-                  UriComponent.encode(
-                      work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
-
-      JSONArray array;
-      try (Response response = webTarget.request(MediaType.APPLICATION_JSON).get()) {
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-          _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
-          return killed;
-        }
-        String sobj = response.readEntity(String.class);
-        array = new JSONArray(sobj);
-      }
-      try {
-        _logger.infof("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
-        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-          _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
-        } else {
-          Task task = BatfishObjectMapper.mapper().readValue(array.getString(1), Task.class);
-          _workQueueMgr.processTaskCheckResult(work, task);
-          killed = true;
-        }
-      } catch (IllegalStateException e) {
-        // can happen if the worker dies before we could finish reading; let's assume success
-        _logger.infof("worker appears dead before response completion\n");
-        Task fakeTask =
-            new Task(TaskStatus.TerminatedByUser, "worker appears dead before responding");
-        _workQueueMgr.processTaskCheckResult(work, fakeTask);
-        killed = true;
-      }
-    } catch (ProcessingException e) {
-      _logger.errorf("unable to connect to %s: %s\n", worker, Throwables.getStackTraceAsString(e));
-    } catch (Exception e) {
-      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
-    } finally {
-      span.finish();
-      if (client != null) {
-        client.close();
-      }
-    }
-    return killed;
   }
 
   /**
