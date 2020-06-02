@@ -103,10 +103,37 @@ set_line_template
     TEMPLATE null_rest_of_line
 ;
 
+set_line_device_group
+:
+    DEVICE_GROUP statement_device_group
+;
+
+/*
+ * Device-group supports a subset of device configuration (statement_config_devices)
+ * plus a couple device-group specific items
+ */
+statement_device_group
+:
+    // Shared with statement_config_devices
+    s_address
+    | s_address_group
+    | s_application
+    | s_application_group
+    | s_post_rulebase
+    | s_pre_rulebase
+    | s_service
+    | s_service_group
+    | s_tag
+    // Device-group specific
+    | sdg_description
+    | sdg_devices
+;
+
 set_line_tail
 :
     set_line_config_devices
     | set_line_config_general
+    | set_line_device_group
     | set_line_template
     | s_policy
 ;

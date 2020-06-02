@@ -161,6 +161,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private List<CryptoProfile> _cryptoProfiles;
 
+  /** Device groups owned by this configuration. */
   private final Map<String, DeviceGroup> _deviceGroups;
 
   private String _dnsServerPrimary;
