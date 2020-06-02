@@ -322,6 +322,12 @@ public final class JFactory extends BDDFactory {
     }
 
     @Override
+    public BDD randomFullSatOne(int seed) {
+      int x = _index;
+      return makeBDD(bdd_randomfullsatone(x, seed));
+    }
+
+    @Override
     public BDD satOne(BDD var, boolean pol) {
       int x = _index;
       int y = ((BDDImpl) var)._index;
@@ -3024,6 +3030,80 @@ public final class JFactory extends BDDFactory {
     }
   }
 
+  private int bdd_randomfullsatone(int r, int seed) {
+    int res;
+
+    CHECK(r);
+    if (r == BDDZERO) {
+      return BDDZERO;
+    }
+
+    INITREF();
+    res = randomfullsatone_rec(r, 0, seed);
+
+    checkresize();
+    return res;
+  }
+
+  // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given
+  // variable, has the given child at the branch indicated by {@code useLow}, and has the other
+  // branch false.
+  private int bdd_makesatnode(int variable, int child, boolean useLow) {
+    assert LEVEL(child) > variable; // or the BDD is out of order.
+    if (useLow) {
+      return bdd_makenode(variable, child, BDDZERO);
+    }
+    return bdd_makenode(variable, BDDZERO, child);
+  }
+
+  // Recursively builds a full satisfying assignment for the BDD corresponding to r, using all
+  // variables from level..bddvarnum.
+  //
+  // Invariants:
+  // * r can be anything, including BDDZERO or BDDONE.
+  // * level <= LEVEL(r)
+  // * seed is a deterministic function of the branches taken in the eventual parent BDD
+  //   (levels 0..level-1) and the original seed.
+  //
+  // The returned BDD tests all variables from level..bddvarnum.
+  private int randomfullsatone_rec(int r, int level, int seed) {
+    if (level == bddvarnum) {
+      // Reached past the last variable aka, r is zero or one.
+      assert r == BDDZERO || r == BDDONE; // sanity check.
+      return r;
+    }
+
+    // To be deterministic, we cannot use the BDD ID (r). Indeed, the only thing we can really use
+    // is LEVEL(r) [aka, which variable is tested in this node] as well as the path we take through
+    // the BDD. This is a lot like netconan, but no need for cryptographic security.
+    int newSeed = seed * 31 + level;
+    boolean preferLo = (newSeed & 1) == 0;
+    if (level < LEVEL(r)) {
+      // The BDD r is the same no matter which branch at the current level is taken. Pick one
+      // randomly.
+      if (preferLo) {
+        // Change newSeed for recursive cases based on path.
+        newSeed = newSeed * 23;
+      }
+      int next = randomfullsatone_rec(r, level + 1, newSeed);
+      return PUSHREF(bdd_makesatnode(level, next, preferLo));
+    }
+
+    assert level == LEVEL(r); // sanity check
+
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    // Even though we prefer low branch randomly, we can't use it if the low branch is BDDZERO.
+    // Similarly, even if we prefer the high branch we must take low branch if hi is BDDZERO.
+    boolean useLo = (lo != BDDZERO && preferLo || hi == BDDZERO);
+    if (useLo) {
+      // Change newSeed for recursive cases based on path.
+      newSeed *= 23;
+    }
+    int next = randomfullsatone_rec(useLo ? lo : hi, level + 1, newSeed);
+    return PUSHREF(bdd_makesatnode(level, next, useLo));
+  }
+
   private void bdd_gbc_rehash() {
     bddfreepos = 0;
     bddfreenum = 0;
@@ -4346,6 +4426,9 @@ public final class JFactory extends BDDFactory {
 
     bdd_pairs_resize(oldbddvarnum, bddvarnum);
     bdd_operator_varresize();
+
+    assert bddvarnum == LEVEL(BDDZERO);
+    assert bddvarnum == LEVEL(BDDONE);
 
     return 0;
   }

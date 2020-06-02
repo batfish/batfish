@@ -94,6 +94,53 @@ public class BasicTest {
     z.free();
   }
 
+  // Assertions that randomFullSatOne returns an assignment that is full and implies the input.
+  private static void randomSatOneTestAndFree(BDD input, int seed) {
+    BDD randomSatOne = input.randomFullSatOne(seed);
+    assertTrue(randomSatOne.isAssignment());
+
+    BDD fullSatOne = randomSatOne.fullSatOne();
+    assertThat(randomSatOne, equalTo(fullSatOne));
+    fullSatOne.free();
+
+    BDD imp = randomSatOne.imp(input);
+    assertTrue(imp.isOne());
+    imp.free();
+
+    randomSatOne.free();
+    input.free();
+  }
+
+  @Test
+  public void testRandomSatOne() {
+    if (_factory.varNum() < 100) {
+      _factory.setVarNum(100);
+    }
+
+    for (int seed = 0; seed < 100; ++seed) {
+      BDD zero = _factory.zero();
+      BDD res = zero.randomFullSatOne(seed);
+      assertTrue(res.isZero());
+      res.free();
+
+      randomSatOneTestAndFree(_factory.one(), seed);
+
+      BDD x = _factory.ithVar(0);
+      BDD y = _factory.ithVar(24);
+      BDD z = _factory.ithVar(49);
+      BDD w = _factory.ithVar(99);
+      randomSatOneTestAndFree(x.or(y), seed);
+      randomSatOneTestAndFree(x.and(y), seed);
+      randomSatOneTestAndFree(x.and(y).or(z), seed);
+      randomSatOneTestAndFree(x.and(y).or(z.and(w)), seed);
+      randomSatOneTestAndFree(x.and(y).or(z.and(w)).not(), seed);
+      randomSatOneTestAndFree(x, seed);
+      randomSatOneTestAndFree(y, seed);
+      randomSatOneTestAndFree(z, seed);
+      randomSatOneTestAndFree(w, seed);
+    }
+  }
+
   @Test
   public void testIsZeroOne() {
     BDD x = _factory.zero();
