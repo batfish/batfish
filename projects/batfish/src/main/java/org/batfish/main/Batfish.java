@@ -8,7 +8,8 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
-import static org.batfish.common.util.CommonUtil.detectCharset;
+import static org.batfish.common.util.CommonUtil.decodeStream;
+import static org.batfish.common.util.CommonUtil.decodeStreamAndAppendNewline;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -39,14 +40,12 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
-import com.google.common.io.ByteStreams;
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -82,7 +81,6 @@ import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
@@ -356,21 +354,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return keys.map(
             key -> {
               _logger.debugf("Reading: \"%s\"\n", key);
-              long copiedBytes;
-              ByteArrayOutputStream baos;
               try (InputStream inputStream =
                   _storage.loadSnapshotInputObject(
                       snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
-                baos = new ByteArrayOutputStream();
-                copiedBytes = ByteStreams.copy(inputStream, baos);
+                return new SimpleEntry<>(key, decodeStreamAndAppendNewline(inputStream));
               } catch (IOException e) {
                 throw new UncheckedIOException(e);
               }
-              if (copiedBytes > 0) {
-                // Adding a trailing newline helps EOF in some parsers.
-                baos.write('\n');
-              }
-              return new SimpleEntry<>(key, new String(baos.toByteArray(), UTF_8));
             })
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
@@ -1892,14 +1882,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
           }
         } else {
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
           try (InputStream inputStream =
               _storage.loadSnapshotInputObject(
                   snapshot.getNetwork(), snapshot.getSnapshot(), iptablesFile)) {
-            ByteStreams.copy(inputStream, baos);
+            iptablesData.put(iptablesFile, decodeStreamAndAppendNewline(inputStream));
           }
-          String fileText = new String(baos.toByteArray(), UTF_8);
-          iptablesData.put(iptablesFile, fileText);
         }
       } catch (IOException e) {
         throw new BatfishException("Could not get canonical path", e);
@@ -2041,20 +2028,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public String getNetworkObject(NetworkId networkId, String key) throws IOException {
-    try (InputStream inputObject = _storage.loadNetworkObject(networkId, key)) {
-      byte[] bytes = IOUtils.toByteArray(inputObject);
-      return new String(bytes, detectCharset(bytes));
+  public @Nonnull String getNetworkObject(NetworkId networkId, String key) throws IOException {
+    try (InputStream inputStream = _storage.loadNetworkObject(networkId, key)) {
+      return decodeStream(inputStream);
     }
   }
 
   @Override
-  public String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+  public @Nonnull String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
       throws FileNotFoundException, IOException {
-    try (InputStream inputObject =
+    try (InputStream inputStream =
         _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
-      byte[] bytes = IOUtils.toByteArray(inputObject);
-      return new String(bytes, detectCharset(bytes));
+      return decodeStream(inputStream);
     }
   }
 

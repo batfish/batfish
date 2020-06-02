@@ -1269,6 +1269,18 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosUnicodeConversion() throws IOException {
+    Configuration c = parseConfig("ios-unicode");
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testIosUnicodeBomConversion() throws IOException {
+    Configuration c = parseConfig("ios-unicode-bom");
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
   public void testIosLineParsing() {
     assertNotNull(parseCiscoConfig("ios-line", null));
   }

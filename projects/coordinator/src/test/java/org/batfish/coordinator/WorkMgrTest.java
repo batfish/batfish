@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static org.batfish.common.util.CommonUtil.decodeStream;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.deserializeAndDeleteInterfaceBlacklist;
@@ -44,8 +45,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,7 +63,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -1147,15 +1145,13 @@ public final class WorkMgrTest {
 
   private String readSnapshotConfig(String network, String snapshot, String fileName)
       throws IOException {
-    StringWriter writer = new StringWriter();
     try (InputStream inputStream =
         _manager.getSnapshotInputObject(
             network,
             snapshot,
             Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString())) {
       assertThat(inputStream, not(nullValue()));
-      IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
-      return writer.toString();
+      return decodeStream(inputStream);
     }
   }
 

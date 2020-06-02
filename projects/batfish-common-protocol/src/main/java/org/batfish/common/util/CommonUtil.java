@@ -3,15 +3,18 @@ package org.batfish.common.util;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.hash.Hashing;
+import com.google.common.io.Closer;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -37,8 +40,10 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
+import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BOMInputStream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -272,6 +277,57 @@ public class CommonUtil {
       throw new BatfishException("Failed to read file: " + file, e);
     }
     return text;
+  }
+
+  private static @Nonnull BOMInputStream bomInputStream(@Nonnull InputStream inputStream) {
+    return new BOMInputStream(
+        inputStream,
+        ByteOrderMark.UTF_8,
+        ByteOrderMark.UTF_16BE,
+        ByteOrderMark.UTF_16LE,
+        ByteOrderMark.UTF_32BE,
+        ByteOrderMark.UTF_32LE);
+  }
+
+  /**
+   * Automatically detects charset of the input stream, reads it, decodes it, and returns the
+   * resulting string with a newline appended if the original stream is non-empty. Does not close
+   * the provided input stream.
+   *
+   * @throws IOException if there is an error
+   */
+  public static @Nonnull String decodeStreamAndAppendNewline(@Nonnull InputStream inputStream)
+      throws IOException {
+    return decodeStream(inputStream, true);
+  }
+
+  /**
+   * Automatically detects charset of the input stream, reads it, decodes it, and returns the
+   * resulting string. Does not close the provided input stream.
+   *
+   * @throws IOException if there is an error
+   */
+  public static @Nonnull String decodeStream(@Nonnull InputStream inputStream) throws IOException {
+    return decodeStream(inputStream, false);
+  }
+
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer.
+  private static @Nonnull String decodeStream(
+      @Nonnull InputStream inputStream, boolean tryAppendNewline) throws IOException {
+    byte[] rawBytes = IOUtils.toByteArray(inputStream);
+    Charset cs = Charset.forName(new CharsetDetector().setText(rawBytes).detect().getName());
+    try (Closer closer = Closer.create()) {
+      InputStream inputByteStream =
+          closer.register(bomInputStream(new ByteArrayInputStream(rawBytes)));
+      InputStream finalInputStream =
+          closer.register(
+              tryAppendNewline && rawBytes.length > 0
+                  ? new SequenceInputStream(
+                      inputByteStream,
+                      closer.register(bomInputStream(new ByteArrayInputStream("\n".getBytes(cs)))))
+                  : inputByteStream);
+      return new String(IOUtils.toByteArray(finalInputStream), cs);
+    }
   }
 
   public static @Nonnull Charset detectCharset(byte[] bytes) {
