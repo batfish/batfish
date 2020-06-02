@@ -322,7 +322,7 @@ public final class BgpSessionProperties {
       ConfedSessionType confedSessionType) {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
-    if (listenerIp == null || listenerIp == Ip.AUTO) {
+    if (listenerIp == null || Ip.AUTO.equals(listenerIp)) {
       // Determine listener's IP from initiator.
       // Listener must be active or dynamic, because unnumbered peers always have localIP defined.
       // Therefore initiator must be active since unnumbered peers only peer with each other.
