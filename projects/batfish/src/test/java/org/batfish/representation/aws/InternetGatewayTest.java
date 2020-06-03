@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -41,7 +43,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
@@ -65,8 +66,7 @@ public class InternetGatewayTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text =
-        CommonUtil.readResource("org/batfish/representation/aws/InternetGatewayTest.json");
+    String text = readResource("org/batfish/representation/aws/InternetGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode gatewaysArray = (ArrayNode) json.get(JSON_KEY_INTERNET_GATEWAYS);

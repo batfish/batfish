@@ -1,7 +1,9 @@
 package org.batfish.grammar.arista;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -97,7 +99,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -184,7 +185,7 @@ public class AristaGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static @Nonnull AristaConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     AristaCombinedParser ciscoParser = new AristaCombinedParser(src, settings);
@@ -303,7 +304,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
                 .build(),
             _folder);
@@ -335,7 +336,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -380,7 +381,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -446,7 +447,7 @@ public class AristaGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "arista-redistribute-default-route",
                     ImmutableList.of(advertiser, receiver))
                 .build(),

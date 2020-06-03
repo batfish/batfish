@@ -57,7 +57,7 @@ public class TracerouteAnswererHelperTest {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + TESTRIG_NAME, TESTRIG_NODE_NAMES)
+                .setConfigurationFiles(TESTRIGS_PREFIX + TESTRIG_NAME, TESTRIG_NODE_NAMES)
                 .build(),
             _folder);
 

@@ -63,8 +63,8 @@ public class AwsConfigurationPrivateSubnetTest {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText(TESTCONFIGS_DIR, fileNames)
-                .setConfigurationText(TESTCONFIGS_DIR, onPremRouterFile)
+                .setAwsFiles(TESTCONFIGS_DIR, fileNames)
+                .setConfigurationFiles(TESTCONFIGS_DIR, onPremRouterFile)
                 .build(),
             _folder);
     _batfish.computeDataPlane(_batfish.getSnapshot());

@@ -38,7 +38,7 @@ public class RipAndBgpTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix, configurations)
+                .setConfigurationFiles(testrigResourcePrefix, configurations)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());

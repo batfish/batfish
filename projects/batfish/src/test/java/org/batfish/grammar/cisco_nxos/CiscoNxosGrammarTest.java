@@ -3,6 +3,8 @@ package org.batfish.grammar.cisco_nxos;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
@@ -142,7 +144,6 @@ import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
@@ -455,7 +456,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
@@ -1853,8 +1854,8 @@ public final class CiscoNxosGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
-                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataPrefix(SNAPSHOTS_PREFIX + snapshotName)
                 .build(),
             _folder);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -1912,8 +1913,8 @@ public final class CiscoNxosGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
-                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataPrefix(SNAPSHOTS_PREFIX + snapshotName)
                 .build(),
             _folder);
     Map<String, org.batfish.datamodel.Interface> interfaces =
@@ -1970,8 +1971,8 @@ public final class CiscoNxosGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
-                .setRuntimeDataText(SNAPSHOTS_PREFIX + snapshotName)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataPrefix(SNAPSHOTS_PREFIX + snapshotName)
                 .build(),
             _folder);
     Map<String, org.batfish.datamodel.Interface> interfaces =

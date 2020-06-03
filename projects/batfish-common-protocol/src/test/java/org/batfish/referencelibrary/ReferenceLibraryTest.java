@@ -1,5 +1,7 @@
 package org.batfish.referencelibrary;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.referencelibrary.ReferenceLibrary.checkDuplicates;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -11,7 +13,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.SortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,7 +45,7 @@ public class ReferenceLibraryTest {
     ReferenceLibrary library =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/referencelibrary/libraryTwoBooks.json"),
+                readResource("org/batfish/referencelibrary/libraryTwoBooks.json", UTF_8),
                 ReferenceLibrary.class);
 
     assertThat(library.getReferenceBooks(), hasSize(2));
@@ -58,7 +59,7 @@ public class ReferenceLibraryTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/libraryDuplicateBooks.json"),
+            readResource("org/batfish/referencelibrary/libraryDuplicateBooks.json", UTF_8),
             ReferenceLibrary.class);
   }
 

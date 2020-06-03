@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
@@ -40,7 +42,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
@@ -111,7 +112,7 @@ public class LoadBalancerTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/LoadBalancerTest.json");
+    String text = readResource("org/batfish/representation/aws/LoadBalancerTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

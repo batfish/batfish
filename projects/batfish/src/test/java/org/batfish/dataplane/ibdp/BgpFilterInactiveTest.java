@@ -33,7 +33,7 @@ public final class BgpFilterInactiveTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     SNAPSHOT_PATH, AS1_NAME, AS2_NO_ADVERTISE_INACTIVE_NAME, AS3_NAME)
                 .build(),
             _folder);
@@ -59,7 +59,7 @@ public final class BgpFilterInactiveTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     SNAPSHOT_PATH, AS1_NAME, AS2_ADVERTISE_INACTIVE_NAME, AS3_NAME)
                 .build(),
             _folder);

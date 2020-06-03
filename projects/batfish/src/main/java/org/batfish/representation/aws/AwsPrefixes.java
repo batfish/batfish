@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -11,7 +13,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -56,7 +57,7 @@ class AwsPrefixes {
     try {
       INSTANCE =
           BatfishObjectMapper.mapper()
-              .readValue(CommonUtil.readResource(PREFIXES_FILE), AwsPrefixes.class);
+              .readValue(readResource(PREFIXES_FILE, UTF_8), AwsPrefixes.class);
     } catch (IOException e) {
       INSTANCE = new AwsPrefixes(ImmutableList.of());
     }

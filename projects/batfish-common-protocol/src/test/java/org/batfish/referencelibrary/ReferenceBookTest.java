@@ -1,5 +1,7 @@
 package org.batfish.referencelibrary;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
@@ -14,7 +16,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.IpWildcard;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class ReferenceBookTest {
     ReferenceBook book =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/referencelibrary/bookBasic.json"),
+                readResource("org/batfish/referencelibrary/bookBasic.json", UTF_8),
                 ReferenceBook.class);
 
     assertThat(book.getAddressGroups(), hasSize(2));
@@ -50,7 +51,7 @@ public class ReferenceBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/bookDupAddressGroup.json"),
+            readResource("org/batfish/referencelibrary/bookDupAddressGroup.json", UTF_8),
             ReferenceBook.class);
   }
 
@@ -62,7 +63,7 @@ public class ReferenceBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/bookUndefChildAddressGroup.json"),
+            readResource("org/batfish/referencelibrary/bookUndefChildAddressGroup.json", UTF_8),
             ReferenceBook.class);
   }
 
@@ -74,7 +75,7 @@ public class ReferenceBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/bookDupServiceName.json"),
+            readResource("org/batfish/referencelibrary/bookDupServiceName.json", UTF_8),
             ReferenceBook.class);
   }
 
@@ -86,7 +87,7 @@ public class ReferenceBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/bookUndefAddressGroup.json"),
+            readResource("org/batfish/referencelibrary/bookUndefAddressGroup.json", UTF_8),
             ReferenceBook.class);
   }
 
@@ -98,7 +99,7 @@ public class ReferenceBookTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/bookUndefServiceName.json"),
+            readResource("org/batfish/referencelibrary/bookUndefServiceName.json", UTF_8),
             ReferenceBook.class);
   }
 

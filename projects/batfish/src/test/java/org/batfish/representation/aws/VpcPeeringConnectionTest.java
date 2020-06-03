@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -18,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -31,7 +32,7 @@ public class VpcPeeringConnectionTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/VpcPeeringConnectionsTest.json");
+        readResource("org/batfish/representation/aws/VpcPeeringConnectionsTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPC_PEERING_CONNECTIONS);
@@ -58,8 +59,8 @@ public class VpcPeeringConnectionTest {
   @Test
   public void testIgnoreNonActive() throws IOException {
     String text =
-        CommonUtil.readResource(
-            "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json");
+        readResource(
+            "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -8,7 +10,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealth;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
@@ -19,7 +20,7 @@ public class LoadBalancerTargetHealthTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/LoadBalancerTargetHealthTest.json");
+        readResource("org/batfish/representation/aws/LoadBalancerTargetHealthTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

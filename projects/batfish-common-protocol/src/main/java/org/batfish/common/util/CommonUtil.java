@@ -1,5 +1,8 @@
 package org.batfish.common.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
+
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
@@ -8,11 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -35,7 +36,6 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -277,30 +277,16 @@ public class CommonUtil {
     return Charset.forName(detector.detect().getName());
   }
 
-  public static String readResource(String resourcePath) {
-    try (InputStream is =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
-      if (is == null) {
-        throw new BatfishException("Error opening resource: '" + resourcePath + "'");
-      }
-      byte[] bytes = IOUtils.toByteArray(is);
-      String output = new String(bytes, detectCharset(bytes));
-      return output;
-    } catch (IOException e) {
-      throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);
-    }
-  }
-
   public static synchronized String salt() {
     if (SALT == null) {
-      SALT = readResource(BfConsts.ABSPATH_DEFAULT_SALT);
+      SALT = readResource(BfConsts.ABSPATH_DEFAULT_SALT, UTF_8);
     }
     return SALT;
   }
 
   /** Returns a hex {@link String} representation of the SHA-256 hash digest of the input string. */
   public static String sha256Digest(String saltedSecret) {
-    return Hashing.sha256().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
+    return Hashing.sha256().hashString(saltedSecret, UTF_8).toString();
   }
 
   public static HttpServer startSslServer(
@@ -347,7 +333,7 @@ public class CommonUtil {
 
   public static void writeFile(Path outputPath, String output) {
     try (FileOutputStream fs = new FileOutputStream(outputPath.toFile());
-        OutputStreamWriter os = new OutputStreamWriter(fs, StandardCharsets.UTF_8)) {
+        OutputStreamWriter os = new OutputStreamWriter(fs, UTF_8)) {
       os.write(output);
     } catch (FileNotFoundException e) {
       throw new BatfishException("Failed to write file (file not found): " + outputPath, e);
