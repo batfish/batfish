@@ -23,9 +23,9 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateExpo
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
+import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
-import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
@@ -1202,9 +1202,7 @@ public final class CumulusConversionsTest {
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setClusterId(Ip.parse("2.2.2.2"));
 
-    assertThat(
-        inferClusterId(bgpVrf, newProc.getRouterId()),
-        equalTo(Ip.parse("2.2.2.2")));
+    assertThat(inferClusterId(bgpVrf, newProc.getRouterId()), equalTo(Ip.parse("2.2.2.2")));
   }
 
   @Test
@@ -1216,9 +1214,7 @@ public final class CumulusConversionsTest {
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setClusterId(null);
 
-    assertThat(
-        inferClusterId(bgpVrf, newProc.getRouterId()),
-        equalTo(Ip.parse("1.1.1.1")));
+    assertThat(inferClusterId(bgpVrf, newProc.getRouterId()), equalTo(Ip.parse("1.1.1.1")));
   }
 
   @Test
