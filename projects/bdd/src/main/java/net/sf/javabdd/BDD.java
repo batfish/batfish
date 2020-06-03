@@ -502,6 +502,18 @@ public abstract class BDD {
   public abstract BDD exist(BDD var);
 
   /**
+   * Project this BDD onto the variables in the set. i.e. existentially quantify all other
+   * variables.
+   *
+   * <p>Compare to bdd_project.
+   *
+   * @param var BDD containing the variables to be projected onto
+   * @return the result of the projection
+   * @see net.sf.javabdd.BDDDomain#set()
+   */
+  public abstract BDD project(BDD var);
+
+  /**
    * Universal quantification of variables. Removes all occurrences of this BDD in variables in the
    * set var by universal quantification.
    *

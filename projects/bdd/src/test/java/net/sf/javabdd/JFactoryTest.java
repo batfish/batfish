@@ -446,4 +446,25 @@ public class JFactoryTest {
     int[] a4 = {1};
     assertEquals(JFactory.dedupSorted(a4), a4);
   }
+
+  @Test
+  public void testProject() {
+    _factory.setVarNum(10);
+    BDD one = _factory.one();
+    BDD x = _factory.ithVar(0);
+    BDD y = _factory.ithVar(1);
+    BDD z = _factory.ithVar(2);
+
+    BDD ite = x.ite(y,z);
+
+    assertEquals(one,ite.project(x));
+    assertEquals(one,ite.project(y));
+    assertEquals(one,ite.project(z));
+
+    assertEquals(x.imp(y),ite.project(x.and(y)));
+    assertEquals(x.not().imp(z),ite.project(x.and(z)));
+    assertEquals(y.or(z),ite.project(y.and(z)));
+
+    assertEquals(ite, ite.project(x.and(y).and(z)));
+  }
 }
