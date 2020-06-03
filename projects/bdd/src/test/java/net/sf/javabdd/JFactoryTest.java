@@ -451,20 +451,40 @@ public class JFactoryTest {
   public void testProject() {
     _factory.setVarNum(10);
     BDD one = _factory.one();
-    BDD x = _factory.ithVar(0);
-    BDD y = _factory.ithVar(1);
-    BDD z = _factory.ithVar(2);
+    BDD zero = _factory.zero();
 
-    BDD ite = x.ite(y, z);
+    // vars used for our test constraint
+    BDD v2 = _factory.ithVar(2);
+    BDD v4 = _factory.ithVar(4);
+    BDD v6 = _factory.ithVar(6);
+    BDD ite = v2.ite(v4, v6);
 
-    assertEquals(one, ite.project(x));
-    assertEquals(one, ite.project(y));
-    assertEquals(one, ite.project(z));
+    // projecting onto one of the variables in the constraint
+    assertEquals(one, ite.project(v2));
+    assertEquals(one, ite.project(v4));
+    assertEquals(one, ite.project(v6));
 
-    assertEquals(x.imp(y), ite.project(x.and(y)));
-    assertEquals(x.not().imp(z), ite.project(x.and(z)));
-    assertEquals(y.or(z), ite.project(y.and(z)));
+    // projecting onto combinations of the variables in the constraint
+    assertEquals(v2.imp(v4), ite.project(v2.and(v4)));
+    assertEquals(v2.not().imp(v6), ite.project(v2.and(v6)));
+    assertEquals(v4.or(v6), ite.project(v4.and(v6)));
 
-    assertEquals(ite, ite.project(x.and(y).and(z)));
+    // projecting onto all the variables in the constraint
+    assertEquals(ite, ite.project(v2.and(v4).and(v6)));
+
+    // projecting any satisfiable BDD to the empty set (i.e. zero or one) returns one
+    assertEquals(one, ite.project(one));
+    assertEquals(one, ite.project(zero));
+
+    // projecting the zero BDD to the empty set (i.e. zero or one) returns zero
+    assertEquals(zero, zero.project(one));
+    assertEquals(zero, zero.project(zero));
+
+    // projecting onto a variable not in the constraint
+    assertEquals(one, ite.project(_factory.ithVar(1)));
+    assertEquals(one, ite.project(_factory.ithVar(3)));
+    assertEquals(one, ite.project(_factory.ithVar(5)));
+    assertEquals(one, ite.project(_factory.ithVar(7)));
+    assertEquals(one, ite.project(_factory.ithVar(9))); // last var
   }
 }

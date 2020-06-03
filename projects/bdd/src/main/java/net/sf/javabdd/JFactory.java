@@ -2619,7 +2619,9 @@ public final class JFactory extends BDDFactory {
     CHECK(var);
 
     if (var < 2) /* Empty set */ {
-      return r;
+      // projecting onto an empty set of variables means existentially
+      // quantifying all variables.
+      return r == BDDZERO ? BDDZERO : BDDONE;
     }
     if (varset2vartable(var) < 0) {
       return BDDZERO;
