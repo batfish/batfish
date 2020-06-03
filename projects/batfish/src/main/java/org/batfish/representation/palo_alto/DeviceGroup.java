@@ -7,7 +7,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents a Palo Alto device-group, which */
+/**
+ * Represents a Palo Alto device-group, which contains some regular device configuration along with
+ * some device-group specific configuration.
+ *
+ * <p>Device-group configuration is inherited by any devices associated with it.
+ */
 @ParametersAreNonnullByDefault
 public final class DeviceGroup extends PaloAltoConfiguration {
   private String _description;
