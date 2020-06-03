@@ -1,10 +1,12 @@
 package org.batfish.main;
 
-import static org.batfish.common.util.CommonUtil.readFile;
+import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,12 +37,11 @@ final class CliUtils {
           .map(
               path -> {
                 logger.debugf("Reading: \"%s\"\n", path);
-                String fileText = readFile(path.toAbsolutePath());
-                if (!fileText.isEmpty()) {
-                  // Adding a trailing newline helps EOF in some parsers.
-                  fileText += '\n';
+                try (InputStream inputStream = Files.newInputStream(path)) {
+                  return new SimpleEntry<>(path, decodeStreamAndAppendNewline(inputStream));
+                } catch (IOException e) {
+                  throw new UncheckedIOException(String.format("Failed to read file: %s", path), e);
                 }
-                return new SimpleEntry<>(path, fileText);
               })
           .collect(
               ImmutableSortedMap.toImmutableSortedMap(

@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -7,7 +9,6 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -22,7 +23,7 @@ public class QuestionHelperTest {
   @Test
   public void fillTemplate() throws JSONException, IOException {
     JSONObject template =
-        new JSONObject(CommonUtil.readResource("org/batfish/client/goodTemplate.json"));
+        new JSONObject(readResource("org/batfish/client/goodTemplate.json", UTF_8));
     JSONObject filledTempate =
         QuestionHelper.fillTemplate(
             template, ImmutableSortedMap.of("parameter1", new IntNode(2)), "qname");
@@ -37,7 +38,7 @@ public class QuestionHelperTest {
   @Test
   public void validateTemplateExtraParameter() throws JSONException, IOException {
     JSONObject template =
-        new JSONObject(CommonUtil.readResource("org/batfish/client/extraParameter.json"));
+        new JSONObject(readResource("org/batfish/client/extraParameter.json", UTF_8));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Unrecognized field");
@@ -50,7 +51,7 @@ public class QuestionHelperTest {
   @Test
   public void validateTemplateExtraVariable() throws JSONException, IOException {
     JSONObject template =
-        new JSONObject(CommonUtil.readResource("org/batfish/client/extraVariable.json"));
+        new JSONObject(readResource("org/batfish/client/extraVariable.json", UTF_8));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Unused variable");
@@ -63,7 +64,7 @@ public class QuestionHelperTest {
   @Test
   public void validateTemplateSuccess() throws JSONException, IOException {
     JSONObject template =
-        new JSONObject(CommonUtil.readResource("org/batfish/client/goodTemplate.json"));
+        new JSONObject(readResource("org/batfish/client/goodTemplate.json", UTF_8));
 
     QuestionHelperTestQuestion question =
         (QuestionHelperTestQuestion)
@@ -78,7 +79,7 @@ public class QuestionHelperTest {
   @Test
   public void validateTemplateUnexercisedVariable() throws JSONException, IOException {
     JSONObject template =
-        new JSONObject(CommonUtil.readResource("org/batfish/client/goodTemplate.json"));
+        new JSONObject(readResource("org/batfish/client/goodTemplate.json", UTF_8));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Template validation should exercise all variables");

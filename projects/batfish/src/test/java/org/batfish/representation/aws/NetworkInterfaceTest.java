@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NETWORK_INTERFACES;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,7 +13,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
@@ -20,8 +21,7 @@ public class NetworkInterfaceTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text =
-        CommonUtil.readResource("org/batfish/representation/aws/NetworkInterfaceTest.json");
+    String text = readResource("org/batfish/representation/aws/NetworkInterfaceTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_NETWORK_INTERFACES);

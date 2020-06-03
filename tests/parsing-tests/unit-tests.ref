@@ -76309,7 +76309,7 @@
             "              DROP:'DROP')))))",
             "    NEWLINE:'\\n')",
             "  COMMIT:'COMMIT'",
-            "  NEWLINE:'\\n')"
+            "  NEWLINE:'\\n\\n')"
           ]
         }
       },

@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
@@ -401,7 +403,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
@@ -692,7 +694,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -724,7 +726,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -805,8 +807,8 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setLayer1TopologyText(resourcePrefix)
-                .setConfigurationText(resourcePrefix, "r1", "r2")
+                .setLayer1TopologyPrefix(resourcePrefix)
+                .setConfigurationFiles(resourcePrefix, "r1", "r2")
                 .build(),
             _folder);
 
@@ -849,7 +851,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -911,7 +913,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2295,7 +2297,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -3255,7 +3257,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -3736,7 +3738,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3763,7 +3765,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3794,7 +3796,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3831,7 +3833,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4439,8 +4441,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testParsingRecovery() {
-    String recoveryText =
-        CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/recovery");
+    String recoveryText = readResource("org/batfish/grammar/juniper/testconfigs/recovery", UTF_8);
     Settings settings = new Settings();
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
     Flat_juniper_configurationContext ctx = cp.parse();

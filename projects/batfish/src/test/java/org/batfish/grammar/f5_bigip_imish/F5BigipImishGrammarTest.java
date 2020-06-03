@@ -1,5 +1,7 @@
 package org.batfish.grammar.f5_bigip_imish;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
@@ -67,7 +69,6 @@ import org.batfish.common.bdd.BDDPrefix;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
@@ -199,7 +200,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   private @Nonnull F5BigipConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);
@@ -486,7 +487,7 @@ public final class F5BigipImishGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();

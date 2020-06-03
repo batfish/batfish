@@ -35,7 +35,7 @@ public class EigrpTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     "org/batfish/dataplane/ibdp/eigrp-distribute-lists",
                     advertiser,
                     listener,
