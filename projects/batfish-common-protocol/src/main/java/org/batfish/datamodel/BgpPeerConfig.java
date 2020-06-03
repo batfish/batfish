@@ -323,7 +323,7 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nullable protected RibGroup _appliedRibGroup;
     @Nullable protected BgpAuthenticationSettings _authenticationSettings;
     @Nullable protected BgpProcess _bgpProcess;
-    protected Long _clusterId;
+    @Nullable protected Long _clusterId;
     @Nullable protected Long _confederation;
     protected int _defaultMetric;
     protected String _description;
@@ -368,7 +368,7 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    public S setClusterId(Long clusterId) {
+    public S setClusterId(@Nullable Long clusterId) {
       _clusterId = clusterId;
       return getThis();
     }
