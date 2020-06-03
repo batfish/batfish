@@ -455,15 +455,15 @@ public class JFactoryTest {
     BDD y = _factory.ithVar(1);
     BDD z = _factory.ithVar(2);
 
-    BDD ite = x.ite(y,z);
+    BDD ite = x.ite(y, z);
 
-    assertEquals(one,ite.project(x));
-    assertEquals(one,ite.project(y));
-    assertEquals(one,ite.project(z));
+    assertEquals(one, ite.project(x));
+    assertEquals(one, ite.project(y));
+    assertEquals(one, ite.project(z));
 
-    assertEquals(x.imp(y),ite.project(x.and(y)));
-    assertEquals(x.not().imp(z),ite.project(x.and(z)));
-    assertEquals(y.or(z),ite.project(y.and(z)));
+    assertEquals(x.imp(y), ite.project(x.and(y)));
+    assertEquals(x.not().imp(z), ite.project(x.and(z)));
+    assertEquals(y.or(z), ite.project(y.and(z)));
 
     assertEquals(ite, ite.project(x.and(y).and(z)));
   }
