@@ -134,20 +134,4 @@ public class BDDIntegerTest {
       }
     }
   }
-
-  @Test
-  public void testGetOtherVars() {
-    BDDFactory factory = JFactory.init(100, 100);
-    factory.setVarNum(10);
-    BDDInteger bddInteger = BDDInteger.makeFromIndex(factory, 5, 2, false);
-    BDD expected =
-        BDDOps.andNull(
-            factory.ithVar(0),
-            factory.ithVar(1),
-            factory.ithVar(7),
-            factory.ithVar(8),
-            factory.ithVar(9));
-    BDD actual = bddInteger.getOtherVars();
-    assertEquals(expected, actual);
-  }
 }

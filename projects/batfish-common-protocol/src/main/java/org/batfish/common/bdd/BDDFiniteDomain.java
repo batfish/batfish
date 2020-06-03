@@ -97,7 +97,7 @@ public final class BDDFiniteDomain<V> {
     checkArgument(bdd.isAssignment());
 
     // Exist turns the assignment into just the finite domain.
-    V ret = _bddToValue.get(bdd.exist(_var.getOtherVars()));
+    V ret = _bddToValue.get(bdd.project(_var.getVars()));
     checkArgument(ret != null, "No value for valid assignment");
     return ret;
   }
