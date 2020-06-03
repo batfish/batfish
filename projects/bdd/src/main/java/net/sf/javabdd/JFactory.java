@@ -2631,7 +2631,7 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
-    quantid = (var << 3) | CACHEID_PROJECT; /* FIXME: range */
+    quantid = (var << 3) | CACHEID_PROJECT;
 
     INITREF();
     int res = project_rec(r);
