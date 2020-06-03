@@ -127,11 +127,6 @@ CALL
   'call' -> pushMode(M_Word)
 ;
 
-CLUSTER_ID
-:
-  'cluster-id'
-;
-
 COLON
 :
   ':'
