@@ -13,8 +13,10 @@ import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,8 +72,9 @@ final class BDDReachabilityAnalysisSessionFactory {
   private final Map<String, Map<String, BDD>> _originatingSessionBdds;
   private final BDDReverseFlowTransformationFactory _reverseFlowTransformationFactory;
   private final BDDReverseTransformationRanges _reverseTransformationRanges;
+  private final BDD _fiveTupleBdd;
 
-  private BDDReachabilityAnalysisSessionFactory(
+  BDDReachabilityAnalysisSessionFactory(
       BDDPacket bddPacket,
       Map<String, Configuration> configs,
       Map<String, BDDSourceManager> srcManagers,
@@ -83,6 +86,7 @@ final class BDDReachabilityAnalysisSessionFactory {
     _configs = configs;
     _srcManagers = srcManagers;
     _lastHopManager = lastHopManager;
+    _fiveTupleBdd = computeFiveTupleBdd(_bddPacket);
     BDD ipProtocolsWithSessionsBdd =
         IpProtocol.IP_PROTOCOLS_WITH_SESSIONS.stream()
             .map(bddPacket.getIpProtocol()::value)
@@ -95,6 +99,24 @@ final class BDDReachabilityAnalysisSessionFactory {
             configs, forwardReachableBdds, ipProtocolsWithSessionsBdd);
     _reverseFlowTransformationFactory = transformationFactory;
     _reverseTransformationRanges = reverseTransformationRanges;
+  }
+
+  /**
+   * Computes the var set of the 5-tuple (src IP, dst IP, IP protocol, src port, dst port) variables
+   * we need to keep to match established sessions.
+   */
+  private static BDD computeFiveTupleBdd(BDDPacket bddPacket) {
+    return Stream.of(
+            // reverse order to build bottom up
+            bddPacket.getIpProtocol().getBDDInteger(),
+            bddPacket.getSrcPort(),
+            bddPacket.getDstPort(),
+            bddPacket.getSrcIp(),
+            bddPacket.getDstIp())
+        // reverse to build bottom up
+        .flatMap(bddInteger -> Lists.reverse(Lists.newArrayList(bddInteger.getBitvec())).stream())
+        .reduce(BDD::and)
+        .get();
   }
 
   /**
@@ -257,9 +279,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                     compose(outgoingTransformation, constraint(outgoingTransformationRange));
 
                 // Return flows for this session.
-                BDD sessionBdd =
-                    _bddPacket.swapSourceAndDestinationFields(
-                        srcMgr.existsSource(srcToOutIfaceBdd));
+                BDD sessionBdd = getSessionBdd(srcToOutIfaceBdd);
                 builder.add(
                     new BDDFirewallSessionTraceInfo(
                         hostname, sessionInterfaces, Accept.INSTANCE, sessionBdd, transformation));
@@ -283,15 +303,12 @@ final class BDDReachabilityAnalysisSessionFactory {
                       _reverseTransformationRanges.reverseOutgoingTransformationRange(
                           hostname, outIface.getName(), src, null);
 
-                  BDD sessionBdd =
-                      _bddPacket.swapSourceAndDestinationFields(
-                          srcMgr.existsSource(srcToOutIfaceBdd));
                   builder.add(
                       new BDDFirewallSessionTraceInfo(
                           hostname,
                           sessionInterfaces,
                           action,
-                          sessionBdd,
+                          getSessionBdd(srcToOutIfaceBdd),
                           compose(
                               outgoingTransformation,
                               constraint(outgoingTransformationRange),
@@ -309,10 +326,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                       }
 
                       // Return flows for this session.
-                      BDD sessionBdd =
-                          _bddPacket.swapSourceAndDestinationFields(
-                              srcMgr.existsSource(
-                                  _lastHopManager.existsLastHop(lastHopToSrcIfaceToOutIfaceBdd)));
+                      BDD sessionBdd = getSessionBdd(lastHopToSrcIfaceToOutIfaceBdd);
 
                       // Next hop for session flows
                       NodeInterfacePair lastHop =
@@ -396,15 +410,13 @@ final class BDDReachabilityAnalysisSessionFactory {
                     _reverseTransformationRanges.reverseIncomingTransformationRange(
                         hostname, src, src, null);
 
-                BDD sessionBdd =
-                    _bddPacket.swapSourceAndDestinationFields(srcMgr.existsSource(srcToAcceptBdd));
                 sessions.add(
                     new BDDFirewallSessionTraceInfo(
                         hostname,
                         new OriginatingSessionScope(vrfName),
                         // Batfish does not support VRF-originating sessions with other actions
                         FibLookup.INSTANCE,
-                        sessionBdd,
+                        getSessionBdd(srcToAcceptBdd),
                         compose(incomingTransformation, constraint(incomingTransformationRange))));
                 return;
               }
@@ -418,10 +430,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                     }
 
                     // Return flows for this session.
-                    BDD sessionBdd =
-                        _bddPacket.swapSourceAndDestinationFields(
-                            srcMgr.existsSource(
-                                _lastHopManager.existsLastHop(lastHopToSrcIfaceToAcceptBdd)));
+                    BDD sessionBdd = getSessionBdd(lastHopToSrcIfaceToAcceptBdd);
 
                     // Next hop for session flows
                     NodeInterfacePair lastHop =
@@ -443,6 +452,15 @@ final class BDDReachabilityAnalysisSessionFactory {
                   });
             });
     return sessions.build();
+  }
+
+  /**
+   * @param bdd The forward flows for which sessions can be established
+   * @return The match constraint for the return flows that can have an established session.
+   */
+  @VisibleForTesting
+  BDD getSessionBdd(BDD bdd) {
+    return _bddPacket.swapSourceAndDestinationFields(bdd.project(_fiveTupleBdd));
   }
 
   /**
