@@ -123,6 +123,7 @@ public final class JFactory extends BDDFactory {
       return _index == BDDONE;
     }
 
+    @Override
     public boolean isAssignment() {
       return bdd_isAssignment(_index);
     }
@@ -193,6 +194,13 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_exist(x, y));
+    }
+
+    @Override
+    public BDD project(BDD var) {
+      int x = _index;
+      int y = ((BDDImpl) var)._index;
+      return makeBDD(bdd_project(x, y));
     }
 
     @Override
@@ -2322,6 +2330,53 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
+  private int project_rec(int r) {
+    BddCacheDataI entry;
+    int res;
+
+    if (r < 2) {
+      return r;
+    }
+
+    int level = LEVEL(r);
+    if (level > quantlast) {
+      // existentially quantify all remaining variables
+      return BDDONE;
+    }
+
+    entry = BddCache_lookupI(quantcache, QUANTHASH(r));
+    if (entry.a == r && entry.c == quantid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    int low = PUSHREF(project_rec(LOW(r)));
+    int high = PUSHREF(project_rec(HIGH(r)));
+
+    if (INVARSET(level)) {
+      res = bdd_makenode(level, low, high);
+    } else {
+      // existentially quantify
+      res = or_rec(low, high);
+    }
+
+    POPREF(2);
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = r;
+    entry.c = quantid;
+    entry.res = res;
+
+    return res;
+  }
+
   private int bdd_constrain(int f, int c) {
     CHECK(f);
     CHECK(c);
@@ -2554,6 +2609,34 @@ public final class JFactory extends BDDFactory {
 
     INITREF();
     int res = quant_rec(r);
+    checkresize();
+
+    return res;
+  }
+
+  private int bdd_project(int r, int var) {
+    CHECK(r);
+    CHECK(var);
+
+    if (var < 2) /* Empty set */ {
+      // projecting onto an empty set of variables means existentially
+      // quantifying all variables.
+      return r == BDDZERO ? BDDZERO : BDDONE;
+    }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
+    }
+
+    if (applycache == null) {
+      applycache = BddCacheI_init(cachesize);
+    }
+    if (quantcache == null) {
+      quantcache = BddCacheI_init(cachesize);
+    }
+    quantid = (var << 3) | CACHEID_PROJECT;
+
+    INITREF();
+    int res = project_rec(r);
     checkresize();
 
     return res;
@@ -3620,13 +3703,14 @@ public final class JFactory extends BDDFactory {
   private static final int CACHEID_VECCOMPOSE = 0x2;
   private static final int CACHEID_CORRECTIFY = 0x3;
 
-  /* Hash value modifiers for quantification */
+  /* Hash value modifiers for quantification. Max 8 values */
   private static final int CACHEID_EXIST = 0x0;
   private static final int CACHEID_FORALL = 0x1;
   private static final int CACHEID_UNIQUE = 0x2;
   private static final int CACHEID_APPEX = 0x3;
   private static final int CACHEID_APPAL = 0x4;
   private static final int CACHEID_APPUN = 0x5;
+  private static final int CACHEID_PROJECT = 0x6;
 
   /* Number of boolean operators */
   static final int OPERATOR_NUM = 11;

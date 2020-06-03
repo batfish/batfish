@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.JFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -136,18 +135,9 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testGetOtherVars() {
-    BDDFactory factory = JFactory.init(100, 100);
-    factory.setVarNum(10);
-    BDDInteger bddInteger = BDDInteger.makeFromIndex(factory, 5, 2, false);
-    BDD expected =
-        BDDOps.andNull(
-            factory.ithVar(0),
-            factory.ithVar(1),
-            factory.ithVar(7),
-            factory.ithVar(8),
-            factory.ithVar(9));
-    BDD actual = bddInteger.getOtherVars();
-    assertEquals(expected, actual);
+  public void testGetVars_emptyVar() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    BDDInteger x = BDDInteger.makeFromIndex(factory, 0, 0, false);
+    assertEquals(factory.one(), x.getVars());
   }
 }
