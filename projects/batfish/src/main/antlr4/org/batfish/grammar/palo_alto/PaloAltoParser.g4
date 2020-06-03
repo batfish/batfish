@@ -9,6 +9,7 @@ import
     PaloAlto_bgp,
     PaloAlto_common,
     PaloAlto_deviceconfig,
+    PaloAlto_device_group,
     PaloAlto_interface,
     PaloAlto_network,
     PaloAlto_ospf,
@@ -105,7 +106,7 @@ set_line_template
 
 set_line_device_group
 :
-    DEVICE_GROUP statement_device_group
+    DEVICE_GROUP name = variable statement_device_group
 ;
 
 /*
@@ -119,12 +120,12 @@ statement_device_group
     | s_address_group
     | s_application
     | s_application_group
-    | s_post_rulebase
-    | s_pre_rulebase
     | s_service
     | s_service_group
     | s_tag
     // Device-group specific
+    | panorama_post_rulebase
+    | panorama_pre_rulebase
     | sdg_description
     | sdg_devices
 ;

@@ -189,6 +189,7 @@ import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
@@ -2741,5 +2742,21 @@ public final class PaloAltoGrammarTest {
             PaloAltoStructureType.APPLICATION,
             computeObjectName(DEFAULT_VSYS_NAME, "app1"),
             1));
+  }
+
+  @Test
+  public void testDeviceGroup() {
+    String hostname = "device-group";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    DeviceGroup deviceGroup = c.getOrCreateDeviceGroup("DG1");
+    Vsys panorama = deviceGroup.getPanorama();
+
+    assertThat(panorama, notNullValue());
+    assertThat(panorama.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
+    assertThat(panorama.getAddressObjects().keySet(), contains("ADDR1"));
+
+    assertThat(deviceGroup.getDevices(), containsInAnyOrder("00000001", "00000002"));
+    assertThat(deviceGroup.getDescription(), equalTo("long description"));
   }
 }

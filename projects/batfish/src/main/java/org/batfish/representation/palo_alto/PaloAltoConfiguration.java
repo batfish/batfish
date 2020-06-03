@@ -243,6 +243,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
+  public DeviceGroup getOrCreateDeviceGroup(String name) {
+    return _deviceGroups.computeIfAbsent(name, DeviceGroup::new);
+  }
+
   public SortedMap<String, Interface> getInterfaces() {
     return _interfaces;
   }
