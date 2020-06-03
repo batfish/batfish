@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -279,7 +279,7 @@ public class CommonUtil {
 
   public static synchronized String salt() {
     if (SALT == null) {
-      SALT = Resources.readResource(BfConsts.ABSPATH_DEFAULT_SALT, StandardCharsets.UTF_8);
+      SALT = readResource(BfConsts.ABSPATH_DEFAULT_SALT, UTF_8);
     }
     return SALT;
   }

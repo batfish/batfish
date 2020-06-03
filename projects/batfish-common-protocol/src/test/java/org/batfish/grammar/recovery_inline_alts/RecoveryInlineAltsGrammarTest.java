@@ -1,12 +1,12 @@
 package org.batfish.grammar.recovery_inline_alts;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.nio.charset.StandardCharsets;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.util.Resources;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
@@ -45,7 +45,7 @@ public final class RecoveryInlineAltsGrammarTest {
       MockGrammarSettings.builder().setThrowOnLexerError(true).setThrowOnParserError(true).build();
 
   private static RecoveryInlineAltsExtractor parse(String filename) {
-    String text = Resources.readResource(RESOURCE_PREFIX + filename, StandardCharsets.UTF_8);
+    String text = readResource(RESOURCE_PREFIX + filename, UTF_8);
     RecoveryInlineAltsCombinedParser cp = new RecoveryInlineAltsCombinedParser(text, SETTINGS);
     ParserRuleContext ctx = cp.parse();
     RecoveryInlineAltsExtractor extractor = new RecoveryInlineAltsExtractor();

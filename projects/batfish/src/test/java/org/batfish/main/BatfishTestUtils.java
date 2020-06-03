@@ -4,6 +4,7 @@ import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
 import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
 import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
+import static org.batfish.common.util.Resources.readResourceBytes;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -24,7 +25,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -289,7 +289,7 @@ public class BatfishTestUtils {
       TemporaryFolder folder, String... configurationNames) throws IOException {
     SortedMap<String, byte[]> configurationBytesMap = new TreeMap<>();
     for (String configName : configurationNames) {
-      byte[] configurationBytes = Resources.readResourceBytes(configName);
+      byte[] configurationBytes = readResourceBytes(configName);
       configurationBytesMap.put(new File(configName).getName(), configurationBytes);
     }
     return BatfishTestUtils.getBatfishFromTestrigText(

@@ -1,5 +1,7 @@
 package org.batfish.job;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.job.ParseVendorConfigurationJob.detectFormat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -7,10 +9,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import java.nio.charset.StandardCharsets;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.identifiers.NetworkId;
@@ -25,7 +25,7 @@ public class ParseVendorConfigurationJobTest {
     return new ParseVendorConfigurationJob(
             new Settings(),
             new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
-            Resources.readResource(resourcePath, StandardCharsets.UTF_8),
+            readResource(resourcePath, UTF_8),
             "filename",
             new Warnings(),
             ConfigurationFormat.HOST,

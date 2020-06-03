@@ -1,13 +1,13 @@
 package org.batfish.datamodel.questions;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.Resources;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
 import org.junit.Test;
@@ -16,9 +16,7 @@ public class DisplayHintsTest {
 
   @Test
   public void displayHintsParsingTest() throws IOException {
-    String text =
-        Resources.readResource(
-            "org/batfish/datamodel/questions/displayHintsTest.json", StandardCharsets.UTF_8);
+    String text = readResource("org/batfish/datamodel/questions/displayHintsTest.json", UTF_8);
     DisplayHints displayHints = BatfishObjectMapper.mapper().readValue(text, DisplayHints.class);
 
     // here, we only test for ExtractionHint level concepts

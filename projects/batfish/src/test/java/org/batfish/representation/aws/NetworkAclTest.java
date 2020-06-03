@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_NETWORK_ACLS;
 import static org.batfish.representation.aws.NetworkAcl.getAclLine;
 import static org.batfish.representation.aws.NetworkAcl.getAclLineName;
@@ -11,11 +13,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.Resources;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -33,9 +33,7 @@ public class NetworkAclTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text =
-        Resources.readResource(
-            "org/batfish/representation/aws/NetworkAclTest.json", StandardCharsets.UTF_8);
+    String text = readResource("org/batfish/representation/aws/NetworkAclTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_NETWORK_ACLS);
@@ -70,9 +68,7 @@ public class NetworkAclTest {
 
   @Test
   public void testDeserializationIcmp() throws IOException {
-    String text =
-        Resources.readResource(
-            "org/batfish/representation/aws/NetworkAclIcmpTest.json", StandardCharsets.UTF_8);
+    String text = readResource("org/batfish/representation/aws/NetworkAclIcmpTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_NETWORK_ACLS);
@@ -113,9 +109,7 @@ public class NetworkAclTest {
 
   @Test
   public void testDeserializationV6() throws IOException {
-    String text =
-        Resources.readResource(
-            "org/batfish/representation/aws/NetworkAclV6Test.json", StandardCharsets.UTF_8);
+    String text = readResource("org/batfish/representation/aws/NetworkAclV6Test.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_NETWORK_ACLS);

@@ -1,12 +1,12 @@
 package org.batfish.grammar;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.nio.charset.StandardCharsets;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.util.Resources;
 import org.batfish.grammar.recovery.NonRecoveryCombinedParser;
 import org.batfish.grammar.recovery.RecoveryExtractor;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
@@ -18,9 +18,7 @@ public final class BatfishLexerErrorListenerTest {
 
   @Test
   public void testNonRecoveryLexerErrorNode() {
-    String recoveryText =
-        Resources.readResource(
-            "org/batfish/grammar/non_recovery_lexer_error", StandardCharsets.UTF_8);
+    String recoveryText = readResource("org/batfish/grammar/non_recovery_lexer_error", UTF_8);
     GrammarSettings settings = MockGrammarSettings.builder().build();
     NonRecoveryCombinedParser cp = new NonRecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();

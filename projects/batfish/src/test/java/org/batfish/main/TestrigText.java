@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResourceBytes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -16,7 +17,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.batfish.common.util.Resources;
 
 public class TestrigText {
 
@@ -36,7 +36,7 @@ public class TestrigText {
                 ImmutableMap.toImmutableMap(
                     Function.identity(),
                     filename ->
-                        Resources.readResourceBytes(
+                        readResourceBytes(
                             String.format(
                                 "%s%s/%s", testrigResourcePrefix, subfolderText, filename))));
       } else {

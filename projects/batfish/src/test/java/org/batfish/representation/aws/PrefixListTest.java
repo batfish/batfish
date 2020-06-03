@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -8,9 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
@@ -19,9 +19,7 @@ public class PrefixListTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text =
-        Resources.readResource(
-            "org/batfish/representation/aws/PrefixListTest.json", StandardCharsets.UTF_8);
+    String text = readResource("org/batfish/representation/aws/PrefixListTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

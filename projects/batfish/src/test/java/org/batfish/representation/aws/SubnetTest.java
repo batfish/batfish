@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
@@ -30,13 +32,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
@@ -61,9 +61,7 @@ public class SubnetTest {
   public void setup() throws IOException {
     JsonNode json =
         BatfishObjectMapper.mapper()
-            .readTree(
-                Resources.readResource(
-                    "org/batfish/representation/aws/SubnetTest.json", StandardCharsets.UTF_8));
+            .readTree(readResource("org/batfish/representation/aws/SubnetTest.json", UTF_8));
     _subnetList =
         BatfishObjectMapper.mapper()
             .convertValue(json.get(JSON_KEY_SUBNETS), new TypeReference<List<Subnet>>() {});
