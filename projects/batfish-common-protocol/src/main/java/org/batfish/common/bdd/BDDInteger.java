@@ -317,6 +317,9 @@ public class BDDInteger {
 
   /** Returns a {@link BDD} containing all the variables of this {@link BDDInteger}. */
   public @Nonnull BDD getVars() {
+    if (_bitvec.length == 0) {
+      return _factory.one(); // empty set
+    }
     BDD ret = BDDOps.andNull(_bitvec);
     assert ret != null;
     return ret;

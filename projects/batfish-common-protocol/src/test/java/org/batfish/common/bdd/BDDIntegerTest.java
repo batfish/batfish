@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -131,5 +132,12 @@ public class BDDIntegerTest {
         assertThat(range, equalTo(rangeEquiv));
       }
     }
+  }
+
+  @Test
+  public void testGetVars_emptyVar() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    BDDInteger x = BDDInteger.makeFromIndex(factory, 0, 0, false);
+    assertEquals(factory.one(), x.getVars());
   }
 }
