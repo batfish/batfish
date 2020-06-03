@@ -5,7 +5,6 @@ import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
-import static org.batfish.question.routes.RoutesAnswerer.COL_CLUSTER_LIST;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
@@ -14,7 +13,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
-import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
@@ -321,10 +319,6 @@ public class RoutesAnswererUtil {
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, bgpv4Route.getOriginType())
-        .put(
-            COL_CLUSTER_LIST,
-            bgpv4Route.getClusterList().size() == 0 ? null : bgpv4Route.getClusterList())
-        .put(COL_ORIGINATOR_ID, bgpv4Route.getOriginatorIp())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .build();
   }
@@ -352,10 +346,6 @@ public class RoutesAnswererUtil {
             evpnRoute.getCommunities().stream().map(Community::toString).collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, evpnRoute.getOriginType())
-        .put(
-            COL_CLUSTER_LIST,
-            evpnRoute.getClusterList().size() == 0 ? null : evpnRoute.getClusterList())
-        .put(COL_ORIGINATOR_ID, evpnRoute.getOriginatorIp())
         .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
         .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
         .build();

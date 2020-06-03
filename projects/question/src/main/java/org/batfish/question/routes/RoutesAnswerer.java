@@ -61,8 +61,6 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_COMMUNITIES = "Communities";
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
   static final String COL_ORIGIN_TYPE = "Origin_Type";
-  static final String COL_CLUSTER_LIST = "Cluster_List";
-  static final String COL_ORIGINATOR_ID = "Originator_Id";
 
   // EVPN BGP only
   static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
@@ -281,20 +279,6 @@ public class RoutesAnswerer extends Answerer {
                     COL_ORIGIN_TYPE,
                     Schema.STRING,
                     "Route's Origin type",
-                    Boolean.FALSE,
-                    Boolean.TRUE))
-            .add(
-                new ColumnMetadata(
-                    COL_CLUSTER_LIST,
-                    Schema.list(Schema.STRING),
-                    "Route's Cluster List",
-                    Boolean.FALSE,
-                    Boolean.TRUE))
-            .add(
-                new ColumnMetadata(
-                    COL_ORIGINATOR_ID,
-                    Schema.STRING,
-                    "Route's Originator ID",
                     Boolean.FALSE,
                     Boolean.TRUE));
         break;
