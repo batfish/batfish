@@ -18,7 +18,7 @@ import org.batfish.datamodel.Ip;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class Address implements AwsVpcEntity, Serializable {
+public final class Address implements AwsVpcEntity, Serializable {
 
   @Nullable private final String _instanceId;
 
