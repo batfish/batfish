@@ -279,7 +279,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                     compose(outgoingTransformation, constraint(outgoingTransformationRange));
 
                 // Return flows for this session.
-                BDD sessionBdd = getSessionBdd(srcToOutIfaceBdd);
+                BDD sessionBdd = getSessionFlowMatchBdd(srcToOutIfaceBdd);
                 builder.add(
                     new BDDFirewallSessionTraceInfo(
                         hostname, sessionInterfaces, Accept.INSTANCE, sessionBdd, transformation));
@@ -308,7 +308,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                           hostname,
                           sessionInterfaces,
                           action,
-                          getSessionBdd(srcToOutIfaceBdd),
+                          getSessionFlowMatchBdd(srcToOutIfaceBdd),
                           compose(
                               outgoingTransformation,
                               constraint(outgoingTransformationRange),
@@ -326,7 +326,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                       }
 
                       // Return flows for this session.
-                      BDD sessionBdd = getSessionBdd(lastHopToSrcIfaceToOutIfaceBdd);
+                      BDD sessionBdd = getSessionFlowMatchBdd(lastHopToSrcIfaceToOutIfaceBdd);
 
                       // Next hop for session flows
                       NodeInterfacePair lastHop =
@@ -416,7 +416,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                         new OriginatingSessionScope(vrfName),
                         // Batfish does not support VRF-originating sessions with other actions
                         FibLookup.INSTANCE,
-                        getSessionBdd(srcToAcceptBdd),
+                        getSessionFlowMatchBdd(srcToAcceptBdd),
                         compose(incomingTransformation, constraint(incomingTransformationRange))));
                 return;
               }
@@ -430,7 +430,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                     }
 
                     // Return flows for this session.
-                    BDD sessionBdd = getSessionBdd(lastHopToSrcIfaceToAcceptBdd);
+                    BDD sessionBdd = getSessionFlowMatchBdd(lastHopToSrcIfaceToAcceptBdd);
 
                     // Next hop for session flows
                     NodeInterfacePair lastHop =
@@ -459,7 +459,7 @@ final class BDDReachabilityAnalysisSessionFactory {
    * @return The match constraint for the return flows that can have an established session.
    */
   @VisibleForTesting
-  BDD getSessionBdd(BDD bdd) {
+  BDD getSessionFlowMatchBdd(BDD bdd) {
     return _bddPacket.swapSourceAndDestinationFields(bdd.project(_fiveTupleBdd));
   }
 

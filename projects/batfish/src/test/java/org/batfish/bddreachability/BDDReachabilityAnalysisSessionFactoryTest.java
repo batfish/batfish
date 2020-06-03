@@ -350,7 +350,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             ImmutableMap.of(),
             _reverseFlowTransformationFactory,
             TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
-    assertEquals(sessionFlows, sessionFactory.getSessionBdd(outBdd));
+    assertEquals(sessionFlows, sessionFactory.getSessionFlowMatchBdd(outBdd));
   }
 
   @Test
