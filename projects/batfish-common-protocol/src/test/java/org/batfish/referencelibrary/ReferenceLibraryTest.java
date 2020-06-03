@@ -9,9 +9,10 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.SortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,7 +45,8 @@ public class ReferenceLibraryTest {
     ReferenceLibrary library =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/referencelibrary/libraryTwoBooks.json"),
+                Resources.readResource(
+                    "org/batfish/referencelibrary/libraryTwoBooks.json", StandardCharsets.UTF_8),
                 ReferenceLibrary.class);
 
     assertThat(library.getReferenceBooks(), hasSize(2));
@@ -58,7 +60,8 @@ public class ReferenceLibraryTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/libraryDuplicateBooks.json"),
+            Resources.readResource(
+                "org/batfish/referencelibrary/libraryDuplicateBooks.json", StandardCharsets.UTF_8),
             ReferenceLibrary.class);
   }
 

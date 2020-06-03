@@ -7,11 +7,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -56,7 +57,8 @@ class AwsPrefixes {
     try {
       INSTANCE =
           BatfishObjectMapper.mapper()
-              .readValue(CommonUtil.readResource(PREFIXES_FILE), AwsPrefixes.class);
+              .readValue(
+                  Resources.readResource(PREFIXES_FILE, StandardCharsets.UTF_8), AwsPrefixes.class);
     } catch (IOException e) {
       INSTANCE = new AwsPrefixes(ImmutableList.of());
     }

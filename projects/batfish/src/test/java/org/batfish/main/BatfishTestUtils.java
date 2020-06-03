@@ -24,7 +24,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -289,7 +289,7 @@ public class BatfishTestUtils {
       TemporaryFolder folder, String... configurationNames) throws IOException {
     SortedMap<String, byte[]> configurationBytesMap = new TreeMap<>();
     for (String configName : configurationNames) {
-      byte[] configurationBytes = CommonUtil.readResourceBytes(configName);
+      byte[] configurationBytes = Resources.readResourceBytes(configName);
       configurationBytesMap.put(new File(configName).getName(), configurationBytes);
     }
     return BatfishTestUtils.getBatfishFromTestrigText(

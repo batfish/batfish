@@ -4,12 +4,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ParseTreeSentences;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
 import org.junit.Test;
@@ -57,7 +58,8 @@ public final class ParseTreePrettyPrinterTest {
 
   @Test
   public void testGetParseTreeSentencesLineNumbers() {
-    String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
+    String configText =
+        Resources.readResource("org/batfish/grammar/line_numbers", StandardCharsets.UTF_8);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, SETTINGS);
     ParserRuleContext tree = cp.parse();
     ParseTreeSentences ptSentencesLineNums =
@@ -74,7 +76,8 @@ public final class ParseTreePrettyPrinterTest {
 
   @Test
   public void testGetParseTreeSentencesMappedLineNumbers() {
-    String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
+    String configText =
+        Resources.readResource("org/batfish/grammar/line_numbers", StandardCharsets.UTF_8);
     FlattenerLineMap lineMap = new FlattenerLineMap();
     /* Map words on each line to different original lines */
     /* (first) simple */

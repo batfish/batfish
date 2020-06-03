@@ -1,8 +1,9 @@
 package org.batfish.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_FILE;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
-import static org.batfish.common.util.CommonUtil.readResourceBytes;
+import static org.batfish.common.util.Resources.readResourceBytes;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
@@ -18,6 +19,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -28,6 +30,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +43,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
@@ -753,9 +757,10 @@ public class BatfishTest {
             TestrigText.builder().setConfigurationText(configurations).build(), _folder);
 
     // returns the text of the config if it exists
-    assertThat(
-        batfish.getSnapshotInputObject(batfish.getSnapshot(), "configs/" + fileName),
-        equalTo(configText));
+    try (InputStream inputStream =
+        batfish.getSnapshotInputObject(batfish.getSnapshot(), "configs/" + fileName)) {
+      assertThat(new String(IOUtils.toByteArray(inputStream), UTF_8), equalTo(configText));
+    }
   }
 
   @Test
@@ -771,7 +776,11 @@ public class BatfishTest {
 
     // should throw FileNotFoundException if file not found
     _thrown.expect(FileNotFoundException.class);
-    batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file");
+    try (InputStream inputStream =
+        batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file")) {
+      // Should not reach here
+      assertNotNull(inputStream);
+    }
   }
 
   @Test

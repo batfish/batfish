@@ -112,6 +112,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +124,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -252,7 +253,7 @@ public final class PaloAltoGrammarTest {
   }
 
   private PaloAltoConfiguration parsePaloAltoConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
@@ -272,7 +273,7 @@ public final class PaloAltoGrammarTest {
   }
 
   private @Nonnull PaloAltoConfiguration parseNestedConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     Warnings w = new Warnings();
@@ -1479,7 +1480,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "multiline-token";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -1526,7 +1527,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),

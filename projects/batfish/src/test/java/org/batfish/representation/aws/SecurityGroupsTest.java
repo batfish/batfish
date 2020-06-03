@@ -26,12 +26,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
@@ -89,7 +90,9 @@ public class SecurityGroupsTest {
     JsonNode json =
         BatfishObjectMapper.mapper()
             .readTree(
-                CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTest.json"));
+                Resources.readResource(
+                    "org/batfish/representation/aws/SecurityGroupTest.json",
+                    StandardCharsets.UTF_8));
     _securityGroups =
         BatfishObjectMapper.mapper()
             .convertValue(
@@ -103,7 +106,8 @@ public class SecurityGroupsTest {
   @Test
   public void testDeser() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTestDeser.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/SecurityGroupTestDeser.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_SECURITY_GROUPS);

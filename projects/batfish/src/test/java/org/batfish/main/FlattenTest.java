@@ -2,13 +2,14 @@ package org.batfish.main;
 
 import static com.google.common.io.MoreFiles.createParentDirectories;
 import static org.batfish.common.util.CommonUtil.readFile;
-import static org.batfish.common.util.CommonUtil.readResource;
 import static org.batfish.common.util.CommonUtil.writeFile;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.main.Flatten.main;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.batfish.common.BfConsts;
 import org.junit.Rule;
@@ -37,12 +38,17 @@ public final class FlattenTest {
     Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     createParentDirectories(inputFile);
-    writeFile(inputFile, readResource(String.format("%s/%s", TESTCONFIGS_PATH, inputFilename)));
+    writeFile(
+        inputFile,
+        readResource(
+            String.format("%s/%s", TESTCONFIGS_PATH, inputFilename), StandardCharsets.UTF_8));
     main(new String[] {inputDir.toString(), outputDir.toString()});
 
     assertThat(
         readFile(outputFile),
-        equalTo(readResource(String.format("%s/%s", TESTCONFIGS_PATH, outputFilename))));
+        equalTo(
+            readResource(
+                String.format("%s/%s", TESTCONFIGS_PATH, outputFilename), StandardCharsets.UTF_8)));
   }
 
   @Test

@@ -1,21 +1,16 @@
 package org.batfish.common.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.hash.Hashing;
-import com.google.common.io.Closer;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.SequenceInputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -40,10 +35,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
-import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -279,98 +271,22 @@ public class CommonUtil {
     return text;
   }
 
-  private static @Nonnull BOMInputStream bomInputStream(@Nonnull InputStream inputStream) {
-    return new BOMInputStream(
-        inputStream,
-        ByteOrderMark.UTF_8,
-        ByteOrderMark.UTF_16BE,
-        ByteOrderMark.UTF_16LE,
-        ByteOrderMark.UTF_32BE,
-        ByteOrderMark.UTF_32LE);
-  }
-
-  /**
-   * Automatically detects charset of the input stream, reads it, decodes it, and returns the
-   * resulting string with a newline appended if the original stream is non-empty. Does not close
-   * the provided input stream.
-   *
-   * @throws IOException if there is an error
-   */
-  public static @Nonnull String decodeStreamAndAppendNewline(@Nonnull InputStream inputStream)
-      throws IOException {
-    return decodeStream(inputStream, true);
-  }
-
-  /**
-   * Automatically detects charset of the input stream, reads it, decodes it, and returns the
-   * resulting string. Does not close the provided input stream.
-   *
-   * @throws IOException if there is an error
-   */
-  public static @Nonnull String decodeStream(@Nonnull InputStream inputStream) throws IOException {
-    return decodeStream(inputStream, false);
-  }
-
-  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer.
-  private static @Nonnull String decodeStream(
-      @Nonnull InputStream inputStream, boolean tryAppendNewline) throws IOException {
-    byte[] rawBytes = IOUtils.toByteArray(inputStream);
-    Charset cs = Charset.forName(new CharsetDetector().setText(rawBytes).detect().getName());
-    try (Closer closer = Closer.create()) {
-      InputStream inputByteStream =
-          closer.register(bomInputStream(new ByteArrayInputStream(rawBytes)));
-      InputStream finalInputStream =
-          closer.register(
-              tryAppendNewline && rawBytes.length > 0
-                  ? new SequenceInputStream(
-                      inputByteStream,
-                      closer.register(bomInputStream(new ByteArrayInputStream("\n".getBytes(cs)))))
-                  : inputByteStream);
-      return new String(IOUtils.toByteArray(finalInputStream), cs);
-    }
-  }
-
   public static @Nonnull Charset detectCharset(byte[] bytes) {
     CharsetDetector detector = new CharsetDetector();
     detector.setText(bytes);
     return Charset.forName(detector.detect().getName());
   }
 
-  public static String readResource(String resourcePath) {
-    try (InputStream is =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
-      if (is == null) {
-        throw new BatfishException("Error opening resource: '" + resourcePath + "'");
-      }
-      byte[] bytes = IOUtils.toByteArray(is);
-      String output = new String(bytes, detectCharset(bytes));
-      return output;
-    } catch (IOException e) {
-      throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);
-    }
-  }
-
-  /** Returns the contents of the resource at the provided path as a byte array. */
-  public static @Nonnull byte[] readResourceBytes(@Nonnull String resourcePath) {
-    try (InputStream is =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
-      checkArgument(is != null, "Error opening resource: '%s'", resourcePath);
-      return IOUtils.toByteArray(is);
-    } catch (IOException e) {
-      throw new UncheckedIOException("Could not open resource: '" + resourcePath + "'", e);
-    }
-  }
-
   public static synchronized String salt() {
     if (SALT == null) {
-      SALT = readResource(BfConsts.ABSPATH_DEFAULT_SALT);
+      SALT = Resources.readResource(BfConsts.ABSPATH_DEFAULT_SALT, StandardCharsets.UTF_8);
     }
     return SALT;
   }
 
   /** Returns a hex {@link String} representation of the SHA-256 hash digest of the input string. */
   public static String sha256Digest(String saltedSecret) {
-    return Hashing.sha256().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
+    return Hashing.sha256().hashString(saltedSecret, UTF_8).toString();
   }
 
   public static HttpServer startSslServer(
@@ -417,7 +333,7 @@ public class CommonUtil {
 
   public static void writeFile(Path outputPath, String output) {
     try (FileOutputStream fs = new FileOutputStream(outputPath.toFile());
-        OutputStreamWriter os = new OutputStreamWriter(fs, StandardCharsets.UTF_8)) {
+        OutputStreamWriter os = new OutputStreamWriter(fs, UTF_8)) {
       os.write(output);
     } catch (FileNotFoundException e) {
       throw new BatfishException("Failed to write file (file not found): " + outputPath, e);

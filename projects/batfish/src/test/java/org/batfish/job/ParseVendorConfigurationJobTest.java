@@ -7,9 +7,10 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import java.nio.charset.StandardCharsets;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.identifiers.NetworkId;
@@ -24,7 +25,7 @@ public class ParseVendorConfigurationJobTest {
     return new ParseVendorConfigurationJob(
             new Settings(),
             new NetworkSnapshot(new NetworkId("net"), new SnapshotId("ss")),
-            CommonUtil.readResource(resourcePath),
+            Resources.readResource(resourcePath, StandardCharsets.UTF_8),
             "filename",
             new Warnings(),
             ConfigurationFormat.HOST,

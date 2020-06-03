@@ -8,8 +8,6 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
-import static org.batfish.common.util.CommonUtil.decodeStream;
-import static org.batfish.common.util.CommonUtil.decodeStreamAndAppendNewline;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -23,6 +21,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
+import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,6 +39,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -2027,20 +2027,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getZones(configurations));
   }
 
+  @MustBeClosed
+  @Nonnull
   @Override
-  public @Nonnull String getNetworkObject(NetworkId networkId, String key) throws IOException {
-    try (InputStream inputStream = _storage.loadNetworkObject(networkId, key)) {
-      return decodeStream(inputStream);
-    }
+  public InputStream getNetworkObject(NetworkId networkId, String key) throws IOException {
+    return _storage.loadNetworkObject(networkId, key);
   }
 
+  @MustBeClosed
+  @Nonnull
   @Override
-  public @Nonnull String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
-      throws FileNotFoundException, IOException {
-    try (InputStream inputStream =
-        _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
-      return decodeStream(inputStream);
-    }
+  public InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+      throws IOException {
+    return _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key);
   }
 
   private void repairEnvironmentBgpTables(NetworkSnapshot snapshot) {

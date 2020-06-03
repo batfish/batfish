@@ -1,7 +1,9 @@
 package org.batfish.common.plugin;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -113,8 +115,9 @@ public interface IBatfish extends IPluginConsumer {
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
+  @MustBeClosed
   @Nonnull
-  String getNetworkObject(NetworkId networkId, String key)
+  InputStream getNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
 
   /**
@@ -123,7 +126,9 @@ public interface IBatfish extends IPluginConsumer {
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
-  String getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+  @MustBeClosed
+  @Nonnull
+  InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
       throws FileNotFoundException, IOException;
 
   String getTaskId();

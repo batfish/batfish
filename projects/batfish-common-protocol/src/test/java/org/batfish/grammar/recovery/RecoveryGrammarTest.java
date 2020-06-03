@@ -4,9 +4,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
@@ -21,7 +22,9 @@ public final class RecoveryGrammarTest {
 
   @Test
   public void testParsingRecovery() {
-    String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_text");
+    String recoveryText =
+        Resources.readResource(
+            "org/batfish/grammar/recovery/recovery_text", StandardCharsets.UTF_8);
     int totalLines = recoveryText.split("\n", -1).length;
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, SETTINGS);
     RecoveryContext ctx = cp.parse();
@@ -53,7 +56,9 @@ public final class RecoveryGrammarTest {
 
   @Test
   public void testParsingRecoveryWithModes() {
-    String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_badmode");
+    String recoveryText =
+        Resources.readResource(
+            "org/batfish/grammar/recovery/recovery_badmode", StandardCharsets.UTF_8);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, SETTINGS);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();

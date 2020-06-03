@@ -1,6 +1,6 @@
 package org.batfish.main;
 
-import static org.batfish.common.util.CommonUtil.decodeStreamAndAppendNewline;
+import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;

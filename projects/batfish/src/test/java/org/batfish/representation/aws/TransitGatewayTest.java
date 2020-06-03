@@ -25,9 +25,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
@@ -71,7 +72,9 @@ public class TransitGatewayTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/TransitGatewayTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/TransitGatewayTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

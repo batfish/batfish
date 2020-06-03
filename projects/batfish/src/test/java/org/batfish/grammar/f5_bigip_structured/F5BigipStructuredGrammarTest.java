@@ -160,6 +160,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -183,7 +184,7 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
@@ -337,7 +338,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   private @Nonnull F5BigipConfiguration parseVendorConfig(String filename) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + filename, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     settings.setDisableUnrecognized(_disableUnrecognized);

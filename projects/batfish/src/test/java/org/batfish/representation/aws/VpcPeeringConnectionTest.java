@@ -14,11 +14,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -31,7 +32,9 @@ public class VpcPeeringConnectionTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/VpcPeeringConnectionsTest.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/VpcPeeringConnectionsTest.json",
+            StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPC_PEERING_CONNECTIONS);
@@ -58,8 +61,9 @@ public class VpcPeeringConnectionTest {
   @Test
   public void testIgnoreNonActive() throws IOException {
     String text =
-        CommonUtil.readResource(
-            "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json",
+            StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

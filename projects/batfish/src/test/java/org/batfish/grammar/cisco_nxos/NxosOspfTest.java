@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -32,7 +33,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
@@ -77,7 +78,7 @@ public final class NxosOspfTest {
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);

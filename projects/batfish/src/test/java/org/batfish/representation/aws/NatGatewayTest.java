@@ -21,10 +21,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -50,7 +51,9 @@ public class NatGatewayTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/NatGatewayTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/NatGatewayTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

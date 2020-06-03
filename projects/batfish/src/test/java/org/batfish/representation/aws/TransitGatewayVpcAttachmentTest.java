@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.junit.Test;
 
 /** Tests for {@link TransitGatewayVpcAttachment} */
@@ -17,8 +18,9 @@ public class TransitGatewayVpcAttachmentTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource(
-            "org/batfish/representation/aws/TransitGatewayVpcAttachmentTest.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/TransitGatewayVpcAttachmentTest.json",
+            StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

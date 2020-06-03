@@ -13,13 +13,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.junit.Test;
@@ -29,7 +30,9 @@ public class VpcTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/VpcTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/VpcTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPCS);

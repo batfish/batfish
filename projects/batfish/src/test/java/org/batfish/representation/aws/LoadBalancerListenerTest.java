@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
 import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
@@ -20,7 +21,8 @@ public class LoadBalancerListenerTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/LoadBalancerListenerTest.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/LoadBalancerListenerTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");
@@ -47,7 +49,9 @@ public class LoadBalancerListenerTest {
 
   @Test
   public void testDeserializationDefaultAction_nullOrder() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/DefaultAction.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/DefaultAction.json", StandardCharsets.UTF_8);
 
     DefaultAction defaultAction = BatfishObjectMapper.mapper().readValue(text, DefaultAction.class);
     assertThat(

@@ -126,6 +126,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -142,7 +143,7 @@ import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
@@ -455,7 +456,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   private @Nonnull CiscoNxosConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);

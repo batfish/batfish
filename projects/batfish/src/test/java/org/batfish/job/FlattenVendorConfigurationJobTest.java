@@ -3,9 +3,10 @@ package org.batfish.job;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class FlattenVendorConfigurationJobTest {
     FlattenVendorConfigurationJob job =
         new FlattenVendorConfigurationJob(
             new Settings(),
-            CommonUtil.readResource(resourcePath),
+            Resources.readResource(resourcePath, StandardCharsets.UTF_8),
             Paths.get("input"),
             Paths.get("output"),
             new Warnings());
@@ -34,7 +35,9 @@ public class FlattenVendorConfigurationJobTest {
     // Confirm Juniper nested config is flattened properly
     assertThat(
         getFlattenedText(JUNIPER_TESTCONFIGS_PREFIX + nestedConfig),
-        equalTo(CommonUtil.readResource(JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig)));
+        equalTo(
+            Resources.readResource(
+                JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig, StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -45,7 +48,10 @@ public class FlattenVendorConfigurationJobTest {
     String flatText = getFlattenedText(JUNIPER_TESTCONFIGS_PREFIX + nestedConfig);
     // Confirm Juniper nested config with bracketed list is flattened properly
     assertThat(
-        flatText, equalTo(CommonUtil.readResource(JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig)));
+        flatText,
+        equalTo(
+            Resources.readResource(
+                JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig, StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -55,7 +61,9 @@ public class FlattenVendorConfigurationJobTest {
     // Confirm Palo Alto nested config is flattened properly
     assertThat(
         getFlattenedText(PAN_TESTCONFIGS_PREFIX + nestedConfig),
-        equalTo(CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + flattenedConfig)));
+        equalTo(
+            Resources.readResource(
+                PAN_TESTCONFIGS_PREFIX + flattenedConfig, StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -66,7 +74,10 @@ public class FlattenVendorConfigurationJobTest {
     String flatText = getFlattenedText(PAN_TESTCONFIGS_PREFIX + nestedConfig);
     // Confirm Palo Alto nested config with bracketed list is flattened properly
     assertThat(
-        flatText, equalTo(CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + flattenedConfig)));
+        flatText,
+        equalTo(
+            Resources.readResource(
+                PAN_TESTCONFIGS_PREFIX + flattenedConfig, StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -90,6 +101,8 @@ public class FlattenVendorConfigurationJobTest {
     // Confirm Vyos nested config is flattened properly
     assertThat(
         getFlattenedText(VYOS_TESTCONFIGS_PREFIX + nestedConfig),
-        equalTo(CommonUtil.readResource(VYOS_TESTCONFIGS_PREFIX + flattenedConfig)));
+        equalTo(
+            Resources.readResource(
+                VYOS_TESTCONFIGS_PREFIX + flattenedConfig, StandardCharsets.UTF_8)));
   }
 }

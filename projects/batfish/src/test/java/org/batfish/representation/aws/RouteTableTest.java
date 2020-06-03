@@ -8,10 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.representation.aws.Route.State;
@@ -24,7 +25,9 @@ public class RouteTableTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RouteTableTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/RouteTableTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_ROUTE_TABLES);
@@ -52,7 +55,9 @@ public class RouteTableTest {
 
   @Test
   public void testDeserializationV6() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RouteV6TableTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/RouteV6TableTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_ROUTE_TABLES);

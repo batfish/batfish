@@ -52,6 +52,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +68,7 @@ import org.batfish.common.bdd.BDDPrefix;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
@@ -199,7 +200,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   private @Nonnull F5BigipConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);

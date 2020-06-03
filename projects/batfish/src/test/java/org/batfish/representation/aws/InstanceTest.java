@@ -25,13 +25,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
@@ -51,7 +52,9 @@ public class InstanceTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/InstanceTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/InstanceTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode reservationArray = (ArrayNode) json.get(JSON_KEY_RESERVATIONS);

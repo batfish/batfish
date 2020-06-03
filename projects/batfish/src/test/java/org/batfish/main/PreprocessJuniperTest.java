@@ -7,10 +7,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,12 +46,16 @@ public final class PreprocessJuniperTest {
     Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     createParentDirectories(inputFile);
-    writeFile(inputFile, CommonUtil.readResource(String.format("%s%s", prefix, before)));
+    writeFile(
+        inputFile,
+        Resources.readResource(String.format("%s%s", prefix, before), StandardCharsets.UTF_8));
     main(new String[] {inputDir.toString(), outputDir.toString()});
 
     assertThat(
         CommonUtil.readFile(outputFile).trim(),
-        equalTo(CommonUtil.readResource(String.format("%s%s", prefix, after)).trim()));
+        equalTo(
+            Resources.readResource(String.format("%s%s", prefix, after), StandardCharsets.UTF_8)
+                .trim()));
   }
 
   @Test

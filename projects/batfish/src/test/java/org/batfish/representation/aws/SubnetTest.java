@@ -30,12 +30,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
@@ -60,7 +61,9 @@ public class SubnetTest {
   public void setup() throws IOException {
     JsonNode json =
         BatfishObjectMapper.mapper()
-            .readTree(CommonUtil.readResource("org/batfish/representation/aws/SubnetTest.json"));
+            .readTree(
+                Resources.readResource(
+                    "org/batfish/representation/aws/SubnetTest.json", StandardCharsets.UTF_8));
     _subnetList =
         BatfishObjectMapper.mapper()
             .convertValue(json.get(JSON_KEY_SUBNETS), new TypeReference<List<Subnet>>() {});

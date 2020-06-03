@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 
 public class TestrigText {
 
@@ -36,7 +36,7 @@ public class TestrigText {
                 ImmutableMap.toImmutableMap(
                     Function.identity(),
                     filename ->
-                        CommonUtil.readResourceBytes(
+                        Resources.readResourceBytes(
                             String.format(
                                 "%s%s/%s", testrigResourcePrefix, subfolderText, filename))));
       } else {

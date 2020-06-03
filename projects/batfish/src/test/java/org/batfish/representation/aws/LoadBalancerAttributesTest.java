@@ -10,8 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.representation.aws.LoadBalancerAttributes.Attribute;
 import org.junit.Test;
 
@@ -20,7 +21,9 @@ public class LoadBalancerAttributesTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/LoadBalancerAttributesTest.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/LoadBalancerAttributesTest.json",
+            StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

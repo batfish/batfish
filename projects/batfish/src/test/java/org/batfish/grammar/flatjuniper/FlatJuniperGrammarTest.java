@@ -175,6 +175,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -195,6 +196,7 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -401,7 +403,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8);
     Settings settings = new Settings();
     BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
@@ -2295,7 +2297,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            Resources.readResource(TESTCONFIGS_PREFIX + hostname, StandardCharsets.UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -4440,7 +4442,8 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testParsingRecovery() {
     String recoveryText =
-        CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/recovery");
+        Resources.readResource(
+            "org/batfish/grammar/juniper/testconfigs/recovery", StandardCharsets.UTF_8);
     Settings settings = new Settings();
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
     Flat_juniper_configurationContext ctx = cp.parse();

@@ -3,9 +3,10 @@ package org.batfish.grammar.recovery_rule_alts;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
@@ -41,7 +42,7 @@ public final class RecoveryRuleAltsGrammarTest {
       MockGrammarSettings.builder().setThrowOnLexerError(true).setThrowOnParserError(true).build();
 
   private static RecoveryRuleAltsExtractor parse(String filename) {
-    String text = CommonUtil.readResource(RESOURCE_PREFIX + filename);
+    String text = Resources.readResource(RESOURCE_PREFIX + filename, StandardCharsets.UTF_8);
     RecoveryRuleAltsCombinedParser cp = new RecoveryRuleAltsCombinedParser(text, SETTINGS);
     ParserRuleContext ctx = cp.parse();
     RecoveryRuleAltsExtractor extractor = new RecoveryRuleAltsExtractor();

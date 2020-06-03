@@ -17,12 +17,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Resources;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -38,7 +39,9 @@ public class VpnConnectionTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/VpnConnectionTest.json");
+    String text =
+        Resources.readResource(
+            "org/batfish/representation/aws/VpnConnectionTest.json", StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");
@@ -111,8 +114,9 @@ public class VpnConnectionTest {
   @Test
   public void testDeserializationTransitGateway() throws IOException {
     String text =
-        CommonUtil.readResource(
-            "org/batfish/representation/aws/VpnConnectionTransitGatewayTest.json");
+        Resources.readResource(
+            "org/batfish/representation/aws/VpnConnectionTransitGatewayTest.json",
+            StandardCharsets.UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPN_CONNECTIONS);

@@ -1,6 +1,6 @@
 package org.batfish.coordinator;
 
-import static org.batfish.common.util.CommonUtil.decodeStream;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.deserializeAndDeleteInterfaceBlacklist;
@@ -63,6 +63,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -1151,7 +1152,7 @@ public final class WorkMgrTest {
             snapshot,
             Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, fileName).toString())) {
       assertThat(inputStream, not(nullValue()));
-      return decodeStream(inputStream);
+      return new String(IOUtils.toByteArray(inputStream), UTF_8);
     }
   }
 
