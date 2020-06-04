@@ -41,9 +41,9 @@ public final class BDDOutgoingOriginalFlowFilterManager {
   /**
    * A representative interface that is active but does not have an {@link
    * Interface#getOutgoingOriginalFlowFilter() outgoingOriginalFlowFilter}. This value (if not null)
-   * will be included in the finite domain, but its corresponding BDD will not be used. Allocating
-   * this value merely enforces that the BDD for an interface with a outgoingOriginalFlowFilter
-   * can't be ONE unless it is the only active interface on the node.
+   * will be included in the finite domain, but its corresponding BDD is not currently used.
+   * Allocating this value merely enforces that the BDD for an interface with a
+   * outgoingOriginalFlowFilter can't be ONE unless it is the only active interface on the node.
    *
    * <p>{@code null} when we don't need BDDs to distinguish between active interfaces with original
    * flow filters vs active interfaces without original flow filters. This is true when one or both
@@ -53,6 +53,12 @@ public final class BDDOutgoingOriginalFlowFilterManager {
 
   private final BDDFiniteDomain<String> _finiteDomain;
   private final Map<String, BDD> _filterBdds;
+  /**
+   * BDD assignments for interfaces with {@link Interface#getOutgoingOriginalFlowFilter()
+   * outgoingOriginalFlowFilters}. (Does not include entry for {@link
+   * #_activeButNoOriginalFlowFilterRepresentative}.
+   */
+  private final Map<String, BDD> _interfaceBdds;
 
   /**
    * Indicates whether a flow will be permitted through an {@link
@@ -74,6 +80,13 @@ public final class BDDOutgoingOriginalFlowFilterManager {
     _finiteDomain = finiteDomain;
     _filterBdds = filterBdds;
     _permitVar = permitVar;
+
+    _interfaceBdds =
+        _activeButNoOriginalFlowFilterRepresentative == null
+            ? _finiteDomain.getValueBdds()
+            : _finiteDomain.getValueBdds().entrySet().stream()
+                .filter(e -> !e.getKey().equals(_activeButNoOriginalFlowFilterRepresentative))
+                .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   /**
@@ -106,8 +119,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
               ? null
               : c.getActiveInterfaces().keySet().stream()
                   .filter(iface -> !activeWithFilters.contains(iface))
-                  .sorted()
-                  .findFirst()
+                  .findAny()
                   .orElse(null);
 
       if (repActiveIfaceWithoutFilter != null) {
@@ -172,9 +184,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    */
   @Nonnull
   Map<String, BDD> getInterfaceBDDs() {
-    return _finiteDomain.getValueBdds().entrySet().stream()
-        .filter(e -> !e.getKey().equals(_activeButNoOriginalFlowFilterRepresentative))
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    return _interfaceBdds;
   }
 
   /**
@@ -203,7 +213,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
 
   /** Existentially quantify the source variable. */
   public BDD erase(BDD bdd) {
-    return _finiteDomain.existsValue(bdd);
+    return _finiteDomain.existsValue(bdd).exist(_permitVar);
   }
 
   /**

@@ -1,5 +1,7 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.transition.Transitions.compose;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -157,25 +159,13 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
       BDD activeIfaceWithFilterBdd = mgr.getInterfaceBDDs().get(ACTIVE_IFACE_WITH_FILTER_1);
       assertTrue(!activeIfaceWithFilterBdd.isZero() && !activeIfaceWithFilterBdd.isOne());
     }
-    {
-      Set<String> ifaces =
-          ImmutableSet.of(
-              ACTIVE_IFACE_WITH_FILTER_1,
-              INACTIVE_IFACE_WITH_FILTER,
-              ACTIVE_IFACE_NO_FILTER_1,
-              ACTIVE_IFACE_NO_FILTER_2);
-      Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
-      assertThat(mgr.getInterfaceBDDs().keySet(), contains(ACTIVE_IFACE_WITH_FILTER_1));
-      BDD activeIfaceWithFilterBdd = mgr.getInterfaceBDDs().get(ACTIVE_IFACE_WITH_FILTER_1);
-      assertTrue(!activeIfaceWithFilterBdd.isZero() && !activeIfaceWithFilterBdd.isOne());
-    }
   }
 
   @Test
   public void testFiniteDomainValues_twoActiveIfacesWithFilter() {
     // If two active interfaces with filters are present and no other active interfaces are present,
-    // the active interfaces' selection BDDs should be nontrivial and mutually complementary.
+    // the active interfaces' selection BDDs should be nontrivial and should together make up the
+    // entire space of finite domain values.
     {
       Set<String> ifaces =
           ImmutableSet.of(
@@ -195,7 +185,9 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     }
 
     // If two active interfaces with filters are present and any other active interfaces are also
-    // present, the active interfaces' selection BDDs should be nontrivial and mutually incomplete.
+    // present, the active interfaces' selection BDDs should be nontrivial and should *not* make up
+    // the entire space of finite domain values (a single value should be allocated to represent the
+    // other active interfaces).
     {
       Set<String> ifaces =
           ImmutableSet.of(
@@ -233,80 +225,27 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     BDDOutgoingOriginalFlowFilterManager mgr1 = mgrs.get(config1.getHostname());
     BDDOutgoingOriginalFlowFilterManager mgr2 = mgrs.get(config2.getHostname());
 
-    // The two managers use the same BDD values to track outgoing interfaces.
-    assertThat(mgr1.getInterfaceBDDs(), equalTo(mgr2.getInterfaceBDDs()));
+    // The two managers should be nontrivial and should use the same BDD values, so it should work
+    // to use one to erase constraints created by the other.
+    assertTrue(!mgr1.isTrivial() && !mgr2.isTrivial());
+    assertTrue(mgr1.erase(mgr2.outgoingOriginalFlowFiltersConstraint()).isOne());
   }
 
   @Test
-  public void testForwardConstraints() {
+  public void testTransitions() {
     /*
-    Test that outgoingOriginalFlowFiltersConstraint correctly constrains forward flows:
-    1. Original flows have dst DST_IP_1
-    2. Constrain using outgoingOriginalFlowFiltersConstraint to track outgoing interface permissions
-    3. Put all flows through transformation to have transformed dst DST_IP_2
-    4. Try sending flows out ACTIVE_IFACE_WITH_FILTER_1 and ACTIVE_IFACE_WITH_FILTER_2. "Sending
-       out" means constraining the flows to the finite domain's BDD for the interface.
-        a. All flows should be allowed out ACTIVE_IFACE_WITH_FILTER_1 because its original flow
-          filter permits DST_IP_1
-        b. No flows should be allowed out ACTIVE_IFACE_WITH_FILTER_2 because its original flow
-          filter permits only DST_IP_2
-     */
-    Configuration c = createConfig(new NetworkFactory(), ALL_IFACES);
-    BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
+    Test that outgoingOriginalFlowFiltersConstraint correctly constrains flows. Will use a variety
+    of flows, some of which will undergo transformations. The initial flows are:
+      1. srcIp1 -> DST_IP_1
+      2. srcIp2 -> DST_IP_1
+      3. srcIp3 -> DST_IP_2
+      4. srcIp4 -> DST_IP_2
+    The transformations are:
+      1. Dest NAT on flows from srcIp2 to transform dst to DST_IP_2
+      2. Dest NAT on flows from srcIp4 to transform dst to DST_IP_1
 
-    BDD dstIp1 = PKT.getDstIp().value(DST_IP_1.asLong());
-    BDD dstIp2 = PKT.getDstIp().value(DST_IP_2.asLong());
-    BDD originalFlowFiltersConstraint = mgr.outgoingOriginalFlowFiltersConstraint();
-    Transformation transformation =
-        Transformation.always().apply(TransformationStep.assignDestinationIp(DST_IP_2)).build();
-    Transition transformationTransition =
-        new TransformationToTransition(
-                PKT,
-                new IpAccessListToBddImpl(
-                    PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of()))
-            .toTransition(transformation);
-
-    BDD flows = dstIp1.and(originalFlowFiltersConstraint); // track outgoing interface permissions
-    flows = transformationTransition.transitForward(flows); // transform dst to DST_IP_2
-
-    // First iface's original flow filter matches DST_IP_1; all flows should be permitted even
-    // though their dst is now DST_IP_2
-    BDD permittedOutIface1 =
-        flows.and(mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1));
-    BDD deniedOutIface1 =
-        flows.and(mgr.deniedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1));
-    assertThat(permittedOutIface1, equalTo(permittedOutIface1.and(dstIp2)));
-    assertThat(deniedOutIface1, equalTo(deniedOutIface1.and(dstIp2)));
-    assertFalse(permittedOutIface1.isZero());
-    assertTrue(deniedOutIface1.isZero());
-
-    // Second iface's original flow filter matches DST_IP_2; all flows should be denied, since they
-    // were *originally* destined for DST_IP_1
-    BDD permittedOutIface2 =
-        flows.and(mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_2));
-    BDD deniedOutIface2 =
-        flows.and(mgr.deniedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_2));
-    assertThat(permittedOutIface2, equalTo(permittedOutIface2.and(dstIp2)));
-    assertThat(deniedOutIface2, equalTo(deniedOutIface2.and(dstIp2)));
-    assertTrue(permittedOutIface2.isZero());
-    assertFalse(deniedOutIface2.isZero());
-  }
-
-  @Test
-  public void testBackwardConstraints() {
-    /*
-    Test that outgoingOriginalFlowFiltersConstraint correctly constrains backward flows:
-    1. Start with three sets of flows that allegedly exited ACTIVE_IFACE_WITH_FILTER_1:
-       a. Flows from srcIp1 -> DST_IP_1
-       b. Flows from srcIp2 -> DST_IP_2
-       c. Flows from srcIp3 -> DST_IP_2
-    2. Create transformation that applies to flows from srcIp2 and transforms dst to DST_IP_2;
-       transit this backwards
-    3. Apply outgoingOriginalFlowFiltersConstraint to pre-transformation flows
-    4. Should see:
-       a. Flows from srcIp1 -> DST_IP_1; these would succeed out without getting transformed
-       b. Flows from srcIp2 -> DST_IP_1; these would get transformed and succeed out
-       c. No flows from srcIp3; these wouldn't get transformed and would be blocked by filter
+    Will then test composite transitions including the outgoingOriginalFlowFiltersConstraint, the
+    transformations, and a permit or deny at interface constraint from the manager.
      */
     Configuration c = createConfig(new NetworkFactory(), ALL_IFACES);
     BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
@@ -314,43 +253,145 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     Ip ip1 = Ip.parse("10.10.10.1");
     Ip ip2 = Ip.parse("10.10.10.2");
     Ip ip3 = Ip.parse("10.10.10.3");
+    Ip ip4 = Ip.parse("10.10.10.4");
     BDD srcIp1 = PKT.getSrcIp().value(ip1.asLong());
     BDD srcIp2 = PKT.getSrcIp().value(ip2.asLong());
     BDD srcIp3 = PKT.getSrcIp().value(ip3.asLong());
+    BDD srcIp4 = PKT.getSrcIp().value(ip4.asLong());
     BDD dstIp1 = PKT.getDstIp().value(DST_IP_1.asLong());
     BDD dstIp2 = PKT.getDstIp().value(DST_IP_2.asLong());
+    BDD srcIp1ToDstIp1 = srcIp1.and(dstIp1);
+    BDD srcIp2ToDstIp1 = srcIp2.and(dstIp1);
+    BDD srcIp3ToDstIp2 = srcIp3.and(dstIp2);
+    BDD srcIp4ToDstIp2 = srcIp4.and(dstIp2);
+    BDD initialFlows = srcIp1ToDstIp1.or(srcIp2ToDstIp1).or(srcIp3ToDstIp2).or(srcIp4ToDstIp2);
 
-    BDD permittedOutIface1 = mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1);
-    Transformation transformation =
+    BDD originalFlowFiltersConstraint = mgr.outgoingOriginalFlowFiltersConstraint();
+
+    // Build transformations
+    Transformation transformation1 =
         Transformation.when(matchSrc(ip2.toIpSpace()))
             .apply(TransformationStep.assignDestinationIp(DST_IP_2))
             .build();
-    Transition transformationTransition =
+    Transformation transformation2 =
+        Transformation.when(matchSrc(ip4.toIpSpace()))
+            .apply(TransformationStep.assignDestinationIp(DST_IP_1))
+            .build();
+    TransformationToTransition transformationToTransition =
         new TransformationToTransition(
-                PKT,
-                new IpAccessListToBddImpl(
-                    PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of()))
-            .toTransition(transformation);
-    BDD originalFlowFiltersConstraint = mgr.outgoingOriginalFlowFiltersConstraint();
+            PKT,
+            new IpAccessListToBddImpl(
+                PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of()));
+    Transition transformation1Transition = transformationToTransition.toTransition(transformation1);
+    Transition transformation2Transition = transformationToTransition.toTransition(transformation2);
 
-    // The "final" flows with which the backwards traversal begins
-    BDD srcIp1ToDstIp1 = srcIp1.and(dstIp1).and(permittedOutIface1);
-    BDD srcIp2ToDstIp2 = srcIp2.and(dstIp2).and(permittedOutIface1);
-    BDD srcIp3ToDstIp2 = srcIp3.and(dstIp2).and(permittedOutIface1);
-    BDD finalFlows = srcIp1ToDstIp1.or(srcIp2ToDstIp2).or(srcIp3ToDstIp2);
+    // Flows that will emerge from transformation
+    BDD srcIp2TransformedFlows = srcIp2.and(dstIp2);
+    BDD srcIp4TransformedFlows = srcIp4.and(dstIp1);
 
-    BDD flows =
-        transformationTransition.transitBackward(finalFlows); // flows with src srcIp2 untransform
-    flows = flows.and(originalFlowFiltersConstraint); // track original flow outgoing filters
+    /*
+    Flows permitted out ACTIVE_IFACE_WITH_FILTER_1 should have:
+      a. Flows from srcIp1 -> DST_IP_1; these succeed out without getting transformed
+      b. Flows from srcIp2 -> DST_IP_2; these get transformed but had correct original dst
+      c. No flows from srcIp3; these don't get transformed and get blocked by filter
+      d. No flows from srcIp4; these get transformed but get blocked by filter (wrong original dst)
+    */
+    {
+      BDD permittedOutIface1 = mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1);
+      Transition transition =
+          compose(
+              constraint(originalFlowFiltersConstraint),
+              transformation1Transition,
+              transformation2Transition,
+              constraint(permittedOutIface1));
 
-    // The final flows from srcIp1 should be present unchanged
-    assertThat(flows, equalTo(flows.or(srcIp1ToDstIp1)));
+      BDD flows = mgr.erase(transition.transitForward(initialFlows));
+      assertThat(flows, equalTo(srcIp1ToDstIp1.or(srcIp2TransformedFlows)));
 
-    // The final flows from srcIp2 should be present, but now with DST_IP_1 instead of DST_IP_2
-    BDD transformedFlowsFromIp2 = srcIp2.and(dstIp1).and(permittedOutIface1);
-    assertThat(flows, equalTo(flows.or(transformedFlowsFromIp2)));
+      // Run it backwards. Should see that only flows originally destined for dstIp1 get permitted.
+      BDD backwardsFlows = mgr.erase(transition.transitBackward(PKT.getFactory().one()));
+      assertThat(backwardsFlows, equalTo(dstIp1));
+    }
 
-    // None of the final flows from srcIp3 should be present
-    assertTrue(flows.and(srcIp3).isZero());
+    // Flows denied out ACTIVE_IFACE_WITH_FILTER_1 should be the opposite of the permitted flows:
+    // should include original flows from srcIp3 and transformed flows from srcIp4, and no flows
+    // from srcIp1 or srcIp2.
+    {
+      BDD deniedOutIface1 = mgr.deniedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1);
+      Transition denyTransition =
+          compose(
+              constraint(originalFlowFiltersConstraint),
+              transformation1Transition,
+              transformation2Transition,
+              constraint(deniedOutIface1));
+
+      BDD flows = mgr.erase(denyTransition.transitForward(initialFlows));
+      assertThat(flows, equalTo(srcIp3ToDstIp2.or(srcIp4TransformedFlows)));
+
+      // Run it backwards. Should see that only flows originally not destined for dstIp1 get denied.
+      BDD backwardsFlows = mgr.erase(denyTransition.transitBackward(PKT.getFactory().one()));
+      assertThat(backwardsFlows, equalTo(dstIp1.not()));
+    }
+
+    // ACTIVE_IFACE_NO_FILTER_1 should permit all flows since it has no filter.
+    {
+      BDD permittedOutIfaceWithoutFilter =
+          mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_NO_FILTER_1);
+      Transition transition =
+          compose(
+              constraint(originalFlowFiltersConstraint),
+              transformation1Transition,
+              transformation2Transition,
+              constraint(permittedOutIfaceWithoutFilter));
+
+      // Just start with all flows since we expect them all to be permitted. Due to transformations,
+      // not every possible flow can reach the interface.
+      BDD flows = mgr.erase(transition.transitForward(PKT.getFactory().one()));
+      BDD allUntransformedFlows = PKT.getFactory().one().diff(srcIp2.or(srcIp4));
+      BDD allTransformedFlows = srcIp2TransformedFlows.or(srcIp4TransformedFlows);
+      assertThat(flows, equalTo(allUntransformedFlows.or(allTransformedFlows)));
+
+      // Run it backwards; should still see that anything can reach permitted state
+      BDD backwardsFlows = mgr.erase(transition.transitBackward(PKT.getFactory().one()));
+      assertTrue(backwardsFlows.isOne());
+    }
+
+    // ACTIVE_IFACE_NO_FILTER_1 should not deny any flows since it has no filter.
+    {
+      BDD deniedOutIfaceWithoutFilter =
+          mgr.deniedByOriginalFlowEgressFilter(ACTIVE_IFACE_NO_FILTER_1);
+      Transition denyTransition =
+          compose(
+              constraint(originalFlowFiltersConstraint),
+              transformation1Transition,
+              transformation2Transition,
+              constraint(deniedOutIfaceWithoutFilter));
+
+      // Just start with all flows since we don't expect any to be denied.
+      BDD flows = mgr.erase(denyTransition.transitForward(PKT.getFactory().one()));
+      assertTrue(flows.isZero());
+
+      // Run it backwards; should still see that nothing can reach denied state
+      BDD backwardsFlows = mgr.erase(denyTransition.transitBackward(PKT.getFactory().one()));
+      assertTrue(backwardsFlows.isZero());
+    }
+  }
+
+  @Test
+  public void testErase() {
+    Configuration c = createConfig(new NetworkFactory(), ALL_IFACES);
+    BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
+
+    // erase should clear implications contingent on interface constraints
+    BDD outgoingOriginalFlowFiltersConstraint = mgr.outgoingOriginalFlowFiltersConstraint();
+    assertTrue(mgr.erase(outgoingOriginalFlowFiltersConstraint).isOne());
+
+    // erase should clear all interface constraints as well as permit var
+    BDD permittedOutAnyIface =
+        ALL_IFACES.stream()
+            .map(mgr::permittedByOriginalFlowEgressFilter)
+            .reduce(BDD::or)
+            .orElse(null);
+    assertTrue(mgr.erase(permittedOutAnyIface).isOne());
   }
 }
