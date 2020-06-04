@@ -1844,10 +1844,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
     // Apply device-groups
     _deviceGroups
-        .values()
+        .entrySet()
         .forEach(
-            dg ->
-                dg.getDevices()
+            deviceGroupEntry ->
+                deviceGroupEntry
+                    .getValue()
+                    .getDevices()
                     .forEach(
                         name -> {
                           // Create new managed config if one doesn't already exist for this device
@@ -1856,16 +1858,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // already be associated with another device-group (should not happen)
                             _w.redFlag(
                                 String.format(
-                                    "Managed device '%s' cannot be associated with more than one device-group.",
-                                    name));
+                                    "Managed device '%s' cannot be associated with more than one device-group. Ignoring association with device-group '%s'.",
+                                    name, deviceGroupEntry.getKey()));
                           } else {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
                             managedConfigurations.put(name, c);
+                            managedConfigurations
+                                .get(name)
+                                .applyDeviceGroup(deviceGroupEntry.getValue());
                           }
-                          managedConfigurations.get(name).applyDeviceGroup(dg);
                         }));
     // Once managed devices are built, convert them too
     outputConfigurations.addAll(
