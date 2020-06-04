@@ -275,6 +275,8 @@ public class BDDOutgoingInterfaceManagerTest {
         flows.and(mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1));
     BDD deniedOutIface1 =
         flows.and(mgr.deniedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1));
+    assertThat(permittedOutIface1, equalTo(permittedOutIface1.and(dstIp2)));
+    assertThat(deniedOutIface1, equalTo(deniedOutIface1.and(dstIp2)));
     assertFalse(permittedOutIface1.isZero());
     assertTrue(deniedOutIface1.isZero());
 
@@ -284,6 +286,8 @@ public class BDDOutgoingInterfaceManagerTest {
         flows.and(mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_2));
     BDD deniedOutIface2 =
         flows.and(mgr.deniedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_2));
+    assertThat(permittedOutIface2, equalTo(permittedOutIface2.and(dstIp2)));
+    assertThat(deniedOutIface2, equalTo(deniedOutIface2.and(dstIp2)));
     assertTrue(permittedOutIface2.isZero());
     assertFalse(deniedOutIface2.isZero());
   }
