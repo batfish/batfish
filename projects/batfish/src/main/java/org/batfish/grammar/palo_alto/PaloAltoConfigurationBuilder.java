@@ -409,7 +409,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private BgpVr _currentBgpVr;
   private PaloAltoConfiguration _currentConfiguration;
   private CryptoProfile _currentCrytoProfile;
-  private @Nullable DeviceGroup _currentDeviceGroup;
+  privateDeviceGroup _currentDeviceGroup;
   private String _currentDeviceName;
   private String _currentExternalListName;
   private Interface _currentInterface;
