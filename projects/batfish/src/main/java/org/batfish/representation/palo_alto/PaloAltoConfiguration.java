@@ -1836,11 +1836,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
-    Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
     // Build primary config
     outputConfigurations.add(this.toVendorIndependentConfiguration());
 
     // Build configs for each managed device, if applicable
+    // Map of managed device ID to managed device config
+    Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
     // Apply device-groups
     _deviceGroups
         .values()
@@ -1849,12 +1850,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 dg.getDevices()
                     .forEach(
                         name -> {
+                          // Create new managed config if one doesn't already exist for this device
                           if (!managedConfigurations.containsKey(name)) {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
                             managedConfigurations.put(name, c);
+                          } else {
+                            // If the device already has a config associated with it, it must
+                            // already be associated with another device-group (should not happen)
+                            _w.redFlag(
+                                String.format(
+                                    "Managed device '%s' cannot be associated with more than one device-group.",
+                                    name));
                           }
                           managedConfigurations.get(name).applyDeviceGroup(dg);
                         }));
