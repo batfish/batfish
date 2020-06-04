@@ -135,6 +135,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
@@ -606,6 +607,7 @@ import org.batfish.representation.juniper.AddressRangeAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
+import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
@@ -782,6 +784,8 @@ import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Vlan;
+import org.batfish.representation.juniper.VlanRange;
+import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
@@ -2358,11 +2362,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterIf_ethernet_switching(If_ethernet_switchingContext ctx) {
-    if (_currentInterfaceOrRange.getSwitchportMode() == SwitchportMode.NONE) {
-      // JunOS docs say family ethernet-switching are access mode by default.
-      //   use enter rule so that an inner port-mode or interface-mode command will override.
-      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.ACCESS);
-    }
+    _currentInterfaceOrRange.initEthernetSwitching();
   }
 
   @Override
@@ -4252,9 +4252,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIfe_interface_mode(Ife_interface_modeContext ctx) {
     if (ctx.ACCESS() != null) {
-      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.ACCESS);
+      _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.ACCESS);
     } else if (ctx.TRUNK() != null) {
-      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.TRUNK);
+      _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.TRUNK);
     } else {
       todo(ctx);
     }
@@ -4262,35 +4262,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIfe_native_vlan_id(Ife_native_vlan_idContext ctx) {
-    _currentInterfaceOrRange.setNativeVlan(toInt(ctx.id));
+    _currentInterfaceOrRange.getEthernetSwitching().setNativeVlan(toInt(ctx.id));
   }
 
   @Override
   public void exitIfe_port_mode(Ife_port_modeContext ctx) {
     if (ctx.TRUNK() != null) {
-      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.TRUNK);
+      _currentInterfaceOrRange.getEthernetSwitching().setSwitchportMode(SwitchportMode.TRUNK);
     }
   }
 
   @Override
   public void exitIfe_vlan(Ife_vlanContext ctx) {
-    if (_currentInterfaceOrRange.getSwitchportMode() == SwitchportMode.TRUNK) {
-      if (ctx.range() != null) {
-        List<SubRange> subRanges = toRange(ctx.range());
-        subRanges.forEach(subRange -> _currentInterfaceOrRange.getAllowedVlans().add(subRange));
-      } else if (ctx.name != null) {
-        String name = ctx.name.getText();
-        _currentInterfaceOrRange.getAllowedVlanNames().add(name);
-        _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
-      }
+    if (ctx.range() != null) {
+      IntegerSpace range = IntegerSpace.unionOf(toRange(ctx.range()).toArray(new SubRange[] {}));
+      _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(new VlanRange(range));
     } else if (ctx.name != null) {
-      // SwitchPortMode here can be ACCESS or NONE, overwrite both with ACCESS(considered default)
-      _currentInterfaceOrRange.setSwitchportMode(SwitchportMode.ACCESS);
       String name = ctx.name.getText();
-      _currentInterfaceOrRange.setAccessVlan(name);
       _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
+      _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(new VlanReference(name));
+    } else if (ctx.ALL() != null) {
+      _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(AllVlans.instance());
     } else {
-      todo(ctx, "Unexpected vlan members range on non-trunk interface");
+      todo(ctx);
     }
   }
 
