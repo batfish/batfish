@@ -1017,7 +1017,7 @@ public class OspfTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText("org/batfish/dataplane/ibdp/ospf-edge", "A1", "A2", "FWL")
+                .setConfigurationFiles("org/batfish/dataplane/ibdp/ospf-edge", "A1", "A2", "FWL")
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -1039,7 +1039,7 @@ public class OspfTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     "org/batfish/dataplane/ibdp/ospf-distribute-lists", "r1", "r2", "r3")
                 .build(),
             _folder);
@@ -1069,7 +1069,7 @@ public class OspfTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     "org/batfish/dataplane/ibdp/ospf-loopback-routes", "advertiser", "listener")
                 .build(),
             _folder);

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
@@ -291,5 +292,16 @@ public class RegionTest {
                 ImmutableMap.of())
             .visit(antiSpoofingLine),
         equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testGetAddresses() {
+    Address addr1 = new Address(Ip.parse("1.2.3.4"), "i-1234", Ip.parse("4.3.2.1"));
+    Address addr2 = new Address(Ip.parse("11.22.33.44"), null, null);
+    Region region =
+        Region.builder("r1")
+            .setAddresses(ImmutableMap.of("1.2.3.4", addr1, "11.22.33.44", addr2))
+            .build();
+    assertThat(region.getAddresses(), equalTo(ImmutableSet.of(addr1, addr2)));
   }
 }

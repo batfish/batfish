@@ -34,8 +34,8 @@ public class EvpnCumulusTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOT_FOLDER, ImmutableSet.of(leaf1, leaf2, spine))
-                .setLayer1TopologyText(SNAPSHOT_FOLDER)
+                .setConfigurationFiles(SNAPSHOT_FOLDER, ImmutableSet.of(leaf1, leaf2, spine))
+                .setLayer1TopologyPrefix(SNAPSHOT_FOLDER)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());

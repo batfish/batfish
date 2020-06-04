@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +30,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -54,7 +56,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** Tests for {@link BDDReachabilityAnalysisSessionFactory}. */
-@SuppressWarnings("unchecked")
 public class BDDReachabilityAnalysisSessionFactoryTest {
   private static final String FW = "fw";
   private static final String R1 = "r1";
@@ -314,6 +315,42 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     assertThat(fwSession, hasAction(new ForwardOutInterface(FWI1, NodeInterfacePair.of(R1, R1I1))));
     assertThat(fwSession, hasSessionFlows(sessionFlows));
     assertThat(fwSession, hasTransformation(_fwI3ToI1ReverseTransformation));
+  }
+
+  @Test
+  public void testGetSessionFlows() {
+    Prefix sourcePrefix = Prefix.parse("2.0.0.0/8");
+    Prefix destPrefix = Prefix.parse("1.0.0.0/8");
+    BDD tcp = PKT.getIpProtocol().value(IpProtocol.TCP);
+    BDD outBdd =
+        BDDOps.andNull(
+            dstBdd(destPrefix), // dst IP constraint
+            srcBdd(sourcePrefix),
+            dstPortBdd(1),
+            srcPortBdd(2),
+            tcp,
+            // everything below will be erased
+            PKT.getFactory().ithVar(0), // unallocated variable
+            _lastHopMgr.getLastHopOutgoingInterfaceBdd(R1, R1I1, FW, FWI1),
+            _fwSrcMgr.getSourceInterfaceBDD(FWI1),
+            PKT.getTcpCwr(),
+            PKT.getDscp().value(0),
+            PKT.getEcn().value(0));
+
+    BDD sessionFlows =
+        BDDOps.andNull(srcBdd(destPrefix), dstBdd(sourcePrefix), dstPortBdd(2), srcPortBdd(1), tcp);
+
+    BDDReachabilityAnalysisSessionFactory sessionFactory =
+        new BDDReachabilityAnalysisSessionFactory(
+            PKT,
+            // None of the inputs below are needed for getSessionBdd
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            _lastHopMgr,
+            ImmutableMap.of(),
+            _reverseFlowTransformationFactory,
+            TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+    assertEquals(sessionFlows, sessionFactory.getSessionFlowMatchBdd(outBdd));
   }
 
   @Test

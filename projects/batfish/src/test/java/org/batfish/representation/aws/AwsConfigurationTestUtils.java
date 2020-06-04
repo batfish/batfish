@@ -30,7 +30,7 @@ public final class AwsConfigurationTestUtils {
       throws IOException {
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setAwsText(testconfigsDir, fileNames).build(), folder);
+            TestrigText.builder().setAwsFiles(testconfigsDir, fileNames).build(), folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     return batfish;
   }

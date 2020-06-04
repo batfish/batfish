@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPCS;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
@@ -19,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class VpcTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/VpcTest.json");
+    String text = readResource("org/batfish/representation/aws/VpcTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPCS);

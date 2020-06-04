@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
@@ -73,6 +75,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkTyp
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -174,6 +177,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -309,6 +313,7 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
@@ -343,6 +348,8 @@ import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.VlanRange;
+import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -401,7 +408,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
@@ -692,7 +699,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -724,7 +731,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -805,8 +812,8 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setLayer1TopologyText(resourcePrefix)
-                .setConfigurationText(resourcePrefix, "r1", "r2")
+                .setLayer1TopologyPrefix(resourcePrefix)
+                .setConfigurationFiles(resourcePrefix, "r1", "r2")
                 .build(),
             _folder);
 
@@ -849,7 +856,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -911,7 +918,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2295,7 +2302,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -3255,7 +3262,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -3736,7 +3743,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3763,7 +3770,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3794,7 +3801,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3831,7 +3838,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + snapshotName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4439,8 +4446,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testParsingRecovery() {
-    String recoveryText =
-        CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/recovery");
+    String recoveryText = readResource("org/batfish/grammar/juniper/testconfigs/recovery", UTF_8);
     Settings settings = new Settings();
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
     Flat_juniper_configurationContext ctx = cp.parse();
@@ -5582,5 +5588,101 @@ public final class FlatJuniperGrammarTest {
       assertThat(iface.getBandwidth(), equalTo(0.0D));
       assertFalse(iface.getActive());
     }
+  }
+
+  @Test
+  public void testVlanAccessExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-access");
+
+    assertThat(
+        vc.getMasterLogicalSystem().getInterfaces(), hasKeys("et-0/0/2", "et-0/0/3", "et-0/0/4"));
+    {
+      String ifaceName = "et-0/0/2";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      VlanReference member =
+          (VlanReference) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+      assertThat(member.getName(), equalTo("foo"));
+    }
+    {
+      String ifaceName = "et-0/0/3";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      VlanRange member =
+          (VlanRange) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+      assertThat(member.getRange(), equalTo(IntegerSpace.of(2)));
+    }
+    {
+      String ifaceName = "et-0/0/4";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+    }
+  }
+
+  @Test
+  public void testVlanAccessConversion() {
+    Configuration c = parseConfig("juniper-vlan-access");
+
+    assertThat(c, hasInterface("et-0/0/2.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/2.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("et-0/0/2.0", hasAccessVlan(2)));
+
+    assertThat(c, hasInterface("et-0/0/3.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/3.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("et-0/0/3.0", hasAccessVlan(2)));
+
+    assertThat(c, hasInterface("et-0/0/4.0", isSwitchport(false)));
+    assertThat(c, hasInterface("et-0/0/4.0", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(c, hasInterface("et-0/0/4.0", hasAccessVlan(nullValue())));
+  }
+
+  @Test
+  public void testVlanAllExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-all");
+
+    String ifaceName = "et-0/0/0";
+    assertThat(vc.getMasterLogicalSystem().getInterfaces(), hasKeys(ifaceName));
+    String unitName = String.format("%s.0", ifaceName);
+    org.batfish.representation.juniper.Interface iface =
+        vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+    assertThat(iface.getUnits(), hasKeys(unitName));
+    org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+    assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+    assertThat(
+        Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers()),
+        instanceOf(AllVlans.class));
+  }
+
+  @Test
+  public void testVlanAllConversion() {
+    Configuration c = parseConfig("juniper-vlan-all");
+
+    assertThat(c, hasInterface("et-0/0/0.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("et-0/0/0.0", hasNativeVlan(nullValue())));
+    assertThat(
+        c,
+        hasInterface(
+            "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
   }
 }

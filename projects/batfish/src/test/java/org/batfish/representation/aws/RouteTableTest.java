@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_ROUTE_TABLES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,7 +13,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.representation.aws.Route.State;
@@ -24,7 +25,7 @@ public class RouteTableTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RouteTableTest.json");
+    String text = readResource("org/batfish/representation/aws/RouteTableTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_ROUTE_TABLES);
@@ -52,7 +53,7 @@ public class RouteTableTest {
 
   @Test
   public void testDeserializationV6() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RouteV6TableTest.json");
+    String text = readResource("org/batfish/representation/aws/RouteV6TableTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_ROUTE_TABLES);

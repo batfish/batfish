@@ -9,7 +9,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.math.IntMath;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -37,7 +36,7 @@ public final class BDDFiniteDomain<V> {
     int size = values.size();
     BDD one = var.getFactory().one();
     _var = var;
-    _varBits = Arrays.stream(var.getBitvec()).reduce(BDD::and).orElse(null);
+    _varBits = var.getVars();
     if (size == 0) {
       _valueToBdd = ImmutableBiMap.of();
       _isValidValue = one;
@@ -97,7 +96,7 @@ public final class BDDFiniteDomain<V> {
     checkArgument(bdd.isAssignment());
 
     // Exist turns the assignment into just the finite domain.
-    V ret = _bddToValue.get(bdd.exist(_var.getOtherVars()));
+    V ret = _bddToValue.get(bdd.project(_var.getVars()));
     checkArgument(ret != null, "No value for valid assignment");
     return ret;
   }

@@ -1,6 +1,8 @@
 package org.batfish.grammar.cisco;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -446,7 +448,7 @@ public final class CiscoGrammarTest {
   }
 
   private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings, format);
@@ -648,7 +650,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -671,7 +673,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -1269,6 +1271,18 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosUnicodeConversion() throws IOException {
+    Configuration c = parseConfig("ios-unicode");
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testIosUnicodeBomConversion() throws IOException {
+    Configuration c = parseConfig("ios-unicode-bom");
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
   public void testIosLineParsing() {
     assertNotNull(parseCiscoConfig("ios-line", null));
   }
@@ -1534,7 +1548,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -2058,7 +2072,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + testrigName,
                     ImmutableList.of(originatorName, l1Name, l2Name, l3Name))
                 .build(),
@@ -2125,7 +2139,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + testrigName, ImmutableList.of(originatorName, l1Name, l2Name))
                 .build(),
             _folder);
@@ -2443,7 +2457,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2489,7 +2503,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2534,7 +2548,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2578,7 +2592,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -3083,7 +3097,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -3500,7 +3514,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3536,7 +3550,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3619,7 +3633,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -3665,7 +3679,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4103,7 +4117,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4124,7 +4138,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4244,7 +4258,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4282,7 +4296,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4340,7 +4354,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -4375,7 +4389,7 @@ public final class CiscoGrammarTest {
     batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     snapshot = batfish.getSnapshot();
@@ -4411,7 +4425,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4502,7 +4516,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4539,7 +4553,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4574,7 +4588,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4593,7 +4607,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -5900,7 +5914,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "ios-tunnels",
                     ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
                 .build(),
@@ -5924,7 +5938,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "ios-tunnels",
                     ImmutableList.of("n1-static-route", "n2-static-route"))
                 .build(),
@@ -6046,7 +6060,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "ios-tunnels-eigrp",
                     ImmutableList.of("advertiser", "receiver"))
                 .build(),

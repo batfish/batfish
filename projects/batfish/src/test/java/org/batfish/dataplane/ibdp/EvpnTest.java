@@ -217,7 +217,7 @@ public class EvpnTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testRigResourcePrefix, exitGw, leaf1, spine)
+                .setConfigurationFiles(testRigResourcePrefix, exitGw, leaf1, spine)
                 .build(),
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());

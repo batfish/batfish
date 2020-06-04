@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_concatenated;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -32,7 +34,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -113,7 +114,7 @@ public class CumulusConcatenatedGrammarTest {
 
   private static CumulusConcatenatedConfiguration parseVendorConfig(
       String filename, GrammarSettings settings) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
+    String src = readResource(TESTCONFIGS_PREFIX + filename, UTF_8);
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
@@ -318,7 +319,7 @@ public class CumulusConcatenatedGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 

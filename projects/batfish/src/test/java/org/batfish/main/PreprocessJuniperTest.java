@@ -1,7 +1,9 @@
 package org.batfish.main;
 
 import static com.google.common.io.MoreFiles.createParentDirectories;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.CommonUtil.writeFile;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.main.PreprocessJuniper.main;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -44,12 +46,12 @@ public final class PreprocessJuniperTest {
     Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     createParentDirectories(inputFile);
-    writeFile(inputFile, CommonUtil.readResource(String.format("%s%s", prefix, before)));
+    writeFile(inputFile, readResource(String.format("%s%s", prefix, before), UTF_8));
     main(new String[] {inputDir.toString(), outputDir.toString()});
 
     assertThat(
         CommonUtil.readFile(outputFile).trim(),
-        equalTo(CommonUtil.readResource(String.format("%s%s", prefix, after)).trim()));
+        equalTo(readResource(String.format("%s%s", prefix, after), UTF_8).trim()));
   }
 
   @Test

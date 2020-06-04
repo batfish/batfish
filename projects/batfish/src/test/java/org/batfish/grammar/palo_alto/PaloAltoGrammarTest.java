@@ -1,5 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
@@ -123,8 +125,9 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -151,6 +154,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -232,6 +236,8 @@ import org.junit.rules.TemporaryFolder;
 
 public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -254,7 +260,7 @@ public final class PaloAltoGrammarTest {
   }
 
   private PaloAltoConfiguration parsePaloAltoConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
@@ -274,7 +280,7 @@ public final class PaloAltoGrammarTest {
   }
 
   private @Nonnull PaloAltoConfiguration parseNestedConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     Warnings w = new Warnings();
@@ -330,6 +336,10 @@ public final class PaloAltoGrammarTest {
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
     return fb.build();
+  }
+
+  private static void assertIpSpacesEqual(IpSpace left, IpSpace right) {
+    assertThat(DST.visit(left), equalTo(DST.visit(right)));
   }
 
   @Test
@@ -1481,7 +1491,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "multiline-token";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -1528,7 +1538,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -2769,6 +2779,9 @@ public final class PaloAltoGrammarTest {
     assertThat(deviceGroup2.getDevices(), contains(firewallId3));
     assertThat(panoramaDg2, notNullValue());
     assertThat(panoramaDg2.getAddressObjects().keySet(), contains("ADDR2"));
+
+    // Make sure post-device-group config is attached to the main config as expected
+    assertThat(c.getHostname(), equalTo("device-group"));
   }
 
   @Test
@@ -2794,12 +2807,12 @@ public final class PaloAltoGrammarTest {
         viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
 
     // First two firewalls should inherit definitions from first Panorama device-group
-    assertThat(
-        firewall1.getIpSpaces().get(addressObject1Name), equalTo(Ip.parse("1.2.3.4").toIpSpace()));
-    assertThat(
-        firewall2.getIpSpaces().get(addressObject1Name), equalTo(Ip.parse("1.2.3.4").toIpSpace()));
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(addressObject1Name), Ip.parse("1.2.3.4").toIpSpace());
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(addressObject1Name), Ip.parse("1.2.3.4").toIpSpace());
     // Third firewall should inherit definitions from second Panorama device-group
-    assertThat(
-        firewall3.getIpSpaces().get(addressObject2Name), equalTo(Ip.parse("2.3.4.5").toIpSpace()));
+    assertIpSpacesEqual(
+        firewall3.getIpSpaces().get(addressObject2Name), Ip.parse("2.3.4.5").toIpSpace());
   }
 }

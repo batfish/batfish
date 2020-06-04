@@ -33,7 +33,7 @@ public class FlatJuniperAggregationTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOT_PATH, Arrays.asList("ae1", "ae2"))
+                .setConfigurationFiles(SNAPSHOT_PATH, Arrays.asList("ae1", "ae2"))
                 .build(),
             _folder);
     SortedMap<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());

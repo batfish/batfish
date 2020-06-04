@@ -436,8 +436,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private VirtualRouter _currentVirtualRouter;
   private Vsys _currentVsys;
   private Zone _currentZone;
-  // Throw-away device group, to avoid null pointer checks
-  private DeviceGroup _nullDeviceGroup = new DeviceGroup("null");
 
   public PaloAltoConfigurationBuilder(
       PaloAltoCombinedParser parser, String text, Warnings warnings) {
@@ -1275,7 +1273,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _defaultVsys =
         _mainConfiguration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
-    _currentDeviceGroup = _nullDeviceGroup;
+    _currentDeviceGroup = null;
   }
 
   @Override
@@ -1636,7 +1634,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSet_line_device_group(Set_line_device_groupContext ctx) {
-    _currentDeviceGroup = _nullDeviceGroup;
+    _currentDeviceGroup = null;
     _currentConfiguration = _mainConfiguration;
     _currentVsys = _defaultVsys;
   }

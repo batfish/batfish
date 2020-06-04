@@ -123,6 +123,7 @@ public final class JFactory extends BDDFactory {
       return _index == BDDONE;
     }
 
+    @Override
     public boolean isAssignment() {
       return bdd_isAssignment(_index);
     }
@@ -193,6 +194,13 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_exist(x, y));
+    }
+
+    @Override
+    public BDD project(BDD var) {
+      int x = _index;
+      int y = ((BDDImpl) var)._index;
+      return makeBDD(bdd_project(x, y));
     }
 
     @Override
@@ -2322,6 +2330,53 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
+  private int project_rec(int r) {
+    BddCacheDataI entry;
+    int res;
+
+    if (r < 2) {
+      return r;
+    }
+
+    int level = LEVEL(r);
+    if (level > quantlast) {
+      // existentially quantify all remaining variables
+      return BDDONE;
+    }
+
+    entry = BddCache_lookupI(quantcache, QUANTHASH(r));
+    if (entry.a == r && entry.c == quantid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    int low = PUSHREF(project_rec(LOW(r)));
+    int high = PUSHREF(project_rec(HIGH(r)));
+
+    if (INVARSET(level)) {
+      res = bdd_makenode(level, low, high);
+    } else {
+      // existentially quantify
+      res = or_rec(low, high);
+    }
+
+    POPREF(2);
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = r;
+    entry.c = quantid;
+    entry.res = res;
+
+    return res;
+  }
+
   private int bdd_constrain(int f, int c) {
     CHECK(f);
     CHECK(c);
@@ -2554,6 +2609,34 @@ public final class JFactory extends BDDFactory {
 
     INITREF();
     int res = quant_rec(r);
+    checkresize();
+
+    return res;
+  }
+
+  private int bdd_project(int r, int var) {
+    CHECK(r);
+    CHECK(var);
+
+    if (var < 2) /* Empty set */ {
+      // projecting onto an empty set of variables means existentially
+      // quantifying all variables.
+      return r == BDDZERO ? BDDZERO : BDDONE;
+    }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
+    }
+
+    if (applycache == null) {
+      applycache = BddCacheI_init(cachesize);
+    }
+    if (quantcache == null) {
+      quantcache = BddCacheI_init(cachesize);
+    }
+    quantid = (var << 3) | CACHEID_PROJECT;
+
+    INITREF();
+    int res = project_rec(r);
     checkresize();
 
     return res;
@@ -2911,17 +2994,10 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    if (ISZERO(LOW(r))) {
-      int res = satone_rec(HIGH(r));
-      int m = bdd_makenode(LEVEL(r), BDDZERO, res);
-      PUSHREF(m);
-      return m;
-    } else {
-      int res = satone_rec(LOW(r));
-      int m = bdd_makenode(LEVEL(r), res, BDDZERO);
-      PUSHREF(m);
-      return m;
-    }
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    boolean useHi = ISZERO(lo);
+    return bdd_makesatnode(LEVEL(r), satone_rec(useHi ? hi : lo), !useHi);
   }
 
   private int bdd_satoneset(int r, int var, int pol) {
@@ -2950,40 +3026,17 @@ public final class JFactory extends BDDFactory {
     }
 
     if (LEVEL(r) < LEVEL(var)) {
-      if (ISZERO(LOW(r))) {
-        int res = satoneset_rec(HIGH(r), var);
-        int m = bdd_makenode(LEVEL(r), BDDZERO, res);
-        PUSHREF(m);
-        return m;
-      } else {
-        int res = satoneset_rec(LOW(r), var);
-        int m = bdd_makenode(LEVEL(r), res, BDDZERO);
-        PUSHREF(m);
-        return m;
-      }
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useHi = ISZERO(lo);
+      return bdd_makesatnode(LEVEL(r), satoneset_rec(useHi ? hi : lo, var), !useHi);
     } else if (LEVEL(var) < LEVEL(r)) {
-      int res = satoneset_rec(r, HIGH(var));
-      if (satPolarity == BDDONE) {
-        int m = bdd_makenode(LEVEL(var), BDDZERO, res);
-        PUSHREF(m);
-        return m;
-      } else {
-        int m = bdd_makenode(LEVEL(var), res, BDDZERO);
-        PUSHREF(m);
-        return m;
-      }
+      return bdd_makesatnode(LEVEL(var), satoneset_rec(r, HIGH(var)), satPolarity != BDDONE);
     } else /* LEVEL(r) == LEVEL(var) */ {
-      if (ISZERO(LOW(r))) {
-        int res = satoneset_rec(HIGH(r), HIGH(var));
-        int m = bdd_makenode(LEVEL(r), BDDZERO, res);
-        PUSHREF(m);
-        return m;
-      } else {
-        int res = satoneset_rec(LOW(r), HIGH(var));
-        int m = bdd_makenode(LEVEL(r), res, BDDZERO);
-        PUSHREF(m);
-        return m;
-      }
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useHi = ISZERO(lo);
+      return bdd_makesatnode(LEVEL(r), satoneset_rec(useHi ? hi : lo, HIGH(var)), !useHi);
     }
   }
 
@@ -2999,7 +3052,7 @@ public final class JFactory extends BDDFactory {
     res = fullsatone_rec(r);
 
     for (int v = LEVEL(r) - 1; v >= 0; v--) {
-      res = PUSHREF(bdd_makenode(v, res, BDDZERO));
+      res = bdd_makesatnode(v, res, true);
     }
 
     checkresize();
@@ -3011,23 +3064,14 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    if (LOW(r) != BDDZERO) {
-      int res = fullsatone_rec(LOW(r));
-
-      for (int v = LEVEL(LOW(r)) - 1; v > LEVEL(r); v--) {
-        res = PUSHREF(bdd_makenode(v, res, BDDZERO));
-      }
-
-      return PUSHREF(bdd_makenode(LEVEL(r), res, BDDZERO));
-    } else {
-      int res = fullsatone_rec(HIGH(r));
-
-      for (int v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); v--) {
-        res = PUSHREF(bdd_makenode(v, res, BDDZERO));
-      }
-
-      return PUSHREF(bdd_makenode(LEVEL(r), BDDZERO, res));
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    boolean useLo = lo != BDDZERO;
+    int child = fullsatone_rec(useLo ? lo : hi);
+    for (int v = LEVEL(child) - 1; v > LEVEL(r); v--) {
+      child = bdd_makesatnode(v, child, true);
     }
+    return bdd_makesatnode(LEVEL(r), child, useLo);
   }
 
   private int bdd_randomfullsatone(int r, int seed) {
@@ -3050,10 +3094,11 @@ public final class JFactory extends BDDFactory {
   // branch false.
   private int bdd_makesatnode(int variable, int child, boolean useLow) {
     assert LEVEL(child) > variable; // or the BDD is out of order.
-    if (useLow) {
-      return bdd_makenode(variable, child, BDDZERO);
-    }
-    return bdd_makenode(variable, BDDZERO, child);
+
+    PUSHREF(child);
+    int ret = bdd_makenode(variable, useLow ? child : BDDZERO, useLow ? BDDZERO : child);
+    POPREF(1);
+    return ret;
   }
 
   // Recursively builds a full satisfying assignment for the BDD corresponding to r, using all
@@ -3086,7 +3131,7 @@ public final class JFactory extends BDDFactory {
         newSeed = newSeed * 23;
       }
       int next = randomfullsatone_rec(r, level + 1, newSeed);
-      return PUSHREF(bdd_makesatnode(level, next, preferLo));
+      return bdd_makesatnode(level, next, preferLo);
     }
 
     assert level == LEVEL(r); // sanity check
@@ -3101,7 +3146,7 @@ public final class JFactory extends BDDFactory {
       newSeed *= 23;
     }
     int next = randomfullsatone_rec(useLo ? lo : hi, level + 1, newSeed);
-    return PUSHREF(bdd_makesatnode(level, next, useLo));
+    return bdd_makesatnode(level, next, useLo);
   }
 
   private void bdd_gbc_rehash() {
@@ -3658,13 +3703,14 @@ public final class JFactory extends BDDFactory {
   private static final int CACHEID_VECCOMPOSE = 0x2;
   private static final int CACHEID_CORRECTIFY = 0x3;
 
-  /* Hash value modifiers for quantification */
+  /* Hash value modifiers for quantification. Max 8 values */
   private static final int CACHEID_EXIST = 0x0;
   private static final int CACHEID_FORALL = 0x1;
   private static final int CACHEID_UNIQUE = 0x2;
   private static final int CACHEID_APPEX = 0x3;
   private static final int CACHEID_APPAL = 0x4;
   private static final int CACHEID_APPUN = 0x5;
+  private static final int CACHEID_PROJECT = 0x6;
 
   /* Number of boolean operators */
   static final int OPERATOR_NUM = 11;

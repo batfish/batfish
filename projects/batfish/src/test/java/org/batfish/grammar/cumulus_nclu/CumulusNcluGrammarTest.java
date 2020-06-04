@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -82,7 +84,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -210,7 +211,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   private @Nonnull CumulusNcluConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);
@@ -243,8 +244,8 @@ public final class CumulusNcluGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
-                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyPrefix(TESTRIGS_PREFIX + testrigName)
                 .build(),
             _folder);
 
@@ -828,8 +829,8 @@ public final class CumulusNcluGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
-                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyPrefix(TESTRIGS_PREFIX + testrigName)
                 .build(),
             _folder);
 
