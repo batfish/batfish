@@ -17,7 +17,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.VrrpGroup;
 
 public class Interface implements Serializable {
@@ -102,7 +101,6 @@ public class Interface implements Serializable {
   private ConcreteInterfaceAddress _primaryAddress;
   @Nullable private String _redundantParentInterface;
   private String _routingInstance;
-  private SwitchportEncapsulationType _switchportTrunkEncapsulation;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
   private Integer _tcpMss;
@@ -117,7 +115,6 @@ public class Interface implements Serializable {
     _name = name;
     _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _ospfNeighbors = new HashSet<>();
-    _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new LinkedList<>();
     _allowedVlanNames = new LinkedList<>();
     _ospfCost = null;
@@ -195,6 +192,10 @@ public class Interface implements Serializable {
     return _name;
   }
 
+  /**
+   * The vlan assigned to untagged packets. These packets are sent to the logical L3 subinterface
+   * with the same vlan-id. This is distinct from the concept of trunk native-vlan.
+   */
   @Nullable
   public Integer getNativeVlan() {
     return _nativeVlan;

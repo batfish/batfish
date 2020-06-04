@@ -4262,7 +4262,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIfe_native_vlan_id(Ife_native_vlan_idContext ctx) {
-    _currentInterfaceOrRange.setNativeVlan(toInt(ctx.id));
+    _currentInterfaceOrRange.getEthernetSwitching().setNativeVlan(toInt(ctx.id));
   }
 
   @Override

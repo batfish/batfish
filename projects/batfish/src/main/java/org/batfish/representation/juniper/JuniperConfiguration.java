@@ -1803,10 +1803,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .get(_indirectAccessPorts.get(name).getName())
               .getVlanId());
     } else if (es != null) {
-      newIface.setSwitchport(true);
       if (es.getSwitchportMode() == null || es.getSwitchportMode() == SwitchportMode.ACCESS) {
-        newIface.setSwitchportMode(SwitchportMode.ACCESS);
-        newIface.setAccessVlan(computeAccessVlan(iface.getName(), es.getVlanMembers()));
+        Integer accessVlan = computeAccessVlan(iface.getName(), es.getVlanMembers());
+        newIface.setAccessVlan(accessVlan);
+        if (accessVlan != null) {
+          newIface.setSwitchport(true);
+          newIface.setSwitchportMode(SwitchportMode.ACCESS);
+        } else {
+          newIface.setSwitchport(false);
+          newIface.setSwitchportMode(SwitchportMode.NONE);
+        }
       }
       if (es.getSwitchportMode() == SwitchportMode.TRUNK) {
         newIface.setSwitchportTrunkEncapsulation(SwitchportEncapsulationType.DOT1Q);
@@ -1814,6 +1820,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // default is no native vlan, untagged are dropped.
         // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/native-vlan-id-edit-interfaces-qfx-series.html
         newIface.setNativeVlan(es.getNativeVlan());
+        newIface.setSwitchport(true);
         newIface.setSwitchportMode(SwitchportMode.TRUNK);
       }
     } else {
@@ -1824,17 +1831,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private int computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
+  private @Nullable Integer computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
     if (vlanMembers.isEmpty()) {
-      // TODO: verify default
-      return 1;
+      return null;
     }
     if (vlanMembers.size() > 1) {
       _w.redFlag(
           String.format(
               "Cannot assign more than one access vlan: %s to interface '%s'",
               vlanMembers, ifaceName));
-      return 1;
+      return null;
     }
     IntegerSpace members = vlanMembersToIntegerSpace(vlanMembers);
     if (!members.isSingleton()) {
@@ -1842,7 +1848,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           String.format(
               "Cannot assign more than one access vlan: %s to interface '%s'",
               vlanMembers, ifaceName));
-      return 1;
+      return null;
     }
     return members.singletonValue();
   }

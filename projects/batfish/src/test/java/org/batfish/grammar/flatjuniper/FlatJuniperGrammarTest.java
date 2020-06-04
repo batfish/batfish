@@ -5594,7 +5594,8 @@ public final class FlatJuniperGrammarTest {
   public void testVlanAccessExtraction() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-access");
 
-    assertThat(vc.getMasterLogicalSystem().getInterfaces(), hasKeys("et-0/0/2", "et-0/0/3"));
+    assertThat(
+        vc.getMasterLogicalSystem().getInterfaces(), hasKeys("et-0/0/2", "et-0/0/3", "et-0/0/4"));
     {
       String ifaceName = "et-0/0/2";
       String unitName = String.format("%s.0", ifaceName);
@@ -5623,6 +5624,17 @@ public final class FlatJuniperGrammarTest {
           (VlanRange) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
       assertThat(member.getRange(), equalTo(IntegerSpace.of(2)));
     }
+    {
+      String ifaceName = "et-0/0/4";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+    }
   }
 
   @Test
@@ -5636,6 +5648,10 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("et-0/0/3.0", isSwitchport()));
     assertThat(c, hasInterface("et-0/0/3.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertThat(c, hasInterface("et-0/0/3.0", hasAccessVlan(2)));
+
+    assertThat(c, hasInterface("et-0/0/4.0", isSwitchport(false)));
+    assertThat(c, hasInterface("et-0/0/4.0", hasSwitchPortMode(SwitchportMode.NONE)));
+    assertThat(c, hasInterface("et-0/0/4.0", hasAccessVlan(nullValue())));
   }
 
   @Test
