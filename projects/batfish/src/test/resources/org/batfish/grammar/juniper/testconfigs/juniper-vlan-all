@@ -1,0 +1,7 @@
+#RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper-vlan-all
+#
+set interfaces et-0/0/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces et-0/0/0 unit 0 family ethernet-switching vlan members all
+#

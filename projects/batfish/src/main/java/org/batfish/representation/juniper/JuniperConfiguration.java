@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -281,6 +282,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .put(RoutingProtocol.BGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
           .put(RoutingProtocol.IBGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
           .build();
+
+  private static final IntegerSpace ALL_VLANS = IntegerSpace.of(Range.closed(1, 4094));
 
   @VisibleForTesting public static final int DEFAULT_ISIS_COST = 10;
 
@@ -1859,6 +1862,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
           : vlan.getVlanId() == null ? IntegerSpace.EMPTY : IntegerSpace.of(vlan.getVlanId());
     } else if (vlanMember instanceof VlanRange) {
       return ((VlanRange) vlanMember).getRange();
+    } else if (vlanMember instanceof AllVlans) {
+      return ALL_VLANS;
     } else {
       _w.redFlag(
           String.format(

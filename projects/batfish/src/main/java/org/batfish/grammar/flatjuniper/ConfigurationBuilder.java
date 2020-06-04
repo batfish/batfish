@@ -607,6 +607,7 @@ import org.batfish.representation.juniper.AddressRangeAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
+import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
@@ -4280,6 +4281,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String name = ctx.name.getText();
       _configuration.referenceStructure(VLAN, name, INTERFACE_VLAN, getLine(ctx.name.getStart()));
       _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(new VlanReference(name));
+    } else if (ctx.ALL() != null) {
+      _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(AllVlans.instance());
+    } else {
+      todo(ctx);
     }
   }
 

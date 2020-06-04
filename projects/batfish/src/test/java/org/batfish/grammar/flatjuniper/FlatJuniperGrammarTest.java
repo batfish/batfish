@@ -177,6 +177,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -312,6 +313,7 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
@@ -5634,5 +5636,37 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasInterface("et-0/0/3.0", isSwitchport()));
     assertThat(c, hasInterface("et-0/0/3.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertThat(c, hasInterface("et-0/0/3.0", hasAccessVlan(2)));
+  }
+
+  @Test
+  public void testVlanAllExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-all");
+
+    String ifaceName = "et-0/0/0";
+    assertThat(vc.getMasterLogicalSystem().getInterfaces(), hasKeys(ifaceName));
+    String unitName = String.format("%s.0", ifaceName);
+    org.batfish.representation.juniper.Interface iface =
+        vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+    assertThat(iface.getUnits(), hasKeys(unitName));
+    org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+    assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
+    assertThat(
+        Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers()),
+        instanceOf(AllVlans.class));
+  }
+
+  @Test
+  public void testVlanAllConversion() {
+    Configuration c = parseConfig("juniper-vlan-all");
+
+    assertThat(c, hasInterface("et-0/0/0.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("et-0/0/0.0", hasNativeVlan(nullValue())));
+    assertThat(
+        c,
+        hasInterface(
+            "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
   }
 }
