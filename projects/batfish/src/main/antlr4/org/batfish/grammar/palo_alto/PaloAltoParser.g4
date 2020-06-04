@@ -9,6 +9,7 @@ import
     PaloAlto_bgp,
     PaloAlto_common,
     PaloAlto_deviceconfig,
+    PaloAlto_device_group,
     PaloAlto_interface,
     PaloAlto_network,
     PaloAlto_ospf,
@@ -103,10 +104,37 @@ set_line_template
     TEMPLATE null_rest_of_line
 ;
 
+set_line_device_group
+:
+    DEVICE_GROUP name = variable statement_device_group
+;
+
+/*
+ * Device-group supports a subset of device configuration (statement_config_devices)
+ * plus a couple device-group / panorama specific items
+ */
+statement_device_group
+:
+    // Shared with statement_config_devices
+    s_address
+    | s_address_group
+    | s_application
+    | s_application_group
+    | s_service
+    | s_service_group
+    | s_tag
+    // Device-group / panorama specific
+    | panorama_post_rulebase
+    | panorama_pre_rulebase
+    | sdg_description
+    | sdg_devices
+;
+
 set_line_tail
 :
     set_line_config_devices
     | set_line_config_general
+    | set_line_device_group
     | set_line_template
     | s_policy
 ;

@@ -215,6 +215,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sagd_filterContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -224,6 +226,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_device_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
@@ -333,6 +336,7 @@ import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.DestinationTranslation;
+import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.DynamicIpAndPort;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
@@ -405,6 +409,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private BgpVr _currentBgpVr;
   private PaloAltoConfiguration _currentConfiguration;
   private CryptoProfile _currentCrytoProfile;
+  private DeviceGroup _currentDeviceGroup;
   private String _currentDeviceName;
   private String _currentExternalListName;
   private Interface _currentInterface;
@@ -1268,6 +1273,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _defaultVsys =
         _mainConfiguration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
+    _currentDeviceGroup = null;
   }
 
   @Override
@@ -1619,12 +1625,33 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSet_line_device_group(Set_line_device_groupContext ctx) {
+    String deviceGroupName = getText(ctx.name);
+    _currentDeviceGroup = _mainConfiguration.getOrCreateDeviceGroup(deviceGroupName);
+    _currentConfiguration = _currentDeviceGroup;
+    _currentVsys = getOrCreatePanoramaVsys();
+  }
+
+  @Override
+  public void exitSet_line_device_group(Set_line_device_groupContext ctx) {
+    _currentDeviceGroup = null;
+    _currentConfiguration = _mainConfiguration;
+    _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitSdg_description(Sdg_descriptionContext ctx) {
+    _currentDeviceGroup.setDescription(getText(ctx.description));
+  }
+
+  @Override
+  public void exitSdg_devices(Sdg_devicesContext ctx) {
+    _currentDeviceGroup.addDevice(getText(ctx.device));
+  }
+
+  @Override
   public void enterS_policy_panorama(S_policy_panoramaContext ctx) {
-    _currentVsys = _currentConfiguration.getPanorama();
-    if (_currentVsys == null) {
-      _currentVsys = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
-      _currentConfiguration.setPanorama(_currentVsys);
-    }
+    _currentVsys = getOrCreatePanoramaVsys();
   }
 
   @Override
@@ -2594,6 +2621,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   public PaloAltoConfiguration getConfiguration() {
     return _mainConfiguration;
+  }
+
+  /** Get or create Panorama vsys for current configuration. */
+  private Vsys getOrCreatePanoramaVsys() {
+    Vsys panorama = _currentConfiguration.getPanorama();
+    if (panorama == null) {
+      panorama = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+      _currentConfiguration.setPanorama(panorama);
+    }
+    return panorama;
   }
 
   private static boolean toBoolean(Yes_or_noContext ctx) {

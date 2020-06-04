@@ -348,6 +348,11 @@ DEVICES
     'devices'
 ;
 
+DEVICE_GROUP
+:
+    'device-group'
+;
+
 DEVICECONFIG
 :
     'deviceconfig'
