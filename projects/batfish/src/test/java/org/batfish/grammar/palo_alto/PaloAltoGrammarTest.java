@@ -116,6 +116,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
@@ -2747,16 +2748,58 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testDeviceGroup() {
     String hostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
 
-    DeviceGroup deviceGroup = c.getOrCreateDeviceGroup("DG1");
-    Vsys panorama = deviceGroup.getPanorama();
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+    DeviceGroup deviceGroup2 = c.getOrCreateDeviceGroup("DG2");
+    Vsys panoramaDg1 = deviceGroup1.getPanorama();
+    Vsys panoramaDg2 = deviceGroup2.getPanorama();
 
-    assertThat(panorama, notNullValue());
-    assertThat(panorama.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
-    assertThat(panorama.getAddressObjects().keySet(), contains("ADDR1"));
+    // Check first device-group
+    assertThat(deviceGroup1.getDevices(), containsInAnyOrder(firewallId1, firewallId2));
+    assertThat(deviceGroup1.getDescription(), equalTo("long description"));
+    assertThat(panoramaDg1, notNullValue());
+    assertThat(panoramaDg1.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
+    assertThat(panoramaDg1.getAddressObjects().keySet(), contains("ADDR1"));
 
-    assertThat(deviceGroup.getDevices(), containsInAnyOrder("00000001", "00000002"));
-    assertThat(deviceGroup.getDescription(), equalTo("long description"));
+    // Check second device-group
+    assertThat(deviceGroup2.getDevices(), contains(firewallId3));
+    assertThat(panoramaDg2, notNullValue());
+    assertThat(panoramaDg2.getAddressObjects().keySet(), contains("ADDR2"));
+  }
+
+  @Test
+  public void testDeviceGroupConversion() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    String addressObject1Name = "ADDR1";
+    String addressObject2Name = "ADDR2";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // First two firewalls should inherit definitions from first Panorama device-group
+    assertThat(
+        firewall1.getIpSpaces().get(addressObject1Name), equalTo(Ip.parse("1.2.3.4").toIpSpace()));
+    assertThat(
+        firewall2.getIpSpaces().get(addressObject1Name), equalTo(Ip.parse("1.2.3.4").toIpSpace()));
+    // Third firewall should inherit definitions from second Panorama device-group
+    assertThat(
+        firewall3.getIpSpaces().get(addressObject2Name), equalTo(Ip.parse("2.3.4.5").toIpSpace()));
   }
 }

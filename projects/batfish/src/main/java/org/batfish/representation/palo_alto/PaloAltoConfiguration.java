@@ -1820,8 +1820,54 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             });
   }
 
+  /**
+   * Apply the specified device-group "pseudo-config" to this PaloAltoConfiguration. Any previously
+   * made changes will be overwritten in this process.
+   */
+  private void applyDeviceGroup(PaloAltoConfiguration template) {
+    // Currently, we only support device-group attributes, which are associated w/ the Panorama vsys
+    // So just copy the Panorama vsys for now
+    Vsys panorama = template.getPanorama();
+    if (panorama != null) {
+      _virtualSystems.put(PANORAMA_VSYS_NAME, panorama);
+    }
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
+    // Build primary config
+    outputConfigurations.add(this.toVendorIndependentConfiguration());
+
+    // Build configs for each managed device, if applicable
+    // Apply device-groups
+    _deviceGroups
+        .values()
+        .forEach(
+            dg ->
+                dg.getDevices()
+                    .forEach(
+                        name -> {
+                          if (!managedConfigurations.containsKey(name)) {
+                            PaloAltoConfiguration c = new PaloAltoConfiguration();
+                            // This may not actually be the device's hostname
+                            // but this is all we know at this point
+                            c.setHostname(name);
+                            managedConfigurations.put(name, c);
+                          }
+                          managedConfigurations.get(name).applyDeviceGroup(dg);
+                        }));
+    // Once managed devices are built, convert them too
+    outputConfigurations.addAll(
+        managedConfigurations.values().stream()
+            .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
+            .collect(ImmutableList.toImmutableList()));
+
+    return outputConfigurations.build();
+  }
+
+  private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
@@ -1995,7 +2041,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS,
         PaloAltoStructureUsage.SECURITY_RULE_APPLICATION);
 
-    return ImmutableList.of(_c);
+    return _c;
   }
 
   /**
