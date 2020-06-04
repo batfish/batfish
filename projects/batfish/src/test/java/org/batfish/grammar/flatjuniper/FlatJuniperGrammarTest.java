@@ -75,6 +75,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfNetworkTyp
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -345,6 +346,8 @@ import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.VlanRange;
+import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -5583,5 +5586,53 @@ public final class FlatJuniperGrammarTest {
       assertThat(iface.getBandwidth(), equalTo(0.0D));
       assertFalse(iface.getActive());
     }
+  }
+
+  @Test
+  public void testVlanAccessExtraction() {
+    JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-access");
+
+    assertThat(vc.getMasterLogicalSystem().getInterfaces(), hasKeys("et-0/0/2", "et-0/0/3"));
+    {
+      String ifaceName = "et-0/0/2";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      VlanReference member =
+          (VlanReference) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+      assertThat(member.getName(), equalTo("foo"));
+    }
+    {
+      String ifaceName = "et-0/0/3";
+      String unitName = String.format("%s.0", ifaceName);
+      org.batfish.representation.juniper.Interface iface =
+          vc.getMasterLogicalSystem().getInterfaces().get(ifaceName);
+
+      assertThat(iface.getUnits(), hasKeys(unitName));
+      org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
+
+      assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
+      VlanRange member =
+          (VlanRange) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+      assertThat(member.getRange(), equalTo(IntegerSpace.of(2)));
+    }
+  }
+
+  @Test
+  public void testVlanAccessConversion() {
+    Configuration c = parseConfig("juniper-vlan-access");
+
+    assertThat(c, hasInterface("et-0/0/2.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/2.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("et-0/0/2.0", hasAccessVlan(2)));
+
+    assertThat(c, hasInterface("et-0/0/3.0", isSwitchport()));
+    assertThat(c, hasInterface("et-0/0/3.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("et-0/0/3.0", hasAccessVlan(2)));
   }
 }

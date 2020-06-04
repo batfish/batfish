@@ -315,10 +315,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private LogicalSystem _masterLogicalSystem;
 
+  private final Map<String, VlanReference> _indirectAccessPorts;
+
   public JuniperConfiguration() {
     _logicalSystems = new TreeMap<>();
     _masterLogicalSystem = new LogicalSystem("");
     _nodeDevices = new TreeMap<>();
+    _indirectAccessPorts = new HashMap<>();
   }
 
   @Nonnull
@@ -1787,42 +1790,81 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
-    if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
-      Vlan vlan = _masterLogicalSystem.getNamedVlans().get(iface.getAccessVlan());
-      if (vlan != null) {
-        newIface.setAccessVlan(vlan.getVlanId());
-      }
-    }
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      IntegerSpace.Builder vlanIdsBuilder = IntegerSpace.builder();
-      Stream.concat(
-              iface.getAllowedVlanNames().stream()
-                  .map(_masterLogicalSystem.getNamedVlans()::get)
-                  .filter(Objects::nonNull) // named vlan must exist
-                  .map(Vlan::getVlanId)
-                  .filter(Objects::nonNull) // named vlan must have assigned numeric id
-                  .map(SubRange::new),
-              iface.getAllowedVlans().stream())
-          .forEach(vlanIdsBuilder::including);
-
-      newIface.setAllowedVlans(vlanIdsBuilder.build());
-      // default is no native vlan, untagged are dropped.
-      // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/native-vlan-id-edit-interfaces-qfx-series.html
-      newIface.setNativeVlan(iface.getNativeVlan());
-    }
-
-    newIface.setSwitchportMode(iface.getSwitchportMode());
-    if (iface.getSwitchportMode() != SwitchportMode.NONE) {
+    EthernetSwitching es = iface.getEthernetSwitching();
+    if (_indirectAccessPorts.containsKey(name)) {
       newIface.setSwitchport(true);
+      newIface.setSwitchportMode(SwitchportMode.ACCESS);
+      newIface.setAccessVlan(
+          _masterLogicalSystem
+              .getNamedVlans()
+              .get(_indirectAccessPorts.get(name).getName())
+              .getVlanId());
+    } else if (es != null) {
+      newIface.setSwitchport(true);
+      if (es.getSwitchportMode() == null || es.getSwitchportMode() == SwitchportMode.ACCESS) {
+        newIface.setSwitchportMode(SwitchportMode.ACCESS);
+        newIface.setAccessVlan(computeAccessVlan(iface.getName(), es.getVlanMembers()));
+      }
+      if (es.getSwitchportMode() == SwitchportMode.TRUNK) {
+        newIface.setSwitchportTrunkEncapsulation(SwitchportEncapsulationType.DOT1Q);
+        newIface.setAllowedVlans(vlanMembersToIntegerSpace(es.getVlanMembers()));
+        // default is no native vlan, untagged are dropped.
+        // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/native-vlan-id-edit-interfaces-qfx-series.html
+        newIface.setNativeVlan(es.getNativeVlan());
+        newIface.setSwitchportMode(SwitchportMode.TRUNK);
+      }
+    } else {
+      newIface.setSwitchportMode(SwitchportMode.NONE);
+      newIface.setSwitchport(false);
     }
-
-    SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
-    if (swe == null) {
-      swe = SwitchportEncapsulationType.DOT1Q;
-    }
-    newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
     return newIface;
+  }
+
+  private int computeAccessVlan(String ifaceName, List<VlanMember> vlanMembers) {
+    if (vlanMembers.isEmpty()) {
+      // TODO: verify default
+      return 1;
+    }
+    if (vlanMembers.size() > 1) {
+      _w.redFlag(
+          String.format(
+              "Cannot assign more than one access vlan: %s to interface '%s'",
+              vlanMembers, ifaceName));
+      return 1;
+    }
+    IntegerSpace members = vlanMembersToIntegerSpace(vlanMembers);
+    if (!members.isSingleton()) {
+      _w.redFlag(
+          String.format(
+              "Cannot assign more than one access vlan: %s to interface '%s'",
+              vlanMembers, ifaceName));
+      return 1;
+    }
+    return members.singletonValue();
+  }
+
+  private @Nonnull IntegerSpace vlanMembersToIntegerSpace(Collection<VlanMember> vlanMembers) {
+    IntegerSpace.Builder builder = IntegerSpace.builder();
+    vlanMembers.stream().map(this::toIntegerSpace).forEach(builder::including);
+    return builder.build();
+  }
+
+  private @Nonnull IntegerSpace toIntegerSpace(VlanMember vlanMember) {
+    if (vlanMember instanceof VlanReference) {
+      VlanReference vlanReference = (VlanReference) vlanMember;
+      Vlan vlan = _masterLogicalSystem.getNamedVlans().get(vlanReference.getName());
+      return vlan == null
+          ? IntegerSpace.EMPTY
+          : vlan.getVlanId() == null ? IntegerSpace.EMPTY : IntegerSpace.of(vlan.getVlanId());
+    } else if (vlanMember instanceof VlanRange) {
+      return ((VlanRange) vlanMember).getRange();
+    } else {
+      _w.redFlag(
+          String.format(
+              "Unsupported vlan member type: %s", vlanMember.getClass().getCanonicalName()));
+      return IntegerSpace.EMPTY;
+    }
   }
 
   @Nullable
@@ -3598,11 +3640,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
           continue;
         }
         Interface i = optionalInterface.get();
-        if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
-          i.setAccessVlan(vlan.getName());
-        } else if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-          i.getAllowedVlanNames().add(vlan.getName());
+        EthernetSwitching es = i.getEthernetSwitching();
+        if (es != null && (es.getSwitchportMode() != null || !es.getVlanMembers().isEmpty())) {
+          _w.redFlag(
+              String.format(
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan configuration under family ethernet-switching",
+                  memberIfName, vlanId));
+          continue;
         }
+        if (_indirectAccessPorts.containsKey(memberIfName)) {
+          _w.redFlag(
+              String.format(
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of vlan '%s'",
+                  memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName()));
+          continue;
+        }
+        _indirectAccessPorts.put(memberIfName, new VlanReference(vlan.getName()));
       }
     }
 
