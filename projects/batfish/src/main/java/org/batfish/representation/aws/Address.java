@@ -38,7 +38,7 @@ public final class Address implements AwsVpcEntity, Serializable {
         privateIpAddress == null ? null : Ip.parse(privateIpAddress));
   }
 
-  Address(Ip publicIp, @Nullable String instanceId, @Nullable Ip privateIp) {
+  public Address(Ip publicIp, @Nullable String instanceId, @Nullable Ip privateIp) {
     _publicIp = publicIp;
     _instanceId = instanceId;
     _privateIp = privateIp;
