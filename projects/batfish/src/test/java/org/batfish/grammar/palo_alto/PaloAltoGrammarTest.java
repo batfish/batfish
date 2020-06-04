@@ -2758,5 +2758,8 @@ public final class PaloAltoGrammarTest {
 
     assertThat(deviceGroup.getDevices(), containsInAnyOrder("00000001", "00000002"));
     assertThat(deviceGroup.getDescription(), equalTo("long description"));
+
+    // Make sure post-device-group config is attached to the main config as expected
+    assertThat(c.getHostname(), equalTo("device-group"));
   }
 }

@@ -11,3 +11,5 @@ set device-group DG1 address ADDR1 ip-netmask 1.2.3.4
 set device-group DG1 description "long description"
 set device-group DG1 devices 00000001
 set device-group DG1 devices 00000002
+# Regular, non-device-group config - intentionally after device-group config to confirm we pop out as expected
+set deviceconfig system hostname device-group
