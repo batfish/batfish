@@ -33,8 +33,8 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Test;
 
-/** Tests of {@link BDDOutgoingInterfaceManager}. */
-public class BDDOutgoingInterfaceManagerTest {
+/** Tests of {@link BDDOutgoingOriginalFlowFilterManager}. */
+public class BDDOutgoingOriginalFlowFilterManagerTest {
   private static final BDDPacket PKT = new BDDPacket();
 
   private static final String ACTIVE_IFACE_WITH_FILTER_1 = "activeWithFilter1";
@@ -97,11 +97,11 @@ public class BDDOutgoingInterfaceManagerTest {
     return c;
   }
 
-  private static BDDOutgoingInterfaceManager getMgrForConfig(Configuration c) {
+  private static BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(PKT, configs);
-    Map<String, BDDOutgoingInterfaceManager> mgrs =
-        BDDOutgoingInterfaceManager.forNetwork(PKT, configs, srcMgrs);
+    Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, srcMgrs);
     return mgrs.get(c.getHostname());
   }
 
@@ -111,7 +111,7 @@ public class BDDOutgoingInterfaceManagerTest {
     {
       Set<String> ifaces = ImmutableSet.of(INACTIVE_IFACE_WITH_FILTER);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertTrue(mgr.isTrivial());
     }
 
@@ -119,7 +119,7 @@ public class BDDOutgoingInterfaceManagerTest {
     {
       Set<String> ifaces = ImmutableSet.of(INACTIVE_IFACE_WITH_FILTER, ACTIVE_IFACE_NO_FILTER_1);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertTrue(mgr.isTrivial());
     }
     {
@@ -127,7 +127,7 @@ public class BDDOutgoingInterfaceManagerTest {
           ImmutableSet.of(
               INACTIVE_IFACE_WITH_FILTER, ACTIVE_IFACE_NO_FILTER_1, ACTIVE_IFACE_NO_FILTER_2);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertTrue(mgr.isTrivial());
     }
   }
@@ -139,7 +139,7 @@ public class BDDOutgoingInterfaceManagerTest {
     {
       Set<String> ifaces = ImmutableSet.of(ACTIVE_IFACE_WITH_FILTER_1, INACTIVE_IFACE_WITH_FILTER);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertThat(
           mgr.getInterfaceBDDs(),
           equalTo(ImmutableMap.of(ACTIVE_IFACE_WITH_FILTER_1, PKT.getFactory().one())));
@@ -152,7 +152,7 @@ public class BDDOutgoingInterfaceManagerTest {
           ImmutableSet.of(
               ACTIVE_IFACE_WITH_FILTER_1, INACTIVE_IFACE_WITH_FILTER, ACTIVE_IFACE_NO_FILTER_1);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertThat(mgr.getInterfaceBDDs().keySet(), contains(ACTIVE_IFACE_WITH_FILTER_1));
       BDD activeIfaceWithFilterBdd = mgr.getInterfaceBDDs().get(ACTIVE_IFACE_WITH_FILTER_1);
       assertTrue(!activeIfaceWithFilterBdd.isZero() && !activeIfaceWithFilterBdd.isOne());
@@ -165,7 +165,7 @@ public class BDDOutgoingInterfaceManagerTest {
               ACTIVE_IFACE_NO_FILTER_1,
               ACTIVE_IFACE_NO_FILTER_2);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertThat(mgr.getInterfaceBDDs().keySet(), contains(ACTIVE_IFACE_WITH_FILTER_1));
       BDD activeIfaceWithFilterBdd = mgr.getInterfaceBDDs().get(ACTIVE_IFACE_WITH_FILTER_1);
       assertTrue(!activeIfaceWithFilterBdd.isZero() && !activeIfaceWithFilterBdd.isOne());
@@ -181,7 +181,7 @@ public class BDDOutgoingInterfaceManagerTest {
           ImmutableSet.of(
               ACTIVE_IFACE_WITH_FILTER_1, ACTIVE_IFACE_WITH_FILTER_2, INACTIVE_IFACE_WITH_FILTER);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
 
       assertThat(
           mgr.getInterfaceBDDs().keySet(),
@@ -204,7 +204,7 @@ public class BDDOutgoingInterfaceManagerTest {
               INACTIVE_IFACE_WITH_FILTER,
               ACTIVE_IFACE_NO_FILTER_1);
       Configuration c = createConfig(new NetworkFactory(), ifaces);
-      BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
 
       assertThat(
           mgr.getInterfaceBDDs().keySet(),
@@ -228,10 +228,10 @@ public class BDDOutgoingInterfaceManagerTest {
         ImmutableMap.of(config1.getHostname(), config1, config2.getHostname(), config2);
 
     Map<String, BDDSourceManager> bddSrcMgrs = BDDSourceManager.forNetwork(PKT, configs, false);
-    Map<String, BDDOutgoingInterfaceManager> mgrs =
-        BDDOutgoingInterfaceManager.forNetwork(PKT, configs, bddSrcMgrs);
-    BDDOutgoingInterfaceManager mgr1 = mgrs.get(config1.getHostname());
-    BDDOutgoingInterfaceManager mgr2 = mgrs.get(config2.getHostname());
+    Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, bddSrcMgrs);
+    BDDOutgoingOriginalFlowFilterManager mgr1 = mgrs.get(config1.getHostname());
+    BDDOutgoingOriginalFlowFilterManager mgr2 = mgrs.get(config2.getHostname());
 
     // The two managers use the same BDD values to track outgoing interfaces.
     assertThat(mgr1.getInterfaceBDDs(), equalTo(mgr2.getInterfaceBDDs()));
@@ -252,7 +252,7 @@ public class BDDOutgoingInterfaceManagerTest {
           filter permits only DST_IP_2
      */
     Configuration c = createConfig(new NetworkFactory(), ALL_IFACES);
-    BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+    BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
 
     BDD dstIp1 = PKT.getDstIp().value(DST_IP_1.asLong());
     BDD dstIp2 = PKT.getDstIp().value(DST_IP_2.asLong());
@@ -309,7 +309,7 @@ public class BDDOutgoingInterfaceManagerTest {
        c. No flows from srcIp3; these wouldn't get transformed and would be blocked by filter
      */
     Configuration c = createConfig(new NetworkFactory(), ALL_IFACES);
-    BDDOutgoingInterfaceManager mgr = getMgrForConfig(c);
+    BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
 
     Ip ip1 = Ip.parse("10.10.10.1");
     Ip ip2 = Ip.parse("10.10.10.2");

@@ -35,7 +35,7 @@ import org.batfish.datamodel.IpAccessList;
  * permitted by that egress interface's {@link Interface#getOutgoingOriginalFlowFilter()
  * outgoingOriginalFlowFilter}.
  */
-public final class BDDOutgoingInterfaceManager {
+public final class BDDOutgoingOriginalFlowFilterManager {
   private static final String VAR_NAME = "OutgoingInterface";
 
   /**
@@ -63,7 +63,7 @@ public final class BDDOutgoingInterfaceManager {
   private final BDD _falseBdd;
   private final BDD _trueBdd;
 
-  private BDDOutgoingInterfaceManager(
+  private BDDOutgoingOriginalFlowFilterManager(
       BDDFiniteDomain<String> finiteDomain,
       @Nullable String activeButNoOriginalFlowFilterRepresentative,
       Map<String, BDD> filterBdds,
@@ -77,10 +77,10 @@ public final class BDDOutgoingInterfaceManager {
   }
 
   /**
-   * Initialize a {@link BDDOutgoingInterfaceManager} for each {@link Configuration} in a network. A
-   * single variable is shared by all of them.
+   * Initialize a {@link BDDOutgoingOriginalFlowFilterManager} for each {@link Configuration} in a
+   * network. A single variable is shared by all of them.
    */
-  public static Map<String, BDDOutgoingInterfaceManager> forNetwork(
+  public static Map<String, BDDOutgoingOriginalFlowFilterManager> forNetwork(
       BDDPacket pkt, Map<String, Configuration> configs, Map<String, BDDSourceManager> srcMgrs) {
     // hostname -> set of interfaces that will be values for the config's finite domain
     ImmutableMap.Builder<String, Set<String>> finiteDomainValues = ImmutableMap.builder();
@@ -136,7 +136,7 @@ public final class BDDOutgoingInterfaceManager {
         configs.keySet(),
         Function.identity(),
         hostname ->
-            new BDDOutgoingInterfaceManager(
+            new BDDOutgoingOriginalFlowFilterManager(
                 finiteDomains.get(hostname),
                 repActiveIfacesWithoutOrigFlowFilters.get(hostname),
                 filterBdds.get(hostname),
