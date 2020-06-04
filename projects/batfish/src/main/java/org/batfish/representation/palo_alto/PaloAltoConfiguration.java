@@ -1851,19 +1851,19 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     .forEach(
                         name -> {
                           // Create new managed config if one doesn't already exist for this device
-                          if (!managedConfigurations.containsKey(name)) {
-                            PaloAltoConfiguration c = new PaloAltoConfiguration();
-                            // This may not actually be the device's hostname
-                            // but this is all we know at this point
-                            c.setHostname(name);
-                            managedConfigurations.put(name, c);
-                          } else {
+                          if (managedConfigurations.containsKey(name)) {
                             // If the device already has a config associated with it, it must
                             // already be associated with another device-group (should not happen)
                             _w.redFlag(
                                 String.format(
                                     "Managed device '%s' cannot be associated with more than one device-group.",
                                     name));
+                          } else {
+                            PaloAltoConfiguration c = new PaloAltoConfiguration();
+                            // This may not actually be the device's hostname
+                            // but this is all we know at this point
+                            c.setHostname(name);
+                            managedConfigurations.put(name, c);
                           }
                           managedConfigurations.get(name).applyDeviceGroup(dg);
                         }));
