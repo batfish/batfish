@@ -1865,10 +1865,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
+                            c.applyDeviceGroup(deviceGroupEntry.getValue());
                             managedConfigurations.put(name, c);
-                            managedConfigurations
-                                .get(name)
-                                .applyDeviceGroup(deviceGroupEntry.getValue());
                           }
                         }));
     // Once managed devices are built, convert them too
