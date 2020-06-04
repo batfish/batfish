@@ -77932,18 +77932,6 @@
         "configs/juniper_interfaces" : {
           "Parse warnings" : [
             {
-              "Comment" : "Unexpected vlan members range on non-trunk interface",
-              "Line" : 5,
-              "Parser_Context" : "[ife_vlan if_ethernet_switching i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "vlan members 1-1000"
-            },
-            {
-              "Comment" : "Unexpected vlan members range on non-trunk interface",
-              "Line" : 15,
-              "Parser_Context" : "[ife_vlan if_ethernet_switching i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "vlan members all"
-            },
-            {
               "Comment" : "This feature is not currently supported",
               "Line" : 19,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -78341,7 +78329,7 @@
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
-        "juniper_interfaces" : "PASSED",
+        "juniper_interfaces" : "WARNINGS",
         "juniper_isis" : "PASSED",
         "juniper_l2_learning" : "PASSED",
         "juniper_misc" : "PASSED",
@@ -95724,6 +95712,22 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'ip_options', term: 't1'"
+            }
+          ]
+        },
+        "juniper_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign more than one access vlan: [1-1000] to interface 'ae0.0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign more than one access vlan: [all] to interface 'xe-0/0/0:0.0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign more than one access vlan: [bippetyboppety] to interface 'xe-0/0/5:0.0'"
             }
           ]
         },
