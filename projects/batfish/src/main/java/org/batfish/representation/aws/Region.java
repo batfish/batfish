@@ -536,8 +536,8 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, Address> getAddresses() {
-    return _addresses;
+  public Set<Address> getAddresses() {
+    return ImmutableSet.copyOf(_addresses.values());
   }
 
   @Nonnull

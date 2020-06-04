@@ -69,12 +69,12 @@ public final class PrivateIpAddress implements Serializable {
   }
 
   @Nonnull
-  Ip getPrivateIp() {
+  public Ip getPrivateIp() {
     return _privateIp;
   }
 
   @Nullable
-  Ip getPublicIp() {
+  public Ip getPublicIp() {
     return _publicIp;
   }
 
