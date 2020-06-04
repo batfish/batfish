@@ -118,12 +118,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -151,6 +154,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -232,6 +236,8 @@ import org.junit.rules.TemporaryFolder;
 
 public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -330,6 +336,10 @@ public final class PaloAltoGrammarTest {
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
     return fb.build();
+  }
+
+  private static void assertIpSpacesEqual(IpSpace left, IpSpace right) {
+    assertThat(DST.visit(left), equalTo(DST.visit(right)));
   }
 
   @Test
@@ -2748,19 +2758,61 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testDeviceGroup() {
     String hostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
 
-    DeviceGroup deviceGroup = c.getOrCreateDeviceGroup("DG1");
-    Vsys panorama = deviceGroup.getPanorama();
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+    DeviceGroup deviceGroup2 = c.getOrCreateDeviceGroup("DG2");
+    Vsys panoramaDg1 = deviceGroup1.getPanorama();
+    Vsys panoramaDg2 = deviceGroup2.getPanorama();
 
-    assertThat(panorama, notNullValue());
-    assertThat(panorama.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
-    assertThat(panorama.getAddressObjects().keySet(), contains("ADDR1"));
+    // Check first device-group
+    assertThat(deviceGroup1.getDevices(), containsInAnyOrder(firewallId1, firewallId2));
+    assertThat(deviceGroup1.getDescription(), equalTo("long description"));
+    assertThat(panoramaDg1, notNullValue());
+    assertThat(panoramaDg1.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
+    assertThat(panoramaDg1.getAddressObjects().keySet(), contains("ADDR1"));
 
-    assertThat(deviceGroup.getDevices(), containsInAnyOrder("00000001", "00000002"));
-    assertThat(deviceGroup.getDescription(), equalTo("long description"));
+    // Check second device-group
+    assertThat(deviceGroup2.getDevices(), contains(firewallId3));
+    assertThat(panoramaDg2, notNullValue());
+    assertThat(panoramaDg2.getAddressObjects().keySet(), contains("ADDR2"));
 
     // Make sure post-device-group config is attached to the main config as expected
     assertThat(c.getHostname(), equalTo("device-group"));
+  }
+
+  @Test
+  public void testDeviceGroupConversion() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    String addressObject1Name = "ADDR1";
+    String addressObject2Name = "ADDR2";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // First two firewalls should inherit definitions from first Panorama device-group
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(addressObject1Name), Ip.parse("1.2.3.4").toIpSpace());
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(addressObject1Name), Ip.parse("1.2.3.4").toIpSpace());
+    // Third firewall should inherit definitions from second Panorama device-group
+    assertIpSpacesEqual(
+        firewall3.getIpSpaces().get(addressObject2Name), Ip.parse("2.3.4.5").toIpSpace());
   }
 }
