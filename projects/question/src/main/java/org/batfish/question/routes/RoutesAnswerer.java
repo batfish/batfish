@@ -232,6 +232,20 @@ public class RoutesAnswerer extends Answerer {
                     Schema.STRING,
                     "Route's Origin type",
                     Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_ORIGINATOR_ID,
+                    Schema.STRING,
+                    "Route's Originator ID",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_CLUSTER_LIST,
+                    Schema.list(Schema.LONG),
+                    "Route's Cluster List",
+                    Boolean.FALSE,
                     Boolean.TRUE));
         break;
       case BGP:
@@ -285,16 +299,16 @@ public class RoutesAnswerer extends Answerer {
                     Boolean.TRUE))
             .add(
                 new ColumnMetadata(
-                    COL_CLUSTER_LIST,
-                    Schema.list(Schema.STRING),
-                    "Route's Cluster List",
+                    COL_ORIGINATOR_ID,
+                    Schema.STRING,
+                    "Route's Originator ID",
                     Boolean.FALSE,
                     Boolean.TRUE))
             .add(
                 new ColumnMetadata(
-                    COL_ORIGINATOR_ID,
-                    Schema.STRING,
-                    "Route's Originator ID",
+                    COL_CLUSTER_LIST,
+                    Schema.list(Schema.LONG),
+                    "Route's Cluster List",
                     Boolean.FALSE,
                     Boolean.TRUE));
         break;

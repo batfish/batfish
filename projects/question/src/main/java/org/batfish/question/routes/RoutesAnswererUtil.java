@@ -321,10 +321,10 @@ public class RoutesAnswererUtil {
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, bgpv4Route.getOriginType())
+        .put(COL_ORIGINATOR_ID, bgpv4Route.getOriginatorIp())
         .put(
             COL_CLUSTER_LIST,
-            bgpv4Route.getClusterList().size() == 0 ? null : bgpv4Route.getClusterList())
-        .put(COL_ORIGINATOR_ID, bgpv4Route.getOriginatorIp())
+            bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .build();
   }
@@ -352,10 +352,10 @@ public class RoutesAnswererUtil {
             evpnRoute.getCommunities().stream().map(Community::toString).collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, evpnRoute.getOriginType())
+        .put(COL_ORIGINATOR_ID, evpnRoute.getOriginatorIp())
         .put(
             COL_CLUSTER_LIST,
-            evpnRoute.getClusterList().size() == 0 ? null : evpnRoute.getClusterList())
-        .put(COL_ORIGINATOR_ID, evpnRoute.getOriginatorIp())
+            evpnRoute.getClusterList().isEmpty() ? null : evpnRoute.getClusterList())
         .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
         .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
         .build();
