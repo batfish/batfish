@@ -212,23 +212,28 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
 
   @Test
   public void testForNetwork() {
-    // Create a network with two configs with the same interfaces and outgoing original flow filters
+    // Create a network with three configs
     NetworkFactory nf = new NetworkFactory();
-    Configuration config1 = createConfig(nf, ALL_IFACES);
-    Configuration config2 = createConfig(nf, ALL_IFACES);
+    Configuration c1 = createConfig(nf, ALL_IFACES);
+    Configuration c2 = createConfig(nf, ALL_IFACES);
+    Configuration c3 = createConfig(nf, ImmutableSet.of());
     Map<String, Configuration> configs =
-        ImmutableMap.of(config1.getHostname(), config1, config2.getHostname(), config2);
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
 
     Map<String, BDDSourceManager> bddSrcMgrs = BDDSourceManager.forNetwork(PKT, configs, false);
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
         BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, bddSrcMgrs);
-    BDDOutgoingOriginalFlowFilterManager mgr1 = mgrs.get(config1.getHostname());
-    BDDOutgoingOriginalFlowFilterManager mgr2 = mgrs.get(config2.getHostname());
+    BDDOutgoingOriginalFlowFilterManager mgr1 = mgrs.get(c1.getHostname());
+    BDDOutgoingOriginalFlowFilterManager mgr2 = mgrs.get(c2.getHostname());
+    BDDOutgoingOriginalFlowFilterManager mgr3 = mgrs.get(c3.getHostname());
 
-    // The two managers should be nontrivial and should use the same BDD values, so it should work
-    // to use one to erase constraints created by the other.
+    // The first two managers should be nontrivial and should use the same BDD values, so it should
+    // work to use one to erase constraints created by the other.
     assertTrue(!mgr1.isTrivial() && !mgr2.isTrivial());
     assertTrue(mgr1.erase(mgr2.outgoingOriginalFlowFiltersConstraint()).isOne());
+
+    // The third manager should be trivial (third config has no interfaces).
+    assertTrue(mgr3.isTrivial());
   }
 
   @Test
@@ -387,11 +392,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     assertTrue(mgr.erase(outgoingOriginalFlowFiltersConstraint).isOne());
 
     // erase should clear all interface constraints as well as permit var
-    BDD permittedOutAnyIface =
-        ALL_IFACES.stream()
-            .map(mgr::permittedByOriginalFlowEgressFilter)
-            .reduce(BDD::or)
-            .orElse(null);
-    assertTrue(mgr.erase(permittedOutAnyIface).isOne());
+    BDD permittedOutIface1 = mgr.permittedByOriginalFlowEgressFilter(ACTIVE_IFACE_WITH_FILTER_1);
+    assertTrue(mgr.erase(permittedOutIface1).isOne());
   }
 }
