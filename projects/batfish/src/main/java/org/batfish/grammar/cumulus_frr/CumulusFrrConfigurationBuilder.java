@@ -111,6 +111,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_ipv4_uni
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
@@ -736,6 +737,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbb_router_id(Sbb_router_idContext ctx) {
     _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
+  public void exitSbb_cluster_id(Sbb_cluster_idContext ctx) {
+    _currentBgpVrf.setClusterId(
+        Ip.parse(ctx.IP_ADDRESS() != null ? ctx.IP_ADDRESS().getText() : null));
   }
 
   @Override
