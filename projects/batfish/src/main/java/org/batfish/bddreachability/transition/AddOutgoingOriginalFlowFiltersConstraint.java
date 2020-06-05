@@ -3,14 +3,13 @@ package org.batfish.bddreachability.transition;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
-import org.batfish.datamodel.Interface;
 
 /**
  * {@link Transition} that adds a constraint tracking which interfaces' {@link
- * Interface#getOutgoingOriginalFlowFilter() outgoingOriginalFlowFilters} would permit the current
- * (pre-transformation) flow. Later when an egress interface is selected, (post-transformation)
- * flows will already be partitioned based on whether their original flows were permitted by the
- * interface's outgoingOriginalFlowFilter, thanks to this constraint.
+ * org.batfish.datamodel.Interface#getOutgoingOriginalFlowFilter() outgoingOriginalFlowFilters}
+ * would permit the current (pre-transformation) flow. Later when an egress interface is selected,
+ * (post-transformation) flows will already be partitioned based on whether their original flows
+ * were permitted by the interface's outgoingOriginalFlowFilter, thanks to this constraint.
  */
 @ParametersAreNonnullByDefault
 public final class AddOutgoingOriginalFlowFiltersConstraint implements Transition {
