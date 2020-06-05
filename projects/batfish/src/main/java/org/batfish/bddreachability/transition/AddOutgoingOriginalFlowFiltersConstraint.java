@@ -15,10 +15,17 @@ import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 public final class AddOutgoingOriginalFlowFiltersConstraint implements Transition {
   private final BDDOutgoingOriginalFlowFilterManager _mgr;
 
-  AddOutgoingOriginalFlowFiltersConstraint(BDDOutgoingOriginalFlowFilterManager mgr) {
-    // Can't swap this out for an identity transition if the manager is trivial, because even in
-    // that case transiting backwards still needs to clear the egress interface constraint.
+  private AddOutgoingOriginalFlowFiltersConstraint(BDDOutgoingOriginalFlowFilterManager mgr) {
+    // If manager is trivial, should use identity transition instead. This depends on the invariant
+    // that egress interface constraints are NOT applied in backwards traversals on nodes with
+    // trivial managers.
+    assert !mgr.isTrivial();
     _mgr = mgr;
+  }
+
+  static Transition addOutgoingOriginalFlowFiltersConstraint(
+      BDDOutgoingOriginalFlowFilterManager mgr) {
+    return mgr.isTrivial() ? Identity.INSTANCE : new AddOutgoingOriginalFlowFiltersConstraint(mgr);
   }
 
   @Override
@@ -30,6 +37,8 @@ public final class AddOutgoingOriginalFlowFiltersConstraint implements Transitio
 
   @Override
   public BDD transitBackward(BDD bdd) {
+    // No assertion that the BDD is constrained, because there are cases where it legitimately
+    // shouldn't be (for example if the final state is NO_ROUTE in this node).
     return _mgr.erase(bdd.and(_mgr.outgoingOriginalFlowFiltersConstraint()));
   }
 }

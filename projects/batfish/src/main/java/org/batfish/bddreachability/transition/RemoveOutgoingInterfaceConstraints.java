@@ -12,8 +12,16 @@ import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 public final class RemoveOutgoingInterfaceConstraints implements Transition {
   private final BDDOutgoingOriginalFlowFilterManager _mgr;
 
-  RemoveOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
+  private RemoveOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
+    // If manager is trivial, should use identity transition instead. This depends on the invariant
+    // that the manager's permittedByOriginalFlowEgressFilter and deniedByOriginalFlowEgressFilter
+    // methods will return ONE and ZERO respectively for trivial managers.
+    assert !mgr.isTrivial();
     _mgr = mgr;
+  }
+
+  static Transition removeOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
+    return mgr.isTrivial() ? Identity.INSTANCE : new RemoveOutgoingInterfaceConstraints(mgr);
   }
 
   @Override

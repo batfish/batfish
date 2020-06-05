@@ -1,9 +1,11 @@
 package org.batfish.bddreachability.transition;
 
+import static org.batfish.bddreachability.transition.RemoveOutgoingInterfaceConstraints.removeOutgoingInterfaceConstraints;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,7 +37,7 @@ public class RemoveOutgoingInterfaceConstraintsTest {
   private static final Ip PERMITTED_DST_IP = Ip.parse("1.1.1.1");
 
   private static BDDOutgoingOriginalFlowFilterManager MGR;
-  private static RemoveOutgoingInterfaceConstraints TRANSITION;
+  private static Transition TRANSITION;
 
   @BeforeClass
   public static void setup() {
@@ -53,15 +55,17 @@ public class RemoveOutgoingInterfaceConstraintsTest {
     nf.interfaceBuilder().setOwner(c).setName(IFACE).setOutgoingOriginalFlowFilter(acl).build();
 
     // Create manager and corresponding RemoveOutgoingInterfaceConstraints transition
+    MGR = getMgrForConfig(c);
+    assert !MGR.isTrivial(); // sanity check
+    TRANSITION = removeOutgoingInterfaceConstraints(MGR);
+  }
+
+  private static BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(PKT, configs);
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
         BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, srcMgrs);
-    MGR = mgrs.get(c.getHostname());
-    TRANSITION = new RemoveOutgoingInterfaceConstraints(MGR);
-
-    // Sanity check
-    assert !MGR.isTrivial();
+    return mgrs.get(c.getHostname());
   }
 
   @Test
@@ -76,6 +80,17 @@ public class RemoveOutgoingInterfaceConstraintsTest {
 
     // Transiting backwards should have no effect
     assertThat(TRANSITION.transitBackward(ONE), equalTo(ONE));
+  }
+
+  @Test
+  public void testTrivialManagerProducesIdentityTransition() {
+    Configuration c =
+        new NetworkFactory()
+            .configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    BDDOutgoingOriginalFlowFilterManager trivialManager = getMgrForConfig(c);
+    assertThat(removeOutgoingInterfaceConstraints(trivialManager), is(Identity.INSTANCE));
   }
 
   @Test
