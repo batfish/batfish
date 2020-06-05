@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.datamodel.Interface;
@@ -11,7 +12,8 @@ import org.batfish.datamodel.Interface;
  * flows will already be partitioned based on whether their original flows were permitted by the
  * interface's outgoingOriginalFlowFilter, thanks to this constraint.
  */
-public class AddOutgoingOriginalFlowFiltersConstraint implements Transition {
+@ParametersAreNonnullByDefault
+public final class AddOutgoingOriginalFlowFiltersConstraint implements Transition {
   private final BDDOutgoingOriginalFlowFilterManager _mgr;
 
   AddOutgoingOriginalFlowFiltersConstraint(BDDOutgoingOriginalFlowFilterManager mgr) {

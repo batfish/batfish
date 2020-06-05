@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 
@@ -7,7 +8,8 @@ import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
  * {@link Transition} to remove constraints on flows' egress interfaces. Such constraints may be
  * imposed by e.g. {@link AddOutgoingOriginalFlowFiltersConstraint}.
  */
-public class RemoveOutgoingInterfaceConstraints implements Transition {
+@ParametersAreNonnullByDefault
+public final class RemoveOutgoingInterfaceConstraints implements Transition {
   private final BDDOutgoingOriginalFlowFilterManager _mgr;
 
   RemoveOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
