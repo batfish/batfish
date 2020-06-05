@@ -23,7 +23,7 @@ public final class AddOutgoingOriginalFlowFiltersConstraint implements Transitio
     _mgr = mgr;
   }
 
-  static Transition addOutgoingOriginalFlowFiltersConstraint(
+  public static Transition addOutgoingOriginalFlowFiltersConstraint(
       BDDOutgoingOriginalFlowFilterManager mgr) {
     return mgr.isTrivial() ? Identity.INSTANCE : new AddOutgoingOriginalFlowFiltersConstraint(mgr);
   }

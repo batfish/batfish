@@ -20,7 +20,8 @@ public final class RemoveOutgoingInterfaceConstraints implements Transition {
     _mgr = mgr;
   }
 
-  static Transition removeOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
+  public static Transition removeOutgoingInterfaceConstraints(
+      BDDOutgoingOriginalFlowFilterManager mgr) {
     return mgr.isTrivial() ? Identity.INSTANCE : new RemoveOutgoingInterfaceConstraints(mgr);
   }
 
