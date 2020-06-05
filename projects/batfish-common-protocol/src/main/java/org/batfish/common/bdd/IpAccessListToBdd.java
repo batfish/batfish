@@ -1,10 +1,12 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,11 +46,24 @@ import org.batfish.datamodel.acl.TrueExpr;
 @ParametersAreNonnullByDefault
 public abstract class IpAccessListToBdd {
 
+  /** Converts the given {@code aclsToConvert} to {@link BDD BDDs} using the given context. */
+  public static Map<String, BDD> toBdds(
+      BDDPacket pkt,
+      Collection<IpAccessList> aclsToConvert,
+      Map<String, IpAccessList> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv,
+      BDDSourceManager bddSrcManager) {
+    IpAccessListToBdd converter = new IpAccessListToBddImpl(pkt, bddSrcManager, aclEnv, ipSpaceEnv);
+    return toImmutableMap(aclsToConvert, IpAccessList::getName, converter::toBdd);
+  }
+
   /**
    * Converts the given {@link IpAccessList} to a {@link BDD} using the given context.
    *
    * <p>Note that if converting multiple {@link IpAccessList ACLs} with the same context,
    * considerable work can be saved by creating a single {@link IpAccessListToBdd} and reusing it.
+   *
+   * @see #toBdds(BDDPacket, Collection, Map, Map, BDDSourceManager)
    */
   public static BDD toBDD(
       BDDPacket pkt,
@@ -68,6 +83,7 @@ public abstract class IpAccessListToBdd {
    * <p>Note that if converting multiple {@link IpAccessList ACLs} with the same context,
    * considerable work can be saved by creating a single {@link IpAccessListToBdd} and reusing it.
    *
+   * @see #toBdds(BDDPacket, Collection, Map, Map, BDDSourceManager)
    * @see #toBDD(BDDPacket, IpAccessList, Map, Map, BDDSourceManager)
    */
   public static BDD toBDD(BDDPacket pkt, IpAccessList acl) {
