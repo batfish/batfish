@@ -1229,6 +1229,7 @@ public final class CumulusConversionsTest {
         equalTo(Ip.parse("1.1.1.1").asLong()));
   }
 
+  @Test
   public void testInferClusterId_eBGP() {
     org.batfish.datamodel.BgpProcess newProc =
         new org.batfish.datamodel.BgpProcess(
