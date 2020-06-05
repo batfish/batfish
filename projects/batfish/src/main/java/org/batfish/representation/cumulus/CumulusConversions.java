@@ -1255,15 +1255,16 @@ public final class CumulusConversions {
    * https://github.com/FRRouting/frr/blob/b4b1d1ebdbee99664c0607cf4abac977dfc896b6/bgpd/bgp_attr.c#L3851
    * If FRR has a cluster-id set it will use that, otherwise it will use router-id.
    *
-   * @param bgpVrf
-   * @param routerId
-   * @return
+   * @param bgpVrf BGP vrf for which to infer cluster ID
+   * @param routerId router ID of the {@code bgpVrf} (already inferred if needed)
    */
   @VisibleForTesting
   @Nullable
   static Long inferClusterId(final BgpVrf bgpVrf, final Ip routerId, final BgpNeighbor neighbor) {
     // Do not set cluster Id if peer is eBGP
-    if (!Objects.equals(neighbor.getRemoteAs(), bgpVrf.getAutonomousSystem())) return null;
+    if (!Objects.equals(neighbor.getRemoteAs(), bgpVrf.getAutonomousSystem())) {
+      return null;
+    }
     // Return clusterId if set in the config, otherwise return routerId as default.
     return bgpVrf.getClusterId() != null ? bgpVrf.getClusterId().asLong() : routerId.asLong();
   }
