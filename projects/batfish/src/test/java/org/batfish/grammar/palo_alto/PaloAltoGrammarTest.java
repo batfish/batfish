@@ -2823,7 +2823,9 @@ public final class PaloAltoGrammarTest {
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
 
     Template t1 = c.getOrCreateTemplate("T1");
+    Template t2 = c.getOrCreateTemplate("T2");
     assertThat(t1.getDescription(), equalTo("template description"));
+    assertThat(t2.getDescription(), equalTo("template 2 description"));
     assertThat(t1.getHostname(), equalTo("pan-template"));
 
     // Check network configuration is applied to the template as expected
