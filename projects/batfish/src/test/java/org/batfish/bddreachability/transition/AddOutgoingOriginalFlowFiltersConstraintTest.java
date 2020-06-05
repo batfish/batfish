@@ -94,7 +94,7 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
 
   @Test
   public void testAddOriginalFlowEgressFiltersConstraint_trivialManager() {
-    // Create transition for trivial manager. Transiting forwards should have no effect.
+    // Transiting forwards should have no effect.
     assertThat(TRIVIAL_TRANSITION.transitForward(ONE), equalTo(ONE));
 
     // Transiting backwards should still clear interface constraints. Use nontrivial mgr to generate
