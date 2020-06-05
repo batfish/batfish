@@ -255,8 +255,7 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
             hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
-            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG))
-        );
+            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)));
 
     assertThat(
         rows,
