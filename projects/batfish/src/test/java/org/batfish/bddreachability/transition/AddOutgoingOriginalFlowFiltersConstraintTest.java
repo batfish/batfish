@@ -1,11 +1,9 @@
 package org.batfish.bddreachability.transition;
 
-import static org.batfish.bddreachability.transition.AddOutgoingOriginalFlowFiltersConstraint.addOutgoingOriginalFlowFiltersConstraint;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -57,7 +55,7 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
     // Create manager and corresponding RemoveOutgoingInterfaceConstraints transition
     MGR = getMgrForConfig(c);
     assert !MGR.isTrivial(); // sanity check
-    TRANSITION = addOutgoingOriginalFlowFiltersConstraint(MGR);
+    TRANSITION = new AddOutgoingOriginalFlowFiltersConstraint(MGR);
   }
 
   private static BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
@@ -87,14 +85,15 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
   }
 
   @Test
-  public void testTrivialManagerProducesIdentityTransition() {
+  public void testConstructorThrowsForTrivialManager() {
     Configuration c =
         new NetworkFactory()
             .configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     BDDOutgoingOriginalFlowFilterManager trivialManager = getMgrForConfig(c);
-    assertThat(addOutgoingOriginalFlowFiltersConstraint(trivialManager), is(Identity.INSTANCE));
+    _thrown.expect(IllegalArgumentException.class);
+    new AddOutgoingOriginalFlowFiltersConstraint(trivialManager);
   }
 
   @Test

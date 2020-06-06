@@ -1,5 +1,7 @@
 package org.batfish.bddreachability.transition;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
@@ -12,17 +14,14 @@ import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 public final class RemoveOutgoingInterfaceConstraints implements Transition {
   private final BDDOutgoingOriginalFlowFilterManager _mgr;
 
-  private RemoveOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
+  RemoveOutgoingInterfaceConstraints(BDDOutgoingOriginalFlowFilterManager mgr) {
     // If manager is trivial, should use identity transition instead. This depends on the invariant
     // that the manager's permittedByOriginalFlowEgressFilter and deniedByOriginalFlowEgressFilter
     // methods will return ONE and ZERO respectively for trivial managers.
-    assert !mgr.isTrivial();
+    checkArgument(
+        !mgr.isTrivial(),
+        "RemoveOutgoingInterfaceConstraints for a trivial BDDOutgoingOriginalFlowFilterManager. Use Identity instead");
     _mgr = mgr;
-  }
-
-  public static Transition removeOutgoingInterfaceConstraints(
-      BDDOutgoingOriginalFlowFilterManager mgr) {
-    return mgr.isTrivial() ? Identity.INSTANCE : new RemoveOutgoingInterfaceConstraints(mgr);
   }
 
   @Override

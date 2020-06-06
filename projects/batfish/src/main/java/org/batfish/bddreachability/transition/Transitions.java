@@ -14,6 +14,7 @@ import java.util.Stack;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
@@ -356,6 +357,11 @@ public final class Transitions {
         : new AddNoLastHopConstraint(mgr, recvNode, recvIface);
   }
 
+  public static Transition addOutgoingOriginalFlowFiltersConstraint(
+      BDDOutgoingOriginalFlowFilterManager mgr) {
+    return mgr.isTrivial() ? IDENTITY : new AddOutgoingOriginalFlowFiltersConstraint(mgr);
+  }
+
   public static Transition addOriginatingFromDeviceConstraint(BDDSourceManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr);
   }
@@ -369,6 +375,11 @@ public final class Transitions {
     return mgr == null || !mgr.isTrackedReceivingNode(node)
         ? IDENTITY
         : new RemoveLastHopConstraint(mgr, node);
+  }
+
+  public static Transition removeOutgoingInterfaceConstraints(
+      BDDOutgoingOriginalFlowFilterManager mgr) {
+    return mgr.isTrivial() ? IDENTITY : new RemoveOutgoingInterfaceConstraints(mgr);
   }
 
   public static Transition removeSourceConstraint(BDDSourceManager mgr) {

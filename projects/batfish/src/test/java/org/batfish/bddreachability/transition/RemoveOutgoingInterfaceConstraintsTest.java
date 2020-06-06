@@ -1,11 +1,10 @@
 package org.batfish.bddreachability.transition;
 
-import static org.batfish.bddreachability.transition.RemoveOutgoingInterfaceConstraints.removeOutgoingInterfaceConstraints;
+import static org.batfish.bddreachability.transition.Transitions.removeOutgoingInterfaceConstraints;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -83,14 +82,15 @@ public class RemoveOutgoingInterfaceConstraintsTest {
   }
 
   @Test
-  public void testTrivialManagerProducesIdentityTransition() {
+  public void testConstructorThrowsForTrivialManager() {
     Configuration c =
         new NetworkFactory()
             .configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     BDDOutgoingOriginalFlowFilterManager trivialManager = getMgrForConfig(c);
-    assertThat(removeOutgoingInterfaceConstraints(trivialManager), is(Identity.INSTANCE));
+    _thrown.expect(IllegalArgumentException.class);
+    new RemoveOutgoingInterfaceConstraints(trivialManager);
   }
 
   @Test

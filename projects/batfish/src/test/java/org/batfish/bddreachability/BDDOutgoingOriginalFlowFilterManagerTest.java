@@ -1,9 +1,9 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.transition.AddOutgoingOriginalFlowFiltersConstraint.addOutgoingOriginalFlowFiltersConstraint;
-import static org.batfish.bddreachability.transition.RemoveOutgoingInterfaceConstraints.removeOutgoingInterfaceConstraints;
+import static org.batfish.bddreachability.transition.Transitions.addOutgoingOriginalFlowFiltersConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.removeOutgoingInterfaceConstraints;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
