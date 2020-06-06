@@ -7,6 +7,7 @@ import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
+import static org.batfish.question.routes.RoutesAnswerer.COL_CLUSTER_LIST;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
@@ -15,6 +16,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
@@ -268,6 +270,8 @@ public class RoutesAnswererTest {
             COL_COMMUNITIES,
             COL_ORIGIN_PROTOCOL,
             COL_ORIGIN_TYPE,
+            COL_ORIGINATOR_ID,
+            COL_CLUSTER_LIST,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
@@ -296,6 +300,8 @@ public class RoutesAnswererTest {
             COL_COMMUNITIES,
             COL_ORIGIN_PROTOCOL,
             COL_ORIGIN_TYPE,
+            COL_ORIGINATOR_ID,
+            COL_CLUSTER_LIST,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.EVPN).getColumnMetadata();
