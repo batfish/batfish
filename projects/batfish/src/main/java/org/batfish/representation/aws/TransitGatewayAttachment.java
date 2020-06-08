@@ -20,6 +20,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
   enum ResourceType {
+    PEERING,
     VPC,
     VPN
   }
