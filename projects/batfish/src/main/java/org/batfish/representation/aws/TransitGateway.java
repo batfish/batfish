@@ -7,6 +7,7 @@ import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP_AND_STATIC;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.connect;
+import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -701,13 +702,24 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         {
           Configuration vpcCfg =
               awsConfiguration.getNode(Vpc.nodeName(tgwAttachment.getResourceId()));
+          assert vpcCfg != null; // suppress IDE warnings
+          String ifaceNameOnVpc = interfaceNameToRemote(tgwCfg, routeTableId);
+          if (!vpcCfg.getAllInterfaces().containsKey(ifaceNameOnVpc)) {
+            warnings.redFlag(
+                String.format(
+                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC is not propagating to that table",
+                    route.getDestinationCidrBlock(),
+                    routeTableId,
+                    tgwCfg.getHostname(),
+                    vpcCfg.getHostname()));
+            return;
+          }
           addStaticRoute(
               vrf,
               toStaticRoute(
                   route.getDestinationCidrBlock(),
                   Utils.interfaceNameToRemote(vpcCfg, routeTableId),
-                  Utils.getInterfaceLinkLocalIp(
-                      vpcCfg, Utils.interfaceNameToRemote(tgwCfg, routeTableId))));
+                  Utils.getInterfaceLinkLocalIp(vpcCfg, ifaceNameOnVpc)));
           return;
         }
       case VPN:
