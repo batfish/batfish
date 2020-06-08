@@ -2867,7 +2867,7 @@ public final class PaloAltoGrammarTest {
     assertThat(ts3.getDevices(), contains("00000003"));
 
     // Finally, check templates associated w/ each stack; order is important
-    assertThat(ts1.getTemplates(), contains("T1", "T2"));
+    assertThat(ts1.getTemplates(), contains("T1", "T2", "T_UNDEF"));
     assertThat(ts2.getTemplates(), contains("T3"));
     assertThat(ts3.getTemplates(), emptyIterable());
   }
