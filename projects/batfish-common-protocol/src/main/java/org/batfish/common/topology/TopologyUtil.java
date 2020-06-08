@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.TunnelTopology.Builder;
 import org.batfish.common.util.CollectionUtil;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -240,22 +239,20 @@ public final class TopologyUtil {
                     .add(i.getName());
               }
             });
+    // Note that since the L2 model is transitive, we only need add a single spanning tree rather
+    // than all O(N^2) edges to get complete connectivity for all interfaces on the same switchport.
+    // Additionally, edges need not be added symmetrically.
     Map<Integer, List<String>> switchportsByVlan =
         CollectionUtil.toImmutableMap(
             switchportsByVlanBuilder, Entry::getKey, e -> e.getValue().build());
     switchportsByVlan.forEach(
         (vlanId, interfaceNames) -> {
-          CommonUtil.forEachWithIndex(
-              interfaceNames,
-              (i, i1Name) -> {
-                for (int j = i + 1; j < interfaceNames.size(); j++) {
-                  String i2Name = interfaceNames.get(j);
-                  edges.accept(
-                      new Layer2Edge(hostname, i1Name, vlanId, hostname, i2Name, vlanId, null));
-                  edges.accept(
-                      new Layer2Edge(hostname, i2Name, vlanId, hostname, i1Name, vlanId, null));
-                }
-              });
+          String firstInterface = interfaceNames.get(0);
+          Layer2Node firstNode = new Layer2Node(hostname, firstInterface, vlanId);
+          for (String otherInterface : interfaceNames.subList(1, interfaceNames.size())) {
+            Layer2Node otherNode = new Layer2Node(hostname, otherInterface, vlanId);
+            edges.accept(new Layer2Edge(firstNode, otherNode, null));
+          }
         });
     Map<Integer, Layer2Vni> vniSettingsByVlan =
         config.getVrfs().values().stream()
@@ -274,12 +271,10 @@ public final class TopologyUtil {
               Optional.ofNullable(vniSettingsByVlan.get(vlanId))
                   .map(vniSettings -> computeVniName(vniSettings.getVni()))
                   .ifPresent(
-                      vniName -> {
-                        edges.accept(
-                            new Layer2Edge(hostname, irbName, null, hostname, vniName, null, null));
-                        edges.accept(
-                            new Layer2Edge(hostname, vniName, null, hostname, irbName, null, null));
-                      });
+                      vniName ->
+                          edges.accept(
+                              new Layer2Edge(
+                                  hostname, irbName, null, hostname, vniName, null, null)));
             });
     // Link each VNI to switchports in same VLAN
     vniSettingsByVlan.forEach(
@@ -307,9 +302,6 @@ public final class TopologyUtil {
               edges.accept(
                   new Layer2Edge(
                       hostname, nonSwitchportName, null, hostname, switchportName, vlanId, null));
-              edges.accept(
-                  new Layer2Edge(
-                      hostname, switchportName, vlanId, hostname, nonSwitchportName, null, null));
             });
     return edges.build();
   }
