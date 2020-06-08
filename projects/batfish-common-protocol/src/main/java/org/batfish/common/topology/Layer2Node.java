@@ -100,7 +100,12 @@ public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _interfaceName, _switchportVlanId);
+    int ret = _hashCode;
+    if (ret == 0) {
+      ret = Objects.hash(_hostname, _interfaceName, _switchportVlanId);
+      _hashCode = ret;
+    }
+    return ret;
   }
 
   @Override
@@ -112,4 +117,6 @@ public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
         .add(PROP_SWITCHPORT_VLAN_ID, _switchportVlanId)
         .toString();
   }
+
+  private transient int _hashCode;
 }

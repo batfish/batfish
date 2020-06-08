@@ -103,7 +103,12 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_node1, _node2, _encapsulatedVlanId);
+    int ret = _hashCode;
+    if (ret == 0) {
+      ret = Objects.hash(_node1, _node2, _encapsulatedVlanId);
+      _hashCode = ret;
+    }
+    return ret;
   }
 
   @Override
@@ -115,4 +120,6 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
         .add(PROP_ENCAPSULATED_VLAN_ID, _encapsulatedVlanId)
         .toString();
   }
+
+  private transient int _hashCode;
 }
