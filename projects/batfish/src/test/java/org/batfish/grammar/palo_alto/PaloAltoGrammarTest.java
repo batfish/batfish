@@ -226,6 +226,7 @@ import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.Template;
+import org.batfish.representation.palo_alto.TemplateStack;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
@@ -2843,5 +2844,29 @@ public final class PaloAltoGrammarTest {
     assertThat(zones.keySet(), containsInAnyOrder("ZONE1", "ZONE2"));
     assertThat(zones.get("ZONE1").getInterfaceNames(), contains("ethernet1/1"));
     assertThat(zones.get("ZONE2").getInterfaceNames(), contains("ethernet1/2"));
+  }
+
+  @Test
+  public void testTemplateStack() {
+    String hostname = "template-stack";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    TemplateStack ts1 = c.getOrCreateTemplateStack("TS1");
+    TemplateStack ts2 = c.getOrCreateTemplateStack("TS2");
+    TemplateStack ts3 = c.getOrCreateTemplateStack("TS3");
+
+    assertThat(ts1.getDescription(), equalTo("ts 1 description"));
+    assertThat(ts2.getDescription(), equalTo("ts 2 description"));
+    assertThat(ts3.getDescription(), equalTo("ts 3 description"));
+
+    // Check devices associated w/ each stack
+    assertThat(ts1.getDevices(), containsInAnyOrder("00000001", "00000002"));
+    assertThat(ts2.getDevices(), emptyIterable());
+    assertThat(ts3.getDevices(), contains("00000003"));
+
+    // Finally, check templates associated w/ each stack; order is important
+    assertThat(ts1.getTemplates(), contains("T1", "T2"));
+    assertThat(ts2.getTemplates(), contains("T3"));
+    assertThat(ts3.getTemplates(), emptyIterable());
   }
 }

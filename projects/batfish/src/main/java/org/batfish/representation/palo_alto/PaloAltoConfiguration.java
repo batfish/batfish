@@ -191,6 +191,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Templates owned by this configuration */
   private final Map<String, Template> _templates;
 
+  /** Template Stacks owned by this configuration */
+  private final Map<String, TemplateStack> _templateStacks;
+
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
@@ -206,6 +209,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
     _templates = new TreeMap<>();
+    _templateStacks = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
     _zoneOutgoingTransformations = new TreeMap<>();
@@ -253,6 +257,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public Template getOrCreateTemplate(String name) {
     return _templates.computeIfAbsent(name, Template::new);
+  }
+
+  public TemplateStack getOrCreateTemplateStack(String name) {
+    return _templateStacks.computeIfAbsent(name, TemplateStack::new);
   }
 
   public SortedMap<String, Interface> getInterfaces() {
