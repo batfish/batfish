@@ -20,6 +20,7 @@ public class BgpVrf implements Serializable {
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
   private @Nullable Ip _routerId;
+  private @Nullable Ip _clusterId;
   private final @Nonnull String _vrfName;
   private @Nullable Long _confederationId;
 
@@ -72,6 +73,10 @@ public class BgpVrf implements Serializable {
     return _routerId;
   }
 
+  public @Nullable Ip getClusterId() {
+    return _clusterId;
+  }
+
   public @Nonnull String getVrfName() {
     return _vrfName;
   }
@@ -90,6 +95,10 @@ public class BgpVrf implements Serializable {
 
   public void setRouterId(@Nullable Ip routerId) {
     _routerId = routerId;
+  }
+
+  public void setClusterId(@Nullable Ip clusterId) {
+    _clusterId = clusterId;
   }
 
   @Nullable

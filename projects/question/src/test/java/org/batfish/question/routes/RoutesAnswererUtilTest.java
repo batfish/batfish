@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
+import static org.batfish.question.routes.RoutesAnswerer.COL_CLUSTER_LIST;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
@@ -12,6 +13,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGINATOR_ID;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
@@ -251,7 +253,9 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
             hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
             hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
-            hasColumn(COL_TAG, nullValue(), Schema.INTEGER));
+            hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
+            hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
+            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)));
 
     assertThat(
         rows,
