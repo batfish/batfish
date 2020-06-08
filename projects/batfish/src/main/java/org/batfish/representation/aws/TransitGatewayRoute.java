@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,14 +55,13 @@ abstract class TransitGatewayRoute implements Serializable {
         "Only one of v4 or v6 destination CIDR block must be present for a transit gateway static route");
     checkArgument(state != null, "State cannot be null for transit gateway attachment");
     checkArgument(type != null, "Type cannot be null for transit gateway attachment");
-    checkArgument(attachments != null, "Attachments cannot be null for transit gateway attachment");
 
     if (destinationCidrBlock != null) {
       return new TransitGatewayRouteV4(
           destinationCidrBlock,
           State.valueOf(state.toUpperCase()),
           Type.valueOf(type.toUpperCase()),
-          attachments.stream()
+          firstNonNull(attachments, new LinkedList<Attachment>()).stream()
               .map(Attachment::getAttachmentId)
               .collect(ImmutableList.toImmutableList()));
     } else {
@@ -68,7 +69,7 @@ abstract class TransitGatewayRoute implements Serializable {
           destinationIpv6CidrBlock,
           State.valueOf(state.toUpperCase()),
           Type.valueOf(type.toUpperCase()),
-          attachments.stream()
+          firstNonNull(attachments, new LinkedList<Attachment>()).stream()
               .map(Attachment::getAttachmentId)
               .collect(ImmutableList.toImmutableList()));
     }
