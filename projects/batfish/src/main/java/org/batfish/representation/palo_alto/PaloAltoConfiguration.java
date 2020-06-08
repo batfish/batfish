@@ -188,6 +188,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Vsys> _sharedGateways;
 
+  /** Templates owned by this configuration */
+  private final Map<String, Template> _templates;
+
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
@@ -202,6 +205,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _deviceGroups = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
+    _templates = new TreeMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
     _zoneOutgoingTransformations = new TreeMap<>();
@@ -245,6 +249,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public DeviceGroup getOrCreateDeviceGroup(String name) {
     return _deviceGroups.computeIfAbsent(name, DeviceGroup::new);
+  }
+
+  public Template getOrCreateTemplate(String name) {
+    return _templates.computeIfAbsent(name, Template::new);
   }
 
   public SortedMap<String, Interface> getInterfaces() {

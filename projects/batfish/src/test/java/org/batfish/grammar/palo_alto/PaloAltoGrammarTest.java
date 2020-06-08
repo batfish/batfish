@@ -225,6 +225,7 @@ import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
+import org.batfish.representation.palo_alto.Template;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
@@ -2814,5 +2815,33 @@ public final class PaloAltoGrammarTest {
     // Third firewall should inherit definitions from second Panorama device-group
     assertIpSpacesEqual(
         firewall3.getIpSpaces().get(addressObject2Name), Ip.parse("2.3.4.5").toIpSpace());
+  }
+
+  @Test
+  public void testTemplate() {
+    String hostname = "template";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    Template t1 = c.getOrCreateTemplate("T1");
+    Template t2 = c.getOrCreateTemplate("T2");
+    assertThat(t1.getDescription(), equalTo("template description"));
+    assertThat(t2.getDescription(), equalTo("template 2 description"));
+    assertThat(t1.getHostname(), equalTo("pan-template"));
+
+    // Check network configuration is applied to the template as expected
+    assertThat(t1.getInterfaces().keySet(), containsInAnyOrder("ethernet1/1", "ethernet1/2"));
+    assertThat(t1.getVirtualRouters().keySet(), contains("default"));
+    assertThat(
+        t1.getVirtualRouters().get("default").getInterfaceNames(),
+        containsInAnyOrder("ethernet1/1", "ethernet1/2"));
+
+    // Check vsys configuration is applied to the template as expected
+    assertThat(t1.getVirtualSystems().keySet(), contains("vsys1"));
+    Vsys vsys1 = t1.getVirtualSystems().get("vsys1");
+    assertThat(vsys1.getImportedInterfaces(), containsInAnyOrder("ethernet1/1", "ethernet1/2"));
+    SortedMap<String, Zone> zones = vsys1.getZones();
+    assertThat(zones.keySet(), containsInAnyOrder("ZONE1", "ZONE2"));
+    assertThat(zones.get("ZONE1").getInterfaceNames(), contains("ethernet1/1"));
+    assertThat(zones.get("ZONE2").getInterfaceNames(), contains("ethernet1/2"));
   }
 }

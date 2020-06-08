@@ -19,6 +19,7 @@ import
     PaloAlto_service_group,
     PaloAlto_shared,
     PaloAlto_tag,
+    PaloAlto_template,
     PaloAlto_virtual_router,
     PaloAlto_vsys,
     PaloAlto_zone;
@@ -93,6 +94,26 @@ statement_config_general
     | s_shared
 ;
 
+statement_template
+:
+    st_description
+    | statement_template_config
+;
+
+statement_template_config
+:
+    CONFIG (DEVICES name = variable)? statement_template_config_devices
+;
+
+// Templates support a small subset of device configuration (statement_config_devices)
+statement_template_config_devices
+:
+    s_deviceconfig
+    | s_network
+    | s_shared
+    | s_vsys
+;
+
 set_line
 :
     SET set_line_tail NEWLINE
@@ -100,8 +121,7 @@ set_line
 
 set_line_template
 :
-// TODO: do we need this if we have the applied template from other show commands?
-    TEMPLATE null_rest_of_line
+    TEMPLATE name = variable statement_template
 ;
 
 set_line_device_group
