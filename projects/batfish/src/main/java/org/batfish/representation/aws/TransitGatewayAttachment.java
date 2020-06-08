@@ -19,6 +19,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
+  /** Different types of TGW attachments */
   enum ResourceType {
     PEERING,
     VPC,
