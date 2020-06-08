@@ -227,6 +227,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_device_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_templateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
@@ -279,6 +280,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.St_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
@@ -375,6 +377,7 @@ import org.batfish.representation.palo_alto.SourceTranslation;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.Tag;
+import org.batfish.representation.palo_alto.Template;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
@@ -433,6 +436,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private SyslogServer _currentSyslogServer;
   private String _currentSyslogServerGroupName;
   private Tag _currentTag;
+  private Template _currentTemplate;
   private VirtualRouter _currentVirtualRouter;
   private Vsys _currentVsys;
   private Zone _currentZone;
@@ -1647,6 +1651,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSdg_devices(Sdg_devicesContext ctx) {
     _currentDeviceGroup.addDevice(getText(ctx.device));
+  }
+
+  @Override
+  public void enterSet_line_template(Set_line_templateContext ctx) {
+    String templateName = getText(ctx.name);
+    _currentTemplate = _mainConfiguration.getOrCreateTemplate(templateName);
+    _currentConfiguration = _currentTemplate;
+    _currentVsys = null;
+  }
+
+  @Override
+  public void exitSet_line_template(Set_line_templateContext ctx) {
+    _currentTemplate = null;
+    _currentConfiguration = _mainConfiguration;
+    _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitSt_description(St_descriptionContext ctx) {
+    _currentTemplate.setDescription(getText(ctx.description));
   }
 
   @Override
