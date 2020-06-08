@@ -1,11 +1,11 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.parboiled.common.ImmutableList;
 
 /**
  * Represents a Palo Alto configuration template stack, which associates multiple templates with
