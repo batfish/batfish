@@ -68,10 +68,12 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
@@ -2868,5 +2870,24 @@ public final class PaloAltoGrammarTest {
     assertThat(ts1.getTemplates(), contains("T1", "T2"));
     assertThat(ts2.getTemplates(), contains("T3"));
     assertThat(ts3.getTemplates(), emptyIterable());
+  }
+
+  @Test
+  public void testTemplateReferences() throws IOException {
+    String hostname = "template-stack";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructureWithDefinitionLines(filename, TEMPLATE, "T1", contains(1)));
+    assertThat(ccae, hasDefinedStructureWithDefinitionLines(filename, TEMPLATE, "T2", contains(2)));
+    assertThat(ccae, hasDefinedStructureWithDefinitionLines(filename, TEMPLATE, "T3", contains(3)));
+
+    assertThat(
+        ccae, hasUndefinedReference(filename, TEMPLATE, "T_UNDEF", TEMPLATE_STACK_TEMPLATES));
+    assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T2", 1));
+    assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T3", 1));
   }
 }

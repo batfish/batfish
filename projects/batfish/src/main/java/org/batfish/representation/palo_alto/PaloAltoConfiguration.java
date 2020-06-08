@@ -2011,6 +2011,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.INTERFACE);
     markConcreteStructure(PaloAltoStructureType.REDIST_PROFILE);
     markConcreteStructure(PaloAltoStructureType.SECURITY_RULE);
+    markConcreteStructure(PaloAltoStructureType.TEMPLATE);
     markConcreteStructure(PaloAltoStructureType.ZONE);
     markConcreteStructure(PaloAltoStructureType.VIRTUAL_ROUTER);
 
