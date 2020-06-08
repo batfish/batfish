@@ -1,7 +1,7 @@
 parser grammar AristaParser;
 
 import
-Arista_common, Legacy_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Legacy_aaa, Legacy_acl, Legacy_cable, Legacy_crypto, Legacy_callhome, Legacy_ignored, Legacy_interface, Legacy_isis, Legacy_line, Legacy_logging, Legacy_mpls, Legacy_ntp, Legacy_ospf, Legacy_pim, Legacy_qos, Legacy_rip, Legacy_routemap, Legacy_snmp, Legacy_static;
+Arista_common, Legacy_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Legacy_aaa, Legacy_acl, Legacy_cable, Legacy_crypto, Legacy_callhome, Legacy_interface, Legacy_isis, Legacy_line, Legacy_logging, Legacy_mpls, Legacy_ntp, Legacy_ospf, Legacy_pim, Legacy_qos, Legacy_rip, Legacy_routemap, Legacy_snmp, Legacy_static;
 
 
 options {
@@ -2101,6 +2101,11 @@ s_bfd_template
   BFD_TEMPLATE SINGLE_HOP name = variable_permissive NEWLINE bfd_template_null*
 ;
 
+s_boot
+:
+  BOOT null_rest_of_line
+;
+
 s_cluster
 :
    NO? CLUSTER
@@ -2293,6 +2298,13 @@ s_enable
    )
 ;
 
+s_end
+:
+  // in principle, this terminates the file. But since we want to have incremental patches appended
+  // we will just parse and ignore.
+  END NEWLINE
+;
+
 s_ephone_dn_template
 :
    EPHONE_DN_TEMPLATE null_rest_of_line
@@ -2421,6 +2433,20 @@ s_interface_line
    NO? INTERFACE BREAKOUT null_rest_of_line
 ;
 
+s_ip
+:
+  IP
+  (
+    s_ip_domain_name
+    | s_ip_name_server
+    | s_ip_nbar
+    | s_ip_probe
+    | s_ip_routing
+    | s_ip_tacacs_source_interface
+    | s_ip_virtual_router
+  )
+;
+
 s_ip_default_gateway
 :
    NO? IP DEFAULT_GATEWAY
@@ -2456,7 +2482,7 @@ s_ip_domain
 
 s_ip_domain_name
 :
-   IP DOMAIN_NAME hostname = variable_hostname
+   DOMAIN_NAME hostname = variable_hostname
    (
       USE_VRF variable
    )? NEWLINE
@@ -2464,7 +2490,7 @@ s_ip_domain_name
 
 s_ip_name_server
 :
-   IP NAME_SERVER
+   NAME_SERVER
    (
       VRF vrf = variable
    )?
@@ -2485,20 +2511,20 @@ s_ip_nat
 
 s_ip_nbar
 :
-   IP NBAR CUSTOM null_rest_of_line
+   NBAR CUSTOM null_rest_of_line
 ;
 
 s_ip_probe
 :
-   IP PROBE null_rest_of_line
+   PROBE null_rest_of_line
    (
       ip_probe_null
    )*
 ;
 
-s_ip_route_mos
+s_ip_routing
 :
-   IP ROUTE IP_ADDRESS DEV interface_name NEWLINE
+  ROUTING (VRF name = variable)? NEWLINE
 ;
 
 s_ip_sla
@@ -2526,10 +2552,15 @@ s_ip_ssh
 
 s_ip_tacacs_source_interface
 :
-   IP TACACS
+   TACACS
    (
       VRF vrf = variable
    )? SOURCE_INTERFACE iname = interface_name NEWLINE
+;
+
+s_ip_virtual_router
+:
+  VIRTUAL_ROUTER MAC_ADDRESS null_rest_of_line
 ;
 
 s_ip_wccp
@@ -3396,6 +3427,7 @@ stanza
    | s_banner_eos
    | s_bfd
    | s_bfd_template
+   | s_boot
    | s_cable
    | s_call_home
    | s_callhome
@@ -3424,6 +3456,7 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
+   | s_end
    | s_eos_mlag
    | s_ephone_dn_template
    | s_ethernet_services
@@ -3444,22 +3477,18 @@ stanza
    s_interface_line
    | s_eos_vxlan_interface
    | s_interface
+   | s_ip
    | s_ip_access_list_eth
    | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain
-   | s_ip_domain_name
    | s_ip_name_server
    | s_ip_nat
-   | s_ip_nbar
    | s_ip_pim
-   | s_ip_probe
-   | s_ip_route_mos
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
-   | s_ip_tacacs_source_interface
    | s_ip_wccp
    | s_ipc
    | s_ipv6_router_ospf
@@ -3493,7 +3522,6 @@ stanza
    | s_no_vlan_internal_eos
    | s_no_vlan_eos
    | s_ntp
-   | s_null
    | s_nv
    | s_openflow
    | s_passwd
