@@ -638,10 +638,7 @@ public final class TopologyUtilTest {
 
     assertThat(
         builder.build(),
-        equalTo(
-            ImmutableSet.of(
-                new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2, null),
-                new Layer2Edge(c1Name, i2Name, 2, c1Name, i1Name, 2, null))));
+        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2, null))));
   }
 
   @Test
@@ -677,9 +674,7 @@ public final class TopologyUtilTest {
     assertThat(
         builder.build(),
         equalTo(
-            ImmutableSet.of(
-                new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null, null),
-                new Layer2Edge(c1Name, vniName, null, c1Name, irbName, null, null))));
+            ImmutableSet.of(new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null, null))));
   }
 
   @Test
@@ -718,7 +713,6 @@ public final class TopologyUtilTest {
         builder.build(),
         equalTo(
             ImmutableSet.of(
-                new Layer2Edge(c1Name, switchportName, vlanId, c1Name, vniName, null, null),
                 new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId, null))));
   }
 
