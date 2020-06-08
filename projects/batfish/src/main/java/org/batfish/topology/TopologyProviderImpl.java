@@ -282,7 +282,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private @Nonnull Optional<Layer2Topology> computeInitialLayer2Topology(
       NetworkSnapshot networkSnapshot) {
-    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer2Topology").start();
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialLayer2Topology").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return getLayer1LogicalTopology(networkSnapshot)
