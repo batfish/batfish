@@ -20,6 +20,7 @@ import
     PaloAlto_shared,
     PaloAlto_tag,
     PaloAlto_template,
+    PaloAlto_template_stack,
     PaloAlto_virtual_router,
     PaloAlto_vsys,
     PaloAlto_zone;
@@ -114,6 +115,13 @@ statement_template_config_devices
     | s_vsys
 ;
 
+statement_template_stack
+:
+    sts_description
+    | sts_devices
+    | sts_templates
+;
+
 set_line
 :
     SET set_line_tail NEWLINE
@@ -122,6 +130,11 @@ set_line
 set_line_template
 :
     TEMPLATE name = variable statement_template
+;
+
+set_line_template_stack
+:
+    TEMPLATE_STACK name = variable statement_template_stack
 ;
 
 set_line_device_group
@@ -156,6 +169,7 @@ set_line_tail
     | set_line_config_general
     | set_line_device_group
     | set_line_template
+    | set_line_template_stack
     | s_policy
 ;
 
