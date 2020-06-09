@@ -419,23 +419,34 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       return null;
     }
 
-    Set<TargetHealthDescription> validTargets =
+    Set<TargetHealthDescription> enabledAzTargets =
         targetHealths.getTargetHealthDescriptions().stream()
             .filter(
                 desc ->
-                    isValidTarget(
+                    isTargetInEnabledAvailabilityZone(
                         desc, targetGroup, lbAvailabilityZoneName, crossZoneLoadBalancing, region))
             .collect(ImmutableSet.toImmutableSet());
-    if (validTargets.isEmpty()) {
+    if (enabledAzTargets.isEmpty()) {
       warnings.redFlag(
           String.format(
-              "No healthy targets found in matching availability zone(s) for target group ARN %s",
+              "No targets found in enabled availability zone(s) for target group ARN %s",
               targetGroupArn));
       return null;
     }
 
+    Set<TargetHealthDescription> healthyTargets =
+        enabledAzTargets.stream()
+            .filter(desc -> desc.getTargetHealth().getState() == HealthState.HEALTHY)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
+    // If there are no enabled Availability Zones with a healthy target in each target group,
+    // requests are routed to targets in all enabled Availability Zones.
+    Set<TargetHealthDescription> activeTargets =
+        healthyTargets.isEmpty() ? enabledAzTargets : healthyTargets;
+
     Set<TransformationStep> transformationSteps =
-        validTargets.stream()
+        activeTargets.stream()
             .map(
                 desc ->
                     computeTargetTransformationStep(
@@ -472,7 +483,7 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     Ip targetIp =
         targetGroupType.equals(TargetGroup.Type.IP)
             ? Ip.parse(target.getId())
-            // instance must exist since this target is valid (see isValidTarget)
+            // instance must exist since this target is valid (see isTargetInValidAvailabilityZone)
             : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();
     if (targetIp == null) {
       warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
@@ -486,20 +497,16 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
-   * A target is deemed valid for this load balancer if it is healthy and availability zone
-   * parameters match, that is, the load balancer does cross zone load balancing or the target is
-   * either in zone "all" or in the same zone as the load balancer.
+   * A target is in enabled zone for this load balancer if the load balancer does cross zone load
+   * balancing; or if the target is either in zone "all" or in the same zone as the load balancer.
    */
   @VisibleForTesting
-  static boolean isValidTarget(
+  static boolean isTargetInEnabledAvailabilityZone(
       TargetHealthDescription targetHealthDescription,
       TargetGroup targetGroup,
       String lbAvailabilityZoneName,
       boolean crossZoneLoadBalancing,
       Region region) {
-    if (targetHealthDescription.getTargetHealth().getState() != HealthState.HEALTHY) {
-      return false;
-    }
     switch (targetGroup.getTargetType()) {
       case IP:
         return crossZoneLoadBalancing
