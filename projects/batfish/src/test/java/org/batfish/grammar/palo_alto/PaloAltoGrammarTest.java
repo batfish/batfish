@@ -2897,6 +2897,9 @@ public final class PaloAltoGrammarTest {
     assertThat(
         firewall1.getLoggingServers(),
         contains("10.1.21.1", "10.1.23.1", "10.1.31.1", "10.1.33.1"));
+    // Primary dns / ntp servers should be overwritten by T1, but secondary should come from T2
+    assertThat(firewall1.getDnsServers(), contains("10.1.51.1", "10.2.52.1"));
+    assertThat(firewall1.getNtpServers(), contains("10.1.61.1", "10.2.62.1"));
     // eth1/2 address should be from template 2, others should be from template 1
     assertThat(firewall1, hasInterface("ethernet1/1", hasAddress("10.1.41.1/30")));
     assertThat(firewall1, hasInterface("ethernet1/2", hasAddress("10.2.42.1/30")));

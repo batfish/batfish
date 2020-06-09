@@ -304,7 +304,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   public String getNtpServerSecondary() {
-    return _ntpServerPrimary;
+    return _ntpServerSecondary;
   }
 
   public @Nonnull SortedMap<String, Vsys> getSharedGateways() {

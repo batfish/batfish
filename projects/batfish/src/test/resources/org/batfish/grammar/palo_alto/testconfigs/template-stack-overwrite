@@ -15,6 +15,8 @@ set template T1 config shared log-settings syslog SG_SHARED server S3 server 10.
 set template T1 config network interface ethernet ethernet1/1 layer3 ip 10.1.41.1/30
 set template T1 config network interface ethernet ethernet1/3 layer3 ip 10.1.43.1/30
 set template T1 config network virtual-router default interface [ ethernet1/1 ethernet1/3 ]
+set template T1 config deviceconfig system dns-setting servers primary 10.1.51.1
+set template T1 config deviceconfig system ntp-servers primary-ntp-server ntp-server-address 10.1.61.1
 
 set template T2 config deviceconfig system hostname hostname_two
 set template T1 config deviceconfig system ip-address 10.2.10.1
@@ -28,6 +30,10 @@ set template T2 config shared log-settings syslog SG_SHARED server S3 server 10.
 set template T2 config network interface ethernet ethernet1/2 layer3 ip 10.2.42.1/30
 set template T2 config network interface ethernet ethernet1/3 layer3 ip 10.2.43.1/30
 set template T2 config network virtual-router default2 interface [ ethernet1/2 ]
+set template T2 config deviceconfig system dns-setting servers primary 10.2.51.1
+set template T2 config deviceconfig system dns-setting servers secondary 10.2.52.1
+set template T2 config deviceconfig system ntp-servers primary-ntp-server ntp-server-address 10.2.61.1
+set template T2 config deviceconfig system ntp-servers secondary-ntp-server ntp-server-address 10.2.62.1
 
 set template-stack TS1 templates [ T1 T2 ]
 set template-stack TS1 devices 00000001
