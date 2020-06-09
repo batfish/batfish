@@ -222,6 +222,7 @@ import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
+import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
@@ -2098,6 +2099,32 @@ public final class PaloAltoGrammarTest {
         equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
 
     // TODO: Test semantics after conversion
+  }
+
+  @Test
+  public void testSharedRulebase() {
+    String hostname = "shared-rulebase";
+    PaloAltoConfiguration vendorConfig = parsePaloAltoConfig(hostname);
+
+    Map<String, NatRule> natPreRules = vendorConfig.getShared().getPreRulebase().getNatRules();
+    Map<String, SecurityRule> securityPreRules =
+        vendorConfig.getShared().getPreRulebase().getSecurityRules();
+    Map<String, NatRule> natPostRules = vendorConfig.getShared().getPostRulebase().getNatRules();
+    Map<String, SecurityRule> securityPostRules =
+        vendorConfig.getShared().getPostRulebase().getSecurityRules();
+
+    // Make sure shared pre- and post- rules are associated with the shared vsys
+    assertThat(natPreRules.keySet(), contains("PRE_NAT"));
+    assertThat(natPreRules.get("PRE_NAT").getTo(), equalTo("Z1"));
+
+    assertThat(natPostRules.keySet(), contains("POST_NAT"));
+    assertThat(natPostRules.get("POST_NAT").getTo(), equalTo("Z2"));
+
+    assertThat(securityPreRules.keySet(), contains("PRE_SECURITY"));
+    assertThat(securityPreRules.get("PRE_SECURITY").getTo(), contains("Z1"));
+
+    assertThat(securityPostRules.keySet(), contains("POST_SECURITY"));
+    assertThat(securityPostRules.get("POST_SECURITY").getTo(), contains("Z2"));
   }
 
   @Test

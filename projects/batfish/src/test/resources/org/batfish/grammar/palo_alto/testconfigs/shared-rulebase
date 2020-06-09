@@ -1,0 +1,23 @@
+set deviceconfig system hostname shared-rulebase
+
+set shared pre-rulebase security rules PRE_SECURITY to Z1
+set shared pre-rulebase security rules PRE_SECURITY from any
+set shared pre-rulebase security rules PRE_SECURITY source any
+set shared pre-rulebase security rules PRE_SECURITY destination any
+set shared pre-rulebase security rules PRE_SECURITY action allow
+
+set shared pre-rulebase nat rules PRE_NAT to Z1
+set shared pre-rulebase nat rules PRE_NAT from any
+set shared pre-rulebase nat rules PRE_NAT source any
+set shared pre-rulebase nat rules PRE_NAT destination any
+
+set shared post-rulebase security rules POST_SECURITY to Z2
+set shared post-rulebase security rules POST_SECURITY from any
+set shared post-rulebase security rules POST_SECURITY source any
+set shared post-rulebase security rules POST_SECURITY destination any
+set shared post-rulebase security rules POST_SECURITY action allow
+
+set shared post-rulebase nat rules POST_NAT to Z2
+set shared post-rulebase nat rules POST_NAT from any
+set shared post-rulebase nat rules POST_NAT source any
+set shared post-rulebase nat rules POST_NAT destination any
