@@ -702,7 +702,16 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         {
           Configuration vpcCfg =
               awsConfiguration.getNode(Vpc.nodeName(tgwAttachment.getResourceId()));
-          assert vpcCfg != null; // suppress IDE warnings
+          if (vpcCfg == null) {
+            warnings.redFlag(
+                String.format(
+                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC configuration was not found",
+                    route.getDestinationCidrBlock(),
+                    routeTableId,
+                    tgwCfg.getHostname(),
+                    Vpc.nodeName(tgwAttachment.getResourceId())));
+            return;
+          }
           String ifaceNameOnVpc = interfaceNameToRemote(tgwCfg, routeTableId);
           if (!vpcCfg.getAllInterfaces().containsKey(ifaceNameOnVpc)) {
             warnings.redFlag(
