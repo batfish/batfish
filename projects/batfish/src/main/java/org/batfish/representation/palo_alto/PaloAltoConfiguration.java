@@ -227,11 +227,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  public String getDnsServerPrimary() {
+  @Nullable
+  String getDnsServerPrimary() {
     return _dnsServerPrimary;
   }
 
-  public String getDnsServerSecondary() {
+  @Nullable
+  String getDnsServerSecondary() {
     return _dnsServerSecondary;
   }
 
@@ -299,11 +301,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  public String getNtpServerPrimary() {
+  @Nullable
+  String getNtpServerPrimary() {
     return _ntpServerPrimary;
   }
 
-  public String getNtpServerSecondary() {
+  @Nullable
+  String getNtpServerSecondary() {
     return _ntpServerSecondary;
   }
 
@@ -1880,10 +1884,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       entry.getValue().setVsys(target);
       target.getZones().put(entry.getKey(), entry.getValue());
     }
-    target.getSyslogServers().putAll(template.getSyslogServers());
-    if (!template.getImportedInterfaces().isEmpty()) {
-      target.getImportedInterfaces().addAll(template.getImportedInterfaces());
-    }
+    target.getSyslogServerGroups().putAll(template.getSyslogServerGroups());
+    target.getImportedInterfaces().addAll(template.getImportedInterfaces());
 
     // Overwrite settings
     if (template.getDisplayName() != null) {
@@ -1933,9 +1935,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       _interfaces.putAll(template.getInterfaces());
       _sharedGateways.putAll(template.getSharedGateways());
       _virtualRouters.putAll(template.getVirtualRouters());
-      if (!template.getCryptoProfiles().isEmpty()) {
-        _cryptoProfiles.addAll(template.getCryptoProfiles());
-      }
+      _cryptoProfiles.addAll(template.getCryptoProfiles());
 
       // Vsys entities
       for (Entry<String, Vsys> entry : template.getVirtualSystems().entrySet()) {

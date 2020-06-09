@@ -163,7 +163,7 @@ public final class Vsys implements Serializable {
     return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
   }
 
-  public Map<String, SortedMap<String, SyslogServer>> getSyslogServers() {
+  public Map<String, SortedMap<String, SyslogServer>> getSyslogServerGroups() {
     return _syslogServerGroups;
   }
 
