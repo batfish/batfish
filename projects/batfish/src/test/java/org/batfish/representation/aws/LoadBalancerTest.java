@@ -20,7 +20,7 @@ import static org.batfish.representation.aws.LoadBalancer.getTraceElementForForw
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNoMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNotForwardedPackets;
-import static org.batfish.representation.aws.LoadBalancer.isValidTarget;
+import static org.batfish.representation.aws.LoadBalancer.isTargetInEnabledAvailabilityZone;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
@@ -445,7 +445,7 @@ public class LoadBalancerTest {
 
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
 
-    // unhealthy target is ignored should be ignored
+    // unhealthy target should be ignored
     assertThat(
         computeTargetGroupTransformationStep(
             targetGroupArn, "zone", loadBalancerIp, true, region, new Warnings()),
@@ -465,14 +465,44 @@ public class LoadBalancerTest {
                     new Warnings()))));
   }
 
-  /** Test that we return null if no valid target is found */
+  /** Test that we return null if no target in enabled availability zones found */
   @Test
-  public void testComputeTargetGroupTransformationStep_nullReturn() {
+  public void testComputeTargetGroupTransformationStep_noEnabledTarget() {
     TargetHealthDescription target1 =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
             new TargetHealth(HealthState.UNHEALTHY));
-    TargetHealthDescription target2 =
+
+    String targetGroupArn = "tgArn";
+    TargetGroup targetGroup =
+        new TargetGroup(
+            targetGroupArn, ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP);
+    Region region =
+        Region.builder("r1")
+            .setTargetGroups(ImmutableMap.of(targetGroupArn, targetGroup))
+            .setLoadBalancerTargetHealths(
+                ImmutableMap.of(
+                    targetGroupArn,
+                    new LoadBalancerTargetHealth(targetGroupArn, ImmutableList.of(target1))))
+            .build();
+
+    Ip loadBalancerIp = Ip.parse("10.10.10.10");
+
+    // unhealthy target is ignored should be ignored
+    assertThat(
+        computeTargetGroupTransformationStep(
+            targetGroupArn, "zone", loadBalancerIp, false, region, new Warnings()),
+        nullValue());
+  }
+
+  /** If all enabled targets are unhealthy, send traffic to all */
+  @Test
+  public void testComputeTargetGroupTransformationStep_allUnhealthyTargets() {
+    TargetHealthDescription unhealthyTarget1 =
+        new TargetHealthDescription(
+            new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
+            new TargetHealth(HealthState.UNHEALTHY));
+    TargetHealthDescription unhealthyTarget2 =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", "2.2.2.2", 80),
             new TargetHealth(HealthState.UNHEALTHY));
@@ -488,16 +518,28 @@ public class LoadBalancerTest {
                 ImmutableMap.of(
                     targetGroupArn,
                     new LoadBalancerTargetHealth(
-                        targetGroupArn, ImmutableList.of(target1, target2))))
+                        targetGroupArn, ImmutableList.of(unhealthyTarget1, unhealthyTarget2))))
             .build();
 
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
 
-    // unhealthy target is ignored should be ignored
     assertThat(
         computeTargetGroupTransformationStep(
             targetGroupArn, "zone", loadBalancerIp, true, region, new Warnings()),
-        nullValue());
+        equalTo(
+            new ApplyAny(
+                computeTargetTransformationStep(
+                    unhealthyTarget1.getTarget(),
+                    TargetGroup.Type.IP,
+                    loadBalancerIp,
+                    region,
+                    new Warnings()),
+                computeTargetTransformationStep(
+                    unhealthyTarget2.getTarget(),
+                    TargetGroup.Type.IP,
+                    loadBalancerIp,
+                    region,
+                    new Warnings()))));
   }
 
   @Test
@@ -551,20 +593,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testIsValidTarget_unhealthy() {
-    assertFalse(
-        isValidTarget(
-            new TargetHealthDescription(
-                new LoadBalancerTarget(null, "id", 80), new TargetHealth(HealthState.UNHEALTHY)),
-            new TargetGroup(
-                "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP),
-            "availabilityZone",
-            true,
-            Region.builder("r1").build()));
-  }
-
-  @Test
-  public void testIsValidTarget_instanceTarget() {
+  public void testIsTargetInEnabledAvailabilityZone_instanceTarget() {
     Subnet subnet =
         new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone", ImmutableMap.of());
     Instance instance =
@@ -583,20 +612,28 @@ public class LoadBalancerTest {
             .build();
 
     // LB in same zone; cross zone load balancing is off
-    assertTrue(isValidTarget(targetHealthDescription, targetGroup, "targetZone", false, region));
+    assertTrue(
+        isTargetInEnabledAvailabilityZone(
+            targetHealthDescription, targetGroup, "targetZone", false, region));
 
     // LB in same zone; cross zone load balancing is on
-    assertTrue(isValidTarget(targetHealthDescription, targetGroup, "targetZone", true, region));
+    assertTrue(
+        isTargetInEnabledAvailabilityZone(
+            targetHealthDescription, targetGroup, "targetZone", true, region));
 
     // LB in different zone; cross zone load balancing is off
-    assertFalse(isValidTarget(targetHealthDescription, targetGroup, "otherZone", false, region));
+    assertFalse(
+        isTargetInEnabledAvailabilityZone(
+            targetHealthDescription, targetGroup, "otherZone", false, region));
 
     // LB in different zone; cross zone load balancing is on
-    assertTrue(isValidTarget(targetHealthDescription, targetGroup, "otherZone", true, region));
+    assertTrue(
+        isTargetInEnabledAvailabilityZone(
+            targetHealthDescription, targetGroup, "otherZone", true, region));
   }
 
   @Test
-  public void testIsValidTarget_ipTarget() {
+  public void testIsTargetInEnabledAvailabilityZone_ipTarget() {
     TargetGroup targetGroup =
         new TargetGroup(
             "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP);
@@ -607,7 +644,7 @@ public class LoadBalancerTest {
 
     // LB in same zone; cross zone load balancing is off
     assertTrue(
-        isValidTarget(
+        isTargetInEnabledAvailabilityZone(
             targetHealthDescription,
             targetGroup,
             "targetZone",
@@ -616,7 +653,7 @@ public class LoadBalancerTest {
 
     // LB in same zone; cross zone load balancing is on
     assertTrue(
-        isValidTarget(
+        isTargetInEnabledAvailabilityZone(
             targetHealthDescription,
             targetGroup,
             "targetZone",
@@ -625,7 +662,7 @@ public class LoadBalancerTest {
 
     // LB in different zone; cross zone load balancing is off
     assertFalse(
-        isValidTarget(
+        isTargetInEnabledAvailabilityZone(
             targetHealthDescription,
             targetGroup,
             "otherZone",
@@ -634,12 +671,12 @@ public class LoadBalancerTest {
 
     // LB in different zone; cross zone load balancing is on
     assertTrue(
-        isValidTarget(
+        isTargetInEnabledAvailabilityZone(
             targetHealthDescription, targetGroup, "otherZone", true, Region.builder("r1").build()));
 
     // Target in zone "all"; cross zone is off
     assertTrue(
-        isValidTarget(
+        isTargetInEnabledAvailabilityZone(
             new TargetHealthDescription(
                 new LoadBalancerTarget("all", "1.1.1.1", 80),
                 new TargetHealth(HealthState.HEALTHY)),
