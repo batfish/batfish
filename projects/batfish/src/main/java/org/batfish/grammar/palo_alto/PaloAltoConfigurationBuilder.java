@@ -24,6 +24,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.VIRTUAL_ROUTER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
@@ -52,6 +53,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TAP_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_SELF_REFERENCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_WIRE_INTERFACE_ZONE;
@@ -1662,6 +1664,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSet_line_template(Set_line_templateContext ctx) {
     String templateName = getText(ctx.name);
+    defineFlattenedStructure(TEMPLATE, templateName, ctx, _parser);
     _currentTemplate = _mainConfiguration.getOrCreateTemplate(templateName);
     _currentConfiguration = _currentTemplate;
     _currentVsys = null;
@@ -1705,7 +1708,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSts_templates(Sts_templatesContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
-      _currentTemplateStack.addTemplate(getText(var));
+      String templateName = getText(var);
+      referenceStructure(TEMPLATE, templateName, TEMPLATE_STACK_TEMPLATES, getLine(ctx.start));
+      _currentTemplateStack.addTemplate(templateName);
     }
   }
 

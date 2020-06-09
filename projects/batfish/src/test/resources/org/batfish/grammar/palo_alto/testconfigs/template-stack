@@ -2,7 +2,7 @@ set template T1 description "template 1 description"
 set template T2 description "template 2 description"
 set template T3 description "template 2 description"
 set template-stack TS1 description "ts 1 description"
-set template-stack TS1 templates [ T1 T2 ]
+set template-stack TS1 templates [ T1 T2 T_UNDEF ]
 set template-stack TS1 devices [ 00000001 00000002 ]
 set template-stack TS2 description "ts 2 description"
 set template-stack TS2 templates T3
