@@ -1378,6 +1378,16 @@ TEMPLATE
     'template'
 ;
 
+TEMPLATES
+:
+    'templates'
+;
+
+TEMPLATE_STACK
+:
+    'template-stack'
+;
+
 THREE_DES
 :
     '3des'
