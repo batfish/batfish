@@ -180,8 +180,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfats_accept_summaryContex
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatsdr_advertise_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfatsdr_disableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_numberContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Pr_enableContext;
@@ -198,6 +196,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_group_definitionCo
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_application_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_external_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_post_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
@@ -1289,22 +1289,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterPanorama_pre_rulebase(Panorama_pre_rulebaseContext ctx) {
+  public void enterS_pre_rulebase(S_pre_rulebaseContext ctx) {
     _currentRuleScope = RulebaseId.PRE;
   }
 
   @Override
-  public void exitPanorama_pre_rulebase(Panorama_pre_rulebaseContext ctx) {
+  public void exitS_pre_rulebase(S_pre_rulebaseContext ctx) {
     _currentRuleScope = null;
   }
 
   @Override
-  public void enterPanorama_post_rulebase(Panorama_post_rulebaseContext ctx) {
+  public void enterS_post_rulebase(S_post_rulebaseContext ctx) {
     _currentRuleScope = RulebaseId.POST;
   }
 
   @Override
-  public void exitPanorama_post_rulebase(Panorama_post_rulebaseContext ctx) {
+  public void exitS_post_rulebase(S_post_rulebaseContext ctx) {
     _currentRuleScope = null;
   }
 
