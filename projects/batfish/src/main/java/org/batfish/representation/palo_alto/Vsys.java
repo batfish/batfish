@@ -49,7 +49,7 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, ServiceGroup> _serviceGroups;
 
-  private final @Nonnull SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
+  private final SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
 
   private final SortedMap<String, Tag> _tags;
 
@@ -163,7 +163,7 @@ public final class Vsys implements Serializable {
     return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
   }
 
-  public Map<String, SortedMap<String, SyslogServer>> getSyslogServerGroups() {
+  public @Nonnull Map<String, SortedMap<String, SyslogServer>> getSyslogServerGroups() {
     return _syslogServerGroups;
   }
 
