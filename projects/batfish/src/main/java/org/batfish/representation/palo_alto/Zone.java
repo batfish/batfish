@@ -31,7 +31,7 @@ public final class Zone implements Serializable {
 
   private Type _type;
 
-  private final Vsys _vsys;
+  private Vsys _vsys;
 
   public Zone(String name, Vsys vsys) {
     _name = name;
@@ -63,5 +63,9 @@ public final class Zone implements Serializable {
 
   public Vsys getVsys() {
     return _vsys;
+  }
+
+  public void setVsys(Vsys vsys) {
+    _vsys = vsys;
   }
 }
