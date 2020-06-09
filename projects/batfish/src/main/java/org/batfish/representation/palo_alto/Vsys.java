@@ -3,6 +3,7 @@ package org.batfish.representation.palo_alto;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -160,6 +161,10 @@ public final class Vsys implements Serializable {
     SortedMap<String, SyslogServer> serverGroup =
         _syslogServerGroups.computeIfAbsent(serverGroupName, g -> new TreeMap<>());
     return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
+  }
+
+  public Map<String, SortedMap<String, SyslogServer>> getSyslogServers() {
+    return _syslogServerGroups;
   }
 
   /** Returns a list of all syslog server addresses. */

@@ -2869,4 +2869,43 @@ public final class PaloAltoGrammarTest {
     assertThat(ts2.getTemplates(), contains("T3"));
     assertThat(ts3.getTemplates(), emptyIterable());
   }
+
+  /**
+   * Test that inheriting from multiple templates merges and overwrites configuration as expected.
+   */
+  @Test
+  public void testTemplateStackOverwriteConversion() {
+    String panoramaHostname = "template-stack-overwrite";
+    String firewallHostname = "hostname_one";
+    String zone1Name = computeObjectName("vsys1", "Z1");
+    String zone2Name = computeObjectName("vsys1", "Z2");
+    String zone3Name = computeObjectName("vsys1", "Z3");
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallHostname));
+    Configuration firewall1 =
+        viConfigs.stream()
+            .filter(vi -> vi.getHostname().equals(firewallHostname))
+            .findFirst()
+            .get();
+
+    // Only SG1 servers and shared servers from template 1 should make it into VI model
+    assertThat(
+        firewall1.getLoggingServers(),
+        contains("10.1.21.1", "10.1.23.1", "10.1.31.1", "10.1.33.1"));
+    // eth1/2 address should be from template 2, others should be from template 1
+    assertThat(firewall1, hasInterface("ethernet1/1", hasAddress("10.1.41.1/30")));
+    assertThat(firewall1, hasInterface("ethernet1/2", hasAddress("10.2.42.1/30")));
+    assertThat(firewall1, hasInterface("ethernet1/3", hasAddress("10.1.43.1/30")));
+    // Both virtual-routers should make it into VI model
+    assertThat(firewall1.getVrfs().keySet(), containsInAnyOrder("default", "default2"));
+    // All zones should make it into VI model
+    assertThat(firewall1, hasZone(zone1Name, hasMemberInterfaces(contains("ethernet1/1"))));
+    assertThat(firewall1, hasZone(zone2Name, hasMemberInterfaces(contains("ethernet1/2"))));
+    assertThat(firewall1, hasZone(zone3Name, hasMemberInterfaces(contains("ethernet1/3"))));
+  }
 }
