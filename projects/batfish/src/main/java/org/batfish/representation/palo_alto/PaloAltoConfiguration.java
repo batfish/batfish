@@ -1924,24 +1924,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
     _virtualSystems.put(PANORAMA_VSYS_NAME, target);
 
-    // Apply shared config
+    // Apply shared config first
     applyVsys(shared, target);
 
-    // Apply the actual device-group
+    // Apply the actual device-group after shared, to overwrite conflicting shared config
     applyVsys(template.getPanorama(), target);
-  }
-
-  /**
-   * Apply the specified device-group "pseudo-config" to this PaloAltoConfiguration. Any previously
-   * made changes will be overwritten in this process.
-   */
-  private void applyDeviceGroupORG(PaloAltoConfiguration template, Vsys shared) {
-    // Currently, we only support device-group attributes, which are associated w/ the Panorama vsys
-    // So just copy the Panorama vsys for now
-    Vsys panorama = template.getPanorama();
-    if (panorama != null) {
-      _virtualSystems.put(PANORAMA_VSYS_NAME, panorama);
-    }
   }
 
   /**
