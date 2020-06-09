@@ -14,6 +14,11 @@
             }
           ],
           "Type": "static"
+        },
+        {
+          "DestinationCidrBlock": "192.168.0.0/16",
+          "State": "blackhole",
+          "Type": "static"
         }
       ],
       "TransitGatewayRouteTableId": "tgw-rtb-08262a9ed03306288"

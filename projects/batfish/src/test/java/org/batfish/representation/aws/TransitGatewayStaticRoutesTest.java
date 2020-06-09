@@ -42,7 +42,12 @@ public class TransitGatewayStaticRoutesTest {
                             Prefix.parse("1.1.1.1/32"),
                             State.ACTIVE,
                             Type.STATIC,
-                            ImmutableList.of("tgw-attach-07f5ec59e9f540021")))),
+                            ImmutableList.of("tgw-attach-07f5ec59e9f540021")),
+                        new TransitGatewayRouteV4(
+                            Prefix.parse("192.168.0.0/16"),
+                            State.BLACKHOLE,
+                            Type.STATIC,
+                            ImmutableList.of()))),
                 "tgw-rtb-0fa40c8df355dce6e",
                 new TransitGatewayStaticRoutes("tgw-rtb-0fa40c8df355dce6e", ImmutableList.of()))));
   }

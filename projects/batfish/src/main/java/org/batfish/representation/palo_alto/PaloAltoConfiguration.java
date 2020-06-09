@@ -209,7 +209,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
     _templates = new TreeMap<>();
-    _templateStacks = new TreeMap<>();
+    _templateStacks = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
     _zoneOutgoingTransformations = new TreeMap<>();
