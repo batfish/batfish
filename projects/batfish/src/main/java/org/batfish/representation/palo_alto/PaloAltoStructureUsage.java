@@ -29,6 +29,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   STATIC_ROUTE_INTERFACE("static-route interface"),
   STATIC_ROUTE_NEXT_VR("static-route nexthop next-vr"),
   TAP_INTERFACE_ZONE("zone network tap"),
+  TEMPLATE_STACK_TEMPLATES("template-stack templates"),
   VIRTUAL_ROUTER_INTERFACE("virtual-router interface"),
   VIRTUAL_ROUTER_SELF_REFERENCE("virtual-router self-reference"),
   VIRTUAL_WIRE_INTERFACE_ZONE("zone network virtual-wire"),
