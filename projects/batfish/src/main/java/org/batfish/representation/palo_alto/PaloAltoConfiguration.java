@@ -1864,7 +1864,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Copy configuration from specified source vsys to specified target vsys. Any previously made
    * changes will be overwritten in this process. Note: this only supports copying device-group vsys
-   * configuration (objects and rules) and rules are merged by appending pre-rulebase and prepending
+   * configuration (objects and rules) and rules are merged by prepending pre-rulebase and appending
    * post-rulebase.
    */
   private void applyVsys(@Nullable Vsys source, Vsys target) {
@@ -1881,38 +1881,38 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getTags().putAll(source.getTags());
 
     /*
-     * Merge rules. Pre-rulebase rules should be appended, post-rulebase rules should be prepended.
+     * Merge rules. Pre-rulebase rules should be prepended, post-rulebase rules should be appended.
      * Note: "regular" rulebase does not apply to panorama
      */
     // NAT pre
-    ImmutableList.Builder<NatRule> preRulebaseNat = ImmutableList.builder();
+    List<NatRule> preRulebaseNat = new ArrayList<>();
     Map<String, NatRule> targetPreNat = target.getPreRulebase().getNatRules();
     preRulebaseNat.addAll(targetPreNat.values());
     preRulebaseNat.addAll(source.getPreRulebase().getNatRules().values());
     targetPreNat.clear();
-    preRulebaseNat.build().forEach(r -> targetPreNat.put(r.getName(), r));
+    preRulebaseNat.forEach(r -> targetPreNat.put(r.getName(), r));
     // Security pre
-    ImmutableList.Builder<SecurityRule> preRulebaseSecurity = ImmutableList.builder();
+    List<SecurityRule> preRulebaseSecurity = new ArrayList<>();
     Map<String, SecurityRule> targetPreSecurity = target.getPreRulebase().getSecurityRules();
     preRulebaseSecurity.addAll(targetPreSecurity.values());
     preRulebaseSecurity.addAll(source.getPreRulebase().getSecurityRules().values());
     targetPreSecurity.clear();
-    preRulebaseSecurity.build().forEach(r -> targetPreSecurity.put(r.getName(), r));
+    preRulebaseSecurity.forEach(r -> targetPreSecurity.put(r.getName(), r));
 
     // NAT post
-    ImmutableList.Builder<NatRule> postRulebaseNat = ImmutableList.builder();
+    List<NatRule> postRulebaseNat = new ArrayList<>();
     Map<String, NatRule> targetPostNat = target.getPostRulebase().getNatRules();
     postRulebaseNat.addAll(source.getPostRulebase().getNatRules().values());
     postRulebaseNat.addAll(targetPostNat.values());
     targetPostNat.clear();
-    postRulebaseNat.build().forEach(r -> targetPostNat.put(r.getName(), r));
+    postRulebaseNat.forEach(r -> targetPostNat.put(r.getName(), r));
     // Security post
-    ImmutableList.Builder<SecurityRule> postRulebaseSecurity = ImmutableList.builder();
+    List<SecurityRule> postRulebaseSecurity = new ArrayList<>();
     Map<String, SecurityRule> targetPostSecurity = target.getPostRulebase().getSecurityRules();
     postRulebaseSecurity.addAll(source.getPostRulebase().getSecurityRules().values());
     postRulebaseSecurity.addAll(targetPostSecurity.values());
     targetPostSecurity.clear();
-    postRulebaseSecurity.build().forEach(r -> targetPostSecurity.put(r.getName(), r));
+    postRulebaseSecurity.forEach(r -> targetPostSecurity.put(r.getName(), r));
   }
 
   /**

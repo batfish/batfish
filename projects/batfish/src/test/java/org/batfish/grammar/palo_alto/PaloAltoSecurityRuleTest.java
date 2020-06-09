@@ -109,6 +109,7 @@ public class PaloAltoSecurityRuleTest {
     Builder baseFlow =
         Flow.builder()
             .setIngressNode(firewallConfig.getHostname())
+            // Arbitrary ports and protocol
             .setSrcPort(111)
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP);
