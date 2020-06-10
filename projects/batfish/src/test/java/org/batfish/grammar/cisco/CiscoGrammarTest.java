@@ -264,6 +264,9 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.bdd.BDDMatchers;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
@@ -1035,6 +1038,31 @@ public final class CiscoGrammarTest {
         c,
         hasInterface(
             highIface3, hasPreTransformationOutgoingFilter(accepts(anyFlow, lowIface4, c))));
+  }
+
+  @Test
+  public void testAsaGh5875() throws IOException {
+    Configuration c = parseConfig("asa-gh-5875");
+    BDDPacket p = new BDDPacket();
+
+    {
+      String aclName = computeServiceObjectGroupAclName("IP_GROUP");
+      assertThat(c, hasIpAccessList(aclName));
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      assertThat(IpAccessListToBdd.toBDD(p, acl), BDDMatchers.isOne());
+    }
+    {
+      String aclName = computeServiceObjectGroupAclName("TCP_GROUP");
+      assertThat(c, hasIpAccessList(aclName));
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.TCP)));
+    }
+    {
+      String aclName = computeServiceObjectGroupAclName("AH_GROUP");
+      assertThat(c, hasIpAccessList(aclName));
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.AHP)));
+    }
   }
 
   @Test

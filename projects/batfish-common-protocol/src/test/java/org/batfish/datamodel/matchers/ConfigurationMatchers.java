@@ -46,6 +46,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 public class ConfigurationMatchers {
 
@@ -150,6 +151,13 @@ public class ConfigurationMatchers {
   public static HasInterfaces hasInterfaces(
       @Nonnull Matcher<? super Map<String, Interface>> subMatcher) {
     return new HasInterfaces(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the configuration has an IpAccessList with specified name.
+   */
+  public static HasIpAccessList hasIpAccessList(@Nonnull String name) {
+    return hasIpAccessList(name, Matchers.any(IpAccessList.class));
   }
 
   /**

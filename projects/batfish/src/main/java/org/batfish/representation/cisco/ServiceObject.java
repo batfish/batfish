@@ -38,7 +38,7 @@ public final class ServiceObject implements ServiceObjectGroupLine {
     _dstPorts.addAll(dstPorts);
   }
 
-  public void addProtocol(IpProtocol protocol) {
+  public void addProtocol(@Nonnull IpProtocol protocol) {
     _protocols.add(protocol);
   }
 
