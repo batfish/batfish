@@ -10,3 +10,7 @@ object-group service TCP_GROUP
  ! This should mean any tcp packet, and not crash.
  service-object tcp
 !
+object-group service AH_GROUP
+ ! This should mean any AH packet, and not crash.
+ service-object ah
+!

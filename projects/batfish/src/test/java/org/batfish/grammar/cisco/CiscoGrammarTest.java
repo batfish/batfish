@@ -1057,6 +1057,12 @@ public final class CiscoGrammarTest {
       IpAccessList acl = c.getIpAccessLists().get(aclName);
       assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.TCP)));
     }
+    {
+      String aclName = computeServiceObjectGroupAclName("AH_GROUP");
+      assertThat(c, hasIpAccessList(aclName));
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.AHP)));
+    }
   }
 
   @Test
