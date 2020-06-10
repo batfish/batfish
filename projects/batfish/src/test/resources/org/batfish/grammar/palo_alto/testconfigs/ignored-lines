@@ -86,3 +86,8 @@ set vsys vsys1 log-settings syslog NAME server NAME transport UDP
 set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
 set vsys vsys1 profiles dos-protection
 set vsys vsys1 profile-group NAME
+# Misc "empty" definitions
+set template T1 config mgt-config users
+set template T1 config shared
+set template T1 config devices localhost.localdomain network vlan
+set template T1 config devices localhost.localdomain network virtual-wire

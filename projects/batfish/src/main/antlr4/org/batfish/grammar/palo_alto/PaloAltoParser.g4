@@ -22,6 +22,8 @@ import
     PaloAlto_template,
     PaloAlto_template_stack,
     PaloAlto_virtual_router,
+    PaloAlto_virtual_wire,
+    PaloAlto_vlan,
     PaloAlto_vsys,
     PaloAlto_zone;
 
@@ -113,6 +115,8 @@ statement_template_config_devices
     | s_network
     | s_shared
     | s_vsys
+    // Ignore irrelevant syntax
+    | s_null
 ;
 
 statement_template_stack
