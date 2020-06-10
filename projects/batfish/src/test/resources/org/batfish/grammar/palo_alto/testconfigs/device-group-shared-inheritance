@@ -17,6 +17,13 @@ set device-group DG1 post-rulebase security rules RULE_DG source ADDR3-shared
 set device-group DG1 post-rulebase security rules RULE_DG destination any
 set device-group DG1 post-rulebase security rules RULE_DG application any
 set device-group DG1 post-rulebase security rules RULE_DG action allow
+# This rule comes before allow rule alphabetically but should be processed last
+set device-group DG1 post-rulebase security rules 2nd_RULE_DG to any
+set device-group DG1 post-rulebase security rules 2nd_RULE_DG from any
+set device-group DG1 post-rulebase security rules 2nd_RULE_DG source any
+set device-group DG1 post-rulebase security rules 2nd_RULE_DG destination any
+set device-group DG1 post-rulebase security rules 2nd_RULE_DG application any
+set device-group DG1 post-rulebase security rules 2nd_RULE_DG action deny
 
 set shared address ADDR2-override ip-netmask 192.168.2.2
 set shared address ADDR2-override description "netmask 2 shared"

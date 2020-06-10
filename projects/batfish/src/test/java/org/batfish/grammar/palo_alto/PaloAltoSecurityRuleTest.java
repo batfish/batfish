@@ -135,7 +135,7 @@ public class PaloAltoSecurityRuleTest {
 
     // Rejected due to hitting shared pre-rulebase rule (deny) before device-group rule (allow)
     assertFalse(traces.get(flowReject).get(0).getDisposition().isSuccessful());
-    // Permitted due to hitting device-group post-rulebase rule (allow) before shared rule (deny)
+    // Permitted due to hitting device-group post-rulebase rule (allow) before any deny rule
     assertTrue(traces.get(flowPermit).get(0).getDisposition().isSuccessful());
   }
 
