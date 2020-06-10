@@ -2868,11 +2868,14 @@ public final class PaloAltoGrammarTest {
     // Check vsys configuration is applied to the template as expected
     assertThat(t1.getVirtualSystems().keySet(), contains("vsys1"));
     Vsys vsys1 = t1.getVirtualSystems().get("vsys1");
+    Vsys shared = t1.getShared();
     assertThat(vsys1.getImportedInterfaces(), containsInAnyOrder("ethernet1/1", "ethernet1/2"));
     SortedMap<String, Zone> zones = vsys1.getZones();
     assertThat(zones.keySet(), containsInAnyOrder("ZONE1", "ZONE2"));
     assertThat(zones.get("ZONE1").getInterfaceNames(), contains("ethernet1/1"));
     assertThat(zones.get("ZONE2").getInterfaceNames(), contains("ethernet1/2"));
+    assertThat(shared, notNullValue());
+    assertThat(shared.getSyslogServer("G1", "S1").getAddress(), equalTo("10.0.0.123"));
   }
 
   @Test

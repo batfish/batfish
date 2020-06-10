@@ -144,7 +144,7 @@ set_line_device_group
 
 /*
  * Device-group supports a subset of device configuration (statement_config_devices)
- * plus a couple device-group / panorama specific items
+ * plus some device-group / panorama specific items
  */
 statement_device_group
 :
@@ -157,6 +157,7 @@ statement_device_group
     | s_service_group
     | s_tag
     // Device-group / panorama specific
+    | s_log_settings
     | s_post_rulebase
     | s_pre_rulebase
     | sdg_description

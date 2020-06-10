@@ -10,10 +10,17 @@ s_log_settings
 :
     LOG_SETTINGS
     (
-        sl_profiles
+        sl_config
+        | sl_profiles
         | sl_syslog
         | sl_system
+        | sl_userid
     )?
+;
+
+sl_config
+:
+    CONFIG null_rest_of_line
 ;
 
 sl_profiles
@@ -32,6 +39,11 @@ sl_syslog
 sl_system
 :
     SYSTEM null_rest_of_line
+;
+
+sl_userid
+:
+    USERID null_rest_of_line
 ;
 
 sls_server

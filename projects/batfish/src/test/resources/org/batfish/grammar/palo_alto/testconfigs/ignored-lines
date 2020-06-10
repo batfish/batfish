@@ -84,5 +84,8 @@ set vsys vsys1 log-settings syslog NAME server NAME format IETF
 set vsys vsys1 log-settings syslog NAME server NAME port 65535
 set vsys vsys1 log-settings syslog NAME server NAME transport UDP
 set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
+set template T1 config shared log-settings config match-list ML_NAME send-to-panorama yes
+set template T1 config shared log-settings userid match-list ML_NAME send-to-panorama yes
+set device-group DG1 log-settings profiles P1 description "long description"
 set vsys vsys1 profiles dos-protection
 set vsys vsys1 profile-group NAME
