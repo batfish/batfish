@@ -922,7 +922,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
     return getInterfaces()
         .filter(iface -> iface.getRoutingPolicyName() != null)
         .flatMap(
@@ -930,6 +931,10 @@ public final class BDDReachabilityAnalysisFactory {
               String nodeName = iface.getOwner().getHostname();
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
+              BDD outgoingOriginalFlowFiltersConstraint =
+                  _bddOutgoingOriginalFlowFilterManagers
+                      .get(nodeName)
+                      .outgoingOriginalFlowFiltersConstraint();
               Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
               VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
@@ -943,7 +948,9 @@ public final class BDDReachabilityAnalysisFactory {
                         return new Edge(
                             preInInterface,
                             new PbrFibLookup(nodeName, vrfName, lookupVrf),
-                            transitionByFibLookupEntry.getValue());
+                            compose(
+                                transitionByFibLookupEntry.getValue(),
+                                constraint(outgoingOriginalFlowFiltersConstraint)));
                       });
             });
   }
@@ -1029,7 +1036,8 @@ public final class BDDReachabilityAnalysisFactory {
     return _ignoreFilters ? _one : aclPermitBDD(node, acl);
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PostInInterface() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreInInterface_PostInInterface() {
     return getInterfaces()
         // Policy-based routing edges handled elsewhere
         .filter(iface -> iface.getRoutingPolicyName() == null)
@@ -1043,10 +1051,15 @@ public final class BDDReachabilityAnalysisFactory {
               PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
+              BDD outgoingOriginalFlowFiltersConstraint =
+                  _bddOutgoingOriginalFlowFilterManagers
+                      .get(nodeName)
+                      .outgoingOriginalFlowFiltersConstraint();
 
               Transition transition =
                   compose(
                       constraint(inAclBDD),
+                      constraint(outgoingOriginalFlowFiltersConstraint),
                       _bddIncomingTransformations.get(nodeName).get(ifaceName));
               return new Edge(preState, postState, transition);
             });
